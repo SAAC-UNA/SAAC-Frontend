@@ -1,68 +1,78 @@
-:root {
-  font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
-  line-height: 1.5;
+@import "tailwindcss";
+
+/* Tipografías Poppins */
+@font-face {
+  font-family: "Poppins";
+  font-style: normal;
+  font-weight: 300;
+  font-display: swap;
+  src: url("./assets/fonts/Poppins/Poppins-Light.ttf") format("woff2");
+}
+
+@font-face {
+  font-family: "Poppins";
+  font-style: normal;
   font-weight: 400;
-
-  color-scheme: light dark;
-  color: rgba(255, 255, 255, 0.87);
-  background-color: #242424;
-
-  font-synthesis: none;
-  text-rendering: optimizeLegibility;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+  font-display: swap;
+  src: url("./assets/fonts/Poppins/Poppins-Regular.ttf") format("woff2");
 }
 
-a {
+@font-face {
+  font-family: "Poppins";
+  font-style: normal;
   font-weight: 500;
-  color: #646cff;
-  text-decoration: inherit;
-}
-a:hover {
-  color: #535bf2;
+  font-display: swap;
+  src: url("./assets/fonts/Poppins/Poppins-Medium.ttf") format("woff2");
 }
 
-body {
-  margin: 0;
-  display: flex;
-  place-items: center;
-  min-width: 320px;
-  min-height: 100vh;
+@font-face {
+  font-family: "Poppins";
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url("./assets/fonts/Poppins/Poppins-SemiBold.ttf") format("woff2");
 }
 
-h1 {
-  font-size: 3.2em;
-  line-height: 1.1;
+@font-face {
+  font-family: "Poppins";
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url("./assets/fonts/Poppins/Poppins-Bold.ttf") format("woff2");
 }
 
-button {
-  border-radius: 8px;
-  border: 1px solid transparent;
-  padding: 0.6em 1.2em;
-  font-size: 1em;
-  font-weight: 500;
-  font-family: inherit;
-  background-color: #1a1a1a;
-  cursor: pointer;
-  transition: border-color 0.25s;
-}
-button:hover {
-  border-color: #646cff;
-}
-button:focus,
-button:focus-visible {
-  outline: 4px auto -webkit-focus-ring-color;
+@theme {
+  --color-rojo-una: #CD1719;
+  --color-rojo-una-2: #C32B30;
+  --color-gris-una: #A7A7A9;
+  --color-azul-una: #034991;
+  --color-blanco-una: #FFFFFF;
+  --color-blanco-una-2: #F8F9FA;
+  --color-negro-una: #000000;
+
+  --font-poppins: 'Poppins', sans-serif;
 }
 
-@media (prefers-color-scheme: light) {
-  :root {
-    color: #213547;
-    background-color: #ffffff;
+/* Estándar de estilos globales */
+
+  @layer base {
+  body {
+    @apply font-poppins bg-blanco-una-2 text-negro-una;
   }
-  a:hover {
-    color: #747bff;
+
+  h1 {
+    @apply font-poppins text-3xl font-bold text-rojo-una;
   }
+
+  h2 {
+    @apply font-poppins text-xl font-semibold text-azul-una;
+  }
+
+  p {
+    @apply font-poppins text-base text-gris-una;
+  }
+
   button {
-    background-color: #f9f9f9;
+    @apply bg-rojo-una text-white font-poppins font-semibold rounded px-4 py-2;
   }
 }
