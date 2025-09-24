@@ -1,25 +1,32 @@
-import React, { useState } from 'react';
+import React from 'react';
 import type { NavItem } from '@/types/CommonTypes';
 import { cn } from '@/utils/ClassNames';
+import { useNavigationItems } from '@/hooks/UseNavigation';
+
+import caretIcon from '@/assets/Icons/caret-left.svg';
 
 interface SidebarItemProps {
   item: NavItem;
   isSubItem?: boolean;
+  centered?: boolean;
 }
 
 export const SidebarItem: React.FC<SidebarItemProps> = ({ 
   item, 
-  isSubItem = false 
+  isSubItem = false,
+  centered = false
 }) => {
-  const [isExpanded, setIsExpanded] = useState(false);
+  const { handleItemClick, isItemActive, isItemExpanded } = useNavigationItems();
+
+  // Estado de expansión ahora viene del contexto global
+  const isExpanded = isItemExpanded(item.id);
+
+  // Debug temporal - eliminar después
+  console.log('SidebarItem:', item.label, 'icon:', item.icon, 'type:', typeof item.icon);
 
   const handleClick = () => {
-    if (item.isExpandable) {
-      setIsExpanded(prev => !prev);
-    } else {
-      // Aquí iría la navegación
-      console.log(`Navegando a: ${item.href}`);
-    }
+    // La lógica de expansión ahora está en el hook
+    handleItemClick(item.id, item.href, item.isExpandable);
   };
 
   return (
@@ -27,7 +34,9 @@ export const SidebarItem: React.FC<SidebarItemProps> = ({
       <button
         onClick={handleClick}
         className={cn(
-          'w-full flex items-center text-left transition-all duration-200 group',
+          'flex items-center text-left transition-all duration-200 group',
+          // Control de ancho basado en el tamaño del sidebar
+          centered ? 'sidebar-item-centered' : 'sidebar-item-width',
           // Estilos base
           'px-4 py-3 text-sm font-medium',
           // Estilos para items principales
@@ -35,19 +44,28 @@ export const SidebarItem: React.FC<SidebarItemProps> = ({
           // Estilos para subitems
           isSubItem && 'ml-8 mr-2 rounded-lg',
           // Estados activo/inactivo
-          item.isActive
-            ? 'bg-white text-red-600 shadow-sm font-semibold'
-            : 'text-white hover:bg-white/10',
+          isItemActive(item.id)
+            ? 'bg-blanco-una text-rojo-una-2 font-semibold hover:translate-x-1'
+            : 'text-blanco-una',
           // Hover effects
-          !item.isActive && 'hover:translate-x-1 hover:shadow-md'
+          !isItemActive(item.id) && 'hover:translate-x-1'
         )}
       >
-        {/* Icono */}
+        {/* Icono y contenedor */}
         <span className={cn(
-          'flex-shrink-0 text-lg mr-3 transition-transform duration-200',
+          'flex-shrink-0 mr-3 transition-transform duration-200',
+          'w-5 h-5 flex items-center justify-center',
           'group-hover:scale-110'
         )}>
-          {item.icon}
+          {/* (SVG/PNG) */}
+          <img 
+            src={item.icon} 
+            alt={`${item.label} icon`} 
+            className={cn(
+              "w-5 h-5 object-contain transition-all duration-200",
+              isItemActive(item.id) ? "icon-rojo-una-2" : "icon-blanco-una"
+            )}
+          />
         </span>
 
         {/* Label */}
@@ -58,10 +76,21 @@ export const SidebarItem: React.FC<SidebarItemProps> = ({
         {/* Arrow para items expandibles */}
         {item.isExpandable && (
           <span className={cn(
-            'flex-shrink-0 ml-2 transition-transform duration-300 text-xs',
-            isExpanded ? 'rotate-90' : 'rotate-0'
+            'flex-shrink-0 ml-2 transition-transform duration-300',
+            // Contenedor del mismo tamaño que los íconos principales 
+            'w-5 h-5 flex items-center justify-center overflow-visible',
+            // Rotación: derecha (>) cuando cerrado, abajo (v) cuando expandido
+            isExpanded ? 'rotate-90' : 'rotate-180'
           )}>
-            ▶
+            <img 
+              src={caretIcon}
+              alt="Expandir menú"
+              className={cn(
+                "w-7 h-7 object-contain transition-all duration-200",
+                // Mismo sistema de colores que los otros íconos
+                isItemActive(item.id) ? "icon-rojo-una-2" : "icon-blanco-una"
+              )}
+            />
           </span>
         )}
       </button>
