@@ -1,11 +1,14 @@
 import React, { useState } from 'react';
-import { Input, Textarea, MultiSelect, Button } from '@/components/Ui/Index';
+import { Input, Textarea, MultiSelect, Button, PageHeader } from '@/components/Ui/Index';
 import { useSidebar } from '@/context/SidebarContext';
 import { useBreakpoint } from '@/hooks/UseBreakpoint';
 
 interface CreateRoleFormProps {
   onSubmit?: (roleData: RoleFormData) => void;
   onCancel?: () => void;
+  title?: string;
+  description?: string;
+  showHeader?: boolean;
 }
 
 interface RoleFormData {
@@ -60,7 +63,10 @@ const AVAILABLE_PRIVILEGES = [
 
 export const CreateRoleForm: React.FC<CreateRoleFormProps> = ({
   onSubmit,
-  onCancel
+  onCancel,
+  title = "Gestión de Roles",
+  description = "Crea roles del sistema SAAC-UNA",
+  showHeader = true
 }) => {
   const { isCollapsed } = useSidebar();
   const { isMobile, isTablet, isDesktop, isLargeScreen } = useBreakpoint();
@@ -147,6 +153,18 @@ export const CreateRoleForm: React.FC<CreateRoleFormProps> = ({
   return (
     <div className={`bg-blanco-una-2 rounded-lg shadow-lg border border-gris-una/20 transition-all duration-300 ${getFormWidth()}`}>
 
+      {/* Título dentro del contenedor - Siempre alineado a la izquierda */}
+      {showHeader && (
+        <div className={` ${getFormPadding()}`}>
+          <PageHeader 
+            title={title}
+            description={description}
+            className="mb-0" // Sin margin bottom porque ya está en un contenedor
+            forceLeftAlign={true} // Forzar alineación a la izquierda
+          />
+        </div>
+      )}
+
       {/* Contenido del formulario */}
       <form onSubmit={handleSubmit} className={`${getFormPadding()}`}>
         
@@ -181,38 +199,41 @@ export const CreateRoleForm: React.FC<CreateRoleFormProps> = ({
                 />
               </div>
 
-              {/* Columna derecha: Descripción */}
-              <div className="w-full">
-                <Textarea
-                  label="Descripción"
-                  placeholder="Descripción del rol..."
-                  value={formData.description}
-                  onChange={(e) => handleInputChange('description', e.target.value)}
-                  error={errors.description}
-                  rows={4}
-                  resize="vertical"
-                  size="sm"
-                />
-              </div>
-            </div>
+              {/* Columna derecha: Descripción + Botones */}
+              <div className="flex flex-col space-y-6 h-full">
+                {/* Descripción */}
+                <div className="flex-1">
+                  <Textarea
+                    label="Descripción"
+                    placeholder="Descripción del rol..."
+                    value={formData.description}
+                    onChange={(e) => handleInputChange('description', e.target.value)}
+                    error={errors.description}
+                    rows={4}
+                    resize="vertical"
+                    size="sm"
+                  />
+                </div>
 
-            {/* Botones de acción - Alineados a la derecha */}
-            <div className="flex justify-end gap-4 pt-4">
-              <Button
-                type="button"
-                variant="secondary"
-                onClick={onCancel}
-                responsive
-              >
-                Cancelar
-              </Button>
-              <Button
-                type="submit"
-                variant="primary"
-                responsive
-              >
-                Crear Rol
-              </Button>
+                {/* Botones en la esquina inferior derecha */}
+                <div className="flex justify-end gap-4">
+                  <Button
+                    type="button"
+                    variant="secondary"
+                    onClick={onCancel}
+                    responsive
+                  >
+                    Cancelar
+                  </Button>
+                  <Button
+                    type="submit"
+                    variant="primary"
+                    responsive
+                  >
+                    Crear Rol
+                  </Button>
+                </div>
+              </div>
             </div>
           </div>
         ) : (

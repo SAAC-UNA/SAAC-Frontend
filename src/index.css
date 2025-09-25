@@ -69,6 +69,67 @@
 /* Estándar de estilos globales (Tal vez lo vamos a tener que eliminar, creo que es mejor usar clases específicas) */
 
   @layer base {
+  :root {
+    --sidebar-width: 16rem;
+    --sidebar-width-mobile: 18rem;
+    --sidebar-width-icon: 3rem;
+    
+    /* Colores del sidebar */
+    --sidebar: 195 43 48; /* rojo-una-2 */
+    --sidebar-foreground: 255 255 255; /* blanco-una */
+    --sidebar-primary: 195 43 48;
+    --sidebar-primary-foreground: 255 255 255;
+    --sidebar-accent: 220 60 65; /* versión más clara del rojo */
+    --sidebar-accent-foreground: 255 255 255;
+    --sidebar-border: 180 40 45; /* versión más oscura del rojo */
+    --sidebar-ring: 195 43 48;
+  }
+
+  /* Utilidades adicionales para el sidebar */
+  .w-sidebar {
+    width: var(--sidebar-width);
+  }
+
+  .w-sidebar-mobile {
+    width: var(--sidebar-width-mobile);
+  }
+
+  .w-sidebar-icon {
+    width: var(--sidebar-width-icon);
+  }
+
+  /* Animaciones para el sidebar */
+  .animate-in {
+    animation-duration: 150ms;
+    animation-fill-mode: both;
+  }
+
+  .slide-in-from-left {
+    animation-name: slide-in-from-left;
+  }
+
+  .slide-in-from-right {
+    animation-name: slide-in-from-right;
+  }
+
+  @keyframes slide-in-from-left {
+    from {
+      transform: translateX(-100%);
+    }
+    to {
+      transform: translateX(0);
+    }
+  }
+
+  @keyframes slide-in-from-right {
+    from {
+      transform: translateX(100%);
+    }
+    to {
+      transform: translateX(0);
+    }
+  }
+
   body {
     @apply font-poppins bg-blanco-una-2 text-negro-una;
     /* Aplicar scrollbar personalizado globalmente */

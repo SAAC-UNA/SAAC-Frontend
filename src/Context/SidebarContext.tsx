@@ -1,9 +1,17 @@
-import React, { createContext, useContext, useState } from 'react';
+import React, { createContext, useContext, useState, useCallback, useEffect } from 'react';
+import { useIsMobile } from '@/hooks/UseMobile';
 import type { ReactNode } from 'react';
 
 interface SidebarContextType {
-  isCollapsed: boolean;
+  state: 'expanded' | 'collapsed';
+  open: boolean;
+  setOpen: (open: boolean) => void;
+  openMobile: boolean;
+  setOpenMobile: (open: boolean) => void;
+  isMobile: boolean;
   toggleSidebar: () => void;
+  // Mantener compatibilidad con la API anterior
+  isCollapsed: boolean;
   collapseSidebar: () => void;
   expandSidebar: () => void;
 }
@@ -12,22 +20,96 @@ const SidebarContext = createContext<SidebarContextType | undefined>(undefined);
 
 interface SidebarProviderProps {
   children: ReactNode;
+  defaultOpen?: boolean;
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
 }
 
-export const SidebarProvider: React.FC<SidebarProviderProps> = ({ children }) => {
-  const [isCollapsed, setIsCollapsed] = useState(false);
+export const SidebarProvider: React.FC<SidebarProviderProps> = ({ 
+  children, 
+  defaultOpen = true,
+  open: openProp,
+  onOpenChange: setOpenProp 
+}) => {
+  const isMobile = useIsMobile();
+  const [openMobile, setOpenMobile] = useState(false);
 
-  const toggleSidebar = () => setIsCollapsed(prev => !prev);
-  const collapseSidebar = () => setIsCollapsed(true);
-  const expandSidebar = () => setIsCollapsed(false);
+  // Estado interno del sidebar
+  const [_open, _setOpen] = useState(defaultOpen);
+  const open = openProp ?? _open;
+  
+  const setOpen = useCallback(
+    (value: boolean | ((value: boolean) => boolean)) => {
+      const openState = typeof value === 'function' ? value(open) : value;
+      if (setOpenProp) {
+        setOpenProp(openState);
+      } else {
+        _setOpen(openState);
+      }
+
+      // Guardar estado en localStorage
+      try {
+        localStorage.setItem('sidebar_state', openState ? 'expanded' : 'collapsed');
+      } catch (error) {
+        console.warn('No se pudo guardar el estado del sidebar en localStorage');
+      }
+    },
+    [setOpenProp, open]
+  );
+
+  // Función para alternar el sidebar
+  const toggleSidebar = useCallback(() => {
+    return isMobile ? setOpenMobile((open) => !open) : setOpen((open) => !open);
+  }, [isMobile, setOpen, setOpenMobile]);
+
+  // Cargar estado inicial desde localStorage
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem('sidebar_state');
+      if (saved && !openProp) {
+        _setOpen(saved === 'expanded');
+      }
+    } catch (error) {
+      console.warn('No se pudo cargar el estado del sidebar desde localStorage');
+    }
+  }, [openProp]);
+
+  // Atajo de teclado para alternar sidebar
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'b' && (event.metaKey || event.ctrlKey)) {
+        event.preventDefault();
+        toggleSidebar();
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [toggleSidebar]);
+
+  const state: 'expanded' | 'collapsed' = open ? 'expanded' : 'collapsed';
+
+  // Funciones de compatibilidad con la API anterior
+  const isCollapsed = !open;
+  const collapseSidebar = () => setOpen(false);
+  const expandSidebar = () => setOpen(true);
+
+  const contextValue = {
+    state,
+    open,
+    setOpen,
+    openMobile,
+    setOpenMobile,
+    isMobile,
+    toggleSidebar,
+    // Compatibilidad con API anterior
+    isCollapsed,
+    collapseSidebar,
+    expandSidebar,
+  };
 
   return (
-    <SidebarContext.Provider value={{
-      isCollapsed,
-      toggleSidebar,
-      collapseSidebar,
-      expandSidebar
-    }}>
+    <SidebarContext.Provider value={contextValue}>
       {children}
     </SidebarContext.Provider>
   );
