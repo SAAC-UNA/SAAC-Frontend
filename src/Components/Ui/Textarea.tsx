@@ -1,0 +1,99 @@
+import React, { forwardRef } from 'react';
+import { cn } from '@/utils/ClassNames';
+import { getComponentSizeClasses, type ComponentSize } from '@/constants/ComponentSizes';
+import infoTriangleIcon from '@/assets/Icons/info-triangle.svg';
+
+interface TextareaProps extends Omit<React.TextareaHTMLAttributes<HTMLTextAreaElement>, 'size'> {
+  label?: string;
+  error?: string;
+  helperText?: string;
+  size?: ComponentSize;
+  required?: boolean;
+  resize?: 'none' | 'vertical' | 'horizontal' | 'both';
+}
+
+const resizeClasses = {
+  none: 'resize-none',
+  vertical: 'resize-y',
+  horizontal: 'resize-x',
+  both: 'resize'
+};
+
+export const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(({
+  label,
+  error,
+  helperText,
+  size = 'md',
+  resize = 'vertical',
+  required = false,
+  className,
+  id,
+  rows = 4,
+  ...props
+}, ref) => {
+  const textareaId = id || `textarea-${Math.random().toString(36).substr(2, 9)}`;
+
+  return (
+    <div className="space-y-2">
+      {/* Label */}
+      {label && (
+        <label 
+          htmlFor={textareaId}
+          className="block text-sm font-medium text-negro-una"
+        >
+          {label}
+          {required && <span className="text-rojo-una-2 ml-1">*</span>}
+        </label>
+      )}
+
+      {/* Textarea */}
+      <textarea
+        ref={ref}
+        id={textareaId}
+        rows={rows}
+        className={cn(
+          // Base styles
+          'w-full border rounded-corner transition-all duration-200',
+          'focus:outline-none focus:ring-1 focus:ring-gris-una/20 focus:border-transparent',
+          'placeholder-gris-una/60 disabled:bg-gris-una/10 disabled:cursor-not-allowed',
+          
+          // Size variants
+          getComponentSizeClasses.input(size),
+          
+          // Resize behavior
+          resizeClasses[resize],
+          
+          // State variants
+          error 
+            ? 'border-rojo-una-2/5 bg-rojo-una-2/2' 
+            : 'border-gris-una/5 bg-gris-una/10',
+          
+          // Custom classes
+          className
+        )}
+        {...props}
+      />
+
+      {/* Error message */}
+      {error && (
+        <p className="text-rojo-una-2 text-sm flex items-center gap-2">
+          <img 
+            src={infoTriangleIcon} 
+            alt="Error" 
+            className="w-4 h-4 flex-shrink-0 icon-rojo-una-2"
+          />
+          {error}
+        </p>
+      )}
+
+      {/* Helper text */}
+      {helperText && !error && (
+        <p className="text-gris-una text-sm">
+          {helperText}
+        </p>
+      )}
+    </div>
+  );
+});
+
+Textarea.displayName = 'Textarea';

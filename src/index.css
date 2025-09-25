@@ -50,28 +50,47 @@
   --color-blanco-una-2: #F8F9FA;
   --color-negro-una: #000000;
 
-  /* Extensiones para el sidebar (usando colores oficiales UNA) */
+  /* Extensiones para el sidebar (usando colores UNA) */
   --color-rojo-sidebar: var(--color-rojo-una);
   --color-rojo-sidebar-dark: var(--color-rojo-una-2);
-  --color-rojo-sidebar-hover: rgba(255, 255, 255, 0.1);
 
   --font-poppins: 'Poppins', sans-serif;
 
-    /* Colores para estados */
+  /* Colores para estados */
   --color-success: #10b981;
   --color-warning: #f59e0b;
   --color-error: #ef4444;
   --color-info: #3b82f6;
 
-  /* Espaciados personalizados (sidebar) */
+  /* Ancho del sidebar */
   --spacing-sidebar: 16rem;
 }
 
-/* Estándar de estilos globales */
+/* Estándar de estilos globales (Tal vez lo vamos a tener que eliminar, creo que es mejor usar clases específicas) */
 
   @layer base {
   body {
     @apply font-poppins bg-blanco-una-2 text-negro-una;
+    /* Aplicar scrollbar personalizado globalmente */
+    scrollbar-width: thin;
+    scrollbar-color: rgba(195, 43, 48, 0.2) transparent;
+  }
+
+  body::-webkit-scrollbar {
+    width: 10px;
+  }
+
+  body::-webkit-scrollbar-track {
+    background: rgba(167, 167, 169, 0.05);
+  }
+
+  body::-webkit-scrollbar-thumb {
+    background: rgba(195, 43, 48, 0.2);
+    border-radius: 5px;
+  }
+
+  body::-webkit-scrollbar-thumb:hover {
+    background: rgba(195, 43, 48, 0.3);
   }
 
   h1 {
@@ -86,13 +105,20 @@
     @apply font-poppins text-base text-gris-una;
   }
 
-  button {
-    @apply bg-rojo-una-2 text-white font-poppins font-semibold rounded px-4 py-2;
-  }
+  /* Removed global button styles - using specific component classes instead */
 }
 
-/* COMPONENTES para el sidebar */
+/* Componentes para el sidebar */
 @layer components {
+  /* BOTONES ESPECIALES */
+  
+  /* Botón sandwich del menú - Para toggle del sidebar */
+  .btn-menu {
+    @apply bg-transparent text-current p-0 border-0 font-normal rounded-none;
+  }
+  
+  /* SIDEBAR */
+  
   /* Gradiente del sidebar */
   .sidebar-gradient {
     background: linear-gradient(180deg, var(--color-rojo-sidebar) 0%, var(--color-rojo-sidebar-dark) 100%);
@@ -114,7 +140,7 @@
   }
 }
 
-/* UTILIDADES adicionales */
+/* Utilidades adicionales */
 @layer utilities {
   /* Transiciones personalizadas */
   .transition-sidebar {
@@ -141,23 +167,89 @@
   }
   
   /* Sidebar items que se adaptan al ancho del sidebar */
+  /* Resta padding lateral */
   .sidebar-item-width {
-    max-width: calc(var(--spacing-sidebar) - 2rem); /* Resta padding lateral */
+    max-width: calc(var(--spacing-sidebar) - 2rem); 
     width: 100%;
   }
   
+  /* Más margen para centrado */
   .sidebar-item-centered {
-    max-width: calc(var(--spacing-sidebar) - 3rem); /* Más margen para centrado */
+    max-width: calc(var(--spacing-sidebar) - 3rem); 
     width: fit-content;
     margin: 0 auto;
   }
 
   /* Icon color utilities */
+  /* Buscar cómo solucionar esto, quiero darle los colores que yo quiera a los SVG */
   .icon-blanco-una {
     filter: invert(100%) sepia(0%) saturate(0%) hue-rotate(0deg) brightness(100%) contrast(100%);
   }
   
   .icon-rojo-una-2 {
     filter: invert(17%) sepia(94%) saturate(7435%) hue-rotate(356deg) brightness(95%) contrast(115%);
+  }
+
+  .icono-negro-una {
+    filter: invert(0%) sepia(0%) saturate(0%) hue-rotate(0deg) brightness(0%) contrast(100%);
+  }
+
+  /* SCROLLBAR STYLING */
+  /* Estilos globales para scrollbar personalizado */
+  .custom-scrollbar {
+    scrollbar-width: thin;
+    scrollbar-color: rgba(0, 0, 0, 0.3) transparent;
+  }
+
+  /* Webkit scrollbar (Chrome, Safari, Edge) */
+  .custom-scrollbar::-webkit-scrollbar {
+    width: 8px;
+  }
+
+  .custom-scrollbar::-webkit-scrollbar-track {
+    background: rgba(167, 167, 169, 0.1);
+    border-radius: 4px;
+  }
+
+  .custom-scrollbar::-webkit-scrollbar-thumb {
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: 4px;
+    transition: background 0.2s ease;
+  }
+
+  .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: rgba(0, 0, 0, 0.5);
+  }
+
+  .custom-scrollbar::-webkit-scrollbar-thumb:active {
+    background: rgba(0, 0, 0, 0.7);
+  }
+
+  /* Variante más sutil para areas más pequeñas */
+  .custom-scrollbar-thin {
+    scrollbar-width: thin;
+    scrollbar-color: rgba(167, 167, 169, 0.4) transparent;
+  }
+
+  .custom-scrollbar-thin::-webkit-scrollbar {
+    width: 6px;
+  }
+
+  .custom-scrollbar-thin::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  .custom-scrollbar-thin::-webkit-scrollbar-thumb {
+    background: rgba(167, 167, 169, 0.4);
+    border-radius: 3px;
+  }
+
+  .custom-scrollbar-thin::-webkit-scrollbar-thumb:hover {
+    background: rgba(195, 43, 48, 0.4);
+  }
+
+  /* Border radius personalizado para componentes UNA */
+  .rounded-corner {
+    border-radius: 15px;
   }
 }

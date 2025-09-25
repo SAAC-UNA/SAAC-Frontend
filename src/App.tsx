@@ -1,36 +1,66 @@
 import React from 'react';
-import { SidebarProvider } from './Context/SidebarContext';
+import { SidebarProvider, useSidebar } from './Context/SidebarContext';
 import { NavigationProvider } from './Context/NavigationContext';
 import { Sidebar } from './Components/Layout/Sidebar/Index';
 import { Header } from './Components/Header';
-import { useSidebar } from './Context/SidebarContext';
-import { cn } from '@/utils/ClassNames';
+import { CreateRoleForm } from './Components/Features/Roles/Index';
+import { ResponsiveLayout } from './Components/Layout/ResponsiveLayout';
+import { useBreakpoint } from '@/hooks/UseBreakpoint';
 
-const AppContent: React.FC = () => {
+const MainContent: React.FC = () => {
   const { isCollapsed } = useSidebar();
+  const { isDesktop } = useBreakpoint();
   
+  const handleCreateRole = (roleData: any) => {
+    console.log('Nuevo rol creado:', roleData);
+    // Aquí integrarías con tu API o estado global
+  };
+
+  const handleCancel = () => {
+    console.log('Creación cancelada');
+    // Aquí podrías navegar de vuelta o limpiar estado
+  };
+
+  // Determinar si debemos centrar el contenido
+  const shouldCenterContent = isCollapsed && isDesktop;
+
   return (
-    <div className="min-h-screen bg-blanco-una flex">
-      <Sidebar />
-      <div className={cn(
-        "flex-1 flex flex-col transition-all duration-300",
-        // Ajustar el margen según el estado del sidebar
-        !isCollapsed ? "lg:ml-0" : "lg:ml-0"
-      )}>
-        {/* Header con botón de menú */}
-        <Header />
-        {/* Contenido principal */}
-        <main className="flex-1 p-8">
-          <h1 className="text-3xl font-bold">Contenido Principal</h1>
-          <p className="mt-4 text-gris-una">
-            {isCollapsed 
-              ? "El sidebar está oculto. Usa el botón de menú para mostrarlo." 
-              : "El sidebar está visible. El contenido se ajusta automáticamente."
-            }
-          </p>
-        </main>
+    <>
+      {/* Header que se extiende por toda la pantalla */}
+      <Header />
+      
+      {/* Layout principal con sidebar y contenido */}
+      <div className="flex flex-1">
+        <Sidebar />
+        
+        {/* Área de contenido */}
+        <div className="flex-1 flex flex-col">
+          <ResponsiveLayout>
+            {/* Título de la página con centrado inteligente */}
+            <div className={`mb-8 transition-all duration-300 ${
+              shouldCenterContent ? 'text-center w-full max-w-4xl' : 'text-left w-full'
+            }`}>
+              <h1 className="text-2xl font-bold text-negro-una mb-2">
+                Gestión de Roles
+              </h1>
+              <p className="text-gris-una">
+                Crea de roles del sistema SAAC-UNA
+              </p>
+            </div>
+
+            {/* Formulario de creación de rol */}
+            <div className={`w-full transition-all duration-300 ${
+              shouldCenterContent ? 'flex justify-center' : 'flex justify-start'
+            }`}>
+              <CreateRoleForm 
+                onSubmit={handleCreateRole}
+                onCancel={handleCancel}
+              />
+            </div>
+          </ResponsiveLayout>
+        </div>
       </div>
-    </div>
+    </>
   );
 };
 
@@ -38,7 +68,10 @@ const App: React.FC = () => {
   return (
     <SidebarProvider>
       <NavigationProvider>
-        <AppContent />
+        <div className="min-h-screen bg-blanco-una-2 flex flex-col">
+          {/* El MainContent ahora controla toda la estructura */}
+          <MainContent />
+        </div>
       </NavigationProvider>
     </SidebarProvider>
   );

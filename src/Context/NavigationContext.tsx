@@ -27,6 +27,7 @@ export const NavigationProvider: React.FC<NavigationProviderProps> = ({ children
     setExpandedItemId(itemId);
   };
 
+  /* Función para alternar el estado expandido de un item del sidebar (para los que tienen hijos) */
   const toggleExpanded = (itemId: string) => {
     // Si el item ya está expandido, se cierra. Si no, se expande y se cierra cualquier otro
     if (expandedItemId === itemId) {
