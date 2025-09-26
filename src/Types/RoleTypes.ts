@@ -21,3 +21,11 @@ export interface Privilege {
   description?: string;
   category?: string;
 }
+
+/**
+ * Estructura de permisos que devuelve el backend
+ */
+export interface PermissionOption {
+  value: string;  // nombre técnico (ej: "gestion_roles")
+  label: string;  // descripción legible (ej: "Gestión de Roles")
+}

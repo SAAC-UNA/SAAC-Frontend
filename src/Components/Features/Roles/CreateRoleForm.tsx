@@ -1,10 +1,13 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Input, Textarea, MultiSelect, Button, PageHeader } from '@/components/Ui/Index';
 import { useSidebar } from '@/context/SidebarContext';
 import { useBreakpoint } from '@/hooks/UseBreakpoint';
+import { useRoles } from '@/hooks/UseRoles';
+import type { CreateRoleData } from '@/Services/RoleService';
+import type { PermissionOption } from '@/Types/RoleTypes';
 
 interface CreateRoleFormProps {
-  onSubmit?: (roleData: RoleFormData) => void;
+  onSubmit?: (roleData: CreateRoleData) => void;
   onCancel?: () => void;
   title?: string;
   description?: string;
@@ -14,52 +17,8 @@ interface CreateRoleFormProps {
 interface RoleFormData {
   name: string;
   description: string;
-  privileges: string[];
+  permissions: string[];
 }
-
-// Lista de privilegios disponibles (basado en el screenshot y requerimientos)
-const AVAILABLE_PRIVILEGES = [
-  { 
-    id: 'view_users', 
-    label: 'Ver usuarios',
-    description: 'Permite visualizar la lista de usuarios'
-  },
-  { 
-    id: 'create_roles', 
-    label: 'Crear roles',
-    description: 'Permite crear nuevos roles de usuario'
-  },
-  { 
-    id: 'edit_roles', 
-    label: 'Editar roles',
-    description: 'Permite modificar roles existentes'
-  },
-  { 
-    id: 'delete_roles', 
-    label: 'Eliminar roles',
-    description: 'Permite eliminar roles del sistema'
-  },
-  { 
-    id: 'view_roles', 
-    label: 'Ver roles',
-    description: 'Permite visualizar la lista de roles'
-  },
-  { 
-    id: 'manage_courses', 
-    label: 'Gestionar cursos',
-    description: 'Permite crear, editar y eliminar cursos'
-  },
-  { 
-    id: 'view_reports', 
-    label: 'Ver reportes',
-    description: 'Permite acceder a reportes del sistema'
-  },
-  { 
-    id: 'system_admin', 
-    label: 'Administración del sistema',
-    description: 'Acceso completo a configuración del sistema'
-  }
-];
 
 export const CreateRoleForm: React.FC<CreateRoleFormProps> = ({
   onSubmit,
@@ -70,14 +29,20 @@ export const CreateRoleForm: React.FC<CreateRoleFormProps> = ({
 }) => {
   const { isCollapsed } = useSidebar();
   const { isMobile, isTablet, isDesktop, isLargeScreen } = useBreakpoint();
+  const { createRole, loadPermissions, isLoading, error, availablePermissions, clearError } = useRoles();
   
   const [formData, setFormData] = useState<RoleFormData>({
     name: '',
     description: '',
-    privileges: []
+    permissions: []
   });
 
-  const [errors, setErrors] = useState<Partial<Record<keyof RoleFormData, string>>>({});
+  const [formErrors, setFormErrors] = useState<Partial<Record<keyof RoleFormData, string>>>({});
+
+  // Cargar permisos disponibles al montar el componente
+  useEffect(() => {
+    loadPermissions();
+  }, []);
 
   const handleInputChange = (field: keyof RoleFormData, value: string | string[]) => {
     setFormData(prev => ({
@@ -86,11 +51,16 @@ export const CreateRoleForm: React.FC<CreateRoleFormProps> = ({
     }));
 
     // Limpiar error cuando el usuario empiece a escribir
-    if (errors[field]) {
-      setErrors(prev => ({
+    if (formErrors[field]) {
+      setFormErrors(prev => ({
         ...prev,
         [field]: undefined
       }));
+    }
+
+    // También limpiar error de la API cuando el usuario haga cambios
+    if (error) {
+      clearError();
     }
   };
 
@@ -107,20 +77,75 @@ export const CreateRoleForm: React.FC<CreateRoleFormProps> = ({
       newErrors.description = 'La descripción debe tener al menos 10 caracteres';
     }
 
-    if (formData.privileges.length === 0) {
-      newErrors.privileges = 'Debe seleccionar al menos un privilegio';
+    if (formData.permissions.length === 0) {
+      newErrors.permissions = 'Debe seleccionar al menos un permiso';
     }
 
-    setErrors(newErrors);
+    setFormErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
     if (validateForm()) {
-      onSubmit?.(formData);
+      try {
+        // Preparar datos para enviar al backend
+        const roleData: CreateRoleData = {
+          name: formData.name.trim(),
+          description: formData.description.trim(),
+          permissions: formData.permissions
+        };
+
+        const createdRole = await createRole(roleData);
+        
+        if (createdRole) {
+          // Limpiar formulario después de éxito
+          setFormData({
+            name: '',
+            description: '',
+            permissions: []
+          });
+          
+          // Llamar callback si existe
+          onSubmit?.(roleData);
+        }
+      } catch (err) {
+        // El error ya se maneja en el hook useRoles
+        console.error('Error en handleSubmit:', err);
+      }
     }
+  };
+
+  // Transformar permisos de backend a formato esperado por MultiSelect
+  const transformPermissionsToOptions = (permissions: PermissionOption[]) => {
+    return permissions.map(permission => ({
+      id: permission.value,      // usar el nombre técnico como ID
+      label: permission.label,   // mostrar la descripción legible
+      description: permission.label  // descripción también legible
+    }));
+  };
+
+  // Estado de permisos para mostrar loading o mensaje vacío
+  const getPermissionsState = () => {
+    if (isLoading && availablePermissions.length === 0) {
+      return {
+        options: [{ id: 'loading', label: 'Cargando permisos...', description: 'Por favor espere' }],
+        placeholder: 'Cargando permisos disponibles...'
+      };
+    }
+    
+    if (availablePermissions.length === 0) {
+      return {
+        options: [{ id: 'empty', label: 'No hay permisos disponibles', description: 'Contacte al administrador' }],
+        placeholder: 'No se encontraron permisos'
+      };
+    }
+    
+    return {
+      options: transformPermissionsToOptions(availablePermissions),
+      placeholder: 'Seleccione los permisos...'
+    };
   };
 
   // Calcular ancho dinámico basado en pantalla y sidebar
@@ -133,10 +158,9 @@ export const CreateRoleForm: React.FC<CreateRoleFormProps> = ({
       return isCollapsed ? 'w-full max-w-4xl' : 'w-full max-w-2xl';
     }
     
-    if (isDesktop) {
-      if (isLargeScreen) {
+    if (isLargeScreen) {
         return isCollapsed ? 'w-full max-w-7xl' : 'w-full max-w-4xl';
-      }
+    } else {
       return isCollapsed ? 'w-full max-w-6xl' : 'w-full max-w-3xl';
     }
     
@@ -165,9 +189,7 @@ export const CreateRoleForm: React.FC<CreateRoleFormProps> = ({
         </div>
       )}
 
-      {/* Contenido del formulario */}
       <form onSubmit={handleSubmit} className={`${getFormPadding()}`}>
-        
         {isDesktop ? (
           // Layout de Desktop: Estructura compleja
           <div className="space-y-6">
@@ -181,39 +203,46 @@ export const CreateRoleForm: React.FC<CreateRoleFormProps> = ({
                   placeholder="Ej: Administrador, Profesor..."
                   value={formData.name}
                   onChange={(e) => handleInputChange('name', e.target.value)}
-                  error={errors.name}
+                  error={formErrors.name}
                   required
                   size="sm"
                 />
 
                 {/* Privilegios */}
                 <MultiSelect
-                  label="Privilegios del Rol"
-                  options={AVAILABLE_PRIVILEGES}
-                  selectedValues={formData.privileges}
-                  onChange={(values) => handleInputChange('privileges', values)}
-                  error={errors.privileges}
+                  label="Permisos del Rol"
+                  options={getPermissionsState().options}
+                  selectedValues={formData.permissions}
+                  onChange={(values) => handleInputChange('permissions', values)}
+                  error={formErrors.permissions}
                   required
                   maxHeight="lg"
                   showCounter
+                  placeholder={getPermissionsState().placeholder}
                 />
               </div>
 
-              {/* Columna derecha: Descripción + Botones */}
-              <div className="flex flex-col space-y-6 h-full">
-                {/* Descripción */}
-                <div className="flex-1">
+              {/* Columna derecha: Descripción */}
+              <div className="space-y-6">
+                <div className="min-h-full">
                   <Textarea
                     label="Descripción"
                     placeholder="Descripción del rol..."
                     value={formData.description}
                     onChange={(e) => handleInputChange('description', e.target.value)}
-                    error={errors.description}
-                    rows={4}
+                    error={formErrors.description}
+                    rows={8}
                     resize="vertical"
                     size="sm"
                   />
                 </div>
+
+                {/* Mostrar error de la API si existe */}
+                {error && (
+                  <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg">
+                    <p className="text-sm text-red-600">{error}</p>
+                  </div>
+                )}
 
                 {/* Botones en la esquina inferior derecha */}
                 <div className="flex justify-end gap-4">
@@ -221,6 +250,7 @@ export const CreateRoleForm: React.FC<CreateRoleFormProps> = ({
                     type="button"
                     variant="secondary"
                     onClick={onCancel}
+                    disabled={isLoading}
                     responsive
                   >
                     Cancelar
@@ -228,18 +258,17 @@ export const CreateRoleForm: React.FC<CreateRoleFormProps> = ({
                   <Button
                     type="submit"
                     variant="primary"
+                    disabled={isLoading}
                     responsive
                   >
-                    Crear Rol
+                    {isLoading ? 'Creando...' : 'Crear Rol'}
                   </Button>
                 </div>
               </div>
             </div>
           </div>
         ) : (
-
-
-          // Layout Mobile/Tablet: Layout vertical simple
+          // Layout de Mobile/Tablet: Columna única
           <div className="space-y-6">
             {/* Campo: Nombre del rol */}
             <Input
@@ -247,7 +276,7 @@ export const CreateRoleForm: React.FC<CreateRoleFormProps> = ({
               placeholder="Ej: Administrador, Profesor..."
               value={formData.name}
               onChange={(e) => handleInputChange('name', e.target.value)}
-              error={errors.name}
+              error={formErrors.name}
               required
               size="sm"
             />
@@ -258,7 +287,7 @@ export const CreateRoleForm: React.FC<CreateRoleFormProps> = ({
               placeholder="Descripción del rol..."
               value={formData.description}
               onChange={(e) => handleInputChange('description', e.target.value)}
-              error={errors.description}
+              error={formErrors.description}
               rows={4}
               resize="vertical"
               size="sm"
@@ -266,15 +295,23 @@ export const CreateRoleForm: React.FC<CreateRoleFormProps> = ({
 
             {/* Campo: Privilegios */}
             <MultiSelect
-              label="Privilegios del Rol"
-              options={AVAILABLE_PRIVILEGES}
-              selectedValues={formData.privileges}
-              onChange={(values) => handleInputChange('privileges', values)}
-              error={errors.privileges}
+              label="Permisos del Rol"
+              options={getPermissionsState().options}
+              selectedValues={formData.permissions}
+              onChange={(values) => handleInputChange('permissions', values)}
+              error={formErrors.permissions}
               required
               maxHeight="lg"
               showCounter
+              placeholder={getPermissionsState().placeholder}
             />
+
+            {/* Mostrar error de la API si existe */}
+            {error && (
+              <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg">
+                <p className="text-sm text-red-600">{error}</p>
+              </div>
+            )}
 
             {/* Botones de acción - Ancho completo en móvil */}
             <div className="flex gap-4 pt-4 ">
@@ -282,6 +319,7 @@ export const CreateRoleForm: React.FC<CreateRoleFormProps> = ({
                 type="button"
                 variant="secondary"
                 onClick={onCancel}
+                disabled={isLoading}
                 responsive
               >
                 Cancelar
@@ -289,9 +327,10 @@ export const CreateRoleForm: React.FC<CreateRoleFormProps> = ({
               <Button
                 type="submit"
                 variant="primary"
+                disabled={isLoading}
                 responsive
               >
-                Crear Rol
+                {isLoading ? 'Creando...' : 'Crear Rol'}
               </Button>
             </div>
           </div>
