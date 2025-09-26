@@ -1,5 +1,5 @@
 import React from 'react';
-import { PanelLeft } from 'lucide-react';
+import hamburgerIcon from '@/assets/icons/list.svg'; // Asegúrate de tener este ícono en tu proyecto
 import { Button } from '@/components/Ui/Button';
 import { useSidebar } from '@/context/SidebarContext';
 import { cn } from '@/utils/ClassNames';
@@ -27,7 +27,7 @@ export const SidebarTrigger: React.FC<SidebarTriggerProps> = ({
       }}
       {...props}
     >
-      <PanelLeft className="h-4 w-4" />
+      <img src={hamburgerIcon} alt="Toggle Sidebar" className="h-5 w-5" />
       <span className="sr-only">Toggle Sidebar</span>
     </Button>
   );

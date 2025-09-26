@@ -14,7 +14,7 @@ export const SidebarInset: React.FC<SidebarInsetProps> = ({
   return (
     <main
       className={cn(
-        'bg-blanco-una-2 relative flex w-full flex-1 flex-col min-h-screen',
+        'bg-blanco-una-2 relative flex w-full flex-1 flex-col min-h-screen transition-all duration-200 ease-in-out',
         // Ajustes para diferentes variantes del sidebar
         'md:peer-data-[variant=inset]:m-2 md:peer-data-[variant=inset]:ml-0',
         'md:peer-data-[variant=inset]:rounded-xl md:peer-data-[variant=inset]:shadow-sm',

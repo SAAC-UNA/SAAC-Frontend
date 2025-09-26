@@ -1,34 +1,24 @@
 import React from 'react';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { NavigationProvider } from './Context/NavigationContext';
 import { Layout } from './Components/Layout/Index';
-import { CreateRoleForm } from './Components/Features/Roles/Index';
+import { HomePage, RolesCreatePage, RolesListPage, UsersPage } from './Pages/Index';
 
 const App: React.FC = () => {
-  const handleCreateRole = (roleData: any) => {
-    console.log('Nuevo rol creado:', roleData);
-    // Aquí integrarías con tu API o estado global
-  };
-
-  const handleCancel = () => {
-    console.log('Creación cancelada');
-    // Aquí podrías navegar de vuelta o limpiar estado
-  };
-
   return (
-    <NavigationProvider>
-      <Layout>
-        {/* Contenido principal de la aplicación */}
-        <div className="w-full">
-          <CreateRoleForm 
-            onSubmit={handleCreateRole}
-            onCancel={handleCancel}
-            title="Gestión de Roles"
-            description="Crea roles del sistema SAAC-UNA"
-            showHeader={true}
-          />
-        </div>
-      </Layout>
-    </NavigationProvider>
+    <Router>
+      <NavigationProvider>
+        <Layout>
+          <Routes>
+            <Route path="/" element={<HomePage />} />
+            <Route path="/roles/crear" element={<RolesCreatePage />} />
+            <Route path="/roles/listar" element={<RolesListPage />} />
+            <Route path="/usuarios" element={<UsersPage />} />
+            {/* Aquí puedes agregar más rutas en el futuro */}
+          </Routes>
+        </Layout>
+      </NavigationProvider>
+    </Router>
   );
 };
 

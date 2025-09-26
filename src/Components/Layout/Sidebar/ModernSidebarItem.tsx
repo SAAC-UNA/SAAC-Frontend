@@ -31,20 +31,26 @@ export const ModernSidebarItem: React.FC<ModernSidebarItemProps> = ({
     <button
       onClick={handleClick}
       className={cn(
-        'flex items-center text-left transition-all duration-200 group w-full',
+        'flex items-center text-left transition-all duration-200 group w-full relative',
         // Padding ajustado para estado colapsado
         isCollapsed ? 'p-2 justify-center' : 'px-4 py-3',
         'text-sm font-medium',
         // Estilos para items principales
-        !isSubItem && 'mx-2 rounded-full',
+        !isSubItem && 'mx-2',
         // Estilos para subitems
         isSubItem && 'ml-8 mr-2 rounded-lg',
+        // Radius condicional para items principales
+        !isSubItem && (
+          isActive 
+            ? 'rounded-l-full rounded-r-none' // Activo: solo borde izquierdo redondeado
+            : 'rounded-full' // Inactivo: completamente redondeado
+        ),
         // Estados activo/inactivo
         isActive
-          ? 'bg-blanco-una text-rojo-una-2 font-semibold hover:translate-x-1'
+          ? 'bg-blanco-una-2 text-rojo-una-2 font-semibold shadow-md'
           : 'text-blanco-una',
-        // Hover effects
-        !isActive && 'hover:translate-x-1 hover:bg-rojo-una/20'
+        // Hover effects - efectos que NO se salen del contenedor
+        !isActive && 'hover:bg-rojo-una/20 hover:shadow-sm hover:scale-[1.02]'
       )}
     >
       {/* Icono */}

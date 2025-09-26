@@ -3,6 +3,8 @@ import homeIcon from './assets/Icons/home.svg';
 import rolesIcon from './assets/Icons/shield.svg';
 import usersIcon from './assets/Icons/user.svg';
 import courseIcon from './assets/Icons/bag.svg';
+import rolesListIcon from './assets/Icons/contacts.svg';
+import addRoles from './assets/Icons/add.svg';
 
 /*
   isActive: true // Indica la página actual
@@ -25,8 +27,23 @@ export const navigationItems: NavItem[] = [
     id: 'roles',
     label: 'Roles',
     icon: rolesIcon,
-    href: '/roles',
-    isActive: false // Ya no hardcodeado
+    href: '/',
+    isActive: false,
+    isExpandable: true,
+    children: [
+      {
+        id: 'roles-crear',
+        label: 'Crear Rol',
+        icon: addRoles,
+        href: '/roles/crear'
+      },
+      {
+        id: 'roles-listar',
+        label: 'Listar Roles',
+        icon: rolesListIcon,
+        href: '/roles/listar'
+      }
+    ]
   },
   {
     id: 'usuarios',

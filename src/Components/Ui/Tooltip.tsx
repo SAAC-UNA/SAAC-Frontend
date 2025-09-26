@@ -102,7 +102,7 @@ export function TooltipContent({
   return (
     <div
       className={cn(
-        'absolute z-50 px-2 py-1 text-xs bg-gray-900 text-white rounded shadow-lg whitespace-nowrap',
+        'absolute z-50 px-2 py-1 text-xs bg-gray-900 text-blanco-una rounded shadow-lg whitespace-nowrap',
         sideClasses[side],
         alignClasses[align],
         className

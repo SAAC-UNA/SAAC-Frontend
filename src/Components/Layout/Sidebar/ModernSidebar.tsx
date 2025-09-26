@@ -56,7 +56,7 @@ export const ModernSidebar: React.FC<SidebarProps> = ({
       </div>
 
       {/* Navigation Menu */}
-      <nav className="flex-1 py-6">
+      <nav className="flex-1 py-6 overflow-hidden">
         <div className="space-y-2 flex flex-col">
           {navigationItems.map((item) => (
             <ModernSidebarItem 
@@ -86,7 +86,7 @@ export const ModernSidebar: React.FC<SidebarProps> = ({
       <TooltipProvider delayDuration={0}>
         <div
           className={cn(
-            'bg-rojo-una-2 text-blanco-una flex h-full flex-col',
+            'bg-rojo-una-2 text-blanco-una flex h-full flex-col overflow-hidden',
             'w-[var(--sidebar-width)]',
             className
           )}
@@ -160,7 +160,7 @@ export const ModernSidebar: React.FC<SidebarProps> = ({
         >
           <div
             className={cn(
-              'bg-rojo-una-2 flex h-full w-full flex-col',
+              'bg-rojo-una-2 flex h-full w-full flex-col overflow-hidden',
               variant === 'floating' && 'rounded-lg border shadow-sm'
             )}
           >
