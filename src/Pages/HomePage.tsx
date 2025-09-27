@@ -1,28 +1,21 @@
 import React from 'react';
 import { PageHeader } from '../Components/Ui/Index';
+import { useModuleInfo } from '../Hooks/UseModuleInfo';
 
 const HomePage: React.FC = () => {
+  const { title, description } = useModuleInfo('home');
+  
   return (
     <div className="w-full">
-      <PageHeader 
-        title="Inicio"
-        description="Bienvenido al Sistema SAAC-UNA"
+      <PageHeader
+        title={title}
+        description={description}
       />
       <div className="p-6">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {/* Cards de navegación rápida */}
-          <div className="bg-white p-6 rounded-lg shadow-sm border">
-            <h3 className="text-lg font-semibold mb-2">Gestión de Roles</h3>
-            <p className="text-gray-600">Administra los roles del sistema</p>
-          </div>
-          <div className="bg-white p-6 rounded-lg shadow-sm border">
-            <h3 className="text-lg font-semibold mb-2">Gestión de Usuarios</h3>
-            <p className="text-gray-600">Administra los usuarios del sistema</p>
-          </div>
-          <div className="bg-white p-6 rounded-lg shadow-sm border">
-            <h3 className="text-lg font-semibold mb-2">Configuración</h3>
-            <p className="text-gray-600">Configura el sistema</p>
-          </div>
+        {/* Cards de navegación rápida */}
+        <div className="bg-blanco-una p-6 rounded-lg shadow-sm border text-center py-12">
+          <h3 className="text-lg font-semibold mb-2">Vacío</h3>
+          <p className="text-gris-una">Agregar contenido de inicio, veremos qué poner, dijo el ciego</p>
         </div>
       </div>
     </div>

@@ -16,6 +16,7 @@
 
 // Servicio para manejar operaciones relacionadas con roles
 import type { PermissionOption } from '../Types/RoleTypes';
+import { transformPermissionsToOptions } from '../Utils/PermissionLabels';
 
 /**
  * Datos requeridos para crear un nuevo rol
@@ -99,7 +100,19 @@ class RoleService {
         throw new Error(errorData.mensajeError || `HTTP error! status: ${response.status}`);
       }
 
-      return await response.json();
+      const data = await response.json();
+      
+      // El backend devuelve un array de strings con nombres técnicos
+      // Los transforma a PermissionOption con etiquetas legibles
+      if (data.datos && Array.isArray(data.datos)) {
+        const transformedPermissions = transformPermissionsToOptions(data.datos);
+        return {
+          ...data,
+          datos: transformedPermissions
+        };
+      }
+
+      return data;
     } catch (error) {
       console.error('Error obteniendo permisos:', error);
       throw error;

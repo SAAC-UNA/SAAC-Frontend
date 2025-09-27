@@ -21,6 +21,8 @@ import { Input, Textarea, MultiSelect, Button, PageHeader } from '@/components/U
 import { useSidebar } from '@/context/SidebarContext';
 import { useBreakpoint } from '@/hooks/UseBreakpoint';
 import { useRoles } from '@/hooks/UseRoles';
+import { useModuleInfo } from '@/hooks/UseModuleInfo';
+import { usePermissionLabels } from '@/hooks/UsePermissionLabels';
 import { validationRules, useValidation } from '@/utils/Validation';
 import type { CreateRoleData } from '@/Services/RoleService';
 import type { PermissionOption } from '@/Types/RoleTypes';
@@ -66,15 +68,23 @@ const validationSchema = {
 export const CreateRoleForm: React.FC<CreateRoleFormProps> = ({
   onSubmit,
   onCancel,
-  title = "Gestión de Roles",
-  description = "Crea roles del sistema SAAC-UNA",
+  title,
+  description,
   showHeader = true,
   simplified = false
 }) => {
   const { isCollapsed } = useSidebar();
   const { isMobile, isTablet, isDesktop, isLargeScreen } = useBreakpoint();
   const { createRole, loadPermissions, isLoading, error, availablePermissions, clearError } = useRoles();
+  const { getDescription } = usePermissionLabels();
   
+  // Obtener información del módulo dinámicamente
+  const moduleInfo = useModuleInfo('roles', 'create');
+  
+  // Usar los valores pasados como props, o los del módulo como fallback
+  const finalTitle = title || moduleInfo.title;
+  const finalDescription = description || moduleInfo.description;
+
   const [formData, setFormData] = useState<RoleFormData>({
     name: '',
     description: '',
@@ -100,7 +110,7 @@ export const CreateRoleForm: React.FC<CreateRoleFormProps> = ({
       ...formData,
       [field]: value
     };
-    
+
     setFormData(newFormData);
 
     // Sistema de limpieza de errores
@@ -179,7 +189,7 @@ export const CreateRoleForm: React.FC<CreateRoleFormProps> = ({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (validateForm()) {
       try {
         // Preparar datos para enviar al backend
@@ -190,7 +200,7 @@ export const CreateRoleForm: React.FC<CreateRoleFormProps> = ({
         };
 
         const createdRole = await createRole(roleData);
-        
+
         if (createdRole) {
           // Limpiar formulario después de éxito
           setFormData({
@@ -198,7 +208,7 @@ export const CreateRoleForm: React.FC<CreateRoleFormProps> = ({
             description: '',
             permissions: []
           });
-          
+
           // Llamar callback si existe
           onSubmit?.(roleData);
         }
@@ -216,7 +226,7 @@ export const CreateRoleForm: React.FC<CreateRoleFormProps> = ({
     return permissions.map(permission => ({
       id: permission.value,
       label: permission.label,
-      description: permission.label
+      description: getDescription(permission.value) || `Permiso para ${permission.label.toLowerCase()}`
     }));
   };
 
@@ -230,14 +240,14 @@ export const CreateRoleForm: React.FC<CreateRoleFormProps> = ({
         placeholder: 'Cargando permisos disponibles...'
       };
     }
-    
+
     if (availablePermissions.length === 0) {
       return {
         options: [{ id: 'empty', label: 'No hay permisos disponibles', description: 'Contacte al administrador' }],
         placeholder: 'No se encontraron permisos'
       };
     }
-    
+
     return {
       options: transformPermissionsToOptions(availablePermissions),
       placeholder: 'Seleccione los permisos...'
@@ -251,17 +261,17 @@ export const CreateRoleForm: React.FC<CreateRoleFormProps> = ({
     if (isMobile) {
       return 'w-full max-w-none'; // Ancho completo en móvil
     }
-    
+
     if (isTablet) {
       return isCollapsed ? 'w-full max-w-4xl' : 'w-full max-w-3xl';
     }
-    
+
     if (isLargeScreen) {
-        return isCollapsed ? 'w-full max-w-6xl' : 'w-full max-w-5xl';
+      return isCollapsed ? 'w-full max-w-6xl' : 'w-full max-w-5xl';
     } else {
       return isCollapsed ? 'w-full max-w-5xl' : 'w-full max-w-4xl';
     }
-    
+
     return 'w-full max-w-3xl'; // fallback más amplio
   };
 
@@ -280,9 +290,9 @@ export const CreateRoleForm: React.FC<CreateRoleFormProps> = ({
       {/* Título dentro del contenedor - Siempre alineado a la izquierda */}
       {showHeader && (
         <div className={` ${getFormPadding()}`}>
-          <PageHeader 
-            title={title}
-            description={description}
+          <PageHeader
+            title={finalTitle}
+            description={finalDescription}
             className="mb-0" // Sin margin bottom porque ya está en un contenedor
             forceLeftAlign={true} // Forzar alineación a la izquierda
           />
@@ -343,33 +353,33 @@ export const CreateRoleForm: React.FC<CreateRoleFormProps> = ({
                       <p className="text-sm text-rojo-una">{error}</p>
                     </div>
                   )}
-                </div>
 
-                {/* Botones en la esquina inferior derecha */}
-                <div className="flex justify-end gap-4">
-                  <Button
-                    type="button"
-                    variant="secondary"
-                    onClick={onCancel}
-                    disabled={isLoading}
-                    size="sm"
-                  >
-                    Cancelar
-                  </Button>
-                  <Button
-                    type="submit"
-                    variant="primary"
-                    disabled={isLoading}
-                    size="sm"
-                  >
-                    {isLoading ? 'Creando...' : 'Crear Rol'}
-                  </Button>
+                  {/* Botones en la esquina inferior derecha */}
+                  <div className="flex justify-end gap-4">
+                    <Button
+                      type="button"
+                      variant="secondary"
+                      onClick={onCancel}
+                      disabled={isLoading}
+                      size="sm"
+                    >
+                      Cancelar
+                    </Button>
+                    <Button
+                      type="submit"
+                      variant="primary"
+                      disabled={isLoading}
+                      size="sm"
+                    >
+                      {isLoading ? 'Creando...' : 'Crear Rol'}
+                    </Button>
+                  </div>
                 </div>
               </div>
             </div>
           </div>
         ) : (
-          
+
           // Layout de Mobile/Tablet: Columna única
           <div className="space-y-6">
             {/* Campo: Nombre del rol */}

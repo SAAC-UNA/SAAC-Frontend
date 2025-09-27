@@ -14,7 +14,7 @@ const App: React.FC = () => {
             <Route path="/roles/crear" element={<RolesCreatePage />} />
             <Route path="/roles/listar" element={<RolesListPage />} />
             <Route path="/usuarios" element={<UsersPage />} />
-            {/* Aquí puedes agregar más rutas en el futuro */}
+            {/* Aquí se pueden agregar más rutas en el futuro */}
           </Routes>
         </Layout>
       </NavigationProvider>
