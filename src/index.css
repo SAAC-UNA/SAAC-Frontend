@@ -1,6 +1,12 @@
+/**
+ * SAAC-UNA Design System
+ * Sistema de diseño completo para el Sistema de Administración Académica y Curricular
+ * Universidad Nacional de Costa Rica
+ */
+
 @import "tailwindcss";
 
-/* Tipografías Poppins */
+/* ===== TIPOGRAFÍAS POPPINS ===== */
 @font-face {
   font-family: "Poppins";
   font-style: normal;
@@ -41,6 +47,8 @@
   src: url("./assets/fonts/Poppins/Poppins-Bold.ttf") format("woff2");
 }
 
+/* ===== VARIABLES DE DISEÑO UNA ===== */
+/* Colores oficiales, tipografías y espaciado */
 @theme {
   --color-rojo-una: #CD1719;
   --color-rojo-una-2: #C32B30;
@@ -66,7 +74,8 @@
   --spacing-sidebar: 16rem;
 }
 
-/* Estándar de estilos globales (Tal vez lo vamos a tener que eliminar, creo que es mejor usar clases específicas, body, h1 y eso) */
+/* ===== CONFIGURACIÓN BASE ===== */
+/* Variables CSS para el sidebar y configuración global */
 
   @layer base {
   :root {
@@ -169,7 +178,8 @@
   /* Removed global button styles - using specific component classes instead */
 }
 
-/* Componentes para el sidebar */
+/* ===== COMPONENTES REUTILIZABLES ===== */
+/* Clases específicas para sidebar y elementos del sistema */
 @layer components {
   /* BOTONES ESPECIALES */
   
@@ -178,7 +188,7 @@
     @apply bg-transparent text-current p-0 border-0 font-normal rounded-none;
   }
   
-  /* SIDEBAR */
+  /* ===== SIDEBAR ===== */
   
   /* Gradiente del sidebar */
   .sidebar-gradient {
@@ -201,7 +211,8 @@
   }
 }
 
-/* Utilidades adicionales */
+/* ===== UTILIDADES ADICIONALES ===== */
+/* Transiciones, sombras, efectos especiales y scrollbars */
 @layer utilities {
   /* Transiciones personalizadas */
   .transition-sidebar {
@@ -255,7 +266,7 @@
     filter: invert(0%) sepia(0%) saturate(0%) hue-rotate(0deg) brightness(0%) contrast(100%);
   }
 
-  /* SCROLLBAR STYLING */
+  /* ===== SCROLLBAR STYLING ===== */
   /* Estilos globales para scrollbar personalizado */
   .custom-scrollbar {
     scrollbar-width: thin;
@@ -309,7 +320,7 @@
     background: rgba(195, 43, 48, 0.4);
   }
 
-  /* Border radius personalizado para componentes UNA */
+  /* ===== Border radius personalizado para componentes UNA ===== */
   .rounded-corner {
     border-radius: 15px;
   }

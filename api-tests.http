@@ -2,8 +2,10 @@
 ### API ENDPOINTS PARA ROLES - SAAC BACKEND
 ### ========================================
 ### Asegúrate de que el servidor esté corriendo con: php artisan serve
-### Base URL: http://127.0.0.1:8000/api
+### Base URL: http://localhost:8000/api
+@baseUrl = http://localhost:8000/api
 
+### Base URL: http://127.0.0.1:8000/api
 @baseUrl = http://127.0.0.1:8000/api
 
 ### ========================================

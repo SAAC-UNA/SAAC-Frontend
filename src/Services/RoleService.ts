@@ -1,12 +1,34 @@
+/**
+ * RoleService - Servicio para operaciones relacionadas con roles
+ * 
+ * Funcionalidades:
+ * - Crear nuevos roles con permisos
+ * - Listar permisos disponibles del sistema
+ * - Obtener lista completa de roles
+ * - Manejo de errores unificado
+ * - Integración completa con Laravel backend
+ * 
+ * Configuración:
+ * - baseURL: Apunta al API de Laravel (puerto 8000)
+ * - Headers: Content-Type y Accept application/json
+ * - Patrón Singleton para una sola instancia global
+ */
+
 // Servicio para manejar operaciones relacionadas con roles
 import type { PermissionOption } from '../Types/RoleTypes';
 
+/**
+ * Datos requeridos para crear un nuevo rol
+ */
 export interface CreateRoleData {
   name: string;
   description?: string;
   permissions: string[];
 }
 
+/**
+ * Estructura de un rol del sistema
+ */
 export interface Role {
   id: number;
   name: string;
@@ -14,17 +36,23 @@ export interface Role {
   permissions: string[];
 }
 
+/**
+ * Estructura estándar de respuesta de la API Laravel
+ */
 export interface ApiResponse<T = any> {
   mensaje?: string;
   mensajeError?: string;
   datos?: T;
 }
 
+/**
+ * Servicio para gestión de roles - Patrón Singleton
+ */
 class RoleService {
   private baseURL: string;
 
   constructor() {
-    // URL base del backend - ajustar según tu configuración
+    // URL base del backend Laravel - Configuración para desarrollo
     this.baseURL = 'http://127.0.0.1:8000/api';
   }
 
@@ -103,5 +131,5 @@ class RoleService {
   }
 }
 
-// Instancia singleton del servicio
+// Instancia singleton del servicio - Un solo punto de acceso global
 export const roleService = new RoleService();
