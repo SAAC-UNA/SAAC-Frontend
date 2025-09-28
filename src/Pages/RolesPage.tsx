@@ -48,13 +48,15 @@ const RolesCreatePage: React.FC = () => {
 
   return (
     <div className="w-full flex justify-center py-6 px-4">
-      <CreateRoleForm 
-        onSubmit={handleCreateRole}
-        onCancel={handleCancel}
-        title="Crear Nuevo Rol"
-        description="Crea roles del sistema SAAC-UNA"
-        showHeader={true}
-      />
+      <div className="w-full max-w-6xl">
+        <CreateRoleForm 
+          onSubmit={handleCreateRole}
+          onCancel={handleCancel}
+          title="Crear Nuevo Rol"
+          description="Crea roles del sistema SAAC-UNA"
+          showHeader={true}
+        />
+      </div>
     </div>
   );
 };

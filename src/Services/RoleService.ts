@@ -28,7 +28,26 @@ export interface CreateRoleData {
 }
 
 /**
- * Estructura de un rol del sistema
+ * Estructura de un permiso como lo devuelve el backend
+ */
+export interface BackendPermission {
+  id: number;
+  name: string;
+  label: string;
+}
+
+/**
+ * Estructura de un rol como lo devuelve el backend
+ */
+export interface BackendRole {
+  id: number;
+  name: string;
+  description?: string;
+  permissions: BackendPermission[];
+}
+
+/**
+ * Estructura de un rol del sistema (para el frontend)
  */
 export interface Role {
   id: number;
@@ -45,6 +64,18 @@ export interface ApiResponse<T = any> {
   mensajeError?: string;
   datos?: T;
 }
+
+/**
+ * Transforma un rol del backend al formato del frontend
+ */
+const transformBackendRole = (backendRole: BackendRole): Role => {
+  return {
+    id: backendRole.id,
+    name: backendRole.name,
+    description: backendRole.description,
+    permissions: backendRole.permissions.map(permission => permission.name)
+  };
+};
 
 /**
  * Servicio para gestión de roles - Patrón Singleton
@@ -136,7 +167,18 @@ class RoleService {
         throw new Error(errorData.mensajeError || `HTTP error! status: ${response.status}`);
       }
 
-      return await response.json();
+      const data: ApiResponse<BackendRole[]> = await response.json();
+      
+      // Transformar los roles del backend al formato del frontend
+      if (data.datos && Array.isArray(data.datos)) {
+        const transformedRoles = data.datos.map(transformBackendRole);
+        return {
+          ...data,
+          datos: transformedRoles
+        };
+      }
+
+      return data as unknown as ApiResponse<Role[]>;
     } catch (error) {
       console.error('Error obteniendo roles:', error);
       throw error;

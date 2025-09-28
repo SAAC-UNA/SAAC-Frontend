@@ -18,7 +18,6 @@
  */
 import React, { useState, useEffect } from 'react';
 import { Input, Textarea, MultiSelect, Button, PageHeader } from '@/components/Ui/Index';
-import { useSidebar } from '@/context/SidebarContext';
 import { useBreakpoint } from '@/hooks/UseBreakpoint';
 import { useRoles } from '@/hooks/UseRoles';
 import { useModuleInfo } from '@/hooks/UseModuleInfo';
@@ -73,8 +72,7 @@ export const CreateRoleForm: React.FC<CreateRoleFormProps> = ({
   showHeader = true,
   simplified = false
 }) => {
-  const { isCollapsed } = useSidebar();
-  const { isMobile, isTablet, isDesktop, isLargeScreen } = useBreakpoint();
+  const { isMobile, isTablet, isDesktop } = useBreakpoint();
   const { createRole, loadPermissions, isLoading, error, availablePermissions, clearError } = useRoles();
   const { getDescription } = usePermissionLabels();
   
@@ -255,27 +253,6 @@ export const CreateRoleForm: React.FC<CreateRoleFormProps> = ({
   };
 
   /**
-   * Calcula ancho dinámico basado en dispositivo y sidebar
-   */
-  const getFormWidth = () => {
-    if (isMobile) {
-      return 'w-full max-w-none'; // Ancho completo en móvil
-    }
-
-    if (isTablet) {
-      return isCollapsed ? 'w-full max-w-4xl' : 'w-full max-w-3xl';
-    }
-
-    if (isLargeScreen) {
-      return isCollapsed ? 'w-full max-w-6xl' : 'w-full max-w-5xl';
-    } else {
-      return isCollapsed ? 'w-full max-w-5xl' : 'w-full max-w-4xl';
-    }
-
-    return 'w-full max-w-3xl'; // fallback más amplio
-  };
-
-  /**
    * Calcula padding interno responsivo
    */
   const getFormPadding = () => {
@@ -285,7 +262,7 @@ export const CreateRoleForm: React.FC<CreateRoleFormProps> = ({
   };
 
   return (
-    <div className={`bg-blanco-una-2 rounded-lg shadow-lg border border-gris-una/20 transition-all duration-300 min-h-fit ${getFormWidth()}`}>
+    <div className="w-full bg-blanco-una-2 rounded-lg shadow-lg border border-gris-una/20 transition-all duration-300 min-h-fit">
 
       {/* Título dentro del contenedor - Siempre alineado a la izquierda */}
       {showHeader && (

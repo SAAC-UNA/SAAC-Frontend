@@ -83,6 +83,13 @@ export const MODULE_INFO: Record<string, ModuleInfo> = {
     subtitle: 'Panel de Administración',
     description: 'Sistema de Acreditación y Autoevaluación de Carreras - Universidad Nacional de Costa Rica',
     shortDescription: 'Panel principal del sistema'
+  },
+
+  listRoles: {
+    title: 'Lista de Roles',
+    subtitle: 'Roles del Sistema',
+    description: 'Visualiza y administra todos los roles existentes en el sistema SAAC-UNA',
+    shortDescription: 'Ver todos los roles del sistema'
   }
 };
 

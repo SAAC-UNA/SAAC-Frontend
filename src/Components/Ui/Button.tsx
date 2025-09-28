@@ -20,7 +20,7 @@ import { getComponentSizeClasses, type ComponentSize } from '@/constants/Compone
 /**
  * Variantes disponibles para el componente Button
  */
-type ButtonVariant = 'primary' | 'secondary' | 'outline' | 'ghost' | 'transparent';
+type ButtonVariant = 'primary' | 'secondary' | 'outline' | 'ghost' | 'transparent' | 'table-view' | 'table-edit' | 'table-delete';
 
 /**
  * Props del componente Button
@@ -63,7 +63,26 @@ const variantClasses = {
   // Botón con solo borde
   outline: 'border border-gris-una/30 bg-transparent text-negro-una hover:bg-gris-una/5',
   // Botón fantasma para acciones sutiles
-  ghost: 'bg-transparent text-gris-una hover:bg-gris-una/10'
+  ghost: 'bg-transparent text-gris-una hover:bg-gris-una/10',
+  
+  // Variantes específicas para acciones de tabla
+  'table-view': [
+    'bg-transparent text-green-600 border-0 p-2 rounded-md',
+    'hover:bg-green-50 hover:text-green-700 transition-colors duration-200',
+    'disabled:opacity-50 disabled:cursor-not-allowed'
+  ].join(' '),
+  
+  'table-edit': [
+    'bg-transparent text-red-600 border-0 p-2 rounded-md',
+    'hover:bg-blue-50 hover:text-blue-700 transition-colors duration-200', 
+    'disabled:opacity-50 disabled:cursor-not-allowed'
+  ].join(' '),
+  
+  'table-delete': [
+    'bg-transparent text-red-600 border-0 p-2 rounded-md',
+    'hover:bg-red-50 hover:text-red-700 transition-colors duration-200',
+    'disabled:opacity-50 disabled:cursor-not-allowed'
+  ].join(' ')
 };
 
 export const Button: React.FC<ButtonProps> = ({
