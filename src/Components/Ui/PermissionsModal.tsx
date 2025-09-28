@@ -1,9 +1,11 @@
 /**
- * Modal para mostrar los permisos de un rol
+ * PermissionsModal - Modal para mostrar los permisos de un rol
+ * 
+ * Ahora usa UniversalModal como base para consistencia visual
  */
 
 import React from 'react';
-import { Button } from './Button';
+import { UniversalModal } from './UniversalModal';
 
 interface PermissionsModalProps {
     isOpen: boolean;
@@ -20,83 +22,47 @@ export const PermissionsModal: React.FC<PermissionsModalProps> = ({
     permissions,
     getPermissionLabel
 }) => {
-    if (!isOpen) return null;
-
-    return (
-        <div className="fixed inset-0 z-50 overflow-y-auto">
-            <div className="flex min-h-screen items-center justify-center p-4">
-                {/* Overlay */}
-                <div
-                    className="fixed inset-0 bg-negro-una/40 bg-opacity-50 transition-opacity"
-                    onClick={onClose}
-                />
-
-                {/* Modal */}
-                <div className="relative bg-blanco-una-2 rounded-lg shadow-xl max-w-lg w-full max-h-96">
-                    {/* Header */}
-                    <div className="flex items-center justify-between p-6">
-                        <div>
-                            <h3 className="text-lg font-semibold text-gray-900">
-                                Permisos del Rol
-                            </h3>
-                            <p className="text-sm text-gray-600 mt-1">
-                                {roleName}
-                            </p>
-                        </div>
-                        <button
-                            onClick={onClose}
-                            className="text-rojo-una hover:text-gray-600 transition-colors"
-                        >
-                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
-                            </svg>
-                        </button>
-                    </div>
-
-                    {/* Content */}
-                    <div className="p-6">
-                        {permissions.length === 0 ? (
-                            <p className="text-gray-500 text-center py-4">
-                                Este rol no tiene permisos asignados
-                            </p>
-                        ) : (
-                            <div className="space-y-2 max-h-48 overflow-y-auto">
-                                {permissions.map((permission, index) => (
-                                    <div
-                                        key={index}
-                                        className="flex items-center p-3 bg-gray-50"
-                                    >
-                                        <div className="flex-1">
-                                            <p className="text-sm font-medium text-gray-900">
-                                                {/* TODO debería de pasar también la descripción getDescription */}
-                                                {getPermissionLabel ? getPermissionLabel(permission) : permission}
-                                            </p>
-                                            <p className="text-xs text-gray-500">
-                                                {permission}
-                                            </p>
-                                        </div>
-                                    </div>
-                                ))}
+    
+    const renderPermissionsList = () => (
+        <div className="mt-4">
+            <div className="bg-blanco-una rounded-lg p-4 max-h-60 overflow-y-auto">
+                {permissions.length > 0 ? (
+                    <div className="space-y-2">
+                        {permissions.map((permission, index) => (
+                            <div key={index} className="flex items-start space-x-2">
+                                <div className="w-2 h-2 bg-blue-500 rounded-full mt-2 flex-shrink-0" />
+                                <span className="text-sm text-gray-700">
+                                    {getPermissionLabel ? getPermissionLabel(permission) : permission}
+                                </span>
                             </div>
-                        )}
+                        ))}
                     </div>
-
-                    {/* Footer */}
-                    <div className="flex justify-between items-center px-6 py-4 border-t bg-blanco-una-2 rounded-b-lg">
-                        <span className="text-sm text-gris-una">
-                            Total: {permissions.length} permisos
-                        </span>
-                        <Button
-                            type="button"
-                            variant="secondary"
-                            onClick={onClose}
-                            size="sm"
-                        >
-                            Cerrar
-                        </Button>
-                    </div>
-                </div>
+                ) : (
+                    <p className="text-sm text-gray-500 text-center py-4">
+                        Este rol no tiene permisos asignados
+                    </p>
+                )}
+            </div>
+            
+            <div className="mt-3 text-xs text-gray-500">
+                Total: {permissions.length} permiso{permissions.length !== 1 ? 's' : ''}
             </div>
         </div>
+    );
+
+    return (
+        <UniversalModal
+            isOpen={isOpen}
+            onClose={onClose}
+            variant="info"
+            title="Permisos del Rol"
+            message={`Permisos asignados al rol: ${roleName}`}
+            showConfirm={false}
+            showCancel={true}
+            cancelLabel="Cerrar"
+            size="md"
+        >
+            {renderPermissionsList()}
+        </UniversalModal>
     );
 };

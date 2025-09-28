@@ -21,21 +21,21 @@ export const ResponsiveLayout: React.FC<ResponsiveLayoutProps> = ({
   // Calcular padding dinámico basado en el tamaño de pantalla
   const getPaddingClasses = () => {
     if (isMobile) {
-      return isCollapsed ? 'px-4 py-6' : 'px-3 py-4';
+      return isCollapsed ? 'px-4 py-4' : 'px-3 py-3';
     }
     
     if (isTablet) {
-      return isCollapsed ? 'px-6 py-8' : 'px-4 py-6';
+      return isCollapsed ? 'px-6 py-6' : 'px-4 py-4';
     }
     
     if (isDesktop) {
       if (isLargeScreen) {
-        return isCollapsed ? 'px-20 py-12' : 'px-16 py-10';
+        return isCollapsed ? 'px-20 py-6' : 'px-16 py-6';
       }
-      return isCollapsed ? 'px-16 py-10' : 'px-12 py-8';
+      return isCollapsed ? 'px-16 py-4' : 'px-12 py-4';
     }
     
-    return 'px-6 py-8'; // fallback
+    return 'px-6 py-4'; // fallback
   };
 
   // Calcular ancho máximo para el contenido

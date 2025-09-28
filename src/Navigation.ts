@@ -1,10 +1,11 @@
 import type { NavItem } from './Types/CommonTypes';
-import homeIcon from './assets/Icons/home.svg';
-import rolesIcon from './assets/Icons/shield.svg';
-import usersIcon from './assets/Icons/user.svg';
-import courseIcon from './assets/Icons/bag.svg';
-import rolesListIcon from './assets/Icons/contacts.svg';
-import addRoles from './assets/Icons/add.svg';
+
+const homeIcon = 'system-icon:home';
+const rolesIcon = 'system-icon:shield';
+const usersIcon = 'system-icon:user';
+const courseIcon = 'system-icon:bag';
+const rolesListIcon = 'system-icon:contacts';
+const addRoles = 'system-icon:add';
 
 /*
   isActive: true // Indica la página actual

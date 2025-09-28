@@ -2,7 +2,7 @@ import React from 'react';
 import { cn } from '@/utils/ClassNames';
 import { getComponentSizeClasses, type ComponentSize } from '@/constants/ComponentSizes';
 import { Button } from '@/components/Ui/Index';
-import infoTriangleIcon from '@/assets/Icons/info-triangle.svg';
+import { SystemIcons } from './Icons/SystemIcons';
 
 interface Option {
   id: string;
@@ -145,11 +145,7 @@ export const MultiSelect: React.FC<MultiSelectProps> = ({
       {/* Error message */}
       {errorMessage && (
         <p className="text-rojo-una-2 text-sm flex items-center gap-2">
-          <img 
-            src={infoTriangleIcon} 
-            alt="Error" 
-            className="w-4 h-4 flex-shrink-0 icon-rojo-una-2"
-          />
+          <SystemIcons.interface.alert className="w-4 h-4 flex-shrink-0 text-rojo-una-2" size="sm" />
           {errorMessage}
         </p>
       )}

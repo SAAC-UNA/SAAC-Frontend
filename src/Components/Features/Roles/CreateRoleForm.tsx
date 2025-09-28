@@ -1,5 +1,5 @@
 /**
- * CreateRoleForm - Formulario consolidado para creación de roles
+ * CreateRoleForm - Formulario consolidado para creación y edición de roles
  * 
  * Características:
  * - Sistema de validación dual (simple/avanzado)
@@ -7,10 +7,12 @@
  * - Integración con hooks de roles y permisos
  * - Manejo de errores unificado
  * - Interfaz adaptativa según el dispositivo
+ * - Soporte para crear y editar roles
  * 
  * Props:
- * @param onSubmit - Callback ejecutado al crear el rol exitosamente
- * @param onCancel - Callback ejecutado al cancelar la creación
+ * @param onSubmit - Callback ejecutado al crear/editar el rol exitosamente
+ * @param onCancel - Callback ejecutado al cancelar la operación
+ * @param initialData - Datos iniciales para editar (opcional, si no se pasa es modo crear)
  * @param title - Título del formulario (opcional)
  * @param description - Descripción del formulario (opcional)
  * @param showHeader - Mostrar/ocultar el header del formulario
@@ -23,7 +25,7 @@ import { useRoles } from '@/hooks/UseRoles';
 import { useModuleInfo } from '@/hooks/UseModuleInfo';
 import { usePermissionLabels } from '@/hooks/UsePermissionLabels';
 import { validationRules, useValidation } from '@/utils/Validation';
-import type { CreateRoleData } from '@/Services/RoleService';
+import type { CreateRoleData, Role } from '@/Services/RoleService';
 import type { PermissionOption } from '@/Types/RoleTypes';
 
 /**
@@ -32,6 +34,7 @@ import type { PermissionOption } from '@/Types/RoleTypes';
 interface CreateRoleFormProps {
   onSubmit?: (roleData: CreateRoleData) => void;
   onCancel?: () => void;
+  initialData?: Role; // Para modo edición
   title?: string;
   description?: string;
   showHeader?: boolean;
@@ -67,26 +70,31 @@ const validationSchema = {
 export const CreateRoleForm: React.FC<CreateRoleFormProps> = ({
   onSubmit,
   onCancel,
+  initialData,
   title,
   description,
   showHeader = true,
   simplified = false
 }) => {
   const { isMobile, isTablet, isDesktop } = useBreakpoint();
-  const { createRole, loadPermissions, isLoading, error, availablePermissions, clearError } = useRoles();
+  const { createRole, editRole, loadPermissions, isLoading, error, availablePermissions, clearError } = useRoles();
   const { getDescription } = usePermissionLabels();
   
+  // Determinar si estamos en modo edición
+  const isEditing = !!initialData;
+  
   // Obtener información del módulo dinámicamente
-  const moduleInfo = useModuleInfo('roles', 'create');
+  const moduleAction = isEditing ? 'edit' : 'create';
+  const moduleInfo = useModuleInfo('roles', moduleAction);
   
   // Usar los valores pasados como props, o los del módulo como fallback
-  const finalTitle = title || moduleInfo.title;
+  const finalTitle = title || (isEditing ? `Editar Rol: ${initialData.name}` : moduleInfo.title);
   const finalDescription = description || moduleInfo.description;
 
   const [formData, setFormData] = useState<RoleFormData>({
-    name: '',
-    description: '',
-    permissions: []
+    name: initialData?.name || '',
+    description: initialData?.description || '',
+    permissions: initialData?.permissions || []
   });
 
   // Sistema de validación avanzado
@@ -197,15 +205,25 @@ export const CreateRoleForm: React.FC<CreateRoleFormProps> = ({
           permissions: formData.permissions
         };
 
-        const createdRole = await createRole(roleData);
+        let result;
+        if (isEditing && initialData) {
+          // Modo edición
+          result = await editRole(initialData.id, roleData);
+        } else {
+          // Modo creación
+          result = await createRole(roleData);
+        }
 
-        if (createdRole) {
-          // Limpiar formulario después de éxito
-          setFormData({
-            name: '',
-            description: '',
-            permissions: []
-          });
+        if (result) {
+          // En modo edición, no limpiar el formulario
+          if (!isEditing) {
+            // Solo limpiar formulario en modo crear
+            setFormData({
+              name: '',
+              description: '',
+              permissions: []
+            });
+          }
 
           // Llamar callback si existe
           onSubmit?.(roleData);
@@ -260,6 +278,168 @@ export const CreateRoleForm: React.FC<CreateRoleFormProps> = ({
     if (isTablet) return 'p-5';
     return 'p-6'; // Desktop
   };
+
+  // Si no se muestra header, retornar solo el formulario (sin contenedor)
+  if (!showHeader) {
+    return (
+      <form onSubmit={handleSubmit} className="w-full">
+        {isDesktop ? (
+          // Layout de Desktop
+          <div className="space-y-6">
+            {/* Grid principal: Columna izquierda (Nombre + Privilegios) y Columna derecha (Descripción) */}
+            <div className="grid grid-cols-2 gap-6">
+              {/* Columna izquierda: Nombre del rol + Privilegios */}
+              <div className="space-y-6">
+                {/* Nombre del rol */}
+                <Input
+                  label="Nombre del Rol"
+                  placeholder="Ej: Administrador, Profesor..."
+                  value={formData.name}
+                  onChange={(e) => handleInputChange('name', e.target.value)}
+                  onFocus={() => handleFieldFocus('name')}
+                  error={getFieldError('name')}
+                  required
+                  size="sm"
+                />
+
+                {/* Privilegios */}
+                <MultiSelect
+                  label="Permisos del Rol"
+                  options={getPermissionsState().options}
+                  selectedValues={formData.permissions}
+                  onChange={(values) => handleInputChange('permissions', values)}
+                  error={getFieldError('permissions')}
+                  required
+                  maxHeight="lg"
+                  showCounter
+                  placeholder={getPermissionsState().placeholder}
+                />
+              </div>
+
+              {/* Columna derecha: Descripción */}
+              <div className="space-y-6">
+                <div className="min-h-full">
+                  <Textarea
+                    label="Descripción"
+                    placeholder="Descripción del rol..."
+                    value={formData.description}
+                    onChange={(e) => handleInputChange('description', e.target.value)}
+                    onFocus={() => handleFieldFocus('description')}
+                    error={getFieldError('description')}
+                    rows={8}
+                    resize="vertical"
+                    size="sm"
+                  />
+                  {/* Mostrar error de la API si existe */}
+                  {error && (
+                    <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg">
+                      <p className="text-sm text-rojo-una">{error}</p>
+                    </div>
+                  )}
+
+                  {/* Botones en la esquina inferior derecha */}
+                  <div className="flex justify-end gap-4">
+                    <Button
+                      type="button"
+                      variant="secondary"
+                      onClick={onCancel}
+                      disabled={isLoading}
+                      size="sm"
+                    >
+                      Cancelar
+                    </Button>
+                    <Button
+                      type="submit"
+                      variant="primary"
+                      disabled={isLoading}
+                      size="sm"
+                    >
+                      {isLoading 
+                        ? (isEditing ? 'Guardando...' : 'Creando...') 
+                        : (isEditing ? 'Guardar Cambios' : 'Crear Rol')
+                      }
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        ) : (
+          // Layout de Mobile/Tablet: Columna única
+          <div className="space-y-6">
+            {/* Campo: Nombre del rol */}
+            <Input
+              label="Nombre del Rol"
+              placeholder="Ej: Administrador, Profesor..."
+              value={formData.name}
+              onChange={(e) => handleInputChange('name', e.target.value)}
+              onFocus={() => handleFieldFocus('name')}
+              error={getFieldError('name')}
+              required
+              size="sm"
+            />
+
+            {/* Campo: Descripción */}
+            <Textarea
+              label="Descripción"
+              placeholder="Descripción del rol..."
+              value={formData.description}
+              onChange={(e) => handleInputChange('description', e.target.value)}
+              onFocus={() => handleFieldFocus('description')}
+              error={getFieldError('description')}
+              rows={4}
+              resize="vertical"
+              size="sm"
+            />
+
+            {/* Campo: Privilegios */}
+            <MultiSelect
+              label="Permisos del Rol"
+              options={getPermissionsState().options}
+              selectedValues={formData.permissions}
+              onChange={(values) => handleInputChange('permissions', values)}
+              error={getFieldError('permissions')}
+              required
+              maxHeight="lg"
+              showCounter
+              placeholder={getPermissionsState().placeholder}
+            />
+
+            {/* Mostrar error de la API si existe */}
+            {error && (
+              <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg">
+                <p className="text-sm text-red-600">{error}</p>
+              </div>
+            )}
+
+            {/* Botones de acción - Ancho completo en móvil */}
+            <div className="flex gap-4 pt-4 ">
+              <Button
+                type="button"
+                variant="secondary"
+                onClick={onCancel}
+                disabled={isLoading}
+                size="sm"
+              >
+                Cancelar
+              </Button>
+              <Button
+                type="submit"
+                variant="primary"
+                disabled={isLoading}
+                size="sm"
+              >
+                {isLoading 
+                  ? (isEditing ? 'Guardando...' : 'Creando...') 
+                  : (isEditing ? 'Guardar Cambios' : 'Crear Rol')
+                }
+              </Button>
+            </div>
+          </div>
+        )}
+      </form>
+    );
+  }
 
   return (
     <div className="w-full bg-blanco-una-2 rounded-lg shadow-lg border border-gris-una/20 transition-all duration-300 min-h-fit">
@@ -348,7 +528,10 @@ export const CreateRoleForm: React.FC<CreateRoleFormProps> = ({
                       disabled={isLoading}
                       size="sm"
                     >
-                      {isLoading ? 'Creando...' : 'Crear Rol'}
+                      {isLoading 
+                        ? (isEditing ? 'Guardando...' : 'Creando...') 
+                        : (isEditing ? 'Guardar Cambios' : 'Crear Rol')
+                      }
                     </Button>
                   </div>
                 </div>
@@ -421,7 +604,10 @@ export const CreateRoleForm: React.FC<CreateRoleFormProps> = ({
                 disabled={isLoading}
                 size="sm"
               >
-                {isLoading ? 'Creando...' : 'Crear Rol'}
+                {isLoading 
+                  ? (isEditing ? 'Guardando...' : 'Creando...') 
+                  : (isEditing ? 'Guardar Cambios' : 'Crear Rol')
+                }
               </Button>
             </div>
           </div>

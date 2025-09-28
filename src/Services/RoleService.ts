@@ -115,6 +115,32 @@ class RoleService {
   }
 
   /**
+   * Editar un rol existente
+   */
+  async editarRol(roleId: number, roleData: CreateRoleData): Promise<ApiResponse<Role>> {
+    try {
+      const response = await fetch(`${this.baseURL}/roles/${roleId}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+        },
+        body: JSON.stringify(roleData),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.mensajeError || `HTTP error! status: ${response.status}`);
+      }
+
+      return await response.json();
+    } catch (error) {
+      console.error('Error editando rol:', error);
+      throw error;
+    }
+  }
+
+  /**
    * Listar permisos disponibles
    */
   async listarPermisos(): Promise<ApiResponse<PermissionOption[]>> {
@@ -151,6 +177,30 @@ class RoleService {
   }
 
   /**
+   * Eliminar un rol por ID
+   */
+  async eliminarRol(roleId: number): Promise<ApiResponse<null>> {
+    try {
+      const response = await fetch(`${this.baseURL}/roles/${roleId}`, {
+        method: 'DELETE',
+        headers: {
+          'Accept': 'application/json',
+        },
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.mensajeError || `HTTP error! status: ${response.status}`);
+      }
+
+      return await response.json();
+    } catch (error) {
+      console.error('Error eliminando rol:', error);
+      throw error;
+    }
+  }
+
+  /**
    * Listar todos los roles
    */
   async listarRoles(): Promise<ApiResponse<Role[]>> {
@@ -181,6 +231,43 @@ class RoleService {
       return data as unknown as ApiResponse<Role[]>;
     } catch (error) {
       console.error('Error obteniendo roles:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Obtener un rol específico por ID
+   */
+  async obtenerRol(roleId: number): Promise<ApiResponse<Role>> {
+    try {
+      const url = `${this.baseURL}/roles/${roleId}`;
+      
+      const response = await fetch(url, {
+        method: 'GET',
+        headers: {
+          'Accept': 'application/json',
+        },
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.mensajeError || `HTTP error! status: ${response.status}`);
+      }
+
+      const data: ApiResponse<BackendRole> = await response.json();
+      
+      // Transformar el rol del backend al formato del frontend
+      if (data.datos) {
+        const transformedRole = transformBackendRole(data.datos);
+        return {
+          ...data,
+          datos: transformedRole
+        };
+      }
+
+      return data as unknown as ApiResponse<Role>;
+    } catch (error) {
+      console.error('Error obteniendo rol:', error);
       throw error;
     }
   }

@@ -6,8 +6,6 @@ import { cn } from '@/utils/ClassNames';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from '@/components/Ui/Sheet';
 import { TooltipProvider } from '@/components/Ui/Tooltip';
 
-import logOutIcon from '@/assets/Icons/logout.svg';
-
 interface SidebarProps {
   side?: 'left' | 'right';
   variant?: 'sidebar' | 'floating' | 'inset';
@@ -26,7 +24,7 @@ export const ModernSidebar: React.FC<SidebarProps> = ({
   const logoutItem = {
     id: 'logout',
     label: 'Salir',
-    icon: logOutIcon,
+    icon: 'system-icon:logout',
     href: '/logout'
   };
 

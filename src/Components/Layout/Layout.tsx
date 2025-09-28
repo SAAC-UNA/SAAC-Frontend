@@ -24,7 +24,7 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
             <img src="/Images/SAAC.png" alt="SAAC Logo" className='h-8 w-8'/>
             <h1 className="text-lg text-negro-una font-semibold">Sistema SAAC</h1>
           </header>
-          <div className="flex-1 p-6 flex justify-center items-start">
+          <div className="flex-1 p-1 flex justify-center items-start">
             <div className="w-full flex justify-center">
               {children}
             </div>

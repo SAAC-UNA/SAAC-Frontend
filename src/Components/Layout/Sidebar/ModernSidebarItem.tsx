@@ -3,8 +3,7 @@ import type { NavItem } from '@/types/CommonTypes';
 import { cn } from '@/utils/ClassNames';
 import { useNavigationItems } from '@/hooks/UseNavigation';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/Ui/Tooltip';
-
-import caretIcon from '@/assets/Icons/caret-left.svg';
+import { getIconByName } from '@/Components/Ui/Icons/SystemIcons';
 
 interface ModernSidebarItemProps {
   item: NavItem;
@@ -60,14 +59,25 @@ export const ModernSidebarItem: React.FC<ModernSidebarItemProps> = ({
         'group-hover:scale-110',
         !isCollapsed && 'mr-3'
       )}>
-        <img 
-          src={item.icon} 
-          alt={`${item.label} icon`} 
-          className={cn(
-            "w-5 h-5 object-contain transition-all duration-200",
-            isActive ? "icon-rojo-una-2" : "icon-blanco-una"
-          )}
-        />
+        {item.icon.startsWith('system-icon:') ? (
+          // Renderizar icono del sistema
+          <div className={cn(
+            "w-5 h-5 transition-all duration-200",
+            isActive ? "text-rojo-una-2" : "text-blanco-una"
+          )}>
+            {getIconByName(item.icon.replace('system-icon:', ''), 'md')}
+          </div>
+        ) : (
+          // Renderizar icono tradicional (SVG file)
+          <img 
+            src={item.icon} 
+            alt={`${item.label} icon`} 
+            className={cn(
+              "w-5 h-5 object-contain transition-all duration-200",
+              isActive ? "icon-rojo-una-2" : "icon-blanco-una"
+            )}
+          />
+        )}
       </span>
 
       {/* Label - oculto cuando está colapsado */}
@@ -84,14 +94,12 @@ export const ModernSidebarItem: React.FC<ModernSidebarItemProps> = ({
           'w-5 h-5 flex items-center justify-center overflow-visible',
           isExpanded ? 'rotate-90' : 'rotate-180'
         )}>
-          <img 
-            src={caretIcon}
-            alt="Expandir menú"
-            className={cn(
-              "w-7 h-7 object-contain transition-all duration-200",
-              isActive ? "icon-rojo-una-2" : "icon-blanco-una"
-            )}
-          />
+          <div className={cn(
+            "w-7 h-7 transition-all duration-200",
+            isActive ? "text-rojo-una-2" : "text-blanco-una"
+          )}>
+            {getIconByName('caret-left', 'lg')}
+          </div>
         </span>
       )}
     </button>

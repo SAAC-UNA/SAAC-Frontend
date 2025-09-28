@@ -1,8 +1,8 @@
 import React from 'react';
-import hamburgerIcon from '@/assets/icons/list.svg'; // Asegúrate de tener este ícono en tu proyecto
 import { Button } from '@/components/Ui/Button';
 import { useSidebar } from '@/context/SidebarContext';
 import { cn } from '@/utils/ClassNames';
+import { SystemIcons } from '@/components/Ui/Icons/SystemIcons';
 
 interface SidebarTriggerProps {
   className?: string;
@@ -27,7 +27,7 @@ export const SidebarTrigger: React.FC<SidebarTriggerProps> = ({
       }}
       {...props}
     >
-      <img src={hamburgerIcon} alt="Toggle Sidebar" className="h-5 w-5" />
+      <SystemIcons.navigation.menu className="h-5 w-5" size="sm" />
       <span className="sr-only">Toggle Sidebar</span>
     </Button>
   );

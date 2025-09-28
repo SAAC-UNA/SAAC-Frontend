@@ -153,6 +153,15 @@ export const RolesTable: React.FC<RolesTableProps> = ({
                     {new Date().toLocaleDateString('es-ES')}
                 </p>
             )
+        },
+        {
+            key: 'actions',
+            header: 'Acciones',
+            render: () => (
+                    <p className="block font-sans text-sm antialiased font-normal leading-normal text-gris-una">
+                        {/* Aquí puedes agregar los botones de acción correspondientes */}
+                    </p>
+            )
         }
     ];
 

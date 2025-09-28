@@ -13,3 +13,4 @@ export { DataTable } from './DataTable';
 export type { DataTableColumn, DataTableAction, DataTableProps } from './DataTable';
 export { createTableAction, createTableActions } from './TableActionButtons';
 export { PermissionsModal } from './PermissionsModal';
+export { UniversalModal } from './UniversalModal';
