@@ -2,10 +2,13 @@ import type { NavItem } from './Types/CommonTypes';
 
 const homeIcon = 'system-icon:home';
 const rolesIcon = 'system-icon:shield';
-const usersIcon = 'system-icon:user';
-const courseIcon = 'system-icon:bag';
 const rolesListIcon = 'system-icon:contacts';
 const addRoles = 'system-icon:add';
+const nutIcon = 'system-icon:nut';
+const plusIcon = 'system-icon:plus';
+const trashIcon = 'system-icon:trash-can';
+const editIcon = 'system-icon:edit-element';
+const boxIcon = 'system-icon:box-archive';
 
 /*
   isActive: true // Indica la página actual
@@ -47,106 +50,39 @@ export const navigationItems: NavItem[] = [
     ]
   },
   {
-    id: 'usuarios',
-    label: 'Usuarios',
-    icon: usersIcon,
-    href: '/usuarios',
+    id: 'estructuraVer',
+    label: 'Estructura del Repositorio',
+    icon: boxIcon,
+    href: '/estructura/repositorio',
     isActive: false,
-    isExpandable: true
-    // ,
-    // children: [
-    //   {
-    //     id: 'usuariosListar',
-    //     label: 'Listar Usuarios',
-    //     icon: '📋',
-    //     href: '/usuarios/listar'
-    //   },
-    //   {
-    //     id: 'usuariosCrear',
-    //     label: 'Crear Usuario',
-    //     icon: '➕',
-    //     href: '/usuarios/crear'
-    //   }
-    // ]
+    isExpandable: false
   },
   {
-    id: 'cursos',
-    label: 'Cursos',
-    icon: courseIcon,
-    href: '/cursos',
+    id: 'estructura',
+    label: 'Gestión de Estructura',
+    icon: nutIcon,
+    href: '/estructura',
     isActive: false,
-    isExpandable: true
-  //   ,
-  //   children: [
-  //     {
-  //       id: 'cursosListar',
-  //       label: 'Ver Cursos',
-  //       icon: '📖',
-  //       href: '/cursos/listar'
-  //     },
-  //     {
-  //       id: 'cursosCrear',
-  //       label: 'Nuevo Curso',
-  //       icon: '📝',
-  //       href: '/cursos/crear'
-  //     }
-  //   ]
-  // },
-  // {
-  //   id: 'estructuraRepositorio',
-  //   label: 'Estructura del Repositorio',
-  //   icon: '📦',
-  //   href: '/estructura-repositorio',
-  //   isExpandable: true,
-  //   children: [
-  //     {
-  //       id: 'estructuraVer',
-  //       label: 'Ver Estructura',
-  //       icon: '🗂️',
-  //       href: '/estructura/ver'
-  //     },
-  //     {
-  //       id: 'estructuraModificar',
-  //       label: 'Modificar',
-  //       icon: '⚙️',
-  //       href: '/estructura/modificar'
-  //     }
-  //   ]
-  // },
-  // {
-  //   id: 'gestionEstructura',
-  //   label: 'Gestión de Estructura',
-  //   icon: '⚙️',
-  //   href: '/gestion-estructura',
-  //   isExpandable: true,
-  //   children: [
-  //     {
-  //       id: 'gestionConfigurar',
-  //       label: 'Configuración',
-  //       icon: '🔧',
-  //       href: '/gestion/configurar'
-  //     }
-  //   ]
-  // },
-  // {
-  //   id: 'bitacora',
-  //   label: 'Bitácora',
-  //   icon: '📊',
-  //   href: '/bitacora',
-  //   isExpandable: true,
-  //   children: [
-  //     {
-  //       id: 'bitacoraVer',
-  //       label: 'Ver Registros',
-  //       icon: '📈',
-  //       href: '/bitacora/ver'
-  //     },
-  //     {
-  //       id: 'bitacoraExportar',
-  //       label: 'Exportar',
-  //       icon: '💾',
-  //       href: '/bitacora/exportar'
-  //     }
-  //   ]
-  }
+    isExpandable: true,
+    children: [
+      {
+        id: 'estructuraCrear',
+        label: 'Crear Elemento',
+        icon: plusIcon,
+        href: '/estructura/crear'
+      },
+      {
+        id: 'estructuraEditar',
+        label: 'Editar Elemento',
+        icon: editIcon,
+        href: '/estructura/editar'
+      },
+      {
+        id: 'deleteElements',
+        label: 'Eliminar Elementos',
+        icon: trashIcon,
+        href: '/estructura/eliminar'
+      }
+    ]
+  },
 ];

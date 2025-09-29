@@ -1,11 +1,11 @@
 /**
  * PermissionsModal - Modal para mostrar los permisos de un rol
  * 
- * Ahora usa UniversalModal como base para consistencia visual
+ * Ahora usa Modal unificado como base para consistencia visual
  */
 
 import React from 'react';
-import { UniversalModal } from './UniversalModal';
+import { Modal } from './Modal';
 
 interface PermissionsModalProps {
     isOpen: boolean;
@@ -51,7 +51,7 @@ export const PermissionsModal: React.FC<PermissionsModalProps> = ({
     );
 
     return (
-        <UniversalModal
+        <Modal
             isOpen={isOpen}
             onClose={onClose}
             variant="info"
@@ -63,6 +63,6 @@ export const PermissionsModal: React.FC<PermissionsModalProps> = ({
             size="md"
         >
             {renderPermissionsList()}
-        </UniversalModal>
+        </Modal>
     );
 };

@@ -3,7 +3,7 @@
  */
 
 import React from 'react';
-import { UniversalModal } from './UniversalModal';
+import { Modal } from './Modal';
 
 interface CreateConfirmationModalProps {
     isOpen: boolean;
@@ -37,7 +37,7 @@ export const CreateConfirmationModal: React.FC<CreateConfirmationModalProps> = (
     const finalMessage = message || defaultMessage;
 
     return (
-        <UniversalModal
+        <Modal
             isOpen={isOpen}
             onClose={onClose}
             onConfirm={onConfirm}

@@ -3,7 +3,7 @@
  */
 
 import React from 'react';
-import { UniversalModal } from './UniversalModal';
+import { Modal } from './Modal';
 
 interface DeleteConfirmationModalProps {
   isOpen: boolean;
@@ -44,7 +44,7 @@ export const DeleteConfirmationModal: React.FC<DeleteConfirmationModalProps> = (
   ) : null;
 
   return (
-    <UniversalModal
+    <Modal
       isOpen={isOpen}
       onClose={onClose}
       onConfirm={onConfirm}
@@ -58,6 +58,6 @@ export const DeleteConfirmationModal: React.FC<DeleteConfirmationModalProps> = (
       showConfirm={true}
     >
       {additionalMessage}
-    </UniversalModal>
+    </Modal>
   );
 };

@@ -13,7 +13,7 @@
  */
 import React, { useState } from 'react';
 import { CreateRoleForm } from '../Components/Features/Roles/Index';
-import { UniversalModal } from '../Components/Ui/Index';
+import { Modal } from '../Components/Ui/Modal';
 import { roleService } from '../Services/RoleService';
 
 const RolesCreatePage: React.FC = () => {
@@ -98,7 +98,7 @@ const RolesCreatePage: React.FC = () => {
       </div>
 
       {/* Modal de confirmación de creación */}
-      <UniversalModal
+      <Modal
         isOpen={createModalState.isOpen}
         onClose={handleCancelCreate}
         onConfirm={handleConfirmCreate}

@@ -29,6 +29,8 @@ export const useSystemIcons = () => {
     Navigation: SystemIcons.navigation,
     Interface: SystemIcons.interface,
     Users: SystemIcons.users,
-    Work: SystemIcons.work
+    Work: SystemIcons.work,
+    Structure: SystemIcons.structure,
+    Repository: SystemIcons.repository
   };
 };

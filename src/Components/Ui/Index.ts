@@ -12,5 +12,6 @@ export type { TableColumn, TableAction, TableProps } from './Table';
 export { DataTable } from './DataTable';
 export type { DataTableColumn, DataTableAction, DataTableProps } from './DataTable';
 export { createTableAction, createTableActions } from './TableActionButtons';
-export { PermissionsModal } from './PermissionsModal';
-export { UniversalModal } from './UniversalModal';
+export { PermissionsModal } from './PermissionsRoleModal';
+export { Modal, useModal } from './Modal';
+export { Select } from './Select';

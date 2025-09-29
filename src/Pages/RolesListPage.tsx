@@ -7,7 +7,8 @@
 
 import React, { useState } from 'react';
 import { RolesTable } from '../Components/Features/Roles/RolesTable';
-import { PageHeader, UniversalModal } from '../Components/Ui/Index';
+import { PageHeader } from '../Components/Ui/Index';
+import { Modal } from '../Components/Ui/Modal';
 import { useRoles } from '../Hooks/UseRoles';
 import type { Role } from '../Services/RoleService';
 
@@ -90,7 +91,7 @@ const RolesListPage: React.FC = () => {
       </div>
 
       {/* Modal de confirmación de eliminación */}
-      <UniversalModal
+      <Modal
         isOpen={deleteModalState.isOpen}
         onClose={handleCancelDelete}
         onConfirm={handleConfirmDelete}
