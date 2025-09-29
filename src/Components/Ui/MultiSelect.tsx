@@ -24,7 +24,7 @@ interface MultiSelectProps {
   size?: ComponentSize;
 }
 
-const maxHeightClasses = {
+const MAX_HEIGHT_CLASSES = {
   sm: 'max-h-32',   // 8rem
   md: 'max-h-48',   // 12rem  
   lg: 'max-h-64',   // 16rem
@@ -92,7 +92,7 @@ export const MultiSelect: React.FC<MultiSelectProps> = ({
         className={cn(
           'border rounded-lg overflow-y-auto custom-scrollbar',
           getComponentSizeClasses.input(size),
-          maxHeightClasses[maxHeight],
+          MAX_HEIGHT_CLASSES[maxHeight],
           errorMessage 
             ? 'border-rojo-una-2/5 bg-rojo-una-2/2' 
             : 'border-gris-una/5 bg-gris-una/10'

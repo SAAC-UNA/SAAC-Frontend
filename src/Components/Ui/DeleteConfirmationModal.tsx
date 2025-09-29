@@ -1,7 +1,5 @@
 /**
  * DeleteConfirmationModal - Modal de confirmación para operaciones de eliminación
- * 
- * Ahora usa UniversalModal como base para consistencia visual y menos duplicación de código
  */
 
 import React from 'react';
@@ -32,7 +30,7 @@ export const DeleteConfirmationModal: React.FC<DeleteConfirmationModalProps> = (
   isLoading = false,
   variant = 'danger'
 }) => {
-  const defaultMessage = itemName 
+  const defaultMessage = itemName
     ? `¿Está seguro de que desea eliminar "${itemName}"?`
     : '¿Está seguro de que desea eliminar este elemento?';
 

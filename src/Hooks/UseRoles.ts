@@ -43,10 +43,10 @@ export const useRoles = (): UseRolesReturn => {
     try {
       const response: ApiResponse<Role> = await roleService.crearRol(roleData);
       
-      if (response.datos) {
+      if (response.data) {
         // Agregar el nuevo rol a la lista local (optimistic update)
-        setRoles(prevRoles => [...prevRoles, response.datos!]);
-        return response.datos;
+        setRoles(prevRoles => [...prevRoles, response.data!]);
+        return response.data;
       }
       
       throw new Error('No se recibieron datos del servidor');
@@ -69,14 +69,14 @@ export const useRoles = (): UseRolesReturn => {
     try {
       const response: ApiResponse<Role> = await roleService.editarRol(roleId, roleData);
       
-      if (response.datos) {
+      if (response.data) {
         // Actualizar el rol en la lista local (optimistic update)
         setRoles(prevRoles => 
           prevRoles.map(role => 
-            role.id === roleId ? response.datos! : role
+            role.id === roleId ? response.data! : role
           )
         );
-        return response.datos;
+        return response.data;
       }
       
       throw new Error('No se recibieron datos del servidor');
@@ -121,8 +121,8 @@ export const useRoles = (): UseRolesReturn => {
     try {
       const response: ApiResponse<Role> = await roleService.obtenerRol(roleId);
       
-      if (response.datos) {
-        return response.datos;
+      if (response.data) {
+        return response.data;
       }
       
       throw new Error('No se recibieron datos del servidor');
@@ -143,9 +143,9 @@ export const useRoles = (): UseRolesReturn => {
     try {
       const response: ApiResponse<PermissionOption[]> = await roleService.listarPermisos();
       
-      if (response.datos) {
-        setAvailablePermissions(response.datos);
-        return response.datos;
+      if (response.data) {
+        setAvailablePermissions(response.data);
+        return response.data;
       }
       
       throw new Error('No se recibieron datos del servidor');
@@ -168,9 +168,9 @@ export const useRoles = (): UseRolesReturn => {
     try {
       const response: ApiResponse<Role[]> = await roleService.listarRoles();
       
-      if (response.datos) {
-        setRoles(response.datos);
-        return response.datos;
+      if (response.data) {
+        setRoles(response.data);
+        return response.data;
       }
       
       throw new Error('No se recibieron datos del servidor');

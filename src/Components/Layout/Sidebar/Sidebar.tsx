@@ -1,6 +1,6 @@
 import React from 'react';
 import { useSidebar } from '@/context/SidebarContext';
-import { ModernSidebarItem } from './ModernSidebarItem';
+import { ModernSidebarItem } from './SidebarItem';
 import { navigationItems } from '@/Navigation';
 import { cn } from '@/utils/ClassNames';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from '@/components/Ui/Sheet';

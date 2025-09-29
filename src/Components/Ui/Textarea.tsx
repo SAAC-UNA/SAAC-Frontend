@@ -12,7 +12,7 @@ interface TextareaProps extends Omit<React.TextareaHTMLAttributes<HTMLTextAreaEl
   resize?: 'none' | 'vertical' | 'horizontal' | 'both';
 }
 
-const resizeClasses = {
+const RESIZE_CLASSES = {
   none: 'resize-none',
   vertical: 'resize-y',
   horizontal: 'resize-x',
@@ -61,7 +61,7 @@ export const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(({
           getComponentSizeClasses.input(size),
           
           // Resize behavior
-          resizeClasses[resize],
+          RESIZE_CLASSES[resize],
           
           // State variants
           error 

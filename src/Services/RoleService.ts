@@ -60,9 +60,9 @@ export interface Role {
  * Estructura estándar de respuesta de la API Laravel
  */
 export interface ApiResponse<T = any> {
-  mensaje?: string;
-  mensajeError?: string;
-  datos?: T;
+  message?: string;
+  errorMessage?: string;
+  data?: T;
 }
 
 /**
@@ -104,7 +104,7 @@ class RoleService {
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.mensajeError || `HTTP error! status: ${response.status}`);
+        throw new Error(errorData.errorMessage || `HTTP error! status: ${response.status}`);
       }
 
       return await response.json();
@@ -130,7 +130,7 @@ class RoleService {
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.mensajeError || `HTTP error! status: ${response.status}`);
+        throw new Error(errorData.errorMessage || `HTTP error! status: ${response.status}`);
       }
 
       return await response.json();
@@ -154,18 +154,18 @@ class RoleService {
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.mensajeError || `HTTP error! status: ${response.status}`);
+        throw new Error(errorData.errorMessage || `HTTP error! status: ${response.status}`);
       }
 
       const data = await response.json();
       
       // El backend devuelve un array de strings con nombres técnicos
       // Los transforma a PermissionOption con etiquetas legibles
-      if (data.datos && Array.isArray(data.datos)) {
-        const transformedPermissions = transformPermissionsToOptions(data.datos);
+      if (data.data && Array.isArray(data.data)) {
+        const transformedPermissions = transformPermissionsToOptions(data.data);
         return {
           ...data,
-          datos: transformedPermissions
+          data: transformedPermissions
         };
       }
 
@@ -190,7 +190,7 @@ class RoleService {
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.mensajeError || `HTTP error! status: ${response.status}`);
+        throw new Error(errorData.errorMessage || `HTTP error! status: ${response.status}`);
       }
 
       return await response.json();
@@ -214,17 +214,17 @@ class RoleService {
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.mensajeError || `HTTP error! status: ${response.status}`);
+        throw new Error(errorData.errorMessage || `HTTP error! status: ${response.status}`);
       }
 
       const data: ApiResponse<BackendRole[]> = await response.json();
       
       // Transformar los roles del backend al formato del frontend
-      if (data.datos && Array.isArray(data.datos)) {
-        const transformedRoles = data.datos.map(transformBackendRole);
+      if (data.data && Array.isArray(data.data)) {
+        const transformedRoles = data.data.map(transformBackendRole);
         return {
           ...data,
-          datos: transformedRoles
+          data: transformedRoles
         };
       }
 
@@ -251,17 +251,17 @@ class RoleService {
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.mensajeError || `HTTP error! status: ${response.status}`);
+        throw new Error(errorData.errorMessage || `HTTP error! status: ${response.status}`);
       }
 
       const data: ApiResponse<BackendRole> = await response.json();
       
       // Transformar el rol del backend al formato del frontend
-      if (data.datos) {
-        const transformedRole = transformBackendRole(data.datos);
+      if (data.data) {
+        const transformedRole = transformBackendRole(data.data);
         return {
           ...data,
-          datos: transformedRole
+          data: transformedRole
         };
       }
 

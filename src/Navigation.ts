@@ -33,13 +33,13 @@ export const navigationItems: NavItem[] = [
     isExpandable: true,
     children: [
       {
-        id: 'roles-crear',
+        id: 'rolesCrear',
         label: 'Crear Rol',
         icon: addRoles,
         href: '/roles/crear'
       },
       {
-        id: 'roles-listar',
+        id: 'rolesListar',
         label: 'Listar Roles',
         icon: rolesListIcon,
         href: '/roles/listar'
@@ -56,13 +56,13 @@ export const navigationItems: NavItem[] = [
     // ,
     // children: [
     //   {
-    //     id: 'usuarios-listar',
+    //     id: 'usuariosListar',
     //     label: 'Listar Usuarios',
     //     icon: '📋',
     //     href: '/usuarios/listar'
     //   },
     //   {
-    //     id: 'usuarios-crear',
+    //     id: 'usuariosCrear',
     //     label: 'Crear Usuario',
     //     icon: '➕',
     //     href: '/usuarios/crear'
@@ -79,13 +79,13 @@ export const navigationItems: NavItem[] = [
   //   ,
   //   children: [
   //     {
-  //       id: 'cursos-listar',
+  //       id: 'cursosListar',
   //       label: 'Ver Cursos',
   //       icon: '📖',
   //       href: '/cursos/listar'
   //     },
   //     {
-  //       id: 'cursos-crear',
+  //       id: 'cursosCrear',
   //       label: 'Nuevo Curso',
   //       icon: '📝',
   //       href: '/cursos/crear'
@@ -93,20 +93,20 @@ export const navigationItems: NavItem[] = [
   //   ]
   // },
   // {
-  //   id: 'estructura-repositorio',
+  //   id: 'estructuraRepositorio',
   //   label: 'Estructura del Repositorio',
   //   icon: '📦',
   //   href: '/estructura-repositorio',
   //   isExpandable: true,
   //   children: [
   //     {
-  //       id: 'estructura-ver',
+  //       id: 'estructuraVer',
   //       label: 'Ver Estructura',
   //       icon: '🗂️',
   //       href: '/estructura/ver'
   //     },
   //     {
-  //       id: 'estructura-modificar',
+  //       id: 'estructuraModificar',
   //       label: 'Modificar',
   //       icon: '⚙️',
   //       href: '/estructura/modificar'
@@ -114,14 +114,14 @@ export const navigationItems: NavItem[] = [
   //   ]
   // },
   // {
-  //   id: 'gestion-estructura',
+  //   id: 'gestionEstructura',
   //   label: 'Gestión de Estructura',
   //   icon: '⚙️',
   //   href: '/gestion-estructura',
   //   isExpandable: true,
   //   children: [
   //     {
-  //       id: 'gestion-configurar',
+  //       id: 'gestionConfigurar',
   //       label: 'Configuración',
   //       icon: '🔧',
   //       href: '/gestion/configurar'
@@ -136,13 +136,13 @@ export const navigationItems: NavItem[] = [
   //   isExpandable: true,
   //   children: [
   //     {
-  //       id: 'bitacora-ver',
+  //       id: 'bitacoraVer',
   //       label: 'Ver Registros',
   //       icon: '📈',
   //       href: '/bitacora/ver'
   //     },
   //     {
-  //       id: 'bitacora-exportar',
+  //       id: 'bitacoraExportar',
   //       label: 'Exportar',
   //       icon: '💾',
   //       href: '/bitacora/exportar'

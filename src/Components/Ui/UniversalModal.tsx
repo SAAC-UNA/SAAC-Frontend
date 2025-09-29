@@ -201,7 +201,7 @@ export const UniversalModal: React.FC<UniversalModalProps> = ({
                 
                 {showCancel && (
                   <Button
-                    variant="primary"
+                    variant="outline"
                     size="sm"
                     onClick={handleClose}
                     disabled={confirmLoading}

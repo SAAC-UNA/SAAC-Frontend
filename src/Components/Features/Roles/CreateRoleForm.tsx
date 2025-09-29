@@ -77,7 +77,7 @@ export const CreateRoleForm: React.FC<CreateRoleFormProps> = ({
   simplified = false
 }) => {
   const { isMobile, isTablet, isDesktop } = useBreakpoint();
-  const { createRole, editRole, loadPermissions, isLoading, error, availablePermissions, clearError } = useRoles();
+  const { editRole, loadPermissions, isLoading, error, availablePermissions, clearError } = useRoles();
   const { getDescription } = usePermissionLabels();
   
   // Determinar si estamos en modo edición
@@ -205,31 +205,20 @@ export const CreateRoleForm: React.FC<CreateRoleFormProps> = ({
           permissions: formData.permissions
         };
 
-        let result;
         if (isEditing && initialData) {
-          // Modo edición
-          result = await editRole(initialData.id, roleData);
-        } else {
-          // Modo creación
-          result = await createRole(roleData);
-        }
-
-        if (result) {
-          // En modo edición, no limpiar el formulario
-          if (!isEditing) {
-            // Solo limpiar formulario en modo crear
-            setFormData({
-              name: '',
-              description: '',
-              permissions: []
-            });
+          // Modo edición - ejecutar directamente sin modal
+          const result = await editRole(initialData.id, roleData);
+          
+          if (result) {
+            // Llamar callback si existe
+            onSubmit?.(roleData);
           }
-
-          // Llamar callback si existe
+        } else {
+          // Modo creación - pasar datos al callback sin crear el rol aquí
+          // El callback (RolesPage) se encargará del modal y la creación
           onSubmit?.(roleData);
         }
       } catch (err) {
-        // El error ya se maneja en el hook useRoles
         console.error('Error en handleSubmit:', err);
       }
     }

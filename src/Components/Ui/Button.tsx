@@ -20,7 +20,7 @@ import { getComponentSizeClasses, type ComponentSize } from '@/constants/Compone
 /**
  * Variantes disponibles para el componente Button
  */
-type ButtonVariant = 'primary' | 'secondary' | 'outline' | 'ghost' | 'transparent' | 'table-view' | 'table-edit' | 'table-delete';
+type ButtonVariant = 'primary' | 'secondary' | 'outline' | 'ghost' | 'transparent' | 'tableView' | 'tableEdit' | 'tableDelete';
 
 /**
  * Props del componente Button
@@ -38,7 +38,7 @@ interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
 }
 
 // Definición de estilos para cada variante del botón
-const variantClasses = {
+const VARIANT_CLASSES = {
   // Botón principal con colores UNA
   primary: [
     'bg-transparent text-azul-una font-poppins font-semibold border-2 border-azul-una',
@@ -66,19 +66,19 @@ const variantClasses = {
   ghost: 'bg-transparent text-gris-una hover:bg-gris-una/10',
   
   // Variantes específicas para acciones de tabla
-  'table-view': [
+  tableView: [
     'bg-transparent text-green-600 border-0 p-2 rounded-md',
     'hover:bg-green-50 hover:text-green-700 transition-colors duration-200',
     'disabled:opacity-50 disabled:cursor-not-allowed'
   ].join(' '),
   
-  'table-edit': [
+  tableEdit: [
     'bg-transparent text-red-600 border-0 p-2 rounded-md',
     'hover:bg-blue-50 hover:text-blue-700 transition-colors duration-200', 
     'disabled:opacity-50 disabled:cursor-not-allowed'
   ].join(' '),
   
-  'table-delete': [
+  tableDelete: [
     'bg-transparent text-red-600 border-0 p-2 rounded-md',
     'hover:bg-red-50 hover:text-red-700 transition-colors duration-200',
     'disabled:opacity-50 disabled:cursor-not-allowed'
@@ -117,7 +117,7 @@ export const Button: React.FC<ButtonProps> = ({
       className={cn(
         baseClasses,
         getComponentSizeClasses.button(size),
-        variantClasses[variant],
+        VARIANT_CLASSES[variant],
         fullWidth && 'w-full',
         flex && 'flex-1',
         responsive && getResponsiveClasses(),
