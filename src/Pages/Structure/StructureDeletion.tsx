@@ -104,10 +104,10 @@ const StructureDeletion: React.FC = () => {
     }
   ];
 
-  // Load elements on component mount
+  // Cargar elementos al montar el componente
   useEffect(() => {
     setLoading(true);
-    // Simulate API loading
+    // Simular carga de API
     setTimeout(() => {
       setElements(mockElements);
       setFilteredElements(mockElements);
@@ -115,11 +115,11 @@ const StructureDeletion: React.FC = () => {
     }, 500);
   }, []);
 
-  // Filter elements when filters change
+  // Filtrar elementos cuando cambian los filtros
   useEffect(() => {
     let filtered = elements;
 
-    // Filter by search term
+    // Filtro por término de búsqueda
     if (searchTerm.trim()) {
       const term = searchTerm.toLowerCase();
       filtered = filtered.filter(element => 
@@ -128,12 +128,12 @@ const StructureDeletion: React.FC = () => {
       );
     }
 
-    // Filter by type
+    // Filtro por tipo
     if (typeFilter !== 'all') {
       filtered = filtered.filter(element => element.type === typeFilter);
     }
 
-    // Filter by status
+    // Filtro por estado
     if (statusFilter !== 'all') {
       filtered = filtered.filter(element => {
         switch (statusFilter) {
@@ -204,13 +204,13 @@ const StructureDeletion: React.FC = () => {
     }
   };
 
-  // Handle element action
+  // Manejar acción de elemento
   const handleAction = (element: ElementListItem, action: ActionType) => {
     setPendingAction({ element, action });
     confirmModal.openModal();
   };
 
-  // Confirm the action
+  // Confirmar la acción
   const confirmAction = async () => {
     if (!pendingAction) return;
 
@@ -218,10 +218,10 @@ const StructureDeletion: React.FC = () => {
     setLoading(true);
 
     try {
-      // Simulate API call
+      // Simular llamada a API
       await new Promise(resolve => setTimeout(resolve, 1000));
 
-      // Update element status locally
+      // Actualizar el estado del elemento localmente
       setElements(prev => prev.map(el => {
         if (el.id === element.id) {
           switch (action) {
@@ -230,7 +230,7 @@ const StructureDeletion: React.FC = () => {
             case 'deactivate':
               return { ...el, isActive: false };
             case 'delete':
-              // In a real case, this would remove the element from the list
+              // En un caso real, esto eliminaría el elemento de la lista
               return el;
           }
         }

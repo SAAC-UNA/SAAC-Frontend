@@ -164,7 +164,7 @@ const StructureEditForm: React.FC = () => {
       if (pendingAction === 'save') {
         // Simular guardado
         await new Promise(resolve => setTimeout(resolve, 1000));
-        console.log('Changes saved:', formData);
+        console.log('Cambios guardados:', formData);
         setHasChanges(false);
       } else {
         // Descartar cambios
@@ -176,7 +176,7 @@ const StructureEditForm: React.FC = () => {
         setHasChanges(false);
       }
     } catch (error) {
-      console.error('Error processing action:', error);
+      console.error('Error al procesar la acción:', error);
     } finally {
       setLoading(false);
       confirmModal.closeModal();
@@ -184,7 +184,7 @@ const StructureEditForm: React.FC = () => {
     }
   };
 
-  // Get confirmation text
+  // Obtener texto de confirmación
   const getConfirmationText = (): string => {
     if (!pendingAction) return '';
     
@@ -195,7 +195,7 @@ const StructureEditForm: React.FC = () => {
     }
   };
 
-  // Go back to list
+  // Volver al listado
   const goBack = () => {
     if (hasChanges) {
       if (confirm('Tienes cambios sin guardar. ¿Deseas salir sin guardar?')) {
