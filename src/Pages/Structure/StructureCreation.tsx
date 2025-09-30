@@ -4,6 +4,7 @@ import { Button } from '@/Components/Ui/Button';
 import { Input } from '@/Components/Ui/Input';
 import { FormContainer } from '@/Components/Ui/FormContainer';
 import { CustomSelect } from '@/Components/Ui/CustomSelect';
+import { useStructure } from '@/Hooks/UseStructure';
 import type { 
   StructureElement, 
   CreateElementForm, 
@@ -17,48 +18,6 @@ import {
   FORM_CONFIG,
   getRequiredParentType
 } from '@/Constants/StructureConstants';
-
-/**
- * Datos mock para elementos existentes (padres potenciales)
- * En producción vendrían de la API
- */
-const mockParentElements: StructureElement[] = [
-  {
-    id: '1',
-    code: 'UNA',
-    name: 'Universidad Nacional',
-    type: ElementType.UNIVERSITY,
-    active: true,
-    createdAt: new Date(),
-    createdBy: 'admin',
-    hasChildren: true,
-    canDelete: false
-  },
-  {
-    id: '2',
-    code: 'UNA-ALAJUELA',
-    name: 'Sede Regional Central Occidente',
-    type: ElementType.CAMPUS,
-    parentElementId: '1',
-    active: true,
-    createdAt: new Date(),
-    createdBy: 'admin',
-    hasChildren: true,
-    canDelete: false
-  },
-  {
-    id: '3',
-    code: 'FAC-ING',
-    name: 'Facultad de Ciencias Exactas y Naturales',
-    type: ElementType.FACULTY,
-    parentElementId: '2',
-    active: true,
-    createdAt: new Date(),
-    createdBy: 'admin',
-    hasChildren: true,
-    canDelete: false
-  }
-];
 
 /**
  * Interface para errores de validación del formulario
@@ -76,6 +35,27 @@ interface FormErrors {
  * Permite crear cualquier tipo de elemento respetando la jerarquía
  */
 export const StructureCreation: React.FC = () => {
+  // Hook de estructura para obtener elementos existentes
+  const { 
+    treeData,
+    createElement, 
+    loadTree
+  } = useStructure();
+
+  // Aplanar el árbol para obtener todos los elementos como lista
+  const elements = React.useMemo(() => {
+    const flattenTree = (nodes: StructureElement[]): StructureElement[] => {
+      return nodes.reduce((acc, node) => {
+        acc.push(node);
+        if (node.childElements && node.childElements.length > 0) {
+          acc.push(...flattenTree(node.childElements));
+        }
+        return acc;
+      }, [] as StructureElement[]);
+    };
+    return flattenTree(treeData);
+  }, [treeData]);
+
   // Estado del formulario
   const [formData, setFormData] = useState<CreateElementForm>({
     type: ElementType.UNIVERSITY,
@@ -102,7 +82,7 @@ export const StructureCreation: React.FC = () => {
       return []; // Universidad no necesita padre
     }
 
-    return mockParentElements.filter(element => 
+    return elements.filter(element => 
       element.type === requiredParentType && element.active
     );
   };
@@ -225,22 +205,23 @@ export const StructureCreation: React.FC = () => {
     setIsSubmitting(true);
     
     try {
-      // Simular llamada a API
-      await new Promise(resolve => setTimeout(resolve, 1500));
+      const success = await createElement(formData);
       
-      setSuccessMessage(USER_MESSAGES.SUCCESS.CREATE);
-      
-      // Limpiar formulario después del éxito
-      setTimeout(() => {
-        setFormData({
-          type: ElementType.UNIVERSITY,
-          code: '',
-          name: '',
-          description: '',
-          parentElementId: ''
-        });
-        setSuccessMessage('');
-      }, 3000);
+      if (success) {
+        setSuccessMessage(USER_MESSAGES.SUCCESS.CREATE);
+        
+        // Limpiar formulario después del éxito
+        setTimeout(() => {
+          setFormData({
+            type: ElementType.UNIVERSITY,
+            code: '',
+            name: '',
+            description: '',
+            parentElementId: ''
+          });
+          setSuccessMessage('');
+        }, 3000);
+      }
       
     } catch (error) {
       console.error('Error creating element:', error);
@@ -249,10 +230,15 @@ export const StructureCreation: React.FC = () => {
     }
   };
 
+  // Efecto para cargar elementos al montar el componente
+  useEffect(() => {
+    loadTree();
+  }, [loadTree]);
+
   // Efecto para actualizar padres disponibles cuando cambia el tipo
   useEffect(() => {
     setAvailableParents(getAvailableParents(formData.type));
-  }, [formData.type]);
+  }, [formData.type, elements]);
 
   // Opciones para el select de tipo
   const typeOptions: SelectOption[] = Object.entries(ELEMENT_TYPE_LABELS).map(([value, label]) => ({

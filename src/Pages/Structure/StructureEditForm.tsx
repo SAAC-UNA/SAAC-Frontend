@@ -6,6 +6,7 @@ import { Modal, useModal } from '../../Components/Ui/Modal';
 import { FormContainer } from '../../Components/Ui/FormContainer';
 import { SystemIcons } from '../../Components/Ui/Icons/SystemIcons';
 import { LoadingSpinner } from '../../Components/Ui/Loading';
+import { useStructure } from '../../Hooks/UseStructure';
 import type { StructureElement, ElementType } from '../../Types/StructureTypes';
 
 interface EditableElement extends StructureElement {
@@ -30,35 +31,35 @@ const StructureEditForm: React.FC = () => {
   // Estados del componente
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
+  
+  // Hook de estructura
+  const { editElement, treeData, loadTree, isLoading } = useStructure();
+  
   const [currentElement, setCurrentElement] = useState<EditableElement | null>(null);
   const [formData, setFormData] = useState({
     code: '',
     name: '',
     description: ''
   });
-  const [loading, setLoading] = useState(false);
   const [hasChanges, setHasChanges] = useState(false);
 
   // Modal para confirmaciones
   const confirmModal = useModal();
   const [pendingAction, setPendingAction] = useState<'save' | 'discard' | null>(null);
 
-  // Datos de ejemplo (simula la API)
-  const mockElements: StructureElement[] = [
-    {
-      id: '1',
-      name: 'Plan de Estudios Vigente',
-      code: 'EVD-01',
-      type: 'evidence',
-      description: 'Documento oficial del plan de estudios',
-      parentElementId: '7',
-      active: true,
-      createdAt: new Date('2024-07-01'),
-      createdBy: 'admin',
-      hasChildren: false,
-      canDelete: true
-    }
-  ];
+  // Aplanar el árbol para obtener todos los elementos
+  const allElements = React.useMemo(() => {
+    const flattenTree = (nodes: StructureElement[]): StructureElement[] => {
+      return nodes.reduce((acc, node) => {
+        acc.push(node);
+        if (node.childElements && node.childElements.length > 0) {
+          acc.push(...flattenTree(node.childElements));
+        }
+        return acc;
+      }, [] as StructureElement[]);
+    };
+    return flattenTree(treeData);
+  }, [treeData]);
 
   const mockModificationHistory: ModificationRecord[] = [
     {
@@ -72,47 +73,46 @@ const StructureEditForm: React.FC = () => {
     }
   ];
 
+  // Cargar elementos al montar
+  useEffect(() => {
+    loadTree();
+  }, [loadTree]);
+
   // Cargar elemento específico desde URL
   useEffect(() => {
     const elementId = searchParams.get('id');
-    if (elementId) {
+    if (elementId && allElements.length > 0) {
       loadElementForEditing(elementId);
-    } else {
+    } else if (!elementId) {
       // Si no hay ID, redirigir a la lista
       navigate('/estructura/editar');
     }
-  }, [searchParams, navigate]);
+  }, [searchParams, navigate, allElements]);
 
   // Cargar elemento para edición
-  const loadElementForEditing = (elementId: string) => {
-    setLoading(true);
-    
-    // Simular carga de API
-    setTimeout(() => {
-      const element = mockElements.find(el => el.id === elementId);
-      if (!element) {
-        navigate('/estructura/editar');
-        return;
-      }
+  const loadElementForEditing = async (elementId: string) => {
+    const element = allElements.find(el => el.id === elementId);
+    if (!element) {
+      navigate('/estructura/editar');
+      return;
+    }
 
-      const editableElement: EditableElement = {
-        ...element,
-        originalCode: element.code,
-        originalName: element.name,
-        originalDescription: element.description,
-        isModified: false,
-        modificationHistory: mockModificationHistory
-      };
+    const editableElement: EditableElement = {
+      ...element,
+      originalCode: element.code,
+      originalName: element.name,
+      originalDescription: element.description,
+      isModified: false,
+      modificationHistory: mockModificationHistory
+    };
 
-      setCurrentElement(editableElement);
-      setFormData({
-        code: element.code,
-        name: element.name,
-        description: element.description || ''
-      });
-      setHasChanges(false);
-      setLoading(false);
-    }, 500);
+    setCurrentElement(editableElement);
+    setFormData({
+      code: element.code,
+      name: element.name,
+      description: element.description || ''
+    });
+    setHasChanges(false);
   };
 
   // Manejar cambios en el formulario
@@ -162,13 +162,20 @@ const StructureEditForm: React.FC = () => {
   const confirmAction = async () => {
     if (!pendingAction || !currentElement) return;
 
-    setLoading(true);
     try {
       if (pendingAction === 'save') {
-        // Simular guardado
-        await new Promise(resolve => setTimeout(resolve, 1000));
-        console.log('Cambios guardados:', formData);
-        setHasChanges(false);
+        // Usar el hook para editar el elemento
+        const result = await editElement(currentElement.type, currentElement.id, {
+          code: formData.code,
+          name: formData.name,
+          description: formData.description,
+          active: currentElement.active
+        });
+        
+        if (result) {
+          console.log('Cambios guardados:', formData);
+          setHasChanges(false);
+        }
       } else {
         // Descartar cambios
         setFormData({
@@ -181,7 +188,6 @@ const StructureEditForm: React.FC = () => {
     } catch (error) {
       console.error('Error al procesar la acción:', error);
     } finally {
-      setLoading(false);
       confirmModal.closeModal();
       setPendingAction(null);
     }
@@ -209,7 +215,7 @@ const StructureEditForm: React.FC = () => {
     }
   };
 
-  if (loading || !currentElement) {
+  if (isLoading || !currentElement) {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <div className="text-center">
@@ -340,16 +346,16 @@ const StructureEditForm: React.FC = () => {
               <Button
                 onClick={() => handleAction('discard')}
                 variant="secondary"
-                disabled={!hasChanges || loading}
+                disabled={!hasChanges || isLoading}
               >
                 Deshacer Cambios
               </Button>
               <Button
                 onClick={() => handleAction('save')}
-                disabled={!hasChanges || loading}
+                disabled={!hasChanges || isLoading}
                 variant="primary"
               >
-                {loading ? 'Guardando...' : 'Guardar Cambios'}
+                {isLoading ? 'Guardando...' : 'Guardar Cambios'}
               </Button>
             </div>
           </div>
@@ -453,10 +459,10 @@ const StructureEditForm: React.FC = () => {
             </Button>
             <Button
               onClick={confirmAction}
-              disabled={loading}
+              disabled={isLoading}
               variant={pendingAction === 'save' ? 'primary' : 'secondary'}
             >
-              {loading ? 'Procesando...' : 'Confirmar'}
+              {isLoading ? 'Procesando...' : 'Confirmar'}
             </Button>
           </div>
         </div>

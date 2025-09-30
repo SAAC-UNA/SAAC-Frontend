@@ -6,70 +6,38 @@ import { Button } from '../../Components/Ui/Button';
 import { FormContainer } from '../../Components/Ui/FormContainer';
 import { SystemIcons } from '../../Components/Ui/Icons/SystemIcons';
 import { LoadingSpinner } from '../../Components/Ui/Loading';
+import { useStructure } from '../../Hooks/UseStructure';
 import type { StructureElement, ElementType } from '../../Types/StructureTypes';
 
 const StructureEditList: React.FC = () => {
   const navigate = useNavigate();
   
+  // Hook de estructura
+  const { treeData, loadTree, isLoading } = useStructure();
+  
   // Estados del componente
   const [searchTerm, setSearchTerm] = useState('');
   const [typeFilter, setTypeFilter] = useState<ElementType | 'all'>('all');
-  const [availableElements, setAvailableElements] = useState<StructureElement[]>([]);
   const [filteredElements, setFilteredElements] = useState<StructureElement[]>([]);
-  const [loading, setLoading] = useState(false);
 
-  // Datos de ejemplo (simula la API)
-  const mockElements: StructureElement[] = [
-    {
-      id: '1',
-      name: 'Plan de Estudios Vigente',
-      code: 'EVD-01',
-      type: 'evidence',
-      description: 'Documento oficial del plan de estudios',
-      parentElementId: '7',
-      active: true,
-      createdAt: new Date('2024-07-01'),
-      createdBy: 'admin',
-      hasChildren: false,
-      canDelete: true
-    },
-    {
-      id: '2',
-      name: 'Ingeniería en Sistemas de Información',
-      code: 'ING-SIS',
-      type: 'career',
-      description: 'Carrera de Ingeniería en Sistemas',
-      parentElementId: '3',
-      active: true,
-      createdAt: new Date('2024-01-01'),
-      createdBy: 'admin',
-      hasChildren: true,
-      canDelete: false
-    },
-    {
-      id: '3',
-      name: 'Sede Regional Central Occidente',
-      code: 'UNA_ALAJUELA',
-      type: 'campus',
-      description: 'Campus Alajuela',
-      parentElementId: '1',
-      active: true,
-      createdAt: new Date('2024-01-01'),
-      createdBy: 'admin',
-      hasChildren: true,
-      canDelete: false
-    }
-  ];
+  // Aplanar el árbol para obtener todos los elementos como lista
+  const availableElements = React.useMemo(() => {
+    const flattenTree = (nodes: StructureElement[]): StructureElement[] => {
+      return nodes.reduce((acc, node) => {
+        acc.push(node);
+        if (node.childElements && node.childElements.length > 0) {
+          acc.push(...flattenTree(node.childElements));
+        }
+        return acc;
+      }, [] as StructureElement[]);
+    };
+    return flattenTree(treeData);
+  }, [treeData]);
 
-  // Cargar elementos disponibles
+  // Cargar elementos disponibles al montar el componente
   useEffect(() => {
-    setLoading(true);
-    setTimeout(() => {
-      setAvailableElements(mockElements);
-      setFilteredElements(mockElements);
-      setLoading(false);
-    }, 500);
-  }, []);
+    loadTree();
+  }, [loadTree]);
 
   // Filtrar elementos cuando cambian los filtros
   useEffect(() => {
@@ -113,13 +81,9 @@ const StructureEditList: React.FC = () => {
     navigate(`/estructura/editar/formulario?id=${elementId}`);
   };
 
-  // Actualizar lista (simula refetch)
+  // Actualizar lista (refrescar datos)
   const handleRefresh = () => {
-    setLoading(true);
-    setTimeout(() => {
-      setAvailableElements([...mockElements]);
-      setLoading(false);
-    }, 500);
+    loadTree();
   };
 
   return (
@@ -175,7 +139,7 @@ const StructureEditList: React.FC = () => {
             </h3>
             <Button
               onClick={handleRefresh}
-              disabled={loading}
+              disabled={isLoading}
               className="flex items-center gap-2"
             >
               <SystemIcons.interface.refresh size="sm" />
@@ -185,7 +149,7 @@ const StructureEditList: React.FC = () => {
 
           {/* Contenido de la lista */}
           <div>
-            {loading ? (
+            {isLoading ? (
               <div className="flex items-center justify-center py-12">
                 <LoadingSpinner variant="ring" size="lg" color="secondary" />
               </div>

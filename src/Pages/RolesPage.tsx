@@ -5,31 +5,38 @@
  * - Creación de roles con integración completa a la API
  * - Manejo de errores y respuestas del backend
  * - Interfaz centrada y responsiva
- * - TODO Pendiente: Notificaciones toast y redirección
+ * - State management con actualizaciones automáticas
  * 
  * Integración:
- * - Usa RoleService para conectar con Laravel backend
+ * - Usa useRoles hook para state management
  * - Consume CreateRoleForm para la interfaz
  */
 import React, { useState } from 'react';
 import { CreateRoleForm } from '../Components/Features/Roles/Index';
 import { Modal } from '../Components/Ui/Modal';
-import { roleService } from '../Services/RoleService';
+import { useRoles } from '../Hooks/UseRoles';
+import type { CreateRoleData } from '../Services/RoleService';
 
 const RolesCreatePage: React.FC = () => {
+  // Hook de roles para state management
+  const { createRole } = useRoles();
+
   // Estado para el modal de confirmación de creación
   const [createModalState, setCreateModalState] = useState<{
     isOpen: boolean;
-    roleData: any;
+    roleData: CreateRoleData | null;
   }>({
     isOpen: false,
     roleData: null
   });
 
+  // Estado para controlar el reset del formulario (cambiar key para reset)
+  const [formKey, setFormKey] = useState(0);
+
   /**
    * Maneja el intento de crear un nuevo rol (abre modal de confirmación)
    */
-  const handleCreateRole = async (roleData: any) => {
+  const handleCreateRole = async (roleData: CreateRoleData) => {
     console.log('Intentando crear nuevo rol:', roleData);
     // En lugar de crear directamente, abrir modal de confirmación
     setCreateModalState({
@@ -45,17 +52,15 @@ const RolesCreatePage: React.FC = () => {
     if (!createModalState.roleData) return;
     
     try {
-      // Llamada a la API Laravel mediante RoleService
-      const response = await roleService.crearRol(createModalState.roleData);
+      // Usar el hook useRoles para crear el rol (con state management automático)
+      const result = await createRole(createModalState.roleData);
       
-      if (response.data) {
-        console.log('Rol creado exitosamente:', response.data);
+      if (result) {
+        console.log('Rol creado exitosamente:', result);
         // TODO: Integrar notificaciones toast
-        // TODO: Redirigir a lista de roles
         
         // Limpiar formulario después de crear exitosamente
-        // Esto se puede hacer recargando la página o usando un ref al formulario
-        window.location.reload(); // Temporal - mejor sería usar state management
+        setFormKey(prev => prev + 1); // Esto fuerza un reset del componente
       }
       
       // Cerrar modal
@@ -88,6 +93,7 @@ const RolesCreatePage: React.FC = () => {
       <div className="w-full flex justify-center py-6 px-4">
         <div className="w-full max-w-6xl">
           <CreateRoleForm 
+            key={formKey} // Cambia para resetear el formulario
             onSubmit={handleCreateRole}
             onCancel={handleCancel}
             title="Crear Nuevo Rol"

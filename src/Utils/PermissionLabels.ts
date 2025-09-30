@@ -32,6 +32,13 @@ export const PERMISSION_LABELS: PermissionMapping = {
     category: 'Administración'
   },
   
+  // Gestión de Evidencias
+  'gestion_evidencias': {
+    label: 'Gestión de Evidencias',
+    description: 'Administrar evidencias del sistema de acreditación',
+    category: 'Académico'
+  },
+  
   // Gestión de Reportes
   'gestion_reportes': {
     label: 'Gestión de Reportes',

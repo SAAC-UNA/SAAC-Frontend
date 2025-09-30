@@ -29,14 +29,14 @@ export const useRoles = (): UseRolesReturn => {
   /**
    * Limpiar errores
    */
-  const clearError = () => {
+  const clearError = useCallback(() => {
     setError(null);
-  };
+  }, []);
 
   /**
    * Crear un nuevo rol
    */
-  const createRole = async (roleData: CreateRoleData): Promise<Role | null> => {
+  const createRole = useCallback(async (roleData: CreateRoleData): Promise<Role | null> => {
     setIsLoading(true);
     setError(null);
 
@@ -57,12 +57,12 @@ export const useRoles = (): UseRolesReturn => {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, []);
 
   /**
    * Editar un rol existente
    */
-  const editRole = async (roleId: number, roleData: CreateRoleData): Promise<Role | null> => {
+  const editRole = useCallback(async (roleId: number, roleData: CreateRoleData): Promise<Role | null> => {
     setIsLoading(true);
     setError(null);
 
@@ -87,12 +87,12 @@ export const useRoles = (): UseRolesReturn => {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, []);
 
   /**
    * Eliminar un rol
    */
-  const deleteRole = async (roleId: number): Promise<boolean> => {
+  const deleteRole = useCallback(async (roleId: number): Promise<boolean> => {
     setIsLoading(true);
     setError(null);
 
@@ -109,7 +109,7 @@ export const useRoles = (): UseRolesReturn => {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, []);
 
   /**
    * Obtener un rol específico por ID
@@ -136,7 +136,7 @@ export const useRoles = (): UseRolesReturn => {
   /**
    * Cargar permisos disponibles
    */
-  const loadPermissions = async (): Promise<PermissionOption[] | null> => {
+  const loadPermissions = useCallback(async (): Promise<PermissionOption[] | null> => {
     setIsLoading(true);
     setError(null);
 
@@ -156,12 +156,12 @@ export const useRoles = (): UseRolesReturn => {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, []);
 
   /**
    * Cargar lista de roles
    */
-  const loadRoles = async (): Promise<Role[] | null> => {
+  const loadRoles = useCallback(async (): Promise<Role[] | null> => {
     setIsLoading(true);
     setError(null);
 
@@ -181,7 +181,7 @@ export const useRoles = (): UseRolesReturn => {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, []); // No tiene dependencias
 
   return {
     // Estados

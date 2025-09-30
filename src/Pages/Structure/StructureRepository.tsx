@@ -1,21 +1,17 @@
 import React, { useState, useEffect } from 'react';
-import { cn } from '../../Utils/ClassNames';
-import { Button } from '../../Components/Ui/Button';
-import { FormContainer } from '../../Components/Ui/FormContainer';
-import { SystemIcons } from '../../Components/Ui/Icons/SystemIcons';
-import { LoadingSpinner } from '../../Components/Ui/Loading';
-import type { StructureElement, StructureTreeNode } from '../../Types/StructureTypes';
-import { ElementType } from '../../Types/StructureTypes';
+import { cn } from '@/Utils/ClassNames';
+import { Button } from '@/Components/Ui/Button';
+import { FormContainer } from '@/Components/Ui/FormContainer';
+import { SystemIcons } from '@/Components/Ui/Icons/SystemIcons';
+import { LoadingSpinner } from '@/Components/Ui/Loading';
+import type { StructureElement, StructureTreeNode } from '@/Types/StructureTypes';
+import { ElementType } from '@/Types/StructureTypes';
 import { 
   ELEMENT_TYPE_LABELS, 
   HIERARCHY_RULES 
-} from '../../Constants/StructureConstants';
+} from '@/Constants/StructureConstants';
 
-/**
-   Datos de ejemplo (mock) para la estructura del repositorio
-   Al conectar el backend, estos datos vendrían de la API
- */
-
+// Mock data completo para el árbol jerárquico
 const mockStructureData: StructureElement[] = [
   {
     id: '1',
@@ -122,42 +118,35 @@ const mockStructureData: StructureElement[] = [
   }
 ];
 
-/**
- * Componente para mostrar un elemento individual en el árbol
- * Representa un nodo de la estructura jerárquica
- */
-
+// Interfaz para props del TreeNode
 interface TreeNodeProps {
-  /** Nodo del árbol a renderizar */
   node: StructureTreeNode;
-  /** Función para alternar expansión del nodo */
   onToggle: (nodeId: string) => void;
 }
 
+// Componente TreeNode para mostrar cada elemento del árbol
 const TreeNode: React.FC<TreeNodeProps> = ({ node, onToggle }) => {
   const { element, children, level, expanded } = node;
   const hasChildren = children.length > 0;
 
-  // Obtener información de jerarquía para mostrar color y estilo
   const hierarchyInfo = HIERARCHY_RULES[element.type];
   
-  // Clases CSS basadas en el nivel y tipo de elemento
+  // Colores por nivel jerárquico
   const levelColors = {
-    1: 'bg-red-50 border-red-200 text-red-800', // Universidad
-    2: 'bg-blue-50 border-blue-200 text-blue-800', // Sede
-    3: 'bg-green-50 border-green-200 text-green-800', // Facultad
-    4: 'bg-yellow-50 border-yellow-200 text-yellow-800', // Carrera
-    5: 'bg-purple-50 border-purple-200 text-purple-800', // Dimensión
-    6: 'bg-pink-50 border-pink-200 text-pink-800', // Componente
-    7: 'bg-indigo-50 border-indigo-200 text-indigo-800', // Criterio
-    8: 'bg-gray-50 border-gray-200 text-gray-800' // Estándar/Evidencia
+    1: 'bg-red-50 border-red-200 text-red-800',
+    2: 'bg-blue-50 border-blue-200 text-blue-800',
+    3: 'bg-green-50 border-green-200 text-green-800',
+    4: 'bg-yellow-50 border-yellow-200 text-yellow-800',
+    5: 'bg-purple-50 border-purple-200 text-purple-800',
+    6: 'bg-pink-50 border-pink-200 text-pink-800',
+    7: 'bg-indigo-50 border-indigo-200 text-indigo-800',
+    8: 'bg-gray-50 border-gray-200 text-gray-800'
   };
 
   const colorClass = levelColors[Math.min(hierarchyInfo.level, 8) as keyof typeof levelColors];
 
   return (
     <div className="w-full">
-      {/* Elemento principal */}
       <div
         className={cn(
           'flex items-center p-3 rounded-lg border transition-all duration-200 hover:shadow-md',
@@ -166,7 +155,6 @@ const TreeNode: React.FC<TreeNodeProps> = ({ node, onToggle }) => {
         )}
         style={{ marginLeft: `${level * 20}px` }}
       >
-        {/* Botón para expandir/colapsar */}
         {hasChildren && (
           <button
             onClick={() => onToggle(element.id)}
@@ -192,13 +180,10 @@ const TreeNode: React.FC<TreeNodeProps> = ({ node, onToggle }) => {
           </button>
         )}
 
-        {/* Espaciador si no tiene hijos */}
         {!hasChildren && <div className="w-7 flex-shrink-0" />}
 
-        {/* Información del elemento */}
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-3">
-            {/* Tipo y código */}
             <div className="flex items-center gap-2">
               <span className="inline-flex items-center px-2 py-1 rounded-md text-xs font-medium bg-white bg-opacity-50">
                 {ELEMENT_TYPE_LABELS[element.type]}
@@ -209,12 +194,10 @@ const TreeNode: React.FC<TreeNodeProps> = ({ node, onToggle }) => {
             </div>
           </div>
 
-          {/* Nombre del elemento */}
           <h3 className="font-semibold text-base mt-1 truncate">
             {element.name}
           </h3>
 
-          {/* Descripción (si existe) */}
           {element.description && (
             <p className="text-sm opacity-75 mt-1 line-clamp-2">
               {element.description}
@@ -222,7 +205,6 @@ const TreeNode: React.FC<TreeNodeProps> = ({ node, onToggle }) => {
           )}
         </div>
 
-        {/* Estado activo/inactivo */}
         <div className="flex-shrink-0 ml-3">
           <span
             className={cn(
@@ -237,7 +219,6 @@ const TreeNode: React.FC<TreeNodeProps> = ({ node, onToggle }) => {
         </div>
       </div>
 
-      {/* Elementos hijos (recursivo) */}
       {hasChildren && expanded && (
         <div className="ml-4">
           {children.map((child) => (
@@ -253,26 +234,13 @@ const TreeNode: React.FC<TreeNodeProps> = ({ node, onToggle }) => {
   );
 };
 
-/**
- * Página principal de Estructura del Repositorio
- * Muestra la jerarquía completa en vista de solo lectura
- */
-
 export const StructureRepository: React.FC = () => {
-  // Estado para los datos de la estructura
   const [structureData, setStructureData] = useState<StructureElement[]>([]);
-  // Estado para el árbol jerárquico construido
   const [treeData, setTreeData] = useState<StructureTreeNode[]>([]);
-  // Estado de carga
   const [loading, setLoading] = useState(true);
-  // Estado para nodos expandidos
   const [expandedNodes, setExpandedNodes] = useState<Set<string>>(new Set(['1', '2', '3', '4']));
 
-  /**
-   * Función para construir el árbol jerárquico a partir de datos planos
-   * Convierte la lista de elementos en estructura de árbol
-   */
-
+  // Función para construir el árbol jerárquico
   const buildTree = (elements: StructureElement[], parentId?: string, level = 0): StructureTreeNode[] => {
     return elements
       .filter(element => element.parentElementId === parentId)
@@ -285,10 +253,7 @@ export const StructureRepository: React.FC = () => {
       }));
   };
 
-  /**
-   * Función para alternar la expansión de un nodo
-   */
-
+  // Manejar expansión/colapso de nodos
   const handleToggleNode = (nodeId: string) => {
     setExpandedNodes(prev => {
       const newExpanded = new Set(prev);
@@ -301,29 +266,23 @@ export const StructureRepository: React.FC = () => {
     });
   };
 
-  /**
-   * Función para expandir todos los nodos
-   */
-
+  // Expandir todos los nodos
   const handleExpandAll = () => {
     const allNodeIds = new Set(structureData.map(element => element.id));
     setExpandedNodes(allNodeIds);
   };
 
-  /**
-   * Función para colapsar todos los nodos
-   */
-
+  // Colapsar todos los nodos
   const handleCollapseAll = () => {
-    setExpandedNodes(new Set(['1'])); // Solo mantener la raíz expandida
+    setExpandedNodes(new Set(['1']));
   };
 
-  // Efecto para cargar datos (simulación de API)
+  // Cargar datos mock
   useEffect(() => {
     const loadStructureData = async () => {
       setLoading(true);
       
-      // Simular llamada a API
+      // Simular carga
       await new Promise(resolve => setTimeout(resolve, 1000));
       
       setStructureData(mockStructureData);
@@ -333,8 +292,7 @@ export const StructureRepository: React.FC = () => {
     loadStructureData();
   }, []);
 
-  // Efecto para reconstruir árbol cuando cambian los datos o nodos expandidos
-  
+  // Actualizar árbol cuando cambian los datos o expansión
   useEffect(() => {
     if (structureData.length > 0) {
       const tree = buildTree(structureData);
@@ -359,7 +317,6 @@ export const StructureRepository: React.FC = () => {
       description="Visualiza la jerarquía completa del Sistema SAAC-UNA. Esta vista muestra todos los elementos organizados desde la Universidad hasta las Evidencias individuales."
       variant="full-width"
     >
-      {/* Controles */}
       <div className="mb-6 flex gap-4">
         <Button
           onClick={handleExpandAll}
@@ -379,53 +336,51 @@ export const StructureRepository: React.FC = () => {
         </Button>
       </div>
 
-        {/* Estadísticas rápidas */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
-          {Object.entries(ELEMENT_TYPE_LABELS).map(([type, label]) => {
-            const count = structureData.filter(element => element.type === type).length;
-            return (
-              <div key={type} className="bg-white p-4 rounded-lg border border-gray-200 shadow-sm">
-                <div className="text-2xl font-bold text-red-600">{count}</div>
-                <div className="text-sm text-gray-600">{label}{count !== 1 ? 's' : ''}</div>
-              </div>
-            );
-          })}
-        </div>
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
+        {Object.entries(ELEMENT_TYPE_LABELS).map(([type, label]) => {
+          const count = structureData.filter(element => element.type === type).length;
+          return (
+            <div key={type} className="bg-white p-4 rounded-lg border border-gray-200 shadow-sm">
+              <div className="text-2xl font-bold text-red-600">{count}</div>
+              <div className="text-sm text-gray-600">{label}{count !== 1 ? 's' : ''}</div>
+            </div>
+          );
+        })}
+      </div>
 
-        {/* Árbol de estructura */}
-        <div className="border-t border-gray-200 pt-6">
-          <h2 className="text-xl font-semibold text-gray-900 mb-4">
-            Jerarquía de Elementos
-          </h2>
-          
-          {treeData.length > 0 ? (
-            <div className="space-y-2">
-              {treeData.map((node) => (
-                <TreeNode
-                    key={node.element.id}
-                    node={node}
-                    onToggle={handleToggleNode}
-                  />
-                ))}
-              </div>
-            ) : (
-              <div className="text-center py-12">
-                <div className="text-gray-400 mb-2">
-                  <svg className="w-12 h-12 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4" />
-                  </svg>
-                </div>
-                <h3 className="text-lg font-medium text-gray-900 mb-2">
-                  Sin estructura configurada
-                </h3>
-                <p className="text-gray-600">
-                  No hay elementos en la estructura del repositorio. 
-                  Utiliza la sección de Gestión para crear elementos.
-                </p>
-              </div>
-            )}
-        </div>
-      </FormContainer>
+      <div className="border-t border-gray-200 pt-6">
+        <h2 className="text-xl font-semibold text-gray-900 mb-4">
+          Jerarquía de Elementos
+        </h2>
+        
+        {treeData.length > 0 ? (
+          <div className="space-y-2">
+            {treeData.map((node) => (
+              <TreeNode
+                key={node.element.id}
+                node={node}
+                onToggle={handleToggleNode}
+              />
+            ))}
+          </div>
+        ) : (
+          <div className="text-center py-12">
+            <div className="text-gray-400 mb-2">
+              <svg className="w-12 h-12 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4" />
+              </svg>
+            </div>
+            <h3 className="text-lg font-medium text-gray-900 mb-2">
+              Sin estructura configurada
+            </h3>
+            <p className="text-gray-600">
+              No hay elementos en la estructura del repositorio. 
+              Utiliza la sección de Gestión para crear elementos.
+            </p>
+          </div>
+        )}
+      </div>
+    </FormContainer>
   );
 };
 

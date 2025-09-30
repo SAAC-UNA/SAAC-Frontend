@@ -6,6 +6,7 @@ import { Modal, useModal } from '../../Components/Ui/Modal';
 import { FormContainer } from '../../Components/Ui/FormContainer';
 import { SystemIcons } from '../../Components/Ui/Icons/SystemIcons';
 import { LoadingSpinner } from '../../Components/Ui/Loading';
+import { useStructure } from '../../Hooks/UseStructure';
 import type { StructureElement, ElementType } from '../../Types/StructureTypes';
 
 interface ElementListItem extends StructureElement {
@@ -22,13 +23,21 @@ type ElementStatus = 'active' | 'inactive' | 'has-dependencies';
 type ActionType = 'activate' | 'deactivate' | 'delete';
 
 const StructureDeletion: React.FC = () => {
+  // Hook de estructura
+  const { 
+    treeData, 
+    loadTree, 
+    deleteElement, 
+    activateElement, 
+    deactivateElement, 
+    isLoading 
+  } = useStructure();
+
   // Estados del componente
   const [searchTerm, setSearchTerm] = useState('');
   const [typeFilter, setTypeFilter] = useState<ElementType | 'all'>('all');
   const [statusFilter, setStatusFilter] = useState<ElementStatus | 'all'>('all');
-  const [elements, setElements] = useState<ElementListItem[]>([]);
   const [filteredElements, setFilteredElements] = useState<ElementListItem[]>([]);
-  const [loading, setLoading] = useState(false);
   
   // Modal para confirmaciones
   const confirmModal = useModal();
@@ -37,86 +46,31 @@ const StructureDeletion: React.FC = () => {
     action: ActionType;
   } | null>(null);
 
-  // Datos de ejemplo (simula la API)
-  const mockElements: ElementListItem[] = [
-    {
-      id: '1',
-      name: 'Universidad Nacional',
-      code: 'UNA',
-      type: 'university',
-      description: 'Universidad Nacional de Costa Rica',
-      parentElementId: undefined,
-      active: true,
-      createdAt: new Date('2024-01-01'),
-      createdBy: 'admin',
-      hasChildren: true,
-      canDelete: false,
-      parentId: null,
-      isActive: true,
-      hasDependencies: true,
-      dependenciesCount: 5
-    },
-    {
-      id: '2',
-      name: 'Sede Regional Central Occidente',
-      code: 'UNA_ALAJUELA',
-      type: 'campus',
-      description: 'Campus Alajuela',
-      parentElementId: '1',
-      active: true,
-      createdAt: new Date('2024-01-02'),
-      createdBy: 'admin',
-      hasChildren: true,
-      canDelete: false,
-      parentId: '1',
-      isActive: true,
-      hasDependencies: true,
-      dependenciesCount: 3
-    },
-    {
-      id: '3',
-      name: 'Plan de Estudios Vigente',
-      code: 'EVD_02',
-      type: 'evidence',
-      description: 'Documento oficial del plan de estudios',
-      parentElementId: '2',
-      active: true,
-      createdAt: new Date('2024-01-03'),
-      createdBy: 'admin',
-      hasChildren: false,
-      canDelete: true,
-      parentId: '2',
-      isActive: true,
-      hasDependencies: false
-    },
-    {
-      id: '4',
-      name: 'Evidencia Inactiva',
-      code: 'EVT_02',
-      type: 'evidence',
-      description: 'Evidencia que fue desactivada',
-      parentElementId: '2',
-      active: false,
-      createdAt: new Date('2024-01-04'),
-      createdBy: 'admin',
-      hasChildren: false,
-      canDelete: true,
-      parentId: '2',
-      isActive: false,
-      hasDependencies: false
-    }
-  ];
+  // Convertir elementos del árbol a lista con información adicional
+  const elements = React.useMemo(() => {
+    const flattenTree = (nodes: StructureElement[]): ElementListItem[] => {
+      return nodes.reduce((acc, node) => {
+        const element: ElementListItem = {
+          ...node,
+          isActive: node.active,
+          hasDependencies: (node.childElements && node.childElements.length > 0) || !node.canDelete,
+          dependenciesCount: node.childElements ? node.childElements.length : 0,
+          parentId: node.parentElementId || null
+        };
+        acc.push(element);
+        if (node.childElements && node.childElements.length > 0) {
+          acc.push(...flattenTree(node.childElements));
+        }
+        return acc;
+      }, [] as ElementListItem[]);
+    };
+    return flattenTree(treeData);
+  }, [treeData]);
 
   // Cargar elementos al montar el componente
   useEffect(() => {
-    setLoading(true);
-    // Simular carga de API
-    setTimeout(() => {
-      setElements(mockElements);
-      setFilteredElements(mockElements);
-      setLoading(false);
-    }, 500);
-  }, []);
+    loadTree();
+  }, [loadTree]);
 
   // Filtrar elementos cuando cambian los filtros
   useEffect(() => {
@@ -223,33 +177,28 @@ const StructureDeletion: React.FC = () => {
     if (!pendingAction) return;
 
     const { element, action } = pendingAction;
-    setLoading(true);
 
     try {
-      // Simular llamada a API
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      let success = false;
+      
+      switch (action) {
+        case 'activate':
+          success = await activateElement(element.type, element.id);
+          break;
+        case 'deactivate':
+          success = await deactivateElement(element.type, element.id);
+          break;
+        case 'delete':
+          success = await deleteElement(element.type, element.id);
+          break;
+      }
 
-      // Actualizar el estado del elemento localmente
-      setElements(prev => prev.map(el => {
-        if (el.id === element.id) {
-          switch (action) {
-            case 'activate':
-              return { ...el, isActive: true };
-            case 'deactivate':
-              return { ...el, isActive: false };
-            case 'delete':
-              // En un caso real, esto eliminaría el elemento de la lista
-              return el;
-          }
-        }
-        return el;
-      }));
-
-      console.log(`${action} realizada en elemento:`, element.name);
+      if (success) {
+        console.log(`${action} realizada en elemento:`, element.name);
+      }
     } catch (error) {
       console.error('Error al realizar la acción:', error);
     } finally {
-      setLoading(false);
       confirmModal.closeModal();
       setPendingAction(null);
     }
@@ -275,13 +224,9 @@ const StructureDeletion: React.FC = () => {
     }
   };
 
-  // Actualizar lista (simula refetch)
+  // Actualizar lista (refrescar datos)
   const handleRefresh = () => {
-    setLoading(true);
-    setTimeout(() => {
-      setElements([...mockElements]);
-      setLoading(false);
-    }, 500);
+    loadTree();
   };
 
   return (
@@ -354,7 +299,7 @@ const StructureDeletion: React.FC = () => {
           </h3>
           <Button
             onClick={handleRefresh}
-            disabled={loading}
+            disabled={isLoading}
             className="flex items-center gap-2"
           >
             <SystemIcons.interface.refresh size="sm" />
@@ -364,7 +309,7 @@ const StructureDeletion: React.FC = () => {
 
         {/* Contenido de la lista */}
         <div>
-          {loading ? (
+          {isLoading ? (
             <div className="flex items-center justify-center py-12">
               <LoadingSpinner variant="ring" size="lg" color="secondary" />
             </div>
@@ -496,14 +441,14 @@ const StructureDeletion: React.FC = () => {
             </Button>
             <Button
               onClick={confirmAction}
-              disabled={loading}
+              disabled={isLoading}
               variant={
                 pendingAction?.action === 'activate' ? 'success' :
                 pendingAction?.action === 'delete' ? 'secondary' :
                 'tertiary'
               }
             >
-              {loading ? 'Procesando...' : 'Confirmar'}
+              {isLoading ? 'Procesando...' : 'Confirmar'}
             </Button>
           </div>
         </div>
