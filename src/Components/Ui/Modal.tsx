@@ -263,7 +263,7 @@ export const Modal: React.FC<UnifiedModalProps> = ({
                     'sm:mx-0 sm:size-12',
                     config.iconBg
                   )}>
-                    <IconComponent className={cn('size-8 sm:size-6', config.iconColor)} />
+                    <IconComponent data-testid="icon" className={cn('size-8 sm:size-6', config.iconColor)} />
                   </div>
                   
                   {/* Contenido avanzado */}
@@ -277,7 +277,7 @@ export const Modal: React.FC<UnifiedModalProps> = ({
                     {variant === 'danger' && (
                       <div className="mt-4 p-3 bg-red-50 border border-red-200 rounded-lg">
                         <p className="text-sm text-red-700 font-medium">
-                          ⚠️ Esta acción no se puede deshacer.
+                          Esta acción no se puede deshacer.
                         </p>
                       </div>
                     )}
