@@ -1,6 +1,6 @@
 import React, { forwardRef } from 'react';
 import { cn } from '@/utils/ClassNames';
-import { getComponentSizeClasses, type ComponentSize } from '@/constants/ComponentSizes';
+import { type ComponentSize } from '@/constants/ComponentSizes';
 import { SystemIcons } from './Icons/SystemIcons';
 
 interface TextareaProps extends Omit<React.TextareaHTMLAttributes<HTMLTextAreaElement>, 'size'> {
@@ -23,7 +23,7 @@ export const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(({
   label,
   error,
   helperText,
-  size = 'md',
+  size = 'sm', // Cambiar default a sm para consistencia
   resize = 'vertical',
   required = false,
   className,
@@ -53,12 +53,9 @@ export const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(({
         rows={rows}
         className={cn(
           // Base styles
-          'w-full border rounded-corner transition-all duration-200',
+          'w-full border rounded-lg transition-all duration-200 px-3 py-2 text-sm',
           'focus:outline-none focus:ring-1 focus:ring-gris-una/20 focus:border-transparent',
           'placeholder-gris-una/60 disabled:bg-gris-una/10 disabled:cursor-not-allowed',
-          
-          // Size variants
-          getComponentSizeClasses.input(size),
           
           // Resize behavior
           RESIZE_CLASSES[resize],

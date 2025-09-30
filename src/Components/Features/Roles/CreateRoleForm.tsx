@@ -23,7 +23,6 @@ import { Input, Textarea, MultiSelect, Button, PageHeader } from '@/components/U
 import { useBreakpoint } from '@/hooks/UseBreakpoint';
 import { useRoles } from '@/hooks/UseRoles';
 import { useModuleInfo } from '@/hooks/UseModuleInfo';
-import { usePermissionLabels } from '@/hooks/UsePermissionLabels';
 import { validationRules, useValidation } from '@/utils/Validation';
 import type { CreateRoleData, Role } from '@/Services/RoleService';
 import type { PermissionOption } from '@/Types/RoleTypes';
@@ -78,7 +77,6 @@ export const CreateRoleForm: React.FC<CreateRoleFormProps> = ({
 }) => {
   const { isMobile, isTablet, isDesktop } = useBreakpoint();
   const { editRole, loadPermissions, isLoading, error, availablePermissions, clearError } = useRoles();
-  const { getDescription } = usePermissionLabels();
   
   // Determinar si estamos en modo edición
   const isEditing = !!initialData;
@@ -229,9 +227,9 @@ export const CreateRoleForm: React.FC<CreateRoleFormProps> = ({
    */
   const transformPermissionsToOptions = (permissions: PermissionOption[]) => {
     return permissions.map(permission => ({
-      id: permission.value,
+      value: permission.value,
       label: permission.label,
-      description: getDescription(permission.value) || `Permiso para ${permission.label.toLowerCase()}`
+      disabled: false
     }));
   };
 
@@ -241,14 +239,14 @@ export const CreateRoleForm: React.FC<CreateRoleFormProps> = ({
   const getPermissionsState = () => {
     if (isLoading && availablePermissions.length === 0) {
       return {
-        options: [{ id: 'loading', label: 'Cargando permisos...', description: 'Por favor espere' }],
+        options: [{ value: 'loading', label: 'Cargando permisos...', disabled: true }],
         placeholder: 'Cargando permisos disponibles...'
       };
     }
 
     if (availablePermissions.length === 0) {
       return {
-        options: [{ id: 'empty', label: 'No hay permisos disponibles', description: 'Contacte al administrador' }],
+        options: [{ value: 'empty', label: 'No hay permisos disponibles', disabled: true }],
         placeholder: 'No se encontraron permisos'
       };
     }
@@ -295,12 +293,12 @@ export const CreateRoleForm: React.FC<CreateRoleFormProps> = ({
                 <MultiSelect
                   label="Permisos del Rol"
                   options={getPermissionsState().options}
-                  selectedValues={formData.permissions}
+                  value={formData.permissions}
                   onChange={(values) => handleInputChange('permissions', values)}
                   error={getFieldError('permissions')}
                   required
-                  maxHeight="lg"
-                  showCounter
+                  
+                  
                   placeholder={getPermissionsState().placeholder}
                 />
               </div>
@@ -385,12 +383,12 @@ export const CreateRoleForm: React.FC<CreateRoleFormProps> = ({
             <MultiSelect
               label="Permisos del Rol"
               options={getPermissionsState().options}
-              selectedValues={formData.permissions}
+              value={formData.permissions}
               onChange={(values) => handleInputChange('permissions', values)}
               error={getFieldError('permissions')}
               required
-              maxHeight="lg"
-              showCounter
+              
+              
               placeholder={getPermissionsState().placeholder}
             />
 
@@ -469,12 +467,12 @@ export const CreateRoleForm: React.FC<CreateRoleFormProps> = ({
                 <MultiSelect
                   label="Permisos del Rol"
                   options={getPermissionsState().options}
-                  selectedValues={formData.permissions}
+                  value={formData.permissions}
                   onChange={(values) => handleInputChange('permissions', values)}
                   error={getFieldError('permissions')}
                   required
-                  maxHeight="lg"
-                  showCounter
+                  
+                  
                   placeholder={getPermissionsState().placeholder}
                 />
               </div>
@@ -560,12 +558,12 @@ export const CreateRoleForm: React.FC<CreateRoleFormProps> = ({
             <MultiSelect
               label="Permisos del Rol"
               options={getPermissionsState().options}
-              selectedValues={formData.permissions}
+              value={formData.permissions}
               onChange={(values) => handleInputChange('permissions', values)}
               error={getFieldError('permissions')}
               required
-              maxHeight="lg"
-              showCounter
+              
+              
               placeholder={getPermissionsState().placeholder}
             />
 

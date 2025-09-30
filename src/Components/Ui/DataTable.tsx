@@ -15,6 +15,8 @@
 import React, { useState } from 'react';
 import { cn } from '@/utils/ClassNames';
 import { Button } from './Button';
+import { SearchInput } from './SearchInput';
+import { LoadingSpinner } from './Loading';
 
 export interface DataTableColumn<T = any> {
   key: string;
@@ -228,21 +230,12 @@ export const DataTable = <T extends Record<string, any>>({
           </div>
           <div className="flex flex-col sm:flex-row w-full gap-2 shrink-0 lg:w-auto">
             {searchable && (
-              <div className="w-full sm:w-72">
-                <div className="relative h-10 w-full min-w-[200px]">
-                  <div className="absolute grid w-5 h-5 top-2/4 right-3 -translate-y-2/4 place-items-center text-gray-400">
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" aria-hidden="true" className="w-5 h-5">
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z"></path>
-                    </svg>
-                  </div>
-                  <input
-                    className="h-full w-full rounded-[7px] border border-gray-200 bg-transparent px-3 py-2.5 !pr-9 font-sans text-sm font-normal text-gray-700 outline-0 transition-all focus:border-2 placeholder:text-gray-500"
-                    placeholder={searchPlaceholder}
-                    value={searchQuery}
-                    onChange={(e) => handleSearch(e.target.value)}
-                  />
-                </div>
-              </div>
+              <SearchInput
+                placeholder={searchPlaceholder}
+                value={searchQuery}
+                onChange={handleSearch}
+                className="w-full sm:w-72"
+              />
             )}
             {primaryAction && (
               <Button
@@ -263,7 +256,7 @@ export const DataTable = <T extends Record<string, any>>({
       <div className="p-6 px-0 overflow-scroll custom-scrollbar">
         {loading ? (
           <div className="flex items-center justify-center py-12">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
+            <LoadingSpinner variant="ring" size="lg" color="gray" />
             <span className="ml-3 text-gray-600">Cargando...</span>
           </div>
         ) : data.length === 0 ? (

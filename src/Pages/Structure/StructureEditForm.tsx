@@ -3,6 +3,9 @@ import { useSearchParams, useNavigate } from 'react-router-dom';
 import { Input } from '../../Components/Ui/Input';
 import { Button } from '../../Components/Ui/Button';
 import { Modal, useModal } from '../../Components/Ui/Modal';
+import { FormContainer } from '../../Components/Ui/FormContainer';
+import { SystemIcons } from '../../Components/Ui/Icons/SystemIcons';
+import { LoadingSpinner } from '../../Components/Ui/Loading';
 import type { StructureElement, ElementType } from '../../Types/StructureTypes';
 
 interface EditableElement extends StructureElement {
@@ -210,7 +213,7 @@ const StructureEditForm: React.FC = () => {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-red-600 mx-auto mb-4"></div>
+          <LoadingSpinner variant="ring" size="lg" color="secondary" className="mx-auto mb-4" />
           <p className="text-gray-600">Cargando elemento para edición...</p>
         </div>
       </div>
@@ -218,33 +221,27 @@ const StructureEditForm: React.FC = () => {
   }
 
   return (
-    <div className="p-6 max-w-7xl mx-auto">
-      {/* Header */}
-      <div className="mb-8">
-        <div className="flex items-center space-x-4 mb-4">
-          <button
-            onClick={goBack}
-            className="flex items-center text-gray-600 hover:text-gray-900"
-          >
-            <span className="text-xl mr-2">←</span>
-            <span>Volver al Listado</span>
-          </button>
-        </div>
-        
-        <h1 className="text-3xl font-bold text-gray-900 mb-2">
-          Editar Elementos
-        </h1>
-        <p className="text-gray-600">
-          Selecciona y modifica elementos existentes en la estructura del repositorio. 
-          No es posible cambiar el tipo de elemento ni su posición en la jerarquía.
-        </p>
+    <FormContainer
+      title="Editar Elementos"
+      description="Selecciona y modifica elementos existentes en la estructura del repositorio. No es posible cambiar el tipo de elemento ni su posición en la jerarquía."
+    >
+      {/* Botón de regreso */}
+      <div className="flex items-center space-x-4 mb-6">
+        <Button
+          onClick={goBack}
+          variant="secondary"
+          className="flex items-center gap-2"
+        >
+          <SystemIcons.interface.back size="sm" />
+          <span>Volver al Listado</span>
+        </Button>
       </div>
 
       {/* Formulario de edición */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Formulario principal */}
         <div className="lg:col-span-2">
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+          <div>
             <h3 className="text-lg font-semibold text-gray-900 mb-6">
               Editando: {currentElement.originalName}
             </h3>
@@ -350,7 +347,7 @@ const StructureEditForm: React.FC = () => {
               <Button
                 onClick={() => handleAction('save')}
                 disabled={!hasChanges || loading}
-                className="bg-red-600 hover:bg-red-700 text-white"
+                variant="primary"
               >
                 {loading ? 'Guardando...' : 'Guardar Cambios'}
               </Button>
@@ -374,7 +371,7 @@ const StructureEditForm: React.FC = () => {
           </div>
 
           {/* Historial de modificaciones */}
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
+          <div className="bg-gray-50 rounded-lg p-4">
             <h4 className="text-sm font-medium text-gray-900 mb-3">
               Historial de Modificaciones
             </h4>
@@ -457,18 +454,14 @@ const StructureEditForm: React.FC = () => {
             <Button
               onClick={confirmAction}
               disabled={loading}
-              className={
-                pendingAction === 'save' 
-                  ? 'bg-red-600 hover:bg-red-700 text-white'
-                  : 'bg-gray-600 hover:bg-gray-700 text-white'
-              }
+              variant={pendingAction === 'save' ? 'primary' : 'secondary'}
             >
               {loading ? 'Procesando...' : 'Confirmar'}
             </Button>
           </div>
         </div>
       </Modal>
-    </div>
+    </FormContainer>
   );
 };
 

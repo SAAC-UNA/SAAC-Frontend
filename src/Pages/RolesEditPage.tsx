@@ -81,7 +81,7 @@ const RolesEditPage: React.FC = () => {
         <div className="w-full max-w-6xl">
           <div className="w-full bg-blanco-una-2 rounded-lg shadow-lg border border-gris-una/20 transition-all duration-300 min-h-fit">
             <div className="flex flex-col justify-center items-center py-12">
-              <LoadingSpinner size="lg" />
+              <LoadingSpinner variant="ring" size="lg" />
               <p className="mt-4 text-gray-600">Cargando datos del rol...</p>
               <p className="mt-2 text-sm text-gray-400">ID: {id}</p>
             </div>

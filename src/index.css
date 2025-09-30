@@ -47,6 +47,16 @@
   src: url("./assets/fonts/Poppins/Poppins-Bold.ttf") format("woff2");
 }
 
+/* ===== ANIMACIONES DE CARGA ===== */
+@keyframes lds-ring {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
 /* ===== VARIABLES DE DISEÑO UNA ===== */
 /* Colores oficiales, tipografías y espaciado */
 @theme {

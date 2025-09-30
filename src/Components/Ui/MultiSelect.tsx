@@ -1,169 +1,268 @@
-import React from 'react';
-import { cn } from '@/utils/ClassNames';
-import { getComponentSizeClasses, type ComponentSize } from '@/constants/ComponentSizes';
-import { Button } from '@/components/Ui/Index';
+import React, { useState, useRef, useEffect } from 'react';
+import { cn } from '../../Utils/ClassNames';
 import { SystemIcons } from './Icons/SystemIcons';
 
-interface Option {
-  id: string;
+export interface MultiSelectOption {
+  value: string;
   label: string;
-  description?: string;
+  disabled?: boolean;
 }
 
-interface MultiSelectProps {
+export interface MultiSelectProps {
   label?: string;
-  error?: string | string[];
-  helperText?: string;
-  options: Option[];
-  selectedValues: string[];
-  onChange: (selectedValues: string[]) => void;
+  value?: string[];
   placeholder?: string;
+  options: MultiSelectOption[];
+  disabled?: boolean;
+  error?: string;
+  className?: string;
   required?: boolean;
-  maxHeight?: 'sm' | 'md' | 'lg' | 'xl';
-  showCounter?: boolean;
-  size?: ComponentSize;
+  showSelectAll?: boolean;
+  selectAllText?: string;
+  deselectAllText?: string;
+  onChange?: (values: string[]) => void;
 }
-
-const MAX_HEIGHT_CLASSES = {
-  sm: 'max-h-32',   // 8rem
-  md: 'max-h-48',   // 12rem  
-  lg: 'max-h-64',   // 16rem
-  xl: 'max-h-80'    // 20rem
-};
 
 export const MultiSelect: React.FC<MultiSelectProps> = ({
   label,
-  error,
-  helperText,
+  value = [],
+  placeholder = 'Seleccionar...',
   options,
-  selectedValues,
-  onChange,
-  placeholder = "Selecciona opciones...",
+  disabled = false,
+  error,
+  className,
   required = false,
-  maxHeight = 'lg',
-  showCounter = true,
-  size = 'md'
+  showSelectAll = true,
+  selectAllText = 'Seleccionar todo',
+  deselectAllText = 'Deseleccionar todo',
+  onChange
 }) => {
-  const multiSelectId = `multiselect-${Math.random().toString(36).substr(2, 9)}`;
-  const errorMessage = Array.isArray(error) ? error[0] : error;
+  const [isOpen, setIsOpen] = useState(false);
+  const [selectedOptions, setSelectedOptions] = useState<MultiSelectOption[]>(
+    value ? options.filter(opt => value.includes(opt.value)) : []
+  );
+  const selectRef = useRef<HTMLDivElement>(null);
 
-  const handleToggle = (optionId: string) => {
-    const isSelected = selectedValues.includes(optionId);
-    const newSelectedValues = isSelected
-      ? selectedValues.filter(id => id !== optionId)
-      : [...selectedValues, optionId];
+  // Cerrar dropdown al hacer click fuera
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (selectRef.current && !selectRef.current.contains(event.target as Node)) {
+        setIsOpen(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  // Actualizar opciones seleccionadas cuando cambia el value prop
+  useEffect(() => {
+    if (value) {
+      const newSelectedOptions = options.filter(opt => value.includes(opt.value));
+      setSelectedOptions(newSelectedOptions);
+    } else {
+      setSelectedOptions([]);
+    }
+  }, [value, options]);
+
+  const handleOptionToggle = (option: MultiSelectOption) => {
+    if (option.disabled || disabled) return;
     
-    onChange(newSelectedValues);
+    let newSelectedOptions: MultiSelectOption[];
+    const isSelected = selectedOptions.some(selected => selected.value === option.value);
+    
+    if (isSelected) {
+      // Remover opción
+      newSelectedOptions = selectedOptions.filter(selected => selected.value !== option.value);
+    } else {
+      // Agregar opción
+      newSelectedOptions = [...selectedOptions, option];
+    }
+    
+    setSelectedOptions(newSelectedOptions);
+    onChange?.(newSelectedOptions.map(opt => opt.value));
   };
 
   const handleSelectAll = () => {
-    const allSelected = selectedValues.length === options.length;
-    onChange(allSelected ? [] : options.map(option => option.id));
+    const enabledOptions = options.filter(opt => !opt.disabled);
+    const allSelected = enabledOptions.every(opt => selectedOptions.some(selected => selected.value === opt.value));
+    
+    if (allSelected) {
+      // Deseleccionar todo
+      const newSelectedOptions = selectedOptions.filter(selected => 
+        !enabledOptions.some(enabled => enabled.value === selected.value)
+      );
+      setSelectedOptions(newSelectedOptions);
+      onChange?.(newSelectedOptions.map(opt => opt.value));
+    } else {
+      // Seleccionar todo
+      const newSelectedOptions = [...selectedOptions];
+      enabledOptions.forEach(opt => {
+        if (!newSelectedOptions.some(selected => selected.value === opt.value)) {
+          newSelectedOptions.push(opt);
+        }
+      });
+      setSelectedOptions(newSelectedOptions);
+      onChange?.(newSelectedOptions.map(opt => opt.value));
+    }
+  };
+
+  const isAllSelected = () => {
+    const enabledOptions = options.filter(opt => !opt.disabled);
+    return enabledOptions.length > 0 && enabledOptions.every(opt => 
+      selectedOptions.some(selected => selected.value === opt.value)
+    );
+  };
+
+  const getDisplayText = () => {
+    if (selectedOptions.length === 0) return placeholder;
+    if (selectedOptions.length === 1) return selectedOptions[0].label;
+    return `${selectedOptions.length} elementos seleccionados`;
   };
 
   return (
-    <div className="space-y-2">
-      {/* Label */}
+    <div className={cn('relative w-full', className)} ref={selectRef}>
+      {/* Label con botón Seleccionar todo */}
       {label && (
-        <div className="flex items-center justify-between">
-          <label 
-            htmlFor={multiSelectId}
-            className="block text-sm font-medium text-negro-una"
-          >
+        <div className="flex items-center justify-between mb-1">
+          <label className={cn(
+            'block font-medium text-negro-una text-sm',
+            disabled && 'text-gray-400'
+          )}>
             {label}
             {required && <span className="text-rojo-una-2 ml-1">*</span>}
           </label>
           
-          {/* Select All / Deselect All */}
-          <Button
-            type="button"
-            variant="transparent"
-            onClick={handleSelectAll}
-            className="text-xs"
-          >
-            {selectedValues.length === options.length ? 'Deseleccionar todo' : 'Seleccionar todo'}
-          </Button>
+          {showSelectAll && options.length > 0 && (
+            <button
+              type="button"
+              onClick={handleSelectAll}
+              disabled={disabled}
+              className={cn(
+                'text-xs font-medium transition-colors duration-200',
+                disabled 
+                  ? 'text-gray-400 cursor-not-allowed'
+                  : 'text-azul-una hover:text-blue-800 cursor-pointer'
+              )}
+            >
+              {isAllSelected() ? deselectAllText : selectAllText}
+            </button>
+          )}
         </div>
       )}
 
-      {/* Options Container */}
-      <div 
-        id={multiSelectId}
+      {/* Select Button */}
+      <button
+        type="button"
         className={cn(
-          'border rounded-lg overflow-y-auto custom-scrollbar',
-          getComponentSizeClasses.input(size),
-          MAX_HEIGHT_CLASSES[maxHeight],
-          errorMessage 
-            ? 'border-rojo-una-2/5 bg-rojo-una-2/2' 
-            : 'border-gris-una/5 bg-gris-una/10'
+          'relative w-full h-10 border rounded-lg text-left cursor-pointer focus:outline-none focus:ring-1 focus:ring-gris-una/20 focus:border-transparent transition-all duration-200',
+          'placeholder-gris-una/60 disabled:cursor-not-allowed px-3 py-2 text-sm',
+          disabled
+            ? 'bg-gris-una/10 border-gris-una/5 text-gray-400'
+            : error
+            ? 'border-rojo-una-2/5 bg-rojo-una-2/2'
+            : 'border-gris-una/5 bg-gris-una/10 hover:border-gris-una/10',
+          isOpen && !disabled && 'border-gris-una/20'
         )}
+        onClick={() => !disabled && setIsOpen(!isOpen)}
+        disabled={disabled}
       >
-        {options.length === 0 ? (
-          <div className="text-center py-8 text-gris-una">
-            <p className="text-sm">{placeholder}</p>
-          </div>
-        ) : (
-          <div className="space-y-1">
+        <span className={cn(
+          'block truncate',
+          selectedOptions.length === 0 && 'text-gris-una/60'
+        )}>
+          {getDisplayText()}
+        </span>
+        
+        {/* Arrow Icon */}
+        <span className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+          <svg
+            className={cn(
+              'w-5 h-5 text-gris-una transition-transform duration-200',
+              isOpen && 'rotate-180'
+            )}
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M19 9l-7 7-7-7"
+            />
+          </svg>
+        </span>
+      </button>
+
+      {/* Dropdown */}
+      {isOpen && !disabled && (
+        <div className="absolute z-50 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg max-h-60 overflow-auto custom-scrollbar">
+          <div className="py-1 text-sm">
+            {/* Botón Seleccionar todo dentro del dropdown */}
+            {showSelectAll && options.length > 1 && (
+              <>
+                <button
+                  type="button"
+                  onClick={handleSelectAll}
+                  className="w-full text-left px-4 py-2 text-blue-600 hover:bg-blue-50 focus:bg-blue-50 focus:outline-none transition-colors duration-150 border-b border-gray-100"
+                >
+                  <span className="font-medium">
+                    {isAllSelected() ? deselectAllText : selectAllText}
+                  </span>
+                </button>
+              </>
+            )}
+            
             {options.map((option) => {
-              const isSelected = selectedValues.includes(option.id);
+              const isSelected = selectedOptions.some(selected => selected.value === option.value);
               
               return (
-                <label
-                  key={option.id}
+                <button
+                  key={option.value}
+                  type="button"
                   className={cn(
-                    'flex items-start gap-3 p-2 rounded-md cursor-pointer transition-all duration-200',
-                    'hover:bg-gris-una/7',
-                    isSelected && 'bg-blanco-una-2'
+                    'relative w-full text-left px-4 py-2 hover:bg-gray-100 focus:bg-gray-100 focus:outline-none transition-colors duration-150 flex items-center justify-between',
+                    option.disabled
+                      ? 'text-gray-400 cursor-not-allowed'
+                      : 'text-gray-900 cursor-pointer',
+                    isSelected && 'bg-blue-50 text-blue-900 font-medium'
                   )}
+                  onClick={() => handleOptionToggle(option)}
+                  disabled={option.disabled}
                 >
-                  {/* Checkbox */}
-                  <input
-                    type="checkbox"
-                    checked={isSelected}
-                    onChange={() => handleToggle(option.id)}
-                    className="w-4 h-4 mt-0.5 text-rojo-una-2 border-gris-una/30 rounded "
-                  />
+                  <span className="flex-1">{option.label}</span>
                   
-                  {/* Option Content */}
-                  <div className="flex-1 min-w-0">
-                    <div className="text-sm font-medium text-negro-una">
-                      {option.label}
-                    </div>
-                    {option.description && (
-                      <div className="text-xs text-gris-una mt-0.5">
-                        {option.description}
-                      </div>
-                    )}
-                  </div>
-                </label>
+                  {/* Check icon for selected options */}
+                  {isSelected && (
+                    <span className="flex-shrink-0 ml-2">
+                      <svg
+                        className="w-5 h-5 text-blue-600"
+                        fill="currentColor"
+                        viewBox="0 0 20 20"
+                      >
+                        <path
+                          fillRule="evenodd"
+                          d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                          clipRule="evenodd"
+                        />
+                      </svg>
+                    </span>
+                  )}
+                </button>
               );
             })}
           </div>
-        )}
-      </div>
-
-      {/* Error message */}
-      {errorMessage && (
-        <p className="text-rojo-una-2 text-sm flex items-center gap-2">
-          <SystemIcons.interface.alert className="w-4 h-4 flex-shrink-0 text-rojo-una-2" size="sm" />
-          {errorMessage}
-        </p>
+        </div>
       )}
 
-      {/* Helper text & Counter */}
-      <div className="flex items-center justify-between">
-        {helperText && !errorMessage && (
-          <p className="text-gris-una text-sm">
-            {helperText}
-          </p>
-        )}
-        
-        {showCounter && (
-          <p className="text-xs text-gris-una">
-            {selectedValues.length} de {options.length} seleccionado(s)
-          </p>
-        )}
-      </div>
+      {/* Error Message */}
+      {error && (
+        <p className="text-rojo-una-2 text-sm flex items-center gap-2">
+          <SystemIcons.interface.alert className="w-4 h-4 flex-shrink-0 text-rojo-una-2" size="sm" />
+          {error}
+        </p>
+      )}
     </div>
   );
 };

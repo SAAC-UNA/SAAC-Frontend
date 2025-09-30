@@ -2,7 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { cn } from '@/Utils/ClassNames';
 import { Button } from '@/Components/Ui/Button';
 import { Input } from '@/Components/Ui/Input';
-import Select from '@/Components/Ui/Select';
+import { FormContainer } from '@/Components/Ui/FormContainer';
+import { CustomSelect } from '@/Components/Ui/CustomSelect';
 import type { 
   StructureElement, 
   CreateElementForm, 
@@ -269,16 +270,6 @@ export const StructureCreation: React.FC = () => {
 
   return (
     <div className="container mx-auto px-4 py-8">
-      {/* Header */}
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900 mb-2">
-          Crear Elemento de Estructura
-        </h1>
-        <p className="text-gray-600">
-          Agrega un nuevo elemento a la jerarquía del Sistema SAAC-UNA respetando las reglas de estructura.
-        </p>
-      </div>
-
       {/* Mensaje de éxito */}
       {successMessage && (
         <div className="mb-6 p-4 bg-green-50 border border-green-200 rounded-lg">
@@ -287,31 +278,38 @@ export const StructureCreation: React.FC = () => {
       )}
 
       {/* Formulario */}
-      <div className="bg-white rounded-lg border border-gray-200 shadow-sm p-6">
+      <FormContainer
+        title="Crear Elemento de Estructura"
+        description="Agrega un nuevo elemento a la jerarquía del Sistema SAAC-UNA respetando las reglas de estructura."
+      >
         <form onSubmit={handleSubmit} className="space-y-6">
           {/* Tipo de Elemento */}
-          <Select
+          <CustomSelect
             label="Tipo de Elemento"
-            required
             options={typeOptions}
             value={formData.type}
-            onChange={(e) => handleTypeChange(e.target.value as ElementType)}
+            onChange={(value) => handleTypeChange(value as ElementType)}
             error={errors.type}
             placeholder="Selecciona el tipo de elemento"
           />
 
           {/* Elemento Padre (condicional) */}
           {config.showParentSelector && (
-            <Select
-              label="Elemento Padre"
-              required
-              options={parentOptions}
-              value={formData.parentElementId}
-              onChange={(e) => handleFieldChange('parentElementId', e.target.value)}
-              error={errors.parentElementId}
-              placeholder="Selecciona el elemento padre"
-              helperText={`Este ${ELEMENT_TYPE_LABELS[formData.type]} debe pertenecer a un ${ELEMENT_TYPE_LABELS[getRequiredParentType(formData.type)!]}`}
-            />
+            <div>
+              <CustomSelect
+                label="Elemento Padre"
+                options={parentOptions}
+                value={formData.parentElementId}
+                onChange={(value) => handleFieldChange('parentElementId', value)}
+                error={errors.parentElementId}
+                placeholder="Selecciona el elemento padre"
+              />
+              {config.showParentSelector && (
+                <p className="mt-1 text-sm text-gray-600">
+                  Este {ELEMENT_TYPE_LABELS[formData.type]} debe pertenecer a un {ELEMENT_TYPE_LABELS[getRequiredParentType(formData.type)!]}
+                </p>
+              )}
+            </div>
           )}
 
           {/* Código */}
@@ -383,7 +381,7 @@ export const StructureCreation: React.FC = () => {
             </Button>
           </div>
         </form>
-      </div>
+      </FormContainer>
     </div>
   );
 };

@@ -1,8 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { Select } from '../../Components/Ui/Select';
-import { Input } from '../../Components/Ui/Input';
+import { CustomSelect } from '../../Components/Ui/CustomSelect';
+import { SearchInput } from '../../Components/Ui/SearchInput';
 import { Button } from '../../Components/Ui/Button';
 import { Modal, useModal } from '../../Components/Ui/Modal';
+import { FormContainer } from '../../Components/Ui/FormContainer';
+import { SystemIcons } from '../../Components/Ui/Icons/SystemIcons';
+import { LoadingSpinner } from '../../Components/Ui/Loading';
 import type { StructureElement, ElementType } from '../../Types/StructureTypes';
 
 interface ElementListItem extends StructureElement {
@@ -160,8 +163,13 @@ const StructureDeletion: React.FC = () => {
   };
 
   // Obtener las clases CSS para el badge de estado
-  const getStatusBadgeClasses = (status: ElementStatus): string => {
-    const baseClasses = 'px-2 py-1 rounded-full text-xs font-medium';
+  const getStatusBadgeClasses = (status: ElementStatus, isElementActive: boolean = true): string => {
+    const baseClasses = 'px-2 py-1 rounded-full text-xs font-medium transition-all duration-300';
+    
+    if (!isElementActive) {
+      return `${baseClasses} bg-gray-100 text-gray-500`;
+    }
+    
     switch (status) {
       case 'active':
         return `${baseClasses} bg-green-100 text-green-800`;
@@ -277,44 +285,32 @@ const StructureDeletion: React.FC = () => {
   };
 
   return (
-    <div className="p-6 max-w-7xl mx-auto">
-      {/* Header */}
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900 mb-2">
-          Eliminación o Desactivación
-        </h1>
-        <p className="text-gray-600">
-          Gestiona el estado de elementos en la estructura. Puedes activar elementos inactivos, 
-          desactivar elementos con dependencias o eliminar permanentemente elementos sin dependencias.
-        </p>
-      </div>
-
+    <FormContainer
+      title="Eliminación o Desactivación"
+      description="Gestiona el estado de elementos en la estructura. Puedes activar elementos inactivos, desactivar elementos con dependencias o eliminar permanentemente elementos sin dependencias."
+    >
       {/* Filtros de búsqueda */}
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
+      <div className="mb-6">
         <h2 className="text-lg font-semibold text-gray-900 mb-4">Buscar Elementos</h2>
         
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           {/* Búsqueda por código o nombre */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Buscar por código o nombre
-            </label>
-            <Input
-              type="text"
-              placeholder="Escriba para buscar..."
+            <SearchInput
+              placeholder="Buscar por código o nombre"
               value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
+              onChange={(value) => setSearchTerm(value)}
             />
           </div>
 
           {/* Filtrar por tipo */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Filtrar por tipo
-            </label>
-            <Select
+            <CustomSelect
+              label=""
               value={typeFilter}
-              onChange={(e) => setTypeFilter(e.target.value as ElementType | 'all')}
+              placeholder="Filtrar por tipo"
+              size="sm"
+              onChange={(value) => setTypeFilter(value as ElementType | 'all')}
               options={[
                 { value: 'all', label: 'Todos los tipos' },
                 { value: 'university', label: 'Universidad' },
@@ -332,12 +328,12 @@ const StructureDeletion: React.FC = () => {
 
           {/* Filtrar por estado */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Filtrar por estado
-            </label>
-            <Select
+            <CustomSelect
+              label=""
               value={statusFilter}
-              onChange={(e) => setStatusFilter(e.target.value as ElementStatus | 'all')}
+              placeholder="Filtrar por estado"
+              size="sm"
+              onChange={(value) => setStatusFilter(value as ElementStatus | 'all')}
               options={[
                 { value: 'all', label: 'Todos los estados' },
                 { value: 'active', label: 'Activo' },
@@ -350,26 +346,27 @@ const StructureDeletion: React.FC = () => {
       </div>
 
       {/* Lista de elementos */}
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200">
+      <div>
         {/* Header de la lista */}
-        <div className="flex items-center justify-between p-6 border-b border-gray-200">
+        <div className="flex items-center justify-between mb-4 pb-4 border-b border-gray-200">
           <h3 className="text-lg font-semibold text-gray-900">
             Elementos Disponibles ({filteredElements.length})
           </h3>
           <Button
             onClick={handleRefresh}
             disabled={loading}
-            className="flex items-center space-x-2"
+            className="flex items-center gap-2"
           >
+            <SystemIcons.interface.refresh size="sm" />
             <span>Actualizar Lista</span>
           </Button>
         </div>
 
         {/* Contenido de la lista */}
-        <div className="p-6">
+        <div>
           {loading ? (
             <div className="flex items-center justify-center py-12">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-red-600"></div>
+              <LoadingSpinner variant="ring" size="lg" color="secondary" />
             </div>
           ) : filteredElements.length === 0 ? (
             <div className="text-center py-12">
@@ -386,21 +383,33 @@ const StructureDeletion: React.FC = () => {
                 return (
                   <div
                     key={element.id}
-                    className="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow"
+                    className={`border rounded-lg p-4 transition-all duration-300 ${
+                      !element.isActive 
+                        ? 'border-gray-300 bg-gray-50/50 opacity-75' 
+                        : 'border-gray-200 bg-white hover:shadow-md'
+                    }`}
                   >
                     <div className="flex items-start justify-between">
                       <div className="flex-1">
                         {/* Header del elemento */}
                         <div className="flex items-center space-x-3 mb-2">
                           <div className="flex items-center space-x-2">
-                            <span className="px-2 py-1 bg-blue-100 text-blue-800 text-xs font-medium rounded">
+                            <span className={`px-2 py-1 text-xs font-medium rounded transition-all duration-300 ${
+                              !element.isActive 
+                                ? 'bg-gray-100 text-gray-500' 
+                                : 'bg-blue-100 text-blue-800'
+                            }`}>
                               {element.code}
                             </span>
-                            <span className={getStatusBadgeClasses(status)}>
+                            <span className={getStatusBadgeClasses(status, element.isActive)}>
                               {getStatusText(status)}
                             </span>
                             {element.hasDependencies && element.dependenciesCount && (
-                              <span className="px-2 py-1 bg-orange-100 text-orange-800 text-xs font-medium rounded">
+                              <span className={`px-2 py-1 text-xs font-medium rounded transition-all duration-300 ${
+                                !element.isActive 
+                                  ? 'bg-gray-100 text-gray-500' 
+                                  : 'bg-orange-100 text-orange-800'
+                              }`}>
                                 {element.dependenciesCount} dependencias
                               </span>
                             )}
@@ -408,13 +417,19 @@ const StructureDeletion: React.FC = () => {
                         </div>
 
                         {/* Información del elemento */}
-                        <h4 className="text-lg font-semibold text-gray-900 mb-1">
+                        <h4 className={`text-lg font-semibold mb-1 transition-colors duration-300 ${
+                          !element.isActive ? 'text-gray-500' : 'text-gray-900'
+                        }`}>
                           {element.name}
                         </h4>
-                        <p className="text-gray-600 text-sm mb-2">
+                        <p className={`text-sm mb-2 transition-colors duration-300 ${
+                          !element.isActive ? 'text-gray-400' : 'text-gray-600'
+                        }`}>
                           {element.description}
                         </p>
-                        <p className="text-xs text-gray-500">
+                        <p className={`text-xs transition-colors duration-300 ${
+                          !element.isActive ? 'text-gray-400' : 'text-gray-500'
+                        }`}>
                           Creado el {new Date().toLocaleDateString()} por admin
                         </p>
                       </div>
@@ -424,8 +439,10 @@ const StructureDeletion: React.FC = () => {
                         {actions.includes('activate' as ActionType) && (
                           <Button
                             onClick={() => handleAction(element, 'activate')}
-                            className="bg-green-600 hover:bg-green-700 text-white"
+                            variant="success"
                             size="sm"
+                            // Sombra verde para resaltar el botón de activar, pero no sé
+                            //className={!element.isActive ? 'shadow-lg shadow-green-200 ring-2 ring-green-200' : ''}
                           >
                             Activar
                           </Button>
@@ -433,7 +450,7 @@ const StructureDeletion: React.FC = () => {
                         {actions.includes('deactivate' as ActionType) && (
                           <Button
                             onClick={() => handleAction(element, 'deactivate')}
-                            className="bg-yellow-600 hover:bg-yellow-700 text-white"
+                            variant="tertiary"
                             size="sm"
                           >
                             Desactivar
@@ -442,7 +459,7 @@ const StructureDeletion: React.FC = () => {
                         {actions.includes('delete' as ActionType) && (
                           <Button
                             onClick={() => handleAction(element, 'delete')}
-                            className="bg-red-600 hover:bg-red-700 text-white"
+                            variant="secondary"
                             size="sm"
                           >
                             Eliminar
@@ -480,10 +497,10 @@ const StructureDeletion: React.FC = () => {
             <Button
               onClick={confirmAction}
               disabled={loading}
-              className={
-                pendingAction?.action === 'delete' 
-                  ? 'bg-red-600 hover:bg-red-700 text-white'
-                  : 'bg-blue-600 hover:bg-blue-700 text-white'
+              variant={
+                pendingAction?.action === 'activate' ? 'success' :
+                pendingAction?.action === 'delete' ? 'secondary' :
+                'tertiary'
               }
             >
               {loading ? 'Procesando...' : 'Confirmar'}
@@ -491,7 +508,7 @@ const StructureDeletion: React.FC = () => {
           </div>
         </div>
       </Modal>
-    </div>
+    </FormContainer>
   );
 };
 

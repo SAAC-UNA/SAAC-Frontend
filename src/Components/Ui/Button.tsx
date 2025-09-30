@@ -16,11 +16,12 @@
 import React from 'react';
 import { cn } from '@/utils/ClassNames';
 import { getComponentSizeClasses, type ComponentSize } from '@/constants/ComponentSizes';
+import { LoadingSpinner } from './Loading';
 
 /**
  * Variantes disponibles para el componente Button
  */
-type ButtonVariant = 'primary' | 'secondary' | 'outline' | 'ghost' | 'transparent' | 'tableView' | 'tableEdit' | 'tableDelete';
+type ButtonVariant = 'primary' | 'secondary' | 'tertiary' | 'outline' | 'ghost' | 'transparent' | 'success' | 'tableView' | 'tableEdit' | 'tableDelete';
 
 /**
  * Props del componente Button
@@ -39,17 +40,30 @@ interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
 
 // Definición de estilos para cada variante del botón
 const VARIANT_CLASSES = {
-  // Botón principal con colores UNA
+  // Botón principal con color Azul UNA
   primary: [
     'bg-transparent text-azul-una font-poppins font-semibold border-2 border-azul-una',
     'hover:bg-azul-una/5 transition-colors duration-200',
     'disabled:bg-gris-una disabled:cursor-not-allowed'
   ].join(' '),
   
-  // Botón secundario con colores UNA alternativos
+  // Botón secundario con color Rojo UNA
   secondary: [
     'bg-transparent text-rojo-una-2 font-poppins font-semibold border-2 border-rojo-una-2', 
     'hover:bg-rojo-una-2/5 transition-colors duration-200 shadow-sm',
+    'disabled:bg-gris-una/10 disabled:cursor-not-allowed'
+  ].join(' '),
+
+  tertiary: [
+    'bg-transparent text-gris-una font-poppins font-semibold border-2 border-gris-una', 
+    'hover:bg-gris-una/5 transition-colors duration-200 shadow-sm',
+    'disabled:bg-negro-una/10 disabled:cursor-not-allowed'
+  ].join(' '),
+
+  // Botón de éxito/activar con color verde
+  success: [
+    'bg-transparent text-green-600 font-poppins font-semibold border-2 border-green-600', 
+    'hover:bg-green-600/5 transition-colors duration-200 shadow-sm',
     'disabled:bg-gris-una/10 disabled:cursor-not-allowed'
   ].join(' '),
 
@@ -128,7 +142,7 @@ export const Button: React.FC<ButtonProps> = ({
       {...props}
     >
       {isLoading && (
-        <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
+        <LoadingSpinner variant="ring" size="sm" color="current" className="mr-2" />
       )}
       {children}
     </button>

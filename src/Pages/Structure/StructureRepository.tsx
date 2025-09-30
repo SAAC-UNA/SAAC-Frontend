@@ -1,5 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { cn } from '../../Utils/ClassNames';
+import { Button } from '../../Components/Ui/Button';
+import { FormContainer } from '../../Components/Ui/FormContainer';
+import { SystemIcons } from '../../Components/Ui/Icons/SystemIcons';
+import { LoadingSpinner } from '../../Components/Ui/Loading';
 import type { StructureElement, StructureTreeNode } from '../../Types/StructureTypes';
 import { ElementType } from '../../Types/StructureTypes';
 import { 
@@ -342,7 +346,7 @@ export const StructureRepository: React.FC = () => {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-red-600 mx-auto mb-4"></div>
+          <LoadingSpinner variant="ring" size="lg" color="secondary" className="mx-auto mb-4" />
           <p className="text-gray-600">Cargando estructura del repositorio...</p>
         </div>
       </div>
@@ -350,50 +354,46 @@ export const StructureRepository: React.FC = () => {
   }
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      {/* Header */}
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900 mb-2">
-          Estructura del Repositorio
-        </h1>
-        <p className="text-gray-600 max-w-3xl">
-          Visualiza la jerarquía completa del Sistema SAAC-UNA. Esta vista muestra todos 
-          los elementos organizados desde la Universidad hasta las Evidencias individuales.
-        </p>
-      </div>
-
+    <FormContainer
+      title="Estructura del Repositorio"
+      description="Visualiza la jerarquía completa del Sistema SAAC-UNA. Esta vista muestra todos los elementos organizados desde la Universidad hasta las Evidencias individuales."
+      variant="full-width"
+    >
       {/* Controles */}
       <div className="mb-6 flex gap-4">
-        <button
+        <Button
           onClick={handleExpandAll}
-          className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
+          variant="secondary"
+          className="flex items-center gap-2"
         >
+          <SystemIcons.interface.expand size="sm" />
           Expandir Todo
-        </button>
-        <button
+        </Button>
+        <Button
           onClick={handleCollapseAll}
-          className="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors"
+          variant="tertiary"
+          className="flex items-center gap-2"
         >
+          <SystemIcons.interface.collapse size="sm" />
           Colapsar Todo
-        </button>
+        </Button>
       </div>
 
-      {/* Estadísticas rápidas */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
-        {Object.entries(ELEMENT_TYPE_LABELS).map(([type, label]) => {
-          const count = structureData.filter(element => element.type === type).length;
-          return (
-            <div key={type} className="bg-white p-4 rounded-lg border border-gray-200 shadow-sm">
-              <div className="text-2xl font-bold text-red-600">{count}</div>
-              <div className="text-sm text-gray-600">{label}{count !== 1 ? 's' : ''}</div>
-            </div>
-          );
-        })}
-      </div>
+        {/* Estadísticas rápidas */}
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
+          {Object.entries(ELEMENT_TYPE_LABELS).map(([type, label]) => {
+            const count = structureData.filter(element => element.type === type).length;
+            return (
+              <div key={type} className="bg-white p-4 rounded-lg border border-gray-200 shadow-sm">
+                <div className="text-2xl font-bold text-red-600">{count}</div>
+                <div className="text-sm text-gray-600">{label}{count !== 1 ? 's' : ''}</div>
+              </div>
+            );
+          })}
+        </div>
 
-      {/* Árbol de estructura */}
-      <div className="bg-white rounded-lg border border-gray-200 shadow-sm">
-        <div className="p-6">
+        {/* Árbol de estructura */}
+        <div className="border-t border-gray-200 pt-6">
           <h2 className="text-xl font-semibold text-gray-900 mb-4">
             Jerarquía de Elementos
           </h2>
@@ -402,31 +402,30 @@ export const StructureRepository: React.FC = () => {
             <div className="space-y-2">
               {treeData.map((node) => (
                 <TreeNode
-                  key={node.element.id}
-                  node={node}
-                  onToggle={handleToggleNode}
-                />
-              ))}
-            </div>
-          ) : (
-            <div className="text-center py-12">
-              <div className="text-gray-400 mb-2">
-                <svg className="w-12 h-12 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4" />
-                </svg>
+                    key={node.element.id}
+                    node={node}
+                    onToggle={handleToggleNode}
+                  />
+                ))}
               </div>
-              <h3 className="text-lg font-medium text-gray-900 mb-2">
-                Sin estructura configurada
-              </h3>
-              <p className="text-gray-600">
-                No hay elementos en la estructura del repositorio. 
-                Utiliza la sección de Gestión para crear elementos.
-              </p>
-            </div>
-          )}
+            ) : (
+              <div className="text-center py-12">
+                <div className="text-gray-400 mb-2">
+                  <svg className="w-12 h-12 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4" />
+                  </svg>
+                </div>
+                <h3 className="text-lg font-medium text-gray-900 mb-2">
+                  Sin estructura configurada
+                </h3>
+                <p className="text-gray-600">
+                  No hay elementos en la estructura del repositorio. 
+                  Utiliza la sección de Gestión para crear elementos.
+                </p>
+              </div>
+            )}
         </div>
-      </div>
-    </div>
+      </FormContainer>
   );
 };
 
