@@ -19,8 +19,8 @@ module.exports = {
     "!src/vite-env.d.ts"
   ],
   
-  // 📋 Reportes HTML para navegador
-  coverageReporters: ["text", "html"],
+  // 📋 Reportes HTML para navegador (solo LCOV para evitar duplicación)
+  coverageReporters: ["text", "lcov"],
   coverageDirectory: "coverage",
   
   // 🎯 Reporte de tests HTML para navegador
