@@ -1,0 +1,1710 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuites name="SAAC Frontend Unit Tests" tests="73" failures="18" errors="0" time="7.188">
+  <testsuite name="cn" errors="0" failures="0" skipped="0" timestamp="2025-09-30T21:51:00" time="2.888" tests="5">
+    <testcase classname="cn" name="une clases simples" time="0.031">
+    </testcase>
+    <testcase classname="cn" name="omite valores falsy" time="0">
+    </testcase>
+    <testcase classname="cn" name="elimina duplicados y combina tailwind" time="0.002">
+    </testcase>
+    <testcase classname="cn" name="acepta objetos y arrays" time="0.001">
+    </testcase>
+    <testcase classname="cn" name="retorna string vacío si no hay clases" time="0.001">
+    </testcase>
+  </testsuite>
+  <testsuite name="SidebarContext" errors="0" failures="0" skipped="0" timestamp="2025-09-30T21:51:00" time="4.068" tests="3">
+    <testcase classname="SidebarContext" name="proporciona valores iniciales y permite expandir/colapsar" time="0.076">
+    </testcase>
+    <testcase classname="SidebarContext" name="permite abrir/cerrar en mobile y alternar" time="0.015">
+    </testcase>
+    <testcase classname="SidebarContext" name="permite alternar y usar API de compatibilidad" time="0.016">
+    </testcase>
+  </testsuite>
+  <testsuite name="useRoles" errors="0" failures="3" skipped="0" timestamp="2025-09-30T21:51:00" time="4.06" tests="8">
+    <testcase classname="useRoles" name="inicializa con valores por defecto" time="0.028">
+    </testcase>
+    <testcase classname="useRoles" name="loadRoles actualiza el estado correctamente" time="0.018">
+      <failure>Error: expect(received).toEqual(expected) // deep equality
+
+- Expected  - 19
++ Received  +  1
+
+- Array [
+-   Object {
+-     &quot;description&quot;: &quot;Administrator role&quot;,
+-     &quot;id&quot;: 1,
+-     &quot;name&quot;: &quot;Admin&quot;,
+-     &quot;permissions&quot;: Array [
+-       &quot;read&quot;,
+-       &quot;write&quot;,
+-     ],
+-   },
+-   Object {
+-     &quot;description&quot;: &quot;Regular user role&quot;,
+-     &quot;id&quot;: 2,
+-     &quot;name&quot;: &quot;User&quot;,
+-     &quot;permissions&quot;: Array [
+-       &quot;read&quot;,
+-     ],
+-   },
+- ]
++ Array []
+    at Object.toEqual (C:\Users\ian19\Desktop\SAAC\SAAC-Frontend\src\Hooks\UseRoles.test.ts:47:34)</failure>
+    </testcase>
+    <testcase classname="useRoles" name="maneja errores en loadRoles" time="0.007">
+      <failure>Error: expect(received).toBe(expected) // Object.is equality
+
+Expected: &quot;Network error&quot;
+Received: &quot;Error al cargar roles: _RoleService.roleService.listarRoles is not a function&quot;
+    at Object.toBe (C:\Users\ian19\Desktop\SAAC\SAAC-Frontend\src\Hooks\UseRoles.test.ts:61:34)</failure>
+    </testcase>
+    <testcase classname="useRoles" name="createRole añade un nuevo rol" time="0.006">
+    </testcase>
+    <testcase classname="useRoles" name="editRole actualiza un rol existente" time="0.005">
+    </testcase>
+    <testcase classname="useRoles" name="deleteRole elimina un rol" time="0.005">
+    </testcase>
+    <testcase classname="useRoles" name="clearError limpia los errores" time="0.003">
+    </testcase>
+    <testcase classname="useRoles" name="loadPermissions carga permisos disponibles" time="0.005">
+      <failure>Error: expect(jest.fn()).toHaveBeenCalled()
+
+Expected number of calls: &gt;= 1
+Received number of calls:    0
+    at Object.toHaveBeenCalled (C:\Users\ian19\Desktop\SAAC\SAAC-Frontend\src\Hooks\UseRoles.test.ts:144:45)</failure>
+    </testcase>
+  </testsuite>
+  <testsuite name="useNavigationItems" errors="0" failures="0" skipped="0" timestamp="2025-09-30T21:51:00" time="4.068" tests="5">
+    <testcase classname="useNavigationItems" name="devuelve los ids activos y expandidos" time="0.028">
+    </testcase>
+    <testcase classname="useNavigationItems" name="isItemActive retorna true si el id es activo" time="0.003">
+    </testcase>
+    <testcase classname="useNavigationItems" name="isItemExpanded retorna true si el id es expandido" time="0.004">
+    </testcase>
+    <testcase classname="useNavigationItems" name="handleItemClick llama setActiveItem y toggleExpanded para expandibles" time="0.084">
+    </testcase>
+    <testcase classname="useNavigationItems" name="handleItemClick navega y cierra expansión para no expandibles" time="0.007">
+    </testcase>
+  </testsuite>
+  <testsuite name="ToastContainer" errors="0" failures="0" skipped="0" timestamp="2025-09-30T21:51:00" time="4.073" tests="4">
+    <testcase classname="ToastContainer" name="renderiza los toasts visibles" time="0.072">
+    </testcase>
+    <testcase classname="ToastContainer" name="muestra el icono correcto para cada tipo" time="0.011">
+    </testcase>
+    <testcase classname="ToastContainer" name="llama hideToast al hacer click en cerrar" time="0.021">
+    </testcase>
+    <testcase classname="ToastContainer" name="no renderiza nada si no hay toasts visibles" time="0.009">
+    </testcase>
+  </testsuite>
+  <testsuite name="NavigationContext" errors="0" failures="0" skipped="0" timestamp="2025-09-30T21:51:00" time="4.087" tests="2">
+    <testcase classname="NavigationContext" name="proporciona valores iniciales y permite cambiar el activo" time="0.076">
+    </testcase>
+    <testcase classname="NavigationContext" name="permite cambiar el expandido y alternar" time="0.026">
+    </testcase>
+  </testsuite>
+  <testsuite name="Input" errors="0" failures="0" skipped="0" timestamp="2025-09-30T21:51:00" time="4.154" tests="6">
+    <testcase classname="Input" name="renderiza el label correctamente" time="0.067">
+    </testcase>
+    <testcase classname="Input" name="muestra el asterisco si es requerido" time="0.01">
+    </testcase>
+    <testcase classname="Input" name="renderiza el input y permite escribir" time="0.082">
+    </testcase>
+    <testcase classname="Input" name="muestra el mensaje de error si existe" time="0.008">
+    </testcase>
+    <testcase classname="Input" name="muestra el helperText si no hay error" time="0.006">
+    </testcase>
+    <testcase classname="Input" name="deshabilita el input si disabled es true" time="0.012">
+    </testcase>
+  </testsuite>
+  <testsuite name="Button" errors="0" failures="0" skipped="0" timestamp="2025-09-30T21:51:00" time="4.168" tests="5">
+    <testcase classname="Button" name="renderiza el texto del botón" time="0.058">
+    </testcase>
+    <testcase classname="Button" name="aplica la variante primaria por defecto" time="0.079">
+    </testcase>
+    <testcase classname="Button" name="muestra el spinner cuando isLoading es true" time="0.028">
+    </testcase>
+    <testcase classname="Button" name="deshabilita el botón cuando isLoading o disabled es true" time="0.02">
+    </testcase>
+    <testcase classname="Button" name="llama onClick cuando se hace click" time="0.008">
+    </testcase>
+  </testsuite>
+  <testsuite name="DataTable" errors="0" failures="1" skipped="0" timestamp="2025-09-30T21:51:00" time="4.273" tests="11">
+    <testcase classname="DataTable" name="renderiza la tabla con datos" time="0.102">
+    </testcase>
+    <testcase classname="DataTable" name="muestra mensaje cuando no hay datos" time="0.022">
+      <failure>TestingLibraryElementError: Found multiple elements with the text: /no hay datos/i
+
+Here are the matching elements:
+
+Ignored nodes: comments, script, style
+&lt;p
+  class=&quot;text-lg font-medium mb-1&quot;
+&gt;
+  No hay datos
+&lt;/p&gt;
+
+Ignored nodes: comments, script, style
+&lt;p
+  class=&quot;text-sm&quot;
+&gt;
+  No hay datos para mostrar
+&lt;/p&gt;
+
+(If this is intentional, then use the `*AllBy*` variant of the query (like `queryAllByText`, `getAllByText`, or `findAllByText`)).
+
+Ignored nodes: comments, script, style
+&lt;body&gt;
+  &lt;div&gt;
+    &lt;div
+      class=&quot;relative flex flex-col w-full h-full text-gris-una/20 bg-white shadow-md rounded-xl bg-clip-border&quot;
+    &gt;
+      &lt;div
+        class=&quot;relative text-gris-una bg-transparent rounded-none bg-clip-border mx-4 mt-4&quot;
+      &gt;
+        &lt;div
+          class=&quot;flex flex-col justify-between gap-4 mb-4 lg:flex-row lg:items-center&quot;
+        &gt;
+          &lt;div
+            class=&quot;flex-1&quot;
+          &gt;
+            &lt;h5
+              class=&quot;block font-sans text-xl antialiased font-semibold leading-snug tracking-normal text-blue-gray-900&quot;
+            &gt;
+              Tabla Vacía
+            &lt;/h5&gt;
+          &lt;/div&gt;
+          &lt;div
+            class=&quot;flex flex-col sm:flex-row w-full gap-2 shrink-0 lg:w-auto&quot;
+          &gt;
+            &lt;div
+              class=&quot;w-full sm:w-72&quot;
+            &gt;
+              &lt;div
+                class=&quot;relative w-full&quot;
+              &gt;
+                &lt;div
+                  class=&quot;absolute grid w-5 h-5 top-2/4 right-3 -translate-y-2/4 place-items-center text-gris-una&quot;
+                &gt;
+                  &lt;svg
+                    class=&quot;w-4 h-4 w-5 h-5&quot;
+                    fill=&quot;none&quot;
+                    stroke=&quot;currentColor&quot;
+                    viewBox=&quot;0 0 24 24&quot;
+                  &gt;
+                    &lt;path
+                      d=&quot;m21 21-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z&quot;
+                      stroke-linecap=&quot;round&quot;
+                      stroke-linejoin=&quot;round&quot;
+                      stroke-width=&quot;2&quot;
+                    /&gt;
+                  &lt;/svg&gt;
+                &lt;/div&gt;
+                &lt;input
+                  class=&quot;h-10 w-full rounded-lg border border-gris-una/5 bg-gris-una/10 px-3 py-2 !pr-9 text-sm font-normal text-negro-una outline-0 transition-all duration-200 placeholder:text-gris-una/60 focus:outline-none focus:ring-1 focus:ring-gris-una/20 focus:border-transparent&quot;
+                  placeholder=&quot;Buscar...&quot;
+                  value=&quot;&quot;
+                /&gt;
+              &lt;/div&gt;
+            &lt;/div&gt;
+          &lt;/div&gt;
+        &lt;/div&gt;
+      &lt;/div&gt;
+      &lt;div
+        class=&quot;p-6 px-0 overflow-scroll custom-scrollbar&quot;
+      &gt;
+        &lt;div
+          class=&quot;flex flex-col items-center justify-center py-12 text-gray-500&quot;
+        &gt;
+          &lt;svg
+            class=&quot;w-12 h-12 mb-4 text-gray-300&quot;
+            fill=&quot;none&quot;
+            stroke=&quot;currentColor&quot;
+            viewBox=&quot;0 0 24 24&quot;
+          &gt;
+            &lt;path
+              d=&quot;M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z&quot;
+              stroke-linecap=&quot;round&quot;
+              stroke-linejoin=&quot;round&quot;
+              stroke-width=&quot;1&quot;
+            /&gt;
+          &lt;/svg&gt;
+          &lt;p
+            class=&quot;text-lg font-medium mb-1&quot;
+          &gt;
+            No hay datos
+          &lt;/p&gt;
+          &lt;p
+            class=&quot;text-sm&quot;
+          &gt;
+            No hay datos para mostrar
+          &lt;/p&gt;
+        &lt;/div&gt;
+      &lt;/div&gt;
+    &lt;/div&gt;
+  &lt;/div&gt;
+&lt;/body&gt;
+    at Object.getElementError (C:\Users\ian19\Desktop\SAAC\SAAC-Frontend\node_modules\@testing-library\dom\dist\config.js:37:19)
+    at getElementError (C:\Users\ian19\Desktop\SAAC\SAAC-Frontend\node_modules\@testing-library\dom\dist\query-helpers.js:20:35)
+    at getMultipleElementsFoundError (C:\Users\ian19\Desktop\SAAC\SAAC-Frontend\node_modules\@testing-library\dom\dist\query-helpers.js:23:10)
+    at C:\Users\ian19\Desktop\SAAC\SAAC-Frontend\node_modules\@testing-library\dom\dist\query-helpers.js:55:13
+    at C:\Users\ian19\Desktop\SAAC\SAAC-Frontend\node_modules\@testing-library\dom\dist\query-helpers.js:95:19
+    at Object.getByText (C:\Users\ian19\Desktop\SAAC\SAAC-Frontend\src\Components\Ui\DataTable.test.tsx:49:19)
+    at Promise.then.completed (C:\Users\ian19\Desktop\SAAC\SAAC-Frontend\node_modules\jest-circus\build\utils.js:298:28)
+    at new Promise (&lt;anonymous&gt;)
+    at callAsyncCircusFn (C:\Users\ian19\Desktop\SAAC\SAAC-Frontend\node_modules\jest-circus\build\utils.js:231:10)
+    at _callCircusTest (C:\Users\ian19\Desktop\SAAC\SAAC-Frontend\node_modules\jest-circus\build\run.js:316:40)
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at _runTest (C:\Users\ian19\Desktop\SAAC\SAAC-Frontend\node_modules\jest-circus\build\run.js:252:3)
+    at _runTestsForDescribeBlock (C:\Users\ian19\Desktop\SAAC\SAAC-Frontend\node_modules\jest-circus\build\run.js:126:9)
+    at _runTestsForDescribeBlock (C:\Users\ian19\Desktop\SAAC\SAAC-Frontend\node_modules\jest-circus\build\run.js:121:9)
+    at run (C:\Users\ian19\Desktop\SAAC\SAAC-Frontend\node_modules\jest-circus\build\run.js:71:3)
+    at runAndTransformResultsToJestFormat (C:\Users\ian19\Desktop\SAAC\SAAC-Frontend\node_modules\jest-circus\build\legacy-code-todo-rewrite\jestAdapterInit.js:122:21)
+    at jestAdapter (C:\Users\ian19\Desktop\SAAC\SAAC-Frontend\node_modules\jest-circus\build\legacy-code-todo-rewrite\jestAdapter.js:79:19)
+    at runTestInternal (C:\Users\ian19\Desktop\SAAC\SAAC-Frontend\node_modules\jest-runner\build\runTest.js:367:16)
+    at runTest (C:\Users\ian19\Desktop\SAAC\SAAC-Frontend\node_modules\jest-runner\build\runTest.js:444:34)
+    at Object.worker (C:\Users\ian19\Desktop\SAAC\SAAC-Frontend\node_modules\jest-runner\build\testWorker.js:106:12)</failure>
+    </testcase>
+    <testcase classname="DataTable" name="muestra el título de la tabla" time="0.012">
+    </testcase>
+    <testcase classname="DataTable" name="muestra estado de carga" time="0.054">
+    </testcase>
+    <testcase classname="DataTable" name="aplica filtros de búsqueda cuando es searchable" time="0.008">
+    </testcase>
+    <testcase classname="DataTable" name="renderiza columnas personalizadas con render" time="0.007">
+    </testcase>
+    <testcase classname="DataTable" name="muestra descripción cuando se proporciona" time="0.005">
+    </testcase>
+    <testcase classname="DataTable" name="renderiza botón de acción principal" time="0.01">
+    </testcase>
+    <testcase classname="DataTable" name="llama a onSearch cuando se busca" time="0.011">
+    </testcase>
+    <testcase classname="DataTable" name="maneja paginación cuando se proporciona" time="0.009">
+    </testcase>
+    <testcase classname="DataTable" name="renderiza acciones para cada fila" time="0.009">
+    </testcase>
+  </testsuite>
+  <testsuite name="RolesListPage - Prueba de Integración" errors="0" failures="7" skipped="0" timestamp="2025-09-30T21:51:00" time="4.61" tests="7">
+    <testcase classname="RolesListPage - Prueba de Integración" name="muestra la lista completa de roles al cargar la página" time="0.05">
+      <failure>Error: useSidebar must be used within SidebarProvider
+    at useSidebar (C:\Users\ian19\Desktop\SAAC\SAAC-Frontend\src\Context\SidebarContext.tsx:121:11)
+    at PageHeader (C:\Users\ian19\Desktop\SAAC\SAAC-Frontend\src\Components\Ui\PageHeader.tsx:23:37)
+    at Object.react_stack_bottom_frame (C:\Users\ian19\Desktop\SAAC\SAAC-Frontend\node_modules\react-dom\cjs\react-dom-client.development.js:23863:20)
+    at renderWithHooks (C:\Users\ian19\Desktop\SAAC\SAAC-Frontend\node_modules\react-dom\cjs\react-dom-client.development.js:5529:22)
+    at updateFunctionComponent (C:\Users\ian19\Desktop\SAAC\SAAC-Frontend\node_modules\react-dom\cjs\react-dom-client.development.js:8897:19)
+    at beginWork (C:\Users\ian19\Desktop\SAAC\SAAC-Frontend\node_modules\react-dom\cjs\react-dom-client.development.js:10522:18)
+    at runWithFiberInDEV (C:\Users\ian19\Desktop\SAAC\SAAC-Frontend\node_modules\react-dom\cjs\react-dom-client.development.js:1522:13)
+    at performUnitOfWork (C:\Users\ian19\Desktop\SAAC\SAAC-Frontend\node_modules\react-dom\cjs\react-dom-client.development.js:15140:22)
+    at workLoopSync (C:\Users\ian19\Desktop\SAAC\SAAC-Frontend\node_modules\react-dom\cjs\react-dom-client.development.js:14956:41)
+    at renderRootSync (C:\Users\ian19\Desktop\SAAC\SAAC-Frontend\node_modules\react-dom\cjs\react-dom-client.development.js:14936:11)
+    at performWorkOnRoot (C:\Users\ian19\Desktop\SAAC\SAAC-Frontend\node_modules\react-dom\cjs\react-dom-client.development.js:14462:44)
+    at performWorkOnRootViaSchedulerTask (C:\Users\ian19\Desktop\SAAC\SAAC-Frontend\node_modules\react-dom\cjs\react-dom-client.development.js:16216:7)
+    at flushActQueue (C:\Users\ian19\Desktop\SAAC\SAAC-Frontend\node_modules\react\cjs\react.development.js:566:34)
+    at Object.&lt;anonymous&gt;.process.env.NODE_ENV.exports.act (C:\Users\ian19\Desktop\SAAC\SAAC-Frontend\node_modules\react\cjs\react.development.js:860:10)
+    at C:\Users\ian19\Desktop\SAAC\SAAC-Frontend\node_modules\@testing-library\react\dist\act-compat.js:47:25
+    at renderRoot (C:\Users\ian19\Desktop\SAAC\SAAC-Frontend\node_modules\@testing-library\react\dist\pure.js:180:26)
+    at render (C:\Users\ian19\Desktop\SAAC\SAAC-Frontend\node_modules\@testing-library\react\dist\pure.js:271:10)
+    at Object.&lt;anonymous&gt; (C:\Users\ian19\Desktop\SAAC\SAAC-Frontend\src\Pages\RolesListPage.integration.test.tsx:49:11)
+    at Promise.then.completed (C:\Users\ian19\Desktop\SAAC\SAAC-Frontend\node_modules\jest-circus\build\utils.js:298:28)
+    at new Promise (&lt;anonymous&gt;)
+    at callAsyncCircusFn (C:\Users\ian19\Desktop\SAAC\SAAC-Frontend\node_modules\jest-circus\build\utils.js:231:10)
+    at _callCircusTest (C:\Users\ian19\Desktop\SAAC\SAAC-Frontend\node_modules\jest-circus\build\run.js:316:40)
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at _runTest (C:\Users\ian19\Desktop\SAAC\SAAC-Frontend\node_modules\jest-circus\build\run.js:252:3)
+    at _runTestsForDescribeBlock (C:\Users\ian19\Desktop\SAAC\SAAC-Frontend\node_modules\jest-circus\build\run.js:126:9)
+    at _runTestsForDescribeBlock (C:\Users\ian19\Desktop\SAAC\SAAC-Frontend\node_modules\jest-circus\build\run.js:121:9)
+    at run (C:\Users\ian19\Desktop\SAAC\SAAC-Frontend\node_modules\jest-circus\build\run.js:71:3)
+    at runAndTransformResultsToJestFormat (C:\Users\ian19\Desktop\SAAC\SAAC-Frontend\node_modules\jest-circus\build\legacy-code-todo-rewrite\jestAdapterInit.js:122:21)
+    at jestAdapter (C:\Users\ian19\Desktop\SAAC\SAAC-Frontend\node_modules\jest-circus\build\legacy-code-todo-rewrite\jestAdapter.js:79:19)
+    at runTestInternal (C:\Users\ian19\Desktop\SAAC\SAAC-Frontend\node_modules\jest-runner\build\runTest.js:367:16)
+    at runTest (C:\Users\ian19\Desktop\SAAC\SAAC-Frontend\node_modules\jest-runner\build\runTest.js:444:34)
+    at Object.worker (C:\Users\ian19\Desktop\SAAC\SAAC-Frontend\node_modules\jest-runner\build\testWorker.js:106:12)</failure>
+    </testcase>
+    <testcase classname="RolesListPage - Prueba de Integración" name="permite buscar roles por nombre" time="0.005">
+      <failure>Error: useSidebar must be used within SidebarProvider
+    at useSidebar (C:\Users\ian19\Desktop\SAAC\SAAC-Frontend\src\Context\SidebarContext.tsx:121:11)
+    at PageHeader (C:\Users\ian19\Desktop\SAAC\SAAC-Frontend\src\Components\Ui\PageHeader.tsx:23:37)
+    at Object.react_stack_bottom_frame (C:\Users\ian19\Desktop\SAAC\SAAC-Frontend\node_modules\react-dom\cjs\react-dom-client.development.js:23863:20)
+    at renderWithHooks (C:\Users\ian19\Desktop\SAAC\SAAC-Frontend\node_modules\react-dom\cjs\react-dom-client.development.js:5529:22)
+    at updateFunctionComponent (C:\Users\ian19\Desktop\SAAC\SAAC-Frontend\node_modules\react-dom\cjs\react-dom-client.development.js:8897:19)
+    at beginWork (C:\Users\ian19\Desktop\SAAC\SAAC-Frontend\node_modules\react-dom\cjs\react-dom-client.development.js:10522:18)
+    at runWithFiberInDEV (C:\Users\ian19\Desktop\SAAC\SAAC-Frontend\node_modules\react-dom\cjs\react-dom-client.development.js:1522:13)
+    at performUnitOfWork (C:\Users\ian19\Desktop\SAAC\SAAC-Frontend\node_modules\react-dom\cjs\react-dom-client.development.js:15140:22)
+    at workLoopSync (C:\Users\ian19\Desktop\SAAC\SAAC-Frontend\node_modules\react-dom\cjs\react-dom-client.development.js:14956:41)
+    at renderRootSync (C:\Users\ian19\Desktop\SAAC\SAAC-Frontend\node_modules\react-dom\cjs\react-dom-client.development.js:14936:11)
+    at performWorkOnRoot (C:\Users\ian19\Desktop\SAAC\SAAC-Frontend\node_modules\react-dom\cjs\react-dom-client.development.js:14462:44)
+    at performWorkOnRootViaSchedulerTask (C:\Users\ian19\Desktop\SAAC\SAAC-Frontend\node_modules\react-dom\cjs\react-dom-client.development.js:16216:7)
+    at flushActQueue (C:\Users\ian19\Desktop\SAAC\SAAC-Frontend\node_modules\react\cjs\react.development.js:566:34)
+    at Object.&lt;anonymous&gt;.process.env.NODE_ENV.exports.act (C:\Users\ian19\Desktop\SAAC\SAAC-Frontend\node_modules\react\cjs\react.development.js:860:10)
+    at C:\Users\ian19\Desktop\SAAC\SAAC-Frontend\node_modules\@testing-library\react\dist\act-compat.js:47:25
+    at renderRoot (C:\Users\ian19\Desktop\SAAC\SAAC-Frontend\node_modules\@testing-library\react\dist\pure.js:180:26)
+    at render (C:\Users\ian19\Desktop\SAAC\SAAC-Frontend\node_modules\@testing-library\react\dist\pure.js:271:10)
+    at Object.&lt;anonymous&gt; (C:\Users\ian19\Desktop\SAAC\SAAC-Frontend\src\Pages\RolesListPage.integration.test.tsx:67:11)
+    at Promise.then.completed (C:\Users\ian19\Desktop\SAAC\SAAC-Frontend\node_modules\jest-circus\build\utils.js:298:28)
+    at new Promise (&lt;anonymous&gt;)
+    at callAsyncCircusFn (C:\Users\ian19\Desktop\SAAC\SAAC-Frontend\node_modules\jest-circus\build\utils.js:231:10)
+    at _callCircusTest (C:\Users\ian19\Desktop\SAAC\SAAC-Frontend\node_modules\jest-circus\build\run.js:316:40)
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at _runTest (C:\Users\ian19\Desktop\SAAC\SAAC-Frontend\node_modules\jest-circus\build\run.js:252:3)
+    at _runTestsForDescribeBlock (C:\Users\ian19\Desktop\SAAC\SAAC-Frontend\node_modules\jest-circus\build\run.js:126:9)
+    at _runTestsForDescribeBlock (C:\Users\ian19\Desktop\SAAC\SAAC-Frontend\node_modules\jest-circus\build\run.js:121:9)
+    at run (C:\Users\ian19\Desktop\SAAC\SAAC-Frontend\node_modules\jest-circus\build\run.js:71:3)
+    at runAndTransformResultsToJestFormat (C:\Users\ian19\Desktop\SAAC\SAAC-Frontend\node_modules\jest-circus\build\legacy-code-todo-rewrite\jestAdapterInit.js:122:21)
+    at jestAdapter (C:\Users\ian19\Desktop\SAAC\SAAC-Frontend\node_modules\jest-circus\build\legacy-code-todo-rewrite\jestAdapter.js:79:19)
+    at runTestInternal (C:\Users\ian19\Desktop\SAAC\SAAC-Frontend\node_modules\jest-runner\build\runTest.js:367:16)
+    at runTest (C:\Users\ian19\Desktop\SAAC\SAAC-Frontend\node_modules\jest-runner\build\runTest.js:444:34)
+    at Object.worker (C:\Users\ian19\Desktop\SAAC\SAAC-Frontend\node_modules\jest-runner\build\testWorker.js:106:12)</failure>
+    </testcase>
+    <testcase classname="RolesListPage - Prueba de Integración" name="navega a crear nuevo rol cuando se hace click en el botón" time="0.004">
+      <failure>Error: useSidebar must be used within SidebarProvider
+    at useSidebar (C:\Users\ian19\Desktop\SAAC\SAAC-Frontend\src\Context\SidebarContext.tsx:121:11)
+    at PageHeader (C:\Users\ian19\Desktop\SAAC\SAAC-Frontend\src\Components\Ui\PageHeader.tsx:23:37)
+    at Object.react_stack_bottom_frame (C:\Users\ian19\Desktop\SAAC\SAAC-Frontend\node_modules\react-dom\cjs\react-dom-client.development.js:23863:20)
+    at renderWithHooks (C:\Users\ian19\Desktop\SAAC\SAAC-Frontend\node_modules\react-dom\cjs\react-dom-client.development.js:5529:22)
+    at updateFunctionComponent (C:\Users\ian19\Desktop\SAAC\SAAC-Frontend\node_modules\react-dom\cjs\react-dom-client.development.js:8897:19)
+    at beginWork (C:\Users\ian19\Desktop\SAAC\SAAC-Frontend\node_modules\react-dom\cjs\react-dom-client.development.js:10522:18)
+    at runWithFiberInDEV (C:\Users\ian19\Desktop\SAAC\SAAC-Frontend\node_modules\react-dom\cjs\react-dom-client.development.js:1522:13)
+    at performUnitOfWork (C:\Users\ian19\Desktop\SAAC\SAAC-Frontend\node_modules\react-dom\cjs\react-dom-client.development.js:15140:22)
+    at workLoopSync (C:\Users\ian19\Desktop\SAAC\SAAC-Frontend\node_modules\react-dom\cjs\react-dom-client.development.js:14956:41)
+    at renderRootSync (C:\Users\ian19\Desktop\SAAC\SAAC-Frontend\node_modules\react-dom\cjs\react-dom-client.development.js:14936:11)
+    at performWorkOnRoot (C:\Users\ian19\Desktop\SAAC\SAAC-Frontend\node_modules\react-dom\cjs\react-dom-client.development.js:14462:44)
+    at performWorkOnRootViaSchedulerTask (C:\Users\ian19\Desktop\SAAC\SAAC-Frontend\node_modules\react-dom\cjs\react-dom-client.development.js:16216:7)
+    at flushActQueue (C:\Users\ian19\Desktop\SAAC\SAAC-Frontend\node_modules\react\cjs\react.development.js:566:34)
+    at Object.&lt;anonymous&gt;.process.env.NODE_ENV.exports.act (C:\Users\ian19\Desktop\SAAC\SAAC-Frontend\node_modules\react\cjs\react.development.js:860:10)
+    at C:\Users\ian19\Desktop\SAAC\SAAC-Frontend\node_modules\@testing-library\react\dist\act-compat.js:47:25
+    at renderRoot (C:\Users\ian19\Desktop\SAAC\SAAC-Frontend\node_modules\@testing-library\react\dist\pure.js:180:26)
+    at render (C:\Users\ian19\Desktop\SAAC\SAAC-Frontend\node_modules\@testing-library\react\dist\pure.js:271:10)
+    at Object.&lt;anonymous&gt; (C:\Users\ian19\Desktop\SAAC\SAAC-Frontend\src\Pages\RolesListPage.integration.test.tsx:95:11)
+    at Promise.then.completed (C:\Users\ian19\Desktop\SAAC\SAAC-Frontend\node_modules\jest-circus\build\utils.js:298:28)
+    at new Promise (&lt;anonymous&gt;)
+    at callAsyncCircusFn (C:\Users\ian19\Desktop\SAAC\SAAC-Frontend\node_modules\jest-circus\build\utils.js:231:10)
+    at _callCircusTest (C:\Users\ian19\Desktop\SAAC\SAAC-Frontend\node_modules\jest-circus\build\run.js:316:40)
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at _runTest (C:\Users\ian19\Desktop\SAAC\SAAC-Frontend\node_modules\jest-circus\build\run.js:252:3)
+    at _runTestsForDescribeBlock (C:\Users\ian19\Desktop\SAAC\SAAC-Frontend\node_modules\jest-circus\build\run.js:126:9)
+    at _runTestsForDescribeBlock (C:\Users\ian19\Desktop\SAAC\SAAC-Frontend\node_modules\jest-circus\build\run.js:121:9)
+    at run (C:\Users\ian19\Desktop\SAAC\SAAC-Frontend\node_modules\jest-circus\build\run.js:71:3)
+    at runAndTransformResultsToJestFormat (C:\Users\ian19\Desktop\SAAC\SAAC-Frontend\node_modules\jest-circus\build\legacy-code-todo-rewrite\jestAdapterInit.js:122:21)
+    at jestAdapter (C:\Users\ian19\Desktop\SAAC\SAAC-Frontend\node_modules\jest-circus\build\legacy-code-todo-rewrite\jestAdapter.js:79:19)
+    at runTestInternal (C:\Users\ian19\Desktop\SAAC\SAAC-Frontend\node_modules\jest-runner\build\runTest.js:367:16)
+    at runTest (C:\Users\ian19\Desktop\SAAC\SAAC-Frontend\node_modules\jest-runner\build\runTest.js:444:34)
+    at Object.worker (C:\Users\ian19\Desktop\SAAC\SAAC-Frontend\node_modules\jest-runner\build\testWorker.js:106:12)</failure>
+    </testcase>
+    <testcase classname="RolesListPage - Prueba de Integración" name="muestra botones de acción para cada rol" time="0.007">
+      <failure>Error: useSidebar must be used within SidebarProvider
+    at useSidebar (C:\Users\ian19\Desktop\SAAC\SAAC-Frontend\src\Context\SidebarContext.tsx:121:11)
+    at PageHeader (C:\Users\ian19\Desktop\SAAC\SAAC-Frontend\src\Components\Ui\PageHeader.tsx:23:37)
+    at Object.react_stack_bottom_frame (C:\Users\ian19\Desktop\SAAC\SAAC-Frontend\node_modules\react-dom\cjs\react-dom-client.development.js:23863:20)
+    at renderWithHooks (C:\Users\ian19\Desktop\SAAC\SAAC-Frontend\node_modules\react-dom\cjs\react-dom-client.development.js:5529:22)
+    at updateFunctionComponent (C:\Users\ian19\Desktop\SAAC\SAAC-Frontend\node_modules\react-dom\cjs\react-dom-client.development.js:8897:19)
+    at beginWork (C:\Users\ian19\Desktop\SAAC\SAAC-Frontend\node_modules\react-dom\cjs\react-dom-client.development.js:10522:18)
+    at runWithFiberInDEV (C:\Users\ian19\Desktop\SAAC\SAAC-Frontend\node_modules\react-dom\cjs\react-dom-client.development.js:1522:13)
+    at performUnitOfWork (C:\Users\ian19\Desktop\SAAC\SAAC-Frontend\node_modules\react-dom\cjs\react-dom-client.development.js:15140:22)
+    at workLoopSync (C:\Users\ian19\Desktop\SAAC\SAAC-Frontend\node_modules\react-dom\cjs\react-dom-client.development.js:14956:41)
+    at renderRootSync (C:\Users\ian19\Desktop\SAAC\SAAC-Frontend\node_modules\react-dom\cjs\react-dom-client.development.js:14936:11)
+    at performWorkOnRoot (C:\Users\ian19\Desktop\SAAC\SAAC-Frontend\node_modules\react-dom\cjs\react-dom-client.development.js:14462:44)
+    at performWorkOnRootViaSchedulerTask (C:\Users\ian19\Desktop\SAAC\SAAC-Frontend\node_modules\react-dom\cjs\react-dom-client.development.js:16216:7)
+    at flushActQueue (C:\Users\ian19\Desktop\SAAC\SAAC-Frontend\node_modules\react\cjs\react.development.js:566:34)
+    at Object.&lt;anonymous&gt;.process.env.NODE_ENV.exports.act (C:\Users\ian19\Desktop\SAAC\SAAC-Frontend\node_modules\react\cjs\react.development.js:860:10)
+    at C:\Users\ian19\Desktop\SAAC\SAAC-Frontend\node_modules\@testing-library\react\dist\act-compat.js:47:25
+    at renderRoot (C:\Users\ian19\Desktop\SAAC\SAAC-Frontend\node_modules\@testing-library\react\dist\pure.js:180:26)
+    at render (C:\Users\ian19\Desktop\SAAC\SAAC-Frontend\node_modules\@testing-library\react\dist\pure.js:271:10)
+    at Object.&lt;anonymous&gt; (C:\Users\ian19\Desktop\SAAC\SAAC-Frontend\src\Pages\RolesListPage.integration.test.tsx:110:11)
+    at Promise.then.completed (C:\Users\ian19\Desktop\SAAC\SAAC-Frontend\node_modules\jest-circus\build\utils.js:298:28)
+    at new Promise (&lt;anonymous&gt;)
+    at callAsyncCircusFn (C:\Users\ian19\Desktop\SAAC\SAAC-Frontend\node_modules\jest-circus\build\utils.js:231:10)
+    at _callCircusTest (C:\Users\ian19\Desktop\SAAC\SAAC-Frontend\node_modules\jest-circus\build\run.js:316:40)
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at _runTest (C:\Users\ian19\Desktop\SAAC\SAAC-Frontend\node_modules\jest-circus\build\run.js:252:3)
+    at _runTestsForDescribeBlock (C:\Users\ian19\Desktop\SAAC\SAAC-Frontend\node_modules\jest-circus\build\run.js:126:9)
+    at _runTestsForDescribeBlock (C:\Users\ian19\Desktop\SAAC\SAAC-Frontend\node_modules\jest-circus\build\run.js:121:9)
+    at run (C:\Users\ian19\Desktop\SAAC\SAAC-Frontend\node_modules\jest-circus\build\run.js:71:3)
+    at runAndTransformResultsToJestFormat (C:\Users\ian19\Desktop\SAAC\SAAC-Frontend\node_modules\jest-circus\build\legacy-code-todo-rewrite\jestAdapterInit.js:122:21)
+    at jestAdapter (C:\Users\ian19\Desktop\SAAC\SAAC-Frontend\node_modules\jest-circus\build\legacy-code-todo-rewrite\jestAdapter.js:79:19)
+    at runTestInternal (C:\Users\ian19\Desktop\SAAC\SAAC-Frontend\node_modules\jest-runner\build\runTest.js:367:16)
+    at runTest (C:\Users\ian19\Desktop\SAAC\SAAC-Frontend\node_modules\jest-runner\build\runTest.js:444:34)
+    at Object.worker (C:\Users\ian19\Desktop\SAAC\SAAC-Frontend\node_modules\jest-runner\build\testWorker.js:106:12)</failure>
+    </testcase>
+    <testcase classname="RolesListPage - Prueba de Integración" name="flujo completo: buscar, encontrar rol y hacer click en editar" time="0.004">
+      <failure>Error: useSidebar must be used within SidebarProvider
+    at useSidebar (C:\Users\ian19\Desktop\SAAC\SAAC-Frontend\src\Context\SidebarContext.tsx:121:11)
+    at PageHeader (C:\Users\ian19\Desktop\SAAC\SAAC-Frontend\src\Components\Ui\PageHeader.tsx:23:37)
+    at Object.react_stack_bottom_frame (C:\Users\ian19\Desktop\SAAC\SAAC-Frontend\node_modules\react-dom\cjs\react-dom-client.development.js:23863:20)
+    at renderWithHooks (C:\Users\ian19\Desktop\SAAC\SAAC-Frontend\node_modules\react-dom\cjs\react-dom-client.development.js:5529:22)
+    at updateFunctionComponent (C:\Users\ian19\Desktop\SAAC\SAAC-Frontend\node_modules\react-dom\cjs\react-dom-client.development.js:8897:19)
+    at beginWork (C:\Users\ian19\Desktop\SAAC\SAAC-Frontend\node_modules\react-dom\cjs\react-dom-client.development.js:10522:18)
+    at runWithFiberInDEV (C:\Users\ian19\Desktop\SAAC\SAAC-Frontend\node_modules\react-dom\cjs\react-dom-client.development.js:1522:13)
+    at performUnitOfWork (C:\Users\ian19\Desktop\SAAC\SAAC-Frontend\node_modules\react-dom\cjs\react-dom-client.development.js:15140:22)
+    at workLoopSync (C:\Users\ian19\Desktop\SAAC\SAAC-Frontend\node_modules\react-dom\cjs\react-dom-client.development.js:14956:41)
+    at renderRootSync (C:\Users\ian19\Desktop\SAAC\SAAC-Frontend\node_modules\react-dom\cjs\react-dom-client.development.js:14936:11)
+    at performWorkOnRoot (C:\Users\ian19\Desktop\SAAC\SAAC-Frontend\node_modules\react-dom\cjs\react-dom-client.development.js:14462:44)
+    at performWorkOnRootViaSchedulerTask (C:\Users\ian19\Desktop\SAAC\SAAC-Frontend\node_modules\react-dom\cjs\react-dom-client.development.js:16216:7)
+    at flushActQueue (C:\Users\ian19\Desktop\SAAC\SAAC-Frontend\node_modules\react\cjs\react.development.js:566:34)
+    at Object.&lt;anonymous&gt;.process.env.NODE_ENV.exports.act (C:\Users\ian19\Desktop\SAAC\SAAC-Frontend\node_modules\react\cjs\react.development.js:860:10)
+    at C:\Users\ian19\Desktop\SAAC\SAAC-Frontend\node_modules\@testing-library\react\dist\act-compat.js:47:25
+    at renderRoot (C:\Users\ian19\Desktop\SAAC\SAAC-Frontend\node_modules\@testing-library\react\dist\pure.js:180:26)
+    at render (C:\Users\ian19\Desktop\SAAC\SAAC-Frontend\node_modules\@testing-library\react\dist\pure.js:271:10)
+    at Object.&lt;anonymous&gt; (C:\Users\ian19\Desktop\SAAC\SAAC-Frontend\src\Pages\RolesListPage.integration.test.tsx:133:11)
+    at Promise.then.completed (C:\Users\ian19\Desktop\SAAC\SAAC-Frontend\node_modules\jest-circus\build\utils.js:298:28)
+    at new Promise (&lt;anonymous&gt;)
+    at callAsyncCircusFn (C:\Users\ian19\Desktop\SAAC\SAAC-Frontend\node_modules\jest-circus\build\utils.js:231:10)
+    at _callCircusTest (C:\Users\ian19\Desktop\SAAC\SAAC-Frontend\node_modules\jest-circus\build\run.js:316:40)
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at _runTest (C:\Users\ian19\Desktop\SAAC\SAAC-Frontend\node_modules\jest-circus\build\run.js:252:3)
+    at _runTestsForDescribeBlock (C:\Users\ian19\Desktop\SAAC\SAAC-Frontend\node_modules\jest-circus\build\run.js:126:9)
+    at _runTestsForDescribeBlock (C:\Users\ian19\Desktop\SAAC\SAAC-Frontend\node_modules\jest-circus\build\run.js:121:9)
+    at run (C:\Users\ian19\Desktop\SAAC\SAAC-Frontend\node_modules\jest-circus\build\run.js:71:3)
+    at runAndTransformResultsToJestFormat (C:\Users\ian19\Desktop\SAAC\SAAC-Frontend\node_modules\jest-circus\build\legacy-code-todo-rewrite\jestAdapterInit.js:122:21)
+    at jestAdapter (C:\Users\ian19\Desktop\SAAC\SAAC-Frontend\node_modules\jest-circus\build\legacy-code-todo-rewrite\jestAdapter.js:79:19)
+    at runTestInternal (C:\Users\ian19\Desktop\SAAC\SAAC-Frontend\node_modules\jest-runner\build\runTest.js:367:16)
+    at runTest (C:\Users\ian19\Desktop\SAAC\SAAC-Frontend\node_modules\jest-runner\build\runTest.js:444:34)
+    at Object.worker (C:\Users\ian19\Desktop\SAAC\SAAC-Frontend\node_modules\jest-runner\build\testWorker.js:106:12)</failure>
+    </testcase>
+    <testcase classname="RolesListPage - Prueba de Integración" name="muestra estado de carga mientras se cargan los roles" time="0.002">
+      <failure>Error: useSidebar must be used within SidebarProvider
+    at useSidebar (C:\Users\ian19\Desktop\SAAC\SAAC-Frontend\src\Context\SidebarContext.tsx:121:11)
+    at PageHeader (C:\Users\ian19\Desktop\SAAC\SAAC-Frontend\src\Components\Ui\PageHeader.tsx:23:37)
+    at Object.react_stack_bottom_frame (C:\Users\ian19\Desktop\SAAC\SAAC-Frontend\node_modules\react-dom\cjs\react-dom-client.development.js:23863:20)
+    at renderWithHooks (C:\Users\ian19\Desktop\SAAC\SAAC-Frontend\node_modules\react-dom\cjs\react-dom-client.development.js:5529:22)
+    at updateFunctionComponent (C:\Users\ian19\Desktop\SAAC\SAAC-Frontend\node_modules\react-dom\cjs\react-dom-client.development.js:8897:19)
+    at beginWork (C:\Users\ian19\Desktop\SAAC\SAAC-Frontend\node_modules\react-dom\cjs\react-dom-client.development.js:10522:18)
+    at runWithFiberInDEV (C:\Users\ian19\Desktop\SAAC\SAAC-Frontend\node_modules\react-dom\cjs\react-dom-client.development.js:1522:13)
+    at performUnitOfWork (C:\Users\ian19\Desktop\SAAC\SAAC-Frontend\node_modules\react-dom\cjs\react-dom-client.development.js:15140:22)
+    at workLoopSync (C:\Users\ian19\Desktop\SAAC\SAAC-Frontend\node_modules\react-dom\cjs\react-dom-client.development.js:14956:41)
+    at renderRootSync (C:\Users\ian19\Desktop\SAAC\SAAC-Frontend\node_modules\react-dom\cjs\react-dom-client.development.js:14936:11)
+    at performWorkOnRoot (C:\Users\ian19\Desktop\SAAC\SAAC-Frontend\node_modules\react-dom\cjs\react-dom-client.development.js:14462:44)
+    at performWorkOnRootViaSchedulerTask (C:\Users\ian19\Desktop\SAAC\SAAC-Frontend\node_modules\react-dom\cjs\react-dom-client.development.js:16216:7)
+    at flushActQueue (C:\Users\ian19\Desktop\SAAC\SAAC-Frontend\node_modules\react\cjs\react.development.js:566:34)
+    at Object.&lt;anonymous&gt;.process.env.NODE_ENV.exports.act (C:\Users\ian19\Desktop\SAAC\SAAC-Frontend\node_modules\react\cjs\react.development.js:860:10)
+    at C:\Users\ian19\Desktop\SAAC\SAAC-Frontend\node_modules\@testing-library\react\dist\act-compat.js:47:25
+    at renderRoot (C:\Users\ian19\Desktop\SAAC\SAAC-Frontend\node_modules\@testing-library\react\dist\pure.js:180:26)
+    at render (C:\Users\ian19\Desktop\SAAC\SAAC-Frontend\node_modules\@testing-library\react\dist\pure.js:271:10)
+    at Object.&lt;anonymous&gt; (C:\Users\ian19\Desktop\SAAC\SAAC-Frontend\src\Pages\RolesListPage.integration.test.tsx:171:11)
+    at Promise.then.completed (C:\Users\ian19\Desktop\SAAC\SAAC-Frontend\node_modules\jest-circus\build\utils.js:298:28)
+    at new Promise (&lt;anonymous&gt;)
+    at callAsyncCircusFn (C:\Users\ian19\Desktop\SAAC\SAAC-Frontend\node_modules\jest-circus\build\utils.js:231:10)
+    at _callCircusTest (C:\Users\ian19\Desktop\SAAC\SAAC-Frontend\node_modules\jest-circus\build\run.js:316:40)
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at _runTest (C:\Users\ian19\Desktop\SAAC\SAAC-Frontend\node_modules\jest-circus\build\run.js:252:3)
+    at _runTestsForDescribeBlock (C:\Users\ian19\Desktop\SAAC\SAAC-Frontend\node_modules\jest-circus\build\run.js:126:9)
+    at _runTestsForDescribeBlock (C:\Users\ian19\Desktop\SAAC\SAAC-Frontend\node_modules\jest-circus\build\run.js:121:9)
+    at run (C:\Users\ian19\Desktop\SAAC\SAAC-Frontend\node_modules\jest-circus\build\run.js:71:3)
+    at runAndTransformResultsToJestFormat (C:\Users\ian19\Desktop\SAAC\SAAC-Frontend\node_modules\jest-circus\build\legacy-code-todo-rewrite\jestAdapterInit.js:122:21)
+    at jestAdapter (C:\Users\ian19\Desktop\SAAC\SAAC-Frontend\node_modules\jest-circus\build\legacy-code-todo-rewrite\jestAdapter.js:79:19)
+    at runTestInternal (C:\Users\ian19\Desktop\SAAC\SAAC-Frontend\node_modules\jest-runner\build\runTest.js:367:16)
+    at runTest (C:\Users\ian19\Desktop\SAAC\SAAC-Frontend\node_modules\jest-runner\build\runTest.js:444:34)
+    at Object.worker (C:\Users\ian19\Desktop\SAAC\SAAC-Frontend\node_modules\jest-runner\build\testWorker.js:106:12)</failure>
+    </testcase>
+    <testcase classname="RolesListPage - Prueba de Integración" name="maneja errores de carga y los muestra al usuario" time="0.002">
+      <failure>Error: useSidebar must be used within SidebarProvider
+    at useSidebar (C:\Users\ian19\Desktop\SAAC\SAAC-Frontend\src\Context\SidebarContext.tsx:121:11)
+    at PageHeader (C:\Users\ian19\Desktop\SAAC\SAAC-Frontend\src\Components\Ui\PageHeader.tsx:23:37)
+    at Object.react_stack_bottom_frame (C:\Users\ian19\Desktop\SAAC\SAAC-Frontend\node_modules\react-dom\cjs\react-dom-client.development.js:23863:20)
+    at renderWithHooks (C:\Users\ian19\Desktop\SAAC\SAAC-Frontend\node_modules\react-dom\cjs\react-dom-client.development.js:5529:22)
+    at updateFunctionComponent (C:\Users\ian19\Desktop\SAAC\SAAC-Frontend\node_modules\react-dom\cjs\react-dom-client.development.js:8897:19)
+    at beginWork (C:\Users\ian19\Desktop\SAAC\SAAC-Frontend\node_modules\react-dom\cjs\react-dom-client.development.js:10522:18)
+    at runWithFiberInDEV (C:\Users\ian19\Desktop\SAAC\SAAC-Frontend\node_modules\react-dom\cjs\react-dom-client.development.js:1522:13)
+    at performUnitOfWork (C:\Users\ian19\Desktop\SAAC\SAAC-Frontend\node_modules\react-dom\cjs\react-dom-client.development.js:15140:22)
+    at workLoopSync (C:\Users\ian19\Desktop\SAAC\SAAC-Frontend\node_modules\react-dom\cjs\react-dom-client.development.js:14956:41)
+    at renderRootSync (C:\Users\ian19\Desktop\SAAC\SAAC-Frontend\node_modules\react-dom\cjs\react-dom-client.development.js:14936:11)
+    at performWorkOnRoot (C:\Users\ian19\Desktop\SAAC\SAAC-Frontend\node_modules\react-dom\cjs\react-dom-client.development.js:14462:44)
+    at performWorkOnRootViaSchedulerTask (C:\Users\ian19\Desktop\SAAC\SAAC-Frontend\node_modules\react-dom\cjs\react-dom-client.development.js:16216:7)
+    at flushActQueue (C:\Users\ian19\Desktop\SAAC\SAAC-Frontend\node_modules\react\cjs\react.development.js:566:34)
+    at Object.&lt;anonymous&gt;.process.env.NODE_ENV.exports.act (C:\Users\ian19\Desktop\SAAC\SAAC-Frontend\node_modules\react\cjs\react.development.js:860:10)
+    at C:\Users\ian19\Desktop\SAAC\SAAC-Frontend\node_modules\@testing-library\react\dist\act-compat.js:47:25
+    at renderRoot (C:\Users\ian19\Desktop\SAAC\SAAC-Frontend\node_modules\@testing-library\react\dist\pure.js:180:26)
+    at render (C:\Users\ian19\Desktop\SAAC\SAAC-Frontend\node_modules\@testing-library\react\dist\pure.js:271:10)
+    at Object.&lt;anonymous&gt; (C:\Users\ian19\Desktop\SAAC\SAAC-Frontend\src\Pages\RolesListPage.integration.test.tsx:196:11)
+    at Promise.then.completed (C:\Users\ian19\Desktop\SAAC\SAAC-Frontend\node_modules\jest-circus\build\utils.js:298:28)
+    at new Promise (&lt;anonymous&gt;)
+    at callAsyncCircusFn (C:\Users\ian19\Desktop\SAAC\SAAC-Frontend\node_modules\jest-circus\build\utils.js:231:10)
+    at _callCircusTest (C:\Users\ian19\Desktop\SAAC\SAAC-Frontend\node_modules\jest-circus\build\run.js:316:40)
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at _runTest (C:\Users\ian19\Desktop\SAAC\SAAC-Frontend\node_modules\jest-circus\build\run.js:252:3)
+    at _runTestsForDescribeBlock (C:\Users\ian19\Desktop\SAAC\SAAC-Frontend\node_modules\jest-circus\build\run.js:126:9)
+    at _runTestsForDescribeBlock (C:\Users\ian19\Desktop\SAAC\SAAC-Frontend\node_modules\jest-circus\build\run.js:121:9)
+    at run (C:\Users\ian19\Desktop\SAAC\SAAC-Frontend\node_modules\jest-circus\build\run.js:71:3)
+    at runAndTransformResultsToJestFormat (C:\Users\ian19\Desktop\SAAC\SAAC-Frontend\node_modules\jest-circus\build\legacy-code-todo-rewrite\jestAdapterInit.js:122:21)
+    at jestAdapter (C:\Users\ian19\Desktop\SAAC\SAAC-Frontend\node_modules\jest-circus\build\legacy-code-todo-rewrite\jestAdapter.js:79:19)
+    at runTestInternal (C:\Users\ian19\Desktop\SAAC\SAAC-Frontend\node_modules\jest-runner\build\runTest.js:367:16)
+    at runTest (C:\Users\ian19\Desktop\SAAC\SAAC-Frontend\node_modules\jest-runner\build\runTest.js:444:34)
+    at Object.worker (C:\Users\ian19\Desktop\SAAC\SAAC-Frontend\node_modules\jest-runner\build\testWorker.js:106:12)</failure>
+    </testcase>
+  </testsuite>
+  <testsuite name="Modal" errors="0" failures="0" skipped="0" timestamp="2025-09-30T21:51:00" time="4.734" tests="6">
+    <testcase classname="Modal" name="renderiza el título correctamente" time="0.156">
+    </testcase>
+    <testcase classname="Modal" name="renderiza el contenido básico" time="0.03">
+    </testcase>
+    <testcase classname="Modal" name="llama onClose al hacer click en el botón de cerrar" time="0.027">
+    </testcase>
+    <testcase classname="Modal" name="renderiza el mensaje y el icono en modo avanzado" time="0.022">
+    </testcase>
+    <testcase classname="Modal" name="llama onConfirm al hacer click en el botón de confirmar" time="0.023">
+    </testcase>
+    <testcase classname="Modal" name="no renderiza nada si isOpen es false" time="0.002">
+    </testcase>
+  </testsuite>
+  <testsuite name="undefined" errors="0" failures="0" skipped="0" timestamp="2025-09-30T21:51:00" time="4.697" tests="1">
+    <testcase classname="" name="muestra el título SAAC-UNA" time="0.089">
+    </testcase>
+  </testsuite>
+  <testsuite name="RolesTable" errors="0" failures="7" skipped="0" timestamp="2025-09-30T21:51:00" time="4.882" tests="10">
+    <testcase classname="RolesTable" name="renderiza la tabla con los roles" time="0.151">
+    </testcase>
+    <testcase classname="RolesTable" name="muestra las descripciones de los roles" time="0.036">
+    </testcase>
+    <testcase classname="RolesTable" name="muestra los permisos de cada rol" time="0.027">
+      <failure>TestingLibraryElementError: Unable to find an element with the text: /read/. This could be because the text is broken up by multiple elements. In this case, you can provide a function for your text matcher to make your matcher more flexible.
+
+Ignored nodes: comments, script, style
+&lt;body
+  style=&quot;overflow: unset;&quot;
+&gt;
+  &lt;div&gt;
+    &lt;div
+      class=&quot;w-full&quot;
+    &gt;
+      &lt;div
+        class=&quot;relative flex flex-col w-full h-full text-gris-una/20 bg-white shadow-md rounded-xl bg-clip-border&quot;
+      &gt;
+        &lt;div
+          class=&quot;relative text-gris-una bg-transparent rounded-none bg-clip-border mx-4 mt-4&quot;
+        &gt;
+          &lt;div
+            class=&quot;flex flex-col justify-between gap-4 mb-4 lg:flex-row lg:items-center&quot;
+          &gt;
+            &lt;div
+              class=&quot;flex-1&quot;
+            &gt;
+              &lt;h5
+                class=&quot;block font-sans text-xl antialiased font-semibold leading-snug tracking-normal text-blue-gray-900&quot;
+              &gt;
+                Lista de Roles
+              &lt;/h5&gt;
+              &lt;p
+                class=&quot;block mt-1 font-sans text-base antialiased font-normal leading-relaxed text-gray-700&quot;
+              &gt;
+                Visualiza y administra todos los roles existentes en el sistema SAAC-UNA
+              &lt;/p&gt;
+            &lt;/div&gt;
+            &lt;div
+              class=&quot;flex flex-col sm:flex-row w-full gap-2 shrink-0 lg:w-auto&quot;
+            &gt;
+              &lt;div
+                class=&quot;w-full sm:w-72&quot;
+              &gt;
+                &lt;div
+                  class=&quot;relative w-full&quot;
+                &gt;
+                  &lt;div
+                    class=&quot;absolute grid w-5 h-5 top-2/4 right-3 -translate-y-2/4 place-items-center text-gris-una&quot;
+                  &gt;
+                    &lt;svg
+                      class=&quot;w-4 h-4 w-5 h-5&quot;
+                      fill=&quot;none&quot;
+                      stroke=&quot;currentColor&quot;
+                      viewBox=&quot;0 0 24 24&quot;
+                    &gt;
+                      &lt;path
+                        d=&quot;m21 21-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z&quot;
+                        stroke-linecap=&quot;round&quot;
+                        stroke-linejoin=&quot;round&quot;
+                        stroke-width=&quot;2&quot;
+                      /&gt;
+                    &lt;/svg&gt;
+                  &lt;/div&gt;
+                  &lt;input
+                    class=&quot;h-10 w-full rounded-lg border border-gris-una/5 bg-gris-una/10 px-3 py-2 !pr-9 text-sm font-normal text-negro-una outline-0 transition-all duration-200 placeholder:text-gris-una/60 focus:outline-none focus:ring-1 focus:ring-gris-una/20 focus:border-transparent&quot;
+                    placeholder=&quot;Buscar roles...&quot;
+                    value=&quot;&quot;
+                  /&gt;
+                &lt;/div&gt;
+              &lt;/div&gt;
+            &lt;/div&gt;
+          &lt;/div&gt;
+        &lt;/div&gt;
+        &lt;div
+          class=&quot;p-6 px-0 overflow-scroll custom-scrollbar&quot;
+        &gt;
+          &lt;table
+            class=&quot;w-full text-left table-auto min-w-max&quot;
+          &gt;
+            &lt;thead&gt;
+              &lt;tr&gt;
+                &lt;th
+                  class=&quot;p-4 border-y border-blue-gray-100 bg-blue-gray-50/50&quot;
+                &gt;
+                  &lt;p
+                    class=&quot;block font-sans text-sm antialiased font-normal leading-none text-blue-gray-900 opacity-70&quot;
+                  &gt;
+                    ID
+                  &lt;/p&gt;
+                &lt;/th&gt;
+                &lt;th
+                  class=&quot;p-4 border-y border-blue-gray-100 bg-blue-gray-50/50&quot;
+                &gt;
+                  &lt;p
+                    class=&quot;block font-sans text-sm antialiased font-normal leading-none text-blue-gray-900 opacity-70&quot;
+                  &gt;
+                    Nombre
+                  &lt;/p&gt;
+                &lt;/th&gt;
+                &lt;th
+                  class=&quot;p-4 border-y border-blue-gray-100 bg-blue-gray-50/50&quot;
+                &gt;
+                  &lt;p
+                    class=&quot;block font-sans text-sm antialiased font-normal leading-none text-blue-gray-900 opacity-70&quot;
+                  &gt;
+                    Permisos
+                  &lt;/p&gt;
+                &lt;/th&gt;
+                &lt;th
+                  class=&quot;p-4 border-y border-blue-gray-100 bg-blue-gray-50/50&quot;
+                &gt;
+                  &lt;p
+                    class=&quot;block font-sans text-sm antialiased font-normal leading-none text-blue-gray-900 opacity-70&quot;
+                  &gt;
+                    Estado
+                  &lt;/p&gt;
+                &lt;/th&gt;
+                &lt;th
+                  class=&quot;p-4 border-y border-blue-gray-100 bg-blue-gray-50/50&quot;
+                &gt;
+                  &lt;p
+                    class=&quot;block font-sans text-sm antialiased font-normal leading-none text-blue-gray-900 opacity-70&quot;
+                  &gt;
+                    Fecha
+                  &lt;/p&gt;
+                &lt;/th&gt;
+                &lt;th
+                  class=&quot;p-4 border-y border-blue-gray-100 bg-blue-gray-50/50&quot;
+                &gt;
+                  &lt;p
+                    class=&quot;block font-sans text-sm antialiased font-normal leading-none text-blue-gray-900 opacity-70&quot;
+                  &gt;
+                    Acciones
+                  &lt;/p&gt;
+                &lt;/th&gt;
+                &lt;th
+                  class=&quot;p-4 border-y border-blue-gray-100 bg-blue-gray-50/50&quot;
+                &gt;
+                  &lt;p
+                    class=&quot;block font-sans text-sm antialiased font-normal leading-none text-blue-gray-900 opacity-70&quot;
+                  /&gt;
+                &lt;/th&gt;
+              &lt;/tr&gt;
+            &lt;/thead&gt;
+            &lt;tbody&gt;
+              &lt;tr&gt;
+                &lt;td
+                  class=&quot;p-4 border-b...
+    at Object.getElementError (C:\Users\ian19\Desktop\SAAC\SAAC-Frontend\node_modules\@testing-library\dom\dist\config.js:37:19)
+    at C:\Users\ian19\Desktop\SAAC\SAAC-Frontend\node_modules\@testing-library\dom\dist\query-helpers.js:76:38
+    at C:\Users\ian19\Desktop\SAAC\SAAC-Frontend\node_modules\@testing-library\dom\dist\query-helpers.js:52:17
+    at C:\Users\ian19\Desktop\SAAC\SAAC-Frontend\node_modules\@testing-library\dom\dist\query-helpers.js:95:19
+    at Object.getByText (C:\Users\ian19\Desktop\SAAC\SAAC-Frontend\src\Components\Features\Roles\RolesTable.test.tsx:77:19)
+    at Promise.then.completed (C:\Users\ian19\Desktop\SAAC\SAAC-Frontend\node_modules\jest-circus\build\utils.js:298:28)
+    at new Promise (&lt;anonymous&gt;)
+    at callAsyncCircusFn (C:\Users\ian19\Desktop\SAAC\SAAC-Frontend\node_modules\jest-circus\build\utils.js:231:10)
+    at _callCircusTest (C:\Users\ian19\Desktop\SAAC\SAAC-Frontend\node_modules\jest-circus\build\run.js:316:40)
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at _runTest (C:\Users\ian19\Desktop\SAAC\SAAC-Frontend\node_modules\jest-circus\build\run.js:252:3)
+    at _runTestsForDescribeBlock (C:\Users\ian19\Desktop\SAAC\SAAC-Frontend\node_modules\jest-circus\build\run.js:126:9)
+    at _runTestsForDescribeBlock (C:\Users\ian19\Desktop\SAAC\SAAC-Frontend\node_modules\jest-circus\build\run.js:121:9)
+    at run (C:\Users\ian19\Desktop\SAAC\SAAC-Frontend\node_modules\jest-circus\build\run.js:71:3)
+    at runAndTransformResultsToJestFormat (C:\Users\ian19\Desktop\SAAC\SAAC-Frontend\node_modules\jest-circus\build\legacy-code-todo-rewrite\jestAdapterInit.js:122:21)
+    at jestAdapter (C:\Users\ian19\Desktop\SAAC\SAAC-Frontend\node_modules\jest-circus\build\legacy-code-todo-rewrite\jestAdapter.js:79:19)
+    at runTestInternal (C:\Users\ian19\Desktop\SAAC\SAAC-Frontend\node_modules\jest-runner\build\runTest.js:367:16)
+    at runTest (C:\Users\ian19\Desktop\SAAC\SAAC-Frontend\node_modules\jest-runner\build\runTest.js:444:34)
+    at Object.worker (C:\Users\ian19\Desktop\SAAC\SAAC-Frontend\node_modules\jest-runner\build\testWorker.js:106:12)</failure>
+    </testcase>
+    <testcase classname="RolesTable" name="renderiza botones de acción para cada rol" time="0.036">
+      <failure>TestingLibraryElementError: Unable to find a label with the text of: /editar/i
+
+Ignored nodes: comments, script, style
+&lt;body
+  style=&quot;overflow: unset;&quot;
+&gt;
+  &lt;div&gt;
+    &lt;div
+      class=&quot;w-full&quot;
+    &gt;
+      &lt;div
+        class=&quot;relative flex flex-col w-full h-full text-gris-una/20 bg-white shadow-md rounded-xl bg-clip-border&quot;
+      &gt;
+        &lt;div
+          class=&quot;relative text-gris-una bg-transparent rounded-none bg-clip-border mx-4 mt-4&quot;
+        &gt;
+          &lt;div
+            class=&quot;flex flex-col justify-between gap-4 mb-4 lg:flex-row lg:items-center&quot;
+          &gt;
+            &lt;div
+              class=&quot;flex-1&quot;
+            &gt;
+              &lt;h5
+                class=&quot;block font-sans text-xl antialiased font-semibold leading-snug tracking-normal text-blue-gray-900&quot;
+              &gt;
+                Lista de Roles
+              &lt;/h5&gt;
+              &lt;p
+                class=&quot;block mt-1 font-sans text-base antialiased font-normal leading-relaxed text-gray-700&quot;
+              &gt;
+                Visualiza y administra todos los roles existentes en el sistema SAAC-UNA
+              &lt;/p&gt;
+            &lt;/div&gt;
+            &lt;div
+              class=&quot;flex flex-col sm:flex-row w-full gap-2 shrink-0 lg:w-auto&quot;
+            &gt;
+              &lt;div
+                class=&quot;w-full sm:w-72&quot;
+              &gt;
+                &lt;div
+                  class=&quot;relative w-full&quot;
+                &gt;
+                  &lt;div
+                    class=&quot;absolute grid w-5 h-5 top-2/4 right-3 -translate-y-2/4 place-items-center text-gris-una&quot;
+                  &gt;
+                    &lt;svg
+                      class=&quot;w-4 h-4 w-5 h-5&quot;
+                      fill=&quot;none&quot;
+                      stroke=&quot;currentColor&quot;
+                      viewBox=&quot;0 0 24 24&quot;
+                    &gt;
+                      &lt;path
+                        d=&quot;m21 21-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z&quot;
+                        stroke-linecap=&quot;round&quot;
+                        stroke-linejoin=&quot;round&quot;
+                        stroke-width=&quot;2&quot;
+                      /&gt;
+                    &lt;/svg&gt;
+                  &lt;/div&gt;
+                  &lt;input
+                    class=&quot;h-10 w-full rounded-lg border border-gris-una/5 bg-gris-una/10 px-3 py-2 !pr-9 text-sm font-normal text-negro-una outline-0 transition-all duration-200 placeholder:text-gris-una/60 focus:outline-none focus:ring-1 focus:ring-gris-una/20 focus:border-transparent&quot;
+                    placeholder=&quot;Buscar roles...&quot;
+                    value=&quot;&quot;
+                  /&gt;
+                &lt;/div&gt;
+              &lt;/div&gt;
+            &lt;/div&gt;
+          &lt;/div&gt;
+        &lt;/div&gt;
+        &lt;div
+          class=&quot;p-6 px-0 overflow-scroll custom-scrollbar&quot;
+        &gt;
+          &lt;table
+            class=&quot;w-full text-left table-auto min-w-max&quot;
+          &gt;
+            &lt;thead&gt;
+              &lt;tr&gt;
+                &lt;th
+                  class=&quot;p-4 border-y border-blue-gray-100 bg-blue-gray-50/50&quot;
+                &gt;
+                  &lt;p
+                    class=&quot;block font-sans text-sm antialiased font-normal leading-none text-blue-gray-900 opacity-70&quot;
+                  &gt;
+                    ID
+                  &lt;/p&gt;
+                &lt;/th&gt;
+                &lt;th
+                  class=&quot;p-4 border-y border-blue-gray-100 bg-blue-gray-50/50&quot;
+                &gt;
+                  &lt;p
+                    class=&quot;block font-sans text-sm antialiased font-normal leading-none text-blue-gray-900 opacity-70&quot;
+                  &gt;
+                    Nombre
+                  &lt;/p&gt;
+                &lt;/th&gt;
+                &lt;th
+                  class=&quot;p-4 border-y border-blue-gray-100 bg-blue-gray-50/50&quot;
+                &gt;
+                  &lt;p
+                    class=&quot;block font-sans text-sm antialiased font-normal leading-none text-blue-gray-900 opacity-70&quot;
+                  &gt;
+                    Permisos
+                  &lt;/p&gt;
+                &lt;/th&gt;
+                &lt;th
+                  class=&quot;p-4 border-y border-blue-gray-100 bg-blue-gray-50/50&quot;
+                &gt;
+                  &lt;p
+                    class=&quot;block font-sans text-sm antialiased font-normal leading-none text-blue-gray-900 opacity-70&quot;
+                  &gt;
+                    Estado
+                  &lt;/p&gt;
+                &lt;/th&gt;
+                &lt;th
+                  class=&quot;p-4 border-y border-blue-gray-100 bg-blue-gray-50/50&quot;
+                &gt;
+                  &lt;p
+                    class=&quot;block font-sans text-sm antialiased font-normal leading-none text-blue-gray-900 opacity-70&quot;
+                  &gt;
+                    Fecha
+                  &lt;/p&gt;
+                &lt;/th&gt;
+                &lt;th
+                  class=&quot;p-4 border-y border-blue-gray-100 bg-blue-gray-50/50&quot;
+                &gt;
+                  &lt;p
+                    class=&quot;block font-sans text-sm antialiased font-normal leading-none text-blue-gray-900 opacity-70&quot;
+                  &gt;
+                    Acciones
+                  &lt;/p&gt;
+                &lt;/th&gt;
+                &lt;th
+                  class=&quot;p-4 border-y border-blue-gray-100 bg-blue-gray-50/50&quot;
+                &gt;
+                  &lt;p
+                    class=&quot;block font-sans text-sm antialiased font-normal leading-none text-blue-gray-900 opacity-70&quot;
+                  /&gt;
+                &lt;/th&gt;
+              &lt;/tr&gt;
+            &lt;/thead&gt;
+            &lt;tbody&gt;
+              &lt;tr&gt;
+                &lt;td
+                  class=&quot;p-4 border-b...
+    at Object.getElementError (C:\Users\ian19\Desktop\SAAC\SAAC-Frontend\node_modules\@testing-library\dom\dist\config.js:37:19)
+    at getAllByLabelText (C:\Users\ian19\Desktop\SAAC\SAAC-Frontend\node_modules\@testing-library\dom\dist\queries\label-text.js:111:38)
+    at C:\Users\ian19\Desktop\SAAC\SAAC-Frontend\node_modules\@testing-library\dom\dist\query-helpers.js:109:15
+    at Object.getAllByLabelText (C:\Users\ian19\Desktop\SAAC\SAAC-Frontend\src\Components\Features\Roles\RolesTable.test.tsx:85:32)
+    at Promise.then.completed (C:\Users\ian19\Desktop\SAAC\SAAC-Frontend\node_modules\jest-circus\build\utils.js:298:28)
+    at new Promise (&lt;anonymous&gt;)
+    at callAsyncCircusFn (C:\Users\ian19\Desktop\SAAC\SAAC-Frontend\node_modules\jest-circus\build\utils.js:231:10)
+    at _callCircusTest (C:\Users\ian19\Desktop\SAAC\SAAC-Frontend\node_modules\jest-circus\build\run.js:316:40)
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at _runTest (C:\Users\ian19\Desktop\SAAC\SAAC-Frontend\node_modules\jest-circus\build\run.js:252:3)
+    at _runTestsForDescribeBlock (C:\Users\ian19\Desktop\SAAC\SAAC-Frontend\node_modules\jest-circus\build\run.js:126:9)
+    at _runTestsForDescribeBlock (C:\Users\ian19\Desktop\SAAC\SAAC-Frontend\node_modules\jest-circus\build\run.js:121:9)
+    at run (C:\Users\ian19\Desktop\SAAC\SAAC-Frontend\node_modules\jest-circus\build\run.js:71:3)
+    at runAndTransformResultsToJestFormat (C:\Users\ian19\Desktop\SAAC\SAAC-Frontend\node_modules\jest-circus\build\legacy-code-todo-rewrite\jestAdapterInit.js:122:21)
+    at jestAdapter (C:\Users\ian19\Desktop\SAAC\SAAC-Frontend\node_modules\jest-circus\build\legacy-code-todo-rewrite\jestAdapter.js:79:19)
+    at runTestInternal (C:\Users\ian19\Desktop\SAAC\SAAC-Frontend\node_modules\jest-runner\build\runTest.js:367:16)
+    at runTest (C:\Users\ian19\Desktop\SAAC\SAAC-Frontend\node_modules\jest-runner\build\runTest.js:444:34)
+    at Object.worker (C:\Users\ian19\Desktop\SAAC\SAAC-Frontend\node_modules\jest-runner\build\testWorker.js:106:12)</failure>
+    </testcase>
+    <testcase classname="RolesTable" name="navega a la página de edición cuando se hace click en editar" time="0.019">
+      <failure>TestingLibraryElementError: Unable to find a label with the text of: /editar/i
+
+Ignored nodes: comments, script, style
+&lt;body
+  style=&quot;overflow: unset;&quot;
+&gt;
+  &lt;div&gt;
+    &lt;div
+      class=&quot;w-full&quot;
+    &gt;
+      &lt;div
+        class=&quot;relative flex flex-col w-full h-full text-gris-una/20 bg-white shadow-md rounded-xl bg-clip-border&quot;
+      &gt;
+        &lt;div
+          class=&quot;relative text-gris-una bg-transparent rounded-none bg-clip-border mx-4 mt-4&quot;
+        &gt;
+          &lt;div
+            class=&quot;flex flex-col justify-between gap-4 mb-4 lg:flex-row lg:items-center&quot;
+          &gt;
+            &lt;div
+              class=&quot;flex-1&quot;
+            &gt;
+              &lt;h5
+                class=&quot;block font-sans text-xl antialiased font-semibold leading-snug tracking-normal text-blue-gray-900&quot;
+              &gt;
+                Lista de Roles
+              &lt;/h5&gt;
+              &lt;p
+                class=&quot;block mt-1 font-sans text-base antialiased font-normal leading-relaxed text-gray-700&quot;
+              &gt;
+                Visualiza y administra todos los roles existentes en el sistema SAAC-UNA
+              &lt;/p&gt;
+            &lt;/div&gt;
+            &lt;div
+              class=&quot;flex flex-col sm:flex-row w-full gap-2 shrink-0 lg:w-auto&quot;
+            &gt;
+              &lt;div
+                class=&quot;w-full sm:w-72&quot;
+              &gt;
+                &lt;div
+                  class=&quot;relative w-full&quot;
+                &gt;
+                  &lt;div
+                    class=&quot;absolute grid w-5 h-5 top-2/4 right-3 -translate-y-2/4 place-items-center text-gris-una&quot;
+                  &gt;
+                    &lt;svg
+                      class=&quot;w-4 h-4 w-5 h-5&quot;
+                      fill=&quot;none&quot;
+                      stroke=&quot;currentColor&quot;
+                      viewBox=&quot;0 0 24 24&quot;
+                    &gt;
+                      &lt;path
+                        d=&quot;m21 21-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z&quot;
+                        stroke-linecap=&quot;round&quot;
+                        stroke-linejoin=&quot;round&quot;
+                        stroke-width=&quot;2&quot;
+                      /&gt;
+                    &lt;/svg&gt;
+                  &lt;/div&gt;
+                  &lt;input
+                    class=&quot;h-10 w-full rounded-lg border border-gris-una/5 bg-gris-una/10 px-3 py-2 !pr-9 text-sm font-normal text-negro-una outline-0 transition-all duration-200 placeholder:text-gris-una/60 focus:outline-none focus:ring-1 focus:ring-gris-una/20 focus:border-transparent&quot;
+                    placeholder=&quot;Buscar roles...&quot;
+                    value=&quot;&quot;
+                  /&gt;
+                &lt;/div&gt;
+              &lt;/div&gt;
+            &lt;/div&gt;
+          &lt;/div&gt;
+        &lt;/div&gt;
+        &lt;div
+          class=&quot;p-6 px-0 overflow-scroll custom-scrollbar&quot;
+        &gt;
+          &lt;table
+            class=&quot;w-full text-left table-auto min-w-max&quot;
+          &gt;
+            &lt;thead&gt;
+              &lt;tr&gt;
+                &lt;th
+                  class=&quot;p-4 border-y border-blue-gray-100 bg-blue-gray-50/50&quot;
+                &gt;
+                  &lt;p
+                    class=&quot;block font-sans text-sm antialiased font-normal leading-none text-blue-gray-900 opacity-70&quot;
+                  &gt;
+                    ID
+                  &lt;/p&gt;
+                &lt;/th&gt;
+                &lt;th
+                  class=&quot;p-4 border-y border-blue-gray-100 bg-blue-gray-50/50&quot;
+                &gt;
+                  &lt;p
+                    class=&quot;block font-sans text-sm antialiased font-normal leading-none text-blue-gray-900 opacity-70&quot;
+                  &gt;
+                    Nombre
+                  &lt;/p&gt;
+                &lt;/th&gt;
+                &lt;th
+                  class=&quot;p-4 border-y border-blue-gray-100 bg-blue-gray-50/50&quot;
+                &gt;
+                  &lt;p
+                    class=&quot;block font-sans text-sm antialiased font-normal leading-none text-blue-gray-900 opacity-70&quot;
+                  &gt;
+                    Permisos
+                  &lt;/p&gt;
+                &lt;/th&gt;
+                &lt;th
+                  class=&quot;p-4 border-y border-blue-gray-100 bg-blue-gray-50/50&quot;
+                &gt;
+                  &lt;p
+                    class=&quot;block font-sans text-sm antialiased font-normal leading-none text-blue-gray-900 opacity-70&quot;
+                  &gt;
+                    Estado
+                  &lt;/p&gt;
+                &lt;/th&gt;
+                &lt;th
+                  class=&quot;p-4 border-y border-blue-gray-100 bg-blue-gray-50/50&quot;
+                &gt;
+                  &lt;p
+                    class=&quot;block font-sans text-sm antialiased font-normal leading-none text-blue-gray-900 opacity-70&quot;
+                  &gt;
+                    Fecha
+                  &lt;/p&gt;
+                &lt;/th&gt;
+                &lt;th
+                  class=&quot;p-4 border-y border-blue-gray-100 bg-blue-gray-50/50&quot;
+                &gt;
+                  &lt;p
+                    class=&quot;block font-sans text-sm antialiased font-normal leading-none text-blue-gray-900 opacity-70&quot;
+                  &gt;
+                    Acciones
+                  &lt;/p&gt;
+                &lt;/th&gt;
+                &lt;th
+                  class=&quot;p-4 border-y border-blue-gray-100 bg-blue-gray-50/50&quot;
+                &gt;
+                  &lt;p
+                    class=&quot;block font-sans text-sm antialiased font-normal leading-none text-blue-gray-900 opacity-70&quot;
+                  /&gt;
+                &lt;/th&gt;
+              &lt;/tr&gt;
+            &lt;/thead&gt;
+            &lt;tbody&gt;
+              &lt;tr&gt;
+                &lt;td
+                  class=&quot;p-4 border-b...
+    at Object.getElementError (C:\Users\ian19\Desktop\SAAC\SAAC-Frontend\node_modules\@testing-library\dom\dist\config.js:37:19)
+    at getAllByLabelText (C:\Users\ian19\Desktop\SAAC\SAAC-Frontend\node_modules\@testing-library\dom\dist\queries\label-text.js:111:38)
+    at C:\Users\ian19\Desktop\SAAC\SAAC-Frontend\node_modules\@testing-library\dom\dist\query-helpers.js:109:15
+    at Object.getAllByLabelText (C:\Users\ian19\Desktop\SAAC\SAAC-Frontend\src\Components\Features\Roles\RolesTable.test.tsx:95:36)
+    at Promise.then.completed (C:\Users\ian19\Desktop\SAAC\SAAC-Frontend\node_modules\jest-circus\build\utils.js:298:28)
+    at new Promise (&lt;anonymous&gt;)
+    at callAsyncCircusFn (C:\Users\ian19\Desktop\SAAC\SAAC-Frontend\node_modules\jest-circus\build\utils.js:231:10)
+    at _callCircusTest (C:\Users\ian19\Desktop\SAAC\SAAC-Frontend\node_modules\jest-circus\build\run.js:316:40)
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at _runTest (C:\Users\ian19\Desktop\SAAC\SAAC-Frontend\node_modules\jest-circus\build\run.js:252:3)
+    at _runTestsForDescribeBlock (C:\Users\ian19\Desktop\SAAC\SAAC-Frontend\node_modules\jest-circus\build\run.js:126:9)
+    at _runTestsForDescribeBlock (C:\Users\ian19\Desktop\SAAC\SAAC-Frontend\node_modules\jest-circus\build\run.js:121:9)
+    at run (C:\Users\ian19\Desktop\SAAC\SAAC-Frontend\node_modules\jest-circus\build\run.js:71:3)
+    at runAndTransformResultsToJestFormat (C:\Users\ian19\Desktop\SAAC\SAAC-Frontend\node_modules\jest-circus\build\legacy-code-todo-rewrite\jestAdapterInit.js:122:21)
+    at jestAdapter (C:\Users\ian19\Desktop\SAAC\SAAC-Frontend\node_modules\jest-circus\build\legacy-code-todo-rewrite\jestAdapter.js:79:19)
+    at runTestInternal (C:\Users\ian19\Desktop\SAAC\SAAC-Frontend\node_modules\jest-runner\build\runTest.js:367:16)
+    at runTest (C:\Users\ian19\Desktop\SAAC\SAAC-Frontend\node_modules\jest-runner\build\runTest.js:444:34)
+    at Object.worker (C:\Users\ian19\Desktop\SAAC\SAAC-Frontend\node_modules\jest-runner\build\testWorker.js:106:12)</failure>
+    </testcase>
+    <testcase classname="RolesTable" name="abre modal de confirmación cuando se hace click en eliminar" time="0.017">
+      <failure>TestingLibraryElementError: Unable to find a label with the text of: /eliminar/i
+
+Ignored nodes: comments, script, style
+&lt;body
+  style=&quot;overflow: unset;&quot;
+&gt;
+  &lt;div&gt;
+    &lt;div
+      class=&quot;w-full&quot;
+    &gt;
+      &lt;div
+        class=&quot;relative flex flex-col w-full h-full text-gris-una/20 bg-white shadow-md rounded-xl bg-clip-border&quot;
+      &gt;
+        &lt;div
+          class=&quot;relative text-gris-una bg-transparent rounded-none bg-clip-border mx-4 mt-4&quot;
+        &gt;
+          &lt;div
+            class=&quot;flex flex-col justify-between gap-4 mb-4 lg:flex-row lg:items-center&quot;
+          &gt;
+            &lt;div
+              class=&quot;flex-1&quot;
+            &gt;
+              &lt;h5
+                class=&quot;block font-sans text-xl antialiased font-semibold leading-snug tracking-normal text-blue-gray-900&quot;
+              &gt;
+                Lista de Roles
+              &lt;/h5&gt;
+              &lt;p
+                class=&quot;block mt-1 font-sans text-base antialiased font-normal leading-relaxed text-gray-700&quot;
+              &gt;
+                Visualiza y administra todos los roles existentes en el sistema SAAC-UNA
+              &lt;/p&gt;
+            &lt;/div&gt;
+            &lt;div
+              class=&quot;flex flex-col sm:flex-row w-full gap-2 shrink-0 lg:w-auto&quot;
+            &gt;
+              &lt;div
+                class=&quot;w-full sm:w-72&quot;
+              &gt;
+                &lt;div
+                  class=&quot;relative w-full&quot;
+                &gt;
+                  &lt;div
+                    class=&quot;absolute grid w-5 h-5 top-2/4 right-3 -translate-y-2/4 place-items-center text-gris-una&quot;
+                  &gt;
+                    &lt;svg
+                      class=&quot;w-4 h-4 w-5 h-5&quot;
+                      fill=&quot;none&quot;
+                      stroke=&quot;currentColor&quot;
+                      viewBox=&quot;0 0 24 24&quot;
+                    &gt;
+                      &lt;path
+                        d=&quot;m21 21-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z&quot;
+                        stroke-linecap=&quot;round&quot;
+                        stroke-linejoin=&quot;round&quot;
+                        stroke-width=&quot;2&quot;
+                      /&gt;
+                    &lt;/svg&gt;
+                  &lt;/div&gt;
+                  &lt;input
+                    class=&quot;h-10 w-full rounded-lg border border-gris-una/5 bg-gris-una/10 px-3 py-2 !pr-9 text-sm font-normal text-negro-una outline-0 transition-all duration-200 placeholder:text-gris-una/60 focus:outline-none focus:ring-1 focus:ring-gris-una/20 focus:border-transparent&quot;
+                    placeholder=&quot;Buscar roles...&quot;
+                    value=&quot;&quot;
+                  /&gt;
+                &lt;/div&gt;
+              &lt;/div&gt;
+            &lt;/div&gt;
+          &lt;/div&gt;
+        &lt;/div&gt;
+        &lt;div
+          class=&quot;p-6 px-0 overflow-scroll custom-scrollbar&quot;
+        &gt;
+          &lt;table
+            class=&quot;w-full text-left table-auto min-w-max&quot;
+          &gt;
+            &lt;thead&gt;
+              &lt;tr&gt;
+                &lt;th
+                  class=&quot;p-4 border-y border-blue-gray-100 bg-blue-gray-50/50&quot;
+                &gt;
+                  &lt;p
+                    class=&quot;block font-sans text-sm antialiased font-normal leading-none text-blue-gray-900 opacity-70&quot;
+                  &gt;
+                    ID
+                  &lt;/p&gt;
+                &lt;/th&gt;
+                &lt;th
+                  class=&quot;p-4 border-y border-blue-gray-100 bg-blue-gray-50/50&quot;
+                &gt;
+                  &lt;p
+                    class=&quot;block font-sans text-sm antialiased font-normal leading-none text-blue-gray-900 opacity-70&quot;
+                  &gt;
+                    Nombre
+                  &lt;/p&gt;
+                &lt;/th&gt;
+                &lt;th
+                  class=&quot;p-4 border-y border-blue-gray-100 bg-blue-gray-50/50&quot;
+                &gt;
+                  &lt;p
+                    class=&quot;block font-sans text-sm antialiased font-normal leading-none text-blue-gray-900 opacity-70&quot;
+                  &gt;
+                    Permisos
+                  &lt;/p&gt;
+                &lt;/th&gt;
+                &lt;th
+                  class=&quot;p-4 border-y border-blue-gray-100 bg-blue-gray-50/50&quot;
+                &gt;
+                  &lt;p
+                    class=&quot;block font-sans text-sm antialiased font-normal leading-none text-blue-gray-900 opacity-70&quot;
+                  &gt;
+                    Estado
+                  &lt;/p&gt;
+                &lt;/th&gt;
+                &lt;th
+                  class=&quot;p-4 border-y border-blue-gray-100 bg-blue-gray-50/50&quot;
+                &gt;
+                  &lt;p
+                    class=&quot;block font-sans text-sm antialiased font-normal leading-none text-blue-gray-900 opacity-70&quot;
+                  &gt;
+                    Fecha
+                  &lt;/p&gt;
+                &lt;/th&gt;
+                &lt;th
+                  class=&quot;p-4 border-y border-blue-gray-100 bg-blue-gray-50/50&quot;
+                &gt;
+                  &lt;p
+                    class=&quot;block font-sans text-sm antialiased font-normal leading-none text-blue-gray-900 opacity-70&quot;
+                  &gt;
+                    Acciones
+                  &lt;/p&gt;
+                &lt;/th&gt;
+                &lt;th
+                  class=&quot;p-4 border-y border-blue-gray-100 bg-blue-gray-50/50&quot;
+                &gt;
+                  &lt;p
+                    class=&quot;block font-sans text-sm antialiased font-normal leading-none text-blue-gray-900 opacity-70&quot;
+                  /&gt;
+                &lt;/th&gt;
+              &lt;/tr&gt;
+            &lt;/thead&gt;
+            &lt;tbody&gt;
+              &lt;tr&gt;
+                &lt;td
+                  class=&quot;p-4 border-b...
+    at Object.getElementError (C:\Users\ian19\Desktop\SAAC\SAAC-Frontend\node_modules\@testing-library\dom\dist\config.js:37:19)
+    at getAllByLabelText (C:\Users\ian19\Desktop\SAAC\SAAC-Frontend\node_modules\@testing-library\dom\dist\queries\label-text.js:111:38)
+    at C:\Users\ian19\Desktop\SAAC\SAAC-Frontend\node_modules\@testing-library\dom\dist\query-helpers.js:109:15
+    at Object.getAllByLabelText (C:\Users\ian19\Desktop\SAAC\SAAC-Frontend\src\Components\Features\Roles\RolesTable.test.tsx:104:38)
+    at Promise.then.completed (C:\Users\ian19\Desktop\SAAC\SAAC-Frontend\node_modules\jest-circus\build\utils.js:298:28)
+    at new Promise (&lt;anonymous&gt;)
+    at callAsyncCircusFn (C:\Users\ian19\Desktop\SAAC\SAAC-Frontend\node_modules\jest-circus\build\utils.js:231:10)
+    at _callCircusTest (C:\Users\ian19\Desktop\SAAC\SAAC-Frontend\node_modules\jest-circus\build\run.js:316:40)
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at _runTest (C:\Users\ian19\Desktop\SAAC\SAAC-Frontend\node_modules\jest-circus\build\run.js:252:3)
+    at _runTestsForDescribeBlock (C:\Users\ian19\Desktop\SAAC\SAAC-Frontend\node_modules\jest-circus\build\run.js:126:9)
+    at _runTestsForDescribeBlock (C:\Users\ian19\Desktop\SAAC\SAAC-Frontend\node_modules\jest-circus\build\run.js:121:9)
+    at run (C:\Users\ian19\Desktop\SAAC\SAAC-Frontend\node_modules\jest-circus\build\run.js:71:3)
+    at runAndTransformResultsToJestFormat (C:\Users\ian19\Desktop\SAAC\SAAC-Frontend\node_modules\jest-circus\build\legacy-code-todo-rewrite\jestAdapterInit.js:122:21)
+    at jestAdapter (C:\Users\ian19\Desktop\SAAC\SAAC-Frontend\node_modules\jest-circus\build\legacy-code-todo-rewrite\jestAdapter.js:79:19)
+    at runTestInternal (C:\Users\ian19\Desktop\SAAC\SAAC-Frontend\node_modules\jest-runner\build\runTest.js:367:16)
+    at runTest (C:\Users\ian19\Desktop\SAAC\SAAC-Frontend\node_modules\jest-runner\build\runTest.js:444:34)
+    at Object.worker (C:\Users\ian19\Desktop\SAAC\SAAC-Frontend\node_modules\jest-runner\build\testWorker.js:106:12)</failure>
+    </testcase>
+    <testcase classname="RolesTable" name="llama a deleteRole cuando se confirma la eliminación" time="0.015">
+      <failure>TestingLibraryElementError: Unable to find a label with the text of: /eliminar/i
+
+Ignored nodes: comments, script, style
+&lt;body
+  style=&quot;overflow: unset;&quot;
+&gt;
+  &lt;div&gt;
+    &lt;div
+      class=&quot;w-full&quot;
+    &gt;
+      &lt;div
+        class=&quot;relative flex flex-col w-full h-full text-gris-una/20 bg-white shadow-md rounded-xl bg-clip-border&quot;
+      &gt;
+        &lt;div
+          class=&quot;relative text-gris-una bg-transparent rounded-none bg-clip-border mx-4 mt-4&quot;
+        &gt;
+          &lt;div
+            class=&quot;flex flex-col justify-between gap-4 mb-4 lg:flex-row lg:items-center&quot;
+          &gt;
+            &lt;div
+              class=&quot;flex-1&quot;
+            &gt;
+              &lt;h5
+                class=&quot;block font-sans text-xl antialiased font-semibold leading-snug tracking-normal text-blue-gray-900&quot;
+              &gt;
+                Lista de Roles
+              &lt;/h5&gt;
+              &lt;p
+                class=&quot;block mt-1 font-sans text-base antialiased font-normal leading-relaxed text-gray-700&quot;
+              &gt;
+                Visualiza y administra todos los roles existentes en el sistema SAAC-UNA
+              &lt;/p&gt;
+            &lt;/div&gt;
+            &lt;div
+              class=&quot;flex flex-col sm:flex-row w-full gap-2 shrink-0 lg:w-auto&quot;
+            &gt;
+              &lt;div
+                class=&quot;w-full sm:w-72&quot;
+              &gt;
+                &lt;div
+                  class=&quot;relative w-full&quot;
+                &gt;
+                  &lt;div
+                    class=&quot;absolute grid w-5 h-5 top-2/4 right-3 -translate-y-2/4 place-items-center text-gris-una&quot;
+                  &gt;
+                    &lt;svg
+                      class=&quot;w-4 h-4 w-5 h-5&quot;
+                      fill=&quot;none&quot;
+                      stroke=&quot;currentColor&quot;
+                      viewBox=&quot;0 0 24 24&quot;
+                    &gt;
+                      &lt;path
+                        d=&quot;m21 21-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z&quot;
+                        stroke-linecap=&quot;round&quot;
+                        stroke-linejoin=&quot;round&quot;
+                        stroke-width=&quot;2&quot;
+                      /&gt;
+                    &lt;/svg&gt;
+                  &lt;/div&gt;
+                  &lt;input
+                    class=&quot;h-10 w-full rounded-lg border border-gris-una/5 bg-gris-una/10 px-3 py-2 !pr-9 text-sm font-normal text-negro-una outline-0 transition-all duration-200 placeholder:text-gris-una/60 focus:outline-none focus:ring-1 focus:ring-gris-una/20 focus:border-transparent&quot;
+                    placeholder=&quot;Buscar roles...&quot;
+                    value=&quot;&quot;
+                  /&gt;
+                &lt;/div&gt;
+              &lt;/div&gt;
+            &lt;/div&gt;
+          &lt;/div&gt;
+        &lt;/div&gt;
+        &lt;div
+          class=&quot;p-6 px-0 overflow-scroll custom-scrollbar&quot;
+        &gt;
+          &lt;table
+            class=&quot;w-full text-left table-auto min-w-max&quot;
+          &gt;
+            &lt;thead&gt;
+              &lt;tr&gt;
+                &lt;th
+                  class=&quot;p-4 border-y border-blue-gray-100 bg-blue-gray-50/50&quot;
+                &gt;
+                  &lt;p
+                    class=&quot;block font-sans text-sm antialiased font-normal leading-none text-blue-gray-900 opacity-70&quot;
+                  &gt;
+                    ID
+                  &lt;/p&gt;
+                &lt;/th&gt;
+                &lt;th
+                  class=&quot;p-4 border-y border-blue-gray-100 bg-blue-gray-50/50&quot;
+                &gt;
+                  &lt;p
+                    class=&quot;block font-sans text-sm antialiased font-normal leading-none text-blue-gray-900 opacity-70&quot;
+                  &gt;
+                    Nombre
+                  &lt;/p&gt;
+                &lt;/th&gt;
+                &lt;th
+                  class=&quot;p-4 border-y border-blue-gray-100 bg-blue-gray-50/50&quot;
+                &gt;
+                  &lt;p
+                    class=&quot;block font-sans text-sm antialiased font-normal leading-none text-blue-gray-900 opacity-70&quot;
+                  &gt;
+                    Permisos
+                  &lt;/p&gt;
+                &lt;/th&gt;
+                &lt;th
+                  class=&quot;p-4 border-y border-blue-gray-100 bg-blue-gray-50/50&quot;
+                &gt;
+                  &lt;p
+                    class=&quot;block font-sans text-sm antialiased font-normal leading-none text-blue-gray-900 opacity-70&quot;
+                  &gt;
+                    Estado
+                  &lt;/p&gt;
+                &lt;/th&gt;
+                &lt;th
+                  class=&quot;p-4 border-y border-blue-gray-100 bg-blue-gray-50/50&quot;
+                &gt;
+                  &lt;p
+                    class=&quot;block font-sans text-sm antialiased font-normal leading-none text-blue-gray-900 opacity-70&quot;
+                  &gt;
+                    Fecha
+                  &lt;/p&gt;
+                &lt;/th&gt;
+                &lt;th
+                  class=&quot;p-4 border-y border-blue-gray-100 bg-blue-gray-50/50&quot;
+                &gt;
+                  &lt;p
+                    class=&quot;block font-sans text-sm antialiased font-normal leading-none text-blue-gray-900 opacity-70&quot;
+                  &gt;
+                    Acciones
+                  &lt;/p&gt;
+                &lt;/th&gt;
+                &lt;th
+                  class=&quot;p-4 border-y border-blue-gray-100 bg-blue-gray-50/50&quot;
+                &gt;
+                  &lt;p
+                    class=&quot;block font-sans text-sm antialiased font-normal leading-none text-blue-gray-900 opacity-70&quot;
+                  /&gt;
+                &lt;/th&gt;
+              &lt;/tr&gt;
+            &lt;/thead&gt;
+            &lt;tbody&gt;
+              &lt;tr&gt;
+                &lt;td
+                  class=&quot;p-4 border-b...
+    at Object.getElementError (C:\Users\ian19\Desktop\SAAC\SAAC-Frontend\node_modules\@testing-library\dom\dist\config.js:37:19)
+    at getAllByLabelText (C:\Users\ian19\Desktop\SAAC\SAAC-Frontend\node_modules\@testing-library\dom\dist\queries\label-text.js:111:38)
+    at C:\Users\ian19\Desktop\SAAC\SAAC-Frontend\node_modules\@testing-library\dom\dist\query-helpers.js:109:15
+    at Object.getAllByLabelText (C:\Users\ian19\Desktop\SAAC\SAAC-Frontend\src\Components\Features\Roles\RolesTable.test.tsx:116:38)
+    at Promise.then.completed (C:\Users\ian19\Desktop\SAAC\SAAC-Frontend\node_modules\jest-circus\build\utils.js:298:28)
+    at new Promise (&lt;anonymous&gt;)
+    at callAsyncCircusFn (C:\Users\ian19\Desktop\SAAC\SAAC-Frontend\node_modules\jest-circus\build\utils.js:231:10)
+    at _callCircusTest (C:\Users\ian19\Desktop\SAAC\SAAC-Frontend\node_modules\jest-circus\build\run.js:316:40)
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at _runTest (C:\Users\ian19\Desktop\SAAC\SAAC-Frontend\node_modules\jest-circus\build\run.js:252:3)
+    at _runTestsForDescribeBlock (C:\Users\ian19\Desktop\SAAC\SAAC-Frontend\node_modules\jest-circus\build\run.js:126:9)
+    at _runTestsForDescribeBlock (C:\Users\ian19\Desktop\SAAC\SAAC-Frontend\node_modules\jest-circus\build\run.js:121:9)
+    at run (C:\Users\ian19\Desktop\SAAC\SAAC-Frontend\node_modules\jest-circus\build\run.js:71:3)
+    at runAndTransformResultsToJestFormat (C:\Users\ian19\Desktop\SAAC\SAAC-Frontend\node_modules\jest-circus\build\legacy-code-todo-rewrite\jestAdapterInit.js:122:21)
+    at jestAdapter (C:\Users\ian19\Desktop\SAAC\SAAC-Frontend\node_modules\jest-circus\build\legacy-code-todo-rewrite\jestAdapter.js:79:19)
+    at runTestInternal (C:\Users\ian19\Desktop\SAAC\SAAC-Frontend\node_modules\jest-runner\build\runTest.js:367:16)
+    at runTest (C:\Users\ian19\Desktop\SAAC\SAAC-Frontend\node_modules\jest-runner\build\runTest.js:444:34)
+    at Object.worker (C:\Users\ian19\Desktop\SAAC\SAAC-Frontend\node_modules\jest-runner\build\testWorker.js:106:12)</failure>
+    </testcase>
+    <testcase classname="RolesTable" name="renderiza estado de carga" time="0.016">
+      <failure>TestingLibraryElementError: Unable to find an element with the text: /cargando/i. This could be because the text is broken up by multiple elements. In this case, you can provide a function for your text matcher to make your matcher more flexible.
+
+Ignored nodes: comments, script, style
+&lt;body
+  style=&quot;overflow: unset;&quot;
+&gt;
+  &lt;div&gt;
+    &lt;div
+      class=&quot;w-full&quot;
+    &gt;
+      &lt;div
+        class=&quot;relative flex flex-col w-full h-full text-gris-una/20 bg-white shadow-md rounded-xl bg-clip-border&quot;
+      &gt;
+        &lt;div
+          class=&quot;relative text-gris-una bg-transparent rounded-none bg-clip-border mx-4 mt-4&quot;
+        &gt;
+          &lt;div
+            class=&quot;flex flex-col justify-between gap-4 mb-4 lg:flex-row lg:items-center&quot;
+          &gt;
+            &lt;div
+              class=&quot;flex-1&quot;
+            &gt;
+              &lt;h5
+                class=&quot;block font-sans text-xl antialiased font-semibold leading-snug tracking-normal text-blue-gray-900&quot;
+              &gt;
+                Lista de Roles
+              &lt;/h5&gt;
+              &lt;p
+                class=&quot;block mt-1 font-sans text-base antialiased font-normal leading-relaxed text-gray-700&quot;
+              &gt;
+                Visualiza y administra todos los roles existentes en el sistema SAAC-UNA
+              &lt;/p&gt;
+            &lt;/div&gt;
+            &lt;div
+              class=&quot;flex flex-col sm:flex-row w-full gap-2 shrink-0 lg:w-auto&quot;
+            &gt;
+              &lt;div
+                class=&quot;w-full sm:w-72&quot;
+              &gt;
+                &lt;div
+                  class=&quot;relative w-full&quot;
+                &gt;
+                  &lt;div
+                    class=&quot;absolute grid w-5 h-5 top-2/4 right-3 -translate-y-2/4 place-items-center text-gris-una&quot;
+                  &gt;
+                    &lt;svg
+                      class=&quot;w-4 h-4 w-5 h-5&quot;
+                      fill=&quot;none&quot;
+                      stroke=&quot;currentColor&quot;
+                      viewBox=&quot;0 0 24 24&quot;
+                    &gt;
+                      &lt;path
+                        d=&quot;m21 21-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z&quot;
+                        stroke-linecap=&quot;round&quot;
+                        stroke-linejoin=&quot;round&quot;
+                        stroke-width=&quot;2&quot;
+                      /&gt;
+                    &lt;/svg&gt;
+                  &lt;/div&gt;
+                  &lt;input
+                    class=&quot;h-10 w-full rounded-lg border border-gris-una/5 bg-gris-una/10 px-3 py-2 !pr-9 text-sm font-normal text-negro-una outline-0 transition-all duration-200 placeholder:text-gris-una/60 focus:outline-none focus:ring-1 focus:ring-gris-una/20 focus:border-transparent&quot;
+                    placeholder=&quot;Buscar roles...&quot;
+                    value=&quot;&quot;
+                  /&gt;
+                &lt;/div&gt;
+              &lt;/div&gt;
+            &lt;/div&gt;
+          &lt;/div&gt;
+        &lt;/div&gt;
+        &lt;div
+          class=&quot;p-6 px-0 overflow-scroll custom-scrollbar&quot;
+        &gt;
+          &lt;table
+            class=&quot;w-full text-left table-auto min-w-max&quot;
+          &gt;
+            &lt;thead&gt;
+              &lt;tr&gt;
+                &lt;th
+                  class=&quot;p-4 border-y border-blue-gray-100 bg-blue-gray-50/50&quot;
+                &gt;
+                  &lt;p
+                    class=&quot;block font-sans text-sm antialiased font-normal leading-none text-blue-gray-900 opacity-70&quot;
+                  &gt;
+                    ID
+                  &lt;/p&gt;
+                &lt;/th&gt;
+                &lt;th
+                  class=&quot;p-4 border-y border-blue-gray-100 bg-blue-gray-50/50&quot;
+                &gt;
+                  &lt;p
+                    class=&quot;block font-sans text-sm antialiased font-normal leading-none text-blue-gray-900 opacity-70&quot;
+                  &gt;
+                    Nombre
+                  &lt;/p&gt;
+                &lt;/th&gt;
+                &lt;th
+                  class=&quot;p-4 border-y border-blue-gray-100 bg-blue-gray-50/50&quot;
+                &gt;
+                  &lt;p
+                    class=&quot;block font-sans text-sm antialiased font-normal leading-none text-blue-gray-900 opacity-70&quot;
+                  &gt;
+                    Permisos
+                  &lt;/p&gt;
+                &lt;/th&gt;
+                &lt;th
+                  class=&quot;p-4 border-y border-blue-gray-100 bg-blue-gray-50/50&quot;
+                &gt;
+                  &lt;p
+                    class=&quot;block font-sans text-sm antialiased font-normal leading-none text-blue-gray-900 opacity-70&quot;
+                  &gt;
+                    Estado
+                  &lt;/p&gt;
+                &lt;/th&gt;
+                &lt;th
+                  class=&quot;p-4 border-y border-blue-gray-100 bg-blue-gray-50/50&quot;
+                &gt;
+                  &lt;p
+                    class=&quot;block font-sans text-sm antialiased font-normal leading-none text-blue-gray-900 opacity-70&quot;
+                  &gt;
+                    Fecha
+                  &lt;/p&gt;
+                &lt;/th&gt;
+                &lt;th
+                  class=&quot;p-4 border-y border-blue-gray-100 bg-blue-gray-50/50&quot;
+                &gt;
+                  &lt;p
+                    class=&quot;block font-sans text-sm antialiased font-normal leading-none text-blue-gray-900 opacity-70&quot;
+                  &gt;
+                    Acciones
+                  &lt;/p&gt;
+                &lt;/th&gt;
+                &lt;th
+                  class=&quot;p-4 border-y border-blue-gray-100 bg-blue-gray-50/50&quot;
+                &gt;
+                  &lt;p
+                    class=&quot;block font-sans text-sm antialiased font-normal leading-none text-blue-gray-900 opacity-70&quot;
+                  /&gt;
+                &lt;/th&gt;
+              &lt;/tr&gt;
+            &lt;/thead&gt;
+            &lt;tbody&gt;
+              &lt;tr&gt;
+                &lt;td
+                  class=&quot;p-4 border-b...
+    at Object.getElementError (C:\Users\ian19\Desktop\SAAC\SAAC-Frontend\node_modules\@testing-library\dom\dist\config.js:37:19)
+    at C:\Users\ian19\Desktop\SAAC\SAAC-Frontend\node_modules\@testing-library\dom\dist\query-helpers.js:76:38
+    at C:\Users\ian19\Desktop\SAAC\SAAC-Frontend\node_modules\@testing-library\dom\dist\query-helpers.js:52:17
+    at C:\Users\ian19\Desktop\SAAC\SAAC-Frontend\node_modules\@testing-library\dom\dist\query-helpers.js:95:19
+    at Object.getByText (C:\Users\ian19\Desktop\SAAC\SAAC-Frontend\src\Components\Features\Roles\RolesTable.test.tsx:143:19)
+    at Promise.then.completed (C:\Users\ian19\Desktop\SAAC\SAAC-Frontend\node_modules\jest-circus\build\utils.js:298:28)
+    at new Promise (&lt;anonymous&gt;)
+    at callAsyncCircusFn (C:\Users\ian19\Desktop\SAAC\SAAC-Frontend\node_modules\jest-circus\build\utils.js:231:10)
+    at _callCircusTest (C:\Users\ian19\Desktop\SAAC\SAAC-Frontend\node_modules\jest-circus\build\run.js:316:40)
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at _runTest (C:\Users\ian19\Desktop\SAAC\SAAC-Frontend\node_modules\jest-circus\build\run.js:252:3)
+    at _runTestsForDescribeBlock (C:\Users\ian19\Desktop\SAAC\SAAC-Frontend\node_modules\jest-circus\build\run.js:126:9)
+    at _runTestsForDescribeBlock (C:\Users\ian19\Desktop\SAAC\SAAC-Frontend\node_modules\jest-circus\build\run.js:121:9)
+    at run (C:\Users\ian19\Desktop\SAAC\SAAC-Frontend\node_modules\jest-circus\build\run.js:71:3)
+    at runAndTransformResultsToJestFormat (C:\Users\ian19\Desktop\SAAC\SAAC-Frontend\node_modules\jest-circus\build\legacy-code-todo-rewrite\jestAdapterInit.js:122:21)
+    at jestAdapter (C:\Users\ian19\Desktop\SAAC\SAAC-Frontend\node_modules\jest-circus\build\legacy-code-todo-rewrite\jestAdapter.js:79:19)
+    at runTestInternal (C:\Users\ian19\Desktop\SAAC\SAAC-Frontend\node_modules\jest-runner\build\runTest.js:367:16)
+    at runTest (C:\Users\ian19\Desktop\SAAC\SAAC-Frontend\node_modules\jest-runner\build\runTest.js:444:34)
+    at Object.worker (C:\Users\ian19\Desktop\SAAC\SAAC-Frontend\node_modules\jest-runner\build\testWorker.js:106:12)</failure>
+    </testcase>
+    <testcase classname="RolesTable" name="muestra mensaje cuando no hay roles" time="0.017">
+      <failure>TestingLibraryElementError: Unable to find an element with the text: /no hay roles/i. This could be because the text is broken up by multiple elements. In this case, you can provide a function for your text matcher to make your matcher more flexible.
+
+Ignored nodes: comments, script, style
+&lt;body
+  style=&quot;overflow: unset;&quot;
+&gt;
+  &lt;div&gt;
+    &lt;div
+      class=&quot;w-full&quot;
+    &gt;
+      &lt;div
+        class=&quot;relative flex flex-col w-full h-full text-gris-una/20 bg-white shadow-md rounded-xl bg-clip-border&quot;
+      &gt;
+        &lt;div
+          class=&quot;relative text-gris-una bg-transparent rounded-none bg-clip-border mx-4 mt-4&quot;
+        &gt;
+          &lt;div
+            class=&quot;flex flex-col justify-between gap-4 mb-4 lg:flex-row lg:items-center&quot;
+          &gt;
+            &lt;div
+              class=&quot;flex-1&quot;
+            &gt;
+              &lt;h5
+                class=&quot;block font-sans text-xl antialiased font-semibold leading-snug tracking-normal text-blue-gray-900&quot;
+              &gt;
+                Lista de Roles
+              &lt;/h5&gt;
+              &lt;p
+                class=&quot;block mt-1 font-sans text-base antialiased font-normal leading-relaxed text-gray-700&quot;
+              &gt;
+                Visualiza y administra todos los roles existentes en el sistema SAAC-UNA
+              &lt;/p&gt;
+            &lt;/div&gt;
+            &lt;div
+              class=&quot;flex flex-col sm:flex-row w-full gap-2 shrink-0 lg:w-auto&quot;
+            &gt;
+              &lt;div
+                class=&quot;w-full sm:w-72&quot;
+              &gt;
+                &lt;div
+                  class=&quot;relative w-full&quot;
+                &gt;
+                  &lt;div
+                    class=&quot;absolute grid w-5 h-5 top-2/4 right-3 -translate-y-2/4 place-items-center text-gris-una&quot;
+                  &gt;
+                    &lt;svg
+                      class=&quot;w-4 h-4 w-5 h-5&quot;
+                      fill=&quot;none&quot;
+                      stroke=&quot;currentColor&quot;
+                      viewBox=&quot;0 0 24 24&quot;
+                    &gt;
+                      &lt;path
+                        d=&quot;m21 21-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z&quot;
+                        stroke-linecap=&quot;round&quot;
+                        stroke-linejoin=&quot;round&quot;
+                        stroke-width=&quot;2&quot;
+                      /&gt;
+                    &lt;/svg&gt;
+                  &lt;/div&gt;
+                  &lt;input
+                    class=&quot;h-10 w-full rounded-lg border border-gris-una/5 bg-gris-una/10 px-3 py-2 !pr-9 text-sm font-normal text-negro-una outline-0 transition-all duration-200 placeholder:text-gris-una/60 focus:outline-none focus:ring-1 focus:ring-gris-una/20 focus:border-transparent&quot;
+                    placeholder=&quot;Buscar roles...&quot;
+                    value=&quot;&quot;
+                  /&gt;
+                &lt;/div&gt;
+              &lt;/div&gt;
+            &lt;/div&gt;
+          &lt;/div&gt;
+        &lt;/div&gt;
+        &lt;div
+          class=&quot;p-6 px-0 overflow-scroll custom-scrollbar&quot;
+        &gt;
+          &lt;table
+            class=&quot;w-full text-left table-auto min-w-max&quot;
+          &gt;
+            &lt;thead&gt;
+              &lt;tr&gt;
+                &lt;th
+                  class=&quot;p-4 border-y border-blue-gray-100 bg-blue-gray-50/50&quot;
+                &gt;
+                  &lt;p
+                    class=&quot;block font-sans text-sm antialiased font-normal leading-none text-blue-gray-900 opacity-70&quot;
+                  &gt;
+                    ID
+                  &lt;/p&gt;
+                &lt;/th&gt;
+                &lt;th
+                  class=&quot;p-4 border-y border-blue-gray-100 bg-blue-gray-50/50&quot;
+                &gt;
+                  &lt;p
+                    class=&quot;block font-sans text-sm antialiased font-normal leading-none text-blue-gray-900 opacity-70&quot;
+                  &gt;
+                    Nombre
+                  &lt;/p&gt;
+                &lt;/th&gt;
+                &lt;th
+                  class=&quot;p-4 border-y border-blue-gray-100 bg-blue-gray-50/50&quot;
+                &gt;
+                  &lt;p
+                    class=&quot;block font-sans text-sm antialiased font-normal leading-none text-blue-gray-900 opacity-70&quot;
+                  &gt;
+                    Permisos
+                  &lt;/p&gt;
+                &lt;/th&gt;
+                &lt;th
+                  class=&quot;p-4 border-y border-blue-gray-100 bg-blue-gray-50/50&quot;
+                &gt;
+                  &lt;p
+                    class=&quot;block font-sans text-sm antialiased font-normal leading-none text-blue-gray-900 opacity-70&quot;
+                  &gt;
+                    Estado
+                  &lt;/p&gt;
+                &lt;/th&gt;
+                &lt;th
+                  class=&quot;p-4 border-y border-blue-gray-100 bg-blue-gray-50/50&quot;
+                &gt;
+                  &lt;p
+                    class=&quot;block font-sans text-sm antialiased font-normal leading-none text-blue-gray-900 opacity-70&quot;
+                  &gt;
+                    Fecha
+                  &lt;/p&gt;
+                &lt;/th&gt;
+                &lt;th
+                  class=&quot;p-4 border-y border-blue-gray-100 bg-blue-gray-50/50&quot;
+                &gt;
+                  &lt;p
+                    class=&quot;block font-sans text-sm antialiased font-normal leading-none text-blue-gray-900 opacity-70&quot;
+                  &gt;
+                    Acciones
+                  &lt;/p&gt;
+                &lt;/th&gt;
+                &lt;th
+                  class=&quot;p-4 border-y border-blue-gray-100 bg-blue-gray-50/50&quot;
+                &gt;
+                  &lt;p
+                    class=&quot;block font-sans text-sm antialiased font-normal leading-none text-blue-gray-900 opacity-70&quot;
+                  /&gt;
+                &lt;/th&gt;
+              &lt;/tr&gt;
+            &lt;/thead&gt;
+            &lt;tbody&gt;
+              &lt;tr&gt;
+                &lt;td
+                  class=&quot;p-4 border-b...
+    at Object.getElementError (C:\Users\ian19\Desktop\SAAC\SAAC-Frontend\node_modules\@testing-library\dom\dist\config.js:37:19)
+    at C:\Users\ian19\Desktop\SAAC\SAAC-Frontend\node_modules\@testing-library\dom\dist\query-helpers.js:76:38
+    at C:\Users\ian19\Desktop\SAAC\SAAC-Frontend\node_modules\@testing-library\dom\dist\query-helpers.js:52:17
+    at C:\Users\ian19\Desktop\SAAC\SAAC-Frontend\node_modules\@testing-library\dom\dist\query-helpers.js:95:19
+    at Object.getByText (C:\Users\ian19\Desktop\SAAC\SAAC-Frontend\src\Components\Features\Roles\RolesTable.test.tsx:160:19)
+    at Promise.then.completed (C:\Users\ian19\Desktop\SAAC\SAAC-Frontend\node_modules\jest-circus\build\utils.js:298:28)
+    at new Promise (&lt;anonymous&gt;)
+    at callAsyncCircusFn (C:\Users\ian19\Desktop\SAAC\SAAC-Frontend\node_modules\jest-circus\build\utils.js:231:10)
+    at _callCircusTest (C:\Users\ian19\Desktop\SAAC\SAAC-Frontend\node_modules\jest-circus\build\run.js:316:40)
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at _runTest (C:\Users\ian19\Desktop\SAAC\SAAC-Frontend\node_modules\jest-circus\build\run.js:252:3)
+    at _runTestsForDescribeBlock (C:\Users\ian19\Desktop\SAAC\SAAC-Frontend\node_modules\jest-circus\build\run.js:126:9)
+    at _runTestsForDescribeBlock (C:\Users\ian19\Desktop\SAAC\SAAC-Frontend\node_modules\jest-circus\build\run.js:121:9)
+    at run (C:\Users\ian19\Desktop\SAAC\SAAC-Frontend\node_modules\jest-circus\build\run.js:71:3)
+    at runAndTransformResultsToJestFormat (C:\Users\ian19\Desktop\SAAC\SAAC-Frontend\node_modules\jest-circus\build\legacy-code-todo-rewrite\jestAdapterInit.js:122:21)
+    at jestAdapter (C:\Users\ian19\Desktop\SAAC\SAAC-Frontend\node_modules\jest-circus\build\legacy-code-todo-rewrite\jestAdapter.js:79:19)
+    at runTestInternal (C:\Users\ian19\Desktop\SAAC\SAAC-Frontend\node_modules\jest-runner\build\runTest.js:367:16)
+    at runTest (C:\Users\ian19\Desktop\SAAC\SAAC-Frontend\node_modules\jest-runner\build\runTest.js:444:34)
+    at Object.worker (C:\Users\ian19\Desktop\SAAC\SAAC-Frontend\node_modules\jest-runner\build\testWorker.js:106:12)</failure>
+    </testcase>
+    <testcase classname="RolesTable" name="permite buscar/filtrar roles" time="0.025">
+    </testcase>
+  </testsuite>
+</testsuites>

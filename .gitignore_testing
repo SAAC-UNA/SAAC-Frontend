@@ -1,0 +1,8 @@
+# Coverage reports
+coverage/
+
+# Test results (se regeneran automáticamente)
+test-results/
+
+# Archivos temporales de Jest
+*.log

@@ -24,6 +24,7 @@ import { useBreakpoint } from '@/hooks/UseBreakpoint';
 import { useRoles } from '@/hooks/UseRoles';
 import { useModuleInfo } from '@/hooks/UseModuleInfo';
 import { validationRules, useValidation } from '@/utils/Validation';
+import { testRoleName } from '@/utils/TestValidation';
 import type { CreateRoleData, Role } from '@/Services/RoleService';
 import type { PermissionOption } from '@/Types/RoleTypes';
 
@@ -55,7 +56,8 @@ const validationSchema = {
   name: [
     validationRules.required('El nombre del rol es obligatorio'),
     validationRules.minLength(3, 'El nombre debe tener al menos 3 caracteres'),
-    validationRules.maxLength(255, 'El nombre no puede exceder 255 caracteres')
+    validationRules.maxLength(255, 'El nombre no puede exceder 255 caracteres'),
+    validationRules.roleName('Solo se permiten letras, espacios y acentos')
   ],
   description: [
     validationRules.minLength(10, 'La descripción debe tener al menos 10 caracteres'),
@@ -107,9 +109,16 @@ export const CreateRoleForm: React.FC<CreateRoleFormProps> = ({
   // Cargar permisos disponibles al montar el componente
   useEffect(() => {
     loadPermissions();
+    // Test de validación en desarrollo
+    if (process.env.NODE_ENV === 'development') {
+      console.log('🧪 Testing roleName validation...');
+      testRoleName();
+    }
   }, []);
 
   const handleInputChange = (field: keyof RoleFormData, value: string | string[]) => {
+    console.log(`📝 handleInputChange called - Field: "${field}", Value:`, value);
+    
     const newFormData = {
       ...formData,
       [field]: value
@@ -119,6 +128,7 @@ export const CreateRoleForm: React.FC<CreateRoleFormProps> = ({
 
     // Sistema de limpieza de errores
     if (simplified) {
+      console.log('🟡 Using SIMPLIFIED validation mode');
       // Limpiar errores básicos
       if (formErrors[field]) {
         setFormErrors(prev => ({
@@ -127,10 +137,10 @@ export const CreateRoleForm: React.FC<CreateRoleFormProps> = ({
         }));
       }
     } else {
-      // Validación en tiempo real
-      if (field in advancedValidation.errors && advancedValidation.errors[field]) {
-        advancedValidation.validateSingleField(field, value, newFormData);
-      }
+      console.log('🟢 Using ADVANCED validation mode');
+      // Validación en tiempo real - SIEMPRE ejecutar validación
+      console.log(`🔍 Validating field "${field}" with value:`, value);
+      advancedValidation.validateSingleField(field, value, newFormData);
     }
 
     // Limpiar error de la API cuando el usuario haga cambios
@@ -168,11 +178,18 @@ export const CreateRoleForm: React.FC<CreateRoleFormProps> = ({
 
   // Función para obtener errores de forma unificada
   const getFieldError = (field: keyof RoleFormData): string | undefined => {
+    let error: string | undefined;
+    
     if (simplified) {
-      return formErrors[field];
+      error = formErrors[field];
+      console.log(`🔍 getFieldError (simplified) for "${field}":`, error);
     } else {
-      return advancedValidation.errors[field];
+      error = advancedValidation.errors[field];
+      console.log(`🔍 getFieldError (advanced) for "${field}":`, error);
+      console.log(`🔍 All advanced errors:`, advancedValidation.errors);
     }
+    
+    return error;
   };
 
   // Función para manejar focus en campos (limpia errores)

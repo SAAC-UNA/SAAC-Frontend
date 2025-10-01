@@ -1,5 +1,23 @@
 /**
  * Sistema de validación de formularios reutilizable
+ * 
+ * VALIDACIÓN roleName - CARACTERES NO PERMITIDOS:
+ * ================================================
+ * 
+ * NÚMEROS: 0-9 (Ej: Admin123, Usuario1, Rol2024)
+ * SÍMBOLOS: @ # $ ! % & * + = - _ | \ / ? < > " ' ` ~ ^ ( ) [ ] { } : ; , .
+ * CARACTERES ESPECIALES: tabs, saltos de línea, emojis, etc.
+ * 
+ * SOLO SE PERMITEN:
+ * - Letras: A-Z, a-z
+ * - Acentos: Á É Í Ó Ú á é í ó ú
+ * - Eñe: Ñ ñ
+ * - Espacios simples
+ * 
+ * Expresión regular: /^[A-Za-zÁÉÍÓÚáéíóúÑñ ]+$/
+ * 
+ * Ejemplos válidos: "Administrador", "Médico Especialista", "Técnico en Sistemas"
+ * Ejemplos inválidos: "Admin123", "Usuario@UNA", "Rol_especial"
  */
 
 export type ValidationRule<T = any> = {
@@ -46,6 +64,12 @@ export const validationRules = {
   // Solo letras y espacios
   alphabetic: (message = 'Solo se permiten letras y espacios'): ValidationRule<string> => ({
     validate: (value) => !value || /^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/.test(value),
+    message
+  }),
+
+  // Validación específica para nombres de roles
+  roleName: (message = 'Solo se permiten letras, espacios y acentos'): ValidationRule<string> => ({
+    validate: (value) => !value || /^[A-Za-zÁÉÍÓÚáéíóúÑñ ]+$/.test(value),
     message
   }),
 
@@ -125,9 +149,15 @@ export const useValidation = <T extends Record<string, any>>(
     value: any,
     allValues: T
   ) => {
-    if (!options.validateOnChange) return;
+    if (!options.validateOnChange) {
+      console.log('⚠️ validateOnChange is disabled');
+      return;
+    }
 
+    console.log(`🧪 validateSingleField called for "${String(fieldName)}" with value:`, value);
     const error = validateField(fieldName, value, allValues);
+    console.log(`🧪 Validation result:`, error ? `❌ Error: ${error}` : '✅ Valid');
+    
     setErrors(prev => ({
       ...prev,
       [fieldName]: error || undefined

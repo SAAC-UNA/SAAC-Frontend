@@ -1,4 +1,5 @@
 import { render, screen, fireEvent } from '@testing-library/react';
+import '@testing-library/jest-dom';
 import { Button } from './Button';
 import React from 'react';
 
@@ -16,7 +17,8 @@ describe('Button', () => {
 
   it('muestra el spinner cuando isLoading es true', () => {
     render(<Button isLoading>Texto</Button>);
-    expect(screen.getByRole('button').querySelector('.animate-spin')).toBeInTheDocument();
+    // Verifica que existe un elemento con role="status" (LoadingSpinner)
+    expect(screen.getByRole('status')).toBeInTheDocument();
   });
 
   it('deshabilita el botón cuando isLoading o disabled es true', () => {
