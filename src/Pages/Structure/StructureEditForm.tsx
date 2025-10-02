@@ -1,13 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
-import { Input } from '../../Components/Ui/Input';
-import { Button } from '../../Components/Ui/Button';
-import { Modal, useModal } from '../../Components/Ui/Modal';
-import { FormContainer } from '../../Components/Ui/FormContainer';
-import { SystemIcons } from '../../Components/Ui/Icons/SystemIcons';
-import { LoadingSpinner } from '../../Components/Ui/Loading';
-import { useStructure } from '../../Hooks/UseStructure';
-import type { StructureElement, ElementType } from '../../Types/StructureTypes';
+import { Input } from '@/Components/Ui/Input';
+import { Button } from '@/Components/Ui/Button';
+import { Modal, useModal } from '@/Components/Ui/Modal';
+import { FormContainer } from '@/Components/Ui/FormContainer';
+import { LoadingSpinner } from '@/Components/Ui/Loading';
+import { useStructure } from '@/Hooks/UseStructure';
+import type { StructureElement, ElementType } from '@/Types/StructureTypes';
 
 interface EditableElement extends StructureElement {
   originalCode: string;
@@ -238,7 +237,7 @@ const StructureEditForm: React.FC = () => {
           variant="secondary"
           className="flex items-center gap-2"
         >
-          <SystemIcons.interface.back size="sm" />
+          <span>←</span>
           <span>Volver al Listado</span>
         </Button>
       </div>

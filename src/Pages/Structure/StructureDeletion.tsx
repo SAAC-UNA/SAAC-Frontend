@@ -1,13 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { CustomSelect } from '../../Components/Ui/CustomSelect';
-import { SearchInput } from '../../Components/Ui/SearchInput';
-import { Button } from '../../Components/Ui/Button';
-import { Modal, useModal } from '../../Components/Ui/Modal';
-import { FormContainer } from '../../Components/Ui/FormContainer';
-import { SystemIcons } from '../../Components/Ui/Icons/SystemIcons';
-import { LoadingSpinner } from '../../Components/Ui/Loading';
-import { useStructure } from '../../Hooks/UseStructure';
-import type { StructureElement, ElementType } from '../../Types/StructureTypes';
+import { CustomSelect } from '@/Components/Ui/SingleSelect';
+import { SearchInput } from '@/Components/Ui/SearchInput';
+import { Button } from '@/Components/Ui/Button';
+import { Modal, useModal } from '@/Components/Ui/Modal';
+import { FormContainer } from '@/Components/Ui/FormContainer';
+import { LoadingSpinner } from '@/Components/Ui/Loading';
+import { useStructure } from '@/Hooks/UseStructure';
+import type { StructureElement, ElementType } from '@/Types/StructureTypes';
 
 interface ElementListItem extends StructureElement {
   hasDependencies: boolean;
@@ -302,7 +301,7 @@ const StructureDeletion: React.FC = () => {
             disabled={isLoading}
             className="flex items-center gap-2"
           >
-            <SystemIcons.interface.refresh size="sm" />
+            <span>🔄</span>
             <span>Actualizar Lista</span>
           </Button>
         </div>

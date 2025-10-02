@@ -1,13 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { SearchInput } from '@/components/Ui/SearchInput';
-import { CustomSelect } from '@/components/Ui/CustomSelect';
-import { Button } from '@/components/Ui/Button';
-import { FormContainer } from '@/components/Ui/FormContainer';
-import { SystemIcons } from '@/components/Ui/Icons/SystemIcons';
-import { LoadingSpinner } from '@/components/Ui/Loading';
-import { useStructure } from '@/hooks/UseStructure';
-import type { StructureElement, ElementType } from '@/types/StructureTypes';
+import { SearchInput } from '@/Components/Ui/SearchInput';
+import { CustomSelect } from '@/Components/Ui/SingleSelect';
+import { Button } from '@/Components/Ui/Button';
+import { FormContainer } from '@/Components/Ui/FormContainer';
+import { LoadingSpinner } from '@/Components/Ui/Loading';
+import { useStructure } from '@/Hooks/UseStructure';
+import type { StructureElement, ElementType } from '@/Types/StructureTypes';
 
 const StructureEditList: React.FC = () => {
   const navigate = useNavigate();
@@ -142,7 +141,7 @@ const StructureEditList: React.FC = () => {
               disabled={isLoading}
               className="flex items-center gap-2"
             >
-              <SystemIcons.interface.refresh size="sm" />
+              <span>🔄</span>
               <span>Actualizar Lista</span>
             </Button>
           </div>

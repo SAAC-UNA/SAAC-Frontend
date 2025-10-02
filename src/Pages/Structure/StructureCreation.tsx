@@ -3,7 +3,7 @@ import { cn } from '@/Utils/ClassNames';
 import { Button } from '@/Components/Ui/Button';
 import { Input } from '@/Components/Ui/Input';
 import { FormContainer } from '@/Components/Ui/FormContainer';
-import { CustomSelect } from '@/Components/Ui/CustomSelect';
+import { CustomSelect } from '@/Components/Ui/SingleSelect';
 import { useStructure } from '@/Hooks/UseStructure';
 import type { 
   StructureElement, 
