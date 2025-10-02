@@ -6,7 +6,7 @@
  */
 
 import { useMemo } from 'react';
-import { getModuleInfo, getContextualInfo, type ModuleInfo } from '../Constants/ModuleInfo';
+import { getModuleInfo, getContextualInfo, type ModuleInfo } from '@/constants/ModuleInfo';
 
 export interface UseModuleInfoReturn {
   /** Información completa del módulo */

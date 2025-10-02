@@ -1,13 +1,13 @@
 import { useState, useCallback } from 'react';
-import { structureService } from '../Services/StructureService';
+import { structureService } from '@/Services/StructureService';
 import type { 
   StructureElement,
   CreateElementForm,
   EditElementForm,
   ElementType,
   StructureSearchCriteria
-} from '../Types/StructureTypes';
-import type { ApiResponse } from '../Services/StructureService';
+} from '@/types/StructureTypes';
+import type { ApiResponse } from '@/Services/StructureService';
 
 // Datos mock temporales para desarrollo (hasta que esté el backend)
 const mockTreeData: StructureElement[] = [

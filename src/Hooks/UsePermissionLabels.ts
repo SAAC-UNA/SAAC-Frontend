@@ -14,7 +14,7 @@ import {
   getPermissionCategory,
   transformPermissionsToOptions,
   groupPermissionsByCategory
-} from '../Utils/PermissionLabels';
+} from '@/utils/PermissionLabels';
 
 export interface UsePermissionLabelsReturn {
   /** Obtiene la etiqueta legible de un permiso técnico */

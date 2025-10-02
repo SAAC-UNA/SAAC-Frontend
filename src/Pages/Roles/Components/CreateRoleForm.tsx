@@ -24,9 +24,8 @@ import { useBreakpoint } from '@/hooks/UseBreakpoint';
 import { useRoles } from '@/hooks/UseRoles';
 import { useModuleInfo } from '@/hooks/UseModuleInfo';
 import { validationRules, useValidation } from '@/utils/Validation';
-import { testRoleName } from '@/utils/TestValidation';
 import type { CreateRoleData, Role } from '@/Services/RoleService';
-import type { PermissionOption } from '@/Types/RoleTypes';
+import type { PermissionOption } from '@/types/RoleTypes';
 
 /**
  * Props del componente CreateRoleForm
@@ -109,16 +108,9 @@ export const CreateRoleForm: React.FC<CreateRoleFormProps> = ({
   // Cargar permisos disponibles al montar el componente
   useEffect(() => {
     loadPermissions();
-    // Test de validación en desarrollo
-    if (process.env.NODE_ENV === 'development') {
-      console.log('🧪 Testing roleName validation...');
-      testRoleName();
-    }
   }, []);
 
   const handleInputChange = (field: keyof RoleFormData, value: string | string[]) => {
-    console.log(`📝 handleInputChange called - Field: "${field}", Value:`, value);
-    
     const newFormData = {
       ...formData,
       [field]: value
@@ -128,7 +120,6 @@ export const CreateRoleForm: React.FC<CreateRoleFormProps> = ({
 
     // Sistema de limpieza de errores
     if (simplified) {
-      console.log('🟡 Using SIMPLIFIED validation mode');
       // Limpiar errores básicos
       if (formErrors[field]) {
         setFormErrors(prev => ({
@@ -137,9 +128,7 @@ export const CreateRoleForm: React.FC<CreateRoleFormProps> = ({
         }));
       }
     } else {
-      console.log('🟢 Using ADVANCED validation mode');
       // Validación en tiempo real - SIEMPRE ejecutar validación
-      console.log(`🔍 Validating field "${field}" with value:`, value);
       advancedValidation.validateSingleField(field, value, newFormData);
     }
 
@@ -178,18 +167,11 @@ export const CreateRoleForm: React.FC<CreateRoleFormProps> = ({
 
   // Función para obtener errores de forma unificada
   const getFieldError = (field: keyof RoleFormData): string | undefined => {
-    let error: string | undefined;
-    
     if (simplified) {
-      error = formErrors[field];
-      console.log(`🔍 getFieldError (simplified) for "${field}":`, error);
+      return formErrors[field];
     } else {
-      error = advancedValidation.errors[field];
-      console.log(`🔍 getFieldError (advanced) for "${field}":`, error);
-      console.log(`🔍 All advanced errors:`, advancedValidation.errors);
+      return advancedValidation.errors[field];
     }
-    
-    return error;
   };
 
   // Función para manejar focus en campos (limpia errores)
@@ -314,8 +296,6 @@ export const CreateRoleForm: React.FC<CreateRoleFormProps> = ({
                   onChange={(values) => handleInputChange('permissions', values)}
                   error={getFieldError('permissions')}
                   required
-                  
-                  
                   placeholder={getPermissionsState().placeholder}
                 />
               </div>
@@ -404,8 +384,6 @@ export const CreateRoleForm: React.FC<CreateRoleFormProps> = ({
               onChange={(values) => handleInputChange('permissions', values)}
               error={getFieldError('permissions')}
               required
-              
-              
               placeholder={getPermissionsState().placeholder}
             />
 
@@ -488,8 +466,6 @@ export const CreateRoleForm: React.FC<CreateRoleFormProps> = ({
                   onChange={(values) => handleInputChange('permissions', values)}
                   error={getFieldError('permissions')}
                   required
-                  
-                  
                   placeholder={getPermissionsState().placeholder}
                 />
               </div>
@@ -579,8 +555,6 @@ export const CreateRoleForm: React.FC<CreateRoleFormProps> = ({
               onChange={(values) => handleInputChange('permissions', values)}
               error={getFieldError('permissions')}
               required
-              
-              
               placeholder={getPermissionsState().placeholder}
             />
 

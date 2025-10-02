@@ -1,11 +1,6 @@
 import React, { useEffect, useRef } from 'react';
 import { Dialog, DialogBackdrop, DialogPanel, DialogTitle } from '@headlessui/react';
-import { 
-  ExclamationTriangleIcon,
-  InformationCircleIcon,
-  CheckCircleIcon,
-  XMarkIcon
-} from '@heroicons/react/24/outline';
+import { SystemIcons } from '@/Components/Ui/Icons/SystemIcons';
 import { cn } from '@/Utils/ClassNames';
 import { Button } from './Button';
 
@@ -123,21 +118,21 @@ export const Modal: React.FC<UnifiedModalProps> = ({
     switch (variant) {
       case 'danger':
         return {
-          icon: ExclamationTriangleIcon,
+          icon: SystemIcons.interface.alert,
           iconBg: 'bg-red-100',
           iconColor: 'text-red-600',
           confirmClasses: 'bg-red-600 hover:bg-red-500 text-white'
         };
       case 'warning':
         return {
-          icon: ExclamationTriangleIcon,
+          icon: SystemIcons.interface.alert,
           iconBg: 'bg-yellow-100',
           iconColor: 'text-yellow-600',
           confirmClasses: 'bg-yellow-600 hover:bg-yellow-500 text-white'
         };
       case 'success':
         return {
-          icon: CheckCircleIcon,
+          icon: SystemIcons.interface.checkCircle,
           iconBg: 'bg-green-100',
           iconColor: 'text-green-600',
           confirmClasses: 'bg-green-600 hover:bg-green-500 text-white'
@@ -145,7 +140,7 @@ export const Modal: React.FC<UnifiedModalProps> = ({
       case 'info':
       default:
         return {
-          icon: InformationCircleIcon,
+          icon: SystemIcons.interface.informationCircle,
           iconBg: 'bg-blue-100',
           iconColor: 'text-blue-600',
           confirmClasses: 'bg-blue-600 hover:bg-blue-500 text-white'
@@ -248,7 +243,7 @@ export const Modal: React.FC<UnifiedModalProps> = ({
                   disabled={confirmLoading}
                   aria-label="Cerrar modal"
                 >
-                  <XMarkIcon className="h-5 w-5" />
+                  <SystemIcons.interface.close className="h-5 w-5" />
                 </button>
               )}
             </div>

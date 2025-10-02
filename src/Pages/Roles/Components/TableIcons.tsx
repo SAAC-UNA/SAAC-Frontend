@@ -5,7 +5,7 @@
  * Mantiene la misma API pero con el sistema centralizado por debajo.
  */
 
-import { SystemIcons, type IconProps } from '../../Ui/Icons/SystemIcons';
+import { SystemIcons, type IconProps } from '@/components/Ui/Icons/SystemIcons';
 
 /**
  * Iconos específicos para tablas - Ahora usa SystemIcons

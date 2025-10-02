@@ -19,13 +19,15 @@
     "baseUrl": "./src",
     "paths": {
       "@/*": ["./*"],
+      "@/App": ["./App"],
       "@/components/*": ["./Components/*"],
       "@/context/*": ["./Context/*"],
       "@/hooks/*": ["./Hooks/*"],
       "@/pages/*": ["./Pages/*"],
       "@/types/*": ["./Types/*"],
       "@/utils/*": ["./Utils/*"],
-      "@/constants/*": ["./Constants/*"]
+      "@/constants/*": ["./Constants/*"],
+      "@/Services/*": ["./Services/*"]
     },
 
     /* Linting */

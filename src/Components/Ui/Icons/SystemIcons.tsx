@@ -277,9 +277,37 @@ export const SystemIcons = {
         />
         <path
           fillRule="evenodd"
-          d="M5.972 9.964a.75.75 0 0 1 .75-.75h2.492V6.722a.75.75 0 0 1 1.5 0v3.242a.75.75 0 0 1-.75.75H6.722a.75.75 0 0 1-.75-.75Z"
+          d="M5.972 9.964a.75.75 0 0 1 .75-.750h2.492V6.722a.75.75 0 0 1 1.5 0v3.242a.75.75 0 0 1-.75.75H6.722a.75.75 0 0 1-.75-.75Z"
           clipRule="evenodd"
         />
+      </svg>
+    ),
+
+    // ===== ICONOS ESPECÍFICOS PARA MODALES =====
+    
+    /** Círculo de información - Para mensajes informativos */
+    informationCircle: ({ className, size, color }: IconProps) => (
+      <svg
+        className={`${getSizeClasses(size)} ${className || ''}`}
+        viewBox="0 0 24 24"
+        fill={color || "currentColor"}
+      >
+        <path
+          fillRule="evenodd"
+          d="M3.25 12a8.75 8.75 0 1 1 17.5 0 8.75 8.75 0 0 1-17.5 0ZM13 8a1 1 0 1 1-2 0 1 1 0 0 1 2 0Zm-1 2.75a.75.75 0 0 1 .75.75v5a.75.75 0 0 1-1.5 0v-5a.75.75 0 0 1 .75-.75Z"
+          clipRule="evenodd"
+        />
+      </svg>
+    ),
+
+    /** Círculo con check - Para mensajes de éxito */
+    checkCircle: ({ className, size, color }: IconProps) => (
+      <svg
+        className={`${getSizeClasses(size)} ${className || ''}`}
+        viewBox="0 0 24 24"
+        fill={color || "currentColor"}
+      >
+        <path d="M12 2.25A9.75 9.75 0 1 0 21.75 12 9.769 9.769 0 0 0 12 2.25Zm4.64 8.044-5.493 5.25a.76.76 0 0 1-.525.206.722.722 0 0 1-.516-.206L7.36 12.919a.75.75 0 1 1 1.032-1.088l2.23 2.128 4.988-4.753a.75.75 0 0 1 1.032 1.088Z" />
       </svg>
     )
   },
@@ -439,6 +467,11 @@ export const getIconByName = (iconName: string, size: IconProps['size'] = 'md'):
     'refresh': () => SystemIcons.interface.refresh({ size }),
     'expand': () => SystemIcons.interface.expand({ size }),
     'collapse': () => SystemIcons.interface.collapse({ size }),
+
+    // Modal icons
+    'exclamation-triangle': () => SystemIcons.interface.alert({ size }),
+    'information-circle': () => SystemIcons.interface.informationCircle({ size }),
+    'check-circle': () => SystemIcons.interface.checkCircle({ size }),
 
     // Repository
     'box-archive': () => SystemIcons.repository.boxArchive({ size })

@@ -150,13 +150,10 @@ export const useValidation = <T extends Record<string, any>>(
     allValues: T
   ) => {
     if (!options.validateOnChange) {
-      console.log('⚠️ validateOnChange is disabled');
       return;
     }
 
-    console.log(`🧪 validateSingleField called for "${String(fieldName)}" with value:`, value);
     const error = validateField(fieldName, value, allValues);
-    console.log(`🧪 Validation result:`, error ? `❌ Error: ${error}` : '✅ Valid');
     
     setErrors(prev => ({
       ...prev,

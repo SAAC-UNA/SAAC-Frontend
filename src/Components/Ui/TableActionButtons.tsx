@@ -6,7 +6,7 @@
  */
 
 import React from 'react';
-import type { DataTableAction } from '../Ui/DataTable';
+import type { DataTableAction } from '@/components/Ui/DataTable';
 
 /**
  * Tipo de acción de tabla disponible

@@ -15,8 +15,8 @@
  */
 
 // Servicio para manejar operaciones relacionadas con roles
-import type { PermissionOption } from '../Types/RoleTypes';
-import { transformPermissionsToOptions } from '../Utils/PermissionLabels';
+import type { PermissionOption } from '@/types/RoleTypes';
+import { transformPermissionsToOptions } from '@/utils/PermissionLabels';
 
 /**
  * Datos requeridos para crear un nuevo rol

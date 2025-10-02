@@ -16,14 +16,14 @@
  */
 
 import React, { useEffect, useState } from 'react';
-import { DataTable, PermissionsModal } from '../../index';
-import { createTableActions } from '../../Ui/TableActionButtons';
+import { DataTable, PermissionsModal } from '@/components/index';
+import { createTableActions } from '@/components/Ui/TableActionButtons';
 import { TableIcons } from './TableIcons';
-import { useRoles } from '../../../Hooks/UseRoles';
-import { usePermissionLabels } from '../../../Hooks/UsePermissionLabels';
-import { useModuleInfo } from '../../../Hooks/UseModuleInfo';
-import type { DataTableColumn, DataTableAction } from '../../Ui/DataTable';
-import type { Role } from '../../../Services/RoleService';
+import { useRoles } from '@/hooks/UseRoles';
+import { usePermissionLabels } from '@/hooks/UsePermissionLabels';
+import { useModuleInfo } from '@/hooks/UseModuleInfo';
+import type { DataTableColumn, DataTableAction } from '@/components/Ui/DataTable';
+import type { Role } from '@/Services/RoleService';
 
 interface RolesTableProps {
     onEdit?: (role: Role) => void;

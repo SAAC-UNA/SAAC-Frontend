@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { cn } from '../../Utils/ClassNames';
-import { type ComponentSize } from '../../Constants/ComponentSizes';
+import { cn } from '@/utils/ClassNames';
+import { type ComponentSize } from '@/constants/ComponentSizes';
 import { SystemIcons } from './Icons/SystemIcons';
 
 export interface SelectOption {

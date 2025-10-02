@@ -1,7 +1,7 @@
 import { useState, useCallback } from 'react';
-import { roleService } from '../Services/RoleService';
-import type { CreateRoleData, Role, ApiResponse } from '../Services/RoleService';
-import type { PermissionOption } from '../Types/RoleTypes';
+import { roleService } from '@/Services/RoleService';
+import type { CreateRoleData, Role, ApiResponse } from '@/Services/RoleService';
+import type { PermissionOption } from '@/types/RoleTypes';
 
 interface UseRolesReturn {
   // Estados
