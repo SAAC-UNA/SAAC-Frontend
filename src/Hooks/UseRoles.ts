@@ -3,6 +3,20 @@ import { roleService } from '@/Services/RoleService';
 import type { CreateRoleData, Role, ApiResponse } from '@/Services/RoleService';
 import type { PermissionOption } from '@/types/RoleTypes';
 
+/**
+ * HOOK DE GESTIÓN DE ROLES
+ * 
+ * Hook centralizado para todas las operaciones CRUD de roles y permisos.
+ * Maneja estado local, llamadas a API, manejo de errores y actualizaciones
+ * optimistas para una experiencia de usuario fluida.
+ * 
+ * OPERACIONES:
+ * - CRUD completo de roles (crear, leer, actualizar, eliminar)
+ * - Gestión de permisos disponibles
+ * - Manejo de estados de carga y errores
+ * - Actualizaciones optimistas del estado local
+ */
+
 interface UseRolesReturn {
   // Estados
   isLoading: boolean;

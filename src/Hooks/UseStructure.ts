@@ -9,6 +9,23 @@ import type {
 } from '@/types/StructureTypes';
 import type { ApiResponse } from '@/Services/StructureService';
 
+/**
+ * HOOK DE GESTIÓN DE ESTRUCTURA ORGANIZACIONAL
+ * 
+ * Hook completo para manejar la estructura jerárquica de la universidad
+ * (universidades, campus, facultades, carreras, dimensiones, etc.).
+ * Incluye operaciones CRUD, búsquedas, activación/desactivación y
+ * operaciones batch con datos mock para desarrollo.
+ * 
+ * CAPACIDADES:
+ * - CRUD completo de elementos estructurales
+ * - Visualización en árbol jerárquico
+ * - Búsquedas con criterios múltiples
+ * - Operaciones batch (activar/desactivar/eliminar múltiples)
+ * - Activación/desactivación individual
+ * - Datos mock para desarrollo sin backend
+ */
+
 // Datos mock temporales para desarrollo (hasta que esté el backend)
 const mockTreeData: StructureElement[] = [
   {

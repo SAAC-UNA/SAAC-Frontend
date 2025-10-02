@@ -1,4 +1,4 @@
 export { ModernSidebar } from './Sidebar';
 export { ModernSidebarItem } from './SidebarItem';
-export { SidebarTrigger } from './SidebarTrigger';
-export { SidebarInset } from './SidebarInset';
+export { MainContent, SidebarInset } from './MainContent';
+export { AppHeader } from './AppHeader';

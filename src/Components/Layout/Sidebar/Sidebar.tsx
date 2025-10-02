@@ -150,16 +150,14 @@ export const ModernSidebar: React.FC<SidebarProps> = ({
             state === 'collapsed' && collapsible === 'icon' && 'w-[var(--sidebar-width-icon)]',
             variant === 'floating' || variant === 'inset' 
               ? 'p-2'
-              : side === 'left' 
-                ? 'border-r' 
-                : 'border-l',
+              : '',
             className
           )}
         >
           <div
             className={cn(
               'bg-rojo-una-2 flex h-full w-full flex-col overflow-hidden',
-              variant === 'floating' && 'rounded-lg border shadow-sm'
+              variant === 'floating' && 'rounded-lg shadow-sm'
             )}
           >
             {sidebarContent}

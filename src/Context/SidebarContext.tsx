@@ -1,6 +1,23 @@
 import React, { createContext, useContext, useState, useCallback, useEffect } from 'react';
-import { useIsMobile } from '@/hooks/UseMobile';
+import { useBreakpoint } from '@/hooks/UseBreakpoint';
 import type { ReactNode } from 'react';
+
+/**
+ * CONTEXTO DE GESTIÓN DEL SIDEBAR
+ * 
+ * Maneja todo el estado y comportamiento del sidebar de navegación,
+ * incluyendo la detección automática de dispositivos móviles y
+ * la adaptación del comportamiento según el tamaño de pantalla.
+ * 
+ * - Control de estado expandido/colapsado del sidebar
+ * - Detección automática de dispositivos móviles
+ * - Comportamiento diferenciado para móvil vs desktop
+ * - API unificada para componentes hijos
+ * 
+ * - open: Estado general del sidebar
+ * - openMobile: Estado específico para móviles
+ * - isMobile: Detección de dispositivo móvil
+ */
 
 interface SidebarContextType {
   state: 'expanded' | 'collapsed';
@@ -31,7 +48,7 @@ export const SidebarProvider: React.FC<SidebarProviderProps> = ({
   open: openProp,
   onOpenChange: setOpenProp 
 }) => {
-  const isMobile = useIsMobile();
+  const { isMobile } = useBreakpoint();
   const [openMobile, setOpenMobile] = useState(false);
 
   // Estado interno del sidebar

@@ -1,5 +1,19 @@
 import { useState, useEffect } from 'react';
 
+/**
+ * HOOK PRINCIPAL PARA RESPONSIVE DESIGN
+ * 
+ * Este hook es la "fuente de verdad" para toda la lógica responsive del sistema.
+ * Proporciona información detallada sobre el tamaño de pantalla actual y helpers
+ * para diferentes categorías de dispositivos.
+ * 
+ * - Detecta automáticamente cambios de tamaño de ventana
+ * - Proporciona breakpoints específicos (xs, sm, md, lg, xl, 2xl)
+ * - Incluye helpers semánticos (isMobile, isTablet, isDesktop, isLargeScreen)
+ * - Basado en estándares de Tailwind CSS
+ * - Dimensiones exactas (width, height) disponibles
+ */
+
 // Definir breakpoints estándar (basados en Tailwind CSS)
 const breakpoints = {
   sm: 640,   // Tablet pequeña

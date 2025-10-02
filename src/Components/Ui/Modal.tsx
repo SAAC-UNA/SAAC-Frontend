@@ -60,22 +60,6 @@ interface UnifiedModalProps {
   cancelLabel?: string;
 }
 
-/**
- * Modal Unificado - Componente único para todos los modales del sistema
- * 
- * MODO BÁSICO - Para contenido personalizado:
- * <Modal title="Mi Modal" footerButtons={<Button>Guardar</Button>}>
- *   <MiFormulario />
- * </Modal>
- * 
- * MODO CONFIRMACIÓN - Para confirmaciones rápidas:
- * <Modal 
- *   variant="danger"
- *   title="Eliminar"
- *   message="¿Está seguro?"
- *   onConfirm={handleDelete}
- * />
- */
 export const Modal: React.FC<UnifiedModalProps> = ({
   isOpen,
   onClose,

@@ -3,6 +3,14 @@ import { useLocation } from 'react-router-dom';
 import type { ReactNode } from 'react';
 import { navigationItems } from '@/Navigation';
 
+/**
+ * CONTEXTO DE NAVEGACIÓN DEL SIDEBAR
+ * 
+ * Contexto global que maneja todo el estado y comportamiento de la navegación
+ * en el sidebar de la aplicación. Controla qué elementos están activos,
+ * expandidos y sincroniza la navegación con las rutas de React Router.
+ */
+
 interface NavigationContextType {
   activeItemId: string | null;
   expandedItemId: string | null;

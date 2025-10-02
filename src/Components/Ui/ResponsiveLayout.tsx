@@ -3,6 +3,23 @@ import { useSidebar } from '@/context/SidebarContext';
 import { useBreakpoint } from '@/hooks/UseBreakpoint';
 import { cn } from '@/utils/ClassNames';
 
+/**
+ * COMPONENTE WRAPPER PARA CONTENIDO RESPONSIVE DEL SIDEBAR
+
+ * Aplica lógica responsive específica usando
+ * la información proporcionada por useBreakpoint.
+ * 
+ * - Ajusta padding dinámicamente según dispositivo
+ * - Controla el ancho máximo del contenido
+ * - Maneja centrado inteligente cuando el sidebar está colapsado
+ * - Proporciona transiciones suaves entre estados
+ * 
+ * - Móvil: Padding reducido, sin restricciones de ancho
+ * - Tablet: Padding intermedio, ajustes moderados
+ * - Desktop: Padding amplio, control de ancho máximo
+ * - Pantallas grandes: Centrado y restricciones adicionales
+ */
+
 interface ResponsiveLayoutProps {
   children: React.ReactNode;
   className?: string;

@@ -20,36 +20,36 @@ export const MODULE_INFO: Record<string, ModuleInfo> = {
   roles: {
     title: 'Gestión de Roles',
     subtitle: 'Administración de Roles y Permisos',
-    description: 'Crea, edita y administra los roles del sistema',
-    shortDescription: 'Administrar roles y permisos del sistema'
+    description: 'Crea, edita y administra los roles y permisos disponibles',
+    shortDescription: 'Administrar roles y permisos'
   },
 
   roles_create: {
     title: 'Crear Nuevo Rol',
     subtitle: 'Definición de Rol y Permisos',
-    description: 'Define un nuevo rol del sistema asignando los permisos correspondientes',
+    description: 'Define un nuevo rol asignando los permisos correspondientes para los usuarios',
     shortDescription: 'Crear nuevo rol con permisos'
   },
 
   roles_list: {
     title: 'Lista de Roles',
-    subtitle: 'Roles del Sistema',
-    description: 'Visualiza y administra todos los roles existentes en el sistema SAAC-UNA',
-    shortDescription: 'Ver todos los roles del sistema'
+    subtitle: 'Roles Existentes',
+    description: 'Visualiza y administra todos los roles existentes con sus permisos asignados',
+    shortDescription: 'Ver todos los roles existentes'
   },
 
   // Gestión de Usuarios
   users: {
     title: 'Gestión de Usuarios',
     subtitle: 'Administración de Usuarios',
-    description: 'Administra los usuarios del sistema, sus roles y permisos de acceso',
-    shortDescription: 'Administrar usuarios del sistema'
+    description: 'Administra los usuarios, sus roles y permisos de acceso a las funcionalidades',
+    shortDescription: 'Administrar usuarios'
   },
 
   users_create: {
     title: 'Crear Nuevo Usuario',
     subtitle: 'Registro de Usuario',
-    description: 'Registra un nuevo usuario en el sistema y asigna sus roles correspondientes',
+    description: 'Registra un nuevo usuario y asigna los roles correspondientes para su acceso',
     shortDescription: 'Registrar nuevo usuario'
   },
 
@@ -57,7 +57,7 @@ export const MODULE_INFO: Record<string, ModuleInfo> = {
   reports: {
     title: 'Gestión de Reportes',
     subtitle: 'Generación de Reportes',
-    description: 'Genera y administra reportes del sistema académico y administrativo',
+    description: 'Genera y administra reportes académicos y administrativos con datos actualizados',
     shortDescription: 'Generar y administrar reportes'
   },
 
@@ -65,7 +65,7 @@ export const MODULE_INFO: Record<string, ModuleInfo> = {
   programs: {
     title: 'Gestión de Programas',
     subtitle: 'Programas Académicos',
-    description: 'Administra los programas académicos de la universidad',
+    description: 'Administra los programas académicos y sus configuraciones institucionales',
     shortDescription: 'Administrar programas académicos'
   },
 
@@ -73,23 +73,23 @@ export const MODULE_INFO: Record<string, ModuleInfo> = {
   cycles: {
     title: 'Gestión de Ciclos',
     subtitle: 'Ciclos Académicos',
-    description: 'Administra los ciclos académicos y periodos de estudio',
+    description: 'Administra los ciclos académicos, periodos de estudio y calendarios institucionales',
     shortDescription: 'Administrar ciclos académicos'
   },
 
   // Página principal
   home: {
-    title: 'Sistema SAAC-UNA',
-    subtitle: 'Panel de Administración',
-    description: 'Sistema de Acreditación y Autoevaluación de Carreras - Universidad Nacional de Costa Rica',
-    shortDescription: 'Panel principal del sistema'
+    title: 'Panel Principal',
+    subtitle: 'Sistema SAAC-UNA',
+    description: 'Accede a todas las funcionalidades de acreditación y autoevaluación de carreras',
+    shortDescription: 'Panel principal de funcionalidades'
   },
 
   listRoles: {
     title: 'Lista de Roles',
-    subtitle: 'Roles del Sistema',
-    description: 'Visualiza y administra todos los roles existentes en el sistema SAAC-UNA',
-    shortDescription: 'Ver todos los roles del sistema'
+    subtitle: 'Roles Existentes',
+    description: 'Visualiza y administra todos los roles existentes con sus permisos asignados',
+    shortDescription: 'Ver todos los roles existentes'
   }
 };
 
@@ -100,9 +100,9 @@ export const MODULE_INFO: Record<string, ModuleInfo> = {
  */
 export const getModuleInfo = (moduleKey: string): ModuleInfo => {
   return MODULE_INFO[moduleKey] || {
-    title: 'Módulo del Sistema',
-    description: 'Funcionalidad del sistema SAAC-UNA',
-    shortDescription: 'Módulo del sistema'
+    title: 'Módulo',
+    description: 'Funcionalidad de acreditación y autoevaluación de carreras',
+    shortDescription: 'Módulo de funcionalidades'
   };
 };
 
