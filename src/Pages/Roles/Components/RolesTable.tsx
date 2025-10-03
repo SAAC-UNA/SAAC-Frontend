@@ -21,6 +21,7 @@ import { createTableActions } from '@/components/Ui/TableActionButtons';
 import { TableIcons } from './TableIcons';
 import { useRoles } from '@/hooks/UseRoles';
 import { usePermissionLabels } from '@/hooks/UsePermissionLabels';
+import { cn } from '@/utils/ClassNames';
 import type { DataTableColumn, DataTableAction } from '@/components/Ui/DataTable';
 import type { Role } from '@/Services/RoleService';
 
@@ -50,6 +51,12 @@ export const RolesTable: React.FC<RolesTableProps> = ({
         role: Role | null;
     }>({ isOpen: false, role: null });
 
+    // Función para truncar texto
+    const truncateText = (text: string, maxLength: number = 20): string => {
+        if (text.length <= maxLength) return text;
+        return text.substring(0, maxLength) + '...';
+    };
+
     // Cargar roles al montar el componente
     useEffect(() => {
         loadRoles();
@@ -78,29 +85,18 @@ export const RolesTable: React.FC<RolesTableProps> = ({
 
     // Configuración de columnas de la tabla
     const columns: DataTableColumn<Role>[] = [
-        {
-            key: 'id',
-            header: 'ID',
-            accessor: 'id',
-            width: '80px',
-            align: 'center',
-            render: (value) => (
-                <div className="text-center">
-                    <span className="text-sm font-medium text-gray-600">{value}</span>
-                </div>
-            )
-        },
+        
         {
             key: 'name',
             header: 'Nombre',
             accessor: 'name',
             render: (value, item) => (
-                <div className="flex flex-col">
-                    <p className="block font-sans text-sm antialiased font-bold leading-normal text-negro-una">
-                        {value}
+                <div className="flex flex-col pl-2">
+                    <p className="block font-sans text-sm antialiased font-bold leading-normal text-negro-una" title={value}>
+                        {truncateText(value, 20)}
                     </p>
-                    <p className="block font-sans text-sm antialiased font-normal leading-normal text-gris-una opacity-70">
-                        {item.description || 'Sin descripción'}
+                    <p className="block font-sans text-sm antialiased font-normal leading-normal text-gris-una opacity-70" title={item.description || 'Sin descripción'}>
+                        {truncateText(item.description || 'Sin descripción', 20)}
                     </p>
                 </div>
             )
@@ -109,22 +105,21 @@ export const RolesTable: React.FC<RolesTableProps> = ({
             key: 'permissions',
             header: 'Permisos',
             accessor: 'permissions',
-            render: (permissions: string[], item) => (
-                <div className="w-max">
-                    <button
-                        onClick={() => setModalState({ isOpen: true, role: item })}
-                        className="relative grid items-center px-2 py-1 font-sans text-xs font-bold text-gray-900 uppercase rounded-md select-none whitespace-nowrap bg-gray-500/20 hover:bg-gray-500/30 transition-colors cursor-pointer"
-                    >
+            align: 'center',
+            render: (permissions: string[]) => (
+                <div className="w-max mx-auto">
+                    <div className="relative grid items-center px-2 py-1 font-sans text-xs font-bold text-gray-900 uppercase rounded-md select-none whitespace-nowrap bg-gray-500/20">
                         <span>{permissions.length} permisos</span>
-                    </button>
+                    </div>
                 </div>
             )
         },
         {
             key: 'status',
             header: 'Estado',
+            align: 'center',
             render: () => (
-                <div className="w-max">
+                <div className="w-max mx-auto">
                     <div className="relative grid items-center px-2 py-1 font-sans text-xs font-bold text-green-900 uppercase rounded-md select-none whitespace-nowrap bg-green-500/20">
                         <span>Activo</span>
                     </div>
@@ -132,21 +127,29 @@ export const RolesTable: React.FC<RolesTableProps> = ({
             )
         },
         {
-            key: 'created_at',
-            header: 'Fecha',
-            render: () => (
-                <p className="block font-sans text-sm antialiased font-normal leading-normal text-gris-una">
-                    {new Date().toLocaleDateString('es-ES')}
-                </p>
-            )
-        },
-        {
             key: 'actions',
             header: 'Acciones',
-            render: () => (
-                    <p className="block font-sans text-sm antialiased font-normal leading-normal text-gris-una">
-                        {/* Aquí puedes agregar los botones de acción correspondientes */}
-                    </p>
+            align: 'center',
+            render: (_, role) => (
+                <div className="flex items-center justify-center gap-3 pr-2">
+                    {actions.map((action, actionIndex) => (
+                        <button
+                            key={actionIndex}
+                            className={cn(
+                                "relative h-10 max-h-[40px] w-10 max-w-[40px] select-none rounded-lg text-center align-middle font-sans text-xs font-medium uppercase transition-all disabled:pointer-events-none disabled:opacity-50 disabled:shadow-none",
+                                action.className
+                            )}
+                            type="button"
+                            onClick={() => action.onClick(role)}
+                            disabled={action.disabled?.(role)}
+                            title={action.label}
+                        >
+                            <span className="absolute transform -translate-x-1/2 -translate-y-1/2 top-1/2 left-1/2">
+                                {action.icon}
+                            </span>
+                        </button>
+                    ))}
+                </div>
             )
         }
     ];
@@ -230,7 +233,6 @@ export const RolesTable: React.FC<RolesTableProps> = ({
             <DataTable
                 data={paginatedData}
                 columns={columns}
-                actions={actions}
                 title="" // Sin título, ScreenContainer lo maneja
                 searchable={true}
                 searchPlaceholder="Buscar roles..."

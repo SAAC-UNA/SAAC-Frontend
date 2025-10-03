@@ -31,9 +31,9 @@ export const navigationItems: NavItem[] = [
     id: 'roles',
     label: 'Roles',
     icon: rolesIcon,
-    href: '/',
-    isActive: false,
-    isExpandable: true,
+    href: '/roles/listar',
+    isActive: false
+    /*isExpandable: true,
     children: [
       {
         id: 'rolesCrear',
@@ -47,7 +47,7 @@ export const navigationItems: NavItem[] = [
         icon: rolesListIcon,
         href: '/roles/listar'
       }
-    ]
+    ]*/
   },
   {
     id: 'estructuraVer',

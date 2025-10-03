@@ -207,7 +207,7 @@ export const DataTable = <T extends Record<string, any>>({
   return (
     <div className={cn(
       "relative flex flex-col w-full h-full text-gris-una/20",
-      !unstyled && "bg-white shadow-md rounded-xl bg-clip-border",
+      !unstyled && "bg-transparent", // Fondo transparente de la tabla
       className
     )}>
       {/* Header */}
@@ -253,7 +253,7 @@ export const DataTable = <T extends Record<string, any>>({
       </div>
 
       {/* Tabla */}
-      <div className="p-6 px-0 overflow-scroll custom-scrollbar">
+      <div className="p-6 px-0 overflow-x-auto lg:overflow-x-visible custom-scrollbar">
         {loading ? (
           <div className="flex flex-col items-center justify-center py-12 gap-3">
             <LoadingSpinner variant="bounce" size="lg" color="secondary" className="text-rojo-una" />
@@ -268,18 +268,26 @@ export const DataTable = <T extends Record<string, any>>({
             <p className="text-sm">{emptyMessage}</p>
           </div>
         ) : (
-          <table className="w-full text-left table-auto min-w-max">
+          <table className="w-full text-left table-fixed min-w-[600px] lg:min-w-0">
             <thead>
               <tr>
                 {columns.map((column, index) => (
-                  <th key={index} className="p-4 border-y border-blue-gray-100 bg-blue-gray-50/50">
+                  <th 
+                    key={index} 
+                    className={cn(
+                      "py-4 border-y border-blue-gray-100",
+                      index === 0 ? "pl-8 pr-4" : "px-4", // Más padding en todas las columnas
+                      column.align === 'center' && "text-center",
+                      column.align === 'right' && "text-right"
+                    )}
+                  >
                     <p className="block font-sans text-sm antialiased font-normal leading-none text-blue-gray-900 opacity-70">
                       {column.header}
                     </p>
                   </th>
                 ))}
                 {actions && actions.length > 0 && (
-                  <th className="p-4 border-y border-blue-gray-100 bg-blue-gray-50/50">
+                  <th className="pl-4 pr-8 py-4 border-y border-blue-gray-100 text-center">
                     <p className="block font-sans text-sm antialiased font-normal leading-none text-blue-gray-900 opacity-70">
                       {/* Columna de acciones vacía */}
                     </p>
@@ -291,10 +299,14 @@ export const DataTable = <T extends Record<string, any>>({
               {data.map((item, index) => (
                 <tr key={index}>
                   {columns.map((column, colIndex) => (
-                    <td key={colIndex} className={cn(
-                      "p-4",
-                      index === data.length - 1 ? "" : "border-b border-blue-gray-50"
-                    )}>
+                    <td 
+                      key={colIndex} 
+                      className={cn(
+                        "py-4",
+                        colIndex === 0 ? "pl-8 pr-4" : "px-4", // Más padding en todas las columnas
+                        index === data.length - 1 ? "" : "border-b border-blue-gray-50"
+                      )}
+                    >
                       <div className={cn(
                         column.align === 'center' && "text-center",
                         column.align === 'right' && "text-right"
@@ -305,7 +317,7 @@ export const DataTable = <T extends Record<string, any>>({
                   ))}
                   {actions && actions.length > 0 && (
                     <td className={cn(
-                      "p-4",
+                      "pl-4 pr-8 py-4", // Más padding en la columna de acciones
                       index === data.length - 1 ? "" : "border-b border-blue-gray-50"
                     )}>
                       <div className="flex items-center gap-2">

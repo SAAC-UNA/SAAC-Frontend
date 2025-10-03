@@ -4,7 +4,6 @@ import { ModernSidebar, MainContent, AppHeader } from './Sidebar/Index';
 
 /**
  * COMPONENTE DE LAYOUT BASE
- * =========================
  * 
  * Define la estructura fundamental e inmutable de la aplicación.
  * 

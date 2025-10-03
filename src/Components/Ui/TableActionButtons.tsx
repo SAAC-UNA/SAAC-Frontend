@@ -49,9 +49,9 @@ const getTableActionClasses = (type: TableActionType): string => {
   
   switch (type) {
     case 'view':
-      return `${baseClasses} text-green-600 hover:bg-green-50 hover:text-green-700`;
+      return `${baseClasses} text-blue-600 hover:bg-blue-50 hover:text-blue-700`;
     case 'edit':
-      return `${baseClasses} text-yellow-600 hover:bg-yellow-50 hover:text-yellow-700`;
+      return `${baseClasses} text-yellow-400 hover:bg-yellow-50 hover:text-yellow-500`;
     case 'delete':
       return `${baseClasses} text-rojo-una hover:bg-red-50 hover:text-red-700`;
     default:

@@ -1,3 +1,12 @@
+/**
+ * Sheet - Componente sidebar para mobile
+ *
+ * Componentes:
+ * - Sheet: Contenedor principal con gestión de estado
+ * - SheetContent: Panel deslizante con el contenido
+ * - SheetHeader: Header opcional con título y descripción
+ */
+
 import React, { useEffect } from 'react';
 import { cn } from '@/utils/ClassNames';
 
@@ -31,9 +40,9 @@ export function Sheet({ open, onOpenChange, children }: SheetProps) {
 
   return (
     <>
-      {/* Backdrop */}
+      {/* Backdrop con efecto blur */}
       <div 
-        className="fixed inset-0 z-50 bg-black/50"
+        className="fixed inset-0 z-50 backdrop-blur-sm bg-black/20"
         onClick={() => onOpenChange(false)}
       />
       {children}
@@ -50,8 +59,8 @@ export function SheetContent({
   return (
     <div
       className={cn(
-        'fixed z-50 gap-4 bg-white p-6 shadow-lg transition ease-in-out',
-        'inset-y-0 h-full w-3/4 border-r',
+        'fixed z-50 gap-4 p-6 shadow-lg transition ease-in-out',
+        'inset-y-0 h-full w-3/4',
         side === 'left' ? 'left-0 animate-in slide-in-from-left' : 'right-0 animate-in slide-in-from-right',
         className
       )}
