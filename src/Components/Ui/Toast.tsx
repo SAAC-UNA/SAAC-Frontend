@@ -14,13 +14,13 @@ const ToastItem: React.FC<ToastItemProps> = ({ toast }) => {
     
     switch (toast.type) {
       case 'success':
-        return `${baseStyles} bg-green-50 border-green-500 text-green-800`;
+        return `${baseStyles} toast-success`;
       case 'error':
-        return `${baseStyles} bg-red-50 border-rojo-una-2 text-red-800`;
+        return `${baseStyles} toast-error`;
       case 'warning':
-        return `${baseStyles} bg-yellow-50 border-yellow-500 text-yellow-800`;
+        return `${baseStyles} toast-warning`;
       case 'info':
-        return `${baseStyles} bg-azul-una/5 border-azul-una text-azul-una`;
+        return `${baseStyles} toast-info`;
       default:
         return `${baseStyles} bg-gris-una/5 border-gris-una text-negro-una`;
     }

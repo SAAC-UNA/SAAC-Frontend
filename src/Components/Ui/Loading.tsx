@@ -3,18 +3,18 @@ import { cn } from '@/utils/ClassNames';
 
 interface LoadingSpinnerProps {
   size?: 'xs' | 'sm' | 'md' | 'lg' | 'xl';
-  color?: 'primary' | 'secondary' | 'white' | 'gray' | 'current';
+  color?: 'primary' | 'secondary' | 'white' | 'gray' | 'current' | 'loading';
   className?: string;
   thickness?: 'thin' | 'normal' | 'thick';
-  variant?: 'spinner' | 'ring' | 'bounce';
+  variant?: 'spinner' | 'bounce';
 }
 
 export const LoadingSpinner: React.FC<LoadingSpinnerProps> = ({
   size = 'md',
-  color = 'primary',
+  color = 'loading',
   className,
   thickness = 'normal',
-  variant = 'spinner'
+  variant = 'bounce'
 }) => {
   const sizeClasses = {
     xs: 'w-3 h-3',
@@ -29,7 +29,8 @@ export const LoadingSpinner: React.FC<LoadingSpinnerProps> = ({
     secondary: 'border-rojo-una-2',
     white: 'border-white',
     gray: 'border-gray-900',
-    current: 'border-current'
+    current: 'border-current',
+    loading: 'border-[var(--icon-loading)]'
   };
 
   const thicknessClasses = {
@@ -38,55 +39,6 @@ export const LoadingSpinner: React.FC<LoadingSpinnerProps> = ({
     thick: 'border-4'
   };
 
-  // Ring loader moderno
-  if (variant === 'ring') {
-    // Tamaños para el contenedor del ring
-    const ringSizeClasses = {
-      xs: 'w-5 h-5',
-      sm: 'w-6 h-6', 
-      md: 'w-10 h-10',
-      lg: 'w-12 h-12',
-      xl: 'w-20 h-20'
-    };
-
-    // Colores solo para el ring (sin clases de border)
-    const ringColorClasses = {
-      primary: 'text-azul-una',
-      secondary: 'text-rojo-una-2',
-      white: 'text-white',
-      gray: 'text-gray-900',
-      current: 'text-current'
-    };
-
-    return (
-      <div
-        className={cn(
-          'relative inline-block',
-          ringSizeClasses[size],
-          ringColorClasses[color],
-          className
-        )}
-        role="status"
-        aria-label="Cargando..."
-      >
-        {[...Array(4)].map((_, index) => (
-          <div
-            key={index}
-            className="absolute box-border block rounded-full"
-            style={{
-              width: '80%',
-              height: '80%',
-              margin: '10%',
-              border: `${thickness === 'thin' ? '2px' : thickness === 'thick' ? '4px' : '3px'} solid transparent`,
-              borderTopColor: 'currentColor',
-              animation: `lds-ring 1.2s cubic-bezier(0.5, 0, 0.5, 1) infinite`,
-              animationDelay: `${-0.45 + index * 0.15}s`
-            }}
-          />
-        ))}
-      </div>
-    );
-  }
 /* 
   *Nuevo loader, este me gustó más para mantenerlo
 */
@@ -113,10 +65,11 @@ export const LoadingSpinner: React.FC<LoadingSpinnerProps> = ({
     // Colores para las esferas
     const bounceColorClasses = {
       primary: 'bg-azul-una',
-      secondary: 'bg-rojo-una-2',
+      secondary: 'bg-rojo-una-2', 
       white: 'bg-white',
       gray: 'bg-gray-900',
-      current: 'bg-current'
+      current: 'bg-current',
+      loading: 'bg-[var(--icon-loading)]' // Usa la variable CSS del sistema de iconos
     };
 
     return (
@@ -245,7 +198,7 @@ export const LoadingOverlay: React.FC<LoadingOverlayProps> = ({
       {isLoading && (
         <div className="absolute inset-0 bg-white/80 backdrop-blur-sm flex items-center justify-center z-10">
           <div className="flex flex-col items-center space-y-3">
-            <LoadingSpinner variant="bounce" size="sm" color="secondary" />
+            <LoadingSpinner size="sm" />
             <p className="text-sm text-gris-una">Cargando...</p>
           </div>
         </div>

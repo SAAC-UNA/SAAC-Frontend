@@ -64,8 +64,8 @@ const VARIANT_CLASSES = {
 
   // Botón de éxito/activar con color verde
   success: [
-    'bg-transparent text-green-600 font-poppins font-semibold border-2 border-green-600', 
-    'hover:bg-green-600/5 transition-colors duration-200 shadow-sm',
+    'btn-success font-poppins font-semibold', 
+    'transition-colors duration-200 shadow-sm',
     'disabled:bg-gris-una/10 disabled:cursor-not-allowed'
   ].join(' '),
 
@@ -81,22 +81,22 @@ const VARIANT_CLASSES = {
   // Botón fantasma para acciones sutiles
   ghost: 'bg-transparent text-gris-una hover:bg-gris-una/10',
   
-  // Variantes específicas para acciones de tabla
+  // Botones de la tabla (ojo, lapiz, basurero)
   tableView: [
-    'bg-transparent text-green-600 border-0 p-2 rounded-md',
-    'hover:bg-green-50 hover:text-green-700 transition-colors duration-200',
+    'bg-transparent text-[var(--icon-view)] border-0 p-2 rounded-md',
+    'hover:bg-[var(--bg-info)] hover:text-[var(--icon-view)] transition-colors duration-200',
     'disabled:opacity-50 disabled:cursor-not-allowed'
   ].join(' '),
   
   tableEdit: [
-    'bg-transparent text-red-600 border-0 p-2 rounded-md',
-    'hover:bg-blue-50 hover:text-blue-700 transition-colors duration-200', 
+    'bg-transparent text-[var(--icon-edit)] border-0 p-2 rounded-md',
+    'hover:bg-[var(--bg-warning)] hover:text-[var(--icon-edit)] transition-colors duration-200', 
     'disabled:opacity-50 disabled:cursor-not-allowed'
   ].join(' '),
   
   tableDelete: [
-    'bg-transparent text-red-600 border-0 p-2 rounded-md',
-    'hover:bg-red-50 hover:text-red-700 transition-colors duration-200',
+    'bg-transparent text-[var(--icon-delete)] border-0 p-2 rounded-md',
+    'hover:bg-[var(--bg-error)] hover:text-[var(--icon-delete)] transition-colors duration-200',
     'disabled:opacity-50 disabled:cursor-not-allowed'
   ].join(' ')
 };
@@ -144,7 +144,7 @@ export const Button: React.FC<ButtonProps> = ({
       {...props}
     >
       {isLoading && (
-        <LoadingSpinner variant="ring" size="sm" color="current" className="mr-2" />
+        <LoadingSpinner variant="spinner" size="sm" color="current" className="mr-2" />
       )}
       {children}
     </button>

@@ -310,7 +310,7 @@ const StructureDeletion: React.FC = () => {
         <div>
           {isLoading ? (
             <div className="flex items-center justify-center py-12">
-              <LoadingSpinner variant="bounce" size="lg" color="secondary" />
+              <LoadingSpinner size="lg" />
             </div>
           ) : filteredElements.length === 0 ? (
             <div className="text-center py-12">

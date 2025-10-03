@@ -318,7 +318,7 @@ export const CreateRoleForm: React.FC<CreateRoleFormProps> = ({
                     >
                       {isLoading 
                         ? (isEditing ? 'Guardando...' : 'Creando...') 
-                        : (isEditing ? 'Guardar Cambios' : 'Crear')
+                        : (isEditing ? 'Guardar' : 'Crear')
                       }
                     </Button>
                   </div>
@@ -373,29 +373,29 @@ export const CreateRoleForm: React.FC<CreateRoleFormProps> = ({
             </div>
           )}
 
-          {/* Botones de acción - Ancho completo en móvil */}
+          {/* Botones de acción */}
           {!hideButtons && (
             <div className="flex gap-4 pt-4">
-              <Button
-                type="button"
-                variant="secondary"
-                onClick={onCancel}
-                disabled={isLoading}
-                size="sm"
-              >
-                Cancelar
-              </Button>
-              <Button
-                type="submit"
-                variant="primary"
-                disabled={isLoading}
-                size="sm"
-              >
-                {isLoading 
-                  ? (isEditing ? 'Guardando...' : 'Creando...') 
-                  : (isEditing ? 'Guardar Cambios' : 'Crear')
-                }
-              </Button>
+                <Button
+                  type="button"
+                  variant="secondary"
+                  onClick={onCancel}
+                  disabled={isLoading}
+                  size="sm"
+                >
+                  Cancelar
+                </Button>
+                <Button
+                  type="submit"
+                  variant="primary"
+                  disabled={isLoading}
+                  size="sm"
+                >
+                  {isLoading 
+                    ? (isEditing ? 'Guardando...' : 'Creando...') 
+                    : (isEditing ? 'Guardar Cambios' : 'Crear')
+                  }
+                </Button>
             </div>
           )}
         </div>

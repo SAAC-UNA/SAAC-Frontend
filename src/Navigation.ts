@@ -2,21 +2,18 @@ import type { NavItem } from './Types/CommonTypes';
 
 const homeIcon = 'system-icon:home';
 const rolesIcon = 'system-icon:shield';
-const rolesListIcon = 'system-icon:contacts';
-const addRoles = 'system-icon:add';
+// const rolesListIcon = 'system-icon:contacts';
+// const addRoles = 'system-icon:add';
 const nutIcon = 'system-icon:nut';
 const plusIcon = 'system-icon:plus';
 const trashIcon = 'system-icon:trash-can';
 const editIcon = 'system-icon:edit-element';
 const boxIcon = 'system-icon:box-archive';
 
-/*
-  isActive: true // Indica la página actual
-  isExpandable: true // Indica si el elemento tiene subelementos
-  children: NavItem[] // Los subelementos del elemento
-
-  Los valores de icon se manejan en SidebarItem.tsx que indica iconType si es SVG o emoji
-  En Sidebar.tsx se detecta si es URL o emoji para renderizarlo correctamente con 
+/**
+ * isActive: true // Es la página actual
+ * isExpandable: true // Es expandible si tiene subelementos
+ * children: NavItem[] // Los subelementos del elemento
 */
 
 export const navigationItems: NavItem[] = [

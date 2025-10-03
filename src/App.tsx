@@ -3,7 +3,7 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { NavigationProvider } from './Context/NavigationContext';
 import { Layout } from './Components/Layout/Index';
 import { HomePage } from './Pages/Index';
-import { RolesRepository, RolesCreation, RolesEdit } from './Pages/Roles';
+import { RolesRepository, RoleForm } from './Pages/Roles';
 import StructureRepository from './Pages/Structure/StructureList';
 import StructureCreation from './Pages/Structure/StructureCreation';
 import StructureDeletion from './Pages/Structure/StructureDeletion';
@@ -17,8 +17,8 @@ const App: React.FC = () => {
         <Layout>
           <Routes>
             <Route path="/" element={<HomePage />} />
-            <Route path="/roles/crear" element={<RolesCreation />} />
-            <Route path="/roles/editar/:id" element={<RolesEdit />} />
+            <Route path="/roles/crear" element={<RoleForm />} />
+            <Route path="/roles/editar/:id" element={<RoleForm />} />
             <Route path="/roles/listar" element={<RolesRepository />} />
             <Route path="/estructura/repositorio" element={<StructureRepository />} />
             <Route path="/estructura/crear" element={<StructureCreation />} />

@@ -7,6 +7,14 @@
  * - Fácil cambio de biblioteca de iconos
  * - Control de tamaños y colores centralizado
  * - Tree-shaking automático
+ * 
+ * ESTANDARIZACIÓN DE COLORES:
+ * Solo los iconos de ACCIONES (view, edit, delete, add, cancel, informationCircle)
+ * tienen colores por defecto para uso en tablas y listas.
+ * 
+ * Los iconos del SIDEBAR (home, nut, plus, edit-element, trash-can, shield, box-archive, logout)
+ * NO tienen colores por defecto porque usan currentColor para adaptarse dinámicamente
+ * al estado activo/inactivo (blanco/rojo UNA).
  */
 
 export interface IconProps {
@@ -35,51 +43,52 @@ const getSizeClasses = (size: IconProps['size'] = 'md'): string => {
  */
 export const SystemIcons = {
   // ===== ACCIONES GENERALES =====
+  // NOTA: Estos iconos tienen colores por defecto para uso en tablas/listas
   actions: {
-    view: ({ className, size, color }: IconProps) => (
+    view: ({ className, size, color = 'var(--icon-view)' }: IconProps) => (
       <svg
         className={`${getSizeClasses(size)} ${className || ''}`}
         viewBox="0 0 24 24"
-        fill={color || "currentColor"}
+        fill={color}
       >
         <path d="M12 9.75a2.25 2.25 0 1 0 0 4.5 2.25 2.25 0 0 0 0-4.5Z" />
         <path fillRule="evenodd" d="M12 5.5c-2.618 0-4.972 1.051-6.668 2.353-.85.652-1.547 1.376-2.036 2.08-.48.692-.796 1.418-.796 2.067 0 .649.317 1.375.796 2.066.49.705 1.186 1.429 2.036 2.08C7.028 17.45 9.382 18.5 12 18.5c2.618 0 4.972-1.051 6.668-2.353.85-.652 1.547-1.376 2.035-2.08.48-.692.797-1.418.797-2.067 0-.649-.317-1.375-.797-2.066-.488-.705-1.185-1.429-2.035-2.08C16.972 6.55 14.618 5.5 12 5.5ZM8.25 12a3.75 3.75 0 1 1 7.5 0 3.75 3.75 0 0 1-7.5 0Z" clipRule="evenodd" />
       </svg>
     ),
 
-    edit: ({ className, size, color }: IconProps) => (
+    edit: ({ className, size, color = 'var(--icon-edit)' }: IconProps) => (
       <svg
         className={`${getSizeClasses(size)} ${className || ''}`}
         viewBox="0 0 24 24"
-        fill={color || "currentColor"}
+        fill={color}
       >
         <path d="M14.607 3.5a.5.5 0 0 1 .353.146l2.829 2.829a.5.5 0 0 1 0 .707l-9.193 9.192a.5.5 0 0 1-.227.13l-3.828 1a.5.5 0 0 1-.61-.61l1-3.828a.5.5 0 0 1 .13-.227l9.192-9.193a.5.5 0 0 1 .354-.146Z" />
         <path d="M4 19.25a.75.75 0 0 0 0 1.5h15a.75.75 0 0 0 0-1.5H4Z" />
       </svg>
     ),
 
-    delete: ({ className, size, color }: IconProps) => (
+    delete: ({ className, size, color = 'var(--icon-delete)' }: IconProps) => (
       <svg
         className={`${getSizeClasses(size)} ${className || ''}`}
         viewBox="0 0 24 24"
-        fill={color || "currentColor"}
+        fill={color}
       >
         <path d="M9.25 3a.75.75 0 0 1 .75-.75h4a.75.75 0 0 1 .75.75v.75H19a.75.75 0 0 1 0 1.5H5a.75.75 0 0 1 0-1.5h4.25V3Z" />
         <path fillRule="evenodd" d="M6.24 7.945a.5.5 0 0 1 .497-.445h10.526a.5.5 0 0 1 .497.445l.2 1.801a44.213 44.213 0 0 1 0 9.771l-.02.177a2.603 2.603 0 0 1-2.226 2.29 26.788 26.788 0 0 1-7.428 0 2.603 2.603 0 0 1-2.227-2.29l-.02-.177a44.239 44.239 0 0 1 0-9.77l.2-1.802Zm4.51 3.455a.75.75 0 0 0-1.5 0v7a.75.75 0 0 0 1.5 0v-7Zm4 0a.75.75 0 0 0-1.5 0v7a.75.75 0 0 0 1.5 0v-7Z" clipRule="evenodd" />
       </svg>
     ),
 
-    add: ({ className, size, color }: IconProps) => (
+    add: ({ className, size, color = 'var(--icon-add)' }: IconProps) => (
       <svg
         className={`${getSizeClasses(size)} ${className || ''}`}
         viewBox="0 0 24 24"
-        fill={color || "currentColor"}
+        fill={color}
       >
         <path fillRule="evenodd" d="M7.345 4.017a42.253 42.253 0 0 1 9.31 0c1.713.192 3.095 1.541 3.296 3.26a40.66 40.66 0 0 1 0 9.445 3.734 3.734 0 0 1-3.296 3.26 42.123 42.123 0 0 1-9.31 0 3.734 3.734 0 0 1-3.296-3.26 40.652 40.652 0 0 1 0-9.444 3.734 3.734 0 0 1 3.295-3.26ZM12 7.007a.75.75 0 0 1 .75.75v3.493h3.493a.75.75 0 1 1 0 1.5H12.75v3.493a.75.75 0 0 1-1.5 0V12.75H7.757a.75.75 0 0 1 0-1.5h3.493V7.757a.75.75 0 0 1 .75-.75Z" clipRule="evenodd" />
       </svg>
     ),
 
-    save: ({ className, size, color }: IconProps) => (
+    save: ({ className, size, color = 'var(--icon-save)' }: IconProps) => (
       <svg
         className={`${getSizeClasses(size)} ${className || ''}`}
         viewBox="0 0 24 24"
@@ -89,11 +98,11 @@ export const SystemIcons = {
       </svg>
     ),
 
-    cancel: ({ className, size, color }: IconProps) => (
+    cancel: ({ className, size, color = 'var(--icon-cancel)' }: IconProps) => (
       <svg
         className={`${getSizeClasses(size)} ${className || ''}`}
         viewBox="0 0 24 24"
-        fill={color || "currentColor"}
+        fill={color}
       >
         <path fillRule="evenodd" d="M5.47 5.47a.75.75 0 011.06 0L12 10.94l5.47-5.47a.75.75 0 111.06 1.06L13.06 12l5.47 5.47a.75.75 0 11-1.06 1.06L12 13.06l-5.47 5.47a.75.75 0 01-1.06-1.06L10.94 12 5.47 6.53a.75.75 0 010-1.06z" clipRule="evenodd" />
       </svg>
@@ -107,6 +116,156 @@ export const SystemIcons = {
       >
         <path d="M11.25 19a.75.75 0 0 1 .75-.75h6a.25.25 0 0 0 .25-.25V6a.25.25 0 0 0-.25-.25h-6a.75.75 0 0 1 0-1.5h6c.966 0 1.75.784 1.75 1.75v12A1.75 1.75 0 0 1 18 19.75h-6a.75.75 0 0 1-.75-.75Z" />
         <path d="M15.612 13.115a1 1 0 0 1-1 1H9.756c-.023.356-.052.71-.086 1.066l-.03.305a.718.718 0 0 1-1.025.578 16.844 16.844 0 0 1-4.885-3.539l-.03-.031a.721.721 0 0 1 0-.998l.03-.031a16.843 16.843 0 0 1 4.885-3.539.718.718 0 0 1 1.025.578l.03.305c.034.355.063.71.086 1.066h4.856a1 1 0 0 1 1 1v2.24Z" />
+      </svg>
+    )
+  },
+
+  // ===== INTERFAZ =====
+  interface: {
+    search: ({ className, size, color = 'var(--icon-search)' }: IconProps) => (
+      <svg
+        className={`${getSizeClasses(size)} ${className || ''}`}
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke={color}
+      >
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
+      </svg>
+    ),
+
+    loading: ({ className, size, color = 'var(--icon-loading)' }: IconProps) => (
+      <svg
+        className={`${getSizeClasses(size)} ${className || ''} animate-spin`}
+        viewBox="0 0 24 24"
+        fill="none"
+      >
+        <circle cx="12" cy="12" r="10" stroke={color} strokeWidth="4" className="opacity-25" />
+        <path fill={color} className="opacity-75" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+      </svg>
+    ),
+
+    close: ({ className, size, color = 'var(--icon-close)' }: IconProps) => (
+      <svg
+        className={`${getSizeClasses(size)} ${className || ''}`}
+        viewBox="0 0 24 24"
+        fill={color}
+      >
+        <path fillRule="evenodd" d="M5.47 5.47a.75.75 0 011.06 0L12 10.94l5.47-5.47a.75.75 0 111.06 1.06L13.06 12l5.47 5.47a.75.75 0 11-1.06 1.06L12 13.06l-5.47 5.47a.75.75 0 01-1.06-1.06L10.94 12 5.47 6.53a.75.75 0 010-1.06z" clipRule="evenodd" />
+      </svg>
+    ),
+
+    alert: ({ className, size, color = 'var(--icon-alert)' }: IconProps) => (
+      <svg
+        className={`${getSizeClasses(size)} ${className || ''}`}
+        viewBox="0 0 24 24"
+        fill={color}
+      >
+        <path fillRule="evenodd" d="M9.73 3.993a2.749 2.749 0 0 1 4.54 0l.432.632a75.951 75.951 0 0 1 6.944 12.563l.09.208a2.511 2.511 0 0 1-2.024 3.497 69.43 69.43 0 0 1-15.424 0 2.511 2.511 0 0 1-2.024-3.497l.09-.208A75.95 75.95 0 0 1 9.298 4.625l.432-.632ZM13 9a1 1 0 1 1-2 0 1 1 0 0 1 2 0Zm-1 2.75a.75.75 0 0 1 .75.75v5a.75.75 0 1 1-1.5 0v-5a.75.75 0 0 1 .75-.75Z" clipRule="evenodd" />
+      </svg>
+    ),
+    back: ({ className, size, color = 'var(--icon-back)' }: IconProps) => (
+      <svg
+        className={`${getSizeClasses(size)} ${className || ''}`}
+        viewBox="0 0 24 24"
+        fill={color}
+      >
+        <path d="M20.446 16.06a.5.5 0 0 1-.655.68l-2.5-1.153a14.381 14.381 0 0 0-6.681-1.309 61.43 61.43 0 0 1-.121 2.204l-.069.938a.754.754 0 0 1-1.158.581 19.55 19.55 0 0 1-5.351-5.068l-.46-.64a.5.5 0 0 1 0-.584l.46-.64A19.55 19.55 0 0 1 9.262 6a.754.754 0 0 1 1.158.58l.069.94c.046.63.082 1.26.108 1.89h.644a9.5 9.5 0 0 1 8.475 5.209l.73 1.442Z" />
+        </svg>
+    ),
+
+    refresh: ({ className, size, color = 'var(--icon-refresh)' }: IconProps) => (
+      <svg
+        className={`${getSizeClasses(size)} ${className || ''}`}
+        viewBox="0 0 24 24"
+        fill={color}
+      >
+        <path fillRule="evenodd" d="M4.755 10.059a7.5 7.5 0 0112.548-3.364l1.903 1.903h-3.183a.75.75 0 100 1.5h4.992a.75.75 0 00.75-.75V4.356a.75.75 0 00-1.5 0v3.18l-1.9-1.9A9 9 0 003.306 9.67a.75.75 0 101.45.388zm15.408 3.352a.75.75 0 00-.919.53 7.5 7.5 0 01-12.548 3.364l-1.902-1.903h3.183a.75.75 0 000-1.5H2.984a.75.75 0 00-.75.75v4.992a.75.75 0 001.5 0v-3.18l1.9 1.9a9 9 0 0015.059-4.035.75.75 0 00-.53-.918z" clipRule="evenodd" />
+      </svg>
+    ),
+
+    expand: ({ className, size, color = 'var(--icon-expand)' }: IconProps) => (
+      <svg
+        className={`${getSizeClasses(size)} ${className || ''}`}
+        viewBox="0 0 24 24"
+        fill={color}
+      >
+        <path
+        fillRule="evenodd"
+        d="M13.664 6.343c0 .414.336.75.75.75h2.493v2.493a.75.75 0 0 0 1.5 0V6.343a.75.75 0 0 0-.75-.75h-3.243a.75.75 0 0 0-.75.75Z"
+        clipRule="evenodd"
+      />
+      <path
+        fillRule="evenodd"
+        d="M17.657 13.664a.75.75 0 0 0-.75.75v2.493h-2.493a.75.75 0 0 0 0 1.5h3.243a.75.75 0 0 0 .75-.75v-3.243a.75.75 0 0 0-.75-.75Z"
+        clipRule="evenodd"
+      />
+      <path
+        fillRule="evenodd"
+        d="M6.343 13.664a.75.75 0 0 1 .75.75v2.493h2.493a.75.75 0 0 1 0 1.5H6.343a.75.75 0 0 1-.75-.75v-3.243a.75.75 0 0 1 .75-.75Z"
+        clipRule="evenodd"
+      />
+      <path
+        fillRule="evenodd"
+        d="M10.336 6.343a.75.75 0 0 1-.75.75H7.093v2.493a.75.75 0 1 1-1.5 0V6.343a.75.75 0 0 1 .75-.75h3.243a.75.75 0 0 1 .75.75Z"
+        clipRule="evenodd"
+      />
+      </svg>
+    ),
+
+    collapse: ({ className, size, color = 'var(--icon-collapse)' }: IconProps) => (
+      <svg
+        className={`${getSizeClasses(size)} ${className || ''}`}
+        viewBox="0 0 24 24"
+        fill={color}
+      >
+        <path
+          fillRule="evenodd"
+          d="M18.028 9.964a.75.75 0 0 0-.75-.75h-2.492V6.722a.75.75 0 0 0-1.5 0v3.242c0 .415.335.75.75.75h3.242a.75.75 0 0 0 .75-.75Z"
+          clipRule="evenodd"
+        />
+        <path
+          fillRule="evenodd"
+          d="M14.036 18.028a.75.75 0 0 0 .75-.75v-2.493h2.492a.75.75 0 0 0 0-1.5h-3.242a.75.75 0 0 0-.75.75v3.243c0 .414.335.75.75.75Z"
+          clipRule="evenodd"
+        />
+        <path
+          fillRule="evenodd"
+          d="M9.964 18.028a.75.75 0 0 1-.75-.75v-2.493H6.722a.75.75 0 0 1 0-1.5h3.242a.75.75 0 0 1 .75.75v3.243a.75.75 0 0 1-.75.75Z"
+          clipRule="evenodd"
+        />
+        <path
+          fillRule="evenodd"
+          d="M5.972 9.964a.75.75 0 0 1 .75-.750h2.492V6.722a.75.75 0 0 1 1.5 0v3.242a.75.75 0 0 1-.75.75H6.722a.75.75 0 0 1-.75-.75Z"
+          clipRule="evenodd"
+        />
+      </svg>
+    ),
+
+    // ===== ICONOS ESPECÍFICOS PARA MODALES =====
+    
+    /** Círculo de información - Para mensajes informativos */
+    informationCircle: ({ className, size, color = 'var(--icon-info)' }: IconProps) => (
+      <svg
+        className={`${getSizeClasses(size)} ${className || ''}`}
+        viewBox="0 0 24 24"
+        fill={color}
+      >
+        <path
+          fillRule="evenodd"
+          d="M3.25 12a8.75 8.75 0 1 1 17.5 0 8.75 8.75 0 0 1-17.5 0ZM13 8a1 1 0 1 1-2 0 1 1 0 0 1 2 0Zm-1 2.75a.75.75 0 0 1 .75.75v5a.75.75 0 0 1-1.5 0v-5a.75.75 0 0 1 .75-.75Z"
+          clipRule="evenodd"
+        />
+      </svg>
+    ),
+
+    /** Círculo con check - Para mensajes de éxito */
+    checkCircle: ({ className, size, color = 'var(--icon-check)' }: IconProps) => (
+      <svg
+        className={`${getSizeClasses(size)} ${className || ''}`}
+        viewBox="0 0 24 24"
+        fill={color}
+      >
+        <path d="M12 2.25A9.75 9.75 0 1 0 21.75 12 9.769 9.769 0 0 0 12 2.25Zm4.64 8.044-5.493 5.25a.76.76 0 0 1-.525.206.722.722 0 0 1-.516-.206L7.36 12.919a.75.75 0 1 1 1.032-1.088l2.23 2.128 4.988-4.753a.75.75 0 0 1 1.032 1.088Z" />
       </svg>
     )
   },
@@ -160,156 +319,6 @@ export const SystemIcons = {
         </svg>
       )
     }
-  },
-
-  // ===== INTERFAZ =====
-  interface: {
-    search: ({ className, size, color }: IconProps) => (
-      <svg
-        className={`${getSizeClasses(size)} ${className || ''}`}
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke={color || "currentColor"}
-      >
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
-      </svg>
-    ),
-
-    loading: ({ className, size }: IconProps) => (
-      <svg
-        className={`${getSizeClasses(size)} ${className || ''} animate-spin`}
-        viewBox="0 0 24 24"
-        fill="none"
-      >
-        <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" className="opacity-25" />
-        <path fill="currentColor" className="opacity-75" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
-      </svg>
-    ),
-
-    close: ({ className, size, color }: IconProps) => (
-      <svg
-        className={`${getSizeClasses(size)} ${className || ''}`}
-        viewBox="0 0 24 24"
-        fill={color || "currentColor"}
-      >
-        <path fillRule="evenodd" d="M5.47 5.47a.75.75 0 011.06 0L12 10.94l5.47-5.47a.75.75 0 111.06 1.06L13.06 12l5.47 5.47a.75.75 0 11-1.06 1.06L12 13.06l-5.47 5.47a.75.75 0 01-1.06-1.06L10.94 12 5.47 6.53a.75.75 0 010-1.06z" clipRule="evenodd" />
-      </svg>
-    ),
-
-    alert: ({ className, size, color }: IconProps) => (
-      <svg
-        className={`${getSizeClasses(size)} ${className || ''}`}
-        viewBox="0 0 24 24"
-        fill={color || "currentColor"}
-      >
-        <path fillRule="evenodd" d="M9.73 3.993a2.749 2.749 0 0 1 4.54 0l.432.632a75.951 75.951 0 0 1 6.944 12.563l.09.208a2.511 2.511 0 0 1-2.024 3.497 69.43 69.43 0 0 1-15.424 0 2.511 2.511 0 0 1-2.024-3.497l.09-.208A75.95 75.95 0 0 1 9.298 4.625l.432-.632ZM13 9a1 1 0 1 1-2 0 1 1 0 0 1 2 0Zm-1 2.75a.75.75 0 0 1 .75.75v5a.75.75 0 1 1-1.5 0v-5a.75.75 0 0 1 .75-.75Z" clipRule="evenodd" />
-      </svg>
-    ),
-    back: ({ className, size, color }: IconProps) => (
-      <svg
-        className={`${getSizeClasses(size)} ${className || ''}`}
-        viewBox="0 0 24 24"
-        fill={color || "currentColor"}
-      >
-        <path d="M20.446 16.06a.5.5 0 0 1-.655.68l-2.5-1.153a14.381 14.381 0 0 0-6.681-1.309 61.43 61.43 0 0 1-.121 2.204l-.069.938a.754.754 0 0 1-1.158.581 19.55 19.55 0 0 1-5.351-5.068l-.46-.64a.5.5 0 0 1 0-.584l.46-.64A19.55 19.55 0 0 1 9.262 6a.754.754 0 0 1 1.158.58l.069.94c.046.63.082 1.26.108 1.89h.644a9.5 9.5 0 0 1 8.475 5.209l.73 1.442Z" />
-        </svg>
-    ),
-
-    refresh: ({ className, size, color }: IconProps) => (
-      <svg
-        className={`${getSizeClasses(size)} ${className || ''}`}
-        viewBox="0 0 24 24"
-        fill={color || "currentColor"}
-      >
-        <path fillRule="evenodd" d="M4.755 10.059a7.5 7.5 0 0112.548-3.364l1.903 1.903h-3.183a.75.75 0 100 1.5h4.992a.75.75 0 00.75-.75V4.356a.75.75 0 00-1.5 0v3.18l-1.9-1.9A9 9 0 003.306 9.67a.75.75 0 101.45.388zm15.408 3.352a.75.75 0 00-.919.53 7.5 7.5 0 01-12.548 3.364l-1.902-1.903h3.183a.75.75 0 000-1.5H2.984a.75.75 0 00-.75.75v4.992a.75.75 0 001.5 0v-3.18l1.9 1.9a9 9 0 0015.059-4.035.75.75 0 00-.53-.918z" clipRule="evenodd" />
-      </svg>
-    ),
-
-    expand: ({ className, size, color }: IconProps) => (
-      <svg
-        className={`${getSizeClasses(size)} ${className || ''}`}
-        viewBox="0 0 24 24"
-        fill={color || "currentColor"}
-      >
-        <path
-        fillRule="evenodd"
-        d="M13.664 6.343c0 .414.336.75.75.75h2.493v2.493a.75.75 0 0 0 1.5 0V6.343a.75.75 0 0 0-.75-.75h-3.243a.75.75 0 0 0-.75.75Z"
-        clipRule="evenodd"
-      />
-      <path
-        fillRule="evenodd"
-        d="M17.657 13.664a.75.75 0 0 0-.75.75v2.493h-2.493a.75.75 0 0 0 0 1.5h3.243a.75.75 0 0 0 .75-.75v-3.243a.75.75 0 0 0-.75-.75Z"
-        clipRule="evenodd"
-      />
-      <path
-        fillRule="evenodd"
-        d="M6.343 13.664a.75.75 0 0 1 .75.75v2.493h2.493a.75.75 0 0 1 0 1.5H6.343a.75.75 0 0 1-.75-.75v-3.243a.75.75 0 0 1 .75-.75Z"
-        clipRule="evenodd"
-      />
-      <path
-        fillRule="evenodd"
-        d="M10.336 6.343a.75.75 0 0 1-.75.75H7.093v2.493a.75.75 0 1 1-1.5 0V6.343a.75.75 0 0 1 .75-.75h3.243a.75.75 0 0 1 .75.75Z"
-        clipRule="evenodd"
-      />
-      </svg>
-    ),
-
-    collapse: ({ className, size, color }: IconProps) => (
-      <svg
-        className={`${getSizeClasses(size)} ${className || ''}`}
-        viewBox="0 0 24 24"
-        fill={color || "currentColor"}
-      >
-        <path
-          fillRule="evenodd"
-          d="M18.028 9.964a.75.75 0 0 0-.75-.75h-2.492V6.722a.75.75 0 0 0-1.5 0v3.242c0 .415.335.75.75.75h3.242a.75.75 0 0 0 .75-.75Z"
-          clipRule="evenodd"
-        />
-        <path
-          fillRule="evenodd"
-          d="M14.036 18.028a.75.75 0 0 0 .75-.75v-2.493h2.492a.75.75 0 0 0 0-1.5h-3.242a.75.75 0 0 0-.75.75v3.243c0 .414.335.75.75.75Z"
-          clipRule="evenodd"
-        />
-        <path
-          fillRule="evenodd"
-          d="M9.964 18.028a.75.75 0 0 1-.75-.75v-2.493H6.722a.75.75 0 0 1 0-1.5h3.242a.75.75 0 0 1 .75.75v3.243a.75.75 0 0 1-.75.75Z"
-          clipRule="evenodd"
-        />
-        <path
-          fillRule="evenodd"
-          d="M5.972 9.964a.75.75 0 0 1 .75-.750h2.492V6.722a.75.75 0 0 1 1.5 0v3.242a.75.75 0 0 1-.75.75H6.722a.75.75 0 0 1-.75-.75Z"
-          clipRule="evenodd"
-        />
-      </svg>
-    ),
-
-    // ===== ICONOS ESPECÍFICOS PARA MODALES =====
-    
-    /** Círculo de información - Para mensajes informativos */
-    informationCircle: ({ className, size, color }: IconProps) => (
-      <svg
-        className={`${getSizeClasses(size)} ${className || ''}`}
-        viewBox="0 0 24 24"
-        fill={color || "currentColor"}
-      >
-        <path
-          fillRule="evenodd"
-          d="M3.25 12a8.75 8.75 0 1 1 17.5 0 8.75 8.75 0 0 1-17.5 0ZM13 8a1 1 0 1 1-2 0 1 1 0 0 1 2 0Zm-1 2.75a.75.75 0 0 1 .75.75v5a.75.75 0 0 1-1.5 0v-5a.75.75 0 0 1 .75-.75Z"
-          clipRule="evenodd"
-        />
-      </svg>
-    ),
-
-    /** Círculo con check - Para mensajes de éxito */
-    checkCircle: ({ className, size, color }: IconProps) => (
-      <svg
-        className={`${getSizeClasses(size)} ${className || ''}`}
-        viewBox="0 0 24 24"
-        fill={color || "currentColor"}
-      >
-        <path d="M12 2.25A9.75 9.75 0 1 0 21.75 12 9.769 9.769 0 0 0 12 2.25Zm4.64 8.044-5.493 5.25a.76.76 0 0 1-.525.206.722.722 0 0 1-.516-.206L7.36 12.919a.75.75 0 1 1 1.032-1.088l2.23 2.128 4.988-4.753a.75.75 0 0 1 1.032 1.088Z" />
-      </svg>
-    )
   },
 
   // ===== USUARIOS Y ROLES =====

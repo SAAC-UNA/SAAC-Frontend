@@ -86,25 +86,13 @@ export const ModernSidebarItem: React.FC<ModernSidebarItemProps> = ({
           'group-hover:scale-110',
           !isCollapsed && 'mr-3'
         )}>
-          {item.icon.startsWith('system-icon:') ? (
-            // Renderizar icono del sistema
-            <div className={cn(
-              "w-5 h-5 transition-all duration-200",
-              isActive ? "text-rojo-una-2" : "text-blanco-una"
-            )}>
-              {getIconByName(item.icon.replace('system-icon:', ''), 'md')}
-            </div>
-          ) : (
-            // Renderizar icono tradicional (SVG file)
-            <img 
-              src={item.icon} 
-              alt={`${item.label} icon`} 
-              className={cn(
-                "w-5 h-5 object-contain transition-all duration-200",
-                isActive ? "icon-rojo-una-2" : "icon-blanco-una"
-              )}
-            />
-          )}
+          {/* Renderizar icono del sistema */}
+          <div className={cn(
+            "w-5 h-5 transition-all duration-200",
+            isActive ? "text-rojo-una-2" : "text-blanco-una"
+          )}>
+            {getIconByName(item.icon.replace('system-icon:', ''), 'md')}
+          </div>
         </span>
 
         {/* Label - oculto cuando está colapsado */}

@@ -1,12 +1,7 @@
-/**
- * SAAC-UNA Design System
- * Sistema de diseño completo para el Sistema de Administración Académica y Curricular
- * Universidad Nacional de Costa Rica
- */
-
 @import "tailwindcss";
 
 /* ===== TIPOGRAFÍAS POPPINS ===== */
+
 @font-face {
   font-family: "Poppins";
   font-style: normal;
@@ -48,6 +43,7 @@
 }
 
 /* ===== ANIMACIONES DE CARGA ===== */
+
 @keyframes lds-ring {
   0% {
     transform: rotate(0deg);
@@ -71,6 +67,7 @@
 
 /* ===== VARIABLES DE DISEÑO UNA ===== */
 /* Colores oficiales, tipografías y espaciado */
+
 @theme {
   --color-rojo-una: #CD1719;
   --color-rojo-una-2: #C32B30;
@@ -91,6 +88,48 @@
   --color-warning: #f59e0b;
   --color-error: #ef4444;
   --color-info: #3b82f6;
+
+  /* Colores estándar para iconos de acciones (NO aplicar a iconos del sidebar) */
+  --icon-view: var(--color-info);         /* Ver/Visualizar - azul info */
+  --icon-edit: var(--color-warning);      /* Editar - amarillo/warning */
+  --icon-delete: var(--color-error);      /* Eliminar - rojo/error */
+  --icon-add: var(--color-rojo-una-2);       /* Agregar - verde/success */
+  --icon-info: var(--color-info);         /* Información - azul info */
+  --icon-cancel: var(--color-gris-una);   /* Cancelar - gris UNA */
+  --icon-save: var(--color-success);      /* Guardar - verde/success */
+  --icon-check: var(--color-success);     /* Confirmar/Éxito - verde/success */
+  --icon-alert: var(--color-warning);     /* Alerta/Advertencia - amarillo/warning */
+  --icon-search: var(--color-gris-una);   /* Buscar - gris UNA */
+  --icon-refresh: var(--color-info);      /* Actualizar - azul info */
+  --icon-expand: var(--color-rojo-una-2);   /* Expandir - gris UNA */
+  --icon-collapse: var(--color-gris-una); /* Colapsar - gris UNA */
+  --icon-back: var(--color-rojo-una-2);     /* Regresar - gris UNA */
+  --icon-close: var(--color-gris-una);    /* Cerrar - gris UNA */
+  --icon-loading: var(--color-rojo-una-2);      /* Cargando - azul info */
+
+  /* Colores para fondos y estados de mensajes */
+  --bg-success: #f0fdf4;     /* Fondo verde claro para éxito */
+  --bg-warning: #fffbeb;     /* Fondo amarillo claro para advertencias */
+  --bg-error: #fef2f2;       /* Fondo rojo claro para errores */
+  --bg-info: #eff6ff;        /* Fondo azul claro para información */
+  
+  --border-success: #bbf7d0; /* Borde verde para éxito */
+  --border-warning: #fde68a; /* Borde amarillo para advertencias */
+  --border-error: #fecaca;   /* Borde rojo para errores */
+  --border-info: #bfdbfe;    /* Borde azul para información */
+
+  --text-success: #166534;   /* Texto verde oscuro para éxito */
+  --text-warning: #92400e;   /* Texto amarillo oscuro para advertencias */
+  --text-error: #991b1b;     /* Texto rojo oscuro para errores */
+  --text-info: #1e40af;      /* Texto azul oscuro para información */
+
+  /* Colores para botones principales */
+  --btn-primary: var(--color-azul-una);     /* Botón principal - azul UNA */
+  --btn-primary-hover: #02366b;             /* Hover del botón principal */
+  --btn-secondary: var(--color-rojo-una);   /* Botón secundario - rojo UNA */  
+  --btn-secondary-hover: #a1151a;           /* Hover del botón secundario */
+  --btn-danger: var(--color-error);         /* Botón de peligro */
+  --btn-danger-hover: #dc2626;              /* Hover del botón de peligro */
 
   /* Ancho del sidebar */
   --spacing-sidebar: 16rem;
@@ -165,7 +204,7 @@
     @apply font-poppins bg-blanco-una-2 text-negro-una;
     /* Aplicar scrollbar personalizado globalmente */
     scrollbar-width: thin;
-    scrollbar-color: rgba(195, 43, 48, 0.2) transparent;
+    scrollbar-color: rgba(167, 167, 169, 0.3) transparent;
   }
 
   body::-webkit-scrollbar {
@@ -177,12 +216,12 @@
   }
 
   body::-webkit-scrollbar-thumb {
-    background: rgba(195, 43, 48, 0.2);
+    background: rgba(167, 167, 169, 0.3);
     border-radius: 5px;
   }
 
   body::-webkit-scrollbar-thumb:hover {
-    background: rgba(195, 43, 48, 0.3);
+    background: rgba(167, 167, 169, 0.5);
   }
 
   h1 {
@@ -196,12 +235,11 @@
   p {
     @apply font-poppins text-base text-gris-una;
   }
-
-  /* Removed global button styles - using specific component classes instead */
 }
 
 /* ===== COMPONENTES REUTILIZABLES ===== */
 /* Clases específicas para sidebar y elementos del sistema */
+
 @layer components {
   /* BOTONES ESPECIALES */
   
@@ -209,8 +247,6 @@
   .btn-menu {
     @apply bg-transparent text-current p-0 border-0 font-normal rounded-none;
   }
-  
-  /* ===== SIDEBAR ===== */
   
   /* Gradiente del sidebar */
   .sidebar-gradient {
@@ -231,10 +267,109 @@
   .glass-effect {
     @apply backdrop-blur-sm bg-gris-una border border-white/20;
   }
+
+  /* ===== TOAST STYLES ===== */
+  /* Clases para toasts - variables de estado */
+
+  .toast-success {
+    background-color: color-mix(in srgb, var(--color-success) 10%, white);
+    border-left-color: var(--color-success);
+    color: color-mix(in srgb, var(--color-success) 80%, black);
+  }
+
+  .toast-error {
+    background-color: color-mix(in srgb, var(--color-error) 10%, white);
+    border-left-color: var(--color-error);
+    color: color-mix(in srgb, var(--color-error) 80%, black);
+  }
+
+  .toast-warning {
+    background-color: color-mix(in srgb, var(--color-warning) 10%, white);
+    border-left-color: var(--color-warning);
+    color: color-mix(in srgb, var(--color-warning) 80%, black);
+  }
+
+  .toast-info {
+    background-color: color-mix(in srgb, var(--color-info) 10%, white);
+    border-left-color: var(--color-info);
+    color: color-mix(in srgb, var(--color-info) 80%, black);
+  }
+
+  /* ===== MESSAGE STYLES ===== */
+  /* Clases para mensajes de estado en formularios */
+  .message-success {
+    background-color: color-mix(in srgb, var(--color-success) 8%, white);
+    border-color: color-mix(in srgb, var(--color-success) 30%, white);
+    color: color-mix(in srgb, var(--color-success) 70%, black);
+  }
+
+  .message-error {
+    background-color: color-mix(in srgb, var(--color-error) 8%, white);
+    border-color: color-mix(in srgb, var(--color-error) 30%, white);
+    color: color-mix(in srgb, var(--color-error) 70%, black);
+  }
+
+  .message-warning {
+    background-color: color-mix(in srgb, var(--color-warning) 8%, white);
+    border-color: color-mix(in srgb, var(--color-warning) 30%, white);
+    color: color-mix(in srgb, var(--color-warning) 70%, black);
+  }
+
+  .message-info {
+    background-color: color-mix(in srgb, var(--color-info) 8%, white);
+    border-color: color-mix(in srgb, var(--color-info) 30%, white);
+    color: color-mix(in srgb, var(--color-info) 70%, black);
+  }
+
+  /* ===== BADGE STYLES ===== */
+  /* Clases para badges/estados usando variables */
+  .badge-success {
+    background-color: color-mix(in srgb, var(--color-success) 20%, white);
+    color: color-mix(in srgb, var(--color-success) 80%, black);
+  }
+
+  .badge-error {
+    background-color: color-mix(in srgb, var(--color-error) 20%, white);
+    color: color-mix(in srgb, var(--color-error) 80%, black);
+  }
+
+  .badge-warning {
+    background-color: color-mix(in srgb, var(--color-warning) 20%, white);
+    color: color-mix(in srgb, var(--color-warning) 80%, black);
+  }
+
+  .badge-info {
+    background-color: color-mix(in srgb, var(--color-info) 20%, white);
+    color: color-mix(in srgb, var(--color-info) 80%, black);
+  }
+
+  /* ===== BUTTON STYLES ===== */
+  /* Clases para botones usando variables de estado */
+
+  .btn-success {
+    background-color: transparent;
+    color: var(--color-success);
+    border: 2px solid var(--color-success);
+  }
+
+  .btn-success:hover {
+    background-color: color-mix(in srgb, var(--color-success) 5%, transparent);
+  }
+
+  .btn-error {
+    background-color: transparent;
+    color: var(--color-error);
+    border: 2px solid var(--color-error);
+  }
+
+  .btn-error:hover {
+    background-color: color-mix(in srgb, var(--color-error) 5%, transparent);
+  }
 }
 
 /* ===== UTILIDADES ADICIONALES ===== */
 /* Transiciones, sombras, efectos especiales y scrollbars */
+
 @layer utilities {
   /* Transiciones personalizadas */
   .transition-sidebar {
@@ -274,28 +409,13 @@
     margin: 0 auto;
   }
 
-  /* Icon color utilities */
-  /* Buscar cómo solucionar esto, quiero darle los colores que yo quiera a los SVG */
-  .icon-blanco-una {
-    filter: invert(100%) sepia(0%) saturate(0%) hue-rotate(0deg) brightness(100%) contrast(100%);
-  }
-  
-  .icon-rojo-una-2 {
-    filter: invert(17%) sepia(94%) saturate(7435%) hue-rotate(356deg) brightness(95%) contrast(115%);
-  }
-
-  .icono-negro-una {
-    filter: invert(0%) sepia(0%) saturate(0%) hue-rotate(0deg) brightness(0%) contrast(100%);
-  }
-
   /* ===== SCROLLBAR STYLING ===== */
-  /* Estilos globales para scrollbar personalizado */
+  /* Scrollbar personalizado simple y consistente */
   .custom-scrollbar {
     scrollbar-width: thin;
-    scrollbar-color: rgba(0, 0, 0, 0.3) transparent;
+    scrollbar-color: rgba(167, 167, 169, 0.4) transparent;
   }
 
-  /* Webkit scrollbar (Chrome, Safari, Edge) */
   .custom-scrollbar::-webkit-scrollbar {
     width: 8px;
   }
@@ -306,43 +426,16 @@
   }
 
   .custom-scrollbar::-webkit-scrollbar-thumb {
-    background: rgba(0, 0, 0, 0.3);
+    background: rgba(167, 167, 169, 0.4);
     border-radius: 4px;
     transition: background 0.2s ease;
   }
 
   .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-    background: rgba(0, 0, 0, 0.5);
+    background: rgba(167, 167, 169, 0.6);
   }
 
-  .custom-scrollbar::-webkit-scrollbar-thumb:active {
-    background: rgba(0, 0, 0, 0.7);
-  }
-
-  /* Variante más sutil para areas más pequeñas */
-  .custom-scrollbar-thin {
-    scrollbar-width: thin;
-    scrollbar-color: rgba(167, 167, 169, 0.4) transparent;
-  }
-
-  .custom-scrollbar-thin::-webkit-scrollbar {
-    width: 6px;
-  }
-
-  .custom-scrollbar-thin::-webkit-scrollbar-track {
-    background: transparent;
-  }
-
-  .custom-scrollbar-thin::-webkit-scrollbar-thumb {
-    background: rgba(167, 167, 169, 0.4);
-    border-radius: 3px;
-  }
-
-  .custom-scrollbar-thin::-webkit-scrollbar-thumb:hover {
-    background: rgba(195, 43, 48, 0.4);
-  }
-
-  /* ===== Border radius personalizado para componentes UNA ===== */
+  /* ===== Border radius personalizado para componentes ===== */
   .rounded-corner {
     border-radius: 15px;
   }

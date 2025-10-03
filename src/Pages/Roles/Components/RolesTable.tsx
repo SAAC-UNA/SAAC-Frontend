@@ -16,13 +16,11 @@
  */
 
 import React, { useEffect, useState } from 'react';
-import { DataTable, PermissionsModal } from '@/components/index';
-import { createTableActions } from '@/components/Ui/TableActionButtons';
+import { DataTable, PermissionsModal, ButtonWithTooltip } from '@/components/index';
 import { TableIcons } from './TableIcons';
 import { useRoles } from '@/hooks/UseRoles';
 import { usePermissionLabels } from '@/hooks/UsePermissionLabels';
-import { cn } from '@/utils/ClassNames';
-import type { DataTableColumn, DataTableAction } from '@/components/Ui/DataTable';
+import type { DataTableColumn } from '@/components/Ui/DataTable';
 import type { Role } from '@/Services/RoleService';
 
 interface RolesTableProps {
@@ -131,56 +129,40 @@ export const RolesTable: React.FC<RolesTableProps> = ({
             header: 'Acciones',
             align: 'center',
             render: (_, role) => (
-                <div className="flex items-center justify-center gap-3 pr-2">
-                    {actions.map((action, actionIndex) => (
-                        <button
-                            key={actionIndex}
-                            className={cn(
-                                "relative h-10 max-h-[40px] w-10 max-w-[40px] select-none rounded-lg text-center align-middle font-sans text-xs font-medium uppercase transition-all disabled:pointer-events-none disabled:opacity-50 disabled:shadow-none",
-                                action.className
-                            )}
-                            type="button"
-                            onClick={() => action.onClick(role)}
-                            disabled={action.disabled?.(role)}
-                            title={action.label}
-                        >
-                            <span className="absolute transform -translate-x-1/2 -translate-y-1/2 top-1/2 left-1/2">
-                                {action.icon}
-                            </span>
-                        </button>
-                    ))}
+                <div className="flex items-center justify-center gap-2 pr-2">
+                    <ButtonWithTooltip
+                        variant="tableView"
+                        size="sm"
+                        tooltip="Ver permisos"
+                        onClick={() => setModalState({ isOpen: true, role })}
+                        className="h-8 w-8 p-2"
+                    >
+                        <TableIcons.view className="w-4 h-4" />
+                    </ButtonWithTooltip>
+                    
+                    <ButtonWithTooltip
+                        variant="tableEdit"
+                        size="sm"
+                        tooltip="Editar rol"
+                        onClick={() => onEdit?.(role)}
+                        className="h-8 w-8 p-2"
+                    >
+                        <TableIcons.edit className="w-4 h-4" />
+                    </ButtonWithTooltip>
+                    
+                    <ButtonWithTooltip
+                        variant="tableDelete"
+                        size="sm"
+                        tooltip="Eliminar rol"
+                        onClick={() => onDelete?.(role)}
+                        className="h-8 w-8 p-2"
+                    >
+                        <TableIcons.delete className="w-4 h-4" />
+                    </ButtonWithTooltip>
                 </div>
             )
         }
     ];
-
-    // Acciones disponibles para cada rol usando el sistema Button establecido
-    const actions: DataTableAction<Role>[] = createTableActions([
-        {
-            type: 'view',
-            icon: <TableIcons.view className="w-4 h-4" />,
-            label: 'Ver permisos',
-            onClick: (role) => {
-                setModalState({ isOpen: true, role });
-            }
-        },
-        {
-            type: 'edit',
-            icon: <TableIcons.edit className="w-4 h-4" />,
-            label: 'Editar rol',
-            onClick: (role) => {
-                onEdit?.(role);
-            }
-        },
-        {
-            type: 'delete',
-            icon: <TableIcons.delete className="w-4 h-4" />,
-            label: 'Eliminar rol',
-            onClick: (role) => {
-                onDelete?.(role);
-            }
-        }
-    ]);
 
     const handleSearch = (query: string) => {
         setSearchQuery(query);
@@ -197,16 +179,16 @@ export const RolesTable: React.FC<RolesTableProps> = ({
     if (error) {
         return (
             <div className="w-full p-6">
-                <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg">
+                <div className="mb-6 p-4 bg-[var(--bg-error)] border border-[var(--border-error)] rounded-lg">
                     <div className="flex">
                         <div className="flex-shrink-0">
-                            <svg className="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
+                            <svg className="h-5 w-5 text-[var(--icon-delete)]" viewBox="0 0 20 20" fill="currentColor">
                                 <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
                             </svg>
                         </div>
                         <div className="ml-3">
-                            <h3 className="text-sm font-medium text-red-800">Error al cargar roles</h3>
-                            <div className="mt-2 text-sm text-red-700">
+                            <h3 className="text-sm font-medium text-[var(--text-error)]">Error al cargar roles</h3>
+                            <div className="mt-2 text-sm text-[var(--text-error)]">
                                 <p>{error}</p>
                             </div>
                             <div className="mt-4">
@@ -261,6 +243,8 @@ export const RolesTable: React.FC<RolesTableProps> = ({
                 isOpen={modalState.isOpen}
                 onClose={handleCloseModal}
                 roleName={modalState.role?.name || ''}
+                roleDescription={modalState.role?.description}
+                // roleCreatedAt={modalState.role?.createdAt} // TODO: Uncomment when backend sends created_at
                 permissions={modalState.role?.permissions || []}
                 getPermissionLabel={getLabel}
             />

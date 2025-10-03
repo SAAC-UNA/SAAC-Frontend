@@ -142,8 +142,7 @@ export const Table = <T extends Record<string, any>>({
     return (
       <div className={cn("bg-white rounded-lg shadow-sm border", className)}>
         <div className="p-8 flex flex-col items-center justify-center gap-3">
-          <LoadingSpinner variant="bounce" size="lg" color="secondary" />
-          <p className="text-center text-gray-500">Cargando datos...</p>
+          <LoadingSpinner size="lg" />
         </div>
       </div>
     );

@@ -87,7 +87,7 @@ const RolesRepository: React.FC = () => {
           <p className="text-gray-700">
             ¿Está seguro de que desea eliminar el rol <strong>"{deleteModalState.role?.name}"</strong>?
           </p>
-          <p className="text-sm text-red-600">
+          <p className="text-sm text-[var(--text-error)]">
             Esta acción no se puede deshacer.
           </p>
           
@@ -101,7 +101,7 @@ const RolesRepository: React.FC = () => {
             </button>
             <button
               onClick={confirmDeleteRole}
-              className="px-4 py-2 text-white bg-red-600 rounded-lg hover:bg-red-700 transition-colors"
+              className="px-4 py-2 text-white bg-[var(--btn-danger)] rounded-lg hover:bg-[var(--btn-danger-hover)] transition-colors"
               disabled={isLoading}
             >
               {isLoading ? 'Eliminando...' : 'Eliminar'}

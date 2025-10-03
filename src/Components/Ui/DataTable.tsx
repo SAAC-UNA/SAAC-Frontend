@@ -256,8 +256,7 @@ export const DataTable = <T extends Record<string, any>>({
       <div className="p-6 px-0 overflow-x-auto lg:overflow-x-visible custom-scrollbar">
         {loading ? (
           <div className="flex flex-col items-center justify-center py-12 gap-3">
-            <LoadingSpinner variant="bounce" size="lg" color="secondary" className="text-rojo-una" />
-            <p className="text-rojo-una-2">Cargando tabla...</p>
+            <LoadingSpinner size="lg" />
           </div>
         ) : data.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-12 text-gray-500">

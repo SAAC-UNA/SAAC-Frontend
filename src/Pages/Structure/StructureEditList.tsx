@@ -150,7 +150,7 @@ const StructureEditList: React.FC = () => {
           <div>
             {isLoading ? (
               <div className="flex items-center justify-center py-12">
-                <LoadingSpinner variant="bounce" size="lg" color="secondary" />
+                <LoadingSpinner size="lg" />
               </div>
             ) : filteredElements.length === 0 ? (
               <div className="text-center py-12">
@@ -177,13 +177,13 @@ const StructureEditList: React.FC = () => {
                           </span>
                           <span className={`px-2 py-1 text-xs font-medium rounded ${
                             element.active 
-                              ? 'bg-green-100 text-green-800' 
-                              : 'bg-red-100 text-red-800'
+                              ? 'badge-success' 
+                              : 'badge-error'
                           }`}>
                             {element.active ? 'Activo' : 'Inactivo'}
                           </span>
                           {element.hasChildren && (
-                            <span className="px-2 py-1 bg-orange-100 text-orange-800 text-xs font-medium rounded">
+                            <span className="px-2 py-1 badge-warning text-xs font-medium rounded">
                               Tiene dependencias
                             </span>
                           )}

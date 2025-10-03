@@ -258,8 +258,8 @@ export const StructureCreation: React.FC = () => {
     <div className="container mx-auto px-4 py-8">
       {/* Mensaje de éxito */}
       {successMessage && (
-        <div className="mb-6 p-4 bg-green-50 border border-green-200 rounded-lg">
-          <p className="text-green-800">{successMessage}</p>
+        <div className="mb-6 p-4 message-success border rounded-lg">
+          <p>{successMessage}</p>
         </div>
       )}
 
@@ -334,14 +334,14 @@ export const StructureCreation: React.FC = () => {
                 'focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent',
                 'placeholder-gray-400',
                 errors.description
-                  ? 'border-red-300 bg-red-50'
+                  ? 'border-[var(--border-error)] bg-[var(--bg-error)]'
                   : 'border-gray-300 hover:border-gray-400'
               )}
               rows={3}
               placeholder="Descripción detallada del elemento (opcional)"
             />
             {errors.description && (
-              <p className="mt-1 text-sm text-red-600">{errors.description}</p>
+              <p className="mt-1 text-sm text-[var(--text-error)]">{errors.description}</p>
             )}
             <p className="mt-1 text-sm text-gray-500">
               Máximo {VALIDATION_RULES.DESCRIPTION_MAX_LENGTH} caracteres.

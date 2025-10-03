@@ -210,8 +210,8 @@ const TreeNode: React.FC<TreeNodeProps> = ({ node, onToggle }) => {
             className={cn(
               'inline-flex items-center px-2 py-1 rounded-full text-xs font-medium',
               element.active
-                ? 'bg-green-100 text-green-800'
-                : 'bg-red-100 text-red-800'
+                ? 'badge-success'
+                : 'badge-error'
             )}
           >
             {element.active ? 'Activo' : 'Inactivo'}
@@ -304,8 +304,7 @@ export const StructureRepository: React.FC = () => {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <div className="text-center">
-          <LoadingSpinner variant="bounce" size="lg" color="secondary" className="mx-auto mb-4 text-rojo-una" />
-          <p className="text-rojo-una">Cargando estructura del repositorio...</p>
+          <LoadingSpinner size="lg" className="mx-auto mb-4" />
         </div>
       </div>
     );

@@ -122,33 +122,15 @@ export const MultiSelect: React.FC<MultiSelectProps> = ({
 
   return (
     <div className={cn('relative w-full', className)} ref={selectRef}>
-      {/* Label con botón Seleccionar todo */}
+      {/* Label */}
       {label && (
-        <div className="flex items-center justify-between mb-1">
-          <label className={cn(
-            'block font-medium text-negro-una text-sm',
-            disabled && 'text-gray-400'
-          )}>
-            {label}
-            {required && <span className="text-rojo-una-2 ml-1">*</span>}
-          </label>
-          
-          {showSelectAll && options.length > 0 && (
-            <button
-              type="button"
-              onClick={handleSelectAll}
-              disabled={disabled}
-              className={cn(
-                'text-xs font-medium transition-colors duration-200',
-                disabled 
-                  ? 'text-gray-400 cursor-not-allowed'
-                  : 'text-azul-una hover:text-blue-800 cursor-pointer'
-              )}
-            >
-              {isAllSelected() ? deselectAllText : selectAllText}
-            </button>
-          )}
-        </div>
+        <label className={cn(
+          'block font-medium text-negro-una text-sm mb-1',
+          disabled && 'text-gray-400'
+        )}>
+          {label}
+          {required && <span className="text-rojo-una-2 ml-1">*</span>}
+        </label>
       )}
 
       {/* Select Button */}
@@ -201,17 +183,15 @@ export const MultiSelect: React.FC<MultiSelectProps> = ({
           <div className="py-1 text-sm">
             {/* Botón Seleccionar todo dentro del dropdown */}
             {showSelectAll && options.length > 1 && (
-              <>
-                <button
-                  type="button"
-                  onClick={handleSelectAll}
-                  className="w-full text-left px-4 py-2 text-blue-600 hover:bg-blue-50 focus:bg-blue-50 focus:outline-none transition-colors duration-150 border-b border-gray-100"
-                >
-                  <span className="font-medium">
-                    {isAllSelected() ? deselectAllText : selectAllText}
-                  </span>
-                </button>
-              </>
+              <button
+                type="button"
+                onClick={handleSelectAll}
+                className="w-full text-left px-4 py-2.5 text-azul-una hover:bg-blue-50 focus:bg-blue-50 focus:outline-none transition-colors duration-150 border-b border-gray-200 bg-gray-50/50"
+              >
+                <span className="font-semibold text-sm">
+                  {isAllSelected() ? deselectAllText : selectAllText}
+                </span>
+              </button>
             )}
             
             {options.map((option) => {

@@ -44,6 +44,8 @@ export interface BackendRole {
   name: string;
   description?: string;
   permissions: BackendPermission[];
+  // created_at?: string; // TODO: Uncomment when backend adds this field to RoleResource
+  // updated_at?: string; // TODO: Uncomment when backend adds this field to RoleResource
 }
 
 /**
@@ -54,6 +56,8 @@ export interface Role {
   name: string;
   description?: string;
   permissions: string[];
+  // createdAt?: Date; // TODO: Uncomment when backend sends created_at
+  // updatedAt?: Date; // TODO: Uncomment when backend sends updated_at
 }
 
 /**
@@ -73,7 +77,9 @@ const transformBackendRole = (backendRole: BackendRole): Role => {
     id: backendRole.id,
     name: backendRole.name,
     description: backendRole.description,
-    permissions: backendRole.permissions.map(permission => permission.name)
+    permissions: backendRole.permissions.map(permission => permission.name),
+    // createdAt: backendRole.created_at ? new Date(backendRole.created_at) : undefined, // TODO: Uncomment when backend sends created_at
+    // updatedAt: backendRole.updated_at ? new Date(backendRole.updated_at) : undefined  // TODO: Uncomment when backend sends updated_at
   };
 };
 

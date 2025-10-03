@@ -218,8 +218,7 @@ const StructureEditForm: React.FC = () => {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <div className="text-center">
-          <LoadingSpinner variant="bounce" size="lg" color="secondary" className="mx-auto mb-4" />
-          <p className="text-gray-600">Cargando elemento para edición...</p>
+          <LoadingSpinner size="lg" className="mx-auto mb-4" />
         </div>
       </div>
     );
@@ -265,7 +264,7 @@ const StructureEditForm: React.FC = () => {
                 </div>
                 <div>
                   <span className="font-medium text-gray-700">Estado:</span>
-                  <span className={`ml-2 ${currentElement.active ? 'text-green-600' : 'text-red-600'}`}>
+                  <span className={`ml-2 ${currentElement.active ? 'text-[var(--text-success)]' : 'text-[var(--text-error)]'}`}>
                     {currentElement.active ? 'Activo' : 'Inactivo'}
                   </span>
                 </div>
@@ -363,12 +362,12 @@ const StructureEditForm: React.FC = () => {
         {/* Panel lateral */}
         <div className="space-y-6">
           {/* Consideraciones importantes */}
-          <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
-            <h4 className="flex items-center text-sm font-medium text-yellow-800 mb-2">
+          <div className="bg-[var(--bg-warning)] border border-[var(--border-warning)] rounded-lg p-4">
+            <h4 className="flex items-center text-sm font-medium text-[var(--text-warning)] mb-2">
               <span className="text-lg mr-2">⚠️</span>
               Consideraciones Importantes
             </h4>
-            <ul className="text-xs text-yellow-700 space-y-1">
+            <ul className="text-xs text-[var(--text-warning)] space-y-1">
               <li>• No se puede cambiar el tipo de elemento</li>
               <li>• No se puede modificar su posición jerárquica</li>
               <li>• Los códigos deben mantener su unicidad</li>
@@ -417,11 +416,11 @@ const StructureEditForm: React.FC = () => {
 
           {/* Información del cambio actual */}
           {hasChanges && (
-            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-              <h4 className="text-sm font-medium text-blue-800 mb-2">
+            <div className="bg-[var(--bg-info)] border border-[var(--border-info)] rounded-lg p-4">
+              <h4 className="text-sm font-medium text-[var(--text-info)] mb-2">
                 Cambios Pendientes
               </h4>
-              <div className="text-xs text-blue-700 space-y-1">
+              <div className="text-xs text-[var(--text-info)] space-y-1">
                 {formData.code !== currentElement.originalCode && (
                   <div>• Código: "{currentElement.originalCode}" → "{formData.code}"</div>
                 )}
