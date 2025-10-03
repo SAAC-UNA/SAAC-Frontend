@@ -87,7 +87,9 @@ export const LoadingSpinner: React.FC<LoadingSpinnerProps> = ({
       </div>
     );
   }
-
+/* 
+  *Nuevo loader, este me gustó más para mantenerlo
+*/
   // Bounce loader 
   if (variant === 'bounce') {
     // Tamaños para las esferas del bounce
