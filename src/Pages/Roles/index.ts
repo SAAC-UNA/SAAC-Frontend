@@ -9,7 +9,7 @@
  */
 
 // Páginas principales
-export { default as RolesRepository } from './RolesRepository';
+export { default as RolesRepository } from './RolesList';
 export { default as RolesCreation } from './RolesCreation';
 export { default as RolesEdit } from './RolesEdit';
 

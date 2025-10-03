@@ -4,7 +4,7 @@ import { NavigationProvider } from './Context/NavigationContext';
 import { Layout } from './Components/Layout/Index';
 import { HomePage } from './Pages/Index';
 import { RolesRepository, RolesCreation, RolesEdit } from './Pages/Roles';
-import StructureRepository from './Pages/Structure/StructureRepository';
+import StructureRepository from './Pages/Structure/StructureList';
 import StructureCreation from './Pages/Structure/StructureCreation';
 import StructureDeletion from './Pages/Structure/StructureDeletion';
 import StructureEditList from './Pages/Structure/StructureEditList';

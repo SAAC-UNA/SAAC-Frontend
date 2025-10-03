@@ -6,7 +6,7 @@ interface LoadingSpinnerProps {
   color?: 'primary' | 'secondary' | 'white' | 'gray' | 'current';
   className?: string;
   thickness?: 'thin' | 'normal' | 'thick';
-  variant?: 'spinner' | 'ring';
+  variant?: 'spinner' | 'ring' | 'bounce';
 }
 
 export const LoadingSpinner: React.FC<LoadingSpinnerProps> = ({
@@ -81,6 +81,63 @@ export const LoadingSpinner: React.FC<LoadingSpinnerProps> = ({
               borderTopColor: 'currentColor',
               animation: `lds-ring 1.2s cubic-bezier(0.5, 0, 0.5, 1) infinite`,
               animationDelay: `${-0.45 + index * 0.15}s`
+            }}
+          />
+        ))}
+      </div>
+    );
+  }
+
+  // Bounce loader 
+  if (variant === 'bounce') {
+    // Tamaños para las esferas del bounce
+    const bounceSizeClasses = {
+      xs: 'w-2 h-2',
+      sm: 'w-3 h-3',
+      md: 'w-4 h-4',
+      lg: 'w-5 h-5',
+      xl: 'w-8 h-8'
+    };
+
+    // Espaciado del contenedor según el tamaño
+    const bounceContainerClasses = {
+      xs: 'gap-1',
+      sm: 'gap-1',
+      md: 'gap-2',
+      lg: 'gap-2',
+      xl: 'gap-3'
+    };
+
+    // Colores para las esferas
+    const bounceColorClasses = {
+      primary: 'bg-azul-una',
+      secondary: 'bg-rojo-una-2',
+      white: 'bg-white',
+      gray: 'bg-gray-900',
+      current: 'bg-current'
+    };
+
+    return (
+      <div 
+        className={cn(
+          'flex items-center justify-center',
+          bounceContainerClasses[size],
+          className
+        )}
+        role="status"
+        aria-label="Cargando..."
+      >
+        {[0, 1, 2].map((index) => (
+          <div
+            key={index}
+            className={cn(
+              'rounded-full',
+              bounceSizeClasses[size],
+              bounceColorClasses[color]
+            )}
+            style={{
+              animation: 'sk-bouncedelay 1.4s infinite ease-in-out both',
+              animationDelay: `${-0.32 + index * 0.16}s`
             }}
           />
         ))}
@@ -186,7 +243,7 @@ export const LoadingOverlay: React.FC<LoadingOverlayProps> = ({
       {isLoading && (
         <div className="absolute inset-0 bg-white/80 backdrop-blur-sm flex items-center justify-center z-10">
           <div className="flex flex-col items-center space-y-3">
-            <LoadingSpinner variant="ring" size="sm" />
+            <LoadingSpinner variant="bounce" size="sm" color="secondary" />
             <p className="text-sm text-gris-una">Cargando...</p>
           </div>
         </div>

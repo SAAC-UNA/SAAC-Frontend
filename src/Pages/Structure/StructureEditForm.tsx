@@ -3,7 +3,7 @@ import { useSearchParams, useNavigate } from 'react-router-dom';
 import { Input } from '@/Components/Ui/Input';
 import { Button } from '@/Components/Ui/Button';
 import { Modal, useModal } from '@/Components/Ui/Modal';
-import { FormContainer } from '@/Components/Ui/FormContainer';
+import { ScreenContainer } from '@/Components/Ui/ScreenContainer';
 import { LoadingSpinner } from '@/Components/Ui/Loading';
 import { useStructure } from '@/Hooks/UseStructure';
 import type { StructureElement, ElementType } from '@/Types/StructureTypes';
@@ -218,7 +218,7 @@ const StructureEditForm: React.FC = () => {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <div className="text-center">
-          <LoadingSpinner variant="ring" size="lg" color="secondary" className="mx-auto mb-4" />
+          <LoadingSpinner variant="bounce" size="lg" color="secondary" className="mx-auto mb-4" />
           <p className="text-gray-600">Cargando elemento para edición...</p>
         </div>
       </div>
@@ -226,7 +226,7 @@ const StructureEditForm: React.FC = () => {
   }
 
   return (
-    <FormContainer
+    <ScreenContainer
       title="Editar Elementos"
       description="Selecciona y modifica elementos existentes en la estructura del repositorio. No es posible cambiar el tipo de elemento ni su posición en la jerarquía."
     >
@@ -466,7 +466,7 @@ const StructureEditForm: React.FC = () => {
           </div>
         </div>
       </Modal>
-    </FormContainer>
+    </ScreenContainer>
   );
 };
 

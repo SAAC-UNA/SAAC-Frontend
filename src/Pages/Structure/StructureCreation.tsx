@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { cn } from '@/Utils/ClassNames';
 import { Button } from '@/Components/Ui/Button';
 import { Input } from '@/Components/Ui/Input';
-import { FormContainer } from '@/Components/Ui/FormContainer';
+import { ScreenContainer } from '@/Components/Ui/ScreenContainer';
 import { CustomSelect } from '@/Components/Ui/SingleSelect';
 import { useStructure } from '@/Hooks/UseStructure';
 import type { 
@@ -264,7 +264,7 @@ export const StructureCreation: React.FC = () => {
       )}
 
       {/* Formulario */}
-      <FormContainer
+      <ScreenContainer
         title="Crear Elemento de Estructura"
         description="Agrega un nuevo elemento a la jerarquía del Sistema SAAC-UNA respetando las reglas de estructura."
       >
@@ -367,7 +367,7 @@ export const StructureCreation: React.FC = () => {
             </Button>
           </div>
         </form>
-      </FormContainer>
+      </ScreenContainer>
     </div>
   );
 };

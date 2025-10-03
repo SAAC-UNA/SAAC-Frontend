@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { SearchInput } from '@/Components/Ui/SearchInput';
 import { CustomSelect } from '@/Components/Ui/SingleSelect';
 import { Button } from '@/Components/Ui/Button';
-import { FormContainer } from '@/Components/Ui/FormContainer';
+import { ScreenContainer } from '@/Components/Ui/ScreenContainer';
 import { LoadingSpinner } from '@/Components/Ui/Loading';
 import { useStructure } from '@/Hooks/UseStructure';
 import type { StructureElement, ElementType } from '@/Types/StructureTypes';
@@ -86,7 +86,7 @@ const StructureEditList: React.FC = () => {
   };
 
   return (
-    <FormContainer
+    <ScreenContainer
       title="Editar Elementos"
       description="Selecciona y modifica elementos existentes en la estructura del repositorio. No es posible cambiar el tipo de elemento ni su posición en la jerarquía."
     >
@@ -150,7 +150,7 @@ const StructureEditList: React.FC = () => {
           <div>
             {isLoading ? (
               <div className="flex items-center justify-center py-12">
-                <LoadingSpinner variant="ring" size="lg" color="secondary" />
+                <LoadingSpinner variant="bounce" size="lg" color="secondary" />
               </div>
             ) : filteredElements.length === 0 ? (
               <div className="text-center py-12">
@@ -220,7 +220,7 @@ const StructureEditList: React.FC = () => {
             )}
           </div>
         </div>
-      </FormContainer>
+      </ScreenContainer>
   );
 };
 

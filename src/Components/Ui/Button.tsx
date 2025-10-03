@@ -2,7 +2,9 @@
  * Button - Componente de botón reutilizable del Design System SAAC-UNA
  * 
  * Características:
- * - Múltiples variantes (primary, secondary, outline, ghost, transparent)
+ * - Múltiples variantes (primary, seco      {loading && (
+        <LoadingSpinner variant="bounce" size="sm" color="current" className="mr-2" />
+      )}ry, outline, ghost, transparent)
  * - Sistema de tamaños responsivo integrado
  * - Estados de loading, disabled, fullWidth
  * - Colores consistentes con la marca UNA

@@ -7,13 +7,17 @@
 
 import React, { useState } from 'react';
 import { RolesTable } from './Components/RolesTable';
-import { PageHeader } from '@/components/Ui/Index';
-import { Modal } from '@/components/Ui/Modal';
-import { useRoles } from '@/hooks/UseRoles';
+import { ScreenContainer } from '@/Components/Ui/ScreenContainer';
+import { Modal } from '@/Components/Ui/Modal';
+import { useRoles } from '@/Hooks/UseRoles';
+import { MODULE_INFO } from '@/Constants/ModuleInfo';
 import type { Role } from '@/Services/RoleService';
 
 const RolesRepository: React.FC = () => {
   const { deleteRole, isLoading } = useRoles();
+  
+  // Obtener información del módulo desde ModuleInfo
+  const moduleInfo = MODULE_INFO.roles;
   
   // Estado para el modal de confirmación
   const [deleteModalState, setDeleteModalState] = useState<{
@@ -60,19 +64,17 @@ const RolesRepository: React.FC = () => {
   };
 
   return (
-    <div className="p-6">
-      <PageHeader
-        title="Gestión de Roles"
-        description="Administra los roles y permisos del sistema SAAC-UNA"
-      />
-
-      <div className="mt-6">
+    <div className="container mx-auto px-4 py-8">
+      <ScreenContainer
+        title={moduleInfo.title}
+        description={moduleInfo.description}
+      >
         <RolesTable
           onEdit={handleEditRole}
           onDelete={handleDeleteRole}
           onCreate={handleCreateRole}
         />
-      </div>
+      </ScreenContainer>
 
       {/* Modal de confirmación de eliminación */}
       <Modal

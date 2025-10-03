@@ -2,7 +2,7 @@ import React from 'react';
 import { cn } from '@/utils/ClassNames';
 import { useBreakpoint } from '@/hooks/UseBreakpoint';
 
-interface FormContainerProps {
+interface ScreenContainerProps {
   children: React.ReactNode;
   title?: string;
   description?: string;
@@ -11,7 +11,7 @@ interface FormContainerProps {
   variant?: 'default' | 'full-width';
 }
 
-export const FormContainer: React.FC<FormContainerProps> = ({
+export const ScreenContainer: React.FC<ScreenContainerProps> = ({
   children,
   title,
   description,
@@ -30,9 +30,9 @@ export const FormContainer: React.FC<FormContainerProps> = ({
   // Función para calcular el contenedor externo
   const getOuterContainer = () => {
     if (variant === 'full-width') {
-      return 'w-full px-4 py-8'; // Sin max-width para full-width
+      return 'w-full px-4 pt-2 pb-8'; // Menos padding arriba para full-width
     }
-    return 'max-w-7xl mx-auto px-4 py-8'; // Con max-width y centrado para default
+    return 'max-w-7xl mx-auto px-4 pt-2 pb-8'; // Menos padding arriba, más abajo
   };
 
   // Si no se muestra header y es full-width, retornar solo el contenido
@@ -68,25 +68,26 @@ export const FormContainer: React.FC<FormContainerProps> = ({
       )}>
         {/* Header */}
         {title && (
-          <div className={cn(
-            getFormPadding(),
-            'border-b border-gris-una/10'
-          )}>
-            <h1 className={cn(
-              'font-bold text-negro-una mb-2',
-              isMobile ? 'text-xl' : 'text-2xl'
-            )}>
-              {title}
-            </h1>
-            {description && (
-              <p className={cn(
-                'text-gris-una',
-                isMobile ? 'text-sm' : 'text-base'
+          <>
+            <div className={getFormPadding()}>
+              <h1 className={cn(
+                'font-bold text-negro-una mb-2',
+                isMobile ? 'text-xl' : 'text-2xl'
               )}>
-                {description}
-              </p>
-            )}
-          </div>
+                {title}
+              </h1>
+              {description && (
+                <p className={cn(
+                  'text-gris-una',
+                  isMobile ? 'text-sm' : 'text-base'
+                )}>
+                  {description}
+                </p>
+              )}
+            </div>
+            {/* Línea divisoria con márgenes */}
+            <hr className="border-0 border-t border-gris-una/20 mx-6" />
+          </>
         )}
 
         {/* Contenido */}

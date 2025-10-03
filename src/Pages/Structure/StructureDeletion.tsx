@@ -3,7 +3,7 @@ import { CustomSelect } from '@/Components/Ui/SingleSelect';
 import { SearchInput } from '@/Components/Ui/SearchInput';
 import { Button } from '@/Components/Ui/Button';
 import { Modal, useModal } from '@/Components/Ui/Modal';
-import { FormContainer } from '@/Components/Ui/FormContainer';
+import { ScreenContainer } from '@/Components/Ui/ScreenContainer';
 import { LoadingSpinner } from '@/Components/Ui/Loading';
 import { useStructure } from '@/Hooks/UseStructure';
 import type { StructureElement, ElementType } from '@/Types/StructureTypes';
@@ -229,7 +229,7 @@ const StructureDeletion: React.FC = () => {
   };
 
   return (
-    <FormContainer
+    <ScreenContainer
       title="Eliminación o Desactivación"
       description="Gestiona el estado de elementos en la estructura. Puedes activar elementos inactivos, desactivar elementos con dependencias o eliminar permanentemente elementos sin dependencias."
     >
@@ -310,7 +310,7 @@ const StructureDeletion: React.FC = () => {
         <div>
           {isLoading ? (
             <div className="flex items-center justify-center py-12">
-              <LoadingSpinner variant="ring" size="lg" color="secondary" />
+              <LoadingSpinner variant="bounce" size="lg" color="secondary" />
             </div>
           ) : filteredElements.length === 0 ? (
             <div className="text-center py-12">
@@ -452,7 +452,7 @@ const StructureDeletion: React.FC = () => {
           </div>
         </div>
       </Modal>
-    </FormContainer>
+    </ScreenContainer>
   );
 };
 

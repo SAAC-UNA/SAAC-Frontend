@@ -20,5 +20,5 @@ export { CustomSelect } from './SingleSelect';
 export type { SelectOption, CustomSelectProps } from './SingleSelect';
 export { SearchInput } from './SearchInput';
 export type { SearchInputProps } from './SearchInput';
-export { FormContainer } from './FormContainer';
+export { ScreenContainer } from './ScreenContainer';
 export { ResponsiveLayout } from './ResponsiveLayout';

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { cn } from '@/Utils/ClassNames';
 import { Button } from '@/Components/Ui/Button';
-import { FormContainer } from '@/Components/Ui/FormContainer';
+import { ScreenContainer } from '@/Components/Ui/ScreenContainer';
 import { SystemIcons } from '@/Components/Ui/Icons/SystemIcons';
 import { LoadingSpinner } from '@/Components/Ui/Loading';
 import type { StructureElement, StructureTreeNode } from '@/Types/StructureTypes';
@@ -304,15 +304,15 @@ export const StructureRepository: React.FC = () => {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <div className="text-center">
-          <LoadingSpinner variant="ring" size="lg" color="secondary" className="mx-auto mb-4" />
-          <p className="text-gray-600">Cargando estructura del repositorio...</p>
+          <LoadingSpinner variant="bounce" size="lg" color="secondary" className="mx-auto mb-4 text-rojo-una" />
+          <p className="text-rojo-una">Cargando estructura del repositorio...</p>
         </div>
       </div>
     );
   }
 
   return (
-    <FormContainer
+    <ScreenContainer
       title="Estructura del Repositorio"
       description="Visualiza la jerarquía completa del Sistema SAAC-UNA. Esta vista muestra todos los elementos organizados desde la Universidad hasta las Evidencias individuales."
       variant="full-width"
@@ -380,7 +380,7 @@ export const StructureRepository: React.FC = () => {
           </div>
         )}
       </div>
-    </FormContainer>
+    </ScreenContainer>
   );
 };
 

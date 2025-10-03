@@ -13,13 +13,18 @@
  */
 import React, { useState } from 'react';
 import { CreateRoleForm } from './Components/CreateRoleForm';
-import { Modal } from '@/components/Ui/Modal';
-import { useRoles } from '@/hooks/UseRoles';
+import { Modal } from '@/Components/Ui/Modal';
+import { Button } from '@/Components/Ui/Button';
+import { useRoles } from '@/Hooks/UseRoles';
+import { MODULE_INFO } from '@/Constants/ModuleInfo';
 import type { CreateRoleData } from '@/Services/RoleService';
 
 const RolesCreation: React.FC = () => {
   // Hook de roles para state management
   const { createRole } = useRoles();
+
+  // Obtener información del módulo desde ModuleInfo
+  const moduleInfo = MODULE_INFO.roles_create;
 
   // Estado para el modal de confirmación de creación
   const [createModalState, setCreateModalState] = useState<{
@@ -80,12 +85,59 @@ const RolesCreation: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 flex items-center justify-center p-6">
-      <div className="w-full max-w-4xl">
-        <CreateRoleForm
-          onSubmit={handleRoleSubmit}
-          onCancel={handleCancel}
-        />
+    <div className="container mx-auto px-4 py-8">
+      <div className="w-full bg-blanco-una-2 rounded-lg shadow-lg border border-gris-una/20 transition-all duration-300 min-h-fit max-w-7xl mx-auto">
+        {/* Header */}
+        <div className="p-4 sm:p-5 lg:p-6">
+          <h1 className="font-bold text-negro-una mb-2 text-xl lg:text-2xl">
+            {moduleInfo.title}
+          </h1>
+          <p className="text-gris-una text-sm lg:text-base">
+            {moduleInfo.description}
+          </p>
+        </div>
+        
+        {/* Línea divisoria superior */}
+        <hr className="border-0 border-t border-gris-una/20 mx-6" />
+        
+        {/* Contenido del formulario */}
+        <div className="p-4 sm:p-5 lg:p-6">
+          <CreateRoleForm
+            onSubmit={handleRoleSubmit}
+            hideButtons={true}
+          />
+        </div>
+        
+        {/* Línea divisoria inferior */}
+        <hr className="border-0 border-t border-gris-una/20 mx-6" />
+        
+        {/* Botones de acción */}
+        <div className="p-4 sm:p-5 lg:p-6">
+          <div className="flex justify-end gap-4">
+            <Button
+              type="button"
+              variant="secondary"
+              onClick={handleCancel}
+              size="sm"
+            >
+              Cancelar
+            </Button>
+            <Button
+              type="button"
+              variant="primary"
+              onClick={() => {
+                // Trigger form submission
+                const form = document.querySelector('form');
+                if (form) {
+                  form.requestSubmit();
+                }
+              }}
+              size="sm"
+            >
+              Crear
+            </Button>
+          </div>
+        </div>
       </div>
 
       {/* Modal de confirmación de creación */}
@@ -119,7 +171,7 @@ const RolesCreation: React.FC = () => {
               onClick={confirmCreateRole}
               className="px-4 py-2 text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition-colors"
             >
-              Crear Rol
+              Crear
             </button>
           </div>
         </div>

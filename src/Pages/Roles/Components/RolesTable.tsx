@@ -21,7 +21,6 @@ import { createTableActions } from '@/components/Ui/TableActionButtons';
 import { TableIcons } from './TableIcons';
 import { useRoles } from '@/hooks/UseRoles';
 import { usePermissionLabels } from '@/hooks/UsePermissionLabels';
-import { useModuleInfo } from '@/hooks/UseModuleInfo';
 import type { DataTableColumn, DataTableAction } from '@/components/Ui/DataTable';
 import type { Role } from '@/Services/RoleService';
 
@@ -29,9 +28,6 @@ interface RolesTableProps {
     onEdit?: (role: Role) => void;
     onDelete?: (role: Role) => void;
     onCreate?: () => void;
-    title?: string;
-    description?: string;
-    showHeader?: boolean;
     itemsPerPage?: number;
     unstyled?: boolean; // Para usar sin contenedor
 }
@@ -40,21 +36,11 @@ export const RolesTable: React.FC<RolesTableProps> = ({
     onEdit,
     onDelete,
     onCreate,
-    title,
-    description,
-    showHeader = true,
     itemsPerPage = 4,
     unstyled = false
 }) => {
     const { roles, isLoading, error, loadRoles, clearError } = useRoles();
     const { getLabel } = usePermissionLabels();
-
-    // Obtener información del módulo dinámicamente
-    const moduleInfo = useModuleInfo('roles', 'list');
-
-    // Usar los valores pasados como props, o los del módulo como fallback
-    const finalTitle = title || moduleInfo.title;
-    const finalDescription = description || moduleInfo.description;
 
     const [searchQuery, setSearchQuery] = useState('');
     const [filteredRoles, setFilteredRoles] = useState<Role[]>([]);
@@ -245,8 +231,7 @@ export const RolesTable: React.FC<RolesTableProps> = ({
                 data={paginatedData}
                 columns={columns}
                 actions={actions}
-                title={showHeader ? finalTitle : ''}
-                description={showHeader ? finalDescription : undefined}
+                title="" // Sin título, ScreenContainer lo maneja
                 searchable={true}
                 searchPlaceholder="Buscar roles..."
                 onSearch={handleSearch}
