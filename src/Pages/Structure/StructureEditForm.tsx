@@ -9,9 +9,9 @@ import { useStructure } from '@/Hooks/UseStructure';
 import type { StructureElement, ElementType } from '@/Types/StructureTypes';
 
 interface EditableElement extends StructureElement {
-  originalCode: string;
+  originalNomenclature: string;
   originalName: string;
-  originalDescription?: string;
+  originalDescription: string;
   isModified: boolean;
   modificationHistory: ModificationRecord[];
 }
@@ -36,7 +36,7 @@ const StructureEditForm: React.FC = () => {
   
   const [currentElement, setCurrentElement] = useState<EditableElement | null>(null);
   const [formData, setFormData] = useState({
-    code: '',
+    nomenclature: '',
     name: '',
     description: ''
   });
@@ -98,17 +98,17 @@ const StructureEditForm: React.FC = () => {
 
     const editableElement: EditableElement = {
       ...element,
-      originalCode: element.code,
-      originalName: element.name,
-      originalDescription: element.description,
+      originalNomenclature: element.nomenclature || '',
+      originalName: element.name || '',
+      originalDescription: element.description || '',
       isModified: false,
       modificationHistory: mockModificationHistory
     };
 
     setCurrentElement(editableElement);
     setFormData({
-      code: element.code,
-      name: element.name,
+      nomenclature: element.nomenclature || '',
+      name: element.name || '',
       description: element.description || ''
     });
     setHasChanges(false);
@@ -123,13 +123,11 @@ const StructureEditForm: React.FC = () => {
 
     // Verificar si hay cambios
     if (currentElement) {
+      const newFormData = { ...formData, [field]: value };
       const hasFieldChanges = 
-        (field === 'code' && value !== currentElement.originalCode) ||
-        (field === 'name' && value !== currentElement.originalName) ||
-        (field === 'description' && value !== (currentElement.originalDescription || '')) ||
-        (field !== 'code' && formData.code !== currentElement.originalCode) ||
-        (field !== 'name' && formData.name !== currentElement.originalName) ||
-        (field !== 'description' && formData.description !== (currentElement.originalDescription || ''));
+      newFormData.nomenclature !== currentElement.originalNomenclature ||
+      newFormData.name !== currentElement.originalName ||
+      newFormData.description !== currentElement.originalDescription;
       
       setHasChanges(hasFieldChanges);
     }
@@ -165,7 +163,7 @@ const StructureEditForm: React.FC = () => {
       if (pendingAction === 'save') {
         // Usar el hook para editar el elemento
         const result = await editElement(currentElement.type, currentElement.id, {
-          code: formData.code,
+          nomenclature: formData.nomenclature,
           name: formData.name,
           description: formData.description,
           active: currentElement.active
@@ -178,8 +176,8 @@ const StructureEditForm: React.FC = () => {
       } else {
         // Descartar cambios
         setFormData({
-          code: currentElement.originalCode,
-          name: currentElement.originalName,
+          nomenclature: currentElement.originalNomenclature || '',
+          name: currentElement.originalName || '',
           description: currentElement.originalDescription || ''
         });
         setHasChanges(false);
@@ -279,17 +277,17 @@ const StructureEditForm: React.FC = () => {
 
             {/* Campos editables */}
             <div className="space-y-6">
-              {/* Código */}
+              {/* Nomenclatura */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   Código *
                 </label>
                 <Input
                   type="text"
-                  value={formData.code}
-                  onChange={(e) => handleInputChange('code', e.target.value)}
-                  placeholder="Código único o identificativo del elemento"
-                  className={formData.code !== currentElement.originalCode ? 'ring-2 ring-blue-500' : ''}
+                  value={formData.nomenclature}
+                  onChange={(e) => handleInputChange('nomenclature', e.target.value)}
+                  placeholder="Nomenclatura única o identificativa del elemento"
+                  className={formData.nomenclature !== currentElement.originalNomenclature ? 'ring-2 ring-blue-500' : ''}
                 />
                 <p className="text-xs text-gray-500 mt-1">
                   Código único o identificativo del elemento
@@ -387,7 +385,7 @@ const StructureEditForm: React.FC = () => {
                 <div className="text-xs">
                   <div className="font-medium text-gray-900">Creación inicial</div>
                   <div className="text-gray-500">
-                    {currentElement.createdAt.toLocaleDateString()} por {currentElement.createdBy}
+                    {currentElement.createdAt.toLocaleDateString()}
                   </div>
                 </div>
                 
@@ -421,8 +419,8 @@ const StructureEditForm: React.FC = () => {
                 Cambios Pendientes
               </h4>
               <div className="text-xs text-[var(--text-info)] space-y-1">
-                {formData.code !== currentElement.originalCode && (
-                  <div>• Código: "{currentElement.originalCode}" → "{formData.code}"</div>
+                {formData.nomenclature !== currentElement.originalNomenclature && (
+                  <div>• Código: "{currentElement.originalNomenclature}" → "{formData.nomenclature}"</div>
                 )}
                 {formData.name !== currentElement.originalName && (
                   <div>• Nombre: "{currentElement.originalName}" → "{formData.name}"</div>

@@ -24,7 +24,7 @@ import {
  */
 interface FormErrors {
   type?: string;
-  code?: string;
+  nomenclature?: string;
   name?: string;
   description?: string;
   parentElementId?: string;
@@ -59,7 +59,7 @@ export const StructureCreation: React.FC = () => {
   // Estado del formulario
   const [formData, setFormData] = useState<CreateElementForm>({
     type: ElementType.UNIVERSITY,
-    code: '',
+    nomenclature: '',
     name: '',
     description: '',
     parentElementId: ''
@@ -99,12 +99,12 @@ export const StructureCreation: React.FC = () => {
         }
         return null;
 
-      case 'code':
+      case 'nomenclature':
         if (!value.trim()) return 'El código es obligatorio';
-        if (value.length > VALIDATION_RULES.CODE_MAX_LENGTH) {
-          return `El código no puede exceder ${VALIDATION_RULES.CODE_MAX_LENGTH} caracteres`;
+        if (value.length > VALIDATION_RULES.NOMENCLATURE_MAX_LENGTH) {
+          return `El código no puede exceder ${VALIDATION_RULES.NOMENCLATURE_MAX_LENGTH} caracteres`;
         }
-        if (!VALIDATION_RULES.CODE_PATTERN.test(value)) {
+        if (!VALIDATION_RULES.NOMENCLATURE_PATTERN.test(value)) {
           return 'El código solo puede contener letras, números, guiones y guiones bajos';
         }
         return null;
@@ -214,7 +214,7 @@ export const StructureCreation: React.FC = () => {
         setTimeout(() => {
           setFormData({
             type: ElementType.UNIVERSITY,
-            code: '',
+            nomenclature: '',
             name: '',
             description: '',
             parentElementId: ''
@@ -249,7 +249,7 @@ export const StructureCreation: React.FC = () => {
   // Opciones para el select de padre
   const parentOptions: SelectOption[] = availableParents.map(parent => ({
     value: parent.id,
-    label: `${parent.code} - ${parent.name}`
+    label: `${parent.nomenclature} - ${parent.name}`
   }));
 
   const config = FORM_CONFIG[formData.type];
@@ -298,15 +298,15 @@ export const StructureCreation: React.FC = () => {
             </div>
           )}
 
-          {/* Código */}
+          {/* Nomenclatura */}
           <Input
-            label="Código"
+            label="Nomenclatura"
             required
-            value={formData.code}
-            onChange={(e) => handleFieldChange('code', e.target.value)}
-            error={errors.code}
+            value={formData.nomenclature}
+            onChange={(e) => handleFieldChange('nomenclature', e.target.value)}
+            error={errors.nomenclature}
             placeholder="Ej: UNA, SEDE-01, FAC-ING"
-            helperText={`Máximo ${VALIDATION_RULES.CODE_MAX_LENGTH} caracteres. Solo letras, números, guiones y guiones bajos.`}
+            helperText={`Máximo ${VALIDATION_RULES.NOMENCLATURE_MAX_LENGTH} caracteres. Solo letras, números, guiones y guiones bajos.`}
           />
 
           {/* Nombre */}

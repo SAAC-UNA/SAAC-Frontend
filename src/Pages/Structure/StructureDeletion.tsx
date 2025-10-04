@@ -79,8 +79,8 @@ const StructureDeletion: React.FC = () => {
     if (searchTerm.trim()) {
       const term = searchTerm.toLowerCase();
       filtered = filtered.filter(element => 
-        element.name.toLowerCase().includes(term) ||
-        element.code.toLowerCase().includes(term)
+        element.name?.toLowerCase().includes(term) ||
+        element.nomenclature?.toLowerCase().includes(term)
       );
     }
 
@@ -238,7 +238,7 @@ const StructureDeletion: React.FC = () => {
         <h2 className="text-lg font-semibold text-gray-900 mb-4">Buscar Elementos</h2>
         
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          {/* Búsqueda por código o nombre */}
+          {/* Búsqueda por nomenclatura o nombre */}
           <div>
             <SearchInput
               placeholder="Buscar por código o nombre"
@@ -343,7 +343,7 @@ const StructureDeletion: React.FC = () => {
                                 ? 'bg-gray-100 text-gray-500' 
                                 : 'bg-blue-100 text-blue-800'
                             }`}>
-                              {element.code}
+                              {element.nomenclature}
                             </span>
                             <span className={getStatusBadgeClasses(status, element.isActive)}>
                               {getStatusText(status)}

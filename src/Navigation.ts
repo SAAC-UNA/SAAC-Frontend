@@ -46,14 +46,15 @@ export const navigationItems: NavItem[] = [
       }
     ]*/
   },
-  {
+/**  {
     id: 'estructuraVer',
     label: 'Estructura del Repositorio',
     icon: boxIcon,
     href: '/estructura/repositorio',
     isActive: false,
     isExpandable: false
-  },
+  },*/
+  // Estructura del Repositorio se quita del sidebar temporalmente, más adelante podrá servir para reportería
   {
     id: 'estructura',
     label: 'Gestión de Estructura',

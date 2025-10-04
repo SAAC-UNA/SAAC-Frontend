@@ -27,7 +27,7 @@ export const HIERARCHY_RULES = {
     canHaveChildren: [ElementType.CAMPUS],
     mustHaveParent: null,
     level: 1,
-    description: 'Nivel raíz del sistema'
+    description: 'Universidad'
   },
   [ElementType.CAMPUS]: { 
     canHaveChildren: [ElementType.FACULTY], 
@@ -49,32 +49,32 @@ export const HIERARCHY_RULES = {
   },
   [ElementType.DIMENSION]: { 
     canHaveChildren: [ElementType.COMPONENT], 
-    mustHaveParent: ElementType.CAREER,
-    level: 5,
+    mustHaveParent: null,
+    level: 1,
     description: 'Dimensión de evaluación'
   },
   [ElementType.COMPONENT]: { 
     canHaveChildren: [ElementType.CRITERIA], 
     mustHaveParent: ElementType.DIMENSION,
-    level: 6,
+    level: 2,
     description: 'Componente de la dimensión'
   },
   [ElementType.CRITERIA]: { 
     canHaveChildren: [ElementType.STANDARD, ElementType.EVIDENCE], 
     mustHaveParent: ElementType.COMPONENT,
-    level: 7,
+    level: 3,
     description: 'Criterio de evaluación'
   },
   [ElementType.STANDARD]: { 
     canHaveChildren: [], 
     mustHaveParent: ElementType.CRITERIA,
-    level: 8,
+    level: 4,
     description: 'Estándar de criterio (opcional)'
   },
   [ElementType.EVIDENCE]: { 
     canHaveChildren: [], 
     mustHaveParent: ElementType.CRITERIA,
-    level: 8,
+    level: 4,
     description: 'Evidencia documental'
   }
 } as const satisfies Record<ElementType, {
@@ -92,7 +92,7 @@ export const HIERARCHY_RULES = {
 export const VALIDATION_RULES = {
 
   /** Longitud máxima para código de elemento */
-  CODE_MAX_LENGTH: 20,
+  NOMENCLATURE_MAX_LENGTH: 20,
 
   /** Longitud máxima para nombre de elemento */
   NAME_MAX_LENGTH: 80,
@@ -101,7 +101,7 @@ export const VALIDATION_RULES = {
   DESCRIPTION_MAX_LENGTH: 250,
 
   /** Patrón permitido para códigos (letras, números, guiones y guiones bajos) */
-  CODE_PATTERN: /^[A-Z0-9\-_]+$/i,
+  NOMENCLATURE_PATTERN: /^[A-Z0-9\-_]+$/i,
 
   /** Patrón permitido para nombres (letras con acentos, números, espacios y puntuación básica) */
   NAME_PATTERN: /^[a-zA-ZáéíóúÁÉÍÓÚñÑüÜ0-9\s\-_.,()]+$/
@@ -167,7 +167,7 @@ export const USER_MESSAGES = {
     HAS_CHILDREN: 'Este elemento tiene elementos dependientes',
     CANNOT_DELETE: 'No se puede eliminar un elemento con dependencias',
     DUPLICATE_NAME: 'Ya existe un elemento con este nombre en este nivel',
-    DUPLICATE_CODE: 'Ya existe un elemento con este código'
+    DUPLICATE_NOMENCLATURE: 'Ya existe un elemento con este código'
   }
 } as const;
 
@@ -187,47 +187,47 @@ type FormConfig = {
 
 export const FORM_CONFIG: Record<ElementType, FormConfig> = {
   [ElementType.UNIVERSITY]: {
-    requiredFields: ['code', 'name'],
+    requiredFields: ['name'],
     optionalFields: ['description'],
     showParentSelector: false
   },
   [ElementType.CAMPUS]: {
-    requiredFields: ['code', 'name', 'parentElementId'],
+    requiredFields: ['name', 'parentElementId'],
     optionalFields: ['description'],
     showParentSelector: true
   },
   [ElementType.FACULTY]: {
-    requiredFields: ['code', 'name', 'parentElementId'],
+    requiredFields: ['name', 'parentElementId'],
     optionalFields: ['description'],
     showParentSelector: true
   },
   [ElementType.CAREER]: {
-    requiredFields: ['code', 'name', 'parentElementId'],
+    requiredFields: ['name', 'parentElementId'],
     optionalFields: ['description'],
     showParentSelector: true
   },
   [ElementType.DIMENSION]: {
-    requiredFields: ['code', 'name', 'parentElementId'],
+    requiredFields: ['nomenclature', 'name'],
     optionalFields: ['description'],
     showParentSelector: true
   },
   [ElementType.COMPONENT]: {
-    requiredFields: ['code', 'name', 'parentElementId'],
+    requiredFields: ['nomenclature', 'name', 'parentElementId'],
     optionalFields: ['description'],
     showParentSelector: true
   },
   [ElementType.CRITERIA]: {
-    requiredFields: ['code', 'name', 'parentElementId'],
+    requiredFields: ['nomenclature', 'parentElementId'],
     optionalFields: ['description'],
     showParentSelector: true
   },
   [ElementType.STANDARD]: {
-    requiredFields: ['code', 'name', 'parentElementId'],
+    requiredFields: ['nomenclature', 'parentElementId'],
     optionalFields: ['description'],
     showParentSelector: true
   },
   [ElementType.EVIDENCE]: {
-    requiredFields: ['code', 'name', 'parentElementId'],
+    requiredFields: ['nomenclature', 'parentElementId'],
     optionalFields: ['description'],
     showParentSelector: true
   }

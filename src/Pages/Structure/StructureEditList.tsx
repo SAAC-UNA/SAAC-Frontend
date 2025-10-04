@@ -46,8 +46,8 @@ const StructureEditList: React.FC = () => {
     if (searchTerm.trim()) {
       const term = searchTerm.toLowerCase();
       filtered = filtered.filter(element => 
-        element.name.toLowerCase().includes(term) ||
-        element.code.toLowerCase().includes(term)
+        element.name?.toLowerCase().includes(term) ||
+        element.nomenclature?.toLowerCase().includes(term)
       );
     }
 
@@ -173,7 +173,7 @@ const StructureEditList: React.FC = () => {
                             {getElementTypeLabel(element.type)}
                           </span>
                           <span className="px-2 py-1 bg-gray-100 text-gray-800 text-xs font-medium rounded font-mono">
-                            {element.code}
+                            {element.nomenclature}
                           </span>
                           <span className={`px-2 py-1 text-xs font-medium rounded ${
                             element.active 
@@ -199,7 +199,7 @@ const StructureEditList: React.FC = () => {
                           </p>
                         )}
                         <p className="text-xs text-gray-500">
-                          Creado el {element.createdAt.toLocaleDateString()} por {element.createdBy}
+                          Creado el {element.createdAt.toLocaleDateString()}
                         </p>
                       </div>
 
