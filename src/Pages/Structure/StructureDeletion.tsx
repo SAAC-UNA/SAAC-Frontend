@@ -44,6 +44,7 @@ const StructureDeletion: React.FC = () => {
     element: ElementListItem;
     action: ActionType;
   } | null>(null);
+  const [activateChildren, setActivateChildren] = useState<boolean>(false);
 
   // Convertir elementos del árbol a lista con información adicional
   const elements = React.useMemo(() => {
@@ -165,63 +166,208 @@ const StructureDeletion: React.FC = () => {
     }
   };
 
+  /**
+ * Encuentra todos los elementos descendientes de un elemento dado (recursivamente)
+ * @param elementId - ID del elemento padre
+ * @param elements - Lista completa de elementos
+ * @returns Array con todos los descendientes (hijos, nietos, bisnietos, etc.)
+ */
+const findAllDescendants = (elementId: string, elements: ElementListItem[]): ElementListItem[] => {
+  const descendants: ElementListItem[] = [];
+  
+  // Encontrar hijos directos
+  const directChildren = elements.filter(el => el.parentElementId === elementId);
+  
+  // Para cada hijo directo, agregarlo y buscar sus descendientes
+  directChildren.forEach(child => {
+    descendants.push(child);
+    // Recursivamente encontrar descendientes del hijo
+    const childDescendants = findAllDescendants(child.id, elements);
+    descendants.push(...childDescendants);
+  });
+  
+  return descendants;
+};
+
+/**
+ * Verifica si un elemento puede ser activado (su padre debe estar activo)
+ * @param element - Elemento que se quiere activar
+ * @param elements - Lista completa de elementos
+ * @returns {valid: boolean, parentName?: string} - Si es válido y nombre del padre inactivo si aplica
+ */
+const canActivateElement = (element: ElementListItem, elements: ElementListItem[]): { valid: boolean; parentName?: string } => {
+  // Si no tiene padre (es elemento raíz), siempre se puede activar
+  if (!element.parentElementId) {
+    return { valid: true };
+  }
+  
+  // Buscar el elemento padre
+  const parent = elements.find(el => el.id === element.parentElementId);
+  
+  // Si no se encuentra el padre, permitir activación (caso edge)
+  if (!parent) {
+    return { valid: true };
+  }
+  
+  // Si el padre está inactivo, no permitir activación
+  if (!parent.active) {
+    return { valid: false, parentName: parent.name || parent.description };
+  }
+  
+  // Si el padre está activo, se puede activar
+  return { valid: true };
+};
+
+/**
+ * Verifica si un elemento tiene hijos inactivos que podrían activarse junto con él
+ * @param element - Elemento que se quiere activar
+ * @param elements - Lista completa de elementos
+ * @returns Array de elementos hijos inactivos
+ */
+const getInactiveChildren = (element: ElementListItem, elements: ElementListItem[]): ElementListItem[] => {
+  // Encontrar todos los descendientes del elemento
+  const descendants = findAllDescendants(element.id, elements);
+  
+  // Filtrar solo los que están inactivos
+  const inactiveDescendants = descendants.filter(desc => !desc.active);
+  
+  return inactiveDescendants;
+};
+
   // Manejar acción de elemento
   const handleAction = (element: ElementListItem, action: ActionType) => {
-    setPendingAction({ element, action });
-    confirmModal.openModal();
-  };
+  // Validar si el elemento puede ser activado (si la acción es activar)
+  if (action === 'activate') {
+    const activationCheck = canActivateElement(element, elements);
+    if (!activationCheck.valid) {
+      // Mostrar advertencia pero aún abrir el modal
+      setPendingAction({ element, action });
+      confirmModal.openModal();
+      return;
+    }
+  }
+  
+  setPendingAction({ element, action });
+  confirmModal.openModal();
+};
 
   // Confirmar la acción
-  const confirmAction = async () => {
-    if (!pendingAction) return;
+const confirmAction = async () => {
+  if (!pendingAction) return;
 
-    const { element, action } = pendingAction;
+  const { element, action } = pendingAction;
 
-    try {
-      let success = false;
-      
-      switch (action) {
-        case 'activate':
-          success = await activateElement(element.type, element.id);
-          break;
-        case 'deactivate':
-          success = await deactivateElement(element.type, element.id);
-          break;
-        case 'delete':
-          success = await deleteElement(element.type, element.id);
-          break;
-      }
-
-      if (success) {
-        console.log(`${action} realizada en elemento:`, element.name);
-      }
-    } catch (error) {
-      console.error('Error al realizar la acción:', error);
-    } finally {
-      confirmModal.closeModal();
-      setPendingAction(null);
-    }
-  };
-
-  // Obtener el texto de confirmación
-  const getConfirmationText = (): string => {
-    if (!pendingAction) return '';
-
-    const { element, action } = pendingAction;
+  try {
+    let success = false;
     
     switch (action) {
       case 'activate':
-        return `¿Estás seguro de que deseas activar el elemento "${element.name}"?`;
+        // Validar nuevamente antes de activar
+        const activationCheck = canActivateElement(element, elements);
+        if (!activationCheck.valid) {
+          console.error('No se puede activar: padre inactivo');
+          confirmModal.closeModal();
+          setPendingAction(null);
+          setActivateChildren(false);
+          return;
+        }
+        
+        success = await activateElement(element.type, element.id);
+        
+        // Si se marcó activar hijos, activarlos también
+        if (success && activateChildren) {
+          const inactiveChildren = getInactiveChildren(element, elements);
+          for (const child of inactiveChildren) {
+            await activateElement(child.type, child.id);
+          }
+        }
+        break;
+        
       case 'deactivate':
-        return `¿Estás seguro de que deseas desactivar el elemento "${element.name}"? ${
-          element.hasDependencies ? 'Esto también desactivará sus dependencias.' : ''
-        }`;
+        success = await deactivateElement(element.type, element.id);
+        
+        // Desactivar todos los descendientes activos
+        if (success) {
+          const descendants = findAllDescendants(element.id, elements);
+          const activeDescendants = descendants.filter(d => d.active);
+          for (const descendant of activeDescendants) {
+            await deactivateElement(descendant.type, descendant.id);
+          }
+        }
+        break;
+        
       case 'delete':
-        return `¿Estás seguro de que deseas eliminar permanentemente el elemento "${element.name}"? Esta acción no se puede deshacer.`;
-      default:
-        return '';
+        success = await deleteElement(element.type, element.id);
+        break;
     }
-  };
+
+    if (success) {
+      console.log(`${action} realizada en elemento:`, element.name);
+    }
+  } catch (error) {
+    console.error('Error al realizar la acción:', error);
+  } finally {
+    confirmModal.closeModal();
+    setPendingAction(null);
+    setActivateChildren(false);
+  }
+};
+
+  // Obtener el texto de confirmación
+  const getConfirmationText = (): { message: string; warning?: string; consequences: string[] } => {
+  if (!pendingAction) return { message: '', consequences: [] };
+
+  const { element, action } = pendingAction;
+  let message = '';
+  let warning: string | undefined;
+  const consequences: string[] = [];
+  
+  switch (action) {
+    case 'activate':
+      const activationCheck = canActivateElement(element, elements);
+      
+      if (!activationCheck.valid) {
+        message = `¿Estás seguro de que deseas activar el elemento "${element.name || element.description}"?`;
+        warning = `No se puede activar este elemento porque su elemento padre "${activationCheck.parentName}" está inactivo. Activa primero el elemento padre.`;
+        consequences.push('Para activar este elemento, primero debe activarse su elemento padre');
+        if (!element.hasChildren) {
+          consequences.push('Alternativamente, puedes eliminar este elemento si ya no es necesario');
+        }
+      } else {
+        message = `¿Estás seguro de que deseas activar el elemento "${element.name || element.description}"?`;
+        consequences.push('El elemento volverá a estar disponible para su uso');
+        consequences.push('Se restaurará en reportes y listados');
+        
+        const inactiveChildren = getInactiveChildren(element, elements);
+        if (inactiveChildren.length > 0) {
+          consequences.push(`Tienes ${inactiveChildren.length} elemento(s) dependiente(s) inactivo(s) que puedes activar opcionalmente`);
+        }
+      }
+      break;
+      
+    case 'deactivate':
+      message = `¿Estás seguro de que deseas inactivar el elemento "${element.name || element.description}"?`;
+      if (element.hasDependencies) {
+        warning = 'Este elemento tiene dependencias';
+      }
+      consequences.push('El elemento dejará de aparecer en nuevas asignaciones');
+      
+      const descendants = findAllDescendants(element.id, elements);
+      const activeDescendants = descendants.filter(d => d.active);
+      if (activeDescendants.length > 0) {
+        consequences.push(`Se inactivarán automáticamente ${activeDescendants.length} elemento(s) dependiente(s)`);
+      }
+      break;
+      
+    case 'delete':
+      message = `¿Estás seguro de que deseas eliminar permanentemente el elemento "${element.name || element.description}"?`;
+      consequences.push('El elemento se eliminará permanentemente');
+      consequences.push('Esta acción no se puede deshacer');
+      break;
+  }
+  
+  return { message, warning, consequences };
+};
 
   // Actualizar lista (refrescar datos)
   const handleRefresh = () => {
@@ -231,7 +377,7 @@ const StructureDeletion: React.FC = () => {
   return (
     <ScreenContainer
       title="Eliminación o Desactivación"
-      description="Gestiona el estado de elementos en la estructura. Puedes activar elementos inactivos, desactivar elementos con dependencias o eliminar permanentemente elementos sin dependencias."
+      description="Gestiona el estado de elementos en la estructura. Puedes activar elementos inactivos, inactivar elementos con dependencias o eliminar permanentemente elementos sin dependencias."
     >
       {/* Filtros de búsqueda */}
       <div className="mb-6">
@@ -397,7 +543,7 @@ const StructureDeletion: React.FC = () => {
                             variant="tertiary"
                             size="sm"
                           >
-                            Desactivar
+                            Inactivar
                           </Button>
                         )}
                         {actions.includes('delete' as ActionType) && (
@@ -427,30 +573,106 @@ const StructureDeletion: React.FC = () => {
         size="md"
       >
         <div className="space-y-4">
-          <p className="text-gray-700">
-            {getConfirmationText()}
-          </p>
-          
-          <div className="flex justify-end space-x-3">
-            <Button
-              onClick={confirmModal.closeModal}
-              variant="secondary"
-            >
-              Cancelar
-            </Button>
-            <Button
-              onClick={confirmAction}
-              disabled={isLoading}
-              variant={
-                pendingAction?.action === 'activate' ? 'success' :
-                pendingAction?.action === 'delete' ? 'secondary' :
-                'tertiary'
-              }
-            >
-              {isLoading ? 'Procesando...' : 'Confirmar'}
-            </Button>
+      {(() => {
+        const confirmInfo = getConfirmationText();
+        const canProceed = pendingAction?.action !== 'activate' || canActivateElement(pendingAction.element, elements).valid;
+    
+      return (
+      <>
+        {/* Advertencia si existe */}
+        {confirmInfo.warning && (
+          <div className="p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+            <div className="flex items-start">
+              <svg className="w-5 h-5 text-yellow-600 mr-2 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.728-.833-2.498 0L3.316 16.5c-.77.833.192 2.5 1.732 2.5z" />
+              </svg>
+              <div>
+                <h4 className="font-medium text-yellow-900 mb-1">Advertencia</h4>
+                <p className="text-yellow-800 text-sm">{confirmInfo.warning}</p>
+              </div>
+            </div>
           </div>
-        </div>
+        )}
+
+        <p className="text-gray-700">{confirmInfo.message}</p>
+
+        {/* Consecuencias */}
+        {confirmInfo.consequences.length > 0 && (
+          <div className="space-y-2">
+            <h4 className="font-medium text-gray-900">Consecuencias de esta acción:</h4>
+            <ul className="text-sm text-gray-700 space-y-1">
+              {confirmInfo.consequences.map((consequence, index) => (
+                <li key={index} className="flex items-start">
+                  <span className="inline-block w-1.5 h-1.5 bg-gray-400 rounded-full mr-2 mt-1.5 flex-shrink-0"></span>
+                  {consequence}
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
+
+        {/* Checkbox para activar hijos */}
+        {pendingAction?.action === 'activate' && canProceed && (() => {
+          const inactiveChildren = getInactiveChildren(pendingAction.element, elements);
+          return inactiveChildren.length > 0 ? (
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+              <div className="flex items-start space-x-3">
+                <input
+                  type="checkbox"
+                  id="activateChildren"
+                  checked={activateChildren}
+                  onChange={(e) => setActivateChildren(e.target.checked)}
+                  className="mt-1 h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                />
+                <div className="flex-1">
+                  <label htmlFor="activateChildren" className="text-sm font-medium text-blue-900 cursor-pointer">
+                    Activar también todos los elementos dependientes inactivos ({inactiveChildren.length})
+                  </label>
+                  <p className="text-xs text-blue-700 mt-1">
+                    Al marcar esta opción, se activarán automáticamente todos los elementos que dependen de este elemento y que actualmente están inactivos.
+                  </p>
+                </div>
+              </div>
+            </div>
+          ) : null;
+        })()}
+
+        {/* Advertencia de eliminación */}
+        {pendingAction?.action === 'delete' && (
+          <div className="p-3 bg-red-50 border border-red-200 rounded-lg">
+            <p className="text-red-800 text-sm font-medium">
+              ⚠️ Esta acción es irreversible. El elemento se eliminará permanentemente.
+            </p>
+          </div>
+        )}
+      </>
+    );
+  })()}
+  
+  <div className="flex justify-end space-x-3">
+    <Button
+      onClick={() => {
+        confirmModal.closeModal();
+        setPendingAction(null);
+        setActivateChildren(false);
+      }}
+      variant="secondary"
+    >
+      Cancelar
+    </Button>
+    <Button
+      onClick={confirmAction}
+      disabled={isLoading || (pendingAction?.action === 'activate' && !canActivateElement(pendingAction.element, elements).valid)}
+      variant={
+        pendingAction?.action === 'activate' ? 'success' :
+        pendingAction?.action === 'delete' ? 'secondary' :
+        'tertiary'
+      }
+    >
+      {isLoading ? 'Procesando...' : 'Confirmar'}
+    </Button>
+  </div>
+</div>
       </Modal>
     </ScreenContainer>
   );

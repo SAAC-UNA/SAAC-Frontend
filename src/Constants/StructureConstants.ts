@@ -42,7 +42,7 @@ export const HIERARCHY_RULES = {
     description: 'Facultad o centro académico'
   },
   [ElementType.CAREER]: { 
-    canHaveChildren: [ElementType.DIMENSION], 
+    canHaveChildren: [], 
     mustHaveParent: ElementType.FACULTY,
     level: 4,
     description: 'Carrera académica'
@@ -188,47 +188,47 @@ type FormConfig = {
 export const FORM_CONFIG: Record<ElementType, FormConfig> = {
   [ElementType.UNIVERSITY]: {
     requiredFields: ['name'],
-    optionalFields: ['description'],
+    optionalFields: [],
     showParentSelector: false
   },
   [ElementType.CAMPUS]: {
     requiredFields: ['name', 'parentElementId'],
-    optionalFields: ['description'],
+    optionalFields: [],
     showParentSelector: true
   },
   [ElementType.FACULTY]: {
     requiredFields: ['name', 'parentElementId'],
-    optionalFields: ['description'],
+    optionalFields: [],
     showParentSelector: true
   },
   [ElementType.CAREER]: {
     requiredFields: ['name', 'parentElementId'],
-    optionalFields: ['description'],
+    optionalFields: [],
     showParentSelector: true
   },
   [ElementType.DIMENSION]: {
     requiredFields: ['nomenclature', 'name'],
-    optionalFields: ['description'],
-    showParentSelector: true
+    optionalFields: [],
+    showParentSelector: false
   },
   [ElementType.COMPONENT]: {
     requiredFields: ['nomenclature', 'name', 'parentElementId'],
-    optionalFields: ['description'],
+    optionalFields: [],
     showParentSelector: true
   },
   [ElementType.CRITERIA]: {
-    requiredFields: ['nomenclature', 'parentElementId'],
-    optionalFields: ['description'],
+    requiredFields: ['nomenclature', 'description', 'parentElementId'],
+    optionalFields: [],
     showParentSelector: true
   },
   [ElementType.STANDARD]: {
-    requiredFields: ['nomenclature', 'parentElementId'],
-    optionalFields: ['description'],
+    requiredFields: ['nomenclature','description', 'parentElementId'],
+    optionalFields: [],
     showParentSelector: true
   },
   [ElementType.EVIDENCE]: {
-    requiredFields: ['nomenclature', 'parentElementId'],
-    optionalFields: ['description'],
+    requiredFields: ['nomenclature', 'description', 'parentElementId'],
+    optionalFields: [],
     showParentSelector: true
   }
 };

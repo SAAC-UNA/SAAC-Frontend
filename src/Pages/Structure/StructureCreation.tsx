@@ -91,6 +91,7 @@ export const StructureCreation: React.FC = () => {
    * Validar un campo específico del formulario
    */
   const validateField = (field: keyof CreateElementForm, value: string): string | null => {
+    const config = FORM_CONFIG[formData.type];
     switch (field) {
       case 'type':
         if (!value) return 'El tipo de elemento es obligatorio';
@@ -120,13 +121,18 @@ export const StructureCreation: React.FC = () => {
         return null;
 
       case 'description':
-        if (value && value.length > VALIDATION_RULES.DESCRIPTION_MAX_LENGTH) {
-          return `La descripción no puede exceder ${VALIDATION_RULES.DESCRIPTION_MAX_LENGTH} caracteres`;
-        }
-        return null;
+      // Validar si es obligatoria
+      if (config.requiredFields.includes('description') && !value.trim()) {
+        return 'La descripción es obligatoria';
+      }
+      // Validar longitud máxima
+      if (value && value.length > VALIDATION_RULES.DESCRIPTION_MAX_LENGTH) {
+        return `La descripción no puede exceder ${VALIDATION_RULES.DESCRIPTION_MAX_LENGTH} caracteres`;
+      }
+  
+  return null;
 
       case 'parentElementId':
-        const config = FORM_CONFIG[formData.type];
         if (config.showParentSelector && !value) {
           return 'Debe seleccionar un elemento padre';
         }
@@ -254,6 +260,14 @@ export const StructureCreation: React.FC = () => {
 
   const config = FORM_CONFIG[formData.type];
 
+  /**
+  * Determinar si un campo debe mostrarse según el tipo de elemento
+  */
+  const shouldShowField = (field: 'nomenclature' | 'name' | 'description'): boolean => {
+    const config = FORM_CONFIG[formData.type];
+    return config.requiredFields.includes(field) || config.optionalFields.includes(field);
+  };
+
   return (
     <div className="container mx-auto px-4 py-8">
       {/* Mensaje de éxito */}
@@ -290,7 +304,7 @@ export const StructureCreation: React.FC = () => {
                 error={errors.parentElementId}
                 placeholder="Selecciona el elemento padre"
               />
-              {config.showParentSelector && (
+              {config.showParentSelector && getRequiredParentType(formData.type) && (
                 <p className="mt-1 text-sm text-gray-600">
                   Este {ELEMENT_TYPE_LABELS[formData.type]} debe pertenecer a un {ELEMENT_TYPE_LABELS[getRequiredParentType(formData.type)!]}
                 </p>
@@ -299,54 +313,58 @@ export const StructureCreation: React.FC = () => {
           )}
 
           {/* Nomenclatura */}
+          {shouldShowField('nomenclature') && (
           <Input
             label="Nomenclatura"
-            required
+            required={FORM_CONFIG[formData.type].requiredFields.includes('nomenclature')}
             value={formData.nomenclature}
             onChange={(e) => handleFieldChange('nomenclature', e.target.value)}
             error={errors.nomenclature}
             placeholder="Ej: UNA, SEDE-01, FAC-ING"
             helperText={`Máximo ${VALIDATION_RULES.NOMENCLATURE_MAX_LENGTH} caracteres. Solo letras, números, guiones y guiones bajos.`}
           />
-
+          )}
           {/* Nombre */}
+          {shouldShowField('name') && (
           <Input
             label="Nombre"
-            required
+            required={FORM_CONFIG[formData.type].requiredFields.includes('name')}
             value={formData.name}
             onChange={(e) => handleFieldChange('name', e.target.value)}
             error={errors.name}
             placeholder="Nombre descriptivo del elemento"
             helperText={`Máximo ${VALIDATION_RULES.NAME_MAX_LENGTH} caracteres.`}
           />
-
+          )}
           {/* Descripción */}
-          <div>
-            <label htmlFor="description" className="block text-sm font-medium text-gray-700 mb-1">
-              Descripción (Opcional)
-            </label>
-            <textarea
-              id="description"
-              value={formData.description}
-              onChange={(e) => handleFieldChange('description', e.target.value)}
-              className={cn(
-                'w-full border rounded-lg p-3 transition-colors duration-200',
-                'focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent',
-                'placeholder-gray-400',
-                errors.description
-                  ? 'border-[var(--border-error)] bg-[var(--bg-error)]'
-                  : 'border-gray-300 hover:border-gray-400'
+          {shouldShowField('description') && (
+            <div>
+              <label htmlFor="description" className="block text-sm font-medium text-gray-700 mb-1">
+                Descripción {FORM_CONFIG[formData.type].requiredFields.includes('description') ? '' : '(Opcional)'}
+              </label>
+              <textarea
+                id="description"
+                value={formData.description}
+                onChange={(e) => handleFieldChange('description', e.target.value)}
+                className={cn(
+                  'w-full border rounded-lg p-3 transition-colors duration-200',
+                  'focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent',
+                  'placeholder-gray-400',
+                  errors.description
+                    ? 'border-[var(--border-error)] bg-[var(--bg-error)]'
+                    : 'border-gray-300 hover:border-gray-400'
+                )}
+                rows={3}
+                placeholder="Descripción detallada del elemento"
+              />
+              {errors.description && (
+                <p className="mt-1 text-sm text-[var(--text-error)]">{errors.description}</p>
               )}
-              rows={3}
-              placeholder="Descripción detallada del elemento (opcional)"
-            />
-            {errors.description && (
-              <p className="mt-1 text-sm text-[var(--text-error)]">{errors.description}</p>
-            )}
-            <p className="mt-1 text-sm text-gray-500">
-              Máximo {VALIDATION_RULES.DESCRIPTION_MAX_LENGTH} caracteres.
-            </p>
-          </div>
+              <p className="mt-1 text-sm text-gray-500">
+                Máximo {VALIDATION_RULES.DESCRIPTION_MAX_LENGTH} caracteres.
+              </p>
+            </div>
+          )}
 
           {/* Botones */}
           <div className="flex justify-end space-x-4 pt-6 border-t border-gray-200">

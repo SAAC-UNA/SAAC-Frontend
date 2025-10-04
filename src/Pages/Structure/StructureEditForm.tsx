@@ -7,6 +7,7 @@ import { ScreenContainer } from '@/Components/Ui/ScreenContainer';
 import { LoadingSpinner } from '@/Components/Ui/Loading';
 import { useStructure } from '@/Hooks/UseStructure';
 import type { StructureElement, ElementType } from '@/Types/StructureTypes';
+import { FORM_CONFIG, VALIDATION_RULES} from '@/Constants/StructureConstants';
 
 interface EditableElement extends StructureElement {
   originalNomenclature: string;
@@ -41,10 +42,106 @@ const StructureEditForm: React.FC = () => {
     description: ''
   });
   const [hasChanges, setHasChanges] = useState(false);
+  const [errors, setErrors] = useState<{
+    nomenclature?: string;
+    name?: string;
+    description?: string;
+  }>({});
 
   // Modal para confirmaciones
   const confirmModal = useModal();
   const [pendingAction, setPendingAction] = useState<'save' | 'discard' | null>(null);
+
+  /**
+    Determinar si un campo debe mostrarse según el tipo de elemento
+  */
+const shouldShowField = (field: 'nomenclature' | 'name' | 'description'): boolean => {
+  if (!currentElement) return false;
+  const config = FORM_CONFIG[currentElement.type];
+  return config.requiredFields.includes(field) || config.optionalFields.includes(field);
+};
+
+/**
+ * Validar un campo específico del formulario
+ */
+const validateField = (field: 'nomenclature' | 'name' | 'description', value: string): string | null => {
+  if (!currentElement) return null;
+  const config = FORM_CONFIG[currentElement.type];
+
+  switch (field) {
+    case 'nomenclature':
+      if (config.requiredFields.includes('nomenclature') && !value.trim()) {
+        return 'El código es obligatorio';
+      }
+      if (value && value.length > VALIDATION_RULES.NOMENCLATURE_MAX_LENGTH) {
+        return `El código no puede exceder ${VALIDATION_RULES.NOMENCLATURE_MAX_LENGTH} caracteres`;
+      }
+      if (value && !VALIDATION_RULES.NOMENCLATURE_PATTERN.test(value)) {
+        return 'El código solo puede contener letras, números, guiones y guiones bajos';
+      }
+      return null;
+
+    case 'name':
+      if (config.requiredFields.includes('name') && !value.trim()) {
+        return 'El nombre es obligatorio';
+      }
+      if (value && value.length > VALIDATION_RULES.NAME_MAX_LENGTH) {
+        return `El nombre no puede exceder ${VALIDATION_RULES.NAME_MAX_LENGTH} caracteres`;
+      }
+      if (value && !VALIDATION_RULES.NAME_PATTERN.test(value)) {
+        return 'El nombre contiene caracteres no permitidos';
+      }
+      return null;
+
+    case 'description':
+      if (config.requiredFields.includes('description') && !value.trim()) {
+        return 'La descripción es obligatoria';
+      }
+      if (value && value.length > VALIDATION_RULES.DESCRIPTION_MAX_LENGTH) {
+        return `La descripción no puede exceder ${VALIDATION_RULES.DESCRIPTION_MAX_LENGTH} caracteres`;
+      }
+      return null;
+
+    default:
+      return null;
+  }
+};
+
+/**
+ * Validar todo el formulario antes de guardar
+ */
+const validateForm = (): boolean => {
+  if (!currentElement) return false;
+  
+  const newErrors: {
+    nomenclature?: string;
+    name?: string;
+    description?: string;
+  } = {};
+  
+  const config = FORM_CONFIG[currentElement.type];
+
+  // Validar solo los campos que se muestran y son requeridos
+  if (shouldShowField('nomenclature') && config.requiredFields.includes('nomenclature')) {
+    const error = validateField('nomenclature', formData.nomenclature);
+    if (error) newErrors.nomenclature = error;
+  }
+
+  if (shouldShowField('name') && config.requiredFields.includes('name')) {
+    const error = validateField('name', formData.name);
+    if (error) newErrors.name = error;
+  }
+
+  if (shouldShowField('description') && config.requiredFields.includes('description')) {
+    const error = validateField('description', formData.description);
+    if (error) newErrors.description = error;
+  }
+
+  setErrors(newErrors);
+  return Object.keys(newErrors).length === 0;
+};
+
+
 
   // Aplanar el árbol para obtener todos los elementos
   const allElements = React.useMemo(() => {
@@ -116,22 +213,27 @@ const StructureEditForm: React.FC = () => {
 
   // Manejar cambios en el formulario
   const handleInputChange = (field: string, value: string) => {
-    setFormData(prev => ({
-      ...prev,
-      [field]: value
-    }));
+  setFormData(prev => ({
+    ...prev,
+    [field]: value
+  }));
 
-    // Verificar si hay cambios
-    if (currentElement) {
-      const newFormData = { ...formData, [field]: value };
-      const hasFieldChanges = 
+  // Limpiar error del campo cuando el usuario empiece a escribir
+  if (errors[field as keyof typeof errors]) {
+    setErrors(prev => ({ ...prev, [field]: undefined }));
+  }
+
+  // Verificar si hay cambios
+  if (currentElement) {
+    const newFormData = { ...formData, [field]: value };
+    const hasFieldChanges = 
       newFormData.nomenclature !== currentElement.originalNomenclature ||
       newFormData.name !== currentElement.originalName ||
       newFormData.description !== currentElement.originalDescription;
-      
-      setHasChanges(hasFieldChanges);
-    }
-  };
+    
+    setHasChanges(hasFieldChanges);
+  }
+};
 
   // Obtener el label del tipo de elemento
   const getElementTypeLabel = (type: ElementType): string => {
@@ -161,18 +263,25 @@ const StructureEditForm: React.FC = () => {
 
     try {
       if (pendingAction === 'save') {
+        // Validar formulario antes de guardar
+        if (!validateForm()) {
+        confirmModal.closeModal();
+        (null);
+        return;
+      }
+
         // Usar el hook para editar el elemento
         const result = await editElement(currentElement.type, currentElement.id, {
-          nomenclature: formData.nomenclature,
-          name: formData.name,
-          description: formData.description,
-          active: currentElement.active
-        });
-        
-        if (result) {
-          console.log('Cambios guardados:', formData);
-          setHasChanges(false);
-        }
+        nomenclature: formData.nomenclature,
+        name: formData.name,
+        description: formData.description,
+        active: currentElement.active
+      });
+    
+      if (result) {
+        console.log('Cambios guardados:', formData);
+        setHasChanges(false);
+      }
       } else {
         // Descartar cambios
         setFormData({
@@ -277,7 +386,9 @@ const StructureEditForm: React.FC = () => {
 
             {/* Campos editables */}
             <div className="space-y-6">
+
               {/* Nomenclatura */}
+              {shouldShowField('nomenclature') && (
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   Código *
@@ -288,13 +399,16 @@ const StructureEditForm: React.FC = () => {
                   onChange={(e) => handleInputChange('nomenclature', e.target.value)}
                   placeholder="Nomenclatura única o identificativa del elemento"
                   className={formData.nomenclature !== currentElement.originalNomenclature ? 'ring-2 ring-blue-500' : ''}
+                  error={errors.nomenclature}
                 />
                 <p className="text-xs text-gray-500 mt-1">
                   Código único o identificativo del elemento
                 </p>
               </div>
+              )}
 
               {/* Nombre */}
+              {shouldShowField('name') && (
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   Nombre *
@@ -305,36 +419,47 @@ const StructureEditForm: React.FC = () => {
                   onChange={(e) => handleInputChange('name', e.target.value)}
                   placeholder="Nombre completo y descriptivo"
                   className={formData.name !== currentElement.originalName ? 'ring-2 ring-blue-500' : ''}
+                  error={errors.name}
                 />
                 <p className="text-xs text-gray-500 mt-1">
                   Nombre completo y descriptivo
                 </p>
               </div>
+              )}
 
               {/* Descripción */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Descripción (opcional)
-                </label>
-                <textarea
-                  value={formData.description}
-                  onChange={(e) => handleInputChange('description', e.target.value)}
-                  rows={4}
-                  className={`w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
-                    formData.description !== (currentElement.originalDescription || '') ? 'ring-2 ring-blue-500' : ''
-                  }`}
-                  placeholder="Descripción detallada del elemento"
-                  maxLength={500}
-                />
-                <div className="flex justify-between items-center mt-1">
-                  <p className="text-xs text-gray-500">
-                    Descripción detallada del elemento
-                  </p>
-                  <span className="text-xs text-gray-400">
-                    {formData.description.length}/500 caracteres
-                  </span>
+              {shouldShowField('description') && (
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Descripción {currentElement && FORM_CONFIG[currentElement.type].requiredFields.includes('description') ? <span className="text-red-500">*</span> : <span className="text-gray-500">(opcional)</span>}
+                  </label>
+                  <textarea
+                    value={formData.description}
+                    onChange={(e) => handleInputChange('description', e.target.value)}
+                    rows={4}
+                    className={`w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                      errors.description
+                        ? 'border-red-500 bg-red-50'
+                        : formData.description !== (currentElement.originalDescription || '') 
+                          ? 'ring-2 ring-blue-500' 
+                          : ''
+                    }`}
+                    placeholder="Descripción detallada del elemento"
+                    maxLength={500}
+                  />
+                  {errors.description && (
+                    <p className="mt-1 text-sm text-red-600">{errors.description}</p>
+                  )}
+                  <div className="flex justify-between items-center mt-1">
+                    <p className="text-xs text-gray-500">
+                      Descripción detallada del elemento
+                    </p>
+                    <span className="text-xs text-gray-400">
+                      {formData.description.length}/500 caracteres
+                    </span>
+                  </div>
                 </div>
-              </div>
+              )}
             </div>
 
             {/* Botones de acción */}
@@ -419,13 +544,13 @@ const StructureEditForm: React.FC = () => {
                 Cambios Pendientes
               </h4>
               <div className="text-xs text-[var(--text-info)] space-y-1">
-                {formData.nomenclature !== currentElement.originalNomenclature && (
-                  <div>• Código: "{currentElement.originalNomenclature}" → "{formData.nomenclature}"</div>
+                {shouldShowField('nomenclature') && formData.nomenclature !== currentElement.originalNomenclature && (
+                 <div>• Código: "{currentElement.originalNomenclature}" → "{formData.nomenclature}"</div>
                 )}
-                {formData.name !== currentElement.originalName && (
+                {shouldShowField('name') && formData.name !== currentElement.originalName && (
                   <div>• Nombre: "{currentElement.originalName}" → "{formData.name}"</div>
                 )}
-                {formData.description !== (currentElement.originalDescription || '') && (
+                {shouldShowField('description') && formData.description !== (currentElement.originalDescription || '') && (
                   <div>• Descripción modificada</div>
                 )}
               </div>

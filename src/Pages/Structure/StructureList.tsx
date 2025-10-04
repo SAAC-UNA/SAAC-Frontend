@@ -15,104 +15,84 @@ import {
 const mockStructureData: StructureElement[] = [
   {
     id: '1',
-    code: 'UNA',
+    nomenclature: 'UNA',
     name: 'Universidad Nacional',
-    description: 'Universidad Nacional de Costa Rica',
     type: ElementType.UNIVERSITY,
     active: true,
     createdAt: new Date('2024-01-01'),
-    createdBy: 'admin',
     hasChildren: true,
     canDelete: false
   },
   {
     id: '2',
-    code: 'UNA-ALAJUELA',
     name: 'Sede Regional Central Occidente',
-    description: 'Campus Alajuela',
     type: ElementType.CAMPUS,
     parentElementId: '1',
     active: true,
     createdAt: new Date('2024-01-02'),
-    createdBy: 'admin',
     hasChildren: true,
     canDelete: false
   },
   {
     id: '3',
-    code: 'FAC-ING',
     name: 'Facultad de Ciencias Exactas y Naturales',
-    description: 'Facultad que incluye carreras de ingeniería',
     type: ElementType.FACULTY,
     parentElementId: '2',
     active: true,
     createdAt: new Date('2024-01-03'),
-    createdBy: 'admin',
     hasChildren: true,
     canDelete: false
   },
   {
     id: '4',
-    code: 'ING-SIS',
     name: 'Ingeniería en Sistemas de Información',
-    description: 'Carrera de Ingeniería en Sistemas',
     type: ElementType.CAREER,
     parentElementId: '3',
     active: true,
     createdAt: new Date('2024-01-04'),
-    createdBy: 'admin',
     hasChildren: true,
     canDelete: false
   },
   {
     id: '5',
-    code: 'DIM-01',
+    nomenclature: 'DIM-01',
     name: 'Gestión del Programa',
-    description: 'Primera dimensión de evaluación',
     type: ElementType.DIMENSION,
-    parentElementId: '4',
     active: true,
     createdAt: new Date('2024-01-05'),
-    createdBy: 'admin',
     hasChildren: true,
     canDelete: false
   },
   {
     id: '6',
-    code: 'COMP-01',
+    nomenclature: 'COMP-01',
     name: 'Propósitos del Programa',
-    description: 'Primer componente de gestión',
     type: ElementType.COMPONENT,
     parentElementId: '5',
     active: true,
     createdAt: new Date('2024-01-06'),
-    createdBy: 'admin',
     hasChildren: true,
     canDelete: false
   },
   {
     id: '7',
-    code: 'CRIT-01',
-    name: 'Correspondencia con la Misión',
+    nomenclature: 'CRIT-01',
     description: 'Criterio sobre alineación con misión institucional',
     type: ElementType.CRITERIA,
     parentElementId: '6',
     active: true,
     createdAt: new Date('2024-01-07'),
-    createdBy: 'admin',
     hasChildren: true,
     canDelete: false
   },
   {
     id: '8',
-    code: 'EVD-01',
-    name: 'Plan de Estudios Vigente',
+    nomenclature: 'EVD-01',
     description: 'Documento oficial del plan de estudios',
     type: ElementType.EVIDENCE,
     parentElementId: '7',
     active: true,
     createdAt: new Date('2024-01-08'),
-    createdBy: 'admin',
     hasChildren: false,
     canDelete: true
   }
@@ -189,7 +169,7 @@ const TreeNode: React.FC<TreeNodeProps> = ({ node, onToggle }) => {
                 {ELEMENT_TYPE_LABELS[element.type]}
               </span>
               <code className="text-sm font-mono bg-white bg-opacity-30 px-2 py-1 rounded">
-                {element.code}
+                {element.nomenclature}
               </code>
             </div>
           </div>
