@@ -1,6 +1,7 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { NavigationProvider } from './Context/NavigationContext';
+import { ToastProvider } from './Context/ToastContext';
 import { Layout } from './Components/Layout/Index';
 import { HomePage } from './Pages/Index';
 import { RolesRepository, RoleForm } from './Pages/Roles';
@@ -14,20 +15,22 @@ const App: React.FC = () => {
   return (
     <Router>
       <NavigationProvider>
-        <Layout>
-          <Routes>
-            <Route path="/" element={<HomePage />} />
-            <Route path="/roles/crear" element={<RoleForm />} />
-            <Route path="/roles/editar/:id" element={<RoleForm />} />
-            <Route path="/roles/listar" element={<RolesRepository />} />
-            <Route path="/estructura/repositorio" element={<StructureRepository />} />
-            <Route path="/estructura/crear" element={<StructureCreation />} />
-            <Route path="/estructura/eliminar" element={<StructureDeletion />} />
-            <Route path="/estructura/editar" element={<StructureEditList />} />
-            <Route path="/estructura/editar/formulario" element={<StructureEditForm />} />
-            {/* Aquí se pueden agregar más rutas en el futuro */}
-          </Routes>
-        </Layout>
+        <ToastProvider>
+          <Layout>
+            <Routes>
+              <Route path="/" element={<HomePage />} />
+              <Route path="/roles/crear" element={<RoleForm />} />
+              <Route path="/roles/editar/:id" element={<RoleForm />} />
+              <Route path="/roles/listar" element={<RolesRepository />} />
+              <Route path="/estructura/repositorio" element={<StructureRepository />} />
+              <Route path="/estructura/crear" element={<StructureCreation />} />
+              <Route path="/estructura/eliminar" element={<StructureDeletion />} />
+              <Route path="/estructura/editar" element={<StructureEditList />} />
+              <Route path="/estructura/editar/formulario" element={<StructureEditForm />} />
+              {/* Aquí se pueden agregar más rutas en el futuro */}
+            </Routes>
+          </Layout>
+        </ToastProvider>
       </NavigationProvider>
     </Router>
   );

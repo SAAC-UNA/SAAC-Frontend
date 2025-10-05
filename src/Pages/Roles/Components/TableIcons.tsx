@@ -23,5 +23,11 @@ export const TableIcons = {
     SystemIcons.actions.delete({ className, size: 'sm' }),
 
   add: ({ className = "w-4 h-4" }: IconProps) => 
-    SystemIcons.actions.add({ className, size: 'sm' })
+    SystemIcons.actions.add({ className, size: 'sm' }),
+
+  search: ({ className = "w-4 h-4" }: IconProps) => 
+    SystemIcons.interface.search({ className, size: 'sm' }),
+
+  roles: ({ className = "w-4 h-4" }: IconProps) => 
+    SystemIcons.users.roles({ className, size: 'sm' })
 };

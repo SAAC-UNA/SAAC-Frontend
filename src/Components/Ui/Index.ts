@@ -15,6 +15,8 @@ export { DataTable } from './DataTable';
 export type { DataTableColumn, DataTableAction, DataTableProps } from './DataTable';
 export { PermissionsModal } from './PermissionsRoleModal';
 export { Modal, useModal } from './Modal';
+export { BackendErrorAlert } from './BackendErrorAlert';
+export { PageErrorState } from './PageErrorState';
 export { Select } from './Select';
 export { CustomSelect } from './SingleSelect';
 export type { SelectOption, CustomSelectProps } from './SingleSelect';

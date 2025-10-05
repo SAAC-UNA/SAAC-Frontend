@@ -16,10 +16,10 @@
  */
 
 import React, { useEffect, useState } from 'react';
-import { DataTable, PermissionsModal, ButtonWithTooltip } from '@/components/index';
+import { DataTable, ButtonWithTooltip } from '@/components/index';
 import { TableIcons } from './TableIcons';
+import { BackendErrorAlert } from '@/Components/Ui/BackendErrorAlert';
 import { useRoles } from '@/hooks/UseRoles';
-import { usePermissionLabels } from '@/hooks/UsePermissionLabels';
 import type { DataTableColumn } from '@/components/Ui/DataTable';
 import type { Role } from '@/Services/RoleService';
 
@@ -27,6 +27,7 @@ interface RolesTableProps {
     onEdit?: (role: Role) => void;
     onDelete?: (role: Role) => void;
     onCreate?: () => void;
+    onViewPermissions?: (role: Role) => void;
     itemsPerPage?: number;
     unstyled?: boolean; // Para usar sin contenedor
 }
@@ -35,19 +36,15 @@ export const RolesTable: React.FC<RolesTableProps> = ({
     onEdit,
     onDelete,
     onCreate,
+    onViewPermissions,
     itemsPerPage = 4,
     unstyled = false
 }) => {
     const { roles, isLoading, error, loadRoles, clearError } = useRoles();
-    const { getLabel } = usePermissionLabels();
 
     const [searchQuery, setSearchQuery] = useState('');
     const [filteredRoles, setFilteredRoles] = useState<Role[]>([]);
     const [currentPage, setCurrentPage] = useState(1);
-    const [modalState, setModalState] = useState<{
-        isOpen: boolean;
-        role: Role | null;
-    }>({ isOpen: false, role: null });
 
     // Función para truncar texto
     const truncateText = (text: string, maxLength: number = 20): string => {
@@ -134,7 +131,7 @@ export const RolesTable: React.FC<RolesTableProps> = ({
                         variant="tableView"
                         size="sm"
                         tooltip="Ver permisos"
-                        onClick={() => setModalState({ isOpen: true, role })}
+                        onClick={() => onViewPermissions?.(role)}
                         className="h-8 w-8 p-2"
                     >
                         <TableIcons.view className="w-4 h-4" />
@@ -144,7 +141,7 @@ export const RolesTable: React.FC<RolesTableProps> = ({
                         variant="tableEdit"
                         size="sm"
                         tooltip="Editar rol"
-                        onClick={() => onEdit?.(role)}
+                        onClick={() => handleEdit(role)}
                         className="h-8 w-8 p-2"
                     >
                         <TableIcons.edit className="w-4 h-4" />
@@ -164,6 +161,11 @@ export const RolesTable: React.FC<RolesTableProps> = ({
         }
     ];
 
+    // Función para manejar edición
+    const handleEdit = (role: Role) => {
+        onEdit?.(role);
+    };
+
     const handleSearch = (query: string) => {
         setSearchQuery(query);
     };
@@ -172,42 +174,18 @@ export const RolesTable: React.FC<RolesTableProps> = ({
         setCurrentPage(page);
     };
 
-    const handleCloseModal = () => {
-        setModalState({ isOpen: false, role: null });
-    };
-
     if (error) {
         return (
-            <div className="w-full p-6">
-                <div className="mb-6 p-4 bg-[var(--bg-error)] border border-[var(--border-error)] rounded-lg">
-                    <div className="flex">
-                        <div className="flex-shrink-0">
-                            <svg className="h-5 w-5 text-[var(--icon-delete)]" viewBox="0 0 20 20" fill="currentColor">
-                                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
-                            </svg>
-                        </div>
-                        <div className="ml-3">
-                            <h3 className="text-sm font-medium text-[var(--text-error)]">Error al cargar roles</h3>
-                            <div className="mt-2 text-sm text-[var(--text-error)]">
-                                <p>{error}</p>
-                            </div>
-                            <div className="mt-4">
-                                <button
-                                    onClick={() => {
-                                        clearError();
-                                        loadRoles();
-                                    }}
-                                    className="px-4 py-2 bg-red-100 text-red-800 rounded-md hover:bg-red-200"
-                                >
-                                    Reintentar
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
+            <BackendErrorAlert
+                error={error}
+                onRetry={() => {
+                    clearError();
+                    loadRoles();
+                }}
+            />
         );
     }
+    
     {/* TODO: Renderizar por qué w-full aquí sí sirve y en CreateRoleForms no, ese estilo debe ser unificado*/ }
     return (
 
@@ -231,22 +209,11 @@ export const RolesTable: React.FC<RolesTableProps> = ({
                 } : undefined}
                 loading={isLoading}
                 emptyMessage={
-                    searchQuery
+                    searchQuery 
                         ? `No se encontraron roles que coincidan con "${searchQuery}"`
-                        : "No hay roles creados aún. ¡Crea el primer rol!"
+                        : "No hay roles creados aún."
                 }
                 unstyled={unstyled}
-            />
-
-            {/* Modal de permisos */}
-            <PermissionsModal
-                isOpen={modalState.isOpen}
-                onClose={handleCloseModal}
-                roleName={modalState.role?.name || ''}
-                roleDescription={modalState.role?.description}
-                // roleCreatedAt={modalState.role?.createdAt} // TODO: Uncomment when backend sends created_at
-                permissions={modalState.role?.permissions || []}
-                getPermissionLabel={getLabel}
             />
         </div>
     );

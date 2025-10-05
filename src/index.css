@@ -120,7 +120,7 @@
 
   --text-success: #166534;   /* Texto verde oscuro para éxito */
   --text-warning: #92400e;   /* Texto amarillo oscuro para advertencias */
-  --text-error: #991b1b;     /* Texto rojo oscuro para errores */
+  --text-error: var(--color-error);      /* Texto rojo oscuro para errores */
   --text-info: #1e40af;      /* Texto azul oscuro para información */
 
   /* Colores para botones principales */

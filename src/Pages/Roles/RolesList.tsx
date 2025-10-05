@@ -8,19 +8,31 @@
 import React, { useState } from 'react';
 import { RolesTable } from './Components/RolesTable';
 import { ScreenContainer } from '@/Components/Ui/ScreenContainer';
-import { Modal } from '@/Components/Ui/Modal';
+import { DeleteConfirmationModal } from '@/Components/Ui/DeleteConfirmationModal';
+import { PermissionsModal } from '@/Components/Ui/PermissionsRoleModal';
 import { useRoles } from '@/Hooks/UseRoles';
+import { usePermissionLabels } from '@/Hooks/UsePermissionLabels';
 import { MODULE_INFO } from '@/Constants/ModuleInfo';
 import type { Role } from '@/Services/RoleService';
 
 const RolesRepository: React.FC = () => {
-  const { deleteRole, isLoading } = useRoles();
+  const { deleteRole } = useRoles();
+  const { getLabel } = usePermissionLabels();
   
   // Obtener información del módulo desde ModuleInfo
   const moduleInfo = MODULE_INFO.roles;
   
-  // Estado para el modal de confirmación
+  // Estado para el modal de confirmación de eliminación
   const [deleteModalState, setDeleteModalState] = useState<{
+    isOpen: boolean;
+    role: Role | null;
+  }>({
+    isOpen: false,
+    role: null
+  });
+
+  // Estado para el modal de permisos
+  const [permissionsModalState, setPermissionsModalState] = useState<{
     isOpen: boolean;
     role: Role | null;
   }>({
@@ -31,6 +43,13 @@ const RolesRepository: React.FC = () => {
   const handleEditRole = (role: Role) => {
     // TODO: Navegar a página de edición
     window.location.href = `/roles/editar/${role.id}`;
+  };
+
+  const handleViewPermissions = (role: Role) => {
+    setPermissionsModalState({
+      isOpen: true,
+      role
+    });
   };
 
   const handleDeleteRole = (role: Role) => {
@@ -59,6 +78,10 @@ const RolesRepository: React.FC = () => {
     setDeleteModalState({ isOpen: false, role: null });
   };
 
+  const closePermissionsModal = () => {
+    setPermissionsModalState({ isOpen: false, role: null });
+  };
+
   const handleCreateRole = () => {
     window.location.href = '/roles/crear';
   };
@@ -73,42 +96,33 @@ const RolesRepository: React.FC = () => {
           onEdit={handleEditRole}
           onDelete={handleDeleteRole}
           onCreate={handleCreateRole}
+          onViewPermissions={handleViewPermissions}
         />
       </ScreenContainer>
 
       {/* Modal de confirmación de eliminación */}
-      <Modal
+      <DeleteConfirmationModal
         isOpen={deleteModalState.isOpen}
         onClose={cancelDeleteRole}
+        onConfirm={confirmDeleteRole}
         title="Confirmar Eliminación"
-        size="md"
-      >
-        <div className="space-y-4">
-          <p className="text-gray-700">
-            ¿Está seguro de que desea eliminar el rol <strong>"{deleteModalState.role?.name}"</strong>?
-          </p>
-          <p className="text-sm text-[var(--text-error)]">
-            Esta acción no se puede deshacer.
-          </p>
-          
-          <div className="flex justify-end gap-3 pt-4">
-            <button
-              onClick={cancelDeleteRole}
-              className="px-4 py-2 text-gray-700 bg-gray-200 rounded-lg hover:bg-gray-300 transition-colors"
-              disabled={isLoading}
-            >
-              Cancelar
-            </button>
-            <button
-              onClick={confirmDeleteRole}
-              className="px-4 py-2 text-white bg-[var(--btn-danger)] rounded-lg hover:bg-[var(--btn-danger-hover)] transition-colors"
-              disabled={isLoading}
-            >
-              {isLoading ? 'Eliminando...' : 'Eliminar'}
-            </button>
-          </div>
-        </div>
-      </Modal>
+        itemName={deleteModalState.role?.name}
+        confirmLabel="Eliminar"
+        cancelLabel="Cancelar"
+        variant="danger"
+      />
+
+      {/* Modal de permisos del rol */}
+      {permissionsModalState.role && (
+        <PermissionsModal
+          isOpen={permissionsModalState.isOpen}
+          onClose={closePermissionsModal}
+          roleName={permissionsModalState.role.name}
+          roleDescription={permissionsModalState.role.description}
+          permissions={permissionsModalState.role.permissions || []}
+          getPermissionLabel={getLabel}
+        />
+      )}
     </div>
   );
 };

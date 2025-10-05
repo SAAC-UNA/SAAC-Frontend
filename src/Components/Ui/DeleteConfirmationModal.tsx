@@ -1,5 +1,8 @@
 /**
  * DeleteConfirmationModal - Modal de confirmación para operaciones de eliminación
+ * 
+ * Utiliza el componente Modal base con variant="danger" o "warning".
+ * Los botones tienen ancho fijo de 128px (modalButton={true}) por estandarización.
  */
 
 import React from 'react';
@@ -31,17 +34,14 @@ export const DeleteConfirmationModal: React.FC<DeleteConfirmationModalProps> = (
   variant = 'danger'
 }) => {
   const defaultMessage = itemName
-    ? `¿Está seguro de que desea eliminar "${itemName}"?`
+    ? (
+        <>
+          ¿Está seguro de que desea eliminar "<span className="font-bold">{itemName}</span>"?
+        </>
+      )
     : '¿Está seguro de que desea eliminar este elemento?';
 
   const finalMessage = message || defaultMessage;
-
-  // Mensaje adicional solo para danger
-  const additionalMessage = variant === 'danger' ? (
-    <p className="text-xs text-rojo-una mt-2">
-      Esta acción no se puede deshacer.
-    </p>
-  ) : null;
 
   return (
     <Modal
@@ -56,8 +56,6 @@ export const DeleteConfirmationModal: React.FC<DeleteConfirmationModalProps> = (
       confirmLoading={isLoading}
       showCancel={true}
       showConfirm={true}
-    >
-      {additionalMessage}
-    </Modal>
+    />
   );
 };

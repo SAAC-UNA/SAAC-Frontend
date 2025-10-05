@@ -39,7 +39,7 @@ interface UnifiedModalProps {
   variant?: 'danger' | 'warning' | 'info' | 'success';
   
   /** Mensaje principal (modo confirmación) */
-  message?: string;
+  message?: string | React.ReactNode;
   
   /** Mostrar botón de confirmación */
   showConfirm?: boolean;
@@ -222,12 +222,12 @@ export const Modal: React.FC<UnifiedModalProps> = ({
               {closable && (
                 <button
                   type="button"
-                  className="rounded-full bg-gray-100 p-2 text-gray-500 hover:bg-gray-200 hover:text-gray-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 transition-all duration-200"
+                  className="rounded-full bg-gray-100 p-2 text-gray-500 hover:bg-gray-200 hover:text-gray-700 focus:outline-none transition-all duration-200"
                   onClick={handleClose}
                   disabled={confirmLoading}
                   aria-label="Cerrar modal"
                 >
-                  <SystemIcons.interface.close className="h-5 w-5" />
+                  <SystemIcons.interface.closeCircle className="h-5 w-5" />
                 </button>
               )}
             </div>
@@ -287,10 +287,10 @@ export const Modal: React.FC<UnifiedModalProps> = ({
                   <>
                     {showCancel && (
                       <Button
-                        variant="outline"
+                        variant="secondary"
                         onClick={handleClose}
                         disabled={confirmLoading}
-                        className="min-w-[80px] rounded-lg border-gray-300 hover:bg-gray-50"
+                        modalButton={true}
                       >
                         {cancelLabel}
                       </Button>
@@ -298,13 +298,11 @@ export const Modal: React.FC<UnifiedModalProps> = ({
                     
                     {showConfirm && (
                       <Button
+                        variant="primary"
                         onClick={handleConfirm}
                         disabled={confirmLoading}
                         isLoading={confirmLoading}
-                        className={cn(
-                          'min-w-[80px] rounded-lg transition-all duration-200',
-                          config.confirmClasses
-                        )}
+                        modalButton={true}
                       >
                         {confirmLoading ? 'Procesando...' : confirmLabel}
                       </Button>

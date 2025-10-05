@@ -23,7 +23,7 @@ import { LoadingSpinner } from './Loading';
 /**
  * Variantes disponibles para el componente Button
  */
-type ButtonVariant = 'primary' | 'secondary' | 'tertiary' | 'outline' | 'ghost' | 'transparent' | 'success' | 'tableView' | 'tableEdit' | 'tableDelete';
+type ButtonVariant = 'primary' | 'secondary' | 'tertiary' | 'outline' | 'ghost' | 'transparent' | 'success' | 'tableView' | 'tableEdit' | 'tableDelete' | 'error';
 
 /**
  * Props del componente Button
@@ -37,6 +37,8 @@ interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   flex?: boolean;
   /** Manejo responsivo automático (usar con precaución) */
   responsive?: boolean;
+  /** Aplica el ancho estándar de 128px para botones de modales */
+  modalButton?: boolean;
   children: React.ReactNode;
 }
 
@@ -98,6 +100,13 @@ const VARIANT_CLASSES = {
     'bg-transparent text-[var(--icon-delete)] border-0 p-2 rounded-md',
     'hover:bg-[var(--bg-error)] hover:text-[var(--icon-delete)] transition-colors duration-200',
     'disabled:opacity-50 disabled:cursor-not-allowed'
+  ].join(' '),
+
+  // Botón para manejo de errores
+  error: [
+    'bg-transparent text-[var(--text-error)] font-poppins font-semibold border-2 border-[var(--text-error)]',
+    'hover:bg-[var(--text-error)]/10 transition-colors duration-200',
+    'disabled:opacity-50 disabled:cursor-not-allowed'
   ].join(' ')
 };
 
@@ -108,6 +117,7 @@ export const Button: React.FC<ButtonProps> = ({
   fullWidth = false,
   flex = false,
   responsive = false,
+  modalButton = false,
   className,
   disabled,
   children,
@@ -123,9 +133,9 @@ export const Button: React.FC<ButtonProps> = ({
   const getResponsiveClasses = () => {
     if (!responsive) return '';
     
-    // En desktop: ancho mínimo y padding específico
+    // En desktop: ancho mínimo y padding específico (128px estándar)
     // En mobile: flex para ocupar todo el ancho
-    return 'flex-1 lg:flex-none lg:min-w-28 lg:px-8';
+    return 'flex-1 lg:flex-none lg:min-w-32 lg:px-8';
   };
 
   return (
@@ -134,9 +144,10 @@ export const Button: React.FC<ButtonProps> = ({
         baseClasses,
         getComponentSizeClasses.button(size),
         VARIANT_CLASSES[variant],
-        fullWidth && 'w-full',
-        flex && 'flex-1',
-        responsive && getResponsiveClasses(),
+        modalButton && '!min-w-[128px] !max-w-[128px]',
+        fullWidth && !modalButton && 'w-full',
+        flex && !modalButton && 'flex-1',
+        responsive && !modalButton && getResponsiveClasses(),
         (disabled || isLoading) && 'opacity-50',
         className
       )}

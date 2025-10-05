@@ -1,14 +1,14 @@
 /**
- * CreateConfirmationModal - Modal de confirmación para operaciones de creación
+ * EditConfirmationModal - Modal de confirmación para operaciones de edición
  * 
- * Utiliza el componente Modal base con variant="success" o "info".
+ * Utiliza el componente Modal base con variant="warning" o "info".
  * Los botones tienen ancho fijo de 128px (modalButton={true}) por estandarización.
  */
 
 import React from 'react';
 import { Modal } from './Modal';
 
-interface CreateConfirmationModalProps {
+interface EditConfirmationModalProps {
     isOpen: boolean;
     onClose: () => void;
     onConfirm: () => void;
@@ -19,31 +19,31 @@ interface CreateConfirmationModalProps {
     confirmLabel?: string;
     cancelLabel?: string;
     isLoading?: boolean;
-    variant?: 'success' | 'info';
+    variant?: 'warning' | 'info';
     description?: string;
 }
 
-export const CreateConfirmationModal: React.FC<CreateConfirmationModalProps> = ({
+export const EditConfirmationModal: React.FC<EditConfirmationModalProps> = ({
     isOpen,
     onClose,
     onConfirm,
-    title = 'Confirmar creación',
+    title = 'Confirmar edición',
     message,
     itemName,
     itemType = 'elemento',
-    confirmLabel = 'Crear',
+    confirmLabel = 'Guardar',
     cancelLabel = 'Cancelar',
     isLoading = false,
-    variant = 'success',
+    variant = 'warning',
     description
 }) => {
     const defaultMessage = itemName
         ? (
             <>
-              ¿Está seguro de que desea crear el {itemType} "<span className="font-bold">{itemName}</span>"?
+              ¿Está seguro de que desea guardar los cambios en el {itemType} "<span className="font-bold">{itemName}</span>"?
             </>
           )
-        : `¿Está seguro de que desea crear este ${itemType}?`;
+        : `¿Está seguro de que desea guardar los cambios en este ${itemType}?`;
 
     const finalMessage = message || defaultMessage;
 
@@ -64,7 +64,7 @@ export const CreateConfirmationModal: React.FC<CreateConfirmationModalProps> = (
             {description && (
                 <div className="mt-4 p-4 bg-gray-50 rounded-lg">
                     <p className="text-sm text-gray-600">
-                        <strong>Descripción:</strong> {description}
+                        <strong>Nueva descripción:</strong> {description}
                     </p>
                 </div>
             )}
