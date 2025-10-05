@@ -18,6 +18,7 @@ import { CreateRoleForm } from './Components/CreateRoleForm';
 import { LoadingSpinner, Button, PageErrorState } from '@/components/Ui/Index';
 import { CreateConfirmationModal } from '@/Components/Ui/CreateConfirmationModal';
 import { EditConfirmationModal } from '@/Components/Ui/EditConfirmationModal';
+import { SuccessModal } from '@/Components/Ui/SuccessModal';
 import { useRoles } from '@/hooks/UseRoles';
 import { MODULE_INFO } from '@/Constants/ModuleInfo';
 import type { CreateRoleData, Role } from '@/Services/RoleService';
@@ -42,6 +43,17 @@ const RoleForm: React.FC = () => {
   }>({
     isOpen: false,
     roleData: null
+  });
+
+  // Estado para el modal de éxito
+  const [successModalState, setSuccessModalState] = useState<{
+    isOpen: boolean;
+    roleName: string;
+    isEditing: boolean;
+  }>({
+    isOpen: false,
+    roleName: '',
+    isEditing: false
   });
 
   /**
@@ -112,19 +124,31 @@ const RoleForm: React.FC = () => {
         }
         
         if (result) {
-          // Cerrar modal
+          // Cerrar modal de confirmación
           setConfirmModalState({ isOpen: false, roleData: null });
           
-          // TODO: Agregar notificación toast
-          
-          // Redireccionar a la lista de roles
-          navigate('/roles/listar');
+          // Mostrar modal de éxito
+          setSuccessModalState({
+            isOpen: true,
+            roleName: confirmModalState.roleData.name,
+            isEditing: isEditing
+          });
         }
       } catch (error) {
         // TODO: Mostrar error al usuario
         console.error(`Error al ${isEditing ? 'editar' : 'crear'} rol:`, error);
+        // Cerrar modal de confirmación incluso si hay error
+        setConfirmModalState({ isOpen: false, roleData: null });
       }
     }
+  };
+
+  /**
+   * Maneja el cierre del modal de éxito y redirecciona
+   */
+  const handleSuccessModalClose = () => {
+    setSuccessModalState({ isOpen: false, roleName: '', isEditing: false });
+    navigate('/roles/listar');
   };
 
   /**
@@ -284,6 +308,19 @@ const RoleForm: React.FC = () => {
           description={confirmModalState.roleData?.description}
         />
       )}
+
+      {/* Modal de éxito */}
+      <SuccessModal
+        isOpen={successModalState.isOpen}
+        title={successModalState.isEditing ? '¡Rol editado exitosamente!' : '¡Rol creado exitosamente!'}
+        message={successModalState.isEditing 
+          ? `El rol "${successModalState.roleName}" ha sido modificado correctamente` 
+          : `El rol "${successModalState.roleName}" ha sido agregado correctamente`
+        }
+        onClose={handleSuccessModalClose}
+        autoClose={true}
+        autoCloseDelay={3000}
+      />
     </div>
   );
 };

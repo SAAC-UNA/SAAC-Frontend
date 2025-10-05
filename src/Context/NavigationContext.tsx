@@ -27,11 +27,10 @@ interface NavigationProviderProps {
 
 export const NavigationProvider: React.FC<NavigationProviderProps> = ({ children }) => {
   const location = useLocation();
-  const [activeItemId, setActiveItemId] = useState<string | null>('inicio');
-  const [expandedItemId, setExpandedItemId] = useState<string | null>(null);
-
+  
   // Función para encontrar el item activo basado en la ruta actual
   const findActiveItemByPath = (path: string) => {
+    // Primero buscar coincidencias exactas
     for (const item of navigationItems) {
       if (item.href === path) {
         return item.id;
@@ -45,8 +44,27 @@ export const NavigationProvider: React.FC<NavigationProviderProps> = ({ children
         }
       }
     }
+
+    // Si no hay coincidencia exacta, buscar por prefijo de módulo
+    // Esto maneja rutas como /roles/crear, /roles/editar/123, etc.
+    if (path.startsWith('/roles')) {
+      return 'roles';
+    }
+    if (path.startsWith('/estructura')) {
+      return 'estructura';
+    }
+    if (path.startsWith('/usuarios')) {
+      return 'usuarios';
+    }
+
     return 'inicio'; // Default
   };
+
+  // Inicializar con el estado correcto desde el principio
+  const [activeItemId, setActiveItemId] = useState<string | null>(() => {
+    return findActiveItemByPath(location.pathname);
+  });
+  const [expandedItemId, setExpandedItemId] = useState<string | null>(null);
 
   // Actualizar el item activo cuando cambie la ruta
   useEffect(() => {
