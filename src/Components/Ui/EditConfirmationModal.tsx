@@ -2,7 +2,7 @@
  * EditConfirmationModal - Modal de confirmación para operaciones de edición
  * 
  * Utiliza el componente Modal base con variant="warning" o "info".
- * Los botones tienen ancho fijo de 128px (modalButton={true}) por estandarización.
+ * Los botones tienen ancho fijo de 128px (standardWidth={true}) por estandarización.
  */
 
 import React from 'react';

@@ -105,7 +105,7 @@ export const PageErrorState: React.FC<PageErrorStateProps> = ({
           <Button
             variant="primary"
             onClick={onPrimaryAction || (() => window.history.back())}
-            modalButton={true}
+            standardWidth={true}
             size="sm"
           >
             {primaryActionLabel}
@@ -117,7 +117,7 @@ export const PageErrorState: React.FC<PageErrorStateProps> = ({
           <Button
             variant="secondary"
             onClick={onSecondaryAction}
-            modalButton={true}
+            standardWidth={true}
             size="sm"
           >
             {secondaryActionLabel}

@@ -38,7 +38,7 @@ interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   /** Manejo responsivo automático (usar con precaución) */
   responsive?: boolean;
   /** Aplica el ancho estándar de 128px para botones de modales */
-  modalButton?: boolean;
+  standardWidth?: boolean;
   children: React.ReactNode;
 }
 
@@ -117,7 +117,7 @@ export const Button: React.FC<ButtonProps> = ({
   fullWidth = false,
   flex = false,
   responsive = false,
-  modalButton = false,
+  standardWidth = false,
   className,
   disabled,
   children,
@@ -144,10 +144,10 @@ export const Button: React.FC<ButtonProps> = ({
         baseClasses,
         getComponentSizeClasses.button(size),
         VARIANT_CLASSES[variant],
-        modalButton && '!min-w-[128px] !max-w-[128px]',
-        fullWidth && !modalButton && 'w-full',
-        flex && !modalButton && 'flex-1',
-        responsive && !modalButton && getResponsiveClasses(),
+        standardWidth && '!min-w-[128px] !max-w-[128px]',
+        fullWidth && !standardWidth && 'w-full',
+        flex && !standardWidth && 'flex-1',
+        responsive && !standardWidth && getResponsiveClasses(),
         (disabled || isLoading) && 'opacity-50',
         className
       )}

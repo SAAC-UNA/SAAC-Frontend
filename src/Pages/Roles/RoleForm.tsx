@@ -249,7 +249,7 @@ const RoleForm: React.FC = () => {
               type="button"
               variant="secondary"
               onClick={handleCancel}
-              modalButton={true}
+              standardWidth={true}
               size="sm"
             >
               Cancelar
@@ -264,7 +264,7 @@ const RoleForm: React.FC = () => {
                   form.requestSubmit();
                 }
               }}
-              modalButton={true}
+              standardWidth={true}
               size="sm"
             >
               {getButtonText()}

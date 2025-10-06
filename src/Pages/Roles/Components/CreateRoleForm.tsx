@@ -306,7 +306,7 @@ export const CreateRoleForm: React.FC<CreateRoleFormProps> = ({
                       variant="secondary"
                       onClick={onCancel}
                       disabled={isLoading}
-                      modalButton={true}
+                      standardWidth={true}
                       size="sm"
                     >
                       Cancelar
@@ -315,7 +315,7 @@ export const CreateRoleForm: React.FC<CreateRoleFormProps> = ({
                       type="submit"
                       variant="primary"
                       disabled={isLoading}
-                      modalButton={true}
+                      standardWidth={true}
                       size="sm"
                     >
                       {isLoading 
@@ -383,7 +383,7 @@ export const CreateRoleForm: React.FC<CreateRoleFormProps> = ({
                   variant="secondary"
                   onClick={onCancel}
                   disabled={isLoading}
-                  modalButton={true}
+                  standardWidth={true}
                   size="sm"
                 >
                   Cancelar
@@ -392,7 +392,7 @@ export const CreateRoleForm: React.FC<CreateRoleFormProps> = ({
                   type="submit"
                   variant="primary"
                   disabled={isLoading}
-                  modalButton={true}
+                  standardWidth={true}
                   size="sm"
                 >
                   {isLoading 

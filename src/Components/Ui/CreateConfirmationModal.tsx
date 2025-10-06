@@ -2,7 +2,7 @@
  * CreateConfirmationModal - Modal de confirmación para operaciones de creación
  * 
  * Utiliza el componente Modal base con variant="success" o "info".
- * Los botones tienen ancho fijo de 128px (modalButton={true}) por estandarización.
+ * Los botones tienen ancho fijo de 128px (standardWidth={true}) por estandarización.
  */
 
 import React from 'react';

@@ -2,7 +2,7 @@
  * PermissionsModal - Modal para mostrar los permisos de un rol
  * 
  * Ahora usa Modal unificado como base para consistencia visual.
- * Los botones del modal tienen ancho fijo de 128px (modalButton={true}) heredado del componente base.
+ * Los botones del modal tienen ancho fijo de 128px (standardWidth={true}) heredado del componente base.
  */
 
 import React from 'react';

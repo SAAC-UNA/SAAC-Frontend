@@ -290,7 +290,7 @@ export const Modal: React.FC<UnifiedModalProps> = ({
                         variant="secondary"
                         onClick={handleClose}
                         disabled={confirmLoading}
-                        modalButton={true}
+                        standardWidth={true}
                       >
                         {cancelLabel}
                       </Button>
@@ -302,7 +302,7 @@ export const Modal: React.FC<UnifiedModalProps> = ({
                         onClick={handleConfirm}
                         disabled={confirmLoading}
                         isLoading={confirmLoading}
-                        modalButton={true}
+                        standardWidth={true}
                       >
                         {confirmLoading ? 'Procesando...' : confirmLabel}
                       </Button>

@@ -148,7 +148,7 @@ export const BackendErrorAlert: React.FC<BackendErrorAlertProps> = ({
                   variant="error"
                   onClick={onRetry}
                   size="sm"
-                  modalButton={true}
+                  standardWidth={true}
                 >
                   Reintentar
                 </Button>

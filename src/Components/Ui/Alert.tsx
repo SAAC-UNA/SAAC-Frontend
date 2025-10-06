@@ -81,7 +81,7 @@ export const Alert: React.FC<AlertProps> = ({
       case 'info':
       default:
         return {
-          icon: SystemIcons.states.infoTriangle,
+          icon: SystemIcons.interface.alert,
           bgColor: 'bg-blue-50',
           borderColor: 'border-l-blue-500',
           iconColor: 'text-blue-500',

@@ -2,7 +2,7 @@
  * DeleteConfirmationModal - Modal de confirmación para operaciones de eliminación
  * 
  * Utiliza el componente Modal base con variant="danger" o "warning".
- * Los botones tienen ancho fijo de 128px (modalButton={true}) por estandarización.
+ * Los botones tienen ancho fijo de 128px (standardWidth={true}) por estandarización.
  */
 
 import React from 'react';
