@@ -30,12 +30,14 @@ import type { ApiResponse } from '@/Services/StructureService';
 const mockTreeData: StructureElement[] = [
   {
     id: '1',
+    nomenclature: 'UNA',
     name: 'Universidad Nacional',
     type: 'university' as ElementType,
     active: true,
     createdAt: new Date('2024-01-01'),
     hasChildren: true,
-    canDelete: false
+    canDelete: false,
+    childElements: []
   },
   {
     id: '2',
@@ -45,7 +47,8 @@ const mockTreeData: StructureElement[] = [
     active: true,
     createdAt: new Date('2024-01-02'),
     hasChildren: true,
-    canDelete: false
+    canDelete: false,
+    childElements: []
   },
   {
     id: '3',
@@ -55,7 +58,8 @@ const mockTreeData: StructureElement[] = [
     active: true,
     createdAt: new Date('2024-01-03'),
     hasChildren: true,
-    canDelete: false
+    canDelete: false,
+    childElements: []
   },
   {
     id: '4',
@@ -65,18 +69,19 @@ const mockTreeData: StructureElement[] = [
     active: true,
     createdAt: new Date('2024-01-04'),
     hasChildren: true,
-    canDelete: false
+    canDelete: false,
+    childElements: []
   },
   {
     id: '5',
     nomenclature: 'DIM-01',
     name: 'Gestión del Programa',
     type: 'dimension' as ElementType,
-    parentElementId: '4',
     active: true,
     createdAt: new Date('2024-01-05'),
     hasChildren: true,
-    canDelete: false
+    canDelete: false,
+    childElements: []
   },
   {
     id: '6',
@@ -87,7 +92,8 @@ const mockTreeData: StructureElement[] = [
     active: true,
     createdAt: new Date('2024-01-06'),
     hasChildren: true,
-    canDelete: false
+    canDelete: false,
+    childElements: []
   },
   {
     id: '7',
@@ -97,19 +103,33 @@ const mockTreeData: StructureElement[] = [
     parentElementId: '6',
     active: true,
     createdAt: new Date('2024-01-07'),
-    hasChildren: true,
-    canDelete: false
+    hasChildren: false,
+    canDelete: true,
+    childElements: []
   },
   {
     id: '8',
-    nomenclature: 'EVD-01',
-    description: 'Documento oficial del plan de estudios',
-    type: 'evidence' as ElementType,
+    nomenclature: 'EST-01',
+    description: 'El programa debe estar alineado con la misión de la universidad',
+    type: 'standard' as ElementType,
     parentElementId: '7',
     active: true,
     createdAt: new Date('2024-01-08'),
     hasChildren: false,
-    canDelete: true
+    canDelete: true,
+    childElements: []
+  },
+  {
+    id: '9',
+    nomenclature: 'EVD-01',
+    description: 'Documento oficial del plan de estudios vigente',
+    type: 'evidence' as ElementType,
+    parentElementId: '8',
+    active: false,
+    createdAt: new Date('2024-01-09'),
+    hasChildren: false,
+    canDelete: true,
+    childElements: []
   }
 ];
 

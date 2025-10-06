@@ -56,31 +56,10 @@ export const navigationItems: NavItem[] = [
   },*/
   // Estructura del Repositorio se quita del sidebar temporalmente, más adelante podrá servir para reportería
   {
-    id: 'estructura',
-    label: 'Gestión de Estructura',
-    icon: nutIcon,
-    href: '/estructura',
-    isActive: false,
-    isExpandable: true,
-    children: [
-      {
-        id: 'estructuraCrear',
-        label: 'Crear Elemento',
-        icon: plusIcon,
-        href: '/estructura/crear'
-      },
-      {
-        id: 'estructuraEditar',
-        label: 'Editar Elemento',
-        icon: editIcon,
-        href: '/estructura/editar'
-      },
-      {
-        id: 'deleteElements',
-        label: 'Eliminar Elementos',
-        icon: trashIcon,
-        href: '/estructura/eliminar'
-      }
-    ]
-  },
+  id: 'estructura',
+  label: 'Gestión de Estructura',
+  icon: nutIcon,
+  href: '/estructura/listar',
+  isActive: false
+}
 ];

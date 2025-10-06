@@ -1,23 +1,24 @@
-import React, { useState, useEffect } from 'react';
-import { cn } from '@/Utils/ClassNames';
-import { Button } from '@/Components/Ui/Button';
-import { ScreenContainer } from '@/Components/Ui/ScreenContainer';
-import { SystemIcons } from '@/Components/Ui/Icons/SystemIcons';
-import { LoadingSpinner } from '@/Components/Ui/Loading';
-import type { StructureElement, StructureTreeNode } from '@/Types/StructureTypes';
-import { ElementType } from '@/Types/StructureTypes';
-import { 
-  ELEMENT_TYPE_LABELS, 
-  HIERARCHY_RULES 
-} from '@/Constants/StructureConstants';
+/**
+ * StructureList - Página principal de listado de elementos de estructura
+ * 
+ * Esta página coordina el componente StructureTable y maneja la navegación
+ * entre las diferentes acciones (crear, editar, eliminar).
+ */
 
-// Mock data completo para el árbol jerárquico
-const mockStructureData: StructureElement[] = [
+import React, { useState } from 'react';
+import { StructureTable } from './Components/StructureTable';
+import { ScreenContainer } from '@/Components/Ui/ScreenContainer';
+import { Modal } from '@/Components/Ui/Modal';
+import { MODULE_INFO } from '@/Constants/ModuleInfo';
+import type { StructureElement } from '@/Types/StructureTypes';
+
+// Datos mock temporales para visualización (eliminar cuando se conecte al backend)
+const mockStructureElements: StructureElement[] = [
   {
     id: '1',
     nomenclature: 'UNA',
     name: 'Universidad Nacional',
-    type: ElementType.UNIVERSITY,
+    type: 'university',
     active: true,
     createdAt: new Date('2024-01-01'),
     hasChildren: true,
@@ -26,7 +27,7 @@ const mockStructureData: StructureElement[] = [
   {
     id: '2',
     name: 'Sede Regional Central Occidente',
-    type: ElementType.CAMPUS,
+    type: 'campus',
     parentElementId: '1',
     active: true,
     createdAt: new Date('2024-01-02'),
@@ -36,7 +37,7 @@ const mockStructureData: StructureElement[] = [
   {
     id: '3',
     name: 'Facultad de Ciencias Exactas y Naturales',
-    type: ElementType.FACULTY,
+    type: 'faculty',
     parentElementId: '2',
     active: true,
     createdAt: new Date('2024-01-03'),
@@ -46,7 +47,7 @@ const mockStructureData: StructureElement[] = [
   {
     id: '4',
     name: 'Ingeniería en Sistemas de Información',
-    type: ElementType.CAREER,
+    type: 'career',
     parentElementId: '3',
     active: true,
     createdAt: new Date('2024-01-04'),
@@ -57,7 +58,7 @@ const mockStructureData: StructureElement[] = [
     id: '5',
     nomenclature: 'DIM-01',
     name: 'Gestión del Programa',
-    type: ElementType.DIMENSION,
+    type: 'dimension',
     active: true,
     createdAt: new Date('2024-01-05'),
     hasChildren: true,
@@ -67,7 +68,7 @@ const mockStructureData: StructureElement[] = [
     id: '6',
     nomenclature: 'COMP-01',
     name: 'Propósitos del Programa',
-    type: ElementType.COMPONENT,
+    type: 'component',
     parentElementId: '5',
     active: true,
     createdAt: new Date('2024-01-06'),
@@ -78,289 +79,137 @@ const mockStructureData: StructureElement[] = [
     id: '7',
     nomenclature: 'CRIT-01',
     description: 'Criterio sobre alineación con misión institucional',
-    type: ElementType.CRITERIA,
+    type: 'criteria',
     parentElementId: '6',
     active: true,
     createdAt: new Date('2024-01-07'),
-    hasChildren: true,
-    canDelete: false
+    hasChildren: false,
+    canDelete: true
   },
   {
     id: '8',
-    nomenclature: 'EVD-01',
-    description: 'Documento oficial del plan de estudios',
-    type: ElementType.EVIDENCE,
+    nomenclature: 'EST-01',
+    description: 'El programa debe estar alineado con la misión de la universidad',
+    type: 'standard',
     parentElementId: '7',
     active: true,
     createdAt: new Date('2024-01-08'),
     hasChildren: false,
     canDelete: true
+  },
+  {
+    id: '9',
+    nomenclature: 'EVD-01',
+    description: 'Documento oficial del plan de estudios vigente',
+    type: 'evidence',
+    parentElementId: '8',
+    active: false,
+    createdAt: new Date('2024-01-09'),
+    hasChildren: false,
+    canDelete: true
   }
 ];
 
-// Interfaz para props del TreeNode
-interface TreeNodeProps {
-  node: StructureTreeNode;
-  onToggle: (nodeId: string) => void;
-}
-
-// Componente TreeNode para mostrar cada elemento del árbol
-const TreeNode: React.FC<TreeNodeProps> = ({ node, onToggle }) => {
-  const { element, children, level, expanded } = node;
-  const hasChildren = children.length > 0;
-
-  const hierarchyInfo = HIERARCHY_RULES[element.type];
+const StructureList: React.FC = () => {
   
-  // Colores por nivel jerárquico
-  const levelColors = {
-    1: 'bg-red-50 border-red-200 text-red-800',
-    2: 'bg-blue-50 border-blue-200 text-blue-800',
-    3: 'bg-green-50 border-green-200 text-green-800',
-    4: 'bg-yellow-50 border-yellow-200 text-yellow-800',
-    5: 'bg-purple-50 border-purple-200 text-purple-800',
-    6: 'bg-pink-50 border-pink-200 text-pink-800',
-    7: 'bg-indigo-50 border-indigo-200 text-indigo-800',
-    8: 'bg-gray-50 border-gray-200 text-gray-800'
+  // Obtener información del módulo desde ModuleInfo
+  const moduleInfo = MODULE_INFO.structure;
+  
+  const [isLoading, setIsLoading] = useState(false);
+
+  // Estado para el modal de confirmación de eliminación
+  const [deleteModalState, setDeleteModalState] = useState<{
+    isOpen: boolean;
+    element: StructureElement | null;
+  }>({
+    isOpen: false,
+    element: null
+  });
+
+  const handleEditElement = (element: StructureElement) => {
+    // Navegar directamente a la página de edición con el ID del elemento
+    window.location.href = `/estructura/editar/formulario?id=${element.id}`;
   };
 
-  const colorClass = levelColors[Math.min(hierarchyInfo.level, 8) as keyof typeof levelColors];
+  const handleDeleteElement = (element: StructureElement) => {
+    setDeleteModalState({
+      isOpen: true,
+      element
+    });
+  };
+
+  const confirmDeleteElement = async () => {
+  if (deleteModalState.element) {
+    setIsLoading(true);
+    try {
+      // Simular eliminación (mock)
+      await new Promise(resolve => setTimeout(resolve, 500));
+      console.log('Elemento eliminado (mock):', deleteModalState.element.id);
+      setDeleteModalState({ isOpen: false, element: null });
+      // TODO: Mostrar notificación de éxito
+    } catch (error) {
+      console.error('Error al eliminar elemento:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  }
+};
+
+  const cancelDeleteElement = () => {
+    setDeleteModalState({ isOpen: false, element: null });
+  };
+
+  const handleCreateElement = () => {
+    window.location.href = '/estructura/crear';
+  };
 
   return (
-    <div className="w-full">
-      <div
-        className={cn(
-          'flex items-center p-3 rounded-lg border transition-all duration-200 hover:shadow-md',
-          colorClass,
-          'mb-2'
-        )}
-        style={{ marginLeft: `${level * 20}px` }}
+    <div className="container mx-auto px-4 py-8">
+      <ScreenContainer
+        title={moduleInfo.title}
+        description={moduleInfo.description}
       >
-        {hasChildren && (
-          <button
-            onClick={() => onToggle(element.id)}
-            className="flex-shrink-0 mr-3 p-1 rounded hover:bg-white hover:bg-opacity-50 transition-colors"
-            aria-label={expanded ? 'Colapsar' : 'Expandir'}
-          >
-            <svg
-              className={cn(
-                'w-4 h-4 transition-transform duration-200',
-                expanded ? 'rotate-90' : 'rotate-0'
-              )}
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
+        <StructureTable
+          onEdit={handleEditElement}
+          onDelete={handleDeleteElement}
+          onCreate={handleCreateElement}
+        />
+      </ScreenContainer>
+
+      {/* Modal de confirmación de eliminación */}
+      <Modal
+        isOpen={deleteModalState.isOpen}
+        onClose={cancelDeleteElement}
+        title="Confirmar Eliminación"
+        size="md"
+      >
+        <div className="space-y-4">
+          <p className="text-gray-700">
+            ¿Está seguro de que desea eliminar el elemento <strong>"{deleteModalState.element?.name || deleteModalState.element?.nomenclature}"</strong>?
+          </p>
+          <p className="text-sm text-[var(--text-error)]">
+            Esta acción no se puede deshacer.
+          </p>
+          
+          <div className="flex justify-end gap-3 mt-6">
+            <button
+              onClick={cancelDeleteElement}
+              className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50"
             >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M9 5l7 7-7 7"
-              />
-            </svg>
-          </button>
-        )}
-
-        {!hasChildren && <div className="w-7 flex-shrink-0" />}
-
-        <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-3">
-            <div className="flex items-center gap-2">
-              <span className="inline-flex items-center px-2 py-1 rounded-md text-xs font-medium bg-white bg-opacity-50">
-                {ELEMENT_TYPE_LABELS[element.type]}
-              </span>
-              <code className="text-sm font-mono bg-white bg-opacity-30 px-2 py-1 rounded">
-                {element.nomenclature}
-              </code>
-            </div>
+              Cancelar
+            </button>
+            <button
+              onClick={confirmDeleteElement}
+              disabled={isLoading}
+              className="px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-md hover:bg-red-700 disabled:opacity-50"
+            >
+              {isLoading ? 'Eliminando...' : 'Eliminar'}
+            </button>
           </div>
-
-          <h3 className="font-semibold text-base mt-1 truncate">
-            {element.name}
-          </h3>
-
-          {element.description && (
-            <p className="text-sm opacity-75 mt-1 line-clamp-2">
-              {element.description}
-            </p>
-          )}
         </div>
-
-        <div className="flex-shrink-0 ml-3">
-          <span
-            className={cn(
-              'inline-flex items-center px-2 py-1 rounded-full text-xs font-medium',
-              element.active
-                ? 'badge-success'
-                : 'badge-error'
-            )}
-          >
-            {element.active ? 'Activo' : 'Inactivo'}
-          </span>
-        </div>
-      </div>
-
-      {hasChildren && expanded && (
-        <div className="ml-4">
-          {children.map((child) => (
-            <TreeNode
-              key={child.element.id}
-              node={child}
-              onToggle={onToggle}
-            />
-          ))}
-        </div>
-      )}
+      </Modal>
     </div>
   );
 };
 
-export const StructureRepository: React.FC = () => {
-  const [structureData, setStructureData] = useState<StructureElement[]>([]);
-  const [treeData, setTreeData] = useState<StructureTreeNode[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [expandedNodes, setExpandedNodes] = useState<Set<string>>(new Set(['1', '2', '3', '4']));
-
-  // Función para construir el árbol jerárquico
-  const buildTree = (elements: StructureElement[], parentId?: string, level = 0): StructureTreeNode[] => {
-    return elements
-      .filter(element => element.parentElementId === parentId)
-      .map(element => ({
-        element,
-        children: buildTree(elements, element.id, level + 1),
-        level,
-        expanded: expandedNodes.has(element.id),
-        path: []
-      }));
-  };
-
-  // Manejar expansión/colapso de nodos
-  const handleToggleNode = (nodeId: string) => {
-    setExpandedNodes(prev => {
-      const newExpanded = new Set(prev);
-      if (newExpanded.has(nodeId)) {
-        newExpanded.delete(nodeId);
-      } else {
-        newExpanded.add(nodeId);
-      }
-      return newExpanded;
-    });
-  };
-
-  // Expandir todos los nodos
-  const handleExpandAll = () => {
-    const allNodeIds = new Set(structureData.map(element => element.id));
-    setExpandedNodes(allNodeIds);
-  };
-
-  // Colapsar todos los nodos
-  const handleCollapseAll = () => {
-    setExpandedNodes(new Set(['1']));
-  };
-
-  // Cargar datos mock
-  useEffect(() => {
-    const loadStructureData = async () => {
-      setLoading(true);
-      
-      // Simular carga
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      setStructureData(mockStructureData);
-      setLoading(false);
-    };
-
-    loadStructureData();
-  }, []);
-
-  // Actualizar árbol cuando cambian los datos o expansión
-  useEffect(() => {
-    if (structureData.length > 0) {
-      const tree = buildTree(structureData);
-      setTreeData(tree);
-    }
-  }, [structureData, expandedNodes]);
-
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="text-center">
-          <LoadingSpinner size="lg" className="mx-auto mb-4" />
-        </div>
-      </div>
-    );
-  }
-
-  return (
-    <ScreenContainer
-      title="Estructura del Repositorio"
-      description="Visualiza la jerarquía completa del Sistema SAAC-UNA. Esta vista muestra todos los elementos organizados desde la Universidad hasta las Evidencias individuales."
-      variant="full-width"
-    >
-      <div className="mb-6 flex gap-4">
-        <Button
-          onClick={handleExpandAll}
-          variant="secondary"
-          className="flex items-center gap-2"
-        >
-          <SystemIcons.interface.expand size="sm" />
-          Expandir Todo
-        </Button>
-        <Button
-          onClick={handleCollapseAll}
-          variant="tertiary"
-          className="flex items-center gap-2"
-        >
-          <SystemIcons.interface.collapse size="sm" />
-          Colapsar Todo
-        </Button>
-      </div>
-
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
-        {Object.entries(ELEMENT_TYPE_LABELS).map(([type, label]) => {
-          const count = structureData.filter(element => element.type === type).length;
-          return (
-            <div key={type} className="bg-white p-4 rounded-lg border border-gray-200 shadow-sm">
-              <div className="text-2xl font-bold text-red-600">{count}</div>
-              <div className="text-sm text-gray-600">{label}{count !== 1 ? 's' : ''}</div>
-            </div>
-          );
-        })}
-      </div>
-
-      <div className="border-t border-gray-200 pt-6">
-        <h2 className="text-xl font-semibold text-gray-900 mb-4">
-          Jerarquía de Elementos
-        </h2>
-        
-        {treeData.length > 0 ? (
-          <div className="space-y-2">
-            {treeData.map((node) => (
-              <TreeNode
-                key={node.element.id}
-                node={node}
-                onToggle={handleToggleNode}
-              />
-            ))}
-          </div>
-        ) : (
-          <div className="text-center py-12">
-            <div className="text-gray-400 mb-2">
-              <svg className="w-12 h-12 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4" />
-              </svg>
-            </div>
-            <h3 className="text-lg font-medium text-gray-900 mb-2">
-              Sin estructura configurada
-            </h3>
-            <p className="text-gray-600">
-              No hay elementos en la estructura del repositorio. 
-              Utiliza la sección de Gestión para crear elementos.
-            </p>
-          </div>
-        )}
-      </div>
-    </ScreenContainer>
-  );
-};
-
-export default StructureRepository;
+export default StructureList;

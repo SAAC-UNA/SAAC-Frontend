@@ -483,19 +483,6 @@ const validateForm = (): boolean => {
         </div>
 
         {/* Panel lateral */}
-        <div className="space-y-6">
-          {/* Consideraciones importantes */}
-          <div className="bg-[var(--bg-warning)] border border-[var(--border-warning)] rounded-lg p-4">
-            <h4 className="flex items-center text-sm font-medium text-[var(--text-warning)] mb-2">
-              <span className="text-lg mr-2">⚠️</span>
-              Consideraciones Importantes
-            </h4>
-            <ul className="text-xs text-[var(--text-warning)] space-y-1">
-              <li>• No se puede cambiar el tipo de elemento</li>
-              <li>• No se puede modificar su posición jerárquica</li>
-              <li>• Los códigos deben mantener su unicidad</li>
-            </ul>
-          </div>
 
           {/* Historial de modificaciones */}
           <div className="bg-gray-50 rounded-lg p-4">
@@ -557,7 +544,7 @@ const validateForm = (): boolean => {
             </div>
           )}
         </div>
-      </div>
+
 
       {/* Modal de confirmación */}
       <Modal
