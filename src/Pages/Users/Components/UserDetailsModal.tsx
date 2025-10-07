@@ -1,0 +1,158 @@
+/**
+ * UserDetailsModal - Modal para mostrar los detalles completos de un usuario
+ * 
+ * Sigue el mismo patrón que PermissionsRoleModal para consistencia visual.
+ * Muestra información detallada del usuario: datos personales, rol y permisos.
+ */
+
+import React from 'react';
+import { Modal } from '@/Components/Ui/Modal';
+import { SystemIcons } from '@/Components/Ui/Icons/SystemIcons';
+import type { User } from '@/Services/UserService';
+
+interface UserDetailsModalProps {
+    isOpen: boolean;
+    onClose: () => void;
+    user: User | null;
+}
+
+export const UserDetailsModal: React.FC<UserDetailsModalProps> = ({
+    isOpen,
+    onClose,
+    user
+}) => {
+    if (!user) return null;
+
+    const formatDate = (date?: Date): string => {
+        if (!date) return 'No disponible';
+        
+        return new Intl.DateTimeFormat('es-ES', {
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit'
+        }).format(date);
+    };
+    
+    const renderUserInfo = () => (
+        <div className="mb-6">
+            {/* Información personal */}
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
+                <div className="flex items-center space-x-2 mb-3">
+                    <SystemIcons.users.user className="w-5 h-5 text-blue-600" />
+                    <h3 className="font-medium text-blue-800">Información Personal</h3>
+                </div>
+                
+                <div className="space-y-2">
+                    <div>
+                        <span className="text-sm font-medium text-blue-700">Nombre:</span>
+                        <p className="text-blue-600 ml-2">{user.name}</p>
+                    </div>
+                    <div>
+                        <span className="text-sm font-medium text-blue-700">Correo electrónico:</span>
+                        <p className="text-blue-600 ml-2">{user.email}</p>
+                    </div>
+                    <div>
+                        <span className="text-sm font-medium text-blue-700">Estado:</span>
+                        <span className={`ml-2 inline-flex px-2 py-1 text-xs font-medium rounded-full ${
+                            user.status === 'active' 
+                                ? 'bg-green-100 text-green-800' 
+                                : 'bg-red-100 text-red-800'
+                        }`}>
+                            {user.status === 'active' ? 'Activo' : 'Inactivo'}
+                        </span>
+                    </div>
+                </div>
+            </div>
+
+            {/* Rol asignado */}
+            {user.role && (
+                <div className="bg-purple-50 border border-purple-200 rounded-lg p-4 mb-4">
+                    <div className="flex items-center space-x-2 mb-3">
+                        <SystemIcons.users.roles className="w-5 h-5 text-purple-600" />
+                        <h3 className="font-medium text-purple-800">Rol Asignado</h3>
+                    </div>
+                    
+                    <div className="bg-white border border-purple-200 rounded-lg p-3">
+                        <span className="inline-flex px-3 py-1 text-sm font-medium bg-purple-100 text-purple-800 rounded-full">
+                            {user.role}
+                        </span>
+                    </div>
+                </div>
+            )}
+
+            {/* Fechas */}
+            <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
+                <div className="flex items-center space-x-2 mb-3">
+                    <SystemIcons.modal.document className="w-5 h-5 text-gray-600" />
+                    <h3 className="font-medium text-gray-800">Información de Registro</h3>
+                </div>
+                
+                <div className="space-y-2 text-sm">
+                    <div>
+                        <span className="font-medium text-gray-700">Fecha de creación:</span>
+                        <p className="text-gray-600 ml-2">{formatDate(user.createdAt)}</p>
+                    </div>
+                    <div>
+                        <span className="font-medium text-gray-700">Última actualización:</span>
+                        <p className="text-gray-600 ml-2">{formatDate(user.updatedAt)}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    );
+    
+    const renderPermissionsList = () => (
+        <div>
+            <div className="flex items-center space-x-2 mb-3">
+                <SystemIcons.modal.key className="w-5 h-5 text-green-600" />
+                <h3 className="font-medium text-gray-800">Permisos Directos</h3>
+            </div>
+            
+            <div className="bg-white border border-gray-200 rounded-lg p-4 max-h-60 overflow-y-auto">
+                {user.directPermissions && user.directPermissions.length > 0 ? (
+                    <div className="space-y-2">
+                        {user.directPermissions.map((permission, index) => (
+                            <div key={index} className="flex items-start space-x-2">
+                                <div className="w-2 h-2 bg-green-500 rounded-full mt-2 flex-shrink-0" />
+                                <span className="text-sm text-gray-700">
+                                    {permission}
+                                </span>
+                            </div>
+                        ))}
+                    </div>
+                ) : (
+                    <p className="text-sm text-gray-500 text-center py-4">
+                        Este usuario no tiene permisos directos asignados
+                    </p>
+                )}
+            </div>
+            
+            <div className="mt-3 text-xs text-gray-500">
+                Total: {user.directPermissions?.length || 0} permiso{(user.directPermissions?.length || 0) !== 1 ? 's' : ''}
+            </div>
+        </div>
+    );
+
+    return (
+        <Modal
+            isOpen={isOpen}
+            onClose={onClose}
+            variant="info"
+            title="Detalles del Usuario"
+            message={
+                <>
+                    Información completa del usuario: <span className="font-bold">{user.name}</span>
+                </>
+            }
+            showConfirm={false}
+            showCancel={true}
+            cancelLabel="Cerrar"
+            size="lg"
+        >
+            {renderUserInfo()}
+            {renderPermissionsList()}
+        </Modal>
+    );
+};

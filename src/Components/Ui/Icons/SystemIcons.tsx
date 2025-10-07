@@ -48,7 +48,7 @@ export const SystemIcons = {
     view: ({ className, size, color = 'var(--icon-view)' }: IconProps) => (
       <svg
         className={`${getSizeClasses(size)} ${className || ''}`}
-        viewBox="0 0 24 24"
+        viewBox="0 0 22 22"
         fill={color}
       >
         <path d="M12 9.75a2.25 2.25 0 1 0 0 4.5 2.25 2.25 0 0 0 0-4.5Z" />
@@ -59,7 +59,7 @@ export const SystemIcons = {
     edit: ({ className, size, color = 'var(--icon-edit)' }: IconProps) => (
       <svg
         className={`${getSizeClasses(size)} ${className || ''}`}
-        viewBox="0 0 24 24"
+        viewBox="0 0 22 22"
         fill={color}
       >
         <path d="M14.607 3.5a.5.5 0 0 1 .353.146l2.829 2.829a.5.5 0 0 1 0 .707l-9.193 9.192a.5.5 0 0 1-.227.13l-3.828 1a.5.5 0 0 1-.61-.61l1-3.828a.5.5 0 0 1 .13-.227l9.192-9.193a.5.5 0 0 1 .354-.146Z" />
@@ -70,12 +70,27 @@ export const SystemIcons = {
     delete: ({ className, size, color = 'var(--icon-delete)' }: IconProps) => (
       <svg
         className={`${getSizeClasses(size)} ${className || ''}`}
-        viewBox="0 0 24 24"
+        viewBox="0 0 22 22"
         fill={color}
       >
         <path d="M9.25 3a.75.75 0 0 1 .75-.75h4a.75.75 0 0 1 .75.75v.75H19a.75.75 0 0 1 0 1.5H5a.75.75 0 0 1 0-1.5h4.25V3Z" />
         <path fillRule="evenodd" d="M6.24 7.945a.5.5 0 0 1 .497-.445h10.526a.5.5 0 0 1 .497.445l.2 1.801a44.213 44.213 0 0 1 0 9.771l-.02.177a2.603 2.603 0 0 1-2.226 2.29 26.788 26.788 0 0 1-7.428 0 2.603 2.603 0 0 1-2.227-2.29l-.02-.177a44.239 44.239 0 0 1 0-9.77l.2-1.802Zm4.51 3.455a.75.75 0 0 0-1.5 0v7a.75.75 0 0 0 1.5 0v-7Zm4 0a.75.75 0 0 0-1.5 0v7a.75.75 0 0 0 1.5 0v-7Z" clipRule="evenodd" />
       </svg>
+    ),
+
+    power: ({ className, size }: IconProps) => (
+      <svg
+        className={`${getSizeClasses(size)} ${className || ''}`}
+        viewBox="0 0 22 22"
+        fill="currentColor"
+      >
+        <path
+      fillRule="evenodd"
+      d="M3.25 12a8.75 8.75 0 1 1 17.5 0 8.75 8.75 0 0 1-17.5 0ZM12 6.25a.75.75 0 0 1 .75.75v5a.75.75 0 0 1-1.5 0V7a.75.75 0 0 1 .75-.75Zm-2 1.832c0-.183-.19-.302-.348-.212a4.75 4.75 0 1 0 4.696 0c-.159-.09-.348.03-.348.212v1.234c0 .077.036.15.095.199a3.25 3.25 0 1 1-4.19 0A.261.261 0 0 0 10 9.316V8.082Z"
+      clipRule="evenodd"
+    />
+  </svg>
+
     ),
 
     add: ({ className, size, color = 'var(--icon-add)' }: IconProps) => (
@@ -496,6 +511,7 @@ export const getIconByName = (iconName: string, size: IconProps['size'] = 'md'):
     'edit-alt': () => SystemIcons.actions.edit({ size }),
     'trash': () => SystemIcons.actions.delete({ size }),
     'eye': () => SystemIcons.actions.view({ size }),
+    'power': () => SystemIcons.actions.power({ size }),
 
     // Users
     'user': () => SystemIcons.users.user({ size }),

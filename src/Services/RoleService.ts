@@ -56,8 +56,8 @@ export interface Role {
   name: string;
   description?: string;
   permissions: string[];
-  // createdAt?: Date; // TODO: Uncomment when backend sends created_at
-  // updatedAt?: Date; // TODO: Uncomment when backend sends updated_at
+  // createdAt?: Date; // TODO
+  // updatedAt?: Date; // TODO
 }
 
 /**
@@ -78,8 +78,8 @@ const transformBackendRole = (backendRole: BackendRole): Role => {
     name: backendRole.name,
     description: backendRole.description,
     permissions: backendRole.permissions.map(permission => permission.name),
-    // createdAt: backendRole.created_at ? new Date(backendRole.created_at) : undefined, // TODO: Uncomment when backend sends created_at
-    // updatedAt: backendRole.updated_at ? new Date(backendRole.updated_at) : undefined  // TODO: Uncomment when backend sends updated_at
+    // createdAt: backendRole.created_at ? new Date(backendRole.created_at) : undefined, // TODO
+    // updatedAt: backendRole.updated_at ? new Date(backendRole.updated_at) : undefined  // TODO
   };
 };
 

@@ -37,8 +37,9 @@ export const ModernSidebarItem: React.FC<ModernSidebarItemProps> = ({
         className={cn(
           'flex items-center text-left transition-all duration-200 group w-full relative z-10',
           // Padding ajustado para estado colapsado
+          // mb-1 es el espacio entre items principales
           isCollapsed ? 'p-2 justify-center' : 'px-4 py-4',
-          'text-sm font-medium cursor-pointer mb-3',
+          'text-sm font-medium cursor-pointer mb-1',
           // Estilo con curvas para items principales
           !isSubItem && 'rounded-l-[20px]',
           // Estilos para subitems

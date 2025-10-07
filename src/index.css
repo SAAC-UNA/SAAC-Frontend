@@ -94,7 +94,9 @@
   --icon-edit: var(--color-warning);      /* Editar - amarillo/warning */
   --icon-delete: var(--color-error);      /* Eliminar - rojo/error */
   --icon-add: var(--color-rojo-una-2);       /* Agregar - verde/success */
-  --icon-info: var(--color-info);         /* Información - azul info */
+  --icon-info: var(--color-info);        /* Información - azul info */
+  --icon-active: var(--color-error);       /* Estado - activo */
+  --icon-inactive: var(--color-gris-una);     /* Estado - inactivo */
   --icon-cancel: var(--color-gris-una);   /* Cancelar - gris UNA */
   --icon-save: var(--color-success);      /* Guardar - verde/success */
   --icon-check: var(--color-success);     /* Confirmar/Éxito - verde/success */
@@ -112,6 +114,7 @@
   --bg-warning: #fffbeb;     /* Fondo amarillo claro para advertencias */
   --bg-error: #fef2f2;       /* Fondo rojo claro para errores */
   --bg-info: #eff6ff;        /* Fondo azul claro para información */
+  --bg-inactive: #f0f0f0;   /* Fondo gris claro para inactivo */
   
   --border-success: #bbf7d0; /* Borde verde para éxito */
   --border-warning: #fde68a; /* Borde amarillo para advertencias */

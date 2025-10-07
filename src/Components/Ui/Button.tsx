@@ -1,19 +1,12 @@
 /**
  * Button - Componente de botón reutilizable del Design System SAAC-UNA
- * 
+ *
  * Características:
- * - Múltiples variantes (primary, seco      {loading && (
-        <LoadingSpinner variant="bounce" size="sm" color="current" className="mr-2" />
-      )}ry, outline, ghost, transparent)
+ * - Múltiples variantes (primary, secondary, outline, ghost, transparent)
  * - Sistema de tamaños responsivo integrado
  * - Estados de loading, disabled, fullWidth
  * - Colores consistentes con la marca UNA
  * - Transiciones suaves y accesibilidad
- * 
- * Uso:
- * <Button variant="primary" size="sm" isLoading={false}>
- *   Crear Rol
- * </Button>
  */
 import React from 'react';
 import { cn } from '@/utils/ClassNames';
@@ -23,7 +16,7 @@ import { LoadingSpinner } from './Loading';
 /**
  * Variantes disponibles para el componente Button
  */
-type ButtonVariant = 'primary' | 'secondary' | 'tertiary' | 'outline' | 'ghost' | 'transparent' | 'success' | 'tableView' | 'tableEdit' | 'tableDelete' | 'error';
+type ButtonVariant = 'primary' | 'secondary' | 'tertiary' | 'outline' | 'ghost' | 'transparent' | 'success' | 'tableView' | 'tableEdit' | 'tableDelete' | 'tablePower' | 'tablePowerInactive' | 'error';
 
 /**
  * Props del componente Button
@@ -99,6 +92,18 @@ const VARIANT_CLASSES = {
   tableDelete: [
     'bg-transparent text-[var(--icon-delete)] border-0 p-2 rounded-md',
     'hover:bg-[var(--bg-error)] hover:text-[var(--icon-delete)] transition-colors duration-200',
+    'disabled:opacity-50 disabled:cursor-not-allowed'
+  ].join(' '),
+
+  tablePower: [
+    'bg-transparent text-[var(--icon-active)] border-0 p-2 rounded-md',
+    'hover:bg-[var(--bg-error)] hover:text-[var(--icon-active)] transition-colors duration-200',
+    'disabled:opacity-50 disabled:cursor-not-allowed'
+  ].join(' '),
+
+  tablePowerInactive: [
+    'bg-transparent text-[var(--icon-inactive)] border-0 p-2 rounded-md',
+    'hover:bg-[var(--bg-inactive)] hover:text-[var(--icon-inactive)] transition-colors duration-200',
     'disabled:opacity-50 disabled:cursor-not-allowed'
   ].join(' '),
 
