@@ -7,6 +7,7 @@ import { RolesRepository, RoleForm } from './Pages/Roles';
 import StructureList from './Pages/Structure/StructureList';
 import StructureCreation from './Pages/Structure/StructureCreation';
 import StructureEditForm from './Pages/Structure/StructureEditForm';
+import { StructureRepository } from './Pages/Structure';
 
 const App: React.FC = () => {
   return (
@@ -18,9 +19,9 @@ const App: React.FC = () => {
             <Route path="/roles/crear" element={<RoleForm />} />
             <Route path="/roles/editar/:id" element={<RoleForm />} />
             <Route path="/roles/listar" element={<RolesRepository />} />
-            <Route path="/estructura/listar" element={<StructureList />} />
-<Route path="/estructura/crear" element={<StructureCreation />} />
-<Route path="/estructura/editar/formulario" element={<StructureEditForm />} />
+            <Route path="/estructura/listar" element={<StructureRepository />} />
+            <Route path="/estructura/crear" element={<StructureCreation />} />
+            <Route path="/estructura/editar/formulario" element={<StructureEditForm />} />
             {/* Aquí se pueden agregar más rutas en el futuro */}
           </Routes>
         </Layout>

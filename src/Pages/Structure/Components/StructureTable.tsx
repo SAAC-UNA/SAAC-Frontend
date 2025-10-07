@@ -68,7 +68,8 @@ export const StructureTable: React.FC<StructureTableProps> = ({
     // Cargar elementos al montar el componente
     useEffect(() => {
         loadTree();
-    }, []);
+    }, [loadTree]);
+
 
     // Filtrar elementos basado en la búsqueda
     useEffect(() => {
@@ -113,7 +114,7 @@ export const StructureTable: React.FC<StructureTableProps> = ({
             key: 'type',
             header: 'Tipo',
             render: (_, element) => (
-                <p className="block font-sans text-sm antialiased font-normal leading-normal text-gris-una">
+                <p className="block font-sans text-sm antialiased font-bold leading-normal text-negro-una">
                     {ELEMENT_TYPE_LABELS[element.type]}
                 </p>
             )
@@ -122,7 +123,7 @@ export const StructureTable: React.FC<StructureTableProps> = ({
             key: 'nomenclature',
             header: 'Nomenclatura',
             render: (_, element) => (
-                <p className="block font-sans text-sm antialiased font-normal leading-normal text-gris-una">
+                <p className="block font-sans text-sm antialiased font-bold leading-normal text-negro-una">
                     {element.nomenclature || '-'}
                 </p>
             )
@@ -131,7 +132,7 @@ export const StructureTable: React.FC<StructureTableProps> = ({
             key: 'name',
             header: 'Nombre',
             render: (_, element) => (
-                <p className="block font-sans text-sm antialiased font-semibold leading-normal text-gris-una">
+                <p className="block font-sans text-sm antialiased font-bold leading-normal text-negro-una">
                     {element.name || '-'}
                 </p>
             )
@@ -140,7 +141,7 @@ export const StructureTable: React.FC<StructureTableProps> = ({
             key: 'description',
             header: 'Descripción',
             render: (_, element) => (
-                <p className="block font-sans text-sm antialiased font-normal leading-normal text-gray-600 italic">
+                <p className="block font-sans text-sm antialiased font-normal leading-normal text-gris-una">
                     {truncateDescription(element.description)}
                 </p>
             )
