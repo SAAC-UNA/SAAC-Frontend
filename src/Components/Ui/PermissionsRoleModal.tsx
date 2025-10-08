@@ -9,13 +9,19 @@ import React from 'react';
 import { Modal } from './Modal';
 import { SystemIcons } from './Icons/SystemIcons';
 
+interface BackendPermission {
+    id: number;
+    name: string;
+    label: string;
+}
+
 interface PermissionsModalProps {
     isOpen: boolean;
     onClose: () => void;
     roleName: string;
     roleDescription?: string;
     // roleCreatedAt?: Date;
-    permissions: string[];
+    permissions: BackendPermission[] | string[];
     getPermissionLabel?: (permission: string) => string;
 }
 
@@ -90,14 +96,22 @@ export const PermissionsModal: React.FC<PermissionsModalProps> = ({
             <div className="bg-white border border-gray-200 rounded-lg p-4 max-h-60 overflow-y-auto">
                 {permissions.length > 0 ? (
                     <div className="space-y-2">
-                        {permissions.map((permission, index) => (
-                            <div key={index} className="flex items-start space-x-2">
-                                <div className="w-2 h-2 bg-green-500 rounded-full mt-2 flex-shrink-0" />
-                                <span className="text-sm text-gray-700">
-                                    {getPermissionLabel ? getPermissionLabel(permission) : permission}
-                                </span>
-                            </div>
-                        ))}
+                        {permissions.map((permission, index) => {
+                            // Determinar si es un objeto del backend o un string
+                            const isObject = typeof permission === 'object' && permission !== null;
+                            const permissionLabel = isObject 
+                                ? permission.label 
+                                : (getPermissionLabel ? getPermissionLabel(permission) : permission);
+                            
+                            return (
+                                <div key={isObject ? permission.id : index} className="flex items-start space-x-2">
+                                    <div className="w-2 h-2 bg-green-500 rounded-full mt-2 flex-shrink-0" />
+                                    <span className="text-sm text-gray-700">
+                                        {permissionLabel}
+                                    </span>
+                                </div>
+                            );
+                        })}
                     </div>
                 ) : (
                     <p className="text-sm text-gray-500 text-center py-4">

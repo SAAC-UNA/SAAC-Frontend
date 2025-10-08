@@ -9,7 +9,40 @@
  */
 
 /**
- * Estructura de un usuario del sistema
+ * Estructura de un permiso como lo devuelve el backend
+ */
+export interface BackendPermission {
+  id: number;
+  name: string;
+  label: string;
+}
+
+/**
+ * Estructura de un rol como lo devuelve el backend
+ */
+export interface BackendRole {
+  id: number;
+  name: string;
+}
+
+/**
+ * Estructura de un usuario del sistema (como lo devuelve el backend)
+ */
+export interface BackendUser {
+  id: number;
+  name: string;
+  email: string;
+  status: 'active' | 'inactive';
+  cedula: string;
+  created_at: string;
+  updated_at: string;
+  roles: BackendRole[];
+  direct_permissions: BackendPermission[];
+  all_permissions: BackendPermission[];
+}
+
+/**
+ * Estructura de un usuario del sistema (para el frontend)
  */
 export interface User {
   id: number;
@@ -18,6 +51,7 @@ export interface User {
   status: 'active' | 'inactive';
   role?: string;
   directPermissions?: string[];
+  allPermissions?: BackendPermission[]; // Ahora incluye las etiquetas del backend
   createdAt?: Date;
   updatedAt?: Date;
 }
@@ -40,7 +74,7 @@ class UserService {
   /**
    * Listar todos los usuarios
    */
-  async listUsers(): Promise<ApiResponse<User[]>> {
+  async listUsers(): Promise<BackendUser[]> {
     try {
       const response = await fetch(this.baseURL, {
         method: 'GET',
@@ -51,7 +85,9 @@ class UserService {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
 
-      return await response.json();
+      const result = await response.json();
+      // El backend devuelve los usuarios directamente en un array (UserResource::collection)
+      return Array.isArray(result) ? result : result.data || [];
     } catch (error) {
       console.error('Error obteniendo usuarios:', error);
       throw error;

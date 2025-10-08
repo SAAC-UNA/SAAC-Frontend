@@ -16,7 +16,6 @@
 
 // Servicio para manejar operaciones relacionadas con roles
 import type { PermissionOption } from '@/types/RoleTypes';
-import { transformPermissionsToOptions } from '@/utils/PermissionLabels';
 
 /**
  * Datos requeridos para crear un nuevo rol
@@ -55,7 +54,7 @@ export interface Role {
   id: number;
   name: string;
   description?: string;
-  permissions: string[];
+  permissions: BackendPermission[]; // Ahora usa las etiquetas del backend
   // createdAt?: Date; // TODO
   // updatedAt?: Date; // TODO
 }
@@ -77,7 +76,7 @@ const transformBackendRole = (backendRole: BackendRole): Role => {
     id: backendRole.id,
     name: backendRole.name,
     description: backendRole.description,
-    permissions: backendRole.permissions.map(permission => permission.name),
+    permissions: backendRole.permissions, // Ahora mantenemos los objetos completos
     // createdAt: backendRole.created_at ? new Date(backendRole.created_at) : undefined, // TODO
     // updatedAt: backendRole.updated_at ? new Date(backendRole.updated_at) : undefined  // TODO
   };
@@ -165,14 +164,30 @@ class RoleService {
 
       const data = await response.json();
       
-      // El backend devuelve un array de strings con nombres técnicos
-      // Los transforma a PermissionOption con etiquetas legibles
+      // El backend ahora devuelve objetos con {id, name, label}
+      // Necesitamos transformar a PermissionOption {value, label}
       if (data.data && Array.isArray(data.data)) {
-        const transformedPermissions = transformPermissionsToOptions(data.data);
-        return {
-          ...data,
-          data: transformedPermissions
-        };
+        if (typeof data.data[0] === 'string') {
+          // Fallback: el backend aún envía solo strings - transformar manualmente
+          const transformedPermissions = data.data.map((name: string) => ({
+            value: name,
+            label: name // Sin transformación, usar el nombre técnico como etiqueta
+          }));
+          return {
+            ...data,
+            data: transformedPermissions
+          };
+        } else if (data.data[0] && typeof data.data[0] === 'object' && 'name' in data.data[0]) {
+          // El backend envía objetos con {id, name, label}
+          const transformedPermissions = data.data.map((permission: any) => ({
+            value: permission.name,
+            label: permission.label
+          }));
+          return {
+            ...data,
+            data: transformedPermissions
+          };
+        }
       }
 
       return data;

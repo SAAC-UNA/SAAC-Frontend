@@ -36,26 +36,26 @@ export const UserDetailsModal: React.FC<UserDetailsModalProps> = ({
     };
     
     const renderUserInfo = () => (
-        <div className="mb-6">
+        <div>
             {/* Información personal */}
-            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
+            <div className="bg-white border border-gray-200 rounded-lg p-4 max-h-60 overflow-y-auto mb-6">
                 <div className="flex items-center space-x-2 mb-3">
-                    <SystemIcons.users.user className="w-5 h-5 text-blue-600" />
-                    <h3 className="font-medium text-blue-800">Información Personal</h3>
+                    <SystemIcons.users.user className="w-5 h-5 text-gray-600" />
+                    <h3 className="font-sm text-gray-700">Información Personal</h3>
                 </div>
                 
                 <div className="space-y-2">
                     <div>
-                        <span className="text-sm font-medium text-blue-700">Nombre:</span>
-                        <p className="text-blue-600 ml-2">{user.name}</p>
+                        <span className="text-sm font-sm text-gray-800">Nombre:</span>
+                        <p className="text-sm text-gray-700">{user.name}</p>
                     </div>
                     <div>
-                        <span className="text-sm font-medium text-blue-700">Correo electrónico:</span>
-                        <p className="text-blue-600 ml-2">{user.email}</p>
+                        <span className="text-sm font-sm text-gray-800">Correo electrónico:</span>
+                        <p className="text-sm text-gray-700">{user.email}</p>
                     </div>
                     <div>
-                        <span className="text-sm font-medium text-blue-700">Estado:</span>
-                        <span className={`ml-2 inline-flex px-2 py-1 text-xs font-medium rounded-full ${
+                        <span className="text-sm font-sm text-gray-800">Estado:</span>
+                        <span className={`ml-2 inline-flex px-2 py-1 text-xs font-sm rounded-full ${
                             user.status === 'active' 
                                 ? 'bg-green-100 text-green-800' 
                                 : 'bg-red-100 text-red-800'
@@ -68,14 +68,14 @@ export const UserDetailsModal: React.FC<UserDetailsModalProps> = ({
 
             {/* Rol asignado */}
             {user.role && (
-                <div className="bg-purple-50 border border-purple-200 rounded-lg p-4 mb-4">
+                <div className="mb-6">
                     <div className="flex items-center space-x-2 mb-3">
-                        <SystemIcons.users.roles className="w-5 h-5 text-purple-600" />
-                        <h3 className="font-medium text-purple-800">Rol Asignado</h3>
+                        <SystemIcons.users.roles className="w-5 h-5 text-gray-600" />
+                        <h3 className="font-sm text-gray-800">Rol Asignado</h3>
                     </div>
                     
-                    <div className="bg-white border border-purple-200 rounded-lg p-3">
-                        <span className="inline-flex px-3 py-1 text-sm font-medium bg-purple-100 text-purple-800 rounded-full">
+                    <div className="bg-white border border-gray-200 rounded-lg p-4 max-h-60 overflow-y-auto">
+                        <span className="text-sm text-gray-700">
                             {user.role}
                         </span>
                     </div>
@@ -83,20 +83,20 @@ export const UserDetailsModal: React.FC<UserDetailsModalProps> = ({
             )}
 
             {/* Fechas */}
-            <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
+            <div className="mb-6">
                 <div className="flex items-center space-x-2 mb-3">
                     <SystemIcons.modal.document className="w-5 h-5 text-gray-600" />
-                    <h3 className="font-medium text-gray-800">Información de Registro</h3>
+                    <h3 className="font-sm text-gray-800">Información de Registro</h3>
                 </div>
                 
-                <div className="space-y-2 text-sm">
+                <div className="bg-white border border-gray-200 rounded-lg p-4 max-h-60 overflow-y-auto">
                     <div>
-                        <span className="font-medium text-gray-700">Fecha de creación:</span>
-                        <p className="text-gray-600 ml-2">{formatDate(user.createdAt)}</p>
+                        <span className="text-sm text-gray-700">Fecha de creación:</span>
+                        <p className="text-sm text-gray-700">{formatDate(user.createdAt)}</p>
                     </div>
                     <div>
-                        <span className="font-medium text-gray-700">Última actualización:</span>
-                        <p className="text-gray-600 ml-2">{formatDate(user.updatedAt)}</p>
+                        <span className="text-sm text-gray-700">Última actualización:</span>
+                        <p className="text-sm text-gray-700">{formatDate(user.updatedAt)}</p>
                     </div>
                 </div>
             </div>
@@ -104,20 +104,20 @@ export const UserDetailsModal: React.FC<UserDetailsModalProps> = ({
     );
     
     const renderPermissionsList = () => (
-        <div>
+        <div className="mb-6">
             <div className="flex items-center space-x-2 mb-3">
-                <SystemIcons.modal.key className="w-5 h-5 text-green-600" />
-                <h3 className="font-medium text-gray-800">Permisos Directos</h3>
+                <SystemIcons.modal.key className="w-5 h-5 text-gray-600" />
+                <h3 className="font-sm text-gray-800">Permisos Directos</h3>
             </div>
             
             <div className="bg-white border border-gray-200 rounded-lg p-4 max-h-60 overflow-y-auto">
-                {user.directPermissions && user.directPermissions.length > 0 ? (
+                {user.allPermissions && user.allPermissions.length > 0 ? (
                     <div className="space-y-2">
-                        {user.directPermissions.map((permission, index) => (
+                        {user.allPermissions.map((permission, index) => (
                             <div key={index} className="flex items-start space-x-2">
                                 <div className="w-2 h-2 bg-green-500 rounded-full mt-2 flex-shrink-0" />
                                 <span className="text-sm text-gray-700">
-                                    {permission}
+                                    {permission.label}
                                 </span>
                             </div>
                         ))}
@@ -143,7 +143,7 @@ export const UserDetailsModal: React.FC<UserDetailsModalProps> = ({
             title="Detalles del Usuario"
             message={
                 <>
-                    Información completa del usuario: <span className="font-bold">{user.name}</span>
+                    Información del usuario: <span className="font-bold">{user.name}</span>
                 </>
             }
             showConfirm={false}
