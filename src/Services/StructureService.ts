@@ -145,10 +145,11 @@ async getFullTree(): Promise<ApiResponse<StructureElement[]>> {
   /**
    * Crear un nuevo elemento
    */
-  async create(elementData: CreateElementForm): Promise<ApiResponse<StructureElement>> {
+  async create(elementData: CreateElementForm, allElements?: StructureElement[]): Promise<ApiResponse<StructureElement>> {
     try {
       const endpoint = ELEMENT_TYPE_TO_ENDPOINT[elementData.type];
-      const payload = mapFrontendToBackend(elementData, elementData.type);
+      // Pasar allElements al mapper para el caso especial de Facultad
+      const payload = mapFrontendToBackend(elementData, elementData.type, allElements);
 
       const response = await fetch(`${this.baseURL}/${endpoint}`, {
         method: 'POST',

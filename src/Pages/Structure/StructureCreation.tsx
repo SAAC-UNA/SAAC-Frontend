@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { cn } from '@/Utils/ClassNames';
 import { Button } from '@/Components/Ui/Button';
 import { Input } from '@/Components/Ui/Input';
@@ -35,6 +36,7 @@ interface FormErrors {
  * Permite crear cualquier tipo de elemento respetando la jerarquía
  */
 export const StructureCreation: React.FC = () => {
+   const navigate = useNavigate();
   // Hook de estructura para obtener elementos existentes
   const { 
     treeData,
@@ -69,8 +71,6 @@ export const StructureCreation: React.FC = () => {
   const [errors, setErrors] = useState<FormErrors>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [availableParents, setAvailableParents] = useState<StructureElement[]>([]);
-  const [successMessage, setSuccessMessage] = useState<string>('');
-
 
   /**
    * Obtener elementos padre disponibles según el tipo seleccionado
@@ -199,42 +199,31 @@ export const StructureCreation: React.FC = () => {
   };
 
   /**
-   * Enviar formulario
-   */
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+ * Enviar formulario
+ */
+const handleSubmit = async (e: React.FormEvent) => {
+  e.preventDefault();
 
-    if (!validateForm()) {
-      return;
-    }
+  if (!validateForm()) {
+    return;
+  }
 
-    setIsSubmitting(true);
+  setIsSubmitting(true);
+  
+  try {
+    const success = await createElement(formData);
     
-    try {
-      const success = await createElement(formData);
-      
-      if (success) {
-        setSuccessMessage(USER_MESSAGES.SUCCESS.CREATE);
-        
-        // Limpiar formulario después del éxito
-        setTimeout(() => {
-          setFormData({
-            type: ElementType.UNIVERSITY,
-            nomenclature: '',
-            name: '',
-            description: '',
-            parentElementId: ''
-          });
-          setSuccessMessage('');
-        }, 3000);
-      }
-      
-    } catch (error) {
-      console.error('Error creating element:', error);
-    } finally {
-      setIsSubmitting(false);
+    if (success) {
+      // Redirigir a la lista después de crear exitosamente
+      navigate('/estructura/listar');
     }
-  };
+    
+  } catch (error) {
+    console.error('Error creating element:', error);
+  } finally {
+    setIsSubmitting(false);
+  }
+};
 
   // Efecto para cargar elementos al montar el componente
   useEffect(() => {
@@ -255,7 +244,7 @@ export const StructureCreation: React.FC = () => {
   // Opciones para el select de padre
   const parentOptions: SelectOption[] = availableParents.map(parent => ({
     value: parent.id,
-    label: `${parent.nomenclature} - ${parent.name}`
+    label: parent.nomenclature ? `${parent.nomenclature} - ${parent.name}` : parent.name || 'Sin nombre'
   }));
 
   const config = FORM_CONFIG[formData.type];
@@ -270,12 +259,6 @@ export const StructureCreation: React.FC = () => {
 
   return (
     <div className="container mx-auto px-4 py-8">
-      {/* Mensaje de éxito */}
-      {successMessage && (
-        <div className="mb-6 p-4 message-success border rounded-lg">
-          <p>{successMessage}</p>
-        </div>
-      )}
 
       {/* Formulario */}
       <ScreenContainer
@@ -295,21 +278,14 @@ export const StructureCreation: React.FC = () => {
 
           {/* Elemento Padre (condicional) */}
           {config.showParentSelector && (
-            <div>
-              <CustomSelect
-                label="Elemento Padre"
-                options={parentOptions}
-                value={formData.parentElementId}
-                onChange={(value) => handleFieldChange('parentElementId', value)}
-                error={errors.parentElementId}
-                placeholder="Selecciona el elemento padre"
-              />
-              {config.showParentSelector && getRequiredParentType(formData.type) && (
-                <p className="mt-1 text-sm text-gray-600">
-                  Este {ELEMENT_TYPE_LABELS[formData.type]} debe pertenecer a un {ELEMENT_TYPE_LABELS[getRequiredParentType(formData.type)!]}
-                </p>
-              )}
-            </div>
+            <CustomSelect
+              label={`Elemento Padre (${getRequiredParentType(formData.type) ? ELEMENT_TYPE_LABELS[getRequiredParentType(formData.type)!] : 'Ninguno'})`}
+              options={parentOptions}
+              value={formData.parentElementId}
+              onChange={(value) => handleFieldChange('parentElementId', value)}
+              error={errors.parentElementId}
+              placeholder="Selecciona el elemento padre"
+            />
           )}
 
           {/* Nomenclatura */}
@@ -322,6 +298,7 @@ export const StructureCreation: React.FC = () => {
             error={errors.nomenclature}
             placeholder="Ej: UNA, SEDE-01, FAC-ING"
             helperText={`Máximo ${VALIDATION_RULES.NOMENCLATURE_MAX_LENGTH} caracteres. Solo letras, números, guiones y guiones bajos.`}
+            maxLength={VALIDATION_RULES.NOMENCLATURE_MAX_LENGTH}
           />
           )}
           {/* Nombre */}
@@ -334,6 +311,7 @@ export const StructureCreation: React.FC = () => {
             error={errors.name}
             placeholder="Nombre descriptivo del elemento"
             helperText={`Máximo ${VALIDATION_RULES.NAME_MAX_LENGTH} caracteres.`}
+            maxLength={VALIDATION_RULES.NAME_MAX_LENGTH}
           />
           )}
           {/* Descripción */}
@@ -346,25 +324,26 @@ export const StructureCreation: React.FC = () => {
                 id="description"
                 value={formData.description}
                 onChange={(e) => handleFieldChange('description', e.target.value)}
+                maxLength={VALIDATION_RULES.DESCRIPTION_MAX_LENGTH}
                 className={cn(
                   'w-full border rounded-lg p-3 transition-colors duration-200',
                   'focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent',
                   'placeholder-gray-400',
-                  errors.description
-                    ? 'border-[var(--border-error)] bg-[var(--bg-error)]'
-                    : 'border-gray-300 hover:border-gray-400'
+                errors.description
+                  ? 'border-[var(--border-error)] bg-[var(--bg-error)]'
+                  : 'border-gray-300 hover:border-gray-400'
                 )}
                 rows={3}
                 placeholder="Descripción detallada del elemento"
               />
               {errors.description && (
                 <p className="mt-1 text-sm text-[var(--text-error)]">{errors.description}</p>
-              )}
-              <p className="mt-1 text-sm text-gray-500">
-                Máximo {VALIDATION_RULES.DESCRIPTION_MAX_LENGTH} caracteres.
-              </p>
-            </div>
-          )}
+            )}
+            <p className="mt-1 text-sm text-gray-500">
+              Máximo {VALIDATION_RULES.DESCRIPTION_MAX_LENGTH} caracteres.
+            </p>
+          </div>
+        )}
 
           {/* Botones */}
           <div className="flex justify-end space-x-4 pt-6 border-t border-gray-200">
@@ -381,7 +360,7 @@ export const StructureCreation: React.FC = () => {
               isLoading={isSubmitting}
               disabled={isSubmitting}
             >
-              {isSubmitting ? 'Creando...' : 'Crear Elemento'}
+              {isSubmitting ? 'Creando...' : 'Crear'}
             </Button>
           </div>
         </form>

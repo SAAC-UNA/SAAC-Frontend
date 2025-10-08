@@ -59,9 +59,16 @@ export const useStructure = (): UseStructureReturn => {
     setError(null);
 
     try {
-      const response: ApiResponse<StructureElement> = await structureService.create(elementData);
+      // Pasar treeData actual para que el mapper pueda obtener la universidad del campus
+      const response: ApiResponse<StructureElement> = await structureService.create(elementData, treeData);
       
       if (response.data) {
+        // Recargar el árbol completo después de crear
+        const treeResponse = await structureService.getFullTree();
+        if (treeResponse.data) {
+          setTreeData(treeResponse.data);
+        }
+        
         return response.data;
       }
       
