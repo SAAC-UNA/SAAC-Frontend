@@ -88,6 +88,7 @@
   --color-warning: #f59e0b;
   --color-error: #ef4444;
   --color-info: #3b82f6;
+  --color-error-screen: #aba9af;
 
   /* Colores estándar para iconos de acciones (NO aplicar a iconos del sidebar) */
   --icon-view: var(--color-info);         /* Ver/Visualizar - azul info */
@@ -108,6 +109,7 @@
   --icon-back: var(--color-rojo-una-2);     /* Regresar - gris UNA */
   --icon-close: var(--color-gris-una);    /* Cerrar - gris UNA */
   --icon-loading: var(--color-rojo-una-2);      /* Cargando - azul info */
+  --icon-error-screen: var(--color-error-screen); /* Error de pantalla - gris/error */
 
   /* Colores para fondos y estados de mensajes */
   --bg-success: #f0fdf4;     /* Fondo verde claro para éxito */
@@ -125,6 +127,7 @@
   --text-warning: #92400e;   /* Texto amarillo oscuro para advertencias */
   --text-error: var(--color-error);      /* Texto rojo oscuro para errores */
   --text-info: #1e40af;      /* Texto azul oscuro para información */
+  --text-error-screen: #aba9af;
 
   /* Colores para botones principales */
   --btn-primary: var(--color-azul-una);     /* Botón principal - azul UNA */

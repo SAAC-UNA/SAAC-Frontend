@@ -55,20 +55,20 @@ export const PageErrorState: React.FC<PageErrorStateProps> = ({
     if (errorCode === 404 || errorCode === '404') {
       return (
         <div className="relative">
-          <SystemIcons.interface.alert className="h-16 w-16 text-[var(--icon-delete)]" />
+          <SystemIcons.interface.alert className="h-16 w-16 text-[var(--icon-error-screen)]" />
         </div>
       );
     }
     
     if (errorCode === 403 || errorCode === '403') {
       return (
-        <SystemIcons.interface.alert className="h-16 w-16 text-[var(--icon-warning)]" />
+        <SystemIcons.interface.alert className="h-16 w-16 text-[var(--icon-error-screen)]" />
       );
     }
     
     // Error genérico
     return (
-      <SystemIcons.interface.alert className="h-16 w-16 text-[var(--icon-delete)]" />
+      <SystemIcons.interface.alert className="h-16 w-16 text-[var(--icon-error-screen)]" />
     );
   };
 
@@ -82,19 +82,19 @@ export const PageErrorState: React.FC<PageErrorStateProps> = ({
       {/* Código de error (si existe) */}
       {errorCode && (
         <div className="mb-2">
-          <span className="text-3xl font-bold text-gris-una/60">
+          <span className="text-3xl font-bold text-[var(--text-error-screen)]">
             {errorCode}
           </span>
         </div>
       )}
       
       {/* Título */}
-      <h1 className="text-2xl font-bold text-negro-una mb-4">
+      <h1 className="text-2xl font-bold text-[var(--text-error-screen)] mb-4">
         {title}
       </h1>
       
       {/* Descripción */}
-      <p className="text-gris-una text-base mb-8 max-w-lg leading-relaxed">
+      <p className="text-[var(--text-error-screen)] text-base mb-8 max-w-lg leading-relaxed">
         {description}
       </p>
       
@@ -103,7 +103,7 @@ export const PageErrorState: React.FC<PageErrorStateProps> = ({
         {/* Botón principal */}
         {primaryActionLabel && (
           <Button
-            variant="primary"
+            variant="outline"
             onClick={onPrimaryAction || (() => window.history.back())}
             standardWidth={true}
             size="sm"
@@ -115,7 +115,7 @@ export const PageErrorState: React.FC<PageErrorStateProps> = ({
         {/* Botón secundario */}
         {secondaryActionLabel && onSecondaryAction && (
           <Button
-            variant="secondary"
+            variant="outline"
             onClick={onSecondaryAction}
             standardWidth={true}
             size="sm"

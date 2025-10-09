@@ -1,0 +1,173 @@
+/**
+ * EditUserPage - Página para editar roles y permisos de usuarios
+ * 
+ * Funcionalidades:
+ * - Detección automática del usuario por URL
+ * - Carga automática de datos del usuario
+ * - Interfaz similar a la edición de roles
+ * - Manejo de estados de carga y errores
+ * - Redirección después de operaciones exitosas
+ * 
+ * Rutas compatibles:
+ * - /usuarios/editar/:id -> Editar usuario
+ */
+import React, { useEffect, useState } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
+import { EditUserForm } from './Components/EditUserForm';
+import { LoadingSpinner, PageErrorState, ScreenContainer } from '@/components/Ui/Index';
+import { SuccessModal } from '@/Components/Ui/SuccessModal';
+import { userService } from '@/Services/UserService';
+import type { User } from '@/Services/UserService';
+
+const EditUserPage: React.FC = () => {
+  const { id } = useParams<{ id: string }>();
+  const navigate = useNavigate();
+  
+  // Estados para el usuario
+  const [user, setUser] = useState<User | null>(null);
+  const [isLoadingUser, setIsLoadingUser] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
+
+  // Estado para el modal de éxito
+  const [successModalState, setSuccessModalState] = useState<{
+    isOpen: boolean;
+    userName: string;
+  }>({
+    isOpen: false,
+    userName: ''
+  });
+
+  // Cargar datos del usuario al montar el componente
+  useEffect(() => {
+    if (id) {
+      loadUserData(parseInt(id));
+    } else {
+      setLoadError('ID de usuario no válido');
+      setIsLoadingUser(false);
+    }
+  }, [id]);
+
+  /**
+   * Cargar los datos del usuario
+   */
+  const loadUserData = async (userId: number) => {
+    setIsLoadingUser(true);
+    setLoadError(null);
+
+    try {
+      // Aquí necesitaríamos un método getUserById en el UserService
+      // Por ahora usaremos listUsers y filtraremos
+      const users = await userService.listUsers();
+      const userData = users.find(u => u.id === userId);
+      
+      if (userData) {
+        // Transformar de BackendUser a User si es necesario
+        const transformedUser: User = {
+          id: userData.id,
+          name: userData.name,
+          email: userData.email,
+          status: userData.status,
+          role: userData.roles[0]?.name,
+          directPermissions: userData.direct_permissions?.map(p => p.name) || [],
+          allPermissions: userData.all_permissions || [],
+          createdAt: new Date(userData.created_at),
+          updatedAt: new Date(userData.updated_at)
+        };
+        
+        setUser(transformedUser);
+      } else {
+        setLoadError('Usuario no encontrado');
+      }
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Error cargando usuario';
+      setLoadError(errorMessage);
+    } finally {
+      setIsLoadingUser(false);
+    }
+  };
+
+  /**
+   * Manejar la actualización exitosa del usuario
+   */
+  const handleUserUpdated = (userName: string) => {
+    setSuccessModalState({
+      isOpen: true,
+      userName
+    });
+  };
+
+  /**
+   * Cerrar modal de éxito y volver a la lista
+   */
+  const handleSuccessModalClose = () => {
+    setSuccessModalState({ isOpen: false, userName: '' });
+    navigate('/usuarios/listar');
+  };
+
+  /**
+   * Volver a la lista de usuarios
+   */
+  const handleCancel = () => {
+    navigate('/usuarios/listar');
+  };
+
+  /**
+   * Reintentar carga del usuario
+   */
+  const handleRetry = () => {
+    if (id) {
+      loadUserData(parseInt(id));
+    }
+  };
+
+  // Estado de carga
+  if (isLoadingUser) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-center">
+          <LoadingSpinner size="lg" />
+        </div>
+      </div>
+    );
+  }
+
+  // Estado de error
+  if (loadError || !user) {
+    return (
+      <PageErrorState
+        title="Error al cargar usuario"
+        description={loadError || 'Usuario no encontrado'}
+        primaryActionLabel="Reintentar"
+        onPrimaryAction={handleRetry}
+        secondaryActionLabel="Volver a la lista"
+        onSecondaryAction={handleCancel}
+      />
+    );
+  }
+
+  return (
+    <>
+      <ScreenContainer
+        title={`Editar Usuario: ${user.name}`}
+        description="Gestiona los roles y permisos del usuario"
+      >
+        {/* Formulario de edición */}
+        <EditUserForm
+          user={user}
+          onSubmit={handleUserUpdated}
+          onCancel={handleCancel}
+        />
+      </ScreenContainer>
+
+      {/* Modal de éxito */}
+      <SuccessModal
+        isOpen={successModalState.isOpen}
+        onClose={handleSuccessModalClose}
+        title="Usuario Actualizado"
+        message={`El usuario "${successModalState.userName}" ha sido actualizado correctamente.`}
+      />
+    </>
+  );
+};
+
+export default EditUserPage;

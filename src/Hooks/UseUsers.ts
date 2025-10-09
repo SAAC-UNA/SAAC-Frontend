@@ -61,29 +61,19 @@ export const useUsers = () => {
     setError(null);
 
     try {
-      // TODO: Descomentar cuando el backend esté listo
-      // const response = await userService.activarUsuario(userId);
-      // if (response.data) {
-      //   setUsers(prevUsers =>
-      //     prevUsers.map(user =>
-      //       user.id === userId ? response.data! : user
-      //     )
-      //   );
-      // }
-      // return response;
-
-      // SIMULACIÓN PARA PRUEBAS - Remover cuando backend esté listo
-      await new Promise(resolve => setTimeout(resolve, 500));
-
-      // Actualizar el estado del usuario en el estado local
-      setUsers(prevUsers =>
-        prevUsers.map(user =>
-          user.id === userId ? { ...user, status: 'active' as const } : user
-        )
-      );
-
-      console.log(`Usuario ${userId} activado exitosamente (simulado)`);
-      return { message: 'Usuario activado exitosamente' };
+      // Usar el servicio real del backend
+      const response = await userService.activateUser(userId);
+      
+      if (response.data) {
+        setUsers(prevUsers =>
+          prevUsers.map(user =>
+            user.id === userId ? { ...user, status: 'active' as const } : user
+          )
+        );
+      }
+      
+      console.log(`Usuario ${userId} activado exitosamente`);
+      return response;
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Error desconocido al activar usuario';
       setError(errorMessage);
@@ -102,29 +92,19 @@ export const useUsers = () => {
     setError(null);
 
     try {
-      // TODO: Descomentar cuando el backend esté listo
-      // const response = await userService.desactivarUsuario(userId);
-      // if (response.data) {
-      //   setUsers(prevUsers =>
-      //     prevUsers.map(user =>
-      //       user.id === userId ? response.data! : user
-      //     )
-      //   );
-      // }
-      // return response;
-
-      // SIMULACIÓN PARA PRUEBAS - Remover cuando backend esté listo
-      await new Promise(resolve => setTimeout(resolve, 500));
-
-      // Actualizar el estado del usuario en el estado local
-      setUsers(prevUsers =>
-        prevUsers.map(user =>
-          user.id === userId ? { ...user, status: 'inactive' as const } : user
-        )
-      );
-
-      console.log(`Usuario ${userId} desactivado exitosamente (simulado)`);
-      return { message: 'Usuario desactivado exitosamente' };
+      // Usar el servicio real del backend
+      const response = await userService.deactivateUser(userId);
+      
+      if (response.data) {
+        setUsers(prevUsers =>
+          prevUsers.map(user =>
+            user.id === userId ? { ...user, status: 'inactive' as const } : user
+          )
+        );
+      }
+      
+      console.log(`Usuario ${userId} desactivado exitosamente`);
+      return response;
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Error desconocido al desactivar usuario';
       setError(errorMessage);

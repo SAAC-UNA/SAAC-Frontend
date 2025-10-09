@@ -8,11 +8,12 @@
 
 // Páginas principales
 export { default as UsersRepository } from './UsersList';
+export { default as EditUserPage } from './EditUser';
 
 // Componentes del módulo
 export { UsersTable } from './Components/UsersTable';
-export { TableIcons } from './Components/TableIcons';
 export { UserDetailsModal } from './Components/UserDetailsModal';
+export { EditUserForm } from './Components/EditUserForm';
 
 // Re-exportar tipos
 export type { User } from '@/Services/UserService';

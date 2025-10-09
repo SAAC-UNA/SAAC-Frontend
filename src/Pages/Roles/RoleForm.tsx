@@ -276,7 +276,7 @@ const RoleForm: React.FC = () => {
   };
 
   return (
-    <div className="container mx-auto px-4 py-8">
+    <>
       {renderContent()}
 
       {/* Modal de confirmación - Crear */}
@@ -321,7 +321,7 @@ const RoleForm: React.FC = () => {
         autoClose={true}
         autoCloseDelay={3000}
       />
-    </div>
+    </>
   );
 };
 

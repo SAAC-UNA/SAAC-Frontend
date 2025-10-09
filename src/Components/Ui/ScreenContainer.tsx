@@ -23,8 +23,8 @@ export const ScreenContainer: React.FC<ScreenContainerProps> = ({
 
   // Función para calcular padding responsivo
   const getFormPadding = () => {
-    // Mobile: p-4, Tablet: p-5, Desktop: p-6
-    return 'p-4 sm:p-5 lg:p-6';
+    // Mobile: p-2, Tablet: p-3, Desktop: p-4 (reducido para subir el contenido)
+    return 'p-2 sm:p-3 lg:p-4';
   };
 
   // Función para calcular el contenedor externo

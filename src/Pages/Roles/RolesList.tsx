@@ -85,42 +85,42 @@ const RolesRepository: React.FC = () => {
   };
 
   return (
-    <div className="container mx-auto px-4 py-8">
+    <>
       <ScreenContainer
         title={moduleInfo.title}
         description={moduleInfo.description}
       >
-        <RolesTable
-          onEdit={handleEditRole}
-          onDelete={handleDeleteRole}
-          onCreate={handleCreateRole}
-          onViewPermissions={handleViewPermissions}
-        />
-      </ScreenContainer>
+          <RolesTable
+            onEdit={handleEditRole}
+            onDelete={handleDeleteRole}
+            onCreate={handleCreateRole}
+            onViewPermissions={handleViewPermissions}
+          />
+        </ScreenContainer>
 
-      {/* Modal de confirmación de eliminación */}
-      <DeleteConfirmationModal
-        isOpen={deleteModalState.isOpen}
-        onClose={cancelDeleteRole}
-        onConfirm={confirmDeleteRole}
-        title="Confirmar Eliminación"
-        itemName={deleteModalState.role?.name}
-        confirmLabel="Eliminar"
-        cancelLabel="Cancelar"
-        variant="danger"
-      />
-
-      {/* Modal de permisos del rol */}
-      {permissionsModalState.role && (
-        <PermissionsModal
-          isOpen={permissionsModalState.isOpen}
-          onClose={closePermissionsModal}
-          roleName={permissionsModalState.role.name}
-          roleDescription={permissionsModalState.role.description}
-          permissions={permissionsModalState.role.permissions || []}
+        {/* Modal de confirmación de eliminación */}
+        <DeleteConfirmationModal
+          isOpen={deleteModalState.isOpen}
+          onClose={cancelDeleteRole}
+          onConfirm={confirmDeleteRole}
+          title="Confirmar Eliminación"
+          itemName={deleteModalState.role?.name}
+          confirmLabel="Eliminar"
+          cancelLabel="Cancelar"
+          variant="danger"
         />
-      )}
-    </div>
+
+        {/* Modal de permisos del rol */}
+        {permissionsModalState.role && (
+          <PermissionsModal
+            isOpen={permissionsModalState.isOpen}
+            onClose={closePermissionsModal}
+            roleName={permissionsModalState.role?.name || ''}
+            roleDescription={permissionsModalState.role?.description || ''}
+            permissions={permissionsModalState.role?.permissions || []}
+          />
+        )}
+    </>
   );
 };
 

@@ -6,7 +6,7 @@
  */
 
 import React from 'react';
-import { Modal } from '@/Components/Ui/Modal';
+import { DetailsModal } from '@/Components/Ui/DetailsModal';
 import { SystemIcons } from '@/Components/Ui/Icons/SystemIcons';
 import type { User } from '@/Services/UserService';
 
@@ -136,23 +136,17 @@ export const UserDetailsModal: React.FC<UserDetailsModalProps> = ({
     );
 
     return (
-        <Modal
+        <DetailsModal
             isOpen={isOpen}
             onClose={onClose}
-            variant="info"
             title="Detalles del Usuario"
-            message={
-                <>
-                    Información del usuario: <span className="font-bold">{user.name}</span>
-                </>
-            }
-            showConfirm={false}
-            showCancel={true}
+            itemName={user.name}
+            itemType="usuario"
             cancelLabel="Cerrar"
             size="lg"
         >
             {renderUserInfo()}
             {renderPermissionsList()}
-        </Modal>
+        </DetailsModal>
     );
 };

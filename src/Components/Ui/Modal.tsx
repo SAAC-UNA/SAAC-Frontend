@@ -38,6 +38,9 @@ interface UnifiedModalProps {
   /** Variante del modal con iconos automáticos */
   variant?: 'danger' | 'warning' | 'info' | 'success';
   
+  /** Ocultar el mensaje automático de peligro para acciones irreversibles */
+  hideDefaultDangerMessage?: boolean;
+  
   /** Mensaje principal (modo confirmación) */
   message?: string | React.ReactNode;
   
@@ -74,6 +77,7 @@ export const Modal: React.FC<UnifiedModalProps> = ({
   
   // Modo avanzado
   variant,
+  hideDefaultDangerMessage = false,
   message,
   showConfirm = true,
   confirmLabel = 'Confirmar',
@@ -253,9 +257,9 @@ export const Modal: React.FC<UnifiedModalProps> = ({
                       </p>
                     )}
                     
-                    {variant === 'danger' && (
-                      <div className="mt-4 p-3 bg-red-50 border border-red-200 rounded-lg">
-                        <p className="text-sm text-red-700 font-medium">
+                    {variant === 'danger' && !hideDefaultDangerMessage && (
+                      <div className="mt-4 p-3 bg-[var(--bg-error)] border border-[var(--border-error)] rounded-lg">
+                        <p className="text-sm text-[var(--text-error)] font-medium">
                           Esta acción no se puede deshacer.
                         </p>
                       </div>

@@ -5,7 +5,7 @@ import { ToastProvider } from './Context/ToastContext';
 import { Layout } from './Components/Layout/Index';
 import { HomePage } from './Pages/Index';
 import { RolesRepository, RoleForm } from './Pages/Roles';
-import { UsersRepository } from './Pages/Users';
+import { UsersRepository, EditUserPage } from './Pages/Users';
 import StructureRepository from './Pages/Structure/StructureList';
 import StructureCreation from './Pages/Structure/StructureCreation';
 import StructureDeletion from './Pages/Structure/StructureDeletion';
@@ -24,7 +24,7 @@ const App: React.FC = () => {
               <Route path="/roles/editar/:id" element={<RoleForm />} />
               <Route path="/roles/listar" element={<RolesRepository />} />
               <Route path="/usuarios/listar" element={<UsersRepository />} />
-
+              <Route path="/usuarios/editar/:id" element={<EditUserPage />} />
               <Route path="/estructura/repositorio" element={<StructureRepository />} />
               <Route path="/estructura/crear" element={<StructureCreation />} />
               <Route path="/estructura/eliminar" element={<StructureDeletion />} />

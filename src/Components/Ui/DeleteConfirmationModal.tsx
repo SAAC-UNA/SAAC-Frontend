@@ -19,6 +19,8 @@ interface DeleteConfirmationModalProps {
   cancelLabel?: string;
   isLoading?: boolean;
   variant?: 'danger' | 'warning';
+  description?: string;
+  hideDefaultDangerMessage?: boolean;
 }
 
 export const DeleteConfirmationModal: React.FC<DeleteConfirmationModalProps> = ({
@@ -31,7 +33,9 @@ export const DeleteConfirmationModal: React.FC<DeleteConfirmationModalProps> = (
   confirmLabel = 'Eliminar',
   cancelLabel = 'Cancelar',
   isLoading = false,
-  variant = 'danger'
+  variant = 'danger',
+  description,
+  hideDefaultDangerMessage = false
 }) => {
   const defaultMessage = itemName
     ? (
@@ -49,6 +53,7 @@ export const DeleteConfirmationModal: React.FC<DeleteConfirmationModalProps> = (
       onClose={onClose}
       onConfirm={onConfirm}
       variant={variant}
+      hideDefaultDangerMessage={hideDefaultDangerMessage}
       title={title}
       message={finalMessage}
       confirmLabel={confirmLabel}
@@ -56,6 +61,14 @@ export const DeleteConfirmationModal: React.FC<DeleteConfirmationModalProps> = (
       confirmLoading={isLoading}
       showCancel={true}
       showConfirm={true}
-    />
+    >
+      {description && (
+        <div className="mt-4 p-3 bg-[var(--bg-error)] border border-[var(--border-error)] rounded-lg">
+          <p className="text-sm text-[var(--text-error)]">
+            {description}
+          </p>
+        </div>
+      )}
+    </Modal>
   );
 };

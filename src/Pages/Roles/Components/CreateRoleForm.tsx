@@ -81,7 +81,7 @@ export const CreateRoleForm: React.FC<CreateRoleFormProps> = ({
   const [formData, setFormData] = useState<RoleFormData>({
     name: initialData?.name || '',
     description: initialData?.description || '',
-    permissions: initialData?.permissions || []
+    permissions: initialData?.permissions.map(p => p.name) || []
   });
 
   // Sistema de validación avanzado

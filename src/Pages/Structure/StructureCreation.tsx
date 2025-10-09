@@ -255,7 +255,7 @@ export const StructureCreation: React.FC = () => {
   const config = FORM_CONFIG[formData.type];
 
   return (
-    <div className="container mx-auto px-4 py-8">
+    <>
       {/* Mensaje de éxito */}
       {successMessage && (
         <div className="mb-6 p-4 message-success border rounded-lg">
@@ -368,7 +368,7 @@ export const StructureCreation: React.FC = () => {
           </div>
         </form>
       </ScreenContainer>
-    </div>
+    </>
   );
 };
 

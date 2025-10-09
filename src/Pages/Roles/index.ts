@@ -14,7 +14,6 @@ export { default as RoleForm } from './RoleForm';
 // Componentes del módulo
 export { RolesTable } from './Components/RolesTable';
 export { CreateRoleForm } from './Components/CreateRoleForm';
-export { TableIcons } from './Components/TableIcons';
 
 // Re-exportar tipos si es necesario
 export type { CreateRoleData } from '@/Services/RoleService';
