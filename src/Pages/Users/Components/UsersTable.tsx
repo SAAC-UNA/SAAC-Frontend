@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { DataTable, ButtonWithTooltip } from '@/components/index';
-import { TableIcons } from '@/pages/Users/Components/TableIcons';
+import { DataTable, TableActionButton } from '@/components/index';
 import { BackendErrorAlert } from '@/Components/Ui/BackendErrorAlert';
 import { useUsers } from '@/Hooks/UseUsers';
 import type { DataTableColumn } from '@/components/Ui/DataTable';
@@ -112,35 +111,24 @@ export const UsersTable: React.FC<UsersTableProps> = ({
             align: 'center',
             render: (_, user) => (
                 <div className="flex items-center justify-center gap-2 pr-2">
-                    <ButtonWithTooltip
-                        variant="tableView"
-                        size="sm"
+                    <TableActionButton
+                        action="view"
                         tooltip="Ver usuario"
                         onClick={() => onViewUser?.(user)}
-                        className="h-8 w-8 p-2"
-                    >
-                        <TableIcons.view className="w-4 h-4" />
-                    </ButtonWithTooltip>
+                    />
                     
-                    <ButtonWithTooltip
-                        variant="tableEdit"
-                        size="sm"
+                    <TableActionButton
+                        action="edit"
                         tooltip="Editar usuario"
                         onClick={() => onEdit?.(user)}
-                        className="h-8 w-8 p-2"
-                    >
-                        <TableIcons.edit className="w-4 h-4" />
-                    </ButtonWithTooltip>
+                    />
 
-                    <ButtonWithTooltip
-                        variant={user.status === 'active' ? 'tablePower' : 'tablePowerInactive'}
-                        size="sm"
+                    <TableActionButton
+                        action="power"
                         tooltip={user.status === 'active' ? 'Desactivar usuario' : 'Activar usuario'}
                         onClick={() => onState?.(user)}
-                        className="h-8 w-8 p-2"
-                    >
-                        <TableIcons.power className="w-4 h-4" />
-                    </ButtonWithTooltip>
+                        isActive={user.status === 'active'}
+                    />
                 </div>
             )
         }

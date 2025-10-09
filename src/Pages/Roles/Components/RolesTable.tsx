@@ -16,8 +16,8 @@
  */
 
 import React, { useEffect, useState } from 'react';
-import { DataTable, ButtonWithTooltip } from '@/components/index';
-import { TableIcons } from './TableIcons';
+import { DataTable, TableActionButton } from '@/components/index';
+import { SystemIcons } from '@/components/Ui/Icons/SystemIcons';
 import { BackendErrorAlert } from '@/Components/Ui/BackendErrorAlert';
 import { useRoles } from '@/hooks/UseRoles';
 import type { DataTableColumn } from '@/components/Ui/DataTable';
@@ -127,35 +127,23 @@ export const RolesTable: React.FC<RolesTableProps> = ({
             align: 'center',
             render: (_, role) => (
                 <div className="flex items-center justify-center gap-2 pr-2">
-                    <ButtonWithTooltip
-                        variant="tableView"
-                        size="sm"
+                    <TableActionButton
+                        action="view"
                         tooltip="Ver permisos"
                         onClick={() => onViewPermissions?.(role)}
-                        className="h-8 w-8 p-2"
-                    >
-                        <TableIcons.view className="w-4 h-4" />
-                    </ButtonWithTooltip>
+                    />
                     
-                    <ButtonWithTooltip
-                        variant="tableEdit"
-                        size="sm"
+                    <TableActionButton
+                        action="edit"
                         tooltip="Editar rol"
                         onClick={() => handleEdit(role)}
-                        className="h-8 w-8 p-2"
-                    >
-                        <TableIcons.edit className="w-4 h-4" />
-                    </ButtonWithTooltip>
+                    />
                     
-                    <ButtonWithTooltip
-                        variant="tableDelete"
-                        size="sm"
+                    <TableActionButton
+                        action="delete"
                         tooltip="Eliminar rol"
                         onClick={() => onDelete?.(role)}
-                        className="h-8 w-8 p-2"
-                    >
-                        <TableIcons.delete className="w-4 h-4" />
-                    </ButtonWithTooltip>
+                    />
                 </div>
             )
         }
@@ -199,7 +187,7 @@ export const RolesTable: React.FC<RolesTableProps> = ({
                 onSearch={handleSearch}
                 primaryAction={onCreate ? {
                     label: 'Crear',
-                    icon: <TableIcons.add className="w-4 h-4" />,
+                    icon: <SystemIcons.actions.add className="w-4 h-4" size="sm" />,
                     onClick: onCreate
                 } : undefined}
                 pagination={totalPages > 1 ? {

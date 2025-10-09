@@ -4,6 +4,8 @@ export { MultiSelect } from './MultiSelect';
 export type { MultiSelectOption, MultiSelectProps } from './MultiSelect';
 export { Button } from './Button';
 export { ButtonWithTooltip } from './ButtonWithTooltip';
+export { TableActionButton } from './TableActionButton';
+export type { TableActionType } from './TableActionButton';
 export { LoadingSpinner, Skeleton, LoadingOverlay } from './Loading';
 export { ToastContainer } from './Toast';
 export { PageHeader } from './PageHeader';
