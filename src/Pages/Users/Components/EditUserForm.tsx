@@ -155,7 +155,7 @@ export const EditUserForm: React.FC<EditUserFormProps> = ({
         )}
 
         {/* Layout de dos columnas */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <div className="grid grid-cols-2 gap-6">
           {/* Columna izquierda: Gestión de Roles y Permisos */}
           <div className="space-y-8">
             {/* Gestión de Roles */}

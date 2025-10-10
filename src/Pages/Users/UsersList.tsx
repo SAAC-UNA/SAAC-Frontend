@@ -92,6 +92,7 @@ const UsersRepository: React.FC = () => {
       <ScreenContainer
         title={moduleInfo.title}
         description={moduleInfo.description}
+        variant="full-width"
       >
           <UsersTable
             onViewUser={handleViewUser}

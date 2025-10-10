@@ -89,6 +89,7 @@ const RolesRepository: React.FC = () => {
       <ScreenContainer
         title={moduleInfo.title}
         description={moduleInfo.description}
+        variant="full-width"
       >
           <RolesTable
             onEdit={handleEditRole}
