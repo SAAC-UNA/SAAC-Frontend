@@ -280,7 +280,7 @@ const validateForm = (): boolean => {
     
       if (result) {
         console.log('Cambios guardados:', formData);
-        setHasChanges(false);
+        navigate('/estructura/listar');
       }
       } else {
         // Descartar cambios
@@ -312,14 +312,14 @@ const validateForm = (): boolean => {
 
   // Volver al listado
   const goBack = () => {
-    if (hasChanges) {
-      if (confirm('Tienes cambios sin guardar. ¿Deseas salir sin guardar?')) {
-        navigate('/estructura/editar');
-      }
-    } else {
-      navigate('/estructura/editar');
+  if (hasChanges) {
+    if (confirm('Tienes cambios sin guardar. ¿Deseas salir sin guardar?')) {
+      navigate('/estructura/listar');
     }
-  };
+  } else {
+    navigate('/estructura/listar');
+  }
+};
 
   if (isLoading || !currentElement) {
     return (
