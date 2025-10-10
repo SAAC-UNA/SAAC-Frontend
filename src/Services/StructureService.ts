@@ -22,6 +22,85 @@ export interface ApiResponse<T = any> {
 }
 
 /**
+ * Crear comentario de sistema (necesario para dimensiones, componentes y criterios)
+ * Usa el endpoint de desarrollo /api/dev/comments
+ */
+async function createSystemComment(): Promise<number> {
+  try {
+    const response = await fetch('http://127.0.0.1:8000/api/dev/comments', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+      },
+      body: JSON.stringify({
+        usuario_id: 1, // Usuario del sistema (debe existir en BD)
+        texto: 'Comentario generado automáticamente por el sistema'
+      }),
+    });
+
+    if (!response.ok) {
+      throw new Error(`Error creando comentario: ${response.status}`);
+    }
+
+    const data = await response.json();
+    return data.comentario_id;
+  } catch (error) {
+    console.error('Error creando comentario del sistema:', error);
+    throw new Error('No se pudo crear el comentario requerido');
+  }
+}
+
+/**
+ * Obtener o crear un estado de evidencia por defecto
+ * Necesario para crear evidencias
+ */
+async function ensureEvidenceState(): Promise<number> {
+  try {
+    // Intentar obtener estados existentes
+    const response = await fetch('http://127.0.0.1:8000/api/estructura/estados-evidencia', {
+      method: 'GET',
+      headers: {
+        'Accept': 'application/json',
+      },
+    });
+
+    if (response.ok) {
+      const data = await response.json();
+      const estados = Array.isArray(data) ? data : (data.data || []);
+      
+      if (estados.length > 0) {
+        // Usar el primer estado disponible
+        return estados[0].estado_evidencia_id;
+      }
+    }
+
+    // Si no existe ninguno, crear uno por defecto
+    const createResponse = await fetch('http://127.0.0.1:8000/api/estructura/estados-evidencia', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+      },
+      body: JSON.stringify({
+        nombre: 'Pendiente'
+      }),
+    });
+
+    if (!createResponse.ok) {
+      throw new Error(`Error creando estado de evidencia: ${createResponse.status}`);
+    }
+
+    const newState = await createResponse.json();
+    return newState.estado_evidencia_id || newState.data?.estado_evidencia_id;
+    
+  } catch (error) {
+    console.error('Error obteniendo/creando estado de evidencia:', error);
+    throw new Error('No se pudo obtener un estado de evidencia válido');
+  }
+}
+
+/**
  * Servicio para gestión de estructura - Patrón Singleton
  */
 class StructureService {
@@ -151,6 +230,26 @@ async getFullTree(): Promise<ApiResponse<StructureElement[]>> {
       // Pasar allElements al mapper para el caso especial de Facultad
       const payload = mapFrontendToBackend(elementData, elementData.type, allElements);
 
+      console.log('🔍 DEBUG CREATE:', {
+      type: elementData.type,
+      elementData: elementData,
+      payload: payload
+    });
+
+      // Si es dimensión, componente o criterio, crear comentario primero
+      const requiresComment = ['dimension', 'component', 'criteria'].includes(elementData.type);
+    
+      if (requiresComment) {
+        const comentarioId = await createSystemComment();
+        payload.comentario_id = comentarioId;
+      }
+
+      //  Si es evidencia, necesita estado_evidencia_id
+      if (elementData.type === 'evidence') {
+        const estadoId = await ensureEvidenceState();
+        payload.estado_evidencia_id = estadoId;
+      }
+
       const response = await fetch(`${this.baseURL}/${endpoint}`, {
         method: 'POST',
         headers: {
@@ -166,16 +265,25 @@ async getFullTree(): Promise<ApiResponse<StructureElement[]>> {
       }
 
       const data = await response.json();
-      
-      if (data.data) {
-        const transformedElement = mapBackendToFrontend(data.data, elementData.type);
+      console.log('🔍 Backend response data:', data);
+
+      // Determinar si el backend devolvió {data: {...}} o directamente {...}
+      const responseData = data.data || data;
+      console.log('🔍 Element data to transform:', responseData);
+
+      // Verificar que tenemos datos válidos
+      if (responseData && typeof responseData === 'object') {
+        const transformedElement = mapBackendToFrontend(responseData, elementData.type);
+        console.log('🔍 Transformed element:', transformedElement);
         return {
-          ...data,
+          message: data.message || 'Elemento creado exitosamente',
           data: transformedElement
         };
       }
 
-      return data;
+      // Si no hay datos válidos, lanzar error
+      throw new Error('No se recibieron datos válidos del servidor');
+      
     } catch (error) {
       console.error('Error creando elemento:', error);
       throw error;

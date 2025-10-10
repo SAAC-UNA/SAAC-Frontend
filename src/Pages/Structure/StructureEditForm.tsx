@@ -14,18 +14,8 @@ interface EditableElement extends StructureElement {
   originalName: string;
   originalDescription: string;
   isModified: boolean;
-  modificationHistory: ModificationRecord[];
 }
 
-interface ModificationRecord {
-  id: string;
-  date: Date;
-  user: string;
-  field: string;
-  oldValue: string;
-  newValue: string;
-  reason?: string;
-}
 
 const StructureEditForm: React.FC = () => {
   // Estados del componente
@@ -157,18 +147,6 @@ const validateForm = (): boolean => {
     return flattenTree(treeData);
   }, [treeData]);
 
-  const mockModificationHistory: ModificationRecord[] = [
-    {
-      id: '1',
-      date: new Date('2024-07-01'),
-      user: 'admin',
-      field: 'Nombre',
-      oldValue: 'Plan de Estudios Anterior',
-      newValue: 'Plan de Estudios Vigente',
-      reason: 'Actualización de nomenclatura'
-    }
-  ];
-
   // Cargar elementos al montar
   useEffect(() => {
     loadTree();
@@ -198,8 +176,7 @@ const validateForm = (): boolean => {
       originalNomenclature: element.nomenclature || '',
       originalName: element.name || '',
       originalDescription: element.description || '',
-      isModified: false,
-      modificationHistory: mockModificationHistory
+      isModified: false
     };
 
     setCurrentElement(editableElement);
@@ -400,6 +377,7 @@ const validateForm = (): boolean => {
                   placeholder="Nomenclatura única o identificativa del elemento"
                   className={formData.nomenclature !== currentElement.originalNomenclature ? 'ring-2 ring-blue-500' : ''}
                   error={errors.nomenclature}
+                  maxLength={VALIDATION_RULES.NOMENCLATURE_MAX_LENGTH}
                 />
                 <p className="text-xs text-gray-500 mt-1">
                   Código único o identificativo del elemento
@@ -420,6 +398,7 @@ const validateForm = (): boolean => {
                   placeholder="Nombre completo y descriptivo"
                   className={formData.name !== currentElement.originalName ? 'ring-2 ring-blue-500' : ''}
                   error={errors.name}
+                  maxLength={VALIDATION_RULES.NAME_MAX_LENGTH}
                 />
                 <p className="text-xs text-gray-500 mt-1">
                   Nombre completo y descriptivo
@@ -445,7 +424,7 @@ const validateForm = (): boolean => {
                           : ''
                     }`}
                     placeholder="Descripción detallada del elemento"
-                    maxLength={500}
+                    maxLength={VALIDATION_RULES.DESCRIPTION_MAX_LENGTH}
                   />
                   {errors.description && (
                     <p className="mt-1 text-sm text-red-600">{errors.description}</p>
@@ -482,69 +461,28 @@ const validateForm = (): boolean => {
           </div>
         </div>
 
-        {/* Panel lateral */}
-
-          {/* Historial de modificaciones */}
-          <div className="bg-gray-50 rounded-lg p-4">
-            <h4 className="text-sm font-medium text-gray-900 mb-3">
-              Historial de Modificaciones
-            </h4>
-            
-            {currentElement.modificationHistory.length === 0 ? (
-              <p className="text-xs text-gray-500">Creación inicial</p>
-            ) : (
-              <div className="space-y-3">
-                <div className="text-xs">
-                  <div className="font-medium text-gray-900">Creación inicial</div>
-                  <div className="text-gray-500">
-                    {currentElement.createdAt.toLocaleDateString()}
-                  </div>
+        {/* Panel lateral para Cambios Pendientes (1/3 del ancho) */}
+        <div>
+            {hasChanges && (
+                <div className="bg-[var(--bg-info)] border border-[var(--border-info)] rounded-lg p-4 sticky top-4">
+                    <h4 className="text-sm font-medium text-[var(--text-info)] mb-2">
+                        Cambios Pendientes
+                    </h4>
+                    <div className="text-xs text-[var(--text-info)] space-y-1 break-words">
+                        {shouldShowField('nomenclature') && formData.nomenclature !== currentElement.originalNomenclature && (
+                            <div>• Código: "{currentElement.originalNomenclature}" → "{formData.nomenclature}"</div>
+                        )}
+                        {shouldShowField('name') && formData.name !== currentElement.originalName && (
+                            <div>• Nombre: "{currentElement.originalName}" → "{formData.name}"</div>
+                        )}
+                        {shouldShowField('description') && formData.description !== (currentElement.originalDescription || '') && (
+                            <div>• Descripción modificada</div>
+                        )}
+                    </div>
                 </div>
-                
-                {currentElement.modificationHistory.map((record) => (
-                  <div key={record.id} className="text-xs border-l-2 border-gray-200 pl-3">
-                    <div className="font-medium text-gray-900">
-                      {record.field}: "{record.oldValue}" → "{record.newValue}"
-                    </div>
-                    <div className="text-gray-500">
-                      {record.date.toLocaleDateString()} por {record.user}
-                    </div>
-                    {record.reason && (
-                      <div className="text-gray-600 italic mt-1">
-                        Razón: {record.reason}
-                      </div>
-                    )}
-                  </div>
-                ))}
-              </div>
             )}
-            
-            <p className="text-xs text-gray-400 mt-3">
-              Las modificaciones se registran automáticamente
-            </p>
-          </div>
-
-          {/* Información del cambio actual */}
-          {hasChanges && (
-            <div className="bg-[var(--bg-info)] border border-[var(--border-info)] rounded-lg p-4">
-              <h4 className="text-sm font-medium text-[var(--text-info)] mb-2">
-                Cambios Pendientes
-              </h4>
-              <div className="text-xs text-[var(--text-info)] space-y-1">
-                {shouldShowField('nomenclature') && formData.nomenclature !== currentElement.originalNomenclature && (
-                 <div>• Código: "{currentElement.originalNomenclature}" → "{formData.nomenclature}"</div>
-                )}
-                {shouldShowField('name') && formData.name !== currentElement.originalName && (
-                  <div>• Nombre: "{currentElement.originalName}" → "{formData.name}"</div>
-                )}
-                {shouldShowField('description') && formData.description !== (currentElement.originalDescription || '') && (
-                  <div>• Descripción modificada</div>
-                )}
-              </div>
-            </div>
-          )}
         </div>
-
+      </div>
 
       {/* Modal de confirmación */}
       <Modal

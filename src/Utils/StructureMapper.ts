@@ -53,15 +53,18 @@ export function mapBackendToFrontend(data: any, type: ElementType): StructureEle
   const idField = ELEMENT_TYPE_TO_ID_FIELD[type];
   const parentField = ELEMENT_TYPE_TO_PARENT_FIELD[type];
   
+  // Intentar obtener el ID del campo específico o del genérico "id"
+  const elementId = data[idField] || data.id;
+
   return {
-    id: String(data[idField]),
+    id: String(elementId),
     nomenclature: data.nomenclatura || undefined,
     name: data.nombre || undefined,
     description: data.descripcion || undefined,
     type: type,
     parentElementId: parentField && data[parentField] ? String(data[parentField]) : undefined,
     active: data.activo !== undefined ? Boolean(data.activo) : true, // Default true si no viene
-    createdAt: new Date(data.created_at),
+    createdAt: data.created_at ? new Date(data.created_at) : new Date(),
     updatedAt: data.updated_at ? new Date(data.updated_at) : undefined,
     hasChildren: false, // TODO: Calcular basado en consultas adicionales
     canDelete: true,    // TODO: Verificar con lógica de negocio
@@ -71,8 +74,10 @@ export function mapBackendToFrontend(data: any, type: ElementType): StructureEle
 /**
  * Transformar datos del frontend al formato del backend
  * 
- * CASO ESPECIAL: Facultad necesita sede_id Y universidad_id
- * Para obtener universidad_id, necesitamos buscar el campus padre
+ * CASOS ESPECIALES:
+ * - Facultad: necesita sede_id Y universidad_id
+ * - Estándar: NO tiene nomenclatura, solo descripcion
+ * - Evidencia: necesita descripcion y nomenclatura (estado_evidencia_id se agrega en service)
  */
 export function mapFrontendToBackend(
   data: Partial<StructureElement>, 
@@ -80,19 +85,37 @@ export function mapFrontendToBackend(
   allElements?: StructureElement[]
 ): any {
   const parentField = ELEMENT_TYPE_TO_PARENT_FIELD[type];
-  
   const payload: any = {};
   
+  // **CASO ESPECIAL 1: ESTÁNDAR - Solo descripcion, SIN nomenclatura**
+  if (type === 'standard') {
+    payload.descripcion = data.description || data.name;
+    if (data.parentElementId && parentField) {
+      payload[parentField] = Number(data.parentElementId);
+    }
+    return payload;
+  }
+  
+  // **CASO ESPECIAL 2: EVIDENCIA - descripcion y nomenclatura**
+  if (type === 'evidence') {
+    payload.descripcion = data.description || data.name;
+    payload.nomenclatura = data.nomenclature;
+    if (data.parentElementId && parentField) {
+      payload[parentField] = Number(data.parentElementId);
+    }
+    // estado_evidencia_id se agregará en StructureService.create()
+    return payload;
+  }
+  
+  // **MAPEO NORMAL para otros tipos**
   if (data.name !== undefined) payload.nombre = data.name;
   if (data.nomenclature !== undefined) payload.nomenclatura = data.nomenclature;
   if (data.description !== undefined) payload.descripcion = data.description;
   
-  // **CASO ESPECIAL: FACULTAD requiere 2 padres**
+  // **CASO ESPECIAL 3: FACULTAD requiere 2 padres**
   if (type === 'faculty' && data.parentElementId) {
-    // El padre directo es el Campus (Sede)
     payload.sede_id = Number(data.parentElementId);
     
-    // Necesitamos obtener universidad_id del campus padre
     if (allElements) {
       const campus = allElements.find(el => el.id === data.parentElementId);
       if (campus && campus.parentElementId) {

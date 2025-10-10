@@ -222,7 +222,7 @@ export const FORM_CONFIG: Record<ElementType, FormConfig> = {
     showParentSelector: true
   },
   [ElementType.STANDARD]: {
-    requiredFields: ['nomenclature','description', 'parentElementId'],
+    requiredFields: ['description', 'parentElementId'],
     optionalFields: [],
     showParentSelector: true
   },

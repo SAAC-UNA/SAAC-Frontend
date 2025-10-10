@@ -212,6 +212,7 @@ const handleSubmit = async (e: React.FormEvent) => {
   
   try {
     const success = await createElement(formData);
+    console.log('🔍 Success:', success);
     
     if (success) {
       // Redirigir a la lista después de crear exitosamente
@@ -243,9 +244,20 @@ const handleSubmit = async (e: React.FormEvent) => {
 
   // Opciones para el select de padre
   const parentOptions: SelectOption[] = availableParents.map(parent => ({
-    value: parent.id,
-    label: parent.nomenclature ? `${parent.nomenclature} - ${parent.name}` : parent.name || 'Sin nombre'
-  }));
+  value: parent.id,
+  label: (() => {
+    // Para criterios, usar description en lugar de name
+    if (parent.type === 'criteria') {
+      return parent.nomenclature 
+        ? `${parent.nomenclature} - ${parent.description || 'Sin descripción'}` 
+        : parent.description || 'Sin descripción';
+    }
+    // Para otros tipos, usar name normalmente
+    return parent.nomenclature 
+      ? `${parent.nomenclature} - ${parent.name || 'Sin nombre'}` 
+      : parent.name || 'Sin nombre';
+  })()
+}));
 
   const config = FORM_CONFIG[formData.type];
 
