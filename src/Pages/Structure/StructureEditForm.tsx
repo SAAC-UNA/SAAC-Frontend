@@ -155,19 +155,21 @@ const validateForm = (): boolean => {
   // Cargar elemento específico desde URL
   useEffect(() => {
     const elementId = searchParams.get('id');
-    if (elementId && allElements.length > 0) {
-      loadElementForEditing(elementId);
-    } else if (!elementId) {
-      // Si no hay ID, redirigir a la lista
-      navigate('/estructura/editar');
+    const elementType = searchParams.get('type') as ElementType | null;
+    
+    if (elementId && elementType && allElements.length > 0) {
+      loadElementForEditing(elementId, elementType);
+    } else if (!elementId || !elementType) {
+      // Si no hay ID o tipo, redirigir a la lista
+      navigate('/estructura/listar');
     }
   }, [searchParams, navigate, allElements]);
 
   // Cargar elemento para edición
-  const loadElementForEditing = async (elementId: string) => {
-    const element = allElements.find(el => el.id === elementId);
+  const loadElementForEditing = async (elementId: string, elementType: ElementType) => {
+    const element = allElements.find(el => el.id === elementId && el.type === elementType);
     if (!element) {
-      navigate('/estructura/editar');
+      navigate('/estructura/listar');
       return;
     }
 
@@ -257,7 +259,7 @@ const validateForm = (): boolean => {
     
       if (result) {
         console.log('Cambios guardados:', formData);
-        navigate('/estructura/listar');
+        window.location.href = '/estructura/listar';
       }
       } else {
         // Descartar cambios

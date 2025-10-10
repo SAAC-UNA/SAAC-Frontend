@@ -1,7 +1,6 @@
 /**
  * StructureService - Servicio para operaciones con la estructura del repositorio
- * 
- * Integración con backend Laravel siguiendo el patrón de RoleService
+ * * Integración con backend Laravel siguiendo el patrón de RoleService
  * Maneja CRUD completo de todos los tipos de elementos
  */
 
@@ -112,79 +111,76 @@ class StructureService {
   }
 
   /**
- * Listar todos los elementos de un tipo específico
- */
-async listByType(type: ElementType): Promise<ApiResponse<StructureElement[]>> {
-  try {
-    const endpoint = ELEMENT_TYPE_TO_ENDPOINT[type];
-    const response = await fetch(`${this.baseURL}/${endpoint}`, {
-      method: 'GET',
-      headers: {
-        'Accept': 'application/json',
-      },
-    });
+  * Listar todos los elementos de un tipo específico
+  */
+  async listByType(type: ElementType): Promise<ApiResponse<StructureElement[]>> {
+    try {
+      const endpoint = ELEMENT_TYPE_TO_ENDPOINT[type];
+      const response = await fetch(`${this.baseURL}/${endpoint}`, {
+        method: 'GET',
+        headers: {
+          'Accept': 'application/json',
+        },
+      });
 
-    if (!response.ok) {
-      const errorData = await response.json();
-      throw new Error(errorData.errorMessage || `HTTP error! status: ${response.status}`);
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.errorMessage || `HTTP error! status: ${response.status}`);
+      }
+
+      const data = await response.json();
+      
+      let rawElements = Array.isArray(data) ? data : (data.data || []);
+      
+      const transformedElements = rawElements.map((item: any) => 
+        mapBackendToFrontend(item, type)
+      );
+
+      return {
+        message: 'Elementos cargados exitosamente',
+        data: transformedElements
+      };
+    } catch (error) {
+      console.error(`Error listando ${type}:`, error);
+      throw error;
     }
-
-    const data = await response.json();
-    
-    // El backend puede devolver directamente un array o un objeto {data: [...]}
-    let rawElements = Array.isArray(data) ? data : (data.data || []);
-    
-    // Transformar cada elemento del backend al formato frontend
-    const transformedElements = rawElements.map((item: any) => 
-      mapBackendToFrontend(item, type)
-    );
-
-    return {
-      message: 'Elementos cargados exitosamente',
-      data: transformedElements
-    };
-  } catch (error) {
-    console.error(`Error listando ${type}:`, error);
-    throw error;
   }
-}
 
   /**
- * Obtener todos los elementos (árbol completo)
- */
-async getFullTree(): Promise<ApiResponse<StructureElement[]>> {
-  try {
-    const types: ElementType[] = [
-      'university', 'campus', 'faculty', 'career',
-      'dimension', 'component', 'criteria', 'standard', 'evidence'
-    ];
+  * Obtener todos los elementos (árbol completo)
+  */
+  async getFullTree(): Promise<ApiResponse<StructureElement[]>> {
+    try {
+      const types: ElementType[] = [
+        'university', 'campus', 'faculty', 'career',
+        'dimension', 'component', 'criteria', 'standard', 'evidence'
+      ];
 
-    const results = await Promise.allSettled(
-      types.map(async (type) => {
-        try {
-          const result = await this.listByType(type);
-          return result.data || [];
-        } catch (error) {
-          console.warn(`Error cargando ${type}, devolviendo array vacío:`, error);
-          return [];
-        }
-      })
-    );
+      const results = await Promise.allSettled(
+        types.map(async (type) => {
+          try {
+            const result = await this.listByType(type);
+            return result.data || [];
+          } catch (error) {
+            console.warn(`Error cargando ${type}, devolviendo array vacío:`, error);
+            return [];
+          }
+        })
+      );
 
-    // Extraer solo los resultados exitosos y aplanar
-    const allElements = results
-      .filter((result) => result.status === 'fulfilled')
-      .flatMap((result) => (result as PromiseFulfilledResult<StructureElement[]>).value);
+      const allElements = results
+        .filter((result) => result.status === 'fulfilled')
+        .flatMap((result) => (result as PromiseFulfilledResult<StructureElement[]>).value);
 
-    return {
-      message: 'Estructura cargada exitosamente',
-      data: allElements
-    };
-  } catch (error) {
-    console.error('Error en getFullTree:', error);
-    throw error;
+      return {
+        message: 'Estructura cargada exitosamente',
+        data: allElements
+      };
+    } catch (error) {
+      console.error('Error en getFullTree:', error);
+      throw error;
+    }
   }
-}
 
   /**
    * Obtener un elemento específico por ID y tipo
@@ -227,24 +223,21 @@ async getFullTree(): Promise<ApiResponse<StructureElement[]>> {
   async create(elementData: CreateElementForm, allElements?: StructureElement[]): Promise<ApiResponse<StructureElement>> {
     try {
       const endpoint = ELEMENT_TYPE_TO_ENDPOINT[elementData.type];
-      // Pasar allElements al mapper para el caso especial de Facultad
       const payload = mapFrontendToBackend(elementData, elementData.type, allElements);
 
       console.log('🔍 DEBUG CREATE:', {
-      type: elementData.type,
-      elementData: elementData,
-      payload: payload
-    });
+        type: elementData.type,
+        elementData: elementData,
+        payload: payload
+      });
 
-      // Si es dimensión, componente o criterio, crear comentario primero
       const requiresComment = ['dimension', 'component', 'criteria'].includes(elementData.type);
-    
+      
       if (requiresComment) {
         const comentarioId = await createSystemComment();
         payload.comentario_id = comentarioId;
       }
 
-      //  Si es evidencia, necesita estado_evidencia_id
       if (elementData.type === 'evidence') {
         const estadoId = await ensureEvidenceState();
         payload.estado_evidencia_id = estadoId;
@@ -267,11 +260,9 @@ async getFullTree(): Promise<ApiResponse<StructureElement[]>> {
       const data = await response.json();
       console.log('🔍 Backend response data:', data);
 
-      // Determinar si el backend devolvió {data: {...}} o directamente {...}
       const responseData = data.data || data;
       console.log('🔍 Element data to transform:', responseData);
 
-      // Verificar que tenemos datos válidos
       if (responseData && typeof responseData === 'object') {
         const transformedElement = mapBackendToFrontend(responseData, elementData.type);
         console.log('🔍 Transformed element:', transformedElement);
@@ -281,7 +272,6 @@ async getFullTree(): Promise<ApiResponse<StructureElement[]>> {
         };
       }
 
-      // Si no hay datos válidos, lanzar error
       throw new Error('No se recibieron datos válidos del servidor');
       
     } catch (error) {
@@ -291,12 +281,58 @@ async getFullTree(): Promise<ApiResponse<StructureElement[]>> {
   }
 
   /**
-   * Actualizar un elemento existente
-   */
+  * Actualizar un elemento existente
+  */
   async update(type: ElementType, id: string, elementData: EditElementForm): Promise<ApiResponse<StructureElement>> {
     try {
       const endpoint = ELEMENT_TYPE_TO_ENDPOINT[type];
-      const payload = mapFrontendToBackend(elementData, type);
+      let payload: any;
+      
+      const requiresSpecialHandling = ['faculty', 'campus', 'dimension', 'component', 'criteria', 'career', 'standard'].includes(type);
+
+      if (requiresSpecialHandling) {
+        const currentResponse = await fetch(`${this.baseURL}/${endpoint}/${id}`, {
+          method: 'GET',
+          headers: { 'Accept': 'application/json' },
+        });
+        
+        if (currentResponse.ok) {
+          const currentData = await currentResponse.json();
+          const current = currentData.data || currentData;
+          
+          console.log(`🔍 Current ${type} data from backend:`, current);
+          
+          payload = {
+            nombre: elementData.name,
+            nomenclatura: elementData.nomenclature,
+            descripcion: elementData.description
+          };
+          
+          if (type === 'faculty') {
+            payload.sede_id = current.sede_id;
+            payload.universidad_id = current.universidad_id;
+          } else if (type === 'campus') {
+            payload.universidad_id = current.universidad_id;
+          } else if (['dimension', 'component', 'criteria'].includes(type)) {
+            payload.comentario_id = current.comentario_id;
+          } else if (type === 'career') {
+            payload.facultad_id = current.facultad_id;
+          } else if (type === 'standard') {
+            payload.criterio_id = current.criterio_id;
+          }
+        } else {
+          throw new Error(`No se pudo obtener los datos actuales del ${type}`);
+        }
+      } else {
+        payload = mapFrontendToBackend(elementData, type);
+      }
+
+      console.log('🔍 DEBUG UPDATE:', {
+        type: type,
+        id: id,
+        elementData: elementData,
+        payload: payload
+      });
 
       const response = await fetch(`${this.baseURL}/${endpoint}/${id}`, {
         method: 'PUT',
@@ -313,16 +349,21 @@ async getFullTree(): Promise<ApiResponse<StructureElement[]>> {
       }
 
       const data = await response.json();
-      
-      if (data.data) {
-        const transformedElement = mapBackendToFrontend(data.data, type);
-        return {
-          ...data,
-          data: transformedElement
-        };
-      }
 
-      return data;
+    // Lógica mejorada: buscar el objeto de datos tanto en data.data como en data directamente.
+    const responseData = data.data || data;
+
+    // Verificar que tenemos un objeto de datos válido antes de transformar
+    if (responseData && typeof responseData === 'object' && Object.keys(responseData).length > 0) {
+        const transformedElement = mapBackendToFrontend(responseData, type);
+        return {
+            message: data.message || 'Elemento actualizado exitosamente',
+            data: transformedElement
+        };
+    }
+
+    // Si no se encuentran datos válidos, puede que la respuesta sea simple (ej. solo un mensaje)
+    return data;
     } catch (error) {
       console.error(`Error actualizando ${type} ${id}:`, error);
       throw error;

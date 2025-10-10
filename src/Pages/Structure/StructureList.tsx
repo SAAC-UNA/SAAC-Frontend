@@ -31,7 +31,7 @@ const { isLoading, deleteElement } = useStructure();
 
   const handleEditElement = (element: StructureElement) => {
     // Navegar directamente a la página de edición con el ID del elemento
-    window.location.href = `/estructura/editar/formulario?id=${element.id}`;
+    window.location.href = `/estructura/editar/formulario?id=${element.id}&type=${element.type}`;
   };
 
   const handleDeleteElement = (element: StructureElement) => {

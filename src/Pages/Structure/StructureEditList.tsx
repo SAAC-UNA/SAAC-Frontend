@@ -76,8 +76,9 @@ const StructureEditList: React.FC = () => {
   };
 
   // Navegar a la página de edición del elemento
-  const handleEdit = (elementId: string) => {
-    navigate(`/estructura/editar/formulario?id=${elementId}`);
+  const handleEdit = (element: StructureElement) => {
+    // Incluir tanto ID como tipo en la URL
+    navigate(`/estructura/editar/formulario?id=${element.id}&type=${element.type}`);
   };
 
   // Actualizar lista (refrescar datos)
@@ -206,7 +207,7 @@ const StructureEditList: React.FC = () => {
                       {/* Botón de editar */}
                       <div className="flex items-center space-x-2 ml-4">
                         <Button
-                          onClick={() => handleEdit(element.id)}
+                          onClick={() => handleEdit(element)}
                           variant="secondary"
                           size="sm"
                         >

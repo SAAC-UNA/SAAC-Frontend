@@ -75,9 +75,9 @@ export function mapBackendToFrontend(data: any, type: ElementType): StructureEle
  * Transformar datos del frontend al formato del backend
  * 
  * CASOS ESPECIALES:
- * - Facultad: necesita sede_id Y universidad_id
+ * - Facultad: necesita sede_id Y universidad_id (tanto para crear como actualizar)
  * - Estándar: NO tiene nomenclatura, solo descripcion
- * - Evidencia: necesita descripcion y nomenclatura (estado_evidencia_id se agrega en service)
+ * - Evidencia: necesita descripcion y nomenclatura
  */
 export function mapFrontendToBackend(
   data: Partial<StructureElement>, 
@@ -103,7 +103,6 @@ export function mapFrontendToBackend(
     if (data.parentElementId && parentField) {
       payload[parentField] = Number(data.parentElementId);
     }
-    // estado_evidencia_id se agregará en StructureService.create()
     return payload;
   }
   
@@ -112,19 +111,28 @@ export function mapFrontendToBackend(
   if (data.nomenclature !== undefined) payload.nomenclatura = data.nomenclature;
   if (data.description !== undefined) payload.descripcion = data.description;
   
-  // **CASO ESPECIAL 3: FACULTAD requiere 2 padres**
-  if (type === 'faculty' && data.parentElementId) {
-    payload.sede_id = Number(data.parentElementId);
-    
-    if (allElements) {
-      const campus = allElements.find(el => el.id === data.parentElementId);
-      if (campus && campus.parentElementId) {
-        payload.universidad_id = Number(campus.parentElementId);
-      } else {
-        console.warn('No se pudo obtener universidad_id del campus padre');
+  // **CASO ESPECIAL 3: FACULTAD requiere 2 padres siempre**
+  if (type === 'faculty') {
+    if (data.parentElementId) {
+      // Crear: Tiene parentElementId nuevo
+      payload.sede_id = Number(data.parentElementId);
+      
+      if (allElements) {
+        const campus = allElements.find(el => el.id === data.parentElementId);
+        if (campus && campus.parentElementId) {
+          payload.universidad_id = Number(campus.parentElementId);
+        }
       }
-    } else {
-      console.warn('Se necesita allElements para crear una Facultad correctamente');
+    } else if (allElements && allElements.length > 0) {
+      // Actualizar: Usar los padres del elemento actual
+      const currentElement = allElements[0]; // El elemento actual que pasamos
+      if (currentElement.parentElementId) {
+        payload.sede_id = Number(currentElement.parentElementId);
+        // Buscar la universidad desde el campus
+        // Nota: Aquí necesitaríamos todos los elementos para buscar el campus padre
+        // Por simplicidad, asumimos que el backend mantiene la universidad
+        console.warn('Al actualizar facultad, no se puede determinar universidad_id sin más contexto');
+      }
     }
   } else {
     // Para otros tipos, mapeo normal del padre
