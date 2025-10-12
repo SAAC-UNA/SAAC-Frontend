@@ -23,7 +23,7 @@ import { useStructure } from '@/Hooks/UseStructure';
 import { ELEMENT_TYPE_LABELS } from '@/Constants/StructureConstants';
 import type { DataTableColumn} from '@/Components/Ui/DataTable';
 import type { StructureElement, ElementType } from '@/Types/StructureTypes';
-import { TableIcons } from '@/Pages/Roles/Components/TableIcons';
+import { SystemIcons } from '@/Components/Ui/Icons/SystemIcons';
 import { CustomSelect } from '@/Components/Ui/SingleSelect';
 import type { SelectOption } from '@/Types/StructureTypes';
 
@@ -187,7 +187,7 @@ useEffect(() => {
                         onClick={() => setModalState({ isOpen: true, element })}
                         className="h-8 w-8 p-2"
                     >
-                        <TableIcons.view className="w-4 h-4" />
+                        <SystemIcons.actions.view className="w-4 h-4" />
                     </ButtonWithTooltip>
                     
                     <ButtonWithTooltip
@@ -197,7 +197,7 @@ useEffect(() => {
                         onClick={() => onEdit?.(element)}
                         className="h-8 w-8 p-2"
                     >
-                        <TableIcons.edit className="w-4 h-4" />
+                        <SystemIcons.actions.edit className="w-4 h-4" />
                     </ButtonWithTooltip>
                     
                     <ButtonWithTooltip
@@ -207,7 +207,7 @@ useEffect(() => {
                         onClick={() => onDelete?.(element)}
                         className="h-8 w-8 p-2"
                     >
-                        <TableIcons.delete className="w-4 h-4" />
+                        <SystemIcons.actions.delete className="w-4 h-4" />
                     </ButtonWithTooltip>
                 </div>
             )
@@ -247,7 +247,7 @@ useEffect(() => {
                 onSearch={setSearchQuery}
                 primaryAction={onCreate ? {
                     label: 'Crear',
-                    icon: <TableIcons.add className="w-4 h-4" />,
+                    icon: <SystemIcons.actions.add className="w-4 h-4" />,
                     onClick: onCreate
                 } : undefined}
                 pagination={totalPages > 1 ? {
