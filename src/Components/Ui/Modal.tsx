@@ -38,8 +38,11 @@ interface UnifiedModalProps {
   /** Variante del modal con iconos automáticos */
   variant?: 'danger' | 'warning' | 'info' | 'success';
   
+  /** Ocultar el mensaje automático de peligro para acciones irreversibles */
+  hideDefaultDangerMessage?: boolean;
+  
   /** Mensaje principal (modo confirmación) */
-  message?: string;
+  message?: string | React.ReactNode;
   
   /** Mostrar botón de confirmación */
   showConfirm?: boolean;
@@ -74,6 +77,7 @@ export const Modal: React.FC<UnifiedModalProps> = ({
   
   // Modo avanzado
   variant,
+  hideDefaultDangerMessage = false,
   message,
   showConfirm = true,
   confirmLabel = 'Confirmar',
@@ -222,12 +226,12 @@ export const Modal: React.FC<UnifiedModalProps> = ({
               {closable && (
                 <button
                   type="button"
-                  className="rounded-full bg-gray-100 p-2 text-gray-500 hover:bg-gray-200 hover:text-gray-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 transition-all duration-200"
+                  className="rounded-full bg-gray-100 p-2 text-gray-500 hover:bg-gray-200 hover:text-gray-700 focus:outline-none transition-all duration-200"
                   onClick={handleClose}
                   disabled={confirmLoading}
                   aria-label="Cerrar modal"
                 >
-                  <SystemIcons.interface.close className="h-5 w-5" />
+                  <SystemIcons.interface.closeCircle className="h-5 w-5" />
                 </button>
               )}
             </div>
@@ -253,9 +257,9 @@ export const Modal: React.FC<UnifiedModalProps> = ({
                       </p>
                     )}
                     
-                    {variant === 'danger' && (
-                      <div className="mt-4 p-3 bg-red-50 border border-red-200 rounded-lg">
-                        <p className="text-sm text-red-700 font-medium">
+                    {variant === 'danger' && !hideDefaultDangerMessage && (
+                      <div className="mt-4 p-3 bg-[var(--bg-error)] border border-[var(--border-error)] rounded-lg">
+                        <p className="text-sm text-[var(--text-error)] font-medium">
                           Esta acción no se puede deshacer.
                         </p>
                       </div>
@@ -287,10 +291,10 @@ export const Modal: React.FC<UnifiedModalProps> = ({
                   <>
                     {showCancel && (
                       <Button
-                        variant="outline"
+                        variant="secondary"
                         onClick={handleClose}
                         disabled={confirmLoading}
-                        className="min-w-[80px] rounded-lg border-gray-300 hover:bg-gray-50"
+                        standardWidth={true}
                       >
                         {cancelLabel}
                       </Button>
@@ -298,13 +302,11 @@ export const Modal: React.FC<UnifiedModalProps> = ({
                     
                     {showConfirm && (
                       <Button
+                        variant="primary"
                         onClick={handleConfirm}
                         disabled={confirmLoading}
                         isLoading={confirmLoading}
-                        className={cn(
-                          'min-w-[80px] rounded-lg transition-all duration-200',
-                          config.confirmClasses
-                        )}
+                        standardWidth={true}
                       >
                         {confirmLoading ? 'Procesando...' : confirmLabel}
                       </Button>

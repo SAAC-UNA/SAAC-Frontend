@@ -1,19 +1,12 @@
 /**
  * Button - Componente de botón reutilizable del Design System SAAC-UNA
- * 
+ *
  * Características:
- * - Múltiples variantes (primary, seco      {loading && (
-        <LoadingSpinner variant="bounce" size="sm" color="current" className="mr-2" />
-      )}ry, outline, ghost, transparent)
+ * - Múltiples variantes (primary, secondary, outline, ghost, transparent)
  * - Sistema de tamaños responsivo integrado
  * - Estados de loading, disabled, fullWidth
  * - Colores consistentes con la marca UNA
  * - Transiciones suaves y accesibilidad
- * 
- * Uso:
- * <Button variant="primary" size="sm" isLoading={false}>
- *   Crear Rol
- * </Button>
  */
 import React from 'react';
 import { cn } from '@/utils/ClassNames';
@@ -23,7 +16,7 @@ import { LoadingSpinner } from './Loading';
 /**
  * Variantes disponibles para el componente Button
  */
-type ButtonVariant = 'primary' | 'secondary' | 'tertiary' | 'outline' | 'ghost' | 'transparent' | 'success' | 'tableView' | 'tableEdit' | 'tableDelete';
+type ButtonVariant = 'primary' | 'secondary' | 'tertiary' | 'outline' | 'ghost' | 'transparent' | 'success' | 'tableView' | 'tableEdit' | 'tableDelete' | 'tablePower' | 'tablePowerInactive' | 'error';
 
 /**
  * Props del componente Button
@@ -37,6 +30,8 @@ interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   flex?: boolean;
   /** Manejo responsivo automático (usar con precaución) */
   responsive?: boolean;
+  /** Aplica el ancho estándar de 128px para botones de modales */
+  standardWidth?: boolean;
   children: React.ReactNode;
 }
 
@@ -98,6 +93,25 @@ const VARIANT_CLASSES = {
     'bg-transparent text-[var(--icon-delete)] border-0 p-2 rounded-md',
     'hover:bg-[var(--bg-error)] hover:text-[var(--icon-delete)] transition-colors duration-200',
     'disabled:opacity-50 disabled:cursor-not-allowed'
+  ].join(' '),
+
+  tablePower: [
+    'bg-transparent text-[var(--icon-active)] border-0 p-2 rounded-md',
+    'hover:bg-[var(--bg-error)] hover:text-[var(--icon-active)] transition-colors duration-200',
+    'disabled:opacity-50 disabled:cursor-not-allowed'
+  ].join(' '),
+
+  tablePowerInactive: [
+    'bg-transparent text-[var(--icon-inactive)] border-0 p-2 rounded-md',
+    'hover:bg-[var(--bg-inactive)] hover:text-[var(--icon-inactive)] transition-colors duration-200',
+    'disabled:opacity-50 disabled:cursor-not-allowed'
+  ].join(' '),
+
+  // Botón para manejo de errores
+  error: [
+    'bg-transparent text-[var(--text-error)] font-poppins font-semibold border-2 border-[var(--text-error)]',
+    'hover:bg-[var(--text-error)]/10 transition-colors duration-200',
+    'disabled:opacity-50 disabled:cursor-not-allowed'
   ].join(' ')
 };
 
@@ -108,6 +122,7 @@ export const Button: React.FC<ButtonProps> = ({
   fullWidth = false,
   flex = false,
   responsive = false,
+  standardWidth = false,
   className,
   disabled,
   children,
@@ -123,9 +138,9 @@ export const Button: React.FC<ButtonProps> = ({
   const getResponsiveClasses = () => {
     if (!responsive) return '';
     
-    // En desktop: ancho mínimo y padding específico
+    // En desktop: ancho mínimo y padding específico (128px estándar)
     // En mobile: flex para ocupar todo el ancho
-    return 'flex-1 lg:flex-none lg:min-w-28 lg:px-8';
+    return 'flex-1 lg:flex-none lg:min-w-32 lg:px-8';
   };
 
   return (
@@ -134,9 +149,10 @@ export const Button: React.FC<ButtonProps> = ({
         baseClasses,
         getComponentSizeClasses.button(size),
         VARIANT_CLASSES[variant],
-        fullWidth && 'w-full',
-        flex && 'flex-1',
-        responsive && getResponsiveClasses(),
+        standardWidth && '!min-w-[128px] !max-w-[128px]',
+        fullWidth && !standardWidth && 'w-full',
+        flex && !standardWidth && 'flex-1',
+        responsive && !standardWidth && getResponsiveClasses(),
         (disabled || isLoading) && 'opacity-50',
         className
       )}

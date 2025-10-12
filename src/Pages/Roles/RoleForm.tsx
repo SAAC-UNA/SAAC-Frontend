@@ -15,8 +15,10 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { CreateRoleForm } from './Components/CreateRoleForm';
-import { LoadingSpinner, Button } from '@/components/Ui/Index';
-import { Modal } from '@/Components/Ui/Modal';
+import { LoadingSpinner, Button, PageErrorState } from '@/components/Ui/Index';
+import { CreateConfirmationModal } from '@/Components/Ui/CreateConfirmationModal';
+import { EditConfirmationModal } from '@/Components/Ui/EditConfirmationModal';
+import { SuccessModal } from '@/Components/Ui/SuccessModal';
 import { useRoles } from '@/hooks/UseRoles';
 import { MODULE_INFO } from '@/Constants/ModuleInfo';
 import type { CreateRoleData, Role } from '@/Services/RoleService';
@@ -41,6 +43,17 @@ const RoleForm: React.FC = () => {
   }>({
     isOpen: false,
     roleData: null
+  });
+
+  // Estado para el modal de éxito
+  const [successModalState, setSuccessModalState] = useState<{
+    isOpen: boolean;
+    roleName: string;
+    isEditing: boolean;
+  }>({
+    isOpen: false,
+    roleName: '',
+    isEditing: false
   });
 
   /**
@@ -111,19 +124,31 @@ const RoleForm: React.FC = () => {
         }
         
         if (result) {
-          // Cerrar modal
+          // Cerrar modal de confirmación
           setConfirmModalState({ isOpen: false, roleData: null });
           
-          // TODO: Agregar notificación toast
-          
-          // Redireccionar a la lista de roles
-          navigate('/roles/listar');
+          // Mostrar modal de éxito
+          setSuccessModalState({
+            isOpen: true,
+            roleName: confirmModalState.roleData.name,
+            isEditing: isEditing
+          });
         }
       } catch (error) {
         // TODO: Mostrar error al usuario
         console.error(`Error al ${isEditing ? 'editar' : 'crear'} rol:`, error);
+        // Cerrar modal de confirmación incluso si hay error
+        setConfirmModalState({ isOpen: false, roleData: null });
       }
     }
+  };
+
+  /**
+   * Maneja el cierre del modal de éxito y redirecciona
+   */
+  const handleSuccessModalClose = () => {
+    setSuccessModalState({ isOpen: false, roleName: '', isEditing: false });
+    navigate('/roles/listar');
   };
 
   /**
@@ -144,22 +169,7 @@ const RoleForm: React.FC = () => {
    * Obtiene el texto del botón según el modo
    */
   const getButtonText = () => {
-    return isEditing ? 'Guardar Cambios' : 'Crear';
-  };
-
-  /**
-   * Obtiene el título del modal según el modo
-   */
-  const getModalTitle = () => {
-    return isEditing ? 'Confirmar Edición de Rol' : 'Confirmar Creación de Rol';
-  };
-
-  /**
-   * Obtiene el mensaje del modal según el modo
-   */
-  const getModalMessage = () => {
-    const action = isEditing ? 'guardar los cambios en' : 'crear';
-    return `¿Está seguro de que desea ${action} el rol "${confirmModalState.roleData?.name}"?`;
+    return isEditing ? 'Guardar' : 'Crear';
   };
 
   /**
@@ -179,39 +189,26 @@ const RoleForm: React.FC = () => {
     // Estado de error al cargar rol (solo en modo edición)
     if (loadError) {
       return (
-        <div className="text-center py-12">
-          <div className="text-[var(--text-error)] mb-4">
-            <svg className="w-16 h-16 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-            </svg>
-          </div>
-          <h2 className="text-xl font-semibold text-negro-una mb-2">Error</h2>
-          <p className="text-gris-una mb-6">{loadError}</p>
-          <Button
-            variant="primary"
-            onClick={() => navigate('/roles/listar')}
-            size="sm"
-          >
-            Volver a la lista
-          </Button>
-        </div>
+        <PageErrorState
+          title="Error al cargar rol"
+          description={loadError}
+          primaryActionLabel="Volver a la lista"
+          onPrimaryAction={() => navigate('/roles/listar')}
+          secondaryActionLabel="Reintentar"
+          onSecondaryAction={() => window.location.reload()}
+        />
       );
     }
 
     // Rol no encontrado (solo en modo edición)
     if (isEditing && !role) {
       return (
-        <div className="text-center py-12">
-          <h2 className="text-xl font-semibold text-negro-una mb-2">Rol no encontrado</h2>
-          <p className="text-gris-una mb-6">El rol que está buscando no existe.</p>
-          <Button
-            variant="primary"
-            onClick={() => navigate('/roles/listar')}
-            size="sm"
-          >
-            Volver a la lista
-          </Button>
-        </div>
+        <PageErrorState
+          title="Rol no encontrado"
+          description="El rol que está buscando no existe o ha sido eliminado."
+          primaryActionLabel="Volver a la lista"
+          onPrimaryAction={() => navigate('/roles/listar')}
+        />
       );
     }
 
@@ -252,6 +249,7 @@ const RoleForm: React.FC = () => {
               type="button"
               variant="secondary"
               onClick={handleCancel}
+              standardWidth={true}
               size="sm"
             >
               Cancelar
@@ -266,6 +264,7 @@ const RoleForm: React.FC = () => {
                   form.requestSubmit();
                 }
               }}
+              standardWidth={true}
               size="sm"
             >
               {getButtonText()}
@@ -277,46 +276,52 @@ const RoleForm: React.FC = () => {
   };
 
   return (
-    <div className="container mx-auto px-4 py-8">
+    <>
       {renderContent()}
 
-      {/* Modal de confirmación */}
-      <Modal
-        isOpen={confirmModalState.isOpen}
-        onClose={cancelOperation}
-        title={getModalTitle()}
-        size="md"
-      >
-        <div className="space-y-4">
-          <p className="text-gray-700">
-            {getModalMessage()}
-          </p>
-          
-          {confirmModalState.roleData?.description && (
-            <div className="p-4 bg-gray-50 rounded-lg">
-              <p className="text-sm text-gray-600">
-                <strong>Descripción:</strong> {confirmModalState.roleData.description}
-              </p>
-            </div>
-          )}
-          
-          <div className="flex justify-end gap-3 pt-4">
-            <button
-              onClick={cancelOperation}
-              className="px-4 py-2 text-gray-700 bg-gray-200 rounded-lg hover:bg-gray-300 transition-colors"
-            >
-              Cancelar
-            </button>
-            <button
-              onClick={confirmOperation}
-              className="px-4 py-2 text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition-colors"
-            >
-              {getButtonText()}
-            </button>
-          </div>
-        </div>
-      </Modal>
-    </div>
+      {/* Modal de confirmación - Crear */}
+      {!isEditing && (
+        <CreateConfirmationModal
+          isOpen={confirmModalState.isOpen}
+          onClose={cancelOperation}
+          onConfirm={confirmOperation}
+          title="Confirmar Creación de Rol"
+          itemName={confirmModalState.roleData?.name}
+          itemType="rol"
+          confirmLabel="Crear"
+          variant="success"
+          description={confirmModalState.roleData?.description}
+        />
+      )}
+
+      {/* Modal de confirmación - Editar */}
+      {isEditing && (
+        <EditConfirmationModal
+          isOpen={confirmModalState.isOpen}
+          onClose={cancelOperation}
+          onConfirm={confirmOperation}
+          title="Confirmar Edición de Rol"
+          itemName={confirmModalState.roleData?.name}
+          itemType="rol"
+          confirmLabel="Guardar"
+          variant="warning"
+          description={confirmModalState.roleData?.description}
+        />
+      )}
+
+      {/* Modal de éxito */}
+      <SuccessModal
+        isOpen={successModalState.isOpen}
+        title={successModalState.isEditing ? '¡Rol editado exitosamente!' : '¡Rol creado exitosamente!'}
+        message={successModalState.isEditing 
+          ? `El rol "${successModalState.roleName}" ha sido modificado correctamente` 
+          : `El rol "${successModalState.roleName}" ha sido agregado correctamente`
+        }
+        onClose={handleSuccessModalClose}
+        autoClose={true}
+        autoCloseDelay={3000}
+      />
+    </>
   );
 };
 

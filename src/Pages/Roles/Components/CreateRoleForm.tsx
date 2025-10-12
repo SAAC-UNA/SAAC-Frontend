@@ -81,7 +81,7 @@ export const CreateRoleForm: React.FC<CreateRoleFormProps> = ({
   const [formData, setFormData] = useState<RoleFormData>({
     name: initialData?.name || '',
     description: initialData?.description || '',
-    permissions: initialData?.permissions || []
+    permissions: initialData?.permissions.map(p => p.name) || []
   });
 
   // Sistema de validación avanzado
@@ -306,6 +306,7 @@ export const CreateRoleForm: React.FC<CreateRoleFormProps> = ({
                       variant="secondary"
                       onClick={onCancel}
                       disabled={isLoading}
+                      standardWidth={true}
                       size="sm"
                     >
                       Cancelar
@@ -314,6 +315,7 @@ export const CreateRoleForm: React.FC<CreateRoleFormProps> = ({
                       type="submit"
                       variant="primary"
                       disabled={isLoading}
+                      standardWidth={true}
                       size="sm"
                     >
                       {isLoading 
@@ -381,6 +383,7 @@ export const CreateRoleForm: React.FC<CreateRoleFormProps> = ({
                   variant="secondary"
                   onClick={onCancel}
                   disabled={isLoading}
+                  standardWidth={true}
                   size="sm"
                 >
                   Cancelar
@@ -389,11 +392,12 @@ export const CreateRoleForm: React.FC<CreateRoleFormProps> = ({
                   type="submit"
                   variant="primary"
                   disabled={isLoading}
+                  standardWidth={true}
                   size="sm"
                 >
                   {isLoading 
                     ? (isEditing ? 'Guardando...' : 'Creando...') 
-                    : (isEditing ? 'Guardar Cambios' : 'Crear')
+                    : (isEditing ? 'Guardar' : 'Crear')
                   }
                 </Button>
             </div>

@@ -268,9 +268,15 @@ const handleSubmit = async (e: React.FormEvent) => {
     const config = FORM_CONFIG[formData.type];
     return config.requiredFields.includes(field) || config.optionalFields.includes(field);
   };
-
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
   return (
-    <div className="container mx-auto px-4 py-8">
+    <>
+      {/* Mensaje de éxito */}
+      {successMessage && (
+        <div className="mb-6 p-4 message-success border rounded-lg">
+          <p>{successMessage}</p>
+        </div>
+      )}
 
       {/* Formulario */}
       <ScreenContainer
@@ -377,7 +383,7 @@ const handleSubmit = async (e: React.FormEvent) => {
           </div>
         </form>
       </ScreenContainer>
-    </div>
+    </>
   );
 };
 

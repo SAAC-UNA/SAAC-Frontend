@@ -48,7 +48,7 @@ export const SystemIcons = {
     view: ({ className, size, color = 'var(--icon-view)' }: IconProps) => (
       <svg
         className={`${getSizeClasses(size)} ${className || ''}`}
-        viewBox="0 0 24 24"
+        viewBox="0 0 22 22"
         fill={color}
       >
         <path d="M12 9.75a2.25 2.25 0 1 0 0 4.5 2.25 2.25 0 0 0 0-4.5Z" />
@@ -59,7 +59,7 @@ export const SystemIcons = {
     edit: ({ className, size, color = 'var(--icon-edit)' }: IconProps) => (
       <svg
         className={`${getSizeClasses(size)} ${className || ''}`}
-        viewBox="0 0 24 24"
+        viewBox="0 0 22 22"
         fill={color}
       >
         <path d="M14.607 3.5a.5.5 0 0 1 .353.146l2.829 2.829a.5.5 0 0 1 0 .707l-9.193 9.192a.5.5 0 0 1-.227.13l-3.828 1a.5.5 0 0 1-.61-.61l1-3.828a.5.5 0 0 1 .13-.227l9.192-9.193a.5.5 0 0 1 .354-.146Z" />
@@ -70,12 +70,27 @@ export const SystemIcons = {
     delete: ({ className, size, color = 'var(--icon-delete)' }: IconProps) => (
       <svg
         className={`${getSizeClasses(size)} ${className || ''}`}
-        viewBox="0 0 24 24"
+        viewBox="0 0 22 22"
         fill={color}
       >
         <path d="M9.25 3a.75.75 0 0 1 .75-.75h4a.75.75 0 0 1 .75.75v.75H19a.75.75 0 0 1 0 1.5H5a.75.75 0 0 1 0-1.5h4.25V3Z" />
         <path fillRule="evenodd" d="M6.24 7.945a.5.5 0 0 1 .497-.445h10.526a.5.5 0 0 1 .497.445l.2 1.801a44.213 44.213 0 0 1 0 9.771l-.02.177a2.603 2.603 0 0 1-2.226 2.29 26.788 26.788 0 0 1-7.428 0 2.603 2.603 0 0 1-2.227-2.29l-.02-.177a44.239 44.239 0 0 1 0-9.77l.2-1.802Zm4.51 3.455a.75.75 0 0 0-1.5 0v7a.75.75 0 0 0 1.5 0v-7Zm4 0a.75.75 0 0 0-1.5 0v7a.75.75 0 0 0 1.5 0v-7Z" clipRule="evenodd" />
       </svg>
+    ),
+
+    power: ({ className, size }: IconProps) => (
+      <svg
+        className={`${getSizeClasses(size)} ${className || ''}`}
+        viewBox="0 0 22 22"
+        fill="currentColor"
+      >
+        <path
+      fillRule="evenodd"
+      d="M3.25 12a8.75 8.75 0 1 1 17.5 0 8.75 8.75 0 0 1-17.5 0ZM12 6.25a.75.75 0 0 1 .75.75v5a.75.75 0 0 1-1.5 0V7a.75.75 0 0 1 .75-.75Zm-2 1.832c0-.183-.19-.302-.348-.212a4.75 4.75 0 1 0 4.696 0c-.159-.09-.348.03-.348.212v1.234c0 .077.036.15.095.199a3.25 3.25 0 1 1-4.19 0A.261.261 0 0 0 10 9.316V8.082Z"
+      clipRule="evenodd"
+    />
+  </svg>
+
     ),
 
     add: ({ className, size, color = 'var(--icon-add)' }: IconProps) => (
@@ -144,21 +159,21 @@ export const SystemIcons = {
       </svg>
     ),
 
-    close: ({ className, size, color = 'var(--icon-close)' }: IconProps) => (
+    closeCircle: ({ className, size }: IconProps) => (
       <svg
         className={`${getSizeClasses(size)} ${className || ''}`}
         viewBox="0 0 24 24"
-        fill={color}
+        fill="currentColor"
       >
-        <path fillRule="evenodd" d="M5.47 5.47a.75.75 0 011.06 0L12 10.94l5.47-5.47a.75.75 0 111.06 1.06L13.06 12l5.47 5.47a.75.75 0 11-1.06 1.06L12 13.06l-5.47 5.47a.75.75 0 01-1.06-1.06L10.94 12 5.47 6.53a.75.75 0 010-1.06z" clipRule="evenodd" />
+        <path d="M12 2.25A9.75 9.75 0 1 0 21.75 12 9.769 9.769 0 0 0 12 2.25Zm3.534 12.216a.76.76 0 0 1 0 1.068.769.769 0 0 1-1.068 0L12 13.06l-2.466 2.475a.769.769 0 0 1-1.068 0 .76.76 0 0 1 0-1.068L10.94 12 8.466 9.534a.76.76 0 0 1 1.068-1.068L12 10.94l2.466-2.475a.76.76 0 0 1 1.068 1.068L13.06 12l2.475 2.466Z" />
       </svg>
     ),
 
-    alert: ({ className, size, color = 'var(--icon-alert)' }: IconProps) => (
+    alert: ({ className, size }: IconProps) => (
       <svg
         className={`${getSizeClasses(size)} ${className || ''}`}
         viewBox="0 0 24 24"
-        fill={color}
+        fill="currentColor"
       >
         <path fillRule="evenodd" d="M9.73 3.993a2.749 2.749 0 0 1 4.54 0l.432.632a75.951 75.951 0 0 1 6.944 12.563l.09.208a2.511 2.511 0 0 1-2.024 3.497 69.43 69.43 0 0 1-15.424 0 2.511 2.511 0 0 1-2.024-3.497l.09-.208A75.95 75.95 0 0 1 9.298 4.625l.432-.632ZM13 9a1 1 0 1 1-2 0 1 1 0 0 1 2 0Zm-1 2.75a.75.75 0 0 1 .75.75v5a.75.75 0 1 1-1.5 0v-5a.75.75 0 0 1 .75-.75Z" clipRule="evenodd" />
       </svg>
@@ -240,6 +255,21 @@ export const SystemIcons = {
         />
       </svg>
     ),
+    cloud: ({ className, size, color }: IconProps) => (
+      <svg
+        className={`${getSizeClasses(size)} ${className || ''}`}
+        viewBox="0 0 24 24"
+        fill={color || "currentColor"}
+
+      >
+          <path
+          fillRule="evenodd"
+          d="M21.03 4.83a.75.75 0 1 0-1.06-1.06l-16 16a.75.75 0 0 0 1.06 1.06l2.08-2.08h11.413a4.478 4.478 0 1 0-.19-8.951 5.38 5.38 0 0 0-.437-1.834L21.03 4.83Zm-4.31 4.312L8.61 17.25h9.912a2.978 2.978 0 1 0-.77-5.854.75.75 0 0 1-.939-.813 3.957 3.957 0 0 0-.095-1.44Z"
+          clipRule="evenodd"
+        />
+        <path d="M12.932 4.708c1.107 0 2.136.333 2.993.903a.24.24 0 0 1 .032.371l-.728.728a.261.261 0 0 1-.317.036 3.91 3.91 0 0 0-5.504 1.676.75.75 0 0 1-.947.373 4.375 4.375 0 0 0-3.708 7.906c.152.086.19.295.067.419l-.724.723a.243.243 0 0 1-.299.038A5.875 5.875 0 0 1 8.38 7.195a5.405 5.405 0 0 1 4.552-2.487Z" />
+      </svg>
+    ),
 
     // ===== ICONOS ESPECÍFICOS PARA MODALES =====
     
@@ -259,11 +289,11 @@ export const SystemIcons = {
     ),
 
     /** Círculo con check - Para mensajes de éxito */
-    checkCircle: ({ className, size, color = 'var(--icon-check)' }: IconProps) => (
+    checkCircle: ({ className, size }: IconProps) => (
       <svg
         className={`${getSizeClasses(size)} ${className || ''}`}
         viewBox="0 0 24 24"
-        fill={color}
+        fill="currentColor"
       >
         <path d="M12 2.25A9.75 9.75 0 1 0 21.75 12 9.769 9.769 0 0 0 12 2.25Zm4.64 8.044-5.493 5.25a.76.76 0 0 1-.525.206.722.722 0 0 1-.516-.206L7.36 12.919a.75.75 0 1 1 1.032-1.088l2.23 2.128 4.988-4.753a.75.75 0 0 1 1.032 1.088Z" />
       </svg>
@@ -384,6 +414,33 @@ export const SystemIcons = {
       </svg>
     )
   },
+  // ===== MODALES =====
+  modal:{
+    document: ({ className, size, color }: IconProps) => (
+      <svg
+        className={`${getSizeClasses(size)} ${className || ''}`}
+        viewBox="0 0 24 24"
+        fill={color || "currentColor"}
+      >
+        <path d="M15.75 13a.75.75 0 0 0-.75-.75H9a.75.75 0 0 0 0 1.5h6a.75.75 0 0 0 .75-.75Z" />
+        <path d="M15.75 17a.75.75 0 0 0-.75-.75H9a.75.75 0 0 0 0 1.5h6a.75.75 0 0 0 .75-.75Z" />
+        <path
+          fillRule="evenodd"
+          d="M7 2.25A2.75 2.75 0 0 0 4.25 5v14A2.75 2.75 0 0 0 7 21.75h10A2.75 2.75 0 0 0 19.75 19V7.968c0-.381-.124-.751-.354-1.055l-2.998-3.968a1.75 1.75 0 0 0-1.396-.695H7ZM5.75 5c0-.69.56-1.25 1.25-1.25h7.25v4.397c0 .414.336.75.75.75h3.25V19c0 .69-.56 1.25-1.25 1.25H7c-.69 0-1.25-.56-1.25-1.25V5Z"
+          clipRule="evenodd"
+        />
+      </svg>
+    ),
+    key: ({ className, size, color }: IconProps) => (
+      <svg
+        className={`${getSizeClasses(size)} ${className || ''}`}
+        viewBox="0 0 24 24"
+        fill={color || "currentColor"}
+      >
+          <path d="M12 2.25A9.75 9.75 0 1 0 21.75 12 9.769 9.769 0 0 0 12 2.25Zm0 18A8.25 8.25 0 1 1 20.25 12 8.26 8.26 0 0 1 12 20.25Zm1.725-7.669 1.172 2.728a1.125 1.125 0 0 1-1.031 1.566h-3.732a1.125 1.125 0 0 1-1.03-1.566l1.171-2.728a3 3 0 0 1 .822-5.315 3 3 0 0 1 2.628 5.315Z" />
+      </svg>
+    ),
+  },
   // ===== ESTRUCTURA DEL REPOSITORIO =====
   structure: {
     trashCan: ({ className, size, color }: IconProps) => (
@@ -454,6 +511,7 @@ export const getIconByName = (iconName: string, size: IconProps['size'] = 'md'):
     'edit-alt': () => SystemIcons.actions.edit({ size }),
     'trash': () => SystemIcons.actions.delete({ size }),
     'eye': () => SystemIcons.actions.view({ size }),
+    'power': () => SystemIcons.actions.power({ size }),
 
     // Users
     'user': () => SystemIcons.users.user({ size }),
@@ -481,6 +539,8 @@ export const getIconByName = (iconName: string, size: IconProps['size'] = 'md'):
     'exclamation-triangle': () => SystemIcons.interface.alert({ size }),
     'information-circle': () => SystemIcons.interface.informationCircle({ size }),
     'check-circle': () => SystemIcons.interface.checkCircle({ size }),
+    'key': () => SystemIcons.modal.key({ size }),
+    'document': () => SystemIcons.modal.document({ size }),
 
     // Repository
     'box-archive': () => SystemIcons.repository.boxArchive({ size })

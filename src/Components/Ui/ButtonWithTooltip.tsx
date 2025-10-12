@@ -18,7 +18,7 @@ import React from 'react';
 import { Button, Tooltip, TooltipContent, TooltipTrigger } from '@/components/index';
 import type { ComponentSize } from '@/constants/ComponentSizes';
 
-type ButtonVariant = 'primary' | 'secondary' | 'tertiary' | 'outline' | 'ghost' | 'transparent' | 'success' | 'tableView' | 'tableEdit' | 'tableDelete';
+type ButtonVariant = 'primary' | 'secondary' | 'tertiary' | 'outline' | 'ghost' | 'transparent' | 'success' | 'tableView' | 'tableEdit' | 'tableDelete' | 'tablePower' | 'tablePowerInactive';
 type TooltipPosition = 'top' | 'bottom' | 'left' | 'right';
 
 interface ButtonWithTooltipProps extends Omit<React.ButtonHTMLAttributes<HTMLButtonElement>, 'title'> {

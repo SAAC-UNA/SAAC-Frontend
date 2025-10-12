@@ -23,16 +23,14 @@ export const ScreenContainer: React.FC<ScreenContainerProps> = ({
 
   // Función para calcular padding responsivo
   const getFormPadding = () => {
-    // Mobile: p-4, Tablet: p-5, Desktop: p-6
-    return 'p-4 sm:p-5 lg:p-6';
+    // Padding interno consistente para todos los casos
+    return 'p-4 sm:p-6 lg:p-8';
   };
 
   // Función para calcular el contenedor externo
   const getOuterContainer = () => {
-    if (variant === 'full-width') {
-      return 'w-full px-4 pt-2 pb-8'; // Menos padding arriba para full-width
-    }
-    return 'max-w-7xl mx-auto px-4 pt-2 pb-8'; // Menos padding arriba, más abajo
+    // Ancho máximo consistente, sin padding extra
+    return 'max-w-7xl mx-auto';
   };
 
   // Si no se muestra header y es full-width, retornar solo el contenido

@@ -1,6 +1,7 @@
 import React from 'react';
 import { SidebarProvider } from '@/context/SidebarContext';
 import { ModernSidebar, MainContent, AppHeader } from './Sidebar/Index';
+import { ToastContainer } from '@/Components/Ui/Toast';
 
 /**
  * COMPONENTE DE LAYOUT BASE
@@ -43,13 +44,16 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
         <ModernSidebar />
         <MainContent>
           <AppHeader />
-          <div className="flex-1 p-1 flex justify-center items-start">
-            <div className="w-full flex justify-center">
+          <div className="flex-1 flex justify-center items-start">
+            <div className="container mx-auto px-4 py-8 w-full flex justify-center">
               {children}
             </div>
           </div>
         </MainContent>
       </div>
+      
+      {/* Container de toasts */}
+      <ToastContainer />
     </SidebarProvider>
   );
 };

@@ -1,5 +1,8 @@
 /**
  * DeleteConfirmationModal - Modal de confirmación para operaciones de eliminación
+ * 
+ * Utiliza el componente Modal base con variant="danger" o "warning".
+ * Los botones tienen ancho fijo de 128px (standardWidth={true}) por estandarización.
  */
 
 import React from 'react';
@@ -16,6 +19,8 @@ interface DeleteConfirmationModalProps {
   cancelLabel?: string;
   isLoading?: boolean;
   variant?: 'danger' | 'warning';
+  description?: string;
+  hideDefaultDangerMessage?: boolean;
 }
 
 export const DeleteConfirmationModal: React.FC<DeleteConfirmationModalProps> = ({
@@ -28,20 +33,19 @@ export const DeleteConfirmationModal: React.FC<DeleteConfirmationModalProps> = (
   confirmLabel = 'Eliminar',
   cancelLabel = 'Cancelar',
   isLoading = false,
-  variant = 'danger'
+  variant = 'danger',
+  description,
+  hideDefaultDangerMessage = false
 }) => {
   const defaultMessage = itemName
-    ? `¿Está seguro de que desea eliminar "${itemName}"?`
+    ? (
+        <>
+          ¿Está seguro de que desea eliminar "<span className="font-bold">{itemName}</span>"?
+        </>
+      )
     : '¿Está seguro de que desea eliminar este elemento?';
 
   const finalMessage = message || defaultMessage;
-
-  // Mensaje adicional solo para danger
-  const additionalMessage = variant === 'danger' ? (
-    <p className="text-xs text-rojo-una mt-2">
-      Esta acción no se puede deshacer.
-    </p>
-  ) : null;
 
   return (
     <Modal
@@ -49,6 +53,7 @@ export const DeleteConfirmationModal: React.FC<DeleteConfirmationModalProps> = (
       onClose={onClose}
       onConfirm={onConfirm}
       variant={variant}
+      hideDefaultDangerMessage={hideDefaultDangerMessage}
       title={title}
       message={finalMessage}
       confirmLabel={confirmLabel}
@@ -57,7 +62,13 @@ export const DeleteConfirmationModal: React.FC<DeleteConfirmationModalProps> = (
       showCancel={true}
       showConfirm={true}
     >
-      {additionalMessage}
+      {description && (
+        <div className="mt-4 p-3 bg-[var(--bg-error)] border border-[var(--border-error)] rounded-lg">
+          <p className="text-sm text-[var(--text-error)]">
+            {description}
+          </p>
+        </div>
+      )}
     </Modal>
   );
 };
