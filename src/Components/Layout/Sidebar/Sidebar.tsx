@@ -3,8 +3,8 @@ import { useSidebar } from '@/context/SidebarContext';
 import { ModernSidebarItem } from './SidebarItem';
 import { navigationItems } from '@/Navigation';
 import { cn } from '@/utils/ClassNames';
-import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from '@/components/Ui/Sheet';
-import { TooltipProvider } from '@/components/Ui/Tooltip';
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from '@/Components/Ui/Sheet';
+import { TooltipProvider } from '@/Components/Ui/Tooltip';
 
 interface SidebarProps {
   side?: 'left' | 'right';

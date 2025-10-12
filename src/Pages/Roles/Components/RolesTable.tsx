@@ -174,7 +174,6 @@ export const RolesTable: React.FC<RolesTableProps> = ({
         );
     }
     
-    {/* TODO: Renderizar por qué w-full aquí sí sirve y en CreateRoleForms no, ese estilo debe ser unificado*/ }
     return (
 
         <div className="w-full">

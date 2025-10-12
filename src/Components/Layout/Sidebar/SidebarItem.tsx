@@ -2,7 +2,7 @@ import React from 'react';
 import type { NavItem } from '@/types/CommonTypes';
 import { cn } from '@/utils/ClassNames';
 import { useNavigationItems } from '@/hooks/UseNavigation';
-import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/Ui/Tooltip';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/Components/Ui/Tooltip';
 import { getIconByName } from '@/Components/Ui/Icons/SystemIcons';
 
 interface ModernSidebarItemProps {

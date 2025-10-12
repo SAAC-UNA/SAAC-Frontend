@@ -1,6 +1,6 @@
 import React from 'react';
-import { PageHeader, ScreenContainer } from '@/components/Ui/Index';
-import { useModuleInfo } from '@/hooks/UseModuleInfo';
+import { PageHeader, ScreenContainer } from '@/Components/Ui/Index';
+import { useModuleInfo } from '@/Hooks/UseModuleInfo';
 
 const HomePage: React.FC = () => {
   const { title, description } = useModuleInfo('home');

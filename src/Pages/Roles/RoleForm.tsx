@@ -19,8 +19,9 @@ import { LoadingSpinner, Button, PageErrorState } from '@/components/Ui/Index';
 import { CreateConfirmationModal } from '@/Components/Ui/CreateConfirmationModal';
 import { EditConfirmationModal } from '@/Components/Ui/EditConfirmationModal';
 import { SuccessModal } from '@/Components/Ui/SuccessModal';
+import { ScreenContainer } from '@/Components/Ui/ScreenContainer';
 import { useRoles } from '@/hooks/UseRoles';
-import { MODULE_INFO } from '@/Constants/ModuleInfo';
+import { getModuleInfoWithDynamicTitle } from '@/Constants/ModuleInfo';
 import type { CreateRoleData, Role } from '@/Services/RoleService';
 
 const RoleForm: React.FC = () => {
@@ -88,13 +89,9 @@ const RoleForm: React.FC = () => {
    * Obtiene la información del módulo según el modo
    */
   const getModuleInfo = () => {
-    if (isEditing) {
-      return {
-        title: role ? `Editar Rol: ${role.name}` : 'Editar Rol',
-        description: 'Modifica la información del rol seleccionado y sus permisos asignados'
-      };
-    }
-    return MODULE_INFO.roles_create;
+    const action = isEditing ? 'edit' : 'create';
+    const itemName = role?.name;
+    return getModuleInfoWithDynamicTitle('roles', action, itemName);
   };
 
   /**
@@ -181,7 +178,6 @@ const RoleForm: React.FC = () => {
       return (
         <div className="text-center py-12">
           <LoadingSpinner size="lg" className="mx-auto mb-4" />
-          <p className="text-gris-una">Cargando información del rol...</p>
         </div>
       );
     }
@@ -216,19 +212,11 @@ const RoleForm: React.FC = () => {
     const moduleInfo = getModuleInfo();
     
     return (
-      <div className="w-full bg-blanco-una-2 rounded-lg shadow-lg border border-gris-una/20 transition-all duration-300 min-h-fit max-w-7xl mx-auto">
-        {/* Header */}
-        <div className="p-4 sm:p-5 lg:p-6">
-          <h1 className="font-bold text-negro-una mb-2 text-xl lg:text-2xl">
-            {moduleInfo.title}
-          </h1>
-          <p className="text-gris-una text-sm lg:text-base">
-            {moduleInfo.description}
-          </p>
-        </div>
-        
-        {/* Línea divisoria superior */}
-        <hr className="border-0 border-t border-gris-una/20 mx-6" />
+      <ScreenContainer
+              title={moduleInfo.title}
+              description={moduleInfo.description}
+              variant="full-width"
+            >
         
         {/* Contenido del formulario */}
         <div className="p-4 sm:p-5 lg:p-6">
@@ -271,7 +259,7 @@ const RoleForm: React.FC = () => {
             </Button>
           </div>
         </div>
-      </div>
+      </ScreenContainer>
     );
   };
 

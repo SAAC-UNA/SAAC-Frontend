@@ -12,13 +12,13 @@ import { UserDetailsModal } from './Components/UserDetailsModal';
 import { EditConfirmationModal } from '@/Components/Ui/EditConfirmationModal';
 import { DeleteConfirmationModal } from '@/Components/Ui/DeleteConfirmationModal';
 import { ScreenContainer } from '@/Components/Ui/ScreenContainer';
-import { MODULE_INFO } from '@/Constants/ModuleInfo';
+import { getContextualInfo } from '@/Constants/ModuleInfo';
 import { useUsers } from '@/Hooks/UseUsers';
 import type { User } from '@/Services/UserService';
 
 const UsersRepository: React.FC = () => {
   // Obtener información del módulo desde ModuleInfo
-  const moduleInfo = MODULE_INFO.users;
+  const moduleInfo = getContextualInfo('users', 'list');
   const navigate = useNavigate();
 
   // Usar el hook de usuarios
@@ -88,7 +88,7 @@ const UsersRepository: React.FC = () => {
   };
 
   return (
-    <>
+
       <ScreenContainer
         title={moduleInfo.title}
         description={moduleInfo.description}
@@ -99,7 +99,7 @@ const UsersRepository: React.FC = () => {
             onEdit={handleEditUser}
             onState={handleChangeState}
           />
-        </ScreenContainer>
+
 
         {/* Modal de detalles del usuario */}
         <UserDetailsModal
@@ -140,7 +140,7 @@ const UsersRepository: React.FC = () => {
             description="Al desactivar este usuario, se revocará su acceso al sistema. Esta acción puede ser revertida en el futuro."
           />
         )}
-    </>
+        </ScreenContainer>
   );
 };
 

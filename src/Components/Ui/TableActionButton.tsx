@@ -12,7 +12,7 @@
  */
 
 import React from 'react';
-import { SystemIcons } from '@/components/Ui/Icons/SystemIcons';
+import { SystemIcons } from '@/Components/Ui/Icons/SystemIcons';
 import { ButtonWithTooltip } from './ButtonWithTooltip';
 
 export type TableActionType = 'view' | 'edit' | 'delete' | 'power' | 'add' | 'search' | 'roles' | 'users' | 'custom';

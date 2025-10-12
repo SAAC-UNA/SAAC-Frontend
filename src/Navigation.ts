@@ -10,6 +10,7 @@ const trashIcon = 'system-icon:trash-can';
 const editIcon = 'system-icon:edit-element';
 const boxIcon = 'system-icon:box-archive';
 const userIcon = 'system-icon:user';
+const evidenceIcon = 'system-icon:shield';
 
 /**
  * isActive: true // Es la página actual
@@ -52,6 +53,13 @@ export const navigationItems: NavItem[] = [
     label: 'Usuarios',
     icon: userIcon,
     href: '/usuarios/listar',
+    isActive: false,
+  },
+  {
+    id: 'evidenciasAsignar',
+    label: 'Asignar Evidencias',
+    icon: evidenceIcon,
+    href: '/evidencias/asignar',
     isActive: false,
   },
   {

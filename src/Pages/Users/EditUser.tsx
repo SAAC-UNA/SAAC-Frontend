@@ -18,11 +18,12 @@ import { LoadingSpinner, PageErrorState, ScreenContainer } from '@/components/Ui
 import { SuccessModal } from '@/Components/Ui/SuccessModal';
 import { userService } from '@/Services/UserService';
 import type { User } from '@/Services/UserService';
+import { getModuleInfoWithDynamicTitle } from '@/Constants/ModuleInfo';
 
 const EditUserPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  
+
   // Estados para el usuario
   const [user, setUser] = useState<User | null>(null);
   const [isLoadingUser, setIsLoadingUser] = useState(true);
@@ -145,11 +146,14 @@ const EditUserPage: React.FC = () => {
     );
   }
 
+  // Obtener información del módulo dinámicamente
+  const moduleInfo = getModuleInfoWithDynamicTitle('users', 'edit', user.name);
+
   return (
-    <>
-      <ScreenContainer
-        title={`Editar Usuario: ${user.name}`}
-        description="Gestiona los roles y permisos del usuario"
+    <ScreenContainer
+        title={moduleInfo.title}
+        description={moduleInfo.description}
+        variant="full-width"
       >
         {/* Formulario de edición */}
         <EditUserForm
@@ -157,7 +161,6 @@ const EditUserPage: React.FC = () => {
           onSubmit={handleUserUpdated}
           onCancel={handleCancel}
         />
-      </ScreenContainer>
 
       {/* Modal de éxito */}
       <SuccessModal
@@ -166,7 +169,7 @@ const EditUserPage: React.FC = () => {
         title="Usuario Actualizado"
         message={`El usuario "${successModalState.userName}" ha sido actualizado correctamente.`}
       />
-    </>
+    </ScreenContainer>
   );
 };
 

@@ -8,7 +8,7 @@ interface ScreenContainerProps {
   description?: string;
   showHeader?: boolean;
   className?: string;
-  variant?: 'default' | 'full-width';
+  variant?: 'default' | 'full-width' | 'extra-wide';
 }
 
 export const ScreenContainer: React.FC<ScreenContainerProps> = ({

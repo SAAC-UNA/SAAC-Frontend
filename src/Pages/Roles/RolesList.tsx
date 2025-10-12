@@ -11,14 +11,14 @@ import { ScreenContainer } from '@/Components/Ui/ScreenContainer';
 import { DeleteConfirmationModal } from '@/Components/Ui/DeleteConfirmationModal';
 import { PermissionsModal } from '@/Components/Ui/PermissionsRoleModal';
 import { useRoles } from '@/Hooks/UseRoles';
-import { MODULE_INFO } from '@/Constants/ModuleInfo';
+import { getContextualInfo } from '@/Constants/ModuleInfo';
 import type { Role } from '@/Services/RoleService';
 
 const RolesRepository: React.FC = () => {
   const { deleteRole } = useRoles();
   
   // Obtener información del módulo desde ModuleInfo
-  const moduleInfo = MODULE_INFO.roles;
+  const moduleInfo = getContextualInfo('roles', 'list');
   
   // Estado para el modal de confirmación de eliminación
   const [deleteModalState, setDeleteModalState] = useState<{
