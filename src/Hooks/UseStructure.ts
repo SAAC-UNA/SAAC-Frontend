@@ -36,6 +36,8 @@ interface UseStructureReturn {
   createElement: (elementData: CreateElementForm) => Promise<StructureElement | null>;
   editElement: (elementType: ElementType, elementId: string, elementData: EditElementForm) => Promise<StructureElement | null>;
   deleteElement: (elementType: ElementType, elementId: string) => Promise<boolean>;
+  activateElement: (elementType: ElementType, elementId: string) => Promise<boolean>;
+  deactivateElement: (elementType: ElementType, elementId: string) => Promise<boolean>;
   clearError: () => void;
 }
 
@@ -132,6 +134,54 @@ const deleteElement = useCallback(async (elementType: ElementType, elementId: st
   }
 }, []);
 
+/**
+   * Activar un elemento
+   */
+  const activateElement = async (elementType: ElementType, elementId: string): Promise<boolean> => {
+    setIsLoading(true);
+    setError(null);
+
+    try {
+      await structureService.setActive(elementType, elementId, true);
+      
+      // Recargar el árbol completo después de activar
+      await loadTree();
+      
+      return true;
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'Error al activar elemento';
+      setError(errorMessage);
+      console.error('Error activando elemento:', err);
+      return false;
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  /**
+   * Desactivar un elemento
+   */
+  const deactivateElement = async (elementType: ElementType, elementId: string): Promise<boolean> => {
+    setIsLoading(true);
+    setError(null);
+
+    try {
+      await structureService.setActive(elementType, elementId, false);
+      
+      // Recargar el árbol completo después de desactivar
+      await loadTree();
+      
+      return true;
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'Error al desactivar elemento';
+      setError(errorMessage);
+      console.error('Error desactivando elemento:', err);
+      return false;
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   /**
    * Cargar estructura en forma de árbol
    */
@@ -168,6 +218,8 @@ const deleteElement = useCallback(async (elementType: ElementType, elementId: st
   createElement,
   editElement,
   deleteElement,
-  clearError,
+  activateElement,
+  deactivateElement,
+  clearError
 };
 };

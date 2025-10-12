@@ -26,11 +26,13 @@ import type { StructureElement, ElementType } from '@/Types/StructureTypes';
 import { SystemIcons } from '@/Components/Ui/Icons/SystemIcons';
 import { CustomSelect } from '@/Components/Ui/SingleSelect';
 import type { SelectOption } from '@/Types/StructureTypes';
+import { TableActionButton } from '@/Components/Ui/TableActionButton';
 
 
 interface StructureTableProps {
     onEdit?: (element: StructureElement) => void;
     onDelete?: (element: StructureElement) => void;
+    onToggleActive?: (element: StructureElement) => void;
     onCreate?: () => void;
     itemsPerPage?: number;
     unstyled?: boolean;
@@ -39,6 +41,7 @@ interface StructureTableProps {
 export const StructureTable: React.FC<StructureTableProps> = ({
     onEdit,
     onDelete,
+    onToggleActive,
     onCreate,
     itemsPerPage = 4,
     unstyled = false
@@ -175,43 +178,72 @@ useEffect(() => {
             )
         },
         {
-            key: 'actions',
-            header: 'Acciones',
-            align: 'center',
-            render: (_, element) => (
-                <div className="flex items-center justify-center gap-2 pr-2">
-                    <ButtonWithTooltip
-                        variant="tableView"
-                        size="sm"
-                        tooltip="Ver detalles"
-                        onClick={() => setModalState({ isOpen: true, element })}
-                        className="h-8 w-8 p-2"
-                    >
-                        <SystemIcons.actions.view className="w-4 h-4" />
-                    </ButtonWithTooltip>
-                    
-                    <ButtonWithTooltip
-                        variant="tableEdit"
-                        size="sm"
-                        tooltip="Editar elemento"
-                        onClick={() => onEdit?.(element)}
-                        className="h-8 w-8 p-2"
-                    >
-                        <SystemIcons.actions.edit className="w-4 h-4" />
-                    </ButtonWithTooltip>
-                    
-                    <ButtonWithTooltip
-                        variant="tableDelete"
-                        size="sm"
-                        tooltip="Eliminar elemento"
-                        onClick={() => onDelete?.(element)}
-                        className="h-8 w-8 p-2"
-                    >
-                        <SystemIcons.actions.delete className="w-4 h-4" />
-                    </ButtonWithTooltip>
-                </div>
-            )
-        }
+    key: 'actions',
+    header: 'Acciones',
+    align: 'center',
+    render: (_, element) => {
+        // Lógica para bloquear botones
+        const canDelete = !element.hasChildren; // Solo puede eliminar si NO tiene hijos
+        const canActivate = element.active || !element.parentElement || element.parentElement.active; // Puede activar si ya está activo, o si no tiene padre, o si el padre está activo
+        
+        return (
+            <div className="flex items-center justify-center gap-2 pr-2">
+                {/* Botón Ver */}
+                <ButtonWithTooltip
+                    variant="tableView"
+                    size="sm"
+                    tooltip="Ver detalles"
+                    onClick={() => setModalState({ isOpen: true, element })}
+                    className="h-8 w-8 p-2"
+                >
+                    <SystemIcons.actions.view className="w-4 h-4" />
+                </ButtonWithTooltip>
+                
+                {/* Botón Editar */}
+                <ButtonWithTooltip
+                    variant="tableEdit"
+                    size="sm"
+                    tooltip="Editar elemento"
+                    onClick={() => onEdit?.(element)}
+                    className="h-8 w-8 p-2"
+                >
+                    <SystemIcons.actions.edit className="w-4 h-4" />
+                </ButtonWithTooltip>
+                
+                {/* Botón Power - Activar/Desactivar */}
+                <TableActionButton
+                    action="power"
+                    isActive={element.active}
+                    tooltip={
+                        !canActivate 
+                            ? "No se puede activar: el padre está inactivo"
+                            : element.active 
+                                ? "Desactivar elemento" 
+                                : "Activar elemento"
+                    }
+                    onClick={() => onToggleActive?.(element)}
+                    disabled={!canActivate}
+                />
+                
+                {/* Botón Eliminar */}
+                <ButtonWithTooltip
+                    variant="tableDelete"
+                    size="sm"
+                    tooltip={
+                        canDelete 
+                            ? "Eliminar elemento" 
+                            : "No se puede eliminar: tiene elementos dependientes"
+                    }
+                    onClick={() => onDelete?.(element)}
+                    className="h-8 w-8 p-2"
+                    disabled={!canDelete}
+                >
+                    <SystemIcons.actions.delete className="w-4 h-4" />
+                </ButtonWithTooltip>
+            </div>
+        );
+    }
+}
     ];
 
     // Opciones para el filtro de tipo

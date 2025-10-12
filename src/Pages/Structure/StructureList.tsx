@@ -12,16 +12,27 @@ import { Modal } from '@/Components/Ui/Modal';
 import { MODULE_INFO } from '@/Constants/ModuleInfo';
 import type { StructureElement } from '@/Types/StructureTypes';
 import { useStructure } from '@/Hooks/UseStructure';
+import { EditConfirmationModal } from '@/Components/Ui/EditConfirmationModal';
+import { DeleteConfirmationModal } from '@/Components/Ui/DeleteConfirmationModal';
 
 const StructureList: React.FC = () => {
   
   // Obtener información del módulo desde ModuleInfo
   const moduleInfo = MODULE_INFO.structure;
   
-const { isLoading, deleteElement } = useStructure();
+const { isLoading, deleteElement, activateElement, deactivateElement, loadTree } = useStructure();
 
   // Estado para el modal de confirmación de eliminación
   const [deleteModalState, setDeleteModalState] = useState<{
+    isOpen: boolean;
+    element: StructureElement | null;
+  }>({
+    isOpen: false,
+    element: null
+  });
+
+  // Estado para el modal de confirmación de activar/desactivar
+  const [toggleActiveModalState, setToggleActiveModalState] = useState<{
     isOpen: boolean;
     element: StructureElement | null;
   }>({
@@ -39,6 +50,15 @@ const { isLoading, deleteElement } = useStructure();
       isOpen: true,
       element
     });
+  };
+
+  const handleToggleActive = (element: StructureElement) => {
+    console.log('🔥 handleToggleActive llamado con:', element);
+    setToggleActiveModalState({
+      isOpen: true,
+      element
+    });
+    console.log('📋 Estado del modal después de setear:', { isOpen: true, element });
   };
 
   const confirmDeleteElement = async () => {
@@ -60,11 +80,39 @@ const { isLoading, deleteElement } = useStructure();
     setDeleteModalState({ isOpen: false, element: null });
   };
 
+  const confirmToggleActive = async () => {
+    if (!toggleActiveModalState.element) return;
+
+    const element = toggleActiveModalState.element;
+    
+    try {
+      if (element.active) {
+        // Desactivar elemento
+        await deactivateElement(element.type, element.id);
+      } else {
+        // Activar elemento
+        await activateElement(element.type, element.id);
+      }
+      
+      setToggleActiveModalState({ isOpen: false, element: null });
+      loadTree(); // Recargar datos
+      
+    } catch (error) {
+      console.error('Error al cambiar estado del elemento:', error);
+    }
+  };
+
+  const cancelToggleActive = () => {
+    setToggleActiveModalState({ isOpen: false, element: null });
+  };
+
   const handleCreateElement = () => {
     window.location.href = '/estructura/crear';
   };
 
-  return (
+  console.log('🎯 Estado toggleActiveModalState:', toggleActiveModalState);
+
+ return (
     <div className="container mx-auto px-4 py-8">
       <ScreenContainer
         title={moduleInfo.title}
@@ -73,6 +121,7 @@ const { isLoading, deleteElement } = useStructure();
         <StructureTable
           onEdit={handleEditElement}
           onDelete={handleDeleteElement}
+          onToggleActive={handleToggleActive}
           onCreate={handleCreateElement}
         />
       </ScreenContainer>
@@ -109,6 +158,34 @@ const { isLoading, deleteElement } = useStructure();
           </div>
         </div>
       </Modal>
+      {/* Modal de confirmación para ACTIVAR */}
+      <EditConfirmationModal
+        isOpen={toggleActiveModalState.isOpen && toggleActiveModalState.element !== null && !toggleActiveModalState.element.active}
+        onClose={cancelToggleActive}
+        onConfirm={confirmToggleActive}
+        title="Confirmar activación"
+        message={`¿Está seguro de que desea activar el elemento "${toggleActiveModalState.element?.name || toggleActiveModalState.element?.nomenclature}"?`}
+        confirmLabel="Activar"
+        cancelLabel="Cancelar"
+        variant="info"
+        isLoading={isLoading}
+        description="Al activar este elemento, volverá a estar disponible para su uso en el sistema."
+      />
+
+      {/* Modal de confirmación para DESACTIVAR */}
+      <DeleteConfirmationModal
+        isOpen={toggleActiveModalState.isOpen && toggleActiveModalState.element !== null && toggleActiveModalState.element.active}
+        onClose={cancelToggleActive}
+        onConfirm={confirmToggleActive}
+        title="Confirmar desactivación"
+        message={`¿Está seguro de que desea desactivar el elemento "${toggleActiveModalState.element?.name || toggleActiveModalState.element?.nomenclature}"?`}
+        confirmLabel="Desactivar"
+        cancelLabel="Cancelar"
+        variant="warning"
+        hideDefaultDangerMessage={true}
+        isLoading={isLoading}
+        description="Al desactivar este elemento, dejará de estar disponible en el sistema. Esta acción es reversible."
+      />
     </div>
   );
 };
