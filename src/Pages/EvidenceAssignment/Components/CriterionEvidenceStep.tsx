@@ -32,9 +32,12 @@ export const CriterionEvidenceStep: React.FC<CriterionEvidenceStepProps> = ({
   const [criteria, setCriteria] = useState<Criterion[]>([]);
   const [evidences, setEvidences] = useState<Evidence[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [dataLoaded, setDataLoaded] = useState(false); // Evitar múltiples cargas
 
-  // Cargar datos iniciales
+  // Cargar datos iniciales solo una vez
   useEffect(() => {
+    if (dataLoaded) return; // Evitar múltiples llamadas
+    
     const loadData = async () => {
       try {
         setIsLoading(true);
@@ -47,6 +50,7 @@ export const CriterionEvidenceStep: React.FC<CriterionEvidenceStepProps> = ({
         setProcesses(processesData);
         setCriteria(criteriaData);
         setEvidences(evidencesData);
+        setDataLoaded(true);
         
         // Auto-seleccionar el primer proceso disponible (proceso activo)
         if (processesData.length > 0 && !formData.proceso_id) {
@@ -62,7 +66,7 @@ export const CriterionEvidenceStep: React.FC<CriterionEvidenceStepProps> = ({
     };
 
     loadData();
-  }, []);
+  }, [dataLoaded]); // Solo depender de dataLoaded
 
   // Opciones para el selector de criterios
   const criterionOptions = useMemo(() => {

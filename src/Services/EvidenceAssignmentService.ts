@@ -10,6 +10,7 @@ import type {
   Criterion,
   Process
 } from '@/Types/EvidenceAssignment';
+import { devLog } from '@/Utils/devLogger';
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000/api';
 
@@ -60,9 +61,6 @@ class EvidenceAssignmentService {
    * Crear nuevas asignaciones de evidencias
    */
   async createAssignment(data: EvidenceAssignmentRequest): Promise<EvidenceAssignmentApiResponse> {
-    console.log('🌐 Making POST request to backend with data:', data);
-    
-    // En modo desarrollo, usar mock cuando el backend falla
     const isDevelopment = import.meta.env.DEV;
     
     try {
@@ -76,12 +74,8 @@ class EvidenceAssignmentService {
 
       if (!response.ok) {
         const errorData = await response.json();
-        console.error('❌ Backend validation error:', errorData);
-        console.error('❌ Specific errors:', JSON.stringify(errorData.errors, null, 2));
-        console.error('❌ Response status:', response.status);
-        console.error('❌ Response statusText:', response.statusText);
         
-        // Si estamos en desarrollo y es un error de entidades no encontradas, usar mock
+        // Si estamos en desarrollo y es un error de entidades no encontradas, usar mock silenciosamente
         if (isDevelopment && response.status === 422) {
           const errors = errorData.errors || {};
           const hasEntityNotFoundErrors = 
@@ -89,7 +83,7 @@ class EvidenceAssignmentService {
             (errors.evidencia_id && errors.evidencia_id.some((msg: string) => msg.includes('no existe')));
           
           if (hasEntityNotFoundErrors) {
-            console.warn('🔧 Backend entities not found - Using mock success response for development');
+            devLog.info('Using mock response - backend entities not ready', { once: true });
             return this.createMockAssignmentResponse(data);
           }
         }
@@ -99,9 +93,9 @@ class EvidenceAssignmentService {
 
       return response.json();
     } catch (networkError) {
-      // Si hay error de red y estamos en desarrollo, usar mock
+      // Si hay error de red y estamos en desarrollo, usar mock silenciosamente
       if (isDevelopment) {
-        console.warn('🔧 Network error in development - Using mock success response:', networkError);
+        devLog.info('Using mock response - network unavailable', { once: true });
         return this.createMockAssignmentResponse(data);
       }
       throw networkError;
@@ -224,14 +218,26 @@ class EvidenceAssignmentService {
    * Obtener todos los procesos
    */
   async getAllProcesses(): Promise<Process[]> {
-    const response = await fetch(`${API_BASE_URL}/procesos`);
-    
-    if (!response.ok) {
-      throw new Error('Error al obtener los procesos');
-    }
+    try {
+      const response = await fetch(`${API_BASE_URL}/procesos`);
+      
+      if (!response.ok) {
+        throw new Error('Error al obtener los procesos');
+      }
 
-    const data = await response.json();
-    return data.data || [];
+      const data = await response.json();
+      return data.data || [];
+    } catch (error) {
+      // En desarrollo, suprimir errores de red para evitar spam en consola
+      if (import.meta.env.DEV) {
+        // Solo logueamos si es un error diferente a 404
+        const isNetworkError = error instanceof TypeError;
+        if (isNetworkError) {
+          devLog.info('Endpoint de procesos no disponible, usando fallback', { once: true });
+        }
+      }
+      throw error;
+    }
   }
 
   /**
@@ -277,48 +283,66 @@ class EvidenceAssignmentService {
    */
   
   async getAllProcessesWithFallback(): Promise<Process[]> {
+    const isDevelopment = import.meta.env.DEV;
+    
     try {
       const result = await this.getAllProcesses();
       // Si el API devuelve un array vacío, usar mock data
       if (!result || result.length === 0) {
-        console.log('API de procesos devolvió datos vacíos, usando mock data');
+        if (isDevelopment) {
+          devLog.info('API de procesos devolvió datos vacíos, usando mock data', { once: true });
+        }
         return mockData.processes;
       }
       return result;
     } catch (error) {
-      console.warn('Usando datos mock para procesos:', error);
+      if (isDevelopment) {
+        devLog.info('API de procesos no disponible, usando mock data', { once: true });
+      }
       return mockData.processes;
     }
   }
 
   async getAllCriteriaWithFallback(): Promise<Criterion[]> {
+    const isDevelopment = import.meta.env.DEV;
+    
     try {
       const result = await this.getAllCriteria();
       
       // Si el API devuelve un array vacío, usar mock data
       if (!result || result.length === 0) {
-        console.log('API de criterios devolvió datos vacíos, usando mock data');
+        if (isDevelopment) {
+          devLog.info('API de criterios devolvió datos vacíos, usando mock data', { once: true });
+        }
         return mockData.criteria;
       }
       
       return result;
     } catch (error) {
-      console.warn('Usando datos mock para criterios:', error);
+      if (isDevelopment) {
+        devLog.info('API de criterios no disponible, usando mock data', { once: true });
+      }
       return mockData.criteria;
     }
   }
 
   async getAllEvidencesWithFallback(): Promise<Evidence[]> {
+    const isDevelopment = import.meta.env.DEV;
+    
     try {
       const result = await this.getAllEvidences();
       // Si el API devuelve un array vacío, usar mock data
       if (!result || result.length === 0) {
-        console.log('API de evidencias devolvió datos vacíos, usando mock data');
+        if (isDevelopment) {
+          devLog.info('API de evidencias devolvió datos vacíos, usando mock data', { once: true });
+        }
         return mockData.evidences;
       }
       return result;
     } catch (error) {
-      console.warn('Usando datos mock para evidencias:', error);
+      if (isDevelopment) {
+        devLog.info('API de evidencias no disponible, usando mock data', { once: true });
+      }
       return mockData.evidences;
     }
   }

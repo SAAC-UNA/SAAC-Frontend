@@ -139,6 +139,10 @@ const EvidenceAssignmentWizard: React.FC = () => {
    * Enviar formulario
    */
   const handleSubmit = async () => {
+    if (isSubmitting) {
+      return; // Evitar múltiples envíos
+    }
+    
     if (!validateStep(4)) {
       showToast({
         type: 'error',
@@ -162,7 +166,6 @@ const EvidenceAssignmentWizard: React.FC = () => {
           comentario: formData.comentario || undefined
         };
 
-        console.log('📤 Sending assignment data to backend:', assignmentData);
         await evidenceAssignmentService.createAssignment(assignmentData);
       }
 
