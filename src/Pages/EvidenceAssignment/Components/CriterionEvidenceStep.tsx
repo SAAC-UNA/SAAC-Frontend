@@ -71,7 +71,7 @@ export const CriterionEvidenceStep: React.FC<CriterionEvidenceStepProps> = ({
   // Opciones para el selector de criterios
   const criterionOptions = useMemo(() => {
     return criteria.map(criterion => ({
-      value: criterion.id.toString(),
+      value: criterion.criterio_id.toString(),
       label: `${criterion.nomenclatura} - ${criterion.descripcion}`
     }));
   }, [criteria]);

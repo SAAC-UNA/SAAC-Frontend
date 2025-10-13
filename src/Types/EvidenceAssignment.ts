@@ -3,11 +3,14 @@
  */
 
 export interface Criterion {
-  id: number;
+  criterio_id: number;
   componente_id: number;
   comentario_id?: number;
   descripcion: string;
   nomenclatura: string;
+  activo?: boolean;
+  created_at?: string;
+  updated_at?: string;
 }
 
 export interface Evidence {
@@ -16,6 +19,7 @@ export interface Evidence {
   estado_evidencia_id: number;
   descripcion: string;
   nomenclatura: string;
+  activo?: boolean;
   created_at?: string;
   updated_at?: string;
 }

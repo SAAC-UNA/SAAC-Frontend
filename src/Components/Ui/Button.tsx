@@ -11,7 +11,6 @@
 import React from 'react';
 import { cn } from '@/utils/ClassNames';
 import { getComponentSizeClasses, type ComponentSize } from '@/constants/ComponentSizes';
-import { LoadingSpinner } from './Loading';
 
 /**
  * Variantes disponibles para el componente Button
@@ -159,9 +158,6 @@ export const Button: React.FC<ButtonProps> = ({
       disabled={disabled || isLoading}
       {...props}
     >
-      {isLoading && (
-        <LoadingSpinner variant="spinner" size="sm" color="current" className="mr-2" />
-      )}
       {children}
     </button>
   );

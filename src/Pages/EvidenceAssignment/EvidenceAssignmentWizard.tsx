@@ -9,6 +9,7 @@ import React, { useState } from 'react';
 import { ScreenContainer } from '@/Components/Ui/ScreenContainer';
 import { Button, LoadingSpinner, WizardProgress } from '@/Components/Ui/Index';
 import { SuccessModal } from '@/Components/Ui/SuccessModal';
+import { EditConfirmationModal } from '@/Components/Ui/EditConfirmationModal';
 import { useToast } from '@/Context/ToastContext';
 import { getContextualInfo } from '@/Constants/ModuleInfo';
 import type { 
@@ -30,6 +31,7 @@ const EvidenceAssignmentWizard: React.FC = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errors, setErrors] = useState<ValidationErrors>({});
   const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [showConfirmModal, setShowConfirmModal] = useState(false);
   const [assignedEvidencesCount, setAssignedEvidencesCount] = useState(0);
 
   // Obtener información del módulo desde ModuleInfo
@@ -136,13 +138,9 @@ const EvidenceAssignmentWizard: React.FC = () => {
   };
 
   /**
-   * Enviar formulario
+   * Maneja el envío del formulario (abre modal de confirmación)
    */
-  const handleSubmit = async () => {
-    if (isSubmitting) {
-      return; // Evitar múltiples envíos
-    }
-    
+  const handleFormSubmit = async () => {
     if (!validateStep(4)) {
       showToast({
         type: 'error',
@@ -150,6 +148,18 @@ const EvidenceAssignmentWizard: React.FC = () => {
         message: 'Por favor, revise los datos ingresados'
       });
       return;
+    }
+
+    // Mostrar modal de confirmación
+    setShowConfirmModal(true);
+  };
+
+  /**
+   * Confirma y ejecuta la asignación de evidencias
+   */
+  const handleSubmit = async () => {
+    if (isSubmitting) {
+      return; // Evitar múltiples envíos
     }
 
     setIsSubmitting(true);
@@ -169,7 +179,8 @@ const EvidenceAssignmentWizard: React.FC = () => {
         await evidenceAssignmentService.createAssignment(assignmentData);
       }
 
-      // Guardar el número de evidencias asignadas y mostrar modal de éxito
+      // Cerrar modal de confirmación y mostrar modal de éxito
+      setShowConfirmModal(false);
       setAssignedEvidencesCount(formData.selectedEvidences.length);
       setShowSuccessModal(true);
 
@@ -195,6 +206,13 @@ const EvidenceAssignmentWizard: React.FC = () => {
     } finally {
       setIsSubmitting(false);
     }
+  };
+
+  /**
+   * Cierra el modal de confirmación
+   */
+  const closeConfirmModal = () => {
+    setShowConfirmModal(false);
   };
 
   /**
@@ -268,7 +286,7 @@ const EvidenceAssignmentWizard: React.FC = () => {
               ) : (
                 <Button
                   variant="primary"
-                  onClick={handleSubmit}
+                  onClick={handleFormSubmit}
                   disabled={isSubmitting}
                   standardWidth={true}
                 >
@@ -279,6 +297,18 @@ const EvidenceAssignmentWizard: React.FC = () => {
           )}
         </>
       </div>
+      
+      {/* Modal de confirmación */}
+      <EditConfirmationModal
+        isOpen={showConfirmModal}
+        onClose={closeConfirmModal}
+        onConfirm={handleSubmit}
+        title="Confirmar Asignación de Evidencias"
+        message={`¿Está seguro de que desea asignar ${formData.selectedEvidences.length} evidencia(s)?`}
+        confirmLabel="Asignar"
+        cancelLabel="Cancelar"
+        isLoading={isSubmitting}
+      />
       
       {/* Modal de éxito */}
       <SuccessModal

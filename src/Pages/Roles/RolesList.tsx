@@ -5,7 +5,7 @@
  * entre las diferentes acciones (crear, editar, eliminar).
  */
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { RolesTable } from './Components/RolesTable';
 import { ScreenContainer } from '@/Components/Ui/ScreenContainer';
 import { DeleteConfirmationModal } from '@/Components/Ui/DeleteConfirmationModal';
@@ -15,7 +15,7 @@ import { getContextualInfo } from '@/Constants/ModuleInfo';
 import type { Role } from '@/Services/RoleService';
 
 const RolesRepository: React.FC = () => {
-  const { deleteRole } = useRoles();
+  const { deleteRole, roles, loadRoles, isLoading, error } = useRoles();
   
   // Obtener información del módulo desde ModuleInfo
   const moduleInfo = getContextualInfo('roles', 'list');
@@ -84,6 +84,11 @@ const RolesRepository: React.FC = () => {
     window.location.href = '/roles/crear';
   };
 
+  // Cargar roles al montar el componente
+  useEffect(() => {
+    loadRoles();
+  }, [loadRoles]);
+
   return (
     <>
       <ScreenContainer
@@ -96,6 +101,9 @@ const RolesRepository: React.FC = () => {
             onDelete={handleDeleteRole}
             onCreate={handleCreateRole}
             onViewPermissions={handleViewPermissions}
+            roles={roles}
+            isLoading={isLoading}
+            error={error}
           />
         </ScreenContainer>
 

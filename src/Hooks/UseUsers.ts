@@ -60,21 +60,26 @@ export const useUsers = () => {
     setIsLoading(true);
     setError(null);
 
+    // Actualización optimista ANTES de la llamada
+    setUsers(prevUsers =>
+      prevUsers.map(user =>
+        user.id === userId ? { ...user, status: 'active' as const } : user
+      )
+    );
+
     try {
       // Usar el servicio real del backend
       const response = await userService.activateUser(userId);
-      
-      if (response.data) {
-        setUsers(prevUsers =>
-          prevUsers.map(user =>
-            user.id === userId ? { ...user, status: 'active' as const } : user
-          )
-        );
-      }
-      
       console.log(`Usuario ${userId} activado exitosamente`);
       return response;
     } catch (err) {
+      // Revertir cambio optimista en caso de error
+      setUsers(prevUsers =>
+        prevUsers.map(user =>
+          user.id === userId ? { ...user, status: 'inactive' as const } : user
+        )
+      );
+      
       const errorMessage = err instanceof Error ? err.message : 'Error desconocido al activar usuario';
       setError(errorMessage);
       console.error('Error en activarUsuario:', err);
@@ -91,21 +96,26 @@ export const useUsers = () => {
     setIsLoading(true);
     setError(null);
 
+    // Actualización optimista ANTES de la llamada
+    setUsers(prevUsers =>
+      prevUsers.map(user =>
+        user.id === userId ? { ...user, status: 'inactive' as const } : user
+      )
+    );
+
     try {
       // Usar el servicio real del backend
       const response = await userService.deactivateUser(userId);
-      
-      if (response.data) {
-        setUsers(prevUsers =>
-          prevUsers.map(user =>
-            user.id === userId ? { ...user, status: 'inactive' as const } : user
-          )
-        );
-      }
-      
       console.log(`Usuario ${userId} desactivado exitosamente`);
       return response;
     } catch (err) {
+      // Revertir cambio optimista en caso de error
+      setUsers(prevUsers =>
+        prevUsers.map(user =>
+          user.id === userId ? { ...user, status: 'active' as const } : user
+        )
+      );
+      
       const errorMessage = err instanceof Error ? err.message : 'Error desconocido al desactivar usuario';
       setError(errorMessage);
       console.error('Error en desactivarUsuario:', err);

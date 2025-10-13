@@ -9,28 +9,22 @@ describe('Button', () => {
     expect(screen.getByText('Crear Rol')).toBeInTheDocument();
   });
 
-  it('aplica la variante primaria por defecto', () => {
+  it('aplica la variante primary por defecto', () => {
     render(<Button>Texto</Button>);
     const btn = screen.getByRole('button');
     expect(btn.className).toMatch(/azul-una/);
   });
 
-  it('muestra el spinner cuando isLoading es true', () => {
+  it('deshabilita el botón cuando isLoading es true', () => {
     render(<Button isLoading>Texto</Button>);
-    // Verifica que existe un elemento con role="status" (LoadingSpinner)
-    expect(screen.getByRole('status')).toBeInTheDocument();
+    const button = screen.getByRole('button');
+    expect(button).toBeDisabled();
   });
 
-  it('deshabilita el botón cuando isLoading o disabled es true', () => {
-    render(
-      <>
-        <Button isLoading>Texto</Button>
-        <Button disabled>Texto</Button>
-      </>
-    );
-    const buttons = screen.getAllByRole('button');
-    expect(buttons[0]).toBeDisabled();
-    expect(buttons[1]).toBeDisabled();
+  it('deshabilita el botón cuando disabled es true', () => {
+    render(<Button disabled>Texto</Button>);
+    const button = screen.getByRole('button');
+    expect(button).toBeDisabled();
   });
 
   it('llama onClick cuando se hace click', () => {

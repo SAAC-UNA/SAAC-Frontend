@@ -30,6 +30,10 @@ interface RolesTableProps {
     onViewPermissions?: (role: Role) => void;
     itemsPerPage?: number;
     unstyled?: boolean; // Para usar sin contenedor
+    // Props para datos externos
+    roles?: Role[];
+    isLoading?: boolean;
+    error?: string | null;
 }
 
 export const RolesTable: React.FC<RolesTableProps> = ({
@@ -38,9 +42,17 @@ export const RolesTable: React.FC<RolesTableProps> = ({
     onCreate,
     onViewPermissions,
     itemsPerPage = 4,
-    unstyled = false
+    unstyled = false,
+    roles: externalRoles,
+    isLoading: externalIsLoading,
+    error: externalError
 }) => {
-    const { roles, isLoading, error, loadRoles, clearError } = useRoles();
+    // Usar datos externos si están disponibles, sino usar hook interno
+    const internalHook = useRoles();
+    const roles = externalRoles ?? internalHook.roles;
+    const isLoading = externalIsLoading ?? internalHook.isLoading;
+    const error = externalError ?? internalHook.error;
+    const { loadRoles, clearError } = internalHook;
 
     const [searchQuery, setSearchQuery] = useState('');
     const [filteredRoles, setFilteredRoles] = useState<Role[]>([]);
@@ -52,10 +64,12 @@ export const RolesTable: React.FC<RolesTableProps> = ({
         return text.substring(0, maxLength) + '...';
     };
 
-    // Cargar roles al montar el componente
+    // Cargar roles al montar el componente solo si no se pasan como props
     useEffect(() => {
-        loadRoles();
-    }, []);
+        if (!externalRoles) {
+            loadRoles();
+        }
+    }, [externalRoles]);
 
     // Filtrar roles basado en la búsqueda
     useEffect(() => {

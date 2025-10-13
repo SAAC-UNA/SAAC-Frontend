@@ -305,7 +305,6 @@ export const Modal: React.FC<UnifiedModalProps> = ({
                         variant="primary"
                         onClick={handleConfirm}
                         disabled={confirmLoading}
-                        isLoading={confirmLoading}
                         standardWidth={true}
                       >
                         {confirmLoading ? 'Procesando...' : confirmLabel}

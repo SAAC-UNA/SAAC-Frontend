@@ -16,14 +16,13 @@
 import React, { useState, useEffect } from 'react';
 import { Input, CustomSelect, Button, LoadingSpinner, BackendErrorAlert } from '@/components/Ui/Index';
 import { roleService } from '@/Services/RoleService';
-import { userService } from '@/Services/UserService';
 import type { User } from '@/Services/UserService';
 import type { Role, BackendPermission } from '@/Services/RoleService';
 import type { SelectOption } from '@/components/Ui/SingleSelect';
 
 interface EditUserFormProps {
   user: User;
-  onSubmit?: (userName: string) => void;
+  onSubmit?: (userData: { userId: number; roleName: string; userName: string }) => void;
   onCancel?: () => void;
 }
 
@@ -37,7 +36,7 @@ export const EditUserForm: React.FC<EditUserFormProps> = ({
   const [roles, setRoles] = useState<Role[]>([]);
   const [selectedRole, setSelectedRole] = useState<string>('');
   const [isLoadingRoles, setIsLoadingRoles] = useState(true);
-  const [isSaving, setIsSaving] = useState(false);
+  const [isSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   // Estados para vista previa de permisos
@@ -108,21 +107,17 @@ export const EditUserForm: React.FC<EditUserFormProps> = ({
    * Manejar envío del formulario
    */
   const handleSubmit = async () => {
-    setIsSaving(true);
-    setError(null);
-
-    try {
-      if (selectedRole) {
-        await userService.assignUserRole(user.id, selectedRole);
-      }
-      
-      onSubmit?.(user.name);
-    } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Error asignando rol';
-      setError(errorMessage);
-    } finally {
-      setIsSaving(false);
+    if (!selectedRole) {
+      setError('Debe seleccionar un rol');
+      return;
     }
+
+    // Pasar los datos al componente padre en lugar de hacer la llamada directamente
+    onSubmit?.({
+      userId: user.id,
+      roleName: selectedRole,
+      userName: user.name
+    });
   };
 
   /**
@@ -291,7 +286,6 @@ export const EditUserForm: React.FC<EditUserFormProps> = ({
           variant="primary"
           onClick={handleSubmit}
           disabled={isSaving || !selectedRole}
-          isLoading={isSaving}
           standardWidth={true}
         >
           {isSaving ? 'Guardando...' : 'Guardar'}
