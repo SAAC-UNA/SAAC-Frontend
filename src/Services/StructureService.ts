@@ -254,6 +254,7 @@ class StructureService {
 
       if (!response.ok) {
         const errorData = await response.json();
+        console.error('🔥 ERROR COMPLETO DEL BACKEND:', errorData);
         throw new Error(errorData.errorMessage || `HTTP error! status: ${response.status}`);
       }
 
@@ -384,11 +385,16 @@ class StructureService {
       });
 
       if (!response.ok) {
+        // Si hay error, el backend SÍ devuelve JSON con el mensaje
         const errorData = await response.json();
-        throw new Error(errorData.errorMessage || `HTTP error! status: ${response.status}`);
+        throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
       }
 
-      return await response.json();
+      // 204 No Content no tiene body, así que devolvemos un objeto vacío
+      return {
+        message: 'Elemento eliminado exitosamente',
+        data: null
+      };
     } catch (error) {
       console.error(`Error eliminando ${type} ${id}:`, error);
       throw error;
@@ -396,41 +402,50 @@ class StructureService {
   }
 
   /**
-   * Activar/Desactivar un elemento
-   */
-  async setActive(type: ElementType, id: string, active: boolean): Promise<ApiResponse<StructureElement>> {
-    try {
-      const endpoint = ELEMENT_TYPE_TO_ENDPOINT[type];
-      const response = await fetch(`${this.baseURL}/${endpoint}/${id}/active`, {
-        method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-          'Accept': 'application/json',
-        },
-        body: JSON.stringify({ active }),
-      });
+ * Activar/Desactivar un elemento
+ */
+async setActive(type: ElementType, id: string, active: boolean): Promise<ApiResponse<StructureElement>> {
+  try {
+    const endpoint = ELEMENT_TYPE_TO_ENDPOINT[type];
+    const url = `${this.baseURL}/${endpoint}/${id}/active`;
+    const payload = { active };
+    
+    console.log('🔥 setActive REQUEST:', { url, payload });
+    
+    const response = await fetch(url, {
+      method: 'PATCH',
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+      },
+      body: JSON.stringify(payload),
+    });
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.errorMessage || `HTTP error! status: ${response.status}`);
-      }
+    console.log('🔥 setActive RESPONSE status:', response.status);
 
-      const data = await response.json();
-      
-      if (data.data) {
-        const transformedElement = mapBackendToFrontend(data.data, type);
-        return {
-          ...data,
-          data: transformedElement
-        };
-      }
-
-      return data;
-    } catch (error) {
-      console.error(`Error cambiando estado de ${type} ${id}:`, error);
-      throw error;
+    if (!response.ok) {
+      const errorData = await response.json();
+      console.log('🔥 setActive ERROR data:', errorData);
+      throw new Error(errorData.message || errorData.errorMessage || `HTTP error! status: ${response.status}`);
     }
+
+    const data = await response.json();
+    console.log('🔥 setActive SUCCESS data:', data);
+    
+    if (data.data) {
+      const transformedElement = mapBackendToFrontend(data.data, type);
+      return {
+        ...data,
+        data: transformedElement
+      };
+    }
+
+    return data;
+  } catch (error) {
+    console.error(`Error cambiando estado de ${type} ${id}:`, error);
+    throw error;
   }
+}
 }
 
 // Instancia singleton del servicio

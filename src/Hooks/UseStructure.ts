@@ -135,52 +135,58 @@ const deleteElement = useCallback(async (elementType: ElementType, elementId: st
 }, []);
 
 /**
-   * Activar un elemento
-   */
-  const activateElement = async (elementType: ElementType, elementId: string): Promise<boolean> => {
-    setIsLoading(true);
-    setError(null);
+ * Activar un elemento
+ */
+const activateElement = useCallback(async (elementType: ElementType, elementId: string): Promise<boolean> => {
+  setIsLoading(true);
+  setError(null);
 
-    try {
-      await structureService.setActive(elementType, elementId, true);
-      
-      // Recargar el árbol completo después de activar
-      await loadTree();
-      
-      return true;
-    } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Error al activar elemento';
-      setError(errorMessage);
-      console.error('Error activando elemento:', err);
-      return false;
-    } finally {
-      setIsLoading(false);
+  try {
+    await structureService.setActive(elementType, elementId, true);
+    
+    // Recargar el árbol completo después de activar - llamada directa al servicio
+    const response = await structureService.getFullTree();
+    if (response.data) {
+      setTreeData(response.data);
     }
-  };
+    
+    return true;
+  } catch (err) {
+    const errorMessage = err instanceof Error ? err.message : 'Error al activar elemento';
+    setError(errorMessage);
+    console.error('Error activando elemento:', err);
+    return false;
+  } finally {
+    setIsLoading(false);
+  }
+}, []);
 
-  /**
-   * Desactivar un elemento
-   */
-  const deactivateElement = async (elementType: ElementType, elementId: string): Promise<boolean> => {
-    setIsLoading(true);
-    setError(null);
+/**
+ * Desactivar un elemento
+ */
+const deactivateElement = useCallback(async (elementType: ElementType, elementId: string): Promise<boolean> => {
+  setIsLoading(true);
+  setError(null);
 
-    try {
-      await structureService.setActive(elementType, elementId, false);
-      
-      // Recargar el árbol completo después de desactivar
-      await loadTree();
-      
-      return true;
-    } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Error al desactivar elemento';
-      setError(errorMessage);
-      console.error('Error desactivando elemento:', err);
-      return false;
-    } finally {
-      setIsLoading(false);
+  try {
+    await structureService.setActive(elementType, elementId, false);
+    
+    // Recargar el árbol completo después de desactivar - llamada directa al servicio
+    const response = await structureService.getFullTree();
+    if (response.data) {
+      setTreeData(response.data);
     }
-  };
+    
+    return true;
+  } catch (err) {
+    const errorMessage = err instanceof Error ? err.message : 'Error al desactivar elemento';
+    setError(errorMessage);
+    console.error('Error desactivando elemento:', err);
+    return false;
+  } finally {
+    setIsLoading(false);
+  }
+}, []);
 
   /**
    * Cargar estructura en forma de árbol

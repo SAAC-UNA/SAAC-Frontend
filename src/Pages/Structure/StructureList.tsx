@@ -20,7 +20,8 @@ const StructureList: React.FC = () => {
   // Obtener información del módulo desde ModuleInfo
   const moduleInfo = MODULE_INFO.structure;
   
-const { isLoading, deleteElement, activateElement, deactivateElement, loadTree } = useStructure();
+  const { isLoading, deleteElement, activateElement, deactivateElement, loadTree, treeData } = useStructure();
+  console.log('🗑️ Total elementos en treeData:', treeData.length);
 
   // Estado para el modal de confirmación de eliminación
   const [deleteModalState, setDeleteModalState] = useState<{
@@ -40,6 +41,9 @@ const { isLoading, deleteElement, activateElement, deactivateElement, loadTree }
     element: null
   });
 
+  const [refreshKey, setRefreshKey] = useState(0);
+  const [cascadeChildren, setCascadeChildren] = useState(false);
+
   const handleEditElement = (element: StructureElement) => {
     // Navegar directamente a la página de edición con el ID del elemento
     window.location.href = `/estructura/editar/formulario?id=${element.id}&type=${element.type}`;
@@ -52,13 +56,52 @@ const { isLoading, deleteElement, activateElement, deactivateElement, loadTree }
     });
   };
 
-  const handleToggleActive = (element: StructureElement) => {
-    console.log('🔥 handleToggleActive llamado con:', element);
+  const handleToggleActive = async (element: StructureElement) => {
+    setCascadeChildren(false); // Resetear el checkbox
+    
+    // Cargar los datos si están vacíos
+    if (treeData.length === 0) {
+      console.log('⚠️ treeData vacío, recargando...');
+      await loadTree();
+    }
+    
     setToggleActiveModalState({
       isOpen: true,
       element
     });
-    console.log('📋 Estado del modal después de setear:', { isOpen: true, element });
+  };
+
+  // Verificar si un elemento tiene hijos buscando en todos los elementos
+  const hasChildren = (element: StructureElement): boolean => {
+    console.log('🔍 hasChildren - Estado actual:', {
+      elementId: element.id,
+      elementName: element.name || element.nomenclature,
+      treeDataLength: treeData.length,
+    });
+    
+    // Aplanar el árbol para obtener todos los elementos
+    const flattenTree = (nodes: StructureElement[]): StructureElement[] => {
+      return nodes.reduce((acc, node) => {
+        acc.push(node);
+        if (node.childElements && node.childElements.length > 0) {
+          acc.push(...flattenTree(node.childElements));
+        }
+        return acc;
+      }, [] as StructureElement[]);
+    };
+
+    const allElements = flattenTree(treeData);
+    
+    // Buscar si hay elementos que tengan este elemento como padre
+    const hasChildElements = allElements.some(el => el.parentElementId === element.id);
+    
+    console.log('🔍 hasChildren - Resultado:', {
+      allElementsCount: allElements.length,
+      hasChildElements,
+      childrenFound: allElements.filter(el => el.parentElementId === element.id).map(c => c.name || c.nomenclature)
+    });
+    
+    return hasChildElements;
   };
 
   const confirmDeleteElement = async () => {
@@ -68,6 +111,7 @@ const { isLoading, deleteElement, activateElement, deactivateElement, loadTree }
       
       if (result) {
         setDeleteModalState({ isOpen: false, element: null });
+        setRefreshKey(prev => prev + 1);
         // TODO: Mostrar notificación de éxito
       }
     } catch (error) {
@@ -81,26 +125,114 @@ const { isLoading, deleteElement, activateElement, deactivateElement, loadTree }
   };
 
   const confirmToggleActive = async () => {
-    if (!toggleActiveModalState.element) return;
+  if (!toggleActiveModalState.element) return;
 
-    const element = toggleActiveModalState.element;
-    
-    try {
-      if (element.active) {
-        // Desactivar elemento
-        await deactivateElement(element.type, element.id);
-      } else {
-        // Activar elemento
-        await activateElement(element.type, element.id);
+  const element = toggleActiveModalState.element;
+  
+  try {
+    // Aplanar el árbol una sola vez al inicio
+    const flattenTree = (nodes: StructureElement[]): StructureElement[] => {
+      const result: StructureElement[] = [];
+      const stack = [...nodes];
+      
+      while (stack.length > 0) {
+        const node = stack.pop()!;
+        result.push(node);
+        
+        if (node.childElements && node.childElements.length > 0) {
+          stack.push(...node.childElements);
+        }
       }
       
-      setToggleActiveModalState({ isOpen: false, element: null });
-      loadTree(); // Recargar datos
+      return result;
+    };
+    
+    const allElements = flattenTree(treeData);
+    
+    // Función para encontrar descendientes usando un enfoque iterativo (sin recursión)
+    const getAllDescendants = (parentId: string): StructureElement[] => {
+      const descendants: StructureElement[] = [];
+      const toProcess = [parentId]; // Cola de IDs a procesar
+      const processed = new Set<string>(); // IDs ya procesados
       
-    } catch (error) {
-      console.error('Error al cambiar estado del elemento:', error);
+      while (toProcess.length > 0) {
+        const currentId = toProcess.shift()!;
+        
+        // Evitar procesar el mismo elemento dos veces
+        if (processed.has(currentId)) continue;
+        processed.add(currentId);
+        
+        // Encontrar hijos directos de este elemento
+        const children = allElements.filter(el => el.parentElementId === currentId);
+        
+        for (const child of children) {
+          descendants.push(child);
+          toProcess.push(child.id); // Agregar para procesar sus hijos
+        }
+      }
+      
+      return descendants;
+    };
+    
+    if (element.active) {
+  // ========== DESACTIVAR elemento ==========
+  await deactivateElement(element.type, element.id);
+  
+  // Si está marcado el checkbox, desactivar hijos en cascada
+  if (cascadeChildren) {
+    const descendants = getAllDescendants(element.id);
+    
+    console.log('🔍 DESACTIVANDO EN CASCADA:');
+    console.log('  📦 Total elementos en treeData:', allElements.length);
+    console.log('  👶 Descendientes encontrados:', descendants.length);
+    console.log('  📋 Lista de descendientes:', descendants.map(d => ({
+      id: d.id,
+      type: d.type,
+      name: d.name || d.nomenclature,
+      parentId: d.parentElementId,
+      active: d.active
+    })));
+    
+    // Desactivar todos los descendientes activos
+    for (const descendant of descendants) {
+      if (descendant.active) {
+        console.log(`  ⚡ Desactivando: ${descendant.type} - ${descendant.name || descendant.nomenclature}`);
+        await deactivateElement(descendant.type, descendant.id);
+      }
     }
-  };
+  }
+  
+} else {
+      // ========== ACTIVAR elemento ==========
+      await activateElement(element.type, element.id);
+      
+      // Si está marcado el checkbox, activar hijos inactivos en cascada
+      if (cascadeChildren) {
+        const descendants = getAllDescendants(element.id);
+        
+        // Activar todos los descendientes inactivos
+        for (const descendant of descendants) {
+          if (!descendant.active) {
+            await activateElement(descendant.type, descendant.id);
+          }
+        }
+      }
+    }
+    
+    // Cerrar modal
+    setToggleActiveModalState({ isOpen: false, element: null });
+    setCascadeChildren(false);
+
+    // Recargar el árbol completo desde el backend
+    await loadTree();
+
+    // Forzar re-render de la tabla
+    setRefreshKey(prev => prev + 1);
+    
+  } catch (error) {
+    console.error('Error al cambiar estado del elemento:', error);
+  }
+};
 
   const cancelToggleActive = () => {
     setToggleActiveModalState({ isOpen: false, element: null });
@@ -119,6 +251,7 @@ const { isLoading, deleteElement, activateElement, deactivateElement, loadTree }
         description={moduleInfo.description}
       >
         <StructureTable
+          key={refreshKey}
           onEdit={handleEditElement}
           onDelete={handleDeleteElement}
           onToggleActive={handleToggleActive}
@@ -158,34 +291,112 @@ const { isLoading, deleteElement, activateElement, deactivateElement, loadTree }
           </div>
         </div>
       </Modal>
+
       {/* Modal de confirmación para ACTIVAR */}
-      <EditConfirmationModal
-        isOpen={toggleActiveModalState.isOpen && toggleActiveModalState.element !== null && !toggleActiveModalState.element.active}
-        onClose={cancelToggleActive}
-        onConfirm={confirmToggleActive}
-        title="Confirmar activación"
-        message={`¿Está seguro de que desea activar el elemento "${toggleActiveModalState.element?.name || toggleActiveModalState.element?.nomenclature}"?`}
-        confirmLabel="Activar"
-        cancelLabel="Cancelar"
-        variant="info"
-        isLoading={isLoading}
-        description="Al activar este elemento, volverá a estar disponible para su uso en el sistema."
-      />
+      {toggleActiveModalState.isOpen && toggleActiveModalState.element && !toggleActiveModalState.element.active && (
+        <Modal
+          isOpen={true}
+          onClose={cancelToggleActive}
+          onConfirm={confirmToggleActive}
+          variant="info"
+          hideDefaultDangerMessage={true}
+          title="Confirmar activación"
+          message={
+            <>
+              ¿Está seguro de que desea activar "<span className="font-bold">{toggleActiveModalState.element?.name || toggleActiveModalState.element?.nomenclature}</span>"?
+            </>
+          }
+          confirmLabel="Activar"
+          cancelLabel="Cancelar"
+          confirmLoading={isLoading}
+          showCancel={true}
+          showConfirm={true}
+        >
+          <div className="mt-4 p-3 bg-[var(--bg-info)] border border-[var(--border-info)] rounded-lg">
+            <p className="text-sm text-[var(--text-info)]">
+              Al activar este elemento, volverá a estar disponible para su uso en el sistema.
+            </p>
+          </div>
+
+          {/* Checkbox para activar hijos en cascada */}
+          {(() => {
+            const hasChildrenResult = hasChildren(toggleActiveModalState.element);
+            console.log('🔍 Modal ACTIVAR - hasChildren:', hasChildrenResult);
+            return hasChildrenResult;
+          })() && (
+            <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+              <div className="flex items-start space-x-3">
+                <input
+                  type="checkbox"
+                  id="cascadeChildrenActivate"
+                  checked={cascadeChildren}
+                  onChange={(e) => setCascadeChildren(e.target.checked)}
+                  className="mt-1 h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                />
+                <div className="flex-1">
+                  <label htmlFor="cascadeChildrenActivate" className="text-sm font-medium text-blue-900 cursor-pointer">
+                    Activar también todos los elementos dependientes inactivos
+                  </label>
+                  <p className="text-xs text-blue-700 mt-1">
+                    Al marcar esta opción, se activarán automáticamente todos los elementos inactivos que dependen de este.
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
+        </Modal>
+      )}
 
       {/* Modal de confirmación para DESACTIVAR */}
-      <DeleteConfirmationModal
-        isOpen={toggleActiveModalState.isOpen && toggleActiveModalState.element !== null && toggleActiveModalState.element.active}
-        onClose={cancelToggleActive}
-        onConfirm={confirmToggleActive}
-        title="Confirmar desactivación"
-        message={`¿Está seguro de que desea desactivar el elemento "${toggleActiveModalState.element?.name || toggleActiveModalState.element?.nomenclature}"?`}
-        confirmLabel="Desactivar"
-        cancelLabel="Cancelar"
-        variant="warning"
-        hideDefaultDangerMessage={true}
-        isLoading={isLoading}
-        description="Al desactivar este elemento, dejará de estar disponible en el sistema. Esta acción es reversible."
-      />
+      {toggleActiveModalState.isOpen && toggleActiveModalState.element && toggleActiveModalState.element.active && (
+        <Modal
+          isOpen={true}
+          onClose={cancelToggleActive}
+          onConfirm={confirmToggleActive}
+          variant="warning"
+          hideDefaultDangerMessage={false}
+          title="Confirmar desactivación"
+          message={
+            <>
+              ¿Está seguro de que desea desactivar "<span className="font-bold">{toggleActiveModalState.element?.name || toggleActiveModalState.element?.nomenclature}</span>"?
+            </>
+          }
+          confirmLabel="Desactivar"
+          cancelLabel="Cancelar"
+          confirmLoading={isLoading}
+          showCancel={true}
+          showConfirm={true}
+        >
+          <div className="mt-4 p-3 bg-[var(--bg-warning)] border border-[var(--border-warning)] rounded-lg">
+            <p className="text-sm text-[var(--text-warning)]">
+              Al desactivar este elemento, dejará de estar disponible en el sistema. Esta acción es reversible.
+            </p>
+          </div>
+
+          {/* Checkbox para desactivar hijos en cascada */}
+          {hasChildren(toggleActiveModalState.element) && (
+            <div className="mt-4 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
+              <div className="flex items-start space-x-3">
+                <input
+                  type="checkbox"
+                  id="cascadeChildrenDeactivate"
+                  checked={cascadeChildren}
+                  onChange={(e) => setCascadeChildren(e.target.checked)}
+                  className="mt-1 h-4 w-4 text-yellow-600 focus:ring-yellow-500 border-gray-300 rounded"
+                />
+                <div className="flex-1">
+                  <label htmlFor="cascadeChildrenDeactivate" className="text-sm font-medium text-yellow-900 cursor-pointer">
+                    Desactivar también todos los elementos dependientes
+                  </label>
+                  <p className="text-xs text-yellow-700 mt-1">
+                    Al marcar esta opción, se desactivarán automáticamente todos los elementos que dependen de este.
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
+        </Modal>
+)}
     </div>
   );
 };
