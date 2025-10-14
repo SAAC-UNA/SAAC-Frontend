@@ -13,8 +13,9 @@
  * @param onSubmit - Callback ejecutado al guardar exitosamente
  * @param onCancel - Callback ejecutado al cancelar la operación
  */
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Input, CustomSelect, Button, LoadingSpinner, BackendErrorAlert } from '@/components/Ui/Index';
+import { cn } from '@/Utils/ClassNames';
 import { roleService } from '@/Services/RoleService';
 import type { User } from '@/Services/UserService';
 import type { Role, BackendPermission } from '@/Services/RoleService';
@@ -41,10 +42,24 @@ export const EditUserForm: React.FC<EditUserFormProps> = ({
 
   // Estados para vista previa de permisos
   const [previewPermissions, setPreviewPermissions] = useState<BackendPermission[]>([]);
+  const [isPermissionsOpen, setIsPermissionsOpen] = useState(false);
+  const permissionsRef = useRef<HTMLDivElement>(null);
 
   // Cargar roles al montar el componente
   useEffect(() => {
     loadRoles();
+  }, []);
+
+  // Cerrar dropdown al hacer click fuera
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (permissionsRef.current && !permissionsRef.current.contains(event.target as Node)) {
+        setIsPermissionsOpen(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
   // Establecer rol actual del usuario
@@ -152,71 +167,112 @@ export const EditUserForm: React.FC<EditUserFormProps> = ({
         {/* Layout de dos columnas */}
         <div className="grid grid-cols-2 gap-6">
           {/* Columna izquierda: Gestión de Roles y Permisos */}
-          <div className="space-y-8">
-            {/* Gestión de Roles */}
-            <div>
-              <h3 className="text-xl font-semibold text-gray-900 mb-6">
-                Gestión de Roles
-              </h3>
+          <div>
+            {/* Título de sección */}
+            <h3 className="text-xl font-semibold text-gray-900 mb-6">
+              Gestión de Roles
+            </h3>
 
-              {/* Selector de Rol */}
-              <div className="mb-6">
-                <div className="mb-3">
-                  <span className="text-xs text-gray-500">
-                    (Solo se permite un rol por usuario)
-                  </span>
-                </div>
-                
+            <div className="space-y-8">
+              {/* Selector de Rol - alineado con Nombre */}
+              <div>
                 {isLoadingRoles ? (
                   <div className="flex items-center justify-center py-8">
                     <LoadingSpinner size="sm" />
-                    <span className="ml-2 text-sm text-gray-600">Cargando roles...</span>
                   </div>
                 ) : (
-                  <CustomSelect
-                    label="Rol del Usuario"
-                    options={roleOptions}
-                    value={selectedRole}
-                    onChange={handleRoleChange}
-                    placeholder="Seleccionar rol..."
-                    className="w-full"
-                  />
+                  <div>
+                    <div className="mb-3">
+                      <span className="text-xs text-gray-500">
+                        (Solo se permite un rol por usuario)
+                      </span>
+                    </div>
+                    <CustomSelect
+                      label="Rol del Usuario"
+                      options={roleOptions}
+                      value={selectedRole}
+                      onChange={handleRoleChange}
+                      placeholder="Seleccionar rol..."
+                      className="w-full"
+                    />
+                  </div>
                 )}
               </div>
-            </div>
 
-            {/* Vista previa de permisos */}
-            {previewPermissions.length > 0 && (
-              <div>
-                <h4 className="text-lg font-semibold text-gray-900 mb-4">
-                  Permisos que tendrá el usuario
-                  <span className="text-sm font-normal text-gray-600 ml-2">
-                    ({previewPermissions.length} permisos)
-                  </span>
-                </h4>
-                {/** ScrollBar */}
-                <div className="bg-gray-50 border border-gray-200 rounded-lg p-4 max-h-64 overflow-y-auto custom-scrollbar">
-                  <div className="grid grid-cols-1 gap-2">
-                    {previewPermissions.map((permission) => (
-                      <div 
-                        key={permission.id}
-                        className="flex items-center p-2"
-                      >
-                        <span className="text-sm text-gray-700">
-                          {permission.label || permission.name}
-                        </span>
+              {/* Vista previa de permisos - alineado con Email */}
+              {previewPermissions.length > 0 && (
+                <div className="relative w-full" ref={permissionsRef}>
+                  <div>
+                    <h4 className="block text-sm font-medium text-negro-una mb-1">
+                      Permisos que tendrá el usuario
+                      <span className="text-sm font-normal text-gray-600 ml-2">
+                        ({previewPermissions.length} permisos)
+                      </span>
+                    </h4>
+
+                    {/* Botón para mostrar/ocultar permisos */}
+                    <button
+                      type="button"
+                      className={cn(
+                        'relative w-full h-10 border rounded-lg text-left cursor-pointer focus:outline-none focus:ring-1 focus:ring-gris-una/20 focus:border-transparent transition-all duration-200',
+                        'placeholder-gris-una/60 px-3 py-2 text-sm',
+                        'border-gris-una/5 bg-gris-una/10 hover:border-gris-una/10',
+                        isPermissionsOpen && 'border-gris-una/20'
+                      )}
+                      onClick={() => setIsPermissionsOpen(!isPermissionsOpen)}
+                    >
+                      <span className="block truncate text-gris-una/80">
+                        {isPermissionsOpen ? 'Ocultar permisos' : 'Ver permisos del rol'}
+                      </span>
+                      
+                      {/* Arrow Icon */}
+                      <span className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                        <svg
+                          className={cn(
+                            'w-5 h-5 text-gris-una transition-transform duration-200',
+                            isPermissionsOpen && 'rotate-180'
+                          )}
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M19 9l-7 7-7-7"
+                          />
+                        </svg>
+                      </span>
+                    </button>
+
+                    {/* Dropdown de permisos */}
+                    {isPermissionsOpen && (
+                      <div className="absolute z-50 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg max-h-[120px] overflow-auto custom-scrollbar">
+                        <div className="py-1 text-sm">
+                          {previewPermissions.map((permission) => (
+                            <div 
+                              key={permission.id}
+                              className="relative w-full text-left px-4 py-2 text-gray-900"
+                            >
+                              <span className="text-sm text-gray-700">
+                                {permission.label || permission.name}
+                              </span>
+                            </div>
+                          ))}
+                        </div>
                       </div>
-                    ))}
+                    )}
                   </div>
                 </div>
-              </div>
-            )}
+              )}
+            </div>
           </div>
 
           {/* Columna derecha: Estado/Rol y Datos del usuario */}
-          <div className="space-y-8">
-            {/* Estado y Rol Actual */}
-            <div className="grid grid-cols-2 gap-4">
+          <div>
+            {/* Estado y Rol Actual - arriba del subtítulo */}
+            <div className="grid grid-cols-2 gap-4 mb-6">
               <div>
                 <label className="block text-sm font-medium text-negro-una mb-1">
                   Estado
@@ -243,8 +299,12 @@ export const EditUserForm: React.FC<EditUserFormProps> = ({
               </div>
             </div>
 
-            {/* Nombre y Email */}
-            <div className="grid grid-cols-1 gap-4">
+            <h3 className="text-xl font-semibold text-gray-900 mb-6">
+              Información Personal
+            </h3>
+
+            <div className="space-y-8">
+              {/* Nombre - alineado con Rol del Usuario */}
               <div>
                 <label className="block text-sm font-medium text-negro-una mb-1">
                   Nombre
@@ -255,6 +315,8 @@ export const EditUserForm: React.FC<EditUserFormProps> = ({
                   className="bg-white/50"
                 />
               </div>
+
+              {/* Email - alineado con Permisos */}
               <div>
                 <label className="block text-sm font-medium text-negro-una mb-1">
                   Email

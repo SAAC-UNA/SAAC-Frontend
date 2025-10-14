@@ -1,5 +1,5 @@
 /**
- * EvidenceAssignmentWizard - Wizard principal para asignar evidencias
+ * EvidenceAssignment - Wizard principal para asignar evidencias
  * 
  * Componente wizard que guía al usuario a través del proceso de
  * asignación de evidencias a usuarios y roles específicos.
@@ -21,11 +21,11 @@ import evidenceAssignmentService from '@/Services/EvidenceAssignmentService';
 
 // Importar los componentes de cada paso
 import { CriterionEvidenceStep } from './Components/CriterionEvidenceStep.tsx';
-import { DestinatariosStep } from './Components/DestinatariosStepSimple.tsx';
+import { AddresseeStep } from './Components/AddresseeStep.tsx';
 import { ConfigurationStep } from './Components/ConfigurationStep.tsx';
 import { ReviewStep } from './Components/ReviewStep.tsx';
 
-const EvidenceAssignmentWizard: React.FC = () => {
+const EvidenceAssignment: React.FC = () => {
   const { showToast } = useToast();
   const [currentStep, setCurrentStep] = useState(1);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -229,7 +229,7 @@ const EvidenceAssignmentWizard: React.FC = () => {
       case 1:
         return <CriterionEvidenceStep {...commonProps} />;
       case 2:
-        return <DestinatariosStep {...commonProps} />;
+        return <AddresseeStep {...commonProps} />;
       case 3:
         return <ConfigurationStep {...commonProps} />;
       case 4:
@@ -323,4 +323,4 @@ const EvidenceAssignmentWizard: React.FC = () => {
   );
 };
 
-export default EvidenceAssignmentWizard;
+export default EvidenceAssignment;

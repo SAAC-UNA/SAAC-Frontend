@@ -446,6 +446,11 @@
     border-radius: 15px;
   }
 
+  .min-h-app {
+    /* py-8 = 4rem (2 + 2) */
+    min-height: calc(100dvh - var(--app-header-height, 64px) - 3rem); /* Ajustar según la altura del header */
+  }
+
   /* ===== ANIMACIONES PARA MODALES ===== */
   @keyframes modalSlideIn {
     0% {

@@ -166,25 +166,29 @@ const EditUserPage: React.FC = () => {
   // Estado de carga
   if (isLoadingUser) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="text-center">
-          <LoadingSpinner size="lg" />
+      <ScreenContainer showHeader={false}>
+        <div className="flex items-center justify-center min-h-screen">
+          <div className="text-center">
+            <LoadingSpinner size="lg" />
+          </div>
         </div>
-      </div>
+      </ScreenContainer>
     );
   }
 
   // Estado de error
   if (loadError || !user) {
     return (
-      <PageErrorState
-        title="Error al cargar usuario"
-        description={loadError || 'Usuario no encontrado'}
-        primaryActionLabel="Reintentar"
-        onPrimaryAction={handleRetry}
-        secondaryActionLabel="Volver a la lista"
-        onSecondaryAction={handleCancel}
-      />
+      <ScreenContainer showHeader={false}>
+        <PageErrorState
+          title="Error al cargar usuario"
+          description={loadError || 'Usuario no encontrado'}
+          primaryActionLabel="Reintentar"
+          onPrimaryAction={handleRetry}
+          secondaryActionLabel="Volver a la lista"
+          onSecondaryAction={handleCancel}
+        />
+      </ScreenContainer>
     );
   }
 

@@ -2,8 +2,8 @@
  * EvidenceAssignment - Exportaciones principales
  */
 
-export { default as EvidenceAssignmentWizard } from './EvidenceAssignmentWizard';
+export { default as EvidenceAssignment } from './EvidenceAssignment';
 export { CriterionEvidenceStep } from './Components/CriterionEvidenceStep';
-export { DestinatariosStep } from './Components/DestinatariosStepSimple';
+export { AddresseeStep } from './Components/AddresseeStep';
 export { ConfigurationStep } from './Components/ConfigurationStep';
 export { ReviewStep } from './Components/ReviewStep';

@@ -37,7 +37,7 @@ export const ScreenContainer: React.FC<ScreenContainerProps> = ({
   if (!showHeader && variant === 'full-width') {
     return (
       <div className={getOuterContainer()}>
-        <div className={`w-full ${className}`}>{children}</div>
+        <div className={cn(`w-full min-h-app`, className)}>{children}</div>
       </div>
     );
   }
@@ -47,9 +47,26 @@ export const ScreenContainer: React.FC<ScreenContainerProps> = ({
     return (
       <div className={getOuterContainer()}>
         <div className={cn(
-          'w-full bg-blanco-una-2 rounded-lg shadow-lg border border-gris-una/20 transition-all duration-300 min-h-fit',
+          'w-full bg-blanco-una-2 rounded-lg shadow-lg border border-gris-una/20 transition-all duration-300', 'min-h-app',
           className
-        )}>
+          )}
+        >
+          {/* Header */}
+          {title && (
+            <>
+              <div className={getFormPadding()}>
+                <h1 className={cn('font-bold text-negro-una mb-2', isMobile ? 'text-xl' : 'text-2xl')}>
+                  {title}
+                </h1>
+                {description && (
+                  <p className={cn('text-gris-una', isMobile ? 'text-sm' : 'text-base')}>
+                    {description}
+                  </p>
+                )}
+              </div>
+              <hr className="border-0 border-t border-gris-una/20 mx-6" />
+            </>
+          )}
           <div className={getFormPadding()}>
             {children}
           </div>
@@ -61,7 +78,7 @@ export const ScreenContainer: React.FC<ScreenContainerProps> = ({
   return (
     <div className={getOuterContainer()}>
       <div className={cn(
-        'w-full bg-blanco-una-2 rounded-lg shadow-lg border border-gris-una/20 transition-all duration-300 min-h-fit',
+        'w-full bg-blanco-una-2 rounded-lg shadow-lg border border-gris-una/20 transition-all duration-300', 'min-h-app',
         className
       )}>
         {/* Header */}

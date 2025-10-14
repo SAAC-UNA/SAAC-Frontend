@@ -12,12 +12,12 @@ import type {
   EvidenceAssignmentFormData
 } from '@/Types/EvidenceAssignment';
 
-interface DestinatariosStepProps {
+interface AddresseeStepProps {
   formData: EvidenceAssignmentFormData;
   updateFormData: (updates: Partial<EvidenceAssignmentFormData>) => void;
 }
 
-export const DestinatariosStep: React.FC<DestinatariosStepProps> = ({
+export const AddresseeStep: React.FC<AddresseeStepProps> = ({
   formData,
   updateFormData
 }) => {

@@ -140,7 +140,7 @@ export const CriterionEvidenceStep: React.FC<CriterionEvidenceStepProps> = ({
       )}
 
       {/* Información del Proceso (automático) */}
-      {formData.proceso_id && (
+      {/*formData.proceso_id && (
         <div className="p-3 bg-azul-una/5 border-l-4 border-azul-una rounded-r-lg">
           <div className="flex items-center gap-2">
             <SystemIcons.interface.checkCircle size="sm" className="text-azul-una" />
@@ -152,7 +152,7 @@ export const CriterionEvidenceStep: React.FC<CriterionEvidenceStepProps> = ({
             </div>
           </div>
         </div>
-      )}
+      )*/}
 
       {/* Selector de Criterio */}
       {formData.proceso_id && (

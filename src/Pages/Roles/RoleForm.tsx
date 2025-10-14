@@ -176,23 +176,27 @@ const RoleForm: React.FC = () => {
     // Estado de carga del rol (solo en modo edición)
     if (isLoadingRole) {
       return (
-        <div className="text-center py-12">
-          <LoadingSpinner size="lg" className="mx-auto mb-4" />
-        </div>
+        <ScreenContainer showHeader={false}>
+          <div className="text-center py-12">
+            <LoadingSpinner size="lg" className="mx-auto mb-4" />
+          </div>
+        </ScreenContainer>
       );
     }
 
     // Estado de error al cargar rol (solo en modo edición)
     if (loadError) {
       return (
-        <PageErrorState
-          title="Error al cargar rol"
-          description={loadError}
-          primaryActionLabel="Volver a la lista"
-          onPrimaryAction={() => navigate('/roles/listar')}
-          secondaryActionLabel="Reintentar"
-          onSecondaryAction={() => window.location.reload()}
-        />
+        <ScreenContainer showHeader={false}>
+          <PageErrorState
+            title="Error al cargar rol"
+            description={loadError}
+            primaryActionLabel="Volver a la lista"
+            onPrimaryAction={() => navigate('/roles/listar')}
+            secondaryActionLabel="Reintentar"
+            onSecondaryAction={() => window.location.reload()}
+          />
+        </ScreenContainer>
       );
     }
 

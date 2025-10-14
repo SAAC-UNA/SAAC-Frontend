@@ -11,7 +11,7 @@ import StructureCreation from './Pages/Structure/StructureCreation';
 import StructureDeletion from './Pages/Structure/StructureDeletion';
 import StructureEditList from './Pages/Structure/StructureEditList';
 import StructureEditForm from './Pages/Structure/StructureEditForm';
-import { EvidenceAssignmentWizard } from './Pages/EvidenceAssignment';
+import { EvidenceAssignment } from './Pages/EvidenceAssignment';
 
 const App: React.FC = () => {
   return (
@@ -31,7 +31,7 @@ const App: React.FC = () => {
               <Route path="/estructura/eliminar" element={<StructureDeletion />} />
               <Route path="/estructura/editar" element={<StructureEditList />} />
               <Route path="/estructura/editar/formulario" element={<StructureEditForm />} />
-              <Route path="/evidencias/asignar" element={<EvidenceAssignmentWizard />} />
+              <Route path="/evidencias/asignar" element={<EvidenceAssignment />} />
             </Routes>
           </Layout>
         </ToastProvider>
