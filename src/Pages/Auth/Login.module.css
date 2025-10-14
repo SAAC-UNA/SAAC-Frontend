@@ -1,0 +1,140 @@
+.login-page {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #c8102e;
+  padding: 20px;
+}
+
+.login-container {
+  border: solid 1px #8d8d8d;
+  padding: 50px;
+  border-radius: 20px;
+  background-color: #fff;
+  max-width: 500px;
+  width: 100%;
+}
+
+.login-container .login-heading {
+  font-size: 1.8rem;
+  margin-bottom: 10px;
+  font-weight: bolder;
+  color: #2d3748;
+  text-align: center;
+}
+
+.login-form {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.loginform .login-btn-container {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.login-form .login-btn {
+  padding: 12px 24px;
+  font-size: 1rem;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  border-radius: 10px;
+  border: solid 1px #a00820;
+  background: linear-gradient(135deg, #c8102e, #9a0b23);
+  color: #fff;
+  font-weight: 600;
+  transition: all 0.2s ease;
+  box-shadow: 0px 2px 3px rgba(0, 0, 0, 0.2), inset 0px 2px 3px rgba(255, 255, 255, 0.2);
+  width: 100%;
+  cursor: pointer;
+}
+
+.login-form .login-btn:hover:not(:disabled) {
+  background: linear-gradient(135deg, #9a0b23, #c8102e);
+  transform: translateY(-1px);
+}
+
+.login-form .login-btn:active {
+  transform: scale(0.995);
+}
+
+.login-form .login-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.login-input-field {
+  position: relative;
+}
+
+.login-input-field label {
+  position: absolute;
+  color: #8d8d8d;
+  pointer-events: none;
+  background-color: transparent;
+  left: 15px;
+  transform: translateY(0.6rem);
+  transition: all 0.3s ease;
+}
+
+.login-input-field input {
+  padding: 14px 18px;
+  font-size: 1.1rem;
+  border-radius: 8px;
+  border: solid 1px #8d8d8d;
+  letter-spacing: 1px;
+  width: 100%;
+}
+
+.login-input-field input:focus,
+.login-input-field input:valid {
+  outline: none;
+  border: solid 1px #c8102e;
+}
+
+.login-input-field input:focus ~ label,
+.login-input-field input:valid ~ label {
+  transform: translateY(-51%) translateX(-10px) scale(0.8);
+  background-color: #fff;
+  padding: 0px 5px;
+  color: #c8102e;
+  font-weight: bold;
+  letter-spacing: 1px;
+  border: none;
+  border-radius: 100px;
+}
+
+.login-form .login-passicon {
+  cursor: pointer;
+  font-size: 1.3rem;
+  position: absolute;
+  top: 8px;
+  right: 12px;
+  user-select: none;
+}
+
+.login-quick-btn {
+  padding: 8px 16px;
+  background: white;
+  color: #c8102e;
+  border: 1px solid #c8102e;
+  border-radius: 6px;
+  fontSize: 12px;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-weight: 500;
+}
+
+.login-quick-btn:hover:not(:disabled) {
+  background: #c8102e;
+  color: white;
+}
+
+.login-quick-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}

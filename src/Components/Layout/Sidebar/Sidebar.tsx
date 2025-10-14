@@ -1,10 +1,12 @@
 import React from 'react';
-import { useSidebar } from '@/context/SidebarContext';
+import { useSidebar } from '@/Context/SidebarContext';
 import { ModernSidebarItem } from './SidebarItem';
-import { navigationItems } from '@/Navigation';
+import { getNavigationItems } from '@/Navigation';
 import { cn } from '@/utils/ClassNames';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from '@/components/Ui/Sheet';
 import { TooltipProvider } from '@/components/Ui/Tooltip';
+import { useAuth } from '@/Context/AuthContext';
+import { useNavigate } from 'react-router-dom';
 
 interface SidebarProps {
   side?: 'left' | 'right';
@@ -21,18 +23,27 @@ export const ModernSidebar: React.FC<SidebarProps> = ({
 }) => {
   const { isMobile, state, openMobile, setOpenMobile } = useSidebar();
 
+  const { user, logout } = useAuth();
+  const navigate = useNavigate();
+
+  const handleLogout = () => {
+    logout();
+    navigate('/login');
+  };
+
   const logoutItem = {
     id: 'logout',
-    label: 'Salir',
+    label: 'Cerrar Sesión',
     icon: 'system-icon:logout',
-    href: '/logout'
+    href: '#',
+    onClick: handleLogout
   };
 
   const sidebarContent = (
     <div className="flex flex-col h-full">
       {/* Logo Section */}
-      <div className="flex-shrink-0 p-6">
-        <div className="flex justify-center items-center">
+      <div className="flex-shrink-0 border-b border-blanco-una/20">
+        <div className="flex justify-center items-center py-6 px-6">
           <a 
             href="https://www.una.ac.cr/"
             target="_blank"
@@ -51,12 +62,29 @@ export const ModernSidebar: React.FC<SidebarProps> = ({
             />
           </a>
         </div>
+        
+        {/* User Info - Solo visible cuando no está colapsado */}
+        {!(state === 'collapsed' && !isMobile) && user && (
+          <div className="px-6 py-4 border-t border-blanco-una/20">
+            <p className="text-sm font-semibold text-blanco-una truncate">
+              {user.nombre}
+            </p>
+            <p className="text-xs text-blanco-una/70 truncate">
+              {user.roles[0]?.name}
+            </p>
+            {user.careers && user.careers.length > 0 && (
+              <p className="text-xs text-blanco-una/60 truncate mt-1">
+                {user.careers[0].nombre}
+              </p>
+            )}
+          </div>
+        )}
       </div>
 
       {/* Navigation Menu */}
       <nav className="flex-1 py-6 overflow-hidden">
         <div className="space-y-2 flex flex-col">
-          {navigationItems.map((item) => (
+          {getNavigationItems(user?.roles?.[0]?.name || undefined).map((item) => (
             <ModernSidebarItem 
               key={item.id} 
               item={item}
