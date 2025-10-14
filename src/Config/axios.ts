@@ -1,14 +1,16 @@
 import axios from 'axios';
 
-// URL base del backend de Laravel
-axios.defaults.baseURL = 'http://localhost:8000';
+// Crear instancia con configuración personalizada
+const axiosInstance = axios.create({
+    baseURL: 'http://localhost:8000',
+    headers: {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json'
+    }
+});
 
-// Headers por defecto
-axios.defaults.headers.common['Accept'] = 'application/json';
-axios.defaults.headers.post['Content-Type'] = 'application/json';
-
-// Interceptor para manejar CSRF token si es necesario
-axios.interceptors.request.use(
+// Interceptor para manejar el token de autenticación
+axiosInstance.interceptors.request.use(
     config => {
         const token = localStorage.getItem('token');
         if (token) {
@@ -20,3 +22,5 @@ axios.interceptors.request.use(
         return Promise.reject(error);
     }
 );
+
+export { axiosInstance };
