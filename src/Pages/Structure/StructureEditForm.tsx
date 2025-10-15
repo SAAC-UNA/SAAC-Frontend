@@ -8,6 +8,7 @@ import { LoadingSpinner } from '@/Components/Ui/Loading';
 import { useStructure } from '@/Hooks/UseStructure';
 import type { StructureElement, ElementType } from '@/Types/StructureTypes';
 import { FORM_CONFIG, VALIDATION_RULES} from '@/Constants/StructureConstants';
+import { SuccessModal } from '@/Components/Ui/SuccessModal';
 
 interface EditableElement extends StructureElement {
   originalNomenclature: string;
@@ -15,7 +16,6 @@ interface EditableElement extends StructureElement {
   originalDescription: string;
   isModified: boolean;
 }
-
 
 const StructureEditForm: React.FC = () => {
   // Estados del componente
@@ -42,6 +42,15 @@ const StructureEditForm: React.FC = () => {
   const confirmModal = useModal();
   const [pendingAction, setPendingAction] = useState<'save' | 'discard' | null>(null);
 
+  // Estado para el modal de éxito
+  const [successModalState, setSuccessModalState] = useState<{
+    isOpen: boolean;
+    elementName: string;
+  }>({
+    isOpen: false,
+    elementName: ''
+  });
+
   /**
     Determinar si un campo debe mostrarse según el tipo de elemento
   */
@@ -49,6 +58,14 @@ const shouldShowField = (field: 'nomenclature' | 'name' | 'description'): boolea
   if (!currentElement) return false;
   const config = FORM_CONFIG[currentElement.type];
   return config.requiredFields.includes(field) || config.optionalFields.includes(field);
+};
+
+/**
+ * Manejar el cierre del modal de éxito y redireccionar
+ */
+const handleSuccessModalClose = () => {
+  setSuccessModalState({ isOpen: false, elementName: '' });
+  navigate('/estructura/listar');
 };
 
 /**
@@ -244,23 +261,30 @@ const validateForm = (): boolean => {
       if (pendingAction === 'save') {
         // Validar formulario antes de guardar
         if (!validateForm()) {
-        confirmModal.closeModal();
-        (null);
-        return;
-      }
+          confirmModal.closeModal();
+          setPendingAction(null);
+          return;
+        }
 
         // Usar el hook para editar el elemento
         const result = await editElement(currentElement.type, currentElement.id, {
-        nomenclature: formData.nomenclature,
-        name: formData.name,
-        description: formData.description,
-        active: currentElement.active
-      });
-    
-      if (result) {
-        console.log('Cambios guardados:', formData);
-        window.location.href = '/estructura/listar';
-      }
+          nomenclature: formData.nomenclature,
+          name: formData.name,
+          description: formData.description,
+          active: currentElement.active
+        });
+
+        if (result) {
+          console.log('Cambios guardados:', formData);
+          confirmModal.closeModal();
+          setPendingAction(null);
+          
+          // Mostrar modal de éxito
+          setSuccessModalState({
+            isOpen: true,
+            elementName: formData.name || formData.nomenclature || formData.description || 'elemento'
+          });
+        }
       } else {
         // Descartar cambios
         setFormData({
@@ -269,10 +293,11 @@ const validateForm = (): boolean => {
           description: currentElement.originalDescription || ''
         });
         setHasChanges(false);
+        confirmModal.closeModal();
+        setPendingAction(null);
       }
     } catch (error) {
       console.error('Error al procesar la acción:', error);
-    } finally {
       confirmModal.closeModal();
       setPendingAction(null);
     }
@@ -515,6 +540,15 @@ const validateForm = (): boolean => {
           </div>
         </div>
       </Modal>
+      {/* Modal de éxito */}
+      <SuccessModal
+        isOpen={successModalState.isOpen}
+        title="¡Elemento editado exitosamente!"
+        message={`El elemento "${successModalState.elementName}" ha sido modificado correctamente`}
+        onClose={handleSuccessModalClose}
+        autoClose={true}
+        autoCloseDelay={3000}
+      />
     </ScreenContainer>
   );
 };

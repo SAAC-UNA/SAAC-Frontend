@@ -6,6 +6,7 @@ import { Input } from '@/Components/Ui/Input';
 import { ScreenContainer } from '@/Components/Ui/ScreenContainer';
 import { CustomSelect } from '@/Components/Ui/SingleSelect';
 import { useStructure } from '@/Hooks/UseStructure';
+import { SuccessModal } from '@/Components/Ui/SuccessModal';
 import type { 
   StructureElement, 
   CreateElementForm, 
@@ -72,6 +73,15 @@ export const StructureCreation: React.FC = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [availableParents, setAvailableParents] = useState<StructureElement[]>([]);
 
+  // Estado para el modal de éxito
+  const [successModalState, setSuccessModalState] = useState<{
+    isOpen: boolean;
+    elementName: string;
+  }>({
+    isOpen: false,
+    elementName: ''
+  });
+
   /**
    * Obtener elementos padre disponibles según el tipo seleccionado
    */
@@ -85,6 +95,14 @@ export const StructureCreation: React.FC = () => {
     return elements.filter(element => 
       element.type === requiredParentType && element.active
     );
+  };
+
+  /**
+ * Manejar el cierre del modal de éxito y redireccionar
+ */
+  const handleSuccessModalClose = () => {
+    setSuccessModalState({ isOpen: false, elementName: '' });
+    navigate('/estructura/listar');
   };
 
   /**
@@ -198,7 +216,7 @@ export const StructureCreation: React.FC = () => {
     setAvailableParents(getAvailableParents(newType));
   };
 
-  /**
+ /**
  * Enviar formulario
  */
 const handleSubmit = async (e: React.FormEvent) => {
@@ -215,8 +233,11 @@ const handleSubmit = async (e: React.FormEvent) => {
     console.log('🔍 Success:', success);
     
     if (success) {
-      // Redirigir a la lista después de crear exitosamente
-      navigate('/estructura/listar');
+      // Mostrar modal de éxito
+      setSuccessModalState({
+        isOpen: true,
+        elementName: formData.name || formData.nomenclature || formData.description || 'elemento'
+      });
     }
     
   } catch (error) {
@@ -225,6 +246,8 @@ const handleSubmit = async (e: React.FormEvent) => {
     setIsSubmitting(false);
   }
 };
+
+
 
   // Efecto para cargar elementos al montar el componente
   useEffect(() => {
@@ -268,16 +291,9 @@ const handleSubmit = async (e: React.FormEvent) => {
     const config = FORM_CONFIG[formData.type];
     return config.requiredFields.includes(field) || config.optionalFields.includes(field);
   };
-  const [successMessage, setSuccessMessage] = useState<string | null>(null);
+  
   return (
     <>
-      {/* Mensaje de éxito */}
-      {successMessage && (
-        <div className="mb-6 p-4 message-success border rounded-lg">
-          <p>{successMessage}</p>
-        </div>
-      )}
-
       {/* Formulario */}
       <ScreenContainer
         title="Crear Elemento de Estructura"
@@ -383,6 +399,15 @@ const handleSubmit = async (e: React.FormEvent) => {
           </div>
         </form>
       </ScreenContainer>
+      {/* Modal de éxito */}
+      <SuccessModal
+        isOpen={successModalState.isOpen}
+        title="¡Elemento creado exitosamente!"
+        message={`El elemento "${successModalState.elementName}" ha sido agregado correctamente`}
+        onClose={handleSuccessModalClose}
+        autoClose={true}
+        autoCloseDelay={3000}
+      />
     </>
   );
 };
