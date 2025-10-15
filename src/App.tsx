@@ -11,6 +11,7 @@ import RolesList from '@/Pages/Roles/RolesList';
 import RoleForm from '@/Pages/Roles/RoleForm';
 import StructureList from '@/Pages/Structure/StructureList';
 import StructureCreation from '@/Pages/Structure/StructureCreation';
+import StructureEditForm from '@/Pages/Structure/StructureEditForm';
 import UsersList from '@/Pages/Users/UsersList';
 import AccreditationProgress from '@/Pages/Accreditation/AccreditationProgress';
 
@@ -133,7 +134,7 @@ function App() {
                   path="/estructura/editar/formulario"
                   element={
                     <ProtectedRoute>
-                      <StructureCreation />
+                      <StructureEditForm />
                     </ProtectedRoute>
                   }
                 />

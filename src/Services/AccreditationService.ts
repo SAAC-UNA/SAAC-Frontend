@@ -42,18 +42,32 @@ export interface Process {
 }
 
 /**
- * Obtiene los procesos de acreditación
- * El filtrado por rol/carrera lo hace el backend según el usuario autenticado
+ * Obtiene los procesos de acreditación filtrados por carrera
+ * @param careerIds - IDs de las carreras del usuario (opcional para SuperUsuario)
  */
-export async function getProcesses(): Promise<Process[]> {
+export async function getProcesses(careerIds?: number[]): Promise<Process[]> {
     try {
-        const response = await axiosInstance.get<Process[]>(ACCREDITATION_ENDPOINTS.PROCESSES);
+        // Construir query params
+        const params = new URLSearchParams();
+        
+        // Si hay carreras específicas, enviar el primer ID
+        // (el backend filtrará automáticamente según el usuario autenticado)
+        if (careerIds && careerIds.length > 0) {
+            params.append('career_id', careerIds[0].toString());
+        }
+        
+        const url = `${ACCREDITATION_ENDPOINTS.PROCESSES}${params.toString() ? `?${params.toString()}` : ''}`;
+        
+        console.log('🔍 Llamando a:', url);
+        
+        const response = await axiosInstance.get<Process[]>(url);
         return response.data || [];
     } catch (error: any) {
         console.error('Error detallado al obtener procesos:', {
             message: error.message,
             response: error.response?.data,
-            status: error.response?.status
+            status: error.response?.status,
+            url: error.config?.url
         });
         
         if (error.response?.status === 401) {
@@ -69,18 +83,31 @@ export async function getProcesses(): Promise<Process[]> {
 }
 
 /**
- * Obtiene los ciclos de acreditación
- * El filtrado por rol/carrera lo hace el backend según el usuario autenticado
+ * Obtiene los ciclos de acreditación filtrados por carrera
+ * @param careerIds - IDs de las carreras del usuario (opcional para SuperUsuario)
  */
-export async function getAccreditationCycles(): Promise<AccreditationCycle[]> {
+export async function getAccreditationCycles(careerIds?: number[]): Promise<AccreditationCycle[]> {
     try {
-        const response = await axiosInstance.get<AccreditationCycle[]>(ACCREDITATION_ENDPOINTS.CYCLES);
+        // Construir query params
+        const params = new URLSearchParams();
+        
+        // Si hay carreras específicas, enviar el primer ID
+        if (careerIds && careerIds.length > 0) {
+            params.append('career_id', careerIds[0].toString());
+        }
+        
+        const url = `${ACCREDITATION_ENDPOINTS.CYCLES}${params.toString() ? `?${params.toString()}` : ''}`;
+        
+        console.log('🔍 Llamando a:', url);
+        
+        const response = await axiosInstance.get<AccreditationCycle[]>(url);
         return response.data || [];
     } catch (error: any) {
         console.error('Error detallado al obtener ciclos:', {
             message: error.message,
             response: error.response?.data,
-            status: error.response?.status
+            status: error.response?.status,
+            url: error.config?.url
         });
         
         if (error.response?.status === 401) {

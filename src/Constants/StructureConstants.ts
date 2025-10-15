@@ -101,7 +101,7 @@ export const VALIDATION_RULES = {
   DESCRIPTION_MAX_LENGTH: 250,
 
   /** Patrón permitido para códigos (letras, números, guiones y guiones bajos) */
-  NOMENCLATURE_PATTERN: /^[A-Z0-9\-_]+$/i,
+  NOMENCLATURE_PATTERN: /^[A-Z0-9\-_.]+$/i,
 
   /** Patrón permitido para nombres (letras con acentos, números, espacios y puntuación básica) */
   NAME_PATTERN: /^[a-zA-ZáéíóúÁÉÍÓÚñÑüÜ0-9\s\-_.,()]+$/

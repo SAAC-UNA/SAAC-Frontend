@@ -109,48 +109,6 @@ export const Login = () => {
             </button>
           </div>
         </form>
-
-        {/* Botones rápidos de testing */}
-        <div style={{ 
-          marginTop: '24px', 
-          paddingTop: '24px', 
-          borderTop: '1px solid #e2e8f0' 
-        }}>
-          <p style={{ 
-            color: '#718096', 
-            fontSize: '12px', 
-            textAlign: 'center', 
-            marginBottom: '12px' 
-          }}>
-            Acceso rápido (solo desarrollo):
-          </p>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-            <button
-              type="button"
-              onClick={() => quickLogin('SuperUsuario')}
-              disabled={loading}
-              className="login-quick-btn"
-            >
-              SuperUsuario
-            </button>
-            <button
-              type="button"
-              onClick={() => quickLogin('AdminInge')}
-              disabled={loading}
-              className="login-quick-btn"
-            >
-              Admin Ingeniería
-            </button>
-            <button
-              type="button"
-              onClick={() => quickLogin('AdminQuimi')}
-              disabled={loading}
-              className="login-quick-btn"
-            >
-              Admin Química
-            </button>
-          </div>
-        </div>
       </div>
     </div>
   );

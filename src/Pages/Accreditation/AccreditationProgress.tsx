@@ -9,7 +9,7 @@ import {
 } from '@/Services/AccreditationService';
 
 const AccreditationProgress: React.FC = () => {
-    const { isAuthenticated } = useAuth();
+    const { isAuthenticated, user } = useAuth();
     const [processes, setProcesses] = useState<Process[]>([]);
     const [cycles, setCycles] = useState<AccreditationCycle[]>([]);
     const [loading, setLoading] = useState(true);
@@ -17,7 +17,7 @@ const AccreditationProgress: React.FC = () => {
     
     useEffect(() => {
         const loadData = async () => {
-            if (!isAuthenticated) {
+            if (!isAuthenticated || !user) {
                 setError('Debes iniciar sesión para ver esta información');
                 setLoading(false);
                 return;
@@ -25,10 +25,22 @@ const AccreditationProgress: React.FC = () => {
 
             try {
                 setError(null);
+                
+                // Obtener los career_ids del usuario
+                const careerIds = user.careers?.map(c => c.carrera_id) || [];
+                
+                console.log('👤 Usuario:', user.nombre);
+                console.log('🎓 Carreras del usuario:', careerIds);
+                
+                // Llamar al backend con los career_ids
                 const [processesData, cyclesData] = await Promise.all([
-                    getProcesses(),
-                    getAccreditationCycles()
+                    getProcesses(careerIds.length > 0 ? careerIds : undefined),
+                    getAccreditationCycles(careerIds.length > 0 ? careerIds : undefined)
                 ]);
+                
+                console.log('📦 Procesos recibidos:', processesData);
+                console.log('🔄 Ciclos recibidos:', cyclesData);
+                
                 setProcesses(processesData);
                 setCycles(cyclesData);
             } catch (err: any) {
@@ -42,7 +54,7 @@ const AccreditationProgress: React.FC = () => {
         };
         
         loadData();
-    }, []);
+    }, [isAuthenticated, user]);
 
     return (
         <ScreenContainer
@@ -64,62 +76,56 @@ const AccreditationProgress: React.FC = () => {
                     </div>
                 ) : processes.length === 0 && cycles.length === 0 ? (
                     <div className="text-center py-8">
-                        <p className="text-gray-500">No se encontraron datos para mostrar.</p>
-                        <p className="text-sm text-gray-400">Esto puede deberse a que no tienes procesos o ciclos asignados.</p>
+                        <p className="text-gray-600">No se encontraron datos para mostrar.</p>
+                        <p className="text-sm text-gray-500 mt-2">
+                            Esto puede deberse a que no tienes procesos o ciclos asignados.
+                        </p>
                     </div>
                 ) : (
-                    <>
-                        {/* Vista de procesos */}
-                        {processes.map(process => (
-                            <div key={process.proceso_id} className="bg-white shadow-sm rounded-lg border border-gray-200">
-                                <div className="px-6 py-5 border-b border-gray-200">
-                                    <h2 className="text-xl font-semibold text-gray-900">
-                                        {process.tipo_proceso}
-                                    </h2>
-                                    <div className="mt-4 grid grid-cols-1 lg:grid-cols-3 gap-4">
-                                        <div>
-                                            <h3 className="text-sm font-medium text-gray-700">Carrera</h3>
-                                            <p className="mt-1 text-sm text-gray-600">
-                                                {process.accreditationCycle.careerCampus.career.nombre}
-                                            </p>
-                                        </div>
-                                        <div>
-                                            <h3 className="text-sm font-medium text-gray-700">Ciclo</h3>
-                                            <p className="mt-1 text-sm text-gray-600">
-                                                {process.accreditationCycle.nombre}
-                                            </p>
-                                        </div>
-                                        <div>
-                                            <h3 className="text-sm font-medium text-gray-700">Sede</h3>
-                                            <p className="mt-1 text-sm text-gray-600">
-                                                {process.accreditationCycle.careerCampus.campus.nombre}
-                                            </p>
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                        {/* Columna de Procesos */}
+                        <div>
+                            <h2 className="text-lg font-semibold mb-4">Procesos Activos</h2>
+                            <div className="space-y-4">
+                                {processes.map(process => (
+                                    <div key={process.proceso_id} className="bg-white border border-gray-200 rounded-lg p-4 shadow-sm">
+                                        <div className="flex justify-between items-start">
+                                            <div>
+                                                <h3 className="font-medium text-gray-900">{process.tipo_proceso}</h3>
+                                                <p className="text-sm text-gray-600 mt-1">
+                                                    {process.accreditationCycle.nombre}
+                                                </p>
+                                                <p className="text-xs text-gray-500 mt-1">
+                                                    {process.accreditationCycle.careerCampus.career.nombre}
+                                                </p>
+                                            </div>
+                                            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                                Activo
+                                            </span>
                                         </div>
                                     </div>
-                                </div>
+                                ))}
                             </div>
-                        ))}
+                        </div>
 
-                        {/* Vista de ciclos */}
-                        {cycles.map(cycle => (
-                            <div key={cycle.ciclo_acreditacion_id} className="bg-white shadow-sm rounded-lg border border-gray-200">
-                                <div className="px-6 py-5 border-b border-gray-200">
-                                    <h2 className="text-xl font-semibold text-gray-900">
-                                        {cycle.nombre}
-                                    </h2>
-                                    <div className="mt-4 grid grid-cols-1 lg:grid-cols-2 gap-4">
-                                        <div>
-                                            <h3 className="text-sm font-medium text-gray-700">Carrera</h3>
-                                            <p className="mt-1 text-sm text-gray-600">
-                                                {cycle.careerCampus.career.nombre}
-                                            </p>
-                                            <p className="text-sm text-gray-500">Sede: {cycle.careerCampus.campus.nombre}</p>
-                                        </div>
+                        {/* Columna de Ciclos */}
+                        <div>
+                            <h2 className="text-lg font-semibold mb-4">Ciclos de Acreditación</h2>
+                            <div className="space-y-4">
+                                {cycles.map(cycle => (
+                                    <div key={cycle.ciclo_acreditacion_id} className="bg-white border border-gray-200 rounded-lg p-4 shadow-sm">
+                                        <h3 className="font-medium text-gray-900">{cycle.nombre}</h3>
+                                        <p className="text-sm text-gray-600 mt-1">
+                                            {cycle.careerCampus.career.nombre}
+                                        </p>
+                                        <p className="text-xs text-gray-500 mt-1">
+                                            {cycle.careerCampus.campus.nombre}
+                                        </p>
                                     </div>
-                                </div>
+                                ))}
                             </div>
-                        ))}
-                    </>
+                        </div>
+                    </div>
                 )}
             </div>
         </ScreenContainer>
