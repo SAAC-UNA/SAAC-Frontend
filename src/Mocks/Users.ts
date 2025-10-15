@@ -43,7 +43,7 @@ export const MOCK_USERS: MockUser[] = [
     usuario_id: 2,
     cedula: '203948609',
     nombre: 'Cristopher Montero Jimenez',
-    email: 'cristopher.montero.jimenez@una.cr',
+    email: 'cristopher.montero.jimenez@una.ac.cr',
     password: 'password', // La contraseña real la maneja el backend
     roles: [
       {
@@ -61,9 +61,9 @@ export const MOCK_USERS: MockUser[] = [
   },
   {
     usuario_id: 3,
-    cedula: '202038940',
-    nombre: 'Ian Villegas Jimenez',
-    email: 'ian.villegas.jimenez@una.cr',
+    cedula: '402290552',
+    nombre: 'Alejandro Ugalde Villalobos',
+    email: 'alejandro.ugalde.villalobos@est.una.ac.cr',
     password: 'password', // La contraseña real la maneja el backend
     roles: [
       {
@@ -74,7 +74,7 @@ export const MOCK_USERS: MockUser[] = [
     careers: [
       {
         carrera_id: 2,
-        nombre: 'Educación',
+        nombre: 'Química',
         facultad_id: 2
       }
     ]

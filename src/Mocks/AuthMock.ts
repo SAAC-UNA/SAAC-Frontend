@@ -46,16 +46,16 @@ export const MOCK_USERS: Record<string, MockUser> = {
       }
     ]
   },
-  '202038940': {
+  '402290552': {
     usuario_id: 3,
-    cedula: '202038940',
-    nombre: 'Ian Villegas Jimenez',
-    email: 'ian.villegas.jimenez@est.una.ac.cr',
+    cedula: '402290552',
+    nombre: 'Alejandro Ugalde Villalobos',
+    email: 'alejandro.ugalde.villalobos@est.una.ac.cr',
     roles: [{ id: 2, name: 'Administrador' }],
     careers: [
       {
         carrera_id: 2,
-        nombre: 'Educación',
+        nombre: 'Química',
         facultad_id: 1
       }
     ]

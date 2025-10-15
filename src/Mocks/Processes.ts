@@ -50,14 +50,14 @@ export const MOCK_PROCESSES: MockProcess[] = [
     created_at: '2025-01-16T10:00:00.000000Z',
     accreditation_cycle: {
       ciclo_acreditacion_id: 2,
-      nombre: 'Ciclo Educación 2025-2030',
+      nombre: 'Ciclo Química 2025-2030',
       carrera_sede_id: 2,
       career_campus: {
         carrera_sede_id: 2,
         carrera_id: 2,
         career: {
           carrera_id: 2,
-          nombre: 'Educación'
+          nombre: 'Química'
         }
       }
     }
