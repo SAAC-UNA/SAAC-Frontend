@@ -1,68 +1,484 @@
-:root {
-  font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
-  line-height: 1.5;
+@import "tailwindcss";
+
+/* ===== TIPOGRAFÍAS POPPINS ===== */
+
+@font-face {
+  font-family: "Poppins";
+  font-style: normal;
+  font-weight: 300;
+  font-display: swap;
+  src: url("./assets/fonts/Poppins/Poppins-Light.ttf") format("woff2");
+}
+
+@font-face {
+  font-family: "Poppins";
+  font-style: normal;
   font-weight: 400;
-
-  color-scheme: light dark;
-  color: rgba(255, 255, 255, 0.87);
-  background-color: #242424;
-
-  font-synthesis: none;
-  text-rendering: optimizeLegibility;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+  font-display: swap;
+  src: url("./assets/fonts/Poppins/Poppins-Regular.ttf") format("woff2");
 }
 
-a {
+@font-face {
+  font-family: "Poppins";
+  font-style: normal;
   font-weight: 500;
-  color: #646cff;
-  text-decoration: inherit;
-}
-a:hover {
-  color: #535bf2;
+  font-display: swap;
+  src: url("./assets/fonts/Poppins/Poppins-Medium.ttf") format("woff2");
 }
 
-body {
-  margin: 0;
-  display: flex;
-  place-items: center;
-  min-width: 320px;
-  min-height: 100vh;
+@font-face {
+  font-family: "Poppins";
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url("./assets/fonts/Poppins/Poppins-SemiBold.ttf") format("woff2");
 }
 
-h1 {
-  font-size: 3.2em;
-  line-height: 1.1;
+@font-face {
+  font-family: "Poppins";
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url("./assets/fonts/Poppins/Poppins-Bold.ttf") format("woff2");
 }
 
-button {
-  border-radius: 8px;
-  border: 1px solid transparent;
-  padding: 0.6em 1.2em;
-  font-size: 1em;
-  font-weight: 500;
-  font-family: inherit;
-  background-color: #1a1a1a;
-  cursor: pointer;
-  transition: border-color 0.25s;
-}
-button:hover {
-  border-color: #646cff;
-}
-button:focus,
-button:focus-visible {
-  outline: 4px auto -webkit-focus-ring-color;
+/* ===== ANIMACIONES DE CARGA ===== */
+
+@keyframes lds-ring {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
 }
 
-@media (prefers-color-scheme: light) {
+/* Para el bounce loader */
+@keyframes sk-bouncedelay {
+  0%, 80%, 100% { 
+    -webkit-transform: scale(0);
+    transform: scale(0);
+  } 
+  40% { 
+    -webkit-transform: scale(1.0);
+    transform: scale(1.0);
+  }
+}
+
+/* ===== VARIABLES DE DISEÑO UNA ===== */
+/* Colores oficiales, tipografías y espaciado */
+
+@theme {
+  --color-rojo-una: #CD1719;
+  --color-rojo-una-2: #C32B30;
+  --color-gris-una: #A7A7A9;
+  --color-azul-una: #034991;
+  --color-blanco-una: #FFFFFF;
+  --color-blanco-una-2: #F8F9FA;
+  --color-negro-una: #000000;
+
+  /* Extensiones para el sidebar (usando colores UNA) */
+  --color-rojo-sidebar: var(--color-rojo-una);
+  --color-rojo-sidebar-dark: var(--color-rojo-una-2);
+
+  --font-poppins: 'Poppins', sans-serif;
+
+  /* Colores para estados */
+  --color-success: #10b981;
+  --color-warning: #f59e0b;
+  --color-error: #ef4444;
+  --color-info: #3b82f6;
+  --color-error-screen: #aba9af;
+
+  /* Colores estándar para iconos de acciones (NO aplicar a iconos del sidebar) */
+  --icon-view: var(--color-info);         /* Ver/Visualizar - azul info */
+  --icon-edit: var(--color-warning);      /* Editar - amarillo/warning */
+  --icon-delete: var(--color-error);      /* Eliminar - rojo/error */
+  --icon-add: var(--color-rojo-una-2);       /* Agregar - verde/success */
+  --icon-info: var(--color-info);        /* Información - azul info */
+  --icon-active: var(--color-error);       /* Estado - activo */
+  --icon-inactive: var(--color-gris-una);     /* Estado - inactivo */
+  --icon-cancel: var(--color-gris-una);   /* Cancelar - gris UNA */
+  --icon-save: var(--color-success);      /* Guardar - verde/success */
+  --icon-check: var(--color-success);     /* Confirmar/Éxito - verde/success */
+  --icon-alert: var(--color-warning);     /* Alerta/Advertencia - amarillo/warning */
+  --icon-search: var(--color-gris-una);   /* Buscar - gris UNA */
+  --icon-refresh: var(--color-info);      /* Actualizar - azul info */
+  --icon-expand: var(--color-rojo-una-2);   /* Expandir - gris UNA */
+  --icon-collapse: var(--color-gris-una); /* Colapsar - gris UNA */
+  --icon-back: var(--color-rojo-una-2);     /* Regresar - gris UNA */
+  --icon-close: var(--color-gris-una);    /* Cerrar - gris UNA */
+  --icon-loading: var(--color-rojo-una-2);      /* Cargando - azul info */
+  --icon-error-screen: var(--color-error-screen); /* Error de pantalla - gris/error */
+
+  /* Colores para fondos y estados de mensajes */
+  --bg-success: #f0fdf4;     /* Fondo verde claro para éxito */
+  --bg-warning: #fffbeb;     /* Fondo amarillo claro para advertencias */
+  --bg-error: #fef2f2;       /* Fondo rojo claro para errores */
+  --bg-info: #eff6ff;        /* Fondo azul claro para información */
+  --bg-inactive: #f0f0f0;   /* Fondo gris claro para inactivo */
+  
+  --border-success: #bbf7d0; /* Borde verde para éxito */
+  --border-warning: #fde68a; /* Borde amarillo para advertencias */
+  --border-error: #fecaca;   /* Borde rojo para errores */
+  --border-info: #bfdbfe;    /* Borde azul para información */
+
+  --text-success: #166534;   /* Texto verde oscuro para éxito */
+  --text-warning: #92400e;   /* Texto amarillo oscuro para advertencias */
+  --text-error: var(--color-error);      /* Texto rojo oscuro para errores */
+  --text-info: #1e40af;      /* Texto azul oscuro para información */
+  --text-error-screen: #aba9af;
+
+  /* Colores para botones principales */
+  --btn-primary: var(--color-azul-una);     /* Botón principal - azul UNA */
+  --btn-primary-hover: #02366b;             /* Hover del botón principal */
+  --btn-secondary: var(--color-rojo-una);   /* Botón secundario - rojo UNA */  
+  --btn-secondary-hover: #a1151a;           /* Hover del botón secundario */
+  --btn-danger: var(--color-error);         /* Botón de peligro */
+  --btn-danger-hover: #dc2626;              /* Hover del botón de peligro */
+
+  /* Ancho del sidebar */
+  --spacing-sidebar: 16rem;
+}
+
+/* ===== CONFIGURACIÓN BASE ===== */
+/* Variables CSS para el sidebar y configuración global */
+
+  @layer base {
   :root {
-    color: #213547;
-    background-color: #ffffff;
+    --sidebar-width: 16rem;
+    --sidebar-width-mobile: 18rem;
+    --sidebar-width-icon: 3rem;
+    
+    /* Colores del sidebar */
+    --sidebar: 195 43 48; /* rojo-una-2 */
+    --sidebar-foreground: 255 255 255; /* blanco-una */
+    --sidebar-primary: 195 43 48;
+    --sidebar-primary-foreground: 255 255 255;
+    --sidebar-accent: 220 60 65; /* versión más clara del rojo */
+    --sidebar-accent-foreground: 255 255 255;
+    --sidebar-border: 180 40 45; /* versión más oscura del rojo */
+    --sidebar-ring: 195 43 48;
   }
-  a:hover {
-    color: #747bff;
+
+  /* Utilidades adicionales para el sidebar */
+  .w-sidebar {
+    width: var(--sidebar-width);
   }
-  button {
-    background-color: #f9f9f9;
+
+  .w-sidebar-mobile {
+    width: var(--sidebar-width-mobile);
+  }
+
+  .w-sidebar-icon {
+    width: var(--sidebar-width-icon);
+  }
+
+  /* Animaciones para el sidebar */
+  .animate-in {
+    animation-duration: 150ms;
+    animation-fill-mode: both;
+  }
+
+  .slide-in-from-left {
+    animation-name: slide-in-from-left;
+  }
+
+  .slide-in-from-right {
+    animation-name: slide-in-from-right;
+  }
+
+  @keyframes slide-in-from-left {
+    from {
+      transform: translateX(-100%);
+    }
+    to {
+      transform: translateX(0);
+    }
+  }
+
+  @keyframes slide-in-from-right {
+    from {
+      transform: translateX(100%);
+    }
+    to {
+      transform: translateX(0);
+    }
+  }
+
+  body {
+    @apply font-poppins bg-blanco-una-2 text-negro-una;
+    /* Aplicar scrollbar personalizado globalmente */
+    scrollbar-width: thin;
+    scrollbar-color: rgba(167, 167, 169, 0.3) transparent;
+  }
+
+  body::-webkit-scrollbar {
+    width: 10px;
+  }
+
+  body::-webkit-scrollbar-track {
+    background: rgba(167, 167, 169, 0.05);
+  }
+
+  body::-webkit-scrollbar-thumb {
+    background: rgba(167, 167, 169, 0.3);
+    border-radius: 5px;
+  }
+
+  body::-webkit-scrollbar-thumb:hover {
+    background: rgba(167, 167, 169, 0.5);
+  }
+
+  h1 {
+    @apply font-poppins text-3xl font-bold text-rojo-una-2;
+  }
+
+  h2 {
+    @apply font-poppins text-xl font-semibold text-azul-una;
+  }
+
+  p {
+    @apply font-poppins text-base text-gris-una;
+  }
+}
+
+/* ===== COMPONENTES REUTILIZABLES ===== */
+/* Clases específicas para sidebar y elementos del sistema */
+
+@layer components {
+  /* BOTONES ESPECIALES */
+  
+  /* Botón sandwich del menú - Para toggle del sidebar */
+  .btn-menu {
+    @apply bg-transparent text-current p-0 border-0 font-normal rounded-none;
+  }
+  
+  /* Gradiente del sidebar */
+  .sidebar-gradient {
+    background: linear-gradient(180deg, var(--color-rojo-sidebar) 0%, var(--color-rojo-sidebar-dark) 100%);
+  }
+  
+  /* Item activo del sidebar (el elemento blanco) */
+  .sidebar-item-active {
+    @apply bg-white text-rojo-una-2 font-semibold rounded-full;
+  }
+  
+  /* Hover states para sidebar */
+  .sidebar-item-hover {
+    @apply hover:bg-blanco-una transition-all duration-200;
+  }
+  
+  /* Efectos de glassmorphism */
+  .glass-effect {
+    @apply backdrop-blur-sm bg-gris-una border border-white/20;
+  }
+
+  /* ===== TOAST STYLES ===== */
+  /* Clases para toasts - variables de estado */
+
+  .toast-success {
+    background-color: color-mix(in srgb, var(--color-success) 10%, white);
+    border-left-color: var(--color-success);
+    color: color-mix(in srgb, var(--color-success) 80%, black);
+  }
+
+  .toast-error {
+    background-color: color-mix(in srgb, var(--color-error) 10%, white);
+    border-left-color: var(--color-error);
+    color: color-mix(in srgb, var(--color-error) 80%, black);
+  }
+
+  .toast-warning {
+    background-color: color-mix(in srgb, var(--color-warning) 10%, white);
+    border-left-color: var(--color-warning);
+    color: color-mix(in srgb, var(--color-warning) 80%, black);
+  }
+
+  .toast-info {
+    background-color: color-mix(in srgb, var(--color-info) 10%, white);
+    border-left-color: var(--color-info);
+    color: color-mix(in srgb, var(--color-info) 80%, black);
+  }
+
+  /* ===== MESSAGE STYLES ===== */
+  /* Clases para mensajes de estado en formularios */
+  .message-success {
+    background-color: color-mix(in srgb, var(--color-success) 8%, white);
+    border-color: color-mix(in srgb, var(--color-success) 30%, white);
+    color: color-mix(in srgb, var(--color-success) 70%, black);
+  }
+
+  .message-error {
+    background-color: color-mix(in srgb, var(--color-error) 8%, white);
+    border-color: color-mix(in srgb, var(--color-error) 30%, white);
+    color: color-mix(in srgb, var(--color-error) 70%, black);
+  }
+
+  .message-warning {
+    background-color: color-mix(in srgb, var(--color-warning) 8%, white);
+    border-color: color-mix(in srgb, var(--color-warning) 30%, white);
+    color: color-mix(in srgb, var(--color-warning) 70%, black);
+  }
+
+  .message-info {
+    background-color: color-mix(in srgb, var(--color-info) 8%, white);
+    border-color: color-mix(in srgb, var(--color-info) 30%, white);
+    color: color-mix(in srgb, var(--color-info) 70%, black);
+  }
+
+  /* ===== BADGE STYLES ===== */
+  /* Clases para badges/estados usando variables */
+  .badge-success {
+    background-color: color-mix(in srgb, var(--color-success) 20%, white);
+    color: color-mix(in srgb, var(--color-success) 80%, black);
+  }
+
+  .badge-error {
+    background-color: color-mix(in srgb, var(--color-error) 20%, white);
+    color: color-mix(in srgb, var(--color-error) 80%, black);
+  }
+
+  .badge-warning {
+    background-color: color-mix(in srgb, var(--color-warning) 20%, white);
+    color: color-mix(in srgb, var(--color-warning) 80%, black);
+  }
+
+  .badge-info {
+    background-color: color-mix(in srgb, var(--color-info) 20%, white);
+    color: color-mix(in srgb, var(--color-info) 80%, black);
+  }
+
+  /* ===== BUTTON STYLES ===== */
+  /* Clases para botones usando variables de estado */
+
+  .btn-success {
+    background-color: transparent;
+    color: var(--color-success);
+    border: 2px solid var(--color-success);
+  }
+
+  .btn-success:hover {
+    background-color: color-mix(in srgb, var(--color-success) 5%, transparent);
+  }
+
+  .btn-error {
+    background-color: transparent;
+    color: var(--color-error);
+    border: 2px solid var(--color-error);
+  }
+
+  .btn-error:hover {
+    background-color: color-mix(in srgb, var(--color-error) 5%, transparent);
+  }
+}
+
+/* ===== UTILIDADES ADICIONALES ===== */
+/* Transiciones, sombras, efectos especiales y scrollbars */
+
+@layer utilities {
+  /* Transiciones personalizadas */
+  .transition-sidebar {
+    transition: transform 0.3s ease-in-out, width 0.3s ease-in-out;
+  }
+  
+  /* Shadows personalizadas */
+  .shadow-sidebar {
+    box-shadow: 4px 0 15px -3px rgba(0, 0, 0, 0.1);
+  }
+  
+  .shadow-card-hover {
+    box-shadow: 0 10px 25px -3px rgba(0, 0, 0, 0.1);
+  }
+  
+  /* Text shadows */
+  .text-shadow-sm {
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+  }
+  
+  /* Layout utilities */
+  .sidebar-width {
+    width: var(--spacing-sidebar);
+  }
+  
+  /* Sidebar items que se adaptan al ancho del sidebar */
+  /* Resta padding lateral */
+  .sidebar-item-width {
+    max-width: calc(var(--spacing-sidebar) - 2rem); 
+    width: 100%;
+  }
+  
+  /* Más margen para centrado */
+  .sidebar-item-centered {
+    max-width: calc(var(--spacing-sidebar) - 3rem); 
+    width: fit-content;
+    margin: 0 auto;
+  }
+
+  /* ===== SCROLLBAR STYLING ===== */
+  /* Scrollbar personalizado simple y consistente */
+  .custom-scrollbar {
+    scrollbar-width: thin;
+    scrollbar-color: rgba(167, 167, 169, 0.4) transparent;
+  }
+
+  .custom-scrollbar::-webkit-scrollbar {
+    width: 8px;
+  }
+
+  .custom-scrollbar::-webkit-scrollbar-track {
+    background: rgba(167, 167, 169, 0.1);
+    border-radius: 4px;
+  }
+
+  .custom-scrollbar::-webkit-scrollbar-thumb {
+    background: rgba(167, 167, 169, 0.4);
+    border-radius: 4px;
+    transition: background 0.2s ease;
+  }
+
+  .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: rgba(167, 167, 169, 0.6);
+  }
+
+  /* ===== Border radius personalizado para componentes ===== */
+  .rounded-corner {
+    border-radius: 15px;
+  }
+
+  .min-h-app {
+    /* py-8 = 4rem (2 + 2) */
+    min-height: calc(100dvh - var(--app-header-height, 64px) - 3rem); /* Ajustar según la altura del header */
+  }
+
+  /* ===== ANIMACIONES PARA MODALES ===== */
+  @keyframes modalSlideIn {
+    0% {
+      opacity: 0;
+      transform: translateY(-20px) scale(0.95);
+    }
+    100% {
+      opacity: 1;
+      transform: translateY(0) scale(1);
+    }
+  }
+
+  @keyframes modalSlideOut {
+    0% {
+      opacity: 1;
+      transform: translateY(0) scale(1);
+    }
+    100% {
+      opacity: 0;
+      transform: translateY(-20px) scale(0.95);
+    }
+  }
+
+  .modal-enter {
+    animation: modalSlideIn 0.3s ease-out forwards;
+  }
+
+  .modal-exit {
+    animation: modalSlideOut 0.2s ease-in forwards;
   }
 }

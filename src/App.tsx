@@ -1,35 +1,43 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import React from 'react';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { NavigationProvider } from './Context/NavigationContext';
+import { ToastProvider } from './Context/ToastContext';
+import { Layout } from './Components/Layout/Index';
+import { HomePage } from './Pages/Index';
+import { RolesRepository, RoleForm } from './Pages/Roles';
+import { UsersRepository, EditUserPage } from './Pages/Users';
+import StructureRepository from './Pages/Structure/StructureList';
+import StructureCreation from './Pages/Structure/StructureCreation';
+import StructureDeletion from './Pages/Structure/StructureDeletion';
+import StructureEditList from './Pages/Structure/StructureEditList';
+import StructureEditForm from './Pages/Structure/StructureEditForm';
+import { EvidenceAssignment } from './Pages/EvidenceAssignment';
 
-function App() {
-  const [count, setCount] = useState(0)
-
+const App: React.FC = () => {
   return (
-    <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.tsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
-  )
-}
+    <Router>
+      <NavigationProvider>
+        <ToastProvider>
+          <Layout>
+            <Routes>
+              <Route path="/" element={<HomePage />} />
+              <Route path="/roles/crear" element={<RoleForm />} />
+              <Route path="/roles/editar/:id" element={<RoleForm />} />
+              <Route path="/roles/listar" element={<RolesRepository />} />
+              <Route path="/usuarios/listar" element={<UsersRepository />} />
+              <Route path="/usuarios/editar/:id" element={<EditUserPage />} />
+              <Route path="/estructura/repositorio" element={<StructureRepository />} />
+              <Route path="/estructura/crear" element={<StructureCreation />} />
+              <Route path="/estructura/eliminar" element={<StructureDeletion />} />
+              <Route path="/estructura/editar" element={<StructureEditList />} />
+              <Route path="/estructura/editar/formulario" element={<StructureEditForm />} />
+              <Route path="/evidencias/asignar" element={<EvidenceAssignment />} />
+            </Routes>
+          </Layout>
+        </ToastProvider>
+      </NavigationProvider>
+    </Router>
+  );
+};
 
-export default App
+export default App;

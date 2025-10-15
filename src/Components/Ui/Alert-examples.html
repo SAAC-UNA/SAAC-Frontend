@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Alert - Ejemplos de uso</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Estilos para simular los componentes Alert */
+        .alert {
+            border: 1px solid #e5e7eb;
+            border-radius: 0.5rem;
+            box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+            border-left-width: 4px;
+            padding: 1rem;
+        }
+        
+        .alert-error {
+            background-color: #fef2f2;
+            border-left-color: #ef4444;
+        }
+        
+        .alert-success {
+            background-color: #f0fdf4;
+            border-left-color: #22c55e;
+        }
+        
+        .alert-warning {
+            background-color: #fffbeb;
+            border-left-color: #f59e0b;
+        }
+        
+        .alert-info {
+            background-color: #eff6ff;
+            border-left-color: #3b82f6;
+        }
+        
+        .btn {
+            padding: 0.25rem 0.75rem;
+            border-radius: 0.375rem;
+            font-size: 0.75rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: 1px solid #d1d5db;
+            background-color: white;
+        }
+        
+        .btn:hover {
+            background-color: #f9fafb;
+        }
+    </style>
+</head>
+<body class="bg-gray-50 p-8">
+    <div class="max-w-4xl mx-auto space-y-8">
+        <h1 class="text-3xl font-bold text-gray-900 mb-8">Ejemplos de Alert</h1>
+        <p class="text-gray-600 mb-8">
+            Componente para mostrar mensajes de estado del sistema, errores del backend, 
+            mensajes de éxito y notificaciones importantes.
+        </p>
+
+        <!-- === VARIANTES BÁSICAS === -->
+        <section>
+            <h2 class="text-xl font-semibold mb-6 text-gray-800">Variantes básicas</h2>
+            <div class="space-y-4">
+                
+                <!-- Error -->
+                <div class="alert alert-error">
+                    <div class="flex items-start">
+                        <div class="flex-shrink-0">
+                            <!-- Icono de error -->
+                            <svg class="w-5 h-5 text-red-500" viewBox="0 0 24 24" fill="currentColor">
+                                <path fill-rule="evenodd" d="M9.401 3.003c1.155-2 4.043-2 5.197 0l7.355 12.748c1.154 2-.29 4.5-2.599 4.5H4.645c-2.309 0-3.752-2.5-2.598-4.5L9.4 3.003zM12 8.25a.75.75 0 01.75.75v3.75a.75.75 0 01-1.5 0V9a.75.75 0 01.75-.75zm0 8.25a.75.75 0 100-1.5.75.75 0 000 1.5z" clip-rule="evenodd" />
+                            </svg>
+                        </div>
+                        <div class="ml-3 flex-1">
+                            <h3 class="text-sm font-medium text-red-800">Error del servidor</h3>
+                            <div class="mt-1 text-sm text-red-700">
+                                Error al cargar roles: HTTP error! status: 500
+                            </div>
+                        </div>
+                        <div class="ml-3 flex-shrink-0">
+                            <button type="button" class="inline-flex rounded-md p-1.5 text-red-500 hover:bg-red-100 focus:outline-none focus:ring-2 focus:ring-red-300 transition-colors">
+                                <svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
+                                    <path fill-rule="evenodd" d="M5.47 5.47a.75.75 0 011.06 0L12 10.94l5.47-5.47a.75.75 0 111.06 1.06L13.06 12l5.47 5.47a.75.75 0 11-1.06 1.06L12 13.06l-5.47 5.47a.75.75 0 01-1.06-1.06L10.94 12 5.47 6.53a.75.75 0 010-1.06z" clip-rule="evenodd" />
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Success -->
+                <div class="alert alert-success">
+                    <div class="flex items-start">
+                        <div class="flex-shrink-0">
+                            <!-- Icono de éxito -->
+                            <svg class="w-5 h-5 text-green-500" viewBox="0 0 24 24" fill="currentColor">
+                                <path fill-rule="evenodd" d="M2.25 12c0-5.385 4.365-9.75 9.75-9.75s9.75 4.365 9.75 9.75-4.365 9.75-9.75 9.75S2.25 17.385 2.25 12zm13.36-1.814a.75.75 0 10-1.22-.872l-3.236 4.53L9.53 12.22a.75.75 0 00-1.06 1.06l2.25 2.25a.75.75 0 001.14-.094l3.75-5.25z" clip-rule="evenodd" />
+                            </svg>
+                        </div>
+                        <div class="ml-3 flex-1">
+                            <h3 class="text-sm font-medium text-green-800">Éxito</h3>
+                            <div class="mt-1 text-sm text-green-700">
+                                You can access all the files in this folder.
+                            </div>
+                        </div>
+                        <div class="ml-3 flex-shrink-0">
+                            <button type="button" class="inline-flex rounded-md p-1.5 text-green-500 hover:bg-green-100 focus:outline-none focus:ring-2 focus:ring-green-300 transition-colors">
+                                <svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
+                                    <path fill-rule="evenodd" d="M5.47 5.47a.75.75 0 011.06 0L12 10.94l5.47-5.47a.75.75 0 111.06 1.06L13.06 12l5.47 5.47a.75.75 0 11-1.06 1.06L12 13.06l-5.47 5.47a.75.75 0 01-1.06-1.06L10.94 12 5.47 6.53a.75.75 0 010-1.06z" clip-rule="evenodd" />
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Info -->
+                <div class="alert alert-info">
+                    <div class="flex items-start">
+                        <div class="flex-shrink-0">
+                            <!-- Icono de info -->
+                            <svg class="w-5 h-5 text-blue-500" viewBox="0 0 24 24" fill="currentColor">
+                                <path fill-rule="evenodd" d="M9.401 3.003c1.155-2 4.043-2 5.197 0l7.355 12.748c1.154 2-.29 4.5-2.599 4.5H4.645c-2.309 0-3.752-2.5-2.598-4.5L9.4 3.003zM12 8.25a.75.75 0 01.75.75v3.75a.75.75 0 01-1.5 0V9a.75.75 0 01.75-.75zm0 8.25a.75.75 0 100-1.5.75.75 0 000 1.5z" clip-rule="evenodd" />
+                            </svg>
+                        </div>
+                        <div class="ml-3 flex-1">
+                            <h3 class="text-sm font-medium text-blue-800">Información</h3>
+                            <div class="mt-1 text-sm text-blue-700">
+                                Anyone on the internet with this link can view.
+                            </div>
+                        </div>
+                        <div class="ml-3 flex-shrink-0">
+                            <button type="button" class="inline-flex rounded-md p-1.5 text-blue-500 hover:bg-blue-100 focus:outline-none focus:ring-2 focus:ring-blue-300 transition-colors">
+                                <svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
+                                    <path fill-rule="evenodd" d="M5.47 5.47a.75.75 0 011.06 0L12 10.94l5.47-5.47a.75.75 0 111.06 1.06L13.06 12l5.47 5.47a.75.75 0 11-1.06 1.06L12 13.06l-5.47 5.47a.75.75 0 01-1.06-1.06L10.94 12 5.47 6.53a.75.75 0 010-1.06z" clip-rule="evenodd" />
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Warning -->
+                <div class="alert alert-warning">
+                    <div class="flex items-start">
+                        <div class="flex-shrink-0">
+                            <!-- Icono de warning -->
+                            <svg class="w-5 h-5 text-yellow-500" viewBox="0 0 24 24" fill="currentColor">
+                                <path fill-rule="evenodd" d="M9.401 3.003c1.155-2 4.043-2 5.197 0l7.355 12.748c1.154 2-.29 4.5-2.599 4.5H4.645c-2.309 0-3.752-2.5-2.598-4.5L9.4 3.003zM12 8.25a.75.75 0 01.75.75v3.75a.75.75 0 01-1.5 0V9a.75.75 0 01.75-.75zm0 8.25a.75.75 0 100-1.5.75.75 0 000 1.5z" clip-rule="evenodd" />
+                            </svg>
+                        </div>
+                        <div class="ml-3 flex-1">
+                            <h3 class="text-sm font-medium text-yellow-800">Advertencia</h3>
+                            <div class="mt-1 text-sm text-yellow-700">
+                                Viewers of this file can see comments and suggestions.
+                            </div>
+                        </div>
+                        <div class="ml-3 flex-shrink-0">
+                            <button type="button" class="inline-flex rounded-md p-1.5 text-yellow-500 hover:bg-yellow-100 focus:outline-none focus:ring-2 focus:ring-yellow-300 transition-colors">
+                                <svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
+                                    <path fill-rule="evenodd" d="M5.47 5.47a.75.75 0 011.06 0L12 10.94l5.47-5.47a.75.75 0 111.06 1.06L13.06 12l5.47 5.47a.75.75 0 11-1.06 1.06L12 13.06l-5.47 5.47a.75.75 0 01-1.06-1.06L10.94 12 5.47 6.53a.75.75 0 010-1.06z" clip-rule="evenodd" />
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+        <!-- === CON ACCIONES === -->
+        <section>
+            <h2 class="text-xl font-semibold mb-6 text-gray-800">Con botones de acción</h2>
+            <div class="space-y-4">
+                
+                <!-- Error con botón Reintentar -->
+                <div class="alert alert-error">
+                    <div class="flex items-start">
+                        <div class="flex-shrink-0">
+                            <svg class="w-5 h-5 text-red-500" viewBox="0 0 24 24" fill="currentColor">
+                                <path fill-rule="evenodd" d="M9.401 3.003c1.155-2 4.043-2 5.197 0l7.355 12.748c1.154 2-.29 4.5-2.599 4.5H4.645c-2.309 0-3.752-2.5-2.598-4.5L9.4 3.003zM12 8.25a.75.75 0 01.75.75v3.75a.75.75 0 01-1.5 0V9a.75.75 0 01.75-.75zm0 8.25a.75.75 0 100-1.5.75.75 0 000 1.5z" clip-rule="evenodd" />
+                            </svg>
+                        </div>
+                        <div class="ml-3 flex-1">
+                            <h3 class="text-sm font-medium text-red-800">Error al cargar roles</h3>
+                            <div class="mt-1 text-sm text-red-700">
+                                Error al cargar roles: HTTP error! status: 500
+                            </div>
+                            <div class="mt-3">
+                                <button class="btn" onclick="alert('Reintentando...')">Reintentar</button>
+                            </div>
+                        </div>
+                        <div class="ml-3 flex-shrink-0">
+                            <button type="button" class="inline-flex rounded-md p-1.5 text-red-500 hover:bg-red-100 transition-colors">
+                                <svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
+                                    <path fill-rule="evenodd" d="M5.47 5.47a.75.75 0 011.06 0L12 10.94l5.47-5.47a.75.75 0 111.06 1.06L13.06 12l5.47 5.47a.75.75 0 11-1.06 1.06L12 13.06l-5.47 5.47a.75.75 0 01-1.06-1.06L10.94 12 5.47 6.53a.75.75 0 010-1.06z" clip-rule="evenodd" />
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Error sin botón cerrar -->
+                <div class="alert alert-warning">
+                    <div class="flex items-start">
+                        <div class="flex-shrink-0">
+                            <svg class="w-5 h-5 text-yellow-500" viewBox="0 0 24 24" fill="currentColor">
+                                <path fill-rule="evenodd" d="M9.401 3.003c1.155-2 4.043-2 5.197 0l7.355 12.748c1.154 2-.29 4.5-2.599 4.5H4.645c-2.309 0-3.752-2.5-2.598-4.5L9.4 3.003zM12 8.25a.75.75 0 01.75.75v3.75a.75.75 0 01-1.5 0V9a.75.75 0 01.75-.75zm0 8.25a.75.75 0 100-1.5.75.75 0 000 1.5z" clip-rule="evenodd" />
+                            </svg>
+                        </div>
+                        <div class="ml-3 flex-1">
+                            <h3 class="text-sm font-medium text-yellow-800">Acceso denegado</h3>
+                            <div class="mt-1 text-sm text-yellow-700">
+                                Sorry, but you're not authorized to look at this page.
+                            </div>
+                        </div>
+                        <!-- Sin botón de cerrar para mensajes críticos -->
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+        <!-- === CASOS DE USO REALES === -->
+        <section>
+            <h2 class="text-xl font-semibold mb-6 text-gray-800">Casos de uso reales en SAAC</h2>
+            <div class="space-y-4">
+                
+                <!-- Error HTTP del backend -->
+                <div class="alert alert-error">
+                    <div class="flex items-start">
+                        <div class="flex-shrink-0">
+                            <svg class="w-5 h-5 text-red-500" viewBox="0 0 24 24" fill="currentColor">
+                                <path fill-rule="evenodd" d="M9.401 3.003c1.155-2 4.043-2 5.197 0l7.355 12.748c1.154 2-.29 4.5-2.599 4.5H4.645c-2.309 0-3.752-2.5-2.598-4.5L9.4 3.003zM12 8.25a.75.75 0 01.75.75v3.75a.75.75 0 01-1.5 0V9a.75.75 0 01.75-.75zm0 8.25a.75.75 0 100-1.5.75.75 0 000 1.5z" clip-rule="evenodd" />
+                            </svg>
+                        </div>
+                        <div class="ml-3 flex-1">
+                            <h3 class="text-sm font-medium text-red-800">Error del servidor</h3>
+                            <div class="mt-1 text-sm text-red-700">
+                                No se pudo crear el rol. Error interno del servidor (500).
+                            </div>
+                            <div class="mt-3">
+                                <button class="btn" onclick="alert('Reintentando creación...')">Reintentar</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Operación exitosa -->
+                <div class="alert alert-success">
+                    <div class="flex items-start">
+                        <div class="flex-shrink-0">
+                            <svg class="w-5 h-5 text-green-500" viewBox="0 0 24 24" fill="currentColor">
+                                <path fill-rule="evenodd" d="M2.25 12c0-5.385 4.365-9.75 9.75-9.75s9.75 4.365 9.75 9.75-4.365 9.75-9.75 9.75S2.25 17.385 2.25 12zm13.36-1.814a.75.75 0 10-1.22-.872l-3.236 4.53L9.53 12.22a.75.75 0 00-1.06 1.06l2.25 2.25a.75.75 0 001.14-.094l3.75-5.25z" clip-rule="evenodd" />
+                            </svg>
+                        </div>
+                        <div class="ml-3 flex-1">
+                            <h3 class="text-sm font-medium text-green-800">Rol creado exitosamente</h3>
+                            <div class="mt-1 text-sm text-green-700">
+                                El rol "Administrador de Sistema" se ha creado correctamente.
+                            </div>
+                        </div>
+                        <div class="ml-3 flex-shrink-0">
+                            <button type="button" class="inline-flex rounded-md p-1.5 text-green-500 hover:bg-green-100 transition-colors">
+                                <svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
+                                    <path fill-rule="evenodd" d="M5.47 5.47a.75.75 0 011.06 0L12 10.94l5.47-5.47a.75.75 0 111.06 1.06L13.06 12l5.47 5.47a.75.75 0 11-1.06 1.06L12 13.06l-5.47 5.47a.75.75 0 01-1.06-1.06L10.94 12 5.47 6.53a.75.75 0 010-1.06z" clip-rule="evenodd" />
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Error de conexión -->
+                <div class="alert alert-error">
+                    <div class="flex items-start">
+                        <div class="flex-shrink-0">
+                            <svg class="w-5 h-5 text-red-500" viewBox="0 0 24 24" fill="currentColor">
+                                <path fill-rule="evenodd" d="M9.401 3.003c1.155-2 4.043-2 5.197 0l7.355 12.748c1.154 2-.29 4.5-2.599 4.5H4.645c-2.309 0-3.752-2.5-2.598-4.5L9.4 3.003zM12 8.25a.75.75 0 01.75.75v3.75a.75.75 0 01-1.5 0V9a.75.75 0 01.75-.75zm0 8.25a.75.75 0 100-1.5.75.75 0 000 1.5z" clip-rule="evenodd" />
+                            </svg>
+                        </div>
+                        <div class="ml-3 flex-1">
+                            <h3 class="text-sm font-medium text-red-800">Error de conexión</h3>
+                            <div class="mt-1 text-sm text-red-700">
+                                No se pudo conectar con el servidor. Verifica tu conexión a internet.
+                            </div>
+                            <div class="mt-3">
+                                <button class="btn" onclick="alert('Verificando conexión...')">Reintentar</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+        <!-- === DOCUMENTACIÓN === -->
+        <section>
+            <h2 class="text-xl font-semibold mb-6 text-gray-800">Documentación de uso</h2>
+            <div class="bg-gray-50 border border-gray-200 rounded-lg p-6">
+                <h3 class="text-lg font-medium mb-4">Cómo usar el componente Alert</h3>
+                
+                <div class="space-y-4">
+                    <div>
+                        <h4 class="font-medium text-gray-900 mb-2">Uso básico:</h4>
+                        <pre class="bg-gray-800 text-green-400 p-3 rounded text-sm overflow-x-auto"><code>&lt;Alert variant="error" message="Error al cargar datos" /&gt;</code></pre>
+                    </div>
+                    
+                    <div>
+                        <h4 class="font-medium text-gray-900 mb-2">Con acción y título personalizado:</h4>
+                        <pre class="bg-gray-800 text-green-400 p-3 rounded text-sm overflow-x-auto"><code>&lt;Alert
+  variant="error"
+  title="Error del servidor"
+  message="HTTP error! status: 500"
+  action={{
+    label: "Reintentar",
+    onClick: handleRetry
+  }}
+  onDismiss={handleClose}
+/&gt;</code></pre>
+                    </div>
+                    
+                    <div>
+                        <h4 class="font-medium text-gray-900 mb-2">Usando variantes pre-definidas:</h4>
+                        <pre class="bg-gray-800 text-green-400 p-3 rounded text-sm overflow-x-auto"><code>{AlertVariants.backendError("HTTP error! status: 500", handleRetry)}</code></pre>
+                    </div>
+                </div>
+                
+                <div class="mt-6">
+                    <h4 class="font-medium text-gray-900 mb-2">Variantes disponibles:</h4>
+                    <ul class="list-disc list-inside text-sm text-gray-600 space-y-1">
+                        <li><code>error</code> - Errores del sistema, backend, validación</li>
+                        <li><code>success</code> - Operaciones exitosas, confirmaciones</li>
+                        <li><code>info</code> - Información general, notificaciones</li>
+                        <li><code>warning</code> - Advertencias, estados de atención</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+    </div>
+</body>
+</html>
