@@ -78,27 +78,31 @@ export const StructureTable: React.FC<StructureTableProps> = ({
 
 
     // Filtrar elementos basado en la búsqueda y tipo
-useEffect(() => {
-    let filtered = allElements;
+    useEffect(() => {
+        let filtered = allElements;
+        
+        // Filtro por búsqueda
+        if (searchQuery.trim()) {
+            filtered = filtered.filter(element =>
+                element.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                element.nomenclature?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                element.description?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                ELEMENT_TYPE_LABELS[element.type].toLowerCase().includes(searchQuery.toLowerCase())
+            );
+        }
+        
+        // Filtro por tipo
+        if (typeFilter !== 'all') {
+            filtered = filtered.filter(element => element.type === typeFilter);
+        }
     
-    // Filtro por búsqueda
-    if (searchQuery.trim()) {
-        filtered = filtered.filter(element =>
-            element.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-            element.nomenclature?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-            element.description?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-            ELEMENT_TYPE_LABELS[element.type].toLowerCase().includes(searchQuery.toLowerCase())
-        );
-    }
-    
-    // Filtro por tipo
-    if (typeFilter !== 'all') {
-        filtered = filtered.filter(element => element.type === typeFilter);
-    }
-    
-    setFilteredElements(filtered);
-    setCurrentPage(1);
-}, [allElements, searchQuery, typeFilter]);
+        setFilteredElements(filtered);
+    }, [allElements, searchQuery, typeFilter]);
+
+    // Resetear página solo cuando cambian los filtros, no cuando cambian los datos
+    useEffect(() => {
+        setCurrentPage(1);
+    }, [searchQuery, typeFilter]);
 
     // Calcular datos paginados
     const totalPages = Math.ceil(filteredElements.length / itemsPerPage);
