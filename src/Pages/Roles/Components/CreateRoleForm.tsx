@@ -87,7 +87,7 @@ export const CreateRoleForm: React.FC<CreateRoleFormProps> = ({
   // Sistema de validación avanzado
   const advancedValidation = useValidation({
     schema: validationSchema,
-    validateOnChange: true
+    validateOnChange: false // Cambiado a false para evitar ciclos infinitos
   });
 
   // Sistema de validación simple (fallback)
@@ -116,8 +116,8 @@ export const CreateRoleForm: React.FC<CreateRoleFormProps> = ({
         }));
       }
     } else {
-      // Validación en tiempo real - SIEMPRE ejecutar validación
-      advancedValidation.validateSingleField(field, value, newFormData);
+      // Validación en tiempo real - DESHABILITADA temporalmente para evitar ciclos
+      // advancedValidation.validateSingleField(field, value, newFormData);
     }
 
     // Limpiar error de la API cuando el usuario haga cambios

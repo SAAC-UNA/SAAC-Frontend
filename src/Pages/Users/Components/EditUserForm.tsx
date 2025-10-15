@@ -176,26 +176,25 @@ export const EditUserForm: React.FC<EditUserFormProps> = ({
             <div className="space-y-8">
               {/* Selector de Rol - alineado con Nombre */}
               <div>
+                <div className="mb-3">
+                  <span className="text-xs text-gray-500">
+                    (Solo se permite un rol por usuario)
+                  </span>
+                </div>
+                
                 {isLoadingRoles ? (
                   <div className="flex items-center justify-center py-8">
                     <LoadingSpinner size="sm" />
                   </div>
                 ) : (
-                  <div>
-                    <div className="mb-3">
-                      <span className="text-xs text-gray-500">
-                        (Solo se permite un rol por usuario)
-                      </span>
-                    </div>
-                    <CustomSelect
-                      label="Rol del Usuario"
-                      options={roleOptions}
-                      value={selectedRole}
-                      onChange={handleRoleChange}
-                      placeholder="Seleccionar rol..."
-                      className="w-full"
-                    />
-                  </div>
+                  <CustomSelect
+                    label="Rol del Usuario"
+                    options={roleOptions}
+                    value={selectedRole}
+                    onChange={handleRoleChange}
+                    placeholder="Seleccionar rol..."
+                    className="w-full"
+                  />
                 )}
               </div>
 
