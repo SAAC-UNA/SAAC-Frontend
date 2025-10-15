@@ -14,6 +14,7 @@ import type { StructureElement } from '@/Types/StructureTypes';
 import { useStructure } from '@/Hooks/UseStructure';
 import { EditConfirmationModal } from '@/Components/Ui/EditConfirmationModal';
 import { DeleteConfirmationModal } from '@/Components/Ui/DeleteConfirmationModal';
+import { LoadingSpinner } from '@/Components/Ui/Loading';
 
 const StructureList: React.FC = () => {
   
@@ -132,78 +133,101 @@ const StructureList: React.FC = () => {
   try {
     // Aplanar el árbol una sola vez al inicio
     const flattenTree = (nodes: StructureElement[]): StructureElement[] => {
-      const result: StructureElement[] = [];
-      const stack = [...nodes];
+  const result: StructureElement[] = [];
+  const seen = new Set<string>();
+  const stack = [...nodes];
+  
+  while (stack.length > 0) {
+    const node = stack.pop()!;
+    
+    // Solo agregar si no lo hemos visto antes (evita duplicados)
+    if (!seen.has(node.id)) {
+      seen.add(node.id);
+      result.push(node);
       
-      while (stack.length > 0) {
-        const node = stack.pop()!;
-        result.push(node);
-        
-        if (node.childElements && node.childElements.length > 0) {
-          stack.push(...node.childElements);
-        }
+      if (node.childElements && node.childElements.length > 0) {
+        stack.push(...node.childElements);
       }
-      
-      return result;
-    };
+    }
+  }
+  return result;
+};
     
     const allElements = flattenTree(treeData);
     
-    // Función para encontrar descendientes usando un enfoque iterativo (sin recursión)
+    console.log('🔍 DEBUG - Elemento seleccionado:', {
+      id: element.id,
+      type: element.type,
+      name: element.name || element.nomenclature,
+      active: element.active
+    });
+    
+    console.log('🔍 DEBUG - Total elementos disponibles:', allElements.length);
+    
+    // Función para encontrar descendientes SOLO de este elemento
     const getAllDescendants = (parentId: string): StructureElement[] => {
       const descendants: StructureElement[] = [];
-      const toProcess = [parentId]; // Cola de IDs a procesar
-      const processed = new Set<string>(); // IDs ya procesados
+      const toProcess = [parentId];
+      const processed = new Set<string>();
+      
+      console.log(`🔍 Iniciando búsqueda de descendientes para: ${parentId}`);
       
       while (toProcess.length > 0) {
-        const currentId = toProcess.shift()!;
+        const currentId = String(toProcess.shift()!);
         
-        // Evitar procesar el mismo elemento dos veces
         if (processed.has(currentId)) continue;
         processed.add(currentId);
         
-        // Encontrar hijos directos de este elemento
-        const children = allElements.filter(el => el.parentElementId === currentId);
+          const children = allElements.filter(el => String(el.parentElementId) === String(currentId));
+        
+        console.log(`  🔍 Hijos directos de ${currentId}:`, children.map(c => ({
+          id: c.id,
+          type: c.type,
+          name: c.name || c.nomenclature,
+          parentId: c.parentElementId
+        })));
         
         for (const child of children) {
+        if (!descendants.some(d => d.id === child.id)) {
           descendants.push(child);
-          toProcess.push(child.id); // Agregar para procesar sus hijos
+          toProcess.push(String(child.id)); // convertir a string
         }
       }
+    }
       
+      console.log(`✅ Total descendientes encontrados: ${descendants.length}`);
       return descendants;
     };
     
     if (element.active) {
-  // ========== DESACTIVAR elemento ==========
-  await deactivateElement(element.type, element.id);
-  
-  // Si está marcado el checkbox, desactivar hijos en cascada
-  if (cascadeChildren) {
-    const descendants = getAllDescendants(element.id);
-    
-    console.log('🔍 DESACTIVANDO EN CASCADA:');
-    console.log('  📦 Total elementos en treeData:', allElements.length);
-    console.log('  👶 Descendientes encontrados:', descendants.length);
-    console.log('  📋 Lista de descendientes:', descendants.map(d => ({
-      id: d.id,
-      type: d.type,
-      name: d.name || d.nomenclature,
-      parentId: d.parentElementId,
-      active: d.active
-    })));
-    
-    // Desactivar todos los descendientes activos
-    for (const descendant of descendants) {
-      if (descendant.active) {
-        console.log(`  ⚡ Desactivando: ${descendant.type} - ${descendant.name || descendant.nomenclature}`);
-        await deactivateElement(descendant.type, descendant.id);
+      // ========== DESACTIVAR elemento ==========
+      console.log('⚡ DESACTIVANDO elemento principal');
+      await deactivateElement(element.type, element.id);
+      
+      // Si está marcado el checkbox, desactivar hijos en cascada
+      if (cascadeChildren) {
+        const descendants = getAllDescendants(element.id);
+        
+        console.log('📋 Descendientes a desactivar:', descendants.map(d => ({
+          id: d.id,
+          type: d.type,
+          name: d.name || d.nomenclature,
+          parentId: d.parentElementId,
+          active: d.active
+        })));
+        
+        // Desactivar todos los descendientes activos
+        for (const descendant of descendants) {
+          if (descendant.active) {
+            console.log(`  ⚡ Desactivando: ${descendant.type} - ${descendant.name || descendant.nomenclature}`);
+            await deactivateElement(descendant.type, descendant.id);
+          }
+        }
       }
-    }
-  }
-  
-} else {
+      
+    } else {
       // ========== ACTIVAR elemento ==========
+      console.log('✅ ACTIVANDO elemento principal');
       await activateElement(element.type, element.id);
       
       // Si está marcado el checkbox, activar hijos inactivos en cascada
@@ -213,6 +237,7 @@ const StructureList: React.FC = () => {
         // Activar todos los descendientes inactivos
         for (const descendant of descendants) {
           if (!descendant.active) {
+            console.log(`  ✅ Activando: ${descendant.type} - ${descendant.name || descendant.nomenclature}`);
             await activateElement(descendant.type, descendant.id);
           }
         }
@@ -312,6 +337,7 @@ const StructureList: React.FC = () => {
           showCancel={true}
           showConfirm={true}
         >
+
           <div className="mt-4 p-3 bg-[var(--bg-info)] border border-[var(--border-info)] rounded-lg">
             <p className="text-sm text-[var(--text-info)]">
               Al activar este elemento, volverá a estar disponible para su uso en el sistema.
@@ -367,6 +393,7 @@ const StructureList: React.FC = () => {
           showCancel={true}
           showConfirm={true}
         >
+
           <div className="mt-4 p-3 bg-[var(--bg-warning)] border border-[var(--border-warning)] rounded-lg">
             <p className="text-sm text-[var(--text-warning)]">
               Al desactivar este elemento, dejará de estar disponible en el sistema. Esta acción es reversible.

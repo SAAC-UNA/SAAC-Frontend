@@ -100,12 +100,32 @@ export const VALIDATION_RULES = {
   /** Longitud máxima para descripción */
   DESCRIPTION_MAX_LENGTH: 250,
 
+  /** Límites específicos de descripción por tipo de elemento */
+  DESCRIPTION_MAX_LENGTH_BY_TYPE: {
+    [ElementType.UNIVERSITY]: 250,
+    [ElementType.CAMPUS]: 250,
+    [ElementType.FACULTY]: 250,
+    [ElementType.CAREER]: 250,
+    [ElementType.DIMENSION]: 250,
+    [ElementType.COMPONENT]: 250,
+    [ElementType.CRITERIA]: 300,
+    [ElementType.STANDARD]: 250,
+    [ElementType.EVIDENCE]: 80
+  } as const,
+
   /** Patrón permitido para códigos (letras, números, guiones y guiones bajos) */
   NOMENCLATURE_PATTERN: /^[A-Z0-9\-_.]+$/i,
 
   /** Patrón permitido para nombres (letras con acentos, números, espacios y puntuación básica) */
   NAME_PATTERN: /^[a-zA-ZáéíóúÁÉÍÓÚñÑüÜ0-9\s\-_.,()]+$/
 } as const;
+
+/**
+ * Función helper para obtener el límite de descripción según el tipo
+ */
+export const getDescriptionMaxLength = (type: ElementType): number => {
+  return VALIDATION_RULES.DESCRIPTION_MAX_LENGTH_BY_TYPE[type];
+};
 
 /**
  * Configuración de interfaz de usuario

@@ -7,7 +7,7 @@ import { ScreenContainer } from '@/Components/Ui/ScreenContainer';
 import { LoadingSpinner } from '@/Components/Ui/Loading';
 import { useStructure } from '@/Hooks/UseStructure';
 import type { StructureElement, ElementType } from '@/Types/StructureTypes';
-import { FORM_CONFIG, VALIDATION_RULES} from '@/Constants/StructureConstants';
+import { FORM_CONFIG, VALIDATION_RULES, getDescriptionMaxLength} from '@/Constants/StructureConstants';
 import { SuccessModal } from '@/Components/Ui/SuccessModal';
 
 interface EditableElement extends StructureElement {
@@ -86,6 +86,17 @@ const validateField = (field: 'nomenclature' | 'name' | 'description', value: st
       if (value && !VALIDATION_RULES.NOMENCLATURE_PATTERN.test(value)) {
         return 'El código solo puede contener letras, números, guiones y guiones bajos';
       }
+
+      // Validar duplicados (excepto el elemento actual)
+      const duplicateNomenclature = allElements.find(el => 
+        el.nomenclature?.toLowerCase() === value.toLowerCase() &&
+        el.type === currentElement.type &&
+        el.id !== currentElement.id  // ← Esta es la línea clave: excluir el elemento actual
+      );
+      if (duplicateNomenclature) {
+        return 'Ya existe otro elemento de este tipo con esta nomenclatura';
+      }
+
       return null;
 
     case 'name':
@@ -98,14 +109,26 @@ const validateField = (field: 'nomenclature' | 'name' | 'description', value: st
       if (value && !VALIDATION_RULES.NAME_PATTERN.test(value)) {
         return 'El nombre contiene caracteres no permitidos';
       }
+
+      // Validar duplicados (excepto el elemento actual)
+      const duplicateName = allElements.find(el => 
+        el.name?.toLowerCase() === value.toLowerCase() &&
+        el.type === currentElement.type &&
+        el.id !== currentElement.id  // ← Excluir el elemento actual
+      );
+      if (duplicateName) {
+        return 'Ya existe otro elemento de este tipo con este nombre';
+      }
+
       return null;
 
     case 'description':
       if (config.requiredFields.includes('description') && !value.trim()) {
         return 'La descripción es obligatoria';
       }
-      if (value && value.length > VALIDATION_RULES.DESCRIPTION_MAX_LENGTH) {
-        return `La descripción no puede exceder ${VALIDATION_RULES.DESCRIPTION_MAX_LENGTH} caracteres`;
+      const maxLength = getDescriptionMaxLength(currentElement.type);
+      if (value && value.length > maxLength) {
+        return `La descripción no puede exceder ${maxLength} caracteres`;
       }
       return null;
 
@@ -217,6 +240,12 @@ const validateForm = (): boolean => {
   // Limpiar error del campo cuando el usuario empiece a escribir
   if (errors[field as keyof typeof errors]) {
     setErrors(prev => ({ ...prev, [field]: undefined }));
+  }
+
+  // Validar el campo en tiempo real
+  const error = validateField(field as 'nomenclature' | 'name' | 'description', value);
+  if (error) {
+    setErrors(prev => ({ ...prev, [field]: error }));
   }
 
   // Verificar si hay cambios
@@ -451,7 +480,7 @@ const validateForm = (): boolean => {
                           : ''
                     }`}
                     placeholder="Descripción detallada del elemento"
-                    maxLength={VALIDATION_RULES.DESCRIPTION_MAX_LENGTH}
+                    maxLength={getDescriptionMaxLength(currentElement.type)}
                   />
                   {errors.description && (
                     <p className="mt-1 text-sm text-red-600">{errors.description}</p>
@@ -461,7 +490,7 @@ const validateForm = (): boolean => {
                       Descripción detallada del elemento
                     </p>
                     <span className="text-xs text-gray-400">
-                      {formData.description.length}/500 caracteres
+                      {formData.description.length}/{getDescriptionMaxLength(currentElement.type)} caracteres
                     </span>
                   </div>
                 </div>

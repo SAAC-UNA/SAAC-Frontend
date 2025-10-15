@@ -18,7 +18,8 @@ import {
   VALIDATION_RULES,
   USER_MESSAGES,
   FORM_CONFIG,
-  getRequiredParentType
+  getRequiredParentType,
+  getDescriptionMaxLength
 } from '@/Constants/StructureConstants';
 
 /**
@@ -126,7 +127,17 @@ export const StructureCreation: React.FC = () => {
         if (!VALIDATION_RULES.NOMENCLATURE_PATTERN.test(value)) {
           return 'El código solo puede contener letras, números, guiones y guiones bajos';
         }
-        return null;
+
+        // Validar duplicados
+      const duplicateNomenclature = elements.find(el => 
+        el.nomenclature?.toLowerCase() === value.toLowerCase() &&
+        el.type === formData.type
+      );
+      if (duplicateNomenclature) {
+        return 'Ya existe un elemento de este tipo con esta nomenclatura';
+      }
+  
+      return null;
 
       case 'name':
         if (!value.trim()) return 'El nombre es obligatorio';
@@ -136,6 +147,15 @@ export const StructureCreation: React.FC = () => {
         if (!VALIDATION_RULES.NAME_PATTERN.test(value)) {
           return 'El nombre contiene caracteres no permitidos';
         }
+
+        // Validar duplicados
+        const duplicateName = elements.find(el => 
+          el.name?.toLowerCase() === value.toLowerCase() &&
+          el.type === formData.type
+        );
+        if (duplicateName) {
+          return 'Ya existe un elemento de este tipo con este nombre';
+        }
         return null;
 
       case 'description':
@@ -144,11 +164,12 @@ export const StructureCreation: React.FC = () => {
         return 'La descripción es obligatoria';
       }
       // Validar longitud máxima
-      if (value && value.length > VALIDATION_RULES.DESCRIPTION_MAX_LENGTH) {
-        return `La descripción no puede exceder ${VALIDATION_RULES.DESCRIPTION_MAX_LENGTH} caracteres`;
+      const maxLength = getDescriptionMaxLength(formData.type);
+      if (value && value.length > maxLength) {
+        return `La descripción no puede exceder ${maxLength} caracteres`;
       }
   
-  return null;
+      return null;
 
       case 'parentElementId':
         if (config.showParentSelector && !value) {
@@ -199,6 +220,12 @@ export const StructureCreation: React.FC = () => {
     // Limpiar error del campo cuando el usuario empiece a escribir
     if (errors[field]) {
       setErrors(prev => ({ ...prev, [field]: undefined }));
+    }
+
+    // Validar el campo en tiempo real
+    const error = validateField(field, value);
+    if (error) {
+      setErrors(prev => ({ ...prev, [field]: error }));
     }
   };
 
@@ -358,7 +385,7 @@ const handleSubmit = async (e: React.FormEvent) => {
                 id="description"
                 value={formData.description}
                 onChange={(e) => handleFieldChange('description', e.target.value)}
-                maxLength={VALIDATION_RULES.DESCRIPTION_MAX_LENGTH}
+                maxLength={getDescriptionMaxLength(formData.type)}
                 className={cn(
                   'w-full border rounded-lg p-3 transition-colors duration-200',
                   'focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent',
@@ -374,7 +401,7 @@ const handleSubmit = async (e: React.FormEvent) => {
                 <p className="mt-1 text-sm text-[var(--text-error)]">{errors.description}</p>
             )}
             <p className="mt-1 text-sm text-gray-500">
-              Máximo {VALIDATION_RULES.DESCRIPTION_MAX_LENGTH} caracteres.
+              Máximo {getDescriptionMaxLength(formData.type)} caracteres.
             </p>
           </div>
         )}
