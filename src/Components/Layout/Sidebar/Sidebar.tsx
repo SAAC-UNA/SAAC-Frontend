@@ -2,9 +2,9 @@ import React from 'react';
 import { useSidebar } from '@/Context/SidebarContext';
 import { ModernSidebarItem } from './SidebarItem';
 import { getNavigationItems } from '@/Navigation';
-import { cn } from '@/utils/ClassNames';
-import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from '@/components/Ui/Sheet';
-import { TooltipProvider } from '@/components/Ui/Tooltip';
+import { cn } from '@/Utils/ClassNames';
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from '@/Components/Ui/Sheet';
+import { TooltipProvider } from '@/Components/Ui/Tooltip';
 import { useAuth } from '@/Context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 
@@ -33,7 +33,7 @@ export const ModernSidebar: React.FC<SidebarProps> = ({
 
   const logoutItem = {
     id: 'logout',
-    label: 'Cerrar Sesión',
+    label: 'Salir',
     icon: 'system-icon:logout',
     href: '#',
     onClick: handleLogout
@@ -42,8 +42,8 @@ export const ModernSidebar: React.FC<SidebarProps> = ({
   const sidebarContent = (
     <div className="flex flex-col h-full">
       {/* Logo Section */}
-      <div className="flex-shrink-0 border-b border-blanco-una/20">
-        <div className="flex justify-center items-center py-6 px-6">
+      <div className="flex-shrink-0 p-6">
+        <div className="flex justify-center items-center">
           <a 
             href="https://www.una.ac.cr/"
             target="_blank"

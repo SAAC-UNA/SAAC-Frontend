@@ -1,5 +1,5 @@
 import React from 'react';
-import { SidebarProvider } from '@/context/SidebarContext';
+import { SidebarProvider } from '@/Context/SidebarContext';
 import { ModernSidebar, MainContent, AppHeader } from './Sidebar/Index';
 import { ToastContainer } from '@/Components/Ui/Toast';
 

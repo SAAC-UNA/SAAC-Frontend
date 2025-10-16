@@ -1,7 +1,7 @@
 import React from 'react';
-import type { NavItem } from '@/types/CommonTypes';
-import { cn } from '@/utils/ClassNames';
-import { useNavigationItems } from '@/hooks/UseNavigation';
+import type { NavItem } from '@/Types/CommonTypes';
+import { cn } from '@/Utils/ClassNames';
+import { useNavigationItems } from '@/Hooks/UseNavigation';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/Components/Ui/Tooltip';
 import { getIconByName } from '@/Components/Ui/Icons/SystemIcons';
 
@@ -23,15 +23,15 @@ export const ModernSidebarItem: React.FC<ModernSidebarItemProps> = ({
   const isActive = isItemActive(item.id);
 
   const handleClick = () => {
-  // Si el item tiene un onClick personalizado (como logout), ejecutarlo
-  if (item.onClick) {
-    item.onClick();
-    return;
-  }
-  
-  // Comportamiento normal de navegación
-  handleItemClick(item.id, item.href, item.isExpandable);
-};
+    // Si el item tiene un onClick personalizado (como logout), ejecutarlo
+    if (item.onClick) {
+      item.onClick();
+      return;
+    }
+    
+    // Comportamiento normal de navegación
+    handleItemClick(item.id, item.href, item.isExpandable);
+  };
 
   const buttonContent = (
     <div className={cn(
@@ -55,13 +55,13 @@ export const ModernSidebarItem: React.FC<ModernSidebarItemProps> = ({
           !isSubItem && (
             isActive 
               ? 'bg-blanco-una-2 text-rojo-una-2 font-semibold' // Activo: fondo blanco + texto rojo
-              : 'text-blanco-una' // Inactivo: texto blanco
+              : 'text-blanco-una-2' // Inactivo: texto blanco
           ),
           // Estados activo/inactivo para subitems
           isSubItem && (
             isActive
               ? 'bg-blanco-una-2 text-rojo-una-2 font-semibold shadow-md'
-              : 'text-blanco-una'
+              : 'text-blanco-una-2'
           ),
           // Hover effects solo para items inactivos
           !isActive && 'hover:bg-rojo-una/20'
@@ -97,7 +97,7 @@ export const ModernSidebarItem: React.FC<ModernSidebarItemProps> = ({
           {/* Renderizar icono del sistema */}
           <div className={cn(
             "w-5 h-5 transition-all duration-200",
-            isActive ? "text-rojo-una-2" : "text-blanco-una"
+            isActive ? "text-rojo-una-2" : "text-blanco-una-2"
           )}>
             {getIconByName(item.icon.replace('system-icon:', ''), 'md')}
           </div>
@@ -119,7 +119,7 @@ export const ModernSidebarItem: React.FC<ModernSidebarItemProps> = ({
           )}>
             <div className={cn(
               "w-7 h-7 transition-all duration-200",
-              isActive ? "text-rojo-una-2" : "text-blanco-una"
+              isActive ? "text-rojo-una-2" : "text-blanco-una-2"
             )}>
               {getIconByName('caret-left', 'lg')}
             </div>

@@ -1,8 +1,8 @@
 import React from 'react';
 import { Button } from '@/Components/Ui/Button';
 import { SystemIcons } from '@/Components/Ui/Icons/SystemIcons';
-import { useSidebar } from '@/context/SidebarContext';
-import { cn } from '@/utils/ClassNames';
+import { useSidebar } from '@/Context/SidebarContext';
+import { cn } from '@/Utils/ClassNames';
 
 /**
  * HEADER DE LA APLICACIÓN CON TRIGGER DEL SIDEBAR
