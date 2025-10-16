@@ -6,7 +6,6 @@ const nutIcon = 'system-icon:nut';
 const userIcon = 'system-icon:user';
 const processIcon = 'system-icon:box-archive';
 const evidenceIcon = 'system-icon:shield';
-const boxIcon = 'system-icon:box';
 
 /**
  * Obtener items de navegación filtrados por rol

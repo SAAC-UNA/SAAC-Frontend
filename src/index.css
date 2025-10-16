@@ -445,7 +445,7 @@
   .rounded-corner {
     border-radius: 15px;
   }
-
+  /*===== Mínima altura del Layout para el screenContainer =====*/
   .min-h-app {
     /* py-8 = 4rem (2 + 2) */
     min-height: calc(100dvh - var(--app-header-height, 64px) - 3rem); /* Ajustar según la altura del header */
