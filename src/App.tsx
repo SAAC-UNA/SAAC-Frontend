@@ -6,24 +6,19 @@ import { ToastProvider } from './Context/ToastContext';
 import { ProtectedRoute } from '@/Components/Ui/ProtectedRoute';
 // Layouts
 import { AppLayout } from './Components/Layout/AppLayout';
-import { Layout } from './Components/Layout/Index';
-import { ScreenContainer } from '@/Components/Ui/ScreenContainer';
 // Auth
 import { Login } from '@/Pages/Auth/Login';
 // Roles
-import RolesList from '@/Pages/Roles/RolesList';
 import RoleForm from '@/Pages/Roles/RoleForm';
 // Roles
 import { RolesRepository } from './Pages/Roles';
 // Users
-import UsersList from '@/Pages/Users/UsersList';
 import { UsersRepository, EditUserPage } from './Pages/Users';
 // Structure
 import StructureList from '@/Pages/Structure/StructureList';
 import StructureCreation from '@/Pages/Structure/StructureCreation';
 import StructureEditForm from '@/Pages/Structure/StructureEditForm';
 // Structure
-import StructureDeletion from './Pages/Structure/StructureDeletion';
 import StructureEditList from './Pages/Structure/StructureEditList';
 // Otros
 import AccreditationProgress from '@/Pages/Accreditation/AccreditationProgress';
@@ -34,9 +29,10 @@ function App() {
   return (
     <BrowserRouter>
       <AuthProvider>
-        <NavigationProvider>
-          <SidebarProvider>
-            <Routes>
+        <ToastProvider>
+          <NavigationProvider>
+            <SidebarProvider>
+              <Routes>
               {/* Rutas públicas */}
               <Route path="/login" element={<Login />} />
              
@@ -156,6 +152,7 @@ function App() {
             </Routes>
           </SidebarProvider>
         </NavigationProvider>
+        </ToastProvider>
       </AuthProvider>
     </BrowserRouter>
   );
