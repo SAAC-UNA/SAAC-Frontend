@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { cn } from '@/utils/ClassNames';
+import { cn } from '@/Utils/ClassNames';
 
 interface TooltipProviderProps {
   delayDuration?: number;

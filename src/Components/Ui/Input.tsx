@@ -1,5 +1,5 @@
 import React, { forwardRef } from 'react';
-import { cn } from '@/utils/ClassNames';
+import { cn } from '@/Utils/ClassNames';
 import { type ComponentSize } from '@/constants/ComponentSizes';
 import { SystemIcons } from './Icons/SystemIcons';
 

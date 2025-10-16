@@ -1,5 +1,5 @@
 import React from 'react';
-import { cn } from '@/utils/ClassNames';
+import { cn } from '@/Utils/ClassNames';
 import { useToast, type Toast } from '@/Context/ToastContext';
 
 interface ToastItemProps {

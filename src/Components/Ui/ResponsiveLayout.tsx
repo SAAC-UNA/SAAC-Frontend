@@ -1,7 +1,7 @@
 import React from 'react';
 import { useSidebar } from '@/context/SidebarContext';
 import { useBreakpoint } from '@/hooks/UseBreakpoint';
-import { cn } from '@/utils/ClassNames';
+import { cn } from '@/Utils/ClassNames';
 
 /**
  * COMPONENTE WRAPPER PARA CONTENIDO RESPONSIVE DEL SIDEBAR

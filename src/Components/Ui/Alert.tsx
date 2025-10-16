@@ -11,7 +11,7 @@
  */
 
 import React from 'react';
-import { cn } from '@/utils/ClassNames';
+import { cn } from '@/Utils/ClassNames';
 import { SystemIcons } from './Icons/SystemIcons';
 import { Button } from './Button';
 

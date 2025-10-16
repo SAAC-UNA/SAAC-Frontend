@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { cn } from '@/utils/ClassNames';
+import { cn } from '@/Utils/ClassNames';
 import { SystemIcons } from './Icons/SystemIcons';
 
 export interface MultiSelectOption {

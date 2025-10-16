@@ -13,7 +13,7 @@
  */
 
 import React, { useState } from 'react';
-import { cn } from '@/utils/ClassNames';
+import { cn } from '@/Utils/ClassNames';
 import { Button } from './Button';
 import { SearchInput } from './SearchInput';
 import { LoadingSpinner } from './Loading';

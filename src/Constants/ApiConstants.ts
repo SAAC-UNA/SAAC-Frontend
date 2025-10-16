@@ -11,7 +11,8 @@ export const API_ENDPOINTS = {
     LOGIN: '/auth/login',
     LOGOUT: '/auth/logout',
     REFRESH: '/auth/refresh',
-    PROFILE: '/auth/profile'
+    PROFILE: '/auth/profile',
+    ME: '/auth/me' // Endpoint alternativo para obtener usuario actual con carreras
   },
   ROLES: {
     LIST: '/roles',

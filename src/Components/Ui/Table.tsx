@@ -11,7 +11,7 @@
  */
 
 import React from 'react';
-import { cn } from '@/utils/ClassNames';
+import { cn } from '@/Utils/ClassNames';
 import { Button } from './Button';
 import { Input } from './Input';
 import { LoadingSpinner } from './Loading';
