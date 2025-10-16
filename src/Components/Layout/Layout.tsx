@@ -44,8 +44,10 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
         <ModernSidebar />
         <MainContent>
           <AppHeader />
-          <div className="flex-1 flex justify-center items-start">
-            <div className="container mx-auto px-4 py-8 w-full flex justify-center">
+          <div className="flex-1">
+            <div className="px-4 pt-4 pb-8"
+              style={{ ['--app-header-height' as any]: '64px' }}
+            >
               {children}
             </div>
           </div>

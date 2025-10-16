@@ -1,6 +1,6 @@
 import React from 'react';
-import { Button } from '@/components/Ui/Button';
-import { SystemIcons } from '@/components/Ui/Icons/SystemIcons';
+import { Button } from '@/Components/Ui/Button';
+import { SystemIcons } from '@/Components/Ui/Icons/SystemIcons';
 import { useSidebar } from '@/context/SidebarContext';
 import { cn } from '@/utils/ClassNames';
 

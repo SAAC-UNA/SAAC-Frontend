@@ -1,0 +1,96 @@
+/**
+ * ConfigurationStep - Tercer paso del wizard
+ * Permite configurar fecha límite y comentarios adicionales
+ */
+
+import React from 'react';
+import { DatePicker } from '@/Components/Ui/Calendar/DatePicker';
+import { Textarea } from '@/Components/Ui/Textarea';
+import type { 
+  EvidenceAssignmentFormData, 
+  ValidationErrors 
+} from '@/Types/EvidenceAssignment';
+
+interface ConfigurationStepProps {
+  formData: EvidenceAssignmentFormData;
+  updateFormData: (updates: Partial<EvidenceAssignmentFormData>) => void;
+  errors: ValidationErrors;
+}
+
+export const ConfigurationStep: React.FC<ConfigurationStepProps> = ({
+  formData,
+  updateFormData,
+  errors
+}) => {
+  // Manejar cambio de fecha límite
+  const handleDateChange = (date: string) => {
+    updateFormData({ fecha_limite: date });
+  };
+
+  // Manejar cambio de comentario
+  const handleCommentChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    const value = e.target.value;
+    // Limitar a 300 caracteres
+    if (value.length <= 300) {
+      updateFormData({ comentario: value });
+    }
+  };
+
+  // Fecha mínima (mañana)
+  const tomorrow = new Date();
+  tomorrow.setDate(tomorrow.getDate() + 1);
+  const minDate = tomorrow.toISOString().split('T')[0];
+
+  return (
+    <div className="space-y-6">
+      <div>
+        <h2 className="text-lg font-bold text-negro-una mb-3">
+          Configuración Adicional
+        </h2>
+        <p className="text-gris-una">
+          Establezca parámetros opcionales para la asignación de evidencias
+        </p>
+      </div>
+
+      <div className="space-y-6">
+        {/* Fecha Límite */}
+        <div>
+          <DatePicker
+            label="Fecha Límite de Entrega"
+            value={formData.fecha_limite}
+            onChange={handleDateChange}
+            placeholder="Selecciona una fecha límite..."
+            minDate={minDate}
+            error={errors.fecha_limite}
+            helperText="Esta fecha será informada a los destinatarios como fecha límite de entrega"
+            className="max-w-md"
+          />
+          {/** Establecer estos mensajes en un ícono de información celeste en una esquina
+          <div className="mt-3 p-3 bg-amber-50 border border-amber-200 rounded-lg">
+            <p className="text-sm text-amber-800 flex items-start gap-2">
+              <SystemIcons.interface.alert size="sm" className="text-amber-600 mt-0.5 flex-shrink-0" />
+              <span>
+                Si no estableces una fecha límite, la asignación se marcará como "sin fecha límite" 
+                y los destinatarios podrán gestionar la evidencia según sus propios cronogramas.
+              </span>
+            </p>
+          </div>
+          */}
+        </div>
+        {/* Comentario */}
+        <div>
+          <Textarea
+            label="Comentario sobre la Asignación"
+            value={formData.comentario || ''}
+            onChange={handleCommentChange}
+            placeholder="Añada instrucciones especiales, contexto o notas sobre esta asignación..."
+            rows={5}
+            maxLength={300}
+            helperText={`${(formData.comentario || '').length}/300 caracteres`}
+            className="resize-none"
+          />
+        </div>
+      </div>
+    </div>
+  );
+};

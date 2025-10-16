@@ -98,7 +98,7 @@ class RoleService {
    */
   async crearRol(roleData: CreateRoleData): Promise<ApiResponse<Role>> {
     try {
-      const response = await fetch(`${this.baseURL}/roles/crear`, {
+      const response = await fetch(`${this.baseURL}/roles`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

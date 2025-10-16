@@ -15,7 +15,7 @@
  */
 
 import React from 'react';
-import { Button, Tooltip, TooltipContent, TooltipTrigger } from '@/components/index';
+import { Button, Tooltip, TooltipContent, TooltipTrigger } from '@/Components/Ui/Index';
 import type { ComponentSize } from '@/constants/ComponentSizes';
 
 type ButtonVariant = 'primary' | 'secondary' | 'tertiary' | 'outline' | 'ghost' | 'transparent' | 'success' | 'tableView' | 'tableEdit' | 'tableDelete' | 'tablePower' | 'tablePowerInactive';

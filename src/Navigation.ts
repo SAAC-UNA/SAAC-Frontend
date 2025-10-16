@@ -5,7 +5,7 @@ const rolesIcon = 'system-icon:shield';
 const nutIcon = 'system-icon:nut';
 const userIcon = 'system-icon:user';
 const processIcon = 'system-icon:box-archive';
-const cycleIcon = 'system-icon:calendar';
+const evidenceIcon = 'system-icon:shield';
 
 /**
  * Obtener items de navegación filtrados por rol
@@ -45,7 +45,23 @@ export const getNavigationItems = (userRole?: string): NavItem[] => {
   });
 
   // Gestión de Estructura - Todos los autenticados
-  items.push({
+  items.push(
+  {
+    id: 'evidenciasAsignar',
+    label: 'Asignar Evidencias',
+    icon: evidenceIcon,
+    href: '/evidencias/asignar',
+    isActive: false,
+  },
+  {
+    id: 'estructuraVer',
+    label: 'Estructura del Repositorio',
+    icon: boxIcon,
+    href: '/estructura/repositorio',
+    isActive: false,
+    isExpandable: false
+  },
+  {
     id: 'estructura',
     label: 'Gestión de Estructura',
     icon: nutIcon,

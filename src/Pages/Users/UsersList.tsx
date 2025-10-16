@@ -5,24 +5,23 @@
  * entre las diferentes acciones (crear, editar, eliminar).
  */
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { UsersTable } from './Components/UsersTable';
 import { UserDetailsModal } from './Components/UserDetailsModal';
-import { EditConfirmationModal } from '@/Components/Ui/EditConfirmationModal';
 import { DeleteConfirmationModal } from '@/Components/Ui/DeleteConfirmationModal';
 import { ScreenContainer } from '@/Components/Ui/ScreenContainer';
-import { MODULE_INFO } from '@/Constants/ModuleInfo';
+import { getContextualInfo } from '@/Constants/ModuleInfo';
 import { useUsers } from '@/Hooks/UseUsers';
 import type { User } from '@/Services/UserService';
 
 const UsersRepository: React.FC = () => {
   // Obtener información del módulo desde ModuleInfo
-  const moduleInfo = MODULE_INFO.users;
+  const moduleInfo = getContextualInfo('users', 'list');
   const navigate = useNavigate();
 
   // Usar el hook de usuarios
-  const { activarUsuario, desactivarUsuario, isLoading } = useUsers();
+  const { activarUsuario, desactivarUsuario, isLoading, users, loadUsers, error } = useUsers();
 
   // Estado para el modal de detalles del usuario
   const [userDetailsModalState, setUserDetailsModalState] = useState<{
@@ -67,19 +66,19 @@ const UsersRepository: React.FC = () => {
   const confirmStateChange = async () => {
     if (!stateChangeModalState.user) return;
 
+    const user = stateChangeModalState.user;
+    
     try {
-      const user = stateChangeModalState.user;
       if (user.status === 'active') {
         await desactivarUsuario(user.id);
       } else {
         await activarUsuario(user.id);
       }
-      
-      // Cerrar el modal después de completar la acción
-      setStateChangeModalState({ isOpen: false, user: null });
     } catch (error) {
       console.error('Error cambiando estado del usuario:', error);
-      // No cerrar el modal en caso de error para que el usuario pueda reintentar
+    } finally {
+      // Siempre cerrar el modal, sin importar si hubo error o no
+      setStateChangeModalState({ isOpen: false, user: null });
     }
   };
 
@@ -87,8 +86,13 @@ const UsersRepository: React.FC = () => {
     setStateChangeModalState({ isOpen: false, user: null });
   };
 
+  // Cargar usuarios al montar el componente
+  useEffect(() => {
+    loadUsers();
+  }, [loadUsers]);
+
   return (
-    <>
+
       <ScreenContainer
         title={moduleInfo.title}
         description={moduleInfo.description}
@@ -98,8 +102,11 @@ const UsersRepository: React.FC = () => {
             onViewUser={handleViewUser}
             onEdit={handleEditUser}
             onState={handleChangeState}
+            users={users}
+            isLoading={isLoading}
+            error={error}
           />
-        </ScreenContainer>
+
 
         {/* Modal de detalles del usuario */}
         <UserDetailsModal
@@ -110,7 +117,7 @@ const UsersRepository: React.FC = () => {
 
         {/* Modal de confirmación para activación */}
         {stateChangeModalState.user?.status === 'inactive' && (
-          <EditConfirmationModal
+          <DeleteConfirmationModal
             isOpen={stateChangeModalState.isOpen}
             onClose={closeStateChangeModal}
             onConfirm={confirmStateChange}
@@ -118,7 +125,7 @@ const UsersRepository: React.FC = () => {
             message={`¿Está seguro de que desea activar al usuario "${stateChangeModalState.user?.name}"?`}
             confirmLabel="Activar"
             cancelLabel="Cancelar"
-            variant="info"
+            variant="warning"
             isLoading={isLoading}
             description="Al activar este usuario, podrá acceder al sistema con sus credenciales."
           />
@@ -140,7 +147,7 @@ const UsersRepository: React.FC = () => {
             description="Al desactivar este usuario, se revocará su acceso al sistema. Esta acción puede ser revertida en el futuro."
           />
         )}
-    </>
+        </ScreenContainer>
   );
 };
 

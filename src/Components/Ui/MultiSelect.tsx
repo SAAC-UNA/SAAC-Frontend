@@ -179,7 +179,7 @@ export const MultiSelect: React.FC<MultiSelectProps> = ({
 
       {/* Dropdown */}
       {isOpen && !disabled && (
-        <div className="absolute z-50 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg max-h-60 overflow-auto custom-scrollbar">
+        <div className="absolute z-50 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg max-h-[140px] overflow-auto custom-scrollbar">
           <div className="py-1 text-sm">
             {/* Botón Seleccionar todo dentro del dropdown */}
             {showSelectAll && options.length > 1 && (

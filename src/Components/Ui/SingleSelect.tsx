@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { cn } from '@/utils/ClassNames';
-import { type ComponentSize } from '@/constants/ComponentSizes';
+import { cn } from '@/Utils/ClassNames';
+import { type ComponentSize } from '@/Constants/ComponentSizes';
 import { SystemIcons } from './Icons/SystemIcons';
 
 export interface SelectOption {
@@ -143,7 +143,7 @@ export const CustomSelect: React.FC<CustomSelectProps> = ({
 
       {/* Dropdown */}
       {isOpen && !disabled && (
-        <div className="absolute z-50 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg max-h-60 overflow-auto custom-scrollbar">
+        <div className="absolute z-50 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg max-h-[120px] overflow-auto custom-scrollbar">
           <div className={cn('py-1', getDropdownSizeClasses())}>
             {options.map((option) => (
               <button

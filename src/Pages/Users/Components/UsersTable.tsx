@@ -11,6 +11,10 @@ interface UsersTableProps {
     onState?: (user: User) => void;
     itemsPerPage?: number;
     unstyled?: boolean;
+    // Props para datos externos
+    users?: User[];
+    isLoading?: boolean;
+    error?: string | null;
 }
 
 export const UsersTable: React.FC<UsersTableProps> = ({
@@ -18,9 +22,20 @@ export const UsersTable: React.FC<UsersTableProps> = ({
     onEdit,
     onState,
     itemsPerPage = 4,
-    unstyled = false
+    unstyled = false,
+    users: externalUsers,
+    isLoading: externalIsLoading,
+    error: externalError
 }) => {
-    const { users, isLoading, error, loadUsers } = useUsers();
+    // Usar datos externos si están disponibles, sino usar hook interno
+    const internalHook = useUsers();
+    
+    // Si se pasan props externas, usar esas; si no, usar hook interno
+    const shouldUseExternal = externalUsers !== undefined;
+    const users = shouldUseExternal ? externalUsers : internalHook.users;
+    const isLoading = shouldUseExternal ? (externalIsLoading ?? false) : internalHook.isLoading;
+    const error = shouldUseExternal ? (externalError ?? null) : internalHook.error;
+    const { loadUsers } = internalHook;
 
     const [searchQuery, setSearchQuery] = useState('');
     const [filteredUsers, setFilteredUsers] = useState<User[]>([]);
@@ -32,10 +47,12 @@ export const UsersTable: React.FC<UsersTableProps> = ({
         return text.substring(0, maxLength) + '...';
     };
 
-    // Cargar usuarios al montar el componente
+    // Cargar usuarios al montar el componente solo si no se pasan como props
     useEffect(() => {
-        loadUsers();
-    }, []);
+        if (!shouldUseExternal) {
+            loadUsers();
+        }
+    }, [shouldUseExternal, loadUsers]);
 
     // Filtrar usuarios basado en la búsqueda
     useEffect(() => {

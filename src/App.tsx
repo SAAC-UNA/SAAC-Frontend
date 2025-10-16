@@ -2,19 +2,34 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider } from '@/Context/AuthContext';
 import { SidebarProvider } from '@/Context/SidebarContext';
 import { NavigationProvider } from '@/Context/NavigationContext';
+import { ToastProvider } from './Context/ToastContext';
 import { ProtectedRoute } from '@/Components/Ui/ProtectedRoute';
-// Importar layout principal
+// Layouts
 import { AppLayout } from './Components/Layout/AppLayout';
+import { Layout } from './Components/Layout/Index';
 import { ScreenContainer } from '@/Components/Ui/ScreenContainer';
+// Auth
 import { Login } from '@/Pages/Auth/Login';
+// Roles
 import RolesList from '@/Pages/Roles/RolesList';
 import RoleForm from '@/Pages/Roles/RoleForm';
+// Roles
+import { RolesRepository } from './Pages/Roles';
+// Users
+import UsersList from '@/Pages/Users/UsersList';
+import { UsersRepository, EditUserPage } from './Pages/Users';
+// Structure
 import StructureList from '@/Pages/Structure/StructureList';
 import StructureCreation from '@/Pages/Structure/StructureCreation';
 import StructureEditForm from '@/Pages/Structure/StructureEditForm';
-import UsersList from '@/Pages/Users/UsersList';
+// Structure
+import StructureDeletion from './Pages/Structure/StructureDeletion';
+import StructureEditList from './Pages/Structure/StructureEditList';
+// Otros
 import AccreditationProgress from '@/Pages/Accreditation/AccreditationProgress';
-
+import { HomePage } from './Pages/Index';
+import { EvidenceAssignment } from './Pages/EvidenceAssignment';
+ 
 function App() {
   return (
     <BrowserRouter>
@@ -24,7 +39,7 @@ function App() {
             <Routes>
               {/* Rutas públicas */}
               <Route path="/login" element={<Login />} />
-              
+             
               {/* Layout principal con sidebar para rutas protegidas */}
               <Route
                 element={
@@ -34,65 +49,14 @@ function App() {
                 }
               >
                 {/* Página de inicio */}
-                <Route path="/" element={
-                  <ScreenContainer
-                    title="Sistema de Acreditación y Autoevaluación de Carreras"
-                    description="Gestión de procesos de acreditación y autoevaluación"
-                  >
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                      <div className="bg-white shadow-sm rounded-lg border border-gray-200">
-                        <div className="px-6 py-5 border-b border-gray-200">
-                          <h2 className="text-xl font-semibold text-gray-900">Acreditación de Carreras</h2>
-                          <p className="mt-1 text-sm text-gray-600">
-                            Procesos de acreditación con SINAES
-                          </p>
-                        </div>
-                        <div className="px-6 py-4">
-                          <ul className="divide-y divide-gray-200">
-                            <li className="py-3 text-sm">
-                              Documentación y evidencias del proceso
-                            </li>
-                            <li className="py-3 text-sm">
-                              Seguimiento de compromisos de mejora
-                            </li>
-                            <li className="py-3 text-sm">
-                              Estado y avance del proceso
-                            </li>
-                          </ul>
-                        </div>
-                      </div>
-
-                      <div className="bg-white shadow-sm rounded-lg border border-gray-200">
-                        <div className="px-6 py-5 border-b border-gray-200">
-                          <h2 className="text-xl font-semibold text-gray-900">Autoevaluación</h2>
-                          <p className="mt-1 text-sm text-gray-600">
-                            Ciclos de autoevaluación de las carreras
-                          </p>
-                        </div>
-                        <div className="px-6 py-4">
-                          <ul className="divide-y divide-gray-200">
-                            <li className="py-3 text-sm">
-                              Recopilación de información y datos
-                            </li>
-                            <li className="py-3 text-sm">
-                              Generación de reportes e informes
-                            </li>
-                            <li className="py-3 text-sm">
-                              Seguimiento de planes de mejora
-                            </li>
-                          </ul>
-                        </div>
-                      </div>
-                    </div>
-                  </ScreenContainer>
-                } />
-
+                <Route path="/" element={<HomePage />} />  {/* ← Cambiar por HomePage */}
+ 
                 {/* Roles - Solo SuperUsuario */}
                 <Route
                   path="/roles/listar"
                   element={
                     <ProtectedRoute requireRole="SuperUsuario">
-                      <RolesList />
+                      <RolesRepository />  {/* ← Cambiar a RolesRepository si lo necesitan */}
                     </ProtectedRoute>
                   }
                 />
@@ -112,7 +76,25 @@ function App() {
                     </ProtectedRoute>
                   }
                 />
-
+ 
+                {/* Usuarios - Todos los autenticados */}
+                <Route
+                  path="/usuarios/listar"
+                  element={
+                    <ProtectedRoute>
+                      <UsersRepository />  {/* ← Cambiar a UsersRepository */}
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/usuarios/editar/:id"
+                  element={
+                    <ProtectedRoute>
+                      <EditUserPage />
+                    </ProtectedRoute>
+                  }
+                />
+ 
                 {/* Estructura - Todos los autenticados */}
                 <Route
                   path="/estructura/listar"
@@ -130,6 +112,15 @@ function App() {
                     </ProtectedRoute>
                   }
                 />
+                {/* ← AGREGAR ESTAS RUTAS NUEVAS */}
+                <Route
+                  path="/estructura/editar"
+                  element={
+                    <ProtectedRoute>
+                      <StructureEditList />
+                    </ProtectedRoute>
+                  }
+                />
                 <Route
                   path="/estructura/editar/formulario"
                   element={
@@ -138,7 +129,17 @@ function App() {
                     </ProtectedRoute>
                   }
                 />
-
+ 
+                {/* ← AGREGAR RUTA DE EVIDENCIAS */}
+                <Route
+                  path="/evidencias/asignar"
+                  element={
+                    <ProtectedRoute>
+                      <EvidenceAssignment />
+                    </ProtectedRoute>
+                  }
+                />
+ 
                 {/* Avance de Acreditación - Todos los autenticados */}
                 <Route
                   path="/acreditacion/avance"
@@ -148,19 +149,7 @@ function App() {
                     </ProtectedRoute>
                   }
                 />
-
-
-
-                {/* Usuarios - Todos los autenticados */}
-                <Route
-                  path="/usuarios/listar"
-                  element={
-                    <ProtectedRoute>
-                      <UsersList />
-                    </ProtectedRoute>
-                  }
-                />
-
+ 
                 {/* Redirigir cualquier ruta no encontrada */}
                 <Route path="*" element={<Navigate to="/" replace />} />
               </Route>
@@ -171,5 +160,5 @@ function App() {
     </BrowserRouter>
   );
 }
-
+ 
 export default App;
