@@ -55,14 +55,6 @@ export const getNavigationItems = (userRole?: string): NavItem[] => {
     isActive: false,
   },
   {
-    id: 'estructuraVer',
-    label: 'Estructura del Repositorio',
-    icon: boxIcon,
-    href: '/estructura/repositorio',
-    isActive: false,
-    isExpandable: false
-  },
-  {
     id: 'estructura',
     label: 'Gestión de Estructura',
     icon: nutIcon,
