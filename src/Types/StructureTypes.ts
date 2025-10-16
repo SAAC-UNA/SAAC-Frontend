@@ -28,15 +28,14 @@ export type ElementType = typeof ElementType[keyof typeof ElementType];
 export interface StructureElement {
 
   id: string;
-  code: string;
-  name: string;
+  nomenclature?: string;
+  name?: string;
   description?: string;
   type: ElementType;
   parentElementId?: string;
   active: boolean;
   createdAt: Date;
   updatedAt?: Date;
-  createdBy: string;
   updatedBy?: string;
   
   /** Datos relacionales calculados (se llenan dinámicamente)*/
@@ -80,8 +79,8 @@ export interface StructureTreeNode {
 
 export interface CreateElementForm {
   type: ElementType;
-  code: string;
-  name: string;
+  nomenclature?: string;
+  name?: string;
   description?: string;
   parentElementId?: string;
 }
@@ -92,8 +91,8 @@ export interface CreateElementForm {
  */
 
 export interface EditElementForm {
-  code: string;
-  name: string;
+  nomenclature?: string;
+  name?: string;
   description?: string;
   active: boolean;
 }

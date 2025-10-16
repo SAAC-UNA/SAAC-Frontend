@@ -23,8 +23,15 @@ export const ModernSidebarItem: React.FC<ModernSidebarItemProps> = ({
   const isActive = isItemActive(item.id);
 
   const handleClick = () => {
-    handleItemClick(item.id, item.href, item.isExpandable);
-  };
+  // Si el item tiene un onClick personalizado (como logout), ejecutarlo
+  if (item.onClick) {
+    item.onClick();
+    return;
+  }
+  
+  // Comportamiento normal de navegación
+  handleItemClick(item.id, item.href, item.isExpandable);
+};
 
   const buttonContent = (
     <div className={cn(

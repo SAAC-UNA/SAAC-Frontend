@@ -1,7 +1,8 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 import type { ReactNode } from 'react';
-import { navigationItems } from '@/Navigation';
+import { getNavigationItems } from '@/Navigation';
+import { useAuth } from '@/Context/AuthContext';
 
 /**
  * CONTEXTO DE NAVEGACIÓN DEL SIDEBAR
@@ -24,10 +25,14 @@ const NavigationContext = createContext<NavigationContextType | undefined>(undef
 interface NavigationProviderProps {
   children: ReactNode;
 }
-
+  
 export const NavigationProvider: React.FC<NavigationProviderProps> = ({ children }) => {
   const location = useLocation();
+  const { user } = useAuth();
   
+  // Obtener items filtrados por rol
+  const navigationItems = getNavigationItems(user?.roles?.[0]?.name);
+
   // Función para encontrar el item activo basado en la ruta actual
   const findActiveItemByPath = (path: string) => {
     // Primero buscar coincidencias exactas

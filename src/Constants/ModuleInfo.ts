@@ -119,6 +119,27 @@ export const MODULE_INFO: Record<string, ModuleInfo> = {
     subtitle: 'Sistema SAAC-UNA',
     description: 'Acceda a todas las funcionalidades de acreditación y autoevaluación de carreras',
     shortDescription: 'Panel principal de funcionalidades'
+  },
+
+  listRoles: {
+    title: 'Lista de Roles',
+    subtitle: 'Roles Existentes',
+    description: 'Visualiza y administra todos los roles existentes con sus permisos asignados',
+    shortDescription: 'Ver todos los roles existentes'
+  },
+// Gestión de Estructura
+  structure: {
+    title: 'Gestión de Estructura',
+    subtitle: 'Administración de Elementos del Repositorio',
+    description: 'Crea, edita y administra los elementos de la estructura del repositorio',
+    shortDescription: 'Administrar elementos de la estructura'
+  },
+
+  structure_list: {
+    title: 'Lista de Elementos',
+    subtitle: 'Elementos de la Estructura',
+    description: 'Visualiza y administra todos los elementos existentes en la estructura del repositorio',
+    shortDescription: 'Ver todos los elementos'
   }
 };
 

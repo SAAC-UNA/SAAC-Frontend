@@ -2,59 +2,50 @@ import type { NavItem } from './Types/CommonTypes';
 
 const homeIcon = 'system-icon:home';
 const rolesIcon = 'system-icon:shield';
-// const rolesListIcon = 'system-icon:contacts';
-// const addRoles = 'system-icon:add';
 const nutIcon = 'system-icon:nut';
-const plusIcon = 'system-icon:plus';
-const trashIcon = 'system-icon:trash-can';
-const editIcon = 'system-icon:edit-element';
-const boxIcon = 'system-icon:box-archive';
 const userIcon = 'system-icon:user';
+const processIcon = 'system-icon:box-archive';
 const evidenceIcon = 'system-icon:shield';
 
 /**
- * isActive: true // Es la página actual
- * isExpandable: true // Es expandible si tiene subelementos
- * children: NavItem[] // Los subelementos del elemento
-*/
+ * Obtener items de navegación filtrados por rol
+ * @param userRole - Rol del usuario autenticado ('SuperUsuario' o 'Administrador')
+ */
+export const getNavigationItems = (userRole?: string): NavItem[] => {
+  const isSuperUser = userRole === 'SuperUsuario';
+  
+  const items: NavItem[] = [
+    {
+      id: 'inicio',
+      label: 'Inicio',
+      icon: homeIcon,
+      href: '/',
+      isActive: false
+    }
+  ];
 
-export const navigationItems: NavItem[] = [
-  {
-    id: 'inicio',
-    label: 'Inicio',
-    icon: homeIcon,
-    href: '/',
-    isActive: false
-  },
-  {
-    id: 'roles',
-    label: 'Roles',
-    icon: rolesIcon,
-    href: '/roles/listar',
-    isActive: false
-    /*isExpandable: true,
-    children: [
-      {
-        id: 'rolesCrear',
-        label: 'Crear Rol',
-        icon: addRoles,
-        href: '/roles/crear'
-      },
-      {
-        id: 'rolesListar',
-        label: 'Listar Roles',
-        icon: rolesListIcon,
-        href: '/roles/listar'
-      }
-    ]*/
-  },
-  {
+  // Roles - Solo SuperUsuario
+  if (isSuperUser) {
+    items.push({
+      id: 'roles',
+      label: 'Roles',
+      icon: rolesIcon,
+      href: '/roles/listar',
+      isActive: false
+    });
+  }
+
+  // Usuarios - Todos los autenticados
+  items.push({
     id: 'usuarios',
     label: 'Usuarios',
     icon: userIcon,
     href: '/usuarios/listar',
-    isActive: false,
-  },
+    isActive: false
+  });
+
+  // Gestión de Estructura - Todos los autenticados
+  items.push(
   {
     id: 'evidenciasAsignar',
     label: 'Asignar Evidencias',
@@ -74,28 +65,24 @@ export const navigationItems: NavItem[] = [
     id: 'estructura',
     label: 'Gestión de Estructura',
     icon: nutIcon,
-    href: '/estructura',
-    isActive: false,
-    isExpandable: true,
-    children: [
-      {
-        id: 'estructuraCrear',
-        label: 'Crear Elemento',
-        icon: plusIcon,
-        href: '/estructura/crear'
-      },
-      {
-        id: 'estructuraEditar',
-        label: 'Editar Elemento',
-        icon: editIcon,
-        href: '/estructura/editar'
-      },
-      {
-        id: 'deleteElements',
-        label: 'Eliminar Elementos',
-        icon: trashIcon,
-        href: '/estructura/eliminar'
-      }
-    ]
-  },
-];
+    href: '/estructura/listar',
+    isActive: false
+  });
+
+  // Avance de Acreditación - Todos los autenticados (filtrado por carrera en el backend)
+  items.push({
+    id: 'avance-acreditacion',
+    label: 'Avance de Acreditación',
+    icon: processIcon,
+    href: '/acreditacion/avance',
+    isActive: false
+  });
+
+  return items;
+};
+
+/**
+ * Items de navegación por defecto (sin filtrar por rol)
+ * Usar getNavigationItems() para obtener los items filtrados
+ */
+export const navigationItems: NavItem[] = getNavigationItems();

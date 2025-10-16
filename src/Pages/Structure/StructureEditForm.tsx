@@ -7,23 +7,14 @@ import { ScreenContainer } from '@/Components/Ui/ScreenContainer';
 import { LoadingSpinner } from '@/Components/Ui/Loading';
 import { useStructure } from '@/Hooks/UseStructure';
 import type { StructureElement, ElementType } from '@/Types/StructureTypes';
+import { FORM_CONFIG, VALIDATION_RULES, getDescriptionMaxLength} from '@/Constants/StructureConstants';
+import { SuccessModal } from '@/Components/Ui/SuccessModal';
 
 interface EditableElement extends StructureElement {
-  originalCode: string;
+  originalNomenclature: string;
   originalName: string;
-  originalDescription?: string;
+  originalDescription: string;
   isModified: boolean;
-  modificationHistory: ModificationRecord[];
-}
-
-interface ModificationRecord {
-  id: string;
-  date: Date;
-  user: string;
-  field: string;
-  oldValue: string;
-  newValue: string;
-  reason?: string;
 }
 
 const StructureEditForm: React.FC = () => {
@@ -36,15 +27,151 @@ const StructureEditForm: React.FC = () => {
   
   const [currentElement, setCurrentElement] = useState<EditableElement | null>(null);
   const [formData, setFormData] = useState({
-    code: '',
+    nomenclature: '',
     name: '',
     description: ''
   });
   const [hasChanges, setHasChanges] = useState(false);
+  const [errors, setErrors] = useState<{
+    nomenclature?: string;
+    name?: string;
+    description?: string;
+  }>({});
 
   // Modal para confirmaciones
   const confirmModal = useModal();
   const [pendingAction, setPendingAction] = useState<'save' | 'discard' | null>(null);
+
+  // Estado para el modal de éxito
+  const [successModalState, setSuccessModalState] = useState<{
+    isOpen: boolean;
+    elementName: string;
+  }>({
+    isOpen: false,
+    elementName: ''
+  });
+
+  /**
+    Determinar si un campo debe mostrarse según el tipo de elemento
+  */
+const shouldShowField = (field: 'nomenclature' | 'name' | 'description'): boolean => {
+  if (!currentElement) return false;
+  const config = FORM_CONFIG[currentElement.type];
+  return config.requiredFields.includes(field) || config.optionalFields.includes(field);
+};
+
+/**
+ * Manejar el cierre del modal de éxito y redireccionar
+ */
+const handleSuccessModalClose = () => {
+  setSuccessModalState({ isOpen: false, elementName: '' });
+  navigate('/estructura/listar');
+};
+
+/**
+ * Validar un campo específico del formulario
+ */
+const validateField = (field: 'nomenclature' | 'name' | 'description', value: string): string | null => {
+  if (!currentElement) return null;
+  const config = FORM_CONFIG[currentElement.type];
+
+  switch (field) {
+    case 'nomenclature':
+      if (config.requiredFields.includes('nomenclature') && !value.trim()) {
+        return 'El código es obligatorio';
+      }
+      if (value && value.length > VALIDATION_RULES.NOMENCLATURE_MAX_LENGTH) {
+        return `El código no puede exceder ${VALIDATION_RULES.NOMENCLATURE_MAX_LENGTH} caracteres`;
+      }
+      if (value && !VALIDATION_RULES.NOMENCLATURE_PATTERN.test(value)) {
+        return 'El código solo puede contener letras, números, guiones y guiones bajos';
+      }
+
+      // Validar duplicados (excepto el elemento actual)
+      const duplicateNomenclature = allElements.find(el => 
+        el.nomenclature?.toLowerCase() === value.toLowerCase() &&
+        el.type === currentElement.type &&
+        el.id !== currentElement.id  // ← Esta es la línea clave: excluir el elemento actual
+      );
+      if (duplicateNomenclature) {
+        return 'Ya existe otro elemento de este tipo con esta nomenclatura';
+      }
+
+      return null;
+
+    case 'name':
+      if (config.requiredFields.includes('name') && !value.trim()) {
+        return 'El nombre es obligatorio';
+      }
+      if (value && value.length > VALIDATION_RULES.NAME_MAX_LENGTH) {
+        return `El nombre no puede exceder ${VALIDATION_RULES.NAME_MAX_LENGTH} caracteres`;
+      }
+      if (value && !VALIDATION_RULES.NAME_PATTERN.test(value)) {
+        return 'El nombre contiene caracteres no permitidos';
+      }
+
+      // Validar duplicados (excepto el elemento actual)
+      const duplicateName = allElements.find(el => 
+        el.name?.toLowerCase() === value.toLowerCase() &&
+        el.type === currentElement.type &&
+        el.id !== currentElement.id  // ← Excluir el elemento actual
+      );
+      if (duplicateName) {
+        return 'Ya existe otro elemento de este tipo con este nombre';
+      }
+
+      return null;
+
+    case 'description':
+      if (config.requiredFields.includes('description') && !value.trim()) {
+        return 'La descripción es obligatoria';
+      }
+      const maxLength = getDescriptionMaxLength(currentElement.type);
+      if (value && value.length > maxLength) {
+        return `La descripción no puede exceder ${maxLength} caracteres`;
+      }
+      return null;
+
+    default:
+      return null;
+  }
+};
+
+/**
+ * Validar todo el formulario antes de guardar
+ */
+const validateForm = (): boolean => {
+  if (!currentElement) return false;
+  
+  const newErrors: {
+    nomenclature?: string;
+    name?: string;
+    description?: string;
+  } = {};
+  
+  const config = FORM_CONFIG[currentElement.type];
+
+  // Validar solo los campos que se muestran y son requeridos
+  if (shouldShowField('nomenclature') && config.requiredFields.includes('nomenclature')) {
+    const error = validateField('nomenclature', formData.nomenclature);
+    if (error) newErrors.nomenclature = error;
+  }
+
+  if (shouldShowField('name') && config.requiredFields.includes('name')) {
+    const error = validateField('name', formData.name);
+    if (error) newErrors.name = error;
+  }
+
+  if (shouldShowField('description') && config.requiredFields.includes('description')) {
+    const error = validateField('description', formData.description);
+    if (error) newErrors.description = error;
+  }
+
+  setErrors(newErrors);
+  return Object.keys(newErrors).length === 0;
+};
+
+
 
   // Aplanar el árbol para obtener todos los elementos
   const allElements = React.useMemo(() => {
@@ -60,18 +187,6 @@ const StructureEditForm: React.FC = () => {
     return flattenTree(treeData);
   }, [treeData]);
 
-  const mockModificationHistory: ModificationRecord[] = [
-    {
-      id: '1',
-      date: new Date('2024-07-01'),
-      user: 'admin',
-      field: 'Nombre',
-      oldValue: 'Plan de Estudios Anterior',
-      newValue: 'Plan de Estudios Vigente',
-      reason: 'Actualización de nomenclatura'
-    }
-  ];
-
   // Cargar elementos al montar
   useEffect(() => {
     loadTree();
@@ -80,35 +195,36 @@ const StructureEditForm: React.FC = () => {
   // Cargar elemento específico desde URL
   useEffect(() => {
     const elementId = searchParams.get('id');
-    if (elementId && allElements.length > 0) {
-      loadElementForEditing(elementId);
-    } else if (!elementId) {
-      // Si no hay ID, redirigir a la lista
-      navigate('/estructura/editar');
+    const elementType = searchParams.get('type') as ElementType | null;
+    
+    if (elementId && elementType && allElements.length > 0) {
+      loadElementForEditing(elementId, elementType);
+    } else if (!elementId || !elementType) {
+      // Si no hay ID o tipo, redirigir a la lista
+      navigate('/estructura/listar');
     }
   }, [searchParams, navigate, allElements]);
 
   // Cargar elemento para edición
-  const loadElementForEditing = async (elementId: string) => {
-    const element = allElements.find(el => el.id === elementId);
+  const loadElementForEditing = async (elementId: string, elementType: ElementType) => {
+    const element = allElements.find(el => el.id === elementId && el.type === elementType);
     if (!element) {
-      navigate('/estructura/editar');
+      navigate('/estructura/listar');
       return;
     }
 
     const editableElement: EditableElement = {
       ...element,
-      originalCode: element.code,
-      originalName: element.name,
-      originalDescription: element.description,
-      isModified: false,
-      modificationHistory: mockModificationHistory
+      originalNomenclature: element.nomenclature || '',
+      originalName: element.name || '',
+      originalDescription: element.description || '',
+      isModified: false
     };
 
     setCurrentElement(editableElement);
     setFormData({
-      code: element.code,
-      name: element.name,
+      nomenclature: element.nomenclature || '',
+      name: element.name || '',
       description: element.description || ''
     });
     setHasChanges(false);
@@ -116,24 +232,33 @@ const StructureEditForm: React.FC = () => {
 
   // Manejar cambios en el formulario
   const handleInputChange = (field: string, value: string) => {
-    setFormData(prev => ({
-      ...prev,
-      [field]: value
-    }));
+  setFormData(prev => ({
+    ...prev,
+    [field]: value
+  }));
 
-    // Verificar si hay cambios
-    if (currentElement) {
-      const hasFieldChanges = 
-        (field === 'code' && value !== currentElement.originalCode) ||
-        (field === 'name' && value !== currentElement.originalName) ||
-        (field === 'description' && value !== (currentElement.originalDescription || '')) ||
-        (field !== 'code' && formData.code !== currentElement.originalCode) ||
-        (field !== 'name' && formData.name !== currentElement.originalName) ||
-        (field !== 'description' && formData.description !== (currentElement.originalDescription || ''));
-      
-      setHasChanges(hasFieldChanges);
-    }
-  };
+  // Limpiar error del campo cuando el usuario empiece a escribir
+  if (errors[field as keyof typeof errors]) {
+    setErrors(prev => ({ ...prev, [field]: undefined }));
+  }
+
+  // Validar el campo en tiempo real
+  const error = validateField(field as 'nomenclature' | 'name' | 'description', value);
+  if (error) {
+    setErrors(prev => ({ ...prev, [field]: error }));
+  }
+
+  // Verificar si hay cambios
+  if (currentElement) {
+    const newFormData = { ...formData, [field]: value };
+    const hasFieldChanges = 
+      newFormData.nomenclature !== currentElement.originalNomenclature ||
+      newFormData.name !== currentElement.originalName ||
+      newFormData.description !== currentElement.originalDescription;
+    
+    setHasChanges(hasFieldChanges);
+  }
+};
 
   // Obtener el label del tipo de elemento
   const getElementTypeLabel = (type: ElementType): string => {
@@ -163,30 +288,45 @@ const StructureEditForm: React.FC = () => {
 
     try {
       if (pendingAction === 'save') {
+        // Validar formulario antes de guardar
+        if (!validateForm()) {
+          confirmModal.closeModal();
+          setPendingAction(null);
+          return;
+        }
+
         // Usar el hook para editar el elemento
         const result = await editElement(currentElement.type, currentElement.id, {
-          code: formData.code,
+          nomenclature: formData.nomenclature,
           name: formData.name,
           description: formData.description,
           active: currentElement.active
         });
-        
+
         if (result) {
           console.log('Cambios guardados:', formData);
-          setHasChanges(false);
+          confirmModal.closeModal();
+          setPendingAction(null);
+          
+          // Mostrar modal de éxito
+          setSuccessModalState({
+            isOpen: true,
+            elementName: formData.name || formData.nomenclature || formData.description || 'elemento'
+          });
         }
       } else {
         // Descartar cambios
         setFormData({
-          code: currentElement.originalCode,
-          name: currentElement.originalName,
+          nomenclature: currentElement.originalNomenclature || '',
+          name: currentElement.originalName || '',
           description: currentElement.originalDescription || ''
         });
         setHasChanges(false);
+        confirmModal.closeModal();
+        setPendingAction(null);
       }
     } catch (error) {
       console.error('Error al procesar la acción:', error);
-    } finally {
       confirmModal.closeModal();
       setPendingAction(null);
     }
@@ -205,14 +345,14 @@ const StructureEditForm: React.FC = () => {
 
   // Volver al listado
   const goBack = () => {
-    if (hasChanges) {
-      if (confirm('Tienes cambios sin guardar. ¿Deseas salir sin guardar?')) {
-        navigate('/estructura/editar');
-      }
-    } else {
-      navigate('/estructura/editar');
+  if (hasChanges) {
+    if (confirm('Tienes cambios sin guardar. ¿Deseas salir sin guardar?')) {
+      navigate('/estructura/listar');
     }
-  };
+  } else {
+    navigate('/estructura/listar');
+  }
+};
 
   if (isLoading || !currentElement) {
     return (
@@ -279,24 +419,30 @@ const StructureEditForm: React.FC = () => {
 
             {/* Campos editables */}
             <div className="space-y-6">
-              {/* Código */}
+
+              {/* Nomenclatura */}
+              {shouldShowField('nomenclature') && (
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   Código *
                 </label>
                 <Input
                   type="text"
-                  value={formData.code}
-                  onChange={(e) => handleInputChange('code', e.target.value)}
-                  placeholder="Código único o identificativo del elemento"
-                  className={formData.code !== currentElement.originalCode ? 'ring-2 ring-blue-500' : ''}
+                  value={formData.nomenclature}
+                  onChange={(e) => handleInputChange('nomenclature', e.target.value)}
+                  placeholder="Nomenclatura única o identificativa del elemento"
+                  className={formData.nomenclature !== currentElement.originalNomenclature ? 'ring-2 ring-blue-500' : ''}
+                  error={errors.nomenclature}
+                  maxLength={VALIDATION_RULES.NOMENCLATURE_MAX_LENGTH}
                 />
                 <p className="text-xs text-gray-500 mt-1">
                   Código único o identificativo del elemento
                 </p>
               </div>
+              )}
 
               {/* Nombre */}
+              {shouldShowField('name') && (
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   Nombre *
@@ -307,36 +453,48 @@ const StructureEditForm: React.FC = () => {
                   onChange={(e) => handleInputChange('name', e.target.value)}
                   placeholder="Nombre completo y descriptivo"
                   className={formData.name !== currentElement.originalName ? 'ring-2 ring-blue-500' : ''}
+                  error={errors.name}
+                  maxLength={VALIDATION_RULES.NAME_MAX_LENGTH}
                 />
                 <p className="text-xs text-gray-500 mt-1">
                   Nombre completo y descriptivo
                 </p>
               </div>
+              )}
 
               {/* Descripción */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Descripción (opcional)
-                </label>
-                <textarea
-                  value={formData.description}
-                  onChange={(e) => handleInputChange('description', e.target.value)}
-                  rows={4}
-                  className={`w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
-                    formData.description !== (currentElement.originalDescription || '') ? 'ring-2 ring-blue-500' : ''
-                  }`}
-                  placeholder="Descripción detallada del elemento"
-                  maxLength={500}
-                />
-                <div className="flex justify-between items-center mt-1">
-                  <p className="text-xs text-gray-500">
-                    Descripción detallada del elemento
-                  </p>
-                  <span className="text-xs text-gray-400">
-                    {formData.description.length}/500 caracteres
-                  </span>
+              {shouldShowField('description') && (
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Descripción {currentElement && FORM_CONFIG[currentElement.type].requiredFields.includes('description') ? <span className="text-red-500">*</span> : <span className="text-gray-500">(opcional)</span>}
+                  </label>
+                  <textarea
+                    value={formData.description}
+                    onChange={(e) => handleInputChange('description', e.target.value)}
+                    rows={4}
+                    className={`w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                      errors.description
+                        ? 'border-red-500 bg-red-50'
+                        : formData.description !== (currentElement.originalDescription || '') 
+                          ? 'ring-2 ring-blue-500' 
+                          : ''
+                    }`}
+                    placeholder="Descripción detallada del elemento"
+                    maxLength={getDescriptionMaxLength(currentElement.type)}
+                  />
+                  {errors.description && (
+                    <p className="mt-1 text-sm text-red-600">{errors.description}</p>
+                  )}
+                  <div className="flex justify-between items-center mt-1">
+                    <p className="text-xs text-gray-500">
+                      Descripción detallada del elemento
+                    </p>
+                    <span className="text-xs text-gray-400">
+                      {formData.description.length}/{getDescriptionMaxLength(currentElement.type)} caracteres
+                    </span>
+                  </div>
                 </div>
-              </div>
+              )}
             </div>
 
             {/* Botones de acción */}
@@ -359,80 +517,26 @@ const StructureEditForm: React.FC = () => {
           </div>
         </div>
 
-        {/* Panel lateral */}
-        <div className="space-y-6">
-          {/* Consideraciones importantes */}
-          <div className="bg-[var(--bg-warning)] border border-[var(--border-warning)] rounded-lg p-4">
-            <h4 className="flex items-center text-sm font-medium text-[var(--text-warning)] mb-2">
-              <span className="text-lg mr-2">⚠️</span>
-              Consideraciones Importantes
-            </h4>
-            <ul className="text-xs text-[var(--text-warning)] space-y-1">
-              <li>• No se puede cambiar el tipo de elemento</li>
-              <li>• No se puede modificar su posición jerárquica</li>
-              <li>• Los códigos deben mantener su unicidad</li>
-            </ul>
-          </div>
-
-          {/* Historial de modificaciones */}
-          <div className="bg-gray-50 rounded-lg p-4">
-            <h4 className="text-sm font-medium text-gray-900 mb-3">
-              Historial de Modificaciones
-            </h4>
-            
-            {currentElement.modificationHistory.length === 0 ? (
-              <p className="text-xs text-gray-500">Creación inicial</p>
-            ) : (
-              <div className="space-y-3">
-                <div className="text-xs">
-                  <div className="font-medium text-gray-900">Creación inicial</div>
-                  <div className="text-gray-500">
-                    {currentElement.createdAt.toLocaleDateString()} por {currentElement.createdBy}
-                  </div>
+        {/* Panel lateral para Cambios Pendientes (1/3 del ancho) */}
+        <div>
+            {hasChanges && (
+                <div className="bg-[var(--bg-info)] border border-[var(--border-info)] rounded-lg p-4 sticky top-4">
+                    <h4 className="text-sm font-medium text-[var(--text-info)] mb-2">
+                        Cambios Pendientes
+                    </h4>
+                    <div className="text-xs text-[var(--text-info)] space-y-1 break-words">
+                        {shouldShowField('nomenclature') && formData.nomenclature !== currentElement.originalNomenclature && (
+                            <div>• Código: "{currentElement.originalNomenclature}" → "{formData.nomenclature}"</div>
+                        )}
+                        {shouldShowField('name') && formData.name !== currentElement.originalName && (
+                            <div>• Nombre: "{currentElement.originalName}" → "{formData.name}"</div>
+                        )}
+                        {shouldShowField('description') && formData.description !== (currentElement.originalDescription || '') && (
+                            <div>• Descripción modificada</div>
+                        )}
+                    </div>
                 </div>
-                
-                {currentElement.modificationHistory.map((record) => (
-                  <div key={record.id} className="text-xs border-l-2 border-gray-200 pl-3">
-                    <div className="font-medium text-gray-900">
-                      {record.field}: "{record.oldValue}" → "{record.newValue}"
-                    </div>
-                    <div className="text-gray-500">
-                      {record.date.toLocaleDateString()} por {record.user}
-                    </div>
-                    {record.reason && (
-                      <div className="text-gray-600 italic mt-1">
-                        Razón: {record.reason}
-                      </div>
-                    )}
-                  </div>
-                ))}
-              </div>
             )}
-            
-            <p className="text-xs text-gray-400 mt-3">
-              Las modificaciones se registran automáticamente
-            </p>
-          </div>
-
-          {/* Información del cambio actual */}
-          {hasChanges && (
-            <div className="bg-[var(--bg-info)] border border-[var(--border-info)] rounded-lg p-4">
-              <h4 className="text-sm font-medium text-[var(--text-info)] mb-2">
-                Cambios Pendientes
-              </h4>
-              <div className="text-xs text-[var(--text-info)] space-y-1">
-                {formData.code !== currentElement.originalCode && (
-                  <div>• Código: "{currentElement.originalCode}" → "{formData.code}"</div>
-                )}
-                {formData.name !== currentElement.originalName && (
-                  <div>• Nombre: "{currentElement.originalName}" → "{formData.name}"</div>
-                )}
-                {formData.description !== (currentElement.originalDescription || '') && (
-                  <div>• Descripción modificada</div>
-                )}
-              </div>
-            </div>
-          )}
         </div>
       </div>
 
@@ -465,6 +569,15 @@ const StructureEditForm: React.FC = () => {
           </div>
         </div>
       </Modal>
+      {/* Modal de éxito */}
+      <SuccessModal
+        isOpen={successModalState.isOpen}
+        title="¡Elemento editado exitosamente!"
+        message={`El elemento "${successModalState.elementName}" ha sido modificado correctamente`}
+        onClose={handleSuccessModalClose}
+        autoClose={true}
+        autoCloseDelay={3000}
+      />
     </ScreenContainer>
   );
 };

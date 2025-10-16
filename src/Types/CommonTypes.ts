@@ -6,4 +6,5 @@ export interface NavItem {
   isActive?: boolean;
   isExpandable?: boolean;
   children?: NavItem[];
+  onClick?: () => void;
 }

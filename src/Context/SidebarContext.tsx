@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useCallback, useEffect } from 'react';
-import { useBreakpoint } from '@/hooks/UseBreakpoint';
+import { useBreakpoint } from '@/Hooks/UseBreakpoint';
 import type { ReactNode } from 'react';
 
 /**

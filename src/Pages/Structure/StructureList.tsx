@@ -1,386 +1,431 @@
-import React, { useState, useEffect } from 'react';
-import { cn } from '@/Utils/ClassNames';
-import { Button } from '@/Components/Ui/Button';
+/**
+ * StructureList - Página principal de listado de elementos de estructura
+ * 
+ * Esta página coordina el componente StructureTable y maneja la navegación
+ * entre las diferentes acciones (crear, editar, eliminar).
+ */
+
+import React, { useState } from 'react';
+import { StructureTable } from './Components/StructureTable';
 import { ScreenContainer } from '@/Components/Ui/ScreenContainer';
-import { SystemIcons } from '@/Components/Ui/Icons/SystemIcons';
+import { Modal } from '@/Components/Ui/Modal';
+import { MODULE_INFO } from '@/Constants/ModuleInfo';
+import type { StructureElement } from '@/Types/StructureTypes';
+import { useStructure } from '@/Hooks/UseStructure';
+import { EditConfirmationModal } from '@/Components/Ui/EditConfirmationModal';
+import { DeleteConfirmationModal } from '@/Components/Ui/DeleteConfirmationModal';
 import { LoadingSpinner } from '@/Components/Ui/Loading';
-import type { StructureElement, StructureTreeNode } from '@/Types/StructureTypes';
-import { ElementType } from '@/Types/StructureTypes';
-import { 
-  ELEMENT_TYPE_LABELS, 
-  HIERARCHY_RULES 
-} from '@/Constants/StructureConstants';
 
-// Mock data completo para el árbol jerárquico
-const mockStructureData: StructureElement[] = [
-  {
-    id: '1',
-    code: 'UNA',
-    name: 'Universidad Nacional',
-    description: 'Universidad Nacional de Costa Rica',
-    type: ElementType.UNIVERSITY,
-    active: true,
-    createdAt: new Date('2024-01-01'),
-    createdBy: 'admin',
-    hasChildren: true,
-    canDelete: false
-  },
-  {
-    id: '2',
-    code: 'UNA-ALAJUELA',
-    name: 'Sede Regional Central Occidente',
-    description: 'Campus Alajuela',
-    type: ElementType.CAMPUS,
-    parentElementId: '1',
-    active: true,
-    createdAt: new Date('2024-01-02'),
-    createdBy: 'admin',
-    hasChildren: true,
-    canDelete: false
-  },
-  {
-    id: '3',
-    code: 'FAC-ING',
-    name: 'Facultad de Ciencias Exactas y Naturales',
-    description: 'Facultad que incluye carreras de ingeniería',
-    type: ElementType.FACULTY,
-    parentElementId: '2',
-    active: true,
-    createdAt: new Date('2024-01-03'),
-    createdBy: 'admin',
-    hasChildren: true,
-    canDelete: false
-  },
-  {
-    id: '4',
-    code: 'ING-SIS',
-    name: 'Ingeniería en Sistemas de Información',
-    description: 'Carrera de Ingeniería en Sistemas',
-    type: ElementType.CAREER,
-    parentElementId: '3',
-    active: true,
-    createdAt: new Date('2024-01-04'),
-    createdBy: 'admin',
-    hasChildren: true,
-    canDelete: false
-  },
-  {
-    id: '5',
-    code: 'DIM-01',
-    name: 'Gestión del Programa',
-    description: 'Primera dimensión de evaluación',
-    type: ElementType.DIMENSION,
-    parentElementId: '4',
-    active: true,
-    createdAt: new Date('2024-01-05'),
-    createdBy: 'admin',
-    hasChildren: true,
-    canDelete: false
-  },
-  {
-    id: '6',
-    code: 'COMP-01',
-    name: 'Propósitos del Programa',
-    description: 'Primer componente de gestión',
-    type: ElementType.COMPONENT,
-    parentElementId: '5',
-    active: true,
-    createdAt: new Date('2024-01-06'),
-    createdBy: 'admin',
-    hasChildren: true,
-    canDelete: false
-  },
-  {
-    id: '7',
-    code: 'CRIT-01',
-    name: 'Correspondencia con la Misión',
-    description: 'Criterio sobre alineación con misión institucional',
-    type: ElementType.CRITERIA,
-    parentElementId: '6',
-    active: true,
-    createdAt: new Date('2024-01-07'),
-    createdBy: 'admin',
-    hasChildren: true,
-    canDelete: false
-  },
-  {
-    id: '8',
-    code: 'EVD-01',
-    name: 'Plan de Estudios Vigente',
-    description: 'Documento oficial del plan de estudios',
-    type: ElementType.EVIDENCE,
-    parentElementId: '7',
-    active: true,
-    createdAt: new Date('2024-01-08'),
-    createdBy: 'admin',
-    hasChildren: false,
-    canDelete: true
-  }
-];
-
-// Interfaz para props del TreeNode
-interface TreeNodeProps {
-  node: StructureTreeNode;
-  onToggle: (nodeId: string) => void;
-}
-
-// Componente TreeNode para mostrar cada elemento del árbol
-const TreeNode: React.FC<TreeNodeProps> = ({ node, onToggle }) => {
-  const { element, children, level, expanded } = node;
-  const hasChildren = children.length > 0;
-
-  const hierarchyInfo = HIERARCHY_RULES[element.type];
+const StructureList: React.FC = () => {
   
-  // Colores por nivel jerárquico
-  const levelColors = {
-    1: 'bg-red-50 border-red-200 text-red-800',
-    2: 'bg-blue-50 border-blue-200 text-blue-800',
-    3: 'bg-green-50 border-green-200 text-green-800',
-    4: 'bg-yellow-50 border-yellow-200 text-yellow-800',
-    5: 'bg-purple-50 border-purple-200 text-purple-800',
-    6: 'bg-pink-50 border-pink-200 text-pink-800',
-    7: 'bg-indigo-50 border-indigo-200 text-indigo-800',
-    8: 'bg-gray-50 border-gray-200 text-gray-800'
+  // Obtener información del módulo desde ModuleInfo
+  const moduleInfo = MODULE_INFO.structure;
+  
+  const { isLoading, deleteElement, activateElement, deactivateElement, loadTree, treeData } = useStructure();
+  console.log('🗑️ Total elementos en treeData:', treeData.length);
+
+  // Estado para el modal de confirmación de eliminación
+  const [deleteModalState, setDeleteModalState] = useState<{
+    isOpen: boolean;
+    element: StructureElement | null;
+  }>({
+    isOpen: false,
+    element: null
+  });
+
+  // Estado para el modal de confirmación de activar/desactivar
+  const [toggleActiveModalState, setToggleActiveModalState] = useState<{
+    isOpen: boolean;
+    element: StructureElement | null;
+  }>({
+    isOpen: false,
+    element: null
+  });
+
+  const [refreshKey, setRefreshKey] = useState(0);
+  const [cascadeChildren, setCascadeChildren] = useState(false);
+
+  const handleEditElement = (element: StructureElement) => {
+    // Navegar directamente a la página de edición con el ID del elemento
+    window.location.href = `/estructura/editar/formulario?id=${element.id}&type=${element.type}`;
   };
 
-  const colorClass = levelColors[Math.min(hierarchyInfo.level, 8) as keyof typeof levelColors];
+  const handleDeleteElement = (element: StructureElement) => {
+    setDeleteModalState({
+      isOpen: true,
+      element
+    });
+  };
 
-  return (
-    <div className="w-full">
-      <div
-        className={cn(
-          'flex items-center p-3 rounded-lg border transition-all duration-200 hover:shadow-md',
-          colorClass,
-          'mb-2'
-        )}
-        style={{ marginLeft: `${level * 20}px` }}
+  const handleToggleActive = async (element: StructureElement) => {
+    setCascadeChildren(false); // Resetear el checkbox
+    
+    // Cargar los datos si están vacíos
+    if (treeData.length === 0) {
+      console.log('⚠️ treeData vacío, recargando...');
+      await loadTree();
+    }
+    
+    setToggleActiveModalState({
+      isOpen: true,
+      element
+    });
+  };
+
+  // Verificar si un elemento tiene hijos buscando en todos los elementos
+  const hasChildren = (element: StructureElement): boolean => {
+    console.log('🔍 hasChildren - Estado actual:', {
+      elementId: element.id,
+      elementName: element.name || element.nomenclature,
+      treeDataLength: treeData.length,
+    });
+    
+    // Aplanar el árbol para obtener todos los elementos
+    const flattenTree = (nodes: StructureElement[]): StructureElement[] => {
+      return nodes.reduce((acc, node) => {
+        acc.push(node);
+        if (node.childElements && node.childElements.length > 0) {
+          acc.push(...flattenTree(node.childElements));
+        }
+        return acc;
+      }, [] as StructureElement[]);
+    };
+
+    const allElements = flattenTree(treeData);
+    
+    // Buscar si hay elementos que tengan este elemento como padre
+    const hasChildElements = allElements.some(el => el.parentElementId === element.id);
+    
+    console.log('🔍 hasChildren - Resultado:', {
+      allElementsCount: allElements.length,
+      hasChildElements,
+      childrenFound: allElements.filter(el => el.parentElementId === element.id).map(c => c.name || c.nomenclature)
+    });
+    
+    return hasChildElements;
+  };
+
+  const confirmDeleteElement = async () => {
+  if (deleteModalState.element) {
+    try {
+      const result = await deleteElement(deleteModalState.element.type, deleteModalState.element.id);
+      
+      if (result) {
+        setDeleteModalState({ isOpen: false, element: null });
+        setRefreshKey(prev => prev + 1);
+        // TODO: Mostrar notificación de éxito
+      }
+    } catch (error) {
+      console.error('Error al eliminar elemento:', error);
+    }
+  }
+};
+
+  const cancelDeleteElement = () => {
+    setDeleteModalState({ isOpen: false, element: null });
+  };
+
+  const confirmToggleActive = async () => {
+  if (!toggleActiveModalState.element) return;
+
+  const element = toggleActiveModalState.element;
+  
+  try {
+    // Aplanar el árbol una sola vez al inicio
+    const flattenTree = (nodes: StructureElement[]): StructureElement[] => {
+  const result: StructureElement[] = [];
+  const seen = new Set<string>();
+  const stack = [...nodes];
+  
+  while (stack.length > 0) {
+    const node = stack.pop()!;
+    
+    // Solo agregar si no lo hemos visto antes (evita duplicados)
+    if (!seen.has(node.id)) {
+      seen.add(node.id);
+      result.push(node);
+      
+      if (node.childElements && node.childElements.length > 0) {
+        stack.push(...node.childElements);
+      }
+    }
+  }
+  return result;
+};
+    
+    const allElements = flattenTree(treeData);
+    
+    console.log('🔍 DEBUG - Elemento seleccionado:', {
+      id: element.id,
+      type: element.type,
+      name: element.name || element.nomenclature,
+      active: element.active
+    });
+    
+    console.log('🔍 DEBUG - Total elementos disponibles:', allElements.length);
+    
+    // Función para encontrar descendientes SOLO de este elemento
+    const getAllDescendants = (parentId: string): StructureElement[] => {
+      const descendants: StructureElement[] = [];
+      const toProcess = [parentId];
+      const processed = new Set<string>();
+      
+      console.log(`🔍 Iniciando búsqueda de descendientes para: ${parentId}`);
+      
+      while (toProcess.length > 0) {
+        const currentId = String(toProcess.shift()!);
+        
+        if (processed.has(currentId)) continue;
+        processed.add(currentId);
+        
+          const children = allElements.filter(el => String(el.parentElementId) === String(currentId));
+        
+        console.log(`  🔍 Hijos directos de ${currentId}:`, children.map(c => ({
+          id: c.id,
+          type: c.type,
+          name: c.name || c.nomenclature,
+          parentId: c.parentElementId
+        })));
+        
+        for (const child of children) {
+        if (!descendants.some(d => d.id === child.id)) {
+          descendants.push(child);
+          toProcess.push(String(child.id)); // convertir a string
+        }
+      }
+    }
+      
+      console.log(`✅ Total descendientes encontrados: ${descendants.length}`);
+      return descendants;
+    };
+    
+    if (element.active) {
+      // ========== DESACTIVAR elemento ==========
+      console.log('⚡ DESACTIVANDO elemento principal');
+      await deactivateElement(element.type, element.id);
+      
+      // Si está marcado el checkbox, desactivar hijos en cascada
+      if (cascadeChildren) {
+        const descendants = getAllDescendants(element.id);
+        
+        console.log('📋 Descendientes a desactivar:', descendants.map(d => ({
+          id: d.id,
+          type: d.type,
+          name: d.name || d.nomenclature,
+          parentId: d.parentElementId,
+          active: d.active
+        })));
+        
+        // Desactivar todos los descendientes activos
+        for (const descendant of descendants) {
+          if (descendant.active) {
+            console.log(`  ⚡ Desactivando: ${descendant.type} - ${descendant.name || descendant.nomenclature}`);
+            await deactivateElement(descendant.type, descendant.id);
+          }
+        }
+      }
+      
+    } else {
+      // ========== ACTIVAR elemento ==========
+      console.log('✅ ACTIVANDO elemento principal');
+      await activateElement(element.type, element.id);
+      
+      // Si está marcado el checkbox, activar hijos inactivos en cascada
+      if (cascadeChildren) {
+        const descendants = getAllDescendants(element.id);
+        
+        // Activar todos los descendientes inactivos
+        for (const descendant of descendants) {
+          if (!descendant.active) {
+            console.log(`  ✅ Activando: ${descendant.type} - ${descendant.name || descendant.nomenclature}`);
+            await activateElement(descendant.type, descendant.id);
+          }
+        }
+      }
+    }
+    
+    // Cerrar modal
+    setToggleActiveModalState({ isOpen: false, element: null });
+    setCascadeChildren(false);
+
+    // Recargar el árbol completo desde el backend
+    await loadTree();
+
+    // Forzar re-render de la tabla
+    setRefreshKey(prev => prev + 1);
+    
+  } catch (error) {
+    console.error('Error al cambiar estado del elemento:', error);
+  }
+};
+
+  const cancelToggleActive = () => {
+    setToggleActiveModalState({ isOpen: false, element: null });
+  };
+
+  const handleCreateElement = () => {
+    window.location.href = '/estructura/crear';
+  };
+
+  console.log('🎯 Estado toggleActiveModalState:', toggleActiveModalState);
+
+ return (
+    <div className="container mx-auto px-4 py-8">
+      <ScreenContainer
+        title={moduleInfo.title}
+        description={moduleInfo.description}
       >
-        {hasChildren && (
-          <button
-            onClick={() => onToggle(element.id)}
-            className="flex-shrink-0 mr-3 p-1 rounded hover:bg-white hover:bg-opacity-50 transition-colors"
-            aria-label={expanded ? 'Colapsar' : 'Expandir'}
-          >
-            <svg
-              className={cn(
-                'w-4 h-4 transition-transform duration-200',
-                expanded ? 'rotate-90' : 'rotate-0'
-              )}
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
+        <StructureTable
+          key={refreshKey}
+          onEdit={handleEditElement}
+          onDelete={handleDeleteElement}
+          onToggleActive={handleToggleActive}
+          onCreate={handleCreateElement}
+        />
+      </ScreenContainer>
+
+      {/* Modal de confirmación de eliminación */}
+      <Modal
+        isOpen={deleteModalState.isOpen}
+        onClose={cancelDeleteElement}
+        title="Confirmar Eliminación"
+        size="md"
+      >
+        <div className="space-y-4">
+          <p className="text-gray-700">
+            ¿Está seguro de que desea eliminar el elemento <strong>"{deleteModalState.element?.name || deleteModalState.element?.nomenclature}"</strong>?
+          </p>
+          <p className="text-sm text-[var(--text-error)]">
+            Esta acción no se puede deshacer.
+          </p>
+          
+          <div className="flex justify-end gap-3 mt-6">
+            <button
+              onClick={cancelDeleteElement}
+              className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50"
             >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M9 5l7 7-7 7"
-              />
-            </svg>
-          </button>
-        )}
+              Cancelar
+            </button>
+            <button
+              onClick={confirmDeleteElement}
+              disabled={isLoading}
+              className="px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-md hover:bg-red-700 disabled:opacity-50"
+            >
+              {isLoading ? 'Eliminando...' : 'Eliminar'}
+            </button>
+          </div>
+        </div>
+      </Modal>
 
-        {!hasChildren && <div className="w-7 flex-shrink-0" />}
+      {/* Modal de confirmación para ACTIVAR */}
+      {toggleActiveModalState.isOpen && toggleActiveModalState.element && !toggleActiveModalState.element.active && (
+        <Modal
+          isOpen={true}
+          onClose={cancelToggleActive}
+          onConfirm={confirmToggleActive}
+          variant="info"
+          hideDefaultDangerMessage={true}
+          title="Confirmar activación"
+          message={
+            <>
+              ¿Está seguro de que desea activar "<span className="font-bold">{toggleActiveModalState.element?.name || toggleActiveModalState.element?.nomenclature}</span>"?
+            </>
+          }
+          confirmLabel="Activar"
+          cancelLabel="Cancelar"
+          confirmLoading={isLoading}
+          showCancel={true}
+          showConfirm={true}
+        >
 
-        <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-3">
-            <div className="flex items-center gap-2">
-              <span className="inline-flex items-center px-2 py-1 rounded-md text-xs font-medium bg-white bg-opacity-50">
-                {ELEMENT_TYPE_LABELS[element.type]}
-              </span>
-              <code className="text-sm font-mono bg-white bg-opacity-30 px-2 py-1 rounded">
-                {element.code}
-              </code>
-            </div>
+          <div className="mt-4 p-3 bg-[var(--bg-info)] border border-[var(--border-info)] rounded-lg">
+            <p className="text-sm text-[var(--text-info)]">
+              Al activar este elemento, volverá a estar disponible para su uso en el sistema.
+            </p>
           </div>
 
-          <h3 className="font-semibold text-base mt-1 truncate">
-            {element.name}
-          </h3>
-
-          {element.description && (
-            <p className="text-sm opacity-75 mt-1 line-clamp-2">
-              {element.description}
-            </p>
+          {/* Checkbox para activar hijos en cascada */}
+          {(() => {
+            const hasChildrenResult = hasChildren(toggleActiveModalState.element);
+            console.log('🔍 Modal ACTIVAR - hasChildren:', hasChildrenResult);
+            return hasChildrenResult;
+          })() && (
+            <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+              <div className="flex items-start space-x-3">
+                <input
+                  type="checkbox"
+                  id="cascadeChildrenActivate"
+                  checked={cascadeChildren}
+                  onChange={(e) => setCascadeChildren(e.target.checked)}
+                  className="mt-1 h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                />
+                <div className="flex-1">
+                  <label htmlFor="cascadeChildrenActivate" className="text-sm font-medium text-blue-900 cursor-pointer">
+                    Activar también todos los elementos dependientes inactivos
+                  </label>
+                  <p className="text-xs text-blue-700 mt-1">
+                    Al marcar esta opción, se activarán automáticamente todos los elementos inactivos que dependen de este.
+                  </p>
+                </div>
+              </div>
+            </div>
           )}
-        </div>
-
-        <div className="flex-shrink-0 ml-3">
-          <span
-            className={cn(
-              'inline-flex items-center px-2 py-1 rounded-full text-xs font-medium',
-              element.active
-                ? 'badge-success'
-                : 'badge-error'
-            )}
-          >
-            {element.active ? 'Activo' : 'Inactivo'}
-          </span>
-        </div>
-      </div>
-
-      {hasChildren && expanded && (
-        <div className="ml-4">
-          {children.map((child) => (
-            <TreeNode
-              key={child.element.id}
-              node={child}
-              onToggle={onToggle}
-            />
-          ))}
-        </div>
+        </Modal>
       )}
+
+      {/* Modal de confirmación para DESACTIVAR */}
+      {toggleActiveModalState.isOpen && toggleActiveModalState.element && toggleActiveModalState.element.active && (
+        <Modal
+          isOpen={true}
+          onClose={cancelToggleActive}
+          onConfirm={confirmToggleActive}
+          variant="warning"
+          hideDefaultDangerMessage={false}
+          title="Confirmar desactivación"
+          message={
+            <>
+              ¿Está seguro de que desea desactivar "<span className="font-bold">{toggleActiveModalState.element?.name || toggleActiveModalState.element?.nomenclature}</span>"?
+            </>
+          }
+          confirmLabel="Desactivar"
+          cancelLabel="Cancelar"
+          confirmLoading={isLoading}
+          showCancel={true}
+          showConfirm={true}
+        >
+
+          <div className="mt-4 p-3 bg-[var(--bg-warning)] border border-[var(--border-warning)] rounded-lg">
+            <p className="text-sm text-[var(--text-warning)]">
+              Al desactivar este elemento, dejará de estar disponible en el sistema. Esta acción es reversible.
+            </p>
+          </div>
+
+          {/* Checkbox para desactivar hijos en cascada */}
+          {hasChildren(toggleActiveModalState.element) && (
+            <div className="mt-4 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
+              <div className="flex items-start space-x-3">
+                <input
+                  type="checkbox"
+                  id="cascadeChildrenDeactivate"
+                  checked={cascadeChildren}
+                  onChange={(e) => setCascadeChildren(e.target.checked)}
+                  className="mt-1 h-4 w-4 text-yellow-600 focus:ring-yellow-500 border-gray-300 rounded"
+                />
+                <div className="flex-1">
+                  <label htmlFor="cascadeChildrenDeactivate" className="text-sm font-medium text-yellow-900 cursor-pointer">
+                    Desactivar también todos los elementos dependientes
+                  </label>
+                  <p className="text-xs text-yellow-700 mt-1">
+                    Al marcar esta opción, se desactivarán automáticamente todos los elementos que dependen de este.
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
+        </Modal>
+)}
     </div>
   );
 };
 
-export const StructureRepository: React.FC = () => {
-  const [structureData, setStructureData] = useState<StructureElement[]>([]);
-  const [treeData, setTreeData] = useState<StructureTreeNode[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [expandedNodes, setExpandedNodes] = useState<Set<string>>(new Set(['1', '2', '3', '4']));
-
-  // Función para construir el árbol jerárquico
-  const buildTree = (elements: StructureElement[], parentId?: string, level = 0): StructureTreeNode[] => {
-    return elements
-      .filter(element => element.parentElementId === parentId)
-      .map(element => ({
-        element,
-        children: buildTree(elements, element.id, level + 1),
-        level,
-        expanded: expandedNodes.has(element.id),
-        path: []
-      }));
-  };
-
-  // Manejar expansión/colapso de nodos
-  const handleToggleNode = (nodeId: string) => {
-    setExpandedNodes(prev => {
-      const newExpanded = new Set(prev);
-      if (newExpanded.has(nodeId)) {
-        newExpanded.delete(nodeId);
-      } else {
-        newExpanded.add(nodeId);
-      }
-      return newExpanded;
-    });
-  };
-
-  // Expandir todos los nodos
-  const handleExpandAll = () => {
-    const allNodeIds = new Set(structureData.map(element => element.id));
-    setExpandedNodes(allNodeIds);
-  };
-
-  // Colapsar todos los nodos
-  const handleCollapseAll = () => {
-    setExpandedNodes(new Set(['1']));
-  };
-
-  // Cargar datos mock
-  useEffect(() => {
-    const loadStructureData = async () => {
-      setLoading(true);
-      
-      // Simular carga
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      setStructureData(mockStructureData);
-      setLoading(false);
-    };
-
-    loadStructureData();
-  }, []);
-
-  // Actualizar árbol cuando cambian los datos o expansión
-  useEffect(() => {
-    if (structureData.length > 0) {
-      const tree = buildTree(structureData);
-      setTreeData(tree);
-    }
-  }, [structureData, expandedNodes]);
-
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="text-center">
-          <LoadingSpinner size="lg" className="mx-auto mb-4" />
-        </div>
-      </div>
-    );
-  }
-
-  return (
-    <ScreenContainer
-      title="Estructura del Repositorio"
-      description="Visualiza la jerarquía completa del Sistema SAAC-UNA. Esta vista muestra todos los elementos organizados desde la Universidad hasta las Evidencias individuales."
-      variant="full-width"
-    >
-      <div className="mb-6 flex gap-4">
-        <Button
-          onClick={handleExpandAll}
-          variant="secondary"
-          className="flex items-center gap-2"
-        >
-          <SystemIcons.interface.expand size="sm" />
-          Expandir Todo
-        </Button>
-        <Button
-          onClick={handleCollapseAll}
-          variant="tertiary"
-          className="flex items-center gap-2"
-        >
-          <SystemIcons.interface.collapse size="sm" />
-          Colapsar Todo
-        </Button>
-      </div>
-
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
-        {Object.entries(ELEMENT_TYPE_LABELS).map(([type, label]) => {
-          const count = structureData.filter(element => element.type === type).length;
-          return (
-            <div key={type} className="bg-white p-4 rounded-lg border border-gray-200 shadow-sm">
-              <div className="text-2xl font-bold text-red-600">{count}</div>
-              <div className="text-sm text-gray-600">{label}{count !== 1 ? 's' : ''}</div>
-            </div>
-          );
-        })}
-      </div>
-
-      <div className="border-t border-gray-200 pt-6">
-        <h2 className="text-xl font-semibold text-gray-900 mb-4">
-          Jerarquía de Elementos
-        </h2>
-        
-        {treeData.length > 0 ? (
-          <div className="space-y-2">
-            {treeData.map((node) => (
-              <TreeNode
-                key={node.element.id}
-                node={node}
-                onToggle={handleToggleNode}
-              />
-            ))}
-          </div>
-        ) : (
-          <div className="text-center py-12">
-            <div className="text-gray-400 mb-2">
-              <svg className="w-12 h-12 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4" />
-              </svg>
-            </div>
-            <h3 className="text-lg font-medium text-gray-900 mb-2">
-              Sin estructura configurada
-            </h3>
-            <p className="text-gray-600">
-              No hay elementos en la estructura del repositorio. 
-              Utiliza la sección de Gestión para crear elementos.
-            </p>
-          </div>
-        )}
-      </div>
-    </ScreenContainer>
-  );
-};
-
-export default StructureRepository;
+export default StructureList;
