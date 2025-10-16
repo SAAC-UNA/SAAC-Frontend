@@ -70,32 +70,25 @@ export const CriterionEvidenceStep: React.FC<CriterionEvidenceStepProps> = ({
 
   // Opciones para el selector de criterios
   const criterionOptions = useMemo(() => {
-    return criteria
-      .filter(criterion => criterion?.criterio_id != null)
-      .map(criterion => ({
-        value: criterion.criterio_id.toString(),
-        label: `${criterion.nomenclatura} - ${criterion.descripcion}`
-      }));
+    return criteria.map(criterion => ({
+      value: criterion.criterio_id.toString(),
+      label: `${criterion.nomenclatura} - ${criterion.descripcion}`
+    }));
   }, [criteria]);
 
   // Evidencias filtradas por criterio seleccionado
   const availableEvidences = useMemo(() => {
     if (!formData.criterio_id) return [];
-    return evidences.filter(evidence => 
-      evidence?.evidencia_id != null && 
-      evidence?.criterio_id === formData.criterio_id
-    );
+    return evidences.filter(evidence => evidence.criterio_id === formData.criterio_id);
   }, [evidences, formData.criterio_id]);
 
   // Opciones para el MultiSelect de evidencias
   const evidenceOptions = useMemo((): MultiSelectOption[] => {
-    return availableEvidences
-      .filter(evidence => evidence?.evidencia_id != null)
-      .map(evidence => ({
-        value: evidence.evidencia_id.toString(),
-        label: `${evidence.nomenclatura} - ${evidence.descripcion}`,
-        disabled: false
-      }));
+    return availableEvidences.map(evidence => ({
+      value: evidence.evidencia_id.toString(),
+      label: `${evidence.nomenclatura} - ${evidence.descripcion}`,
+      disabled: false
+    }));
   }, [availableEvidences]);
 
   // Manejar selección de criterio

@@ -6,6 +6,7 @@
  */
 
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { RolesTable } from './Components/RolesTable';
 import { ScreenContainer } from '@/Components/Ui/ScreenContainer';
 import { DeleteConfirmationModal } from '@/Components/Ui/DeleteConfirmationModal';
@@ -13,9 +14,11 @@ import { PermissionsModal } from '@/Components/Ui/PermissionsRoleModal';
 import { useRoles } from '@/Hooks/UseRoles';
 import { getContextualInfo } from '@/Constants/ModuleInfo';
 import type { Role } from '@/Services/RoleService';
+import { SuccessModal } from '@/Components/Ui/SuccessModal';
 
 const RolesRepository: React.FC = () => {
   const { deleteRole, roles, loadRoles, isLoading, error } = useRoles();
+  const navigate = useNavigate();
   
   // Obtener información del módulo desde ModuleInfo
   const moduleInfo = getContextualInfo('roles', 'list');
@@ -38,8 +41,24 @@ const RolesRepository: React.FC = () => {
     role: null
   });
 
+  // Estado para el modal de éxito
+  const [successModalState, setSuccessModalState] = useState<{
+    isOpen: boolean;
+    roleName: string;
+  }>({
+    isOpen: false,
+    roleName: ''
+  });
+
+  /**
+   * Maneja el cierre del modal de éxito y redirecciona
+   */
+  const handleSuccessModalClose = () => {
+    setSuccessModalState({ isOpen: false, roleName: '' });
+    navigate('/roles/listar');
+  };
+
   const handleEditRole = (role: Role) => {
-    // TODO: Navegar a página de edición
     window.location.href = `/roles/editar/${role.id}`;
   };
 
@@ -63,8 +82,14 @@ const RolesRepository: React.FC = () => {
         const result = await deleteRole(deleteModalState.role.id);
         
         if (result) {
+          const roleName = deleteModalState.role.name;
           setDeleteModalState({ isOpen: false, role: null });
-          // TODO: Mostrar notificación de éxito
+          
+          // Mostrar modal de éxito
+          setSuccessModalState({
+            isOpen: true,
+            roleName: roleName
+          });
         }
       } catch (error) {
         console.error('Error al eliminar rol:', error);
@@ -129,6 +154,15 @@ const RolesRepository: React.FC = () => {
             permissions={permissionsModalState.role?.permissions || []}
           />
         )}
+        {/* Modal de éxito */}
+        <SuccessModal
+          isOpen={successModalState.isOpen}
+          title="¡Rol eliminado exitosamente!"
+          message={`El rol "${successModalState.roleName}" ha sido eliminado correctamente`}
+          onClose={handleSuccessModalClose}
+          autoClose={true}
+          autoCloseDelay={3000}
+        />
     </>
   );
 };
