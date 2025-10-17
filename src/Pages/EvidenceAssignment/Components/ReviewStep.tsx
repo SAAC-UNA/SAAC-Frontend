@@ -41,7 +41,7 @@ export const ReviewStep: React.FC<ReviewStepProps> = ({
       try {
         setLoading(true);
         const [evidencesData, usersData, rolesData] = await Promise.all([
-          evidenceAssignmentService.getAllEvidencesWithFallback(),
+          evidenceAssignmentService.getAllEvidences(),
           userService.listUsers(),
           roleService.listarRoles()
         ]);

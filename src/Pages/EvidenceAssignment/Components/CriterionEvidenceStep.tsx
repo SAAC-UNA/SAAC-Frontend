@@ -11,8 +11,7 @@ import type {
   EvidenceAssignmentFormData, 
   ValidationErrors, 
   Criterion, 
-  Evidence,
-  Process 
+  Evidence
 } from '@/Types/EvidenceAssignment';
 import evidenceAssignmentService from '@/Services/EvidenceAssignmentService';
 import type { MultiSelectOption } from '@/Components/Ui/MultiSelect';
@@ -28,7 +27,6 @@ export const CriterionEvidenceStep: React.FC<CriterionEvidenceStepProps> = ({
   updateFormData,
   errors
 }) => {
-  const [processes, setProcesses] = useState<Process[]>([]);
   const [criteria, setCriteria] = useState<Criterion[]>([]);
   const [evidences, setEvidences] = useState<Evidence[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -41,18 +39,17 @@ export const CriterionEvidenceStep: React.FC<CriterionEvidenceStepProps> = ({
     const loadData = async () => {
       try {
         setIsLoading(true);
-        const [processesData, criteriaData, evidencesData] = await Promise.all([
-          evidenceAssignmentService.getAllProcessesWithFallback(),
-          evidenceAssignmentService.getAllCriteriaWithFallback(),
-          evidenceAssignmentService.getAllEvidencesWithFallback()
+        const [criteriaData, evidencesData] = await Promise.all([
+          evidenceAssignmentService.getAllCriteria(),
+          evidenceAssignmentService.getAllEvidences()
         ]);
         
-        setProcesses(processesData);
         setCriteria(criteriaData);
         setEvidences(evidencesData);
         setDataLoaded(true);
         
-        // Auto-seleccionar el primer proceso disponible (proceso activo)
+        // Auto-seleccionar el primer proceso disponible
+        const processesData = await evidenceAssignmentService.getAllProcesses();
         if (processesData.length > 0 && !formData.proceso_id) {
           updateFormData({
             proceso_id: processesData[0].proceso_id
@@ -138,21 +135,6 @@ export const CriterionEvidenceStep: React.FC<CriterionEvidenceStepProps> = ({
           <span className="text-rojo-una-2">{errors.evidences}</span>
         </div>
       )}
-
-      {/* Información del Proceso (automático) */}
-      {/*formData.proceso_id && (
-        <div className="p-3 bg-azul-una/5 border-l-4 border-azul-una rounded-r-lg">
-          <div className="flex items-center gap-2">
-            <SystemIcons.interface.checkCircle size="sm" className="text-azul-una" />
-            <div>
-              <span className="text-sm font-medium text-azul-una">Proceso activo:</span>
-              <span className="ml-2 text-sm text-negro-una">
-                Proceso {formData.proceso_id} - Ciclo {processes.find(p => p.proceso_id === formData.proceso_id)?.ciclo_acreditacion_id || 'N/A'}
-              </span>
-            </div>
-          </div>
-        </div>
-      )*/}
 
       {/* Selector de Criterio */}
       {formData.proceso_id && (

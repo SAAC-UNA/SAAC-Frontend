@@ -16,6 +16,14 @@ export interface ModuleInfo {
  * Información de módulos principales del sistema
  */
 export const MODULE_INFO: Record<string, ModuleInfo> = {
+    // Página principal
+  home: {
+    title: 'Panel Principal',
+    subtitle: 'Sistema SAAC-UNA',
+    description: 'Acceda a todas las funcionalidades de acreditación y autoevaluación de carreras',
+    shortDescription: 'Panel principal de funcionalidades'
+  },
+  
   // Gestión de Roles
   roles: {
     title: 'Gestión de Roles',
@@ -111,14 +119,6 @@ export const MODULE_INFO: Record<string, ModuleInfo> = {
     subtitle: 'Ciclos Académicos',
     description: 'Administre los ciclos académicos, periodos de estudio y calendarios institucionales',
     shortDescription: 'Administrar ciclos académicos'
-  },
-
-  // Página principal
-  home: {
-    title: 'Panel Principal',
-    subtitle: 'Sistema SAAC-UNA',
-    description: 'Acceda a todas las funcionalidades de acreditación y autoevaluación de carreras',
-    shortDescription: 'Panel principal de funcionalidades'
   },
 
   listRoles: {

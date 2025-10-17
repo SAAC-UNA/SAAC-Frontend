@@ -31,7 +31,7 @@ interface AppHeaderProps {
 
 export const AppHeader: React.FC<AppHeaderProps> = ({
   className,
-  title = "Sistema SAAC",
+  title = "SAAC",
   logo = "/Images/SAAC.png",
   logoAlt = "SAAC Logo"
 }) => {
