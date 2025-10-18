@@ -17,6 +17,7 @@ export interface MultiSelectProps {
   error?: string;
   className?: string;
   required?: boolean;
+  variant?: 'default' | 'floating';
   showSelectAll?: boolean;
   selectAllText?: string;
   deselectAllText?: string;
@@ -32,6 +33,7 @@ export const MultiSelect: React.FC<MultiSelectProps> = ({
   error,
   className,
   required = false,
+  variant = 'floating', // Default a floating para consistencia
   showSelectAll = true,
   selectAllText = 'Seleccionar todo',
   deselectAllText = 'Deseleccionar todo',
@@ -120,129 +122,306 @@ export const MultiSelect: React.FC<MultiSelectProps> = ({
     return `${selectedOptions.length} elementos seleccionados`;
   };
 
-  return (
-    <div className={cn('relative w-full', className)} ref={selectRef}>
-      {/* Label */}
-      {label && (
-        <label className={cn(
-          'block font-medium text-negro-una text-sm mb-1',
-          disabled && 'text-gray-400'
-        )}>
-          {label}
-          {required && <span className="text-rojo-una-2 ml-1">*</span>}
-        </label>
-      )}
+  // Floating label variant (nuevo diseño por defecto)
+  if (variant === 'floating') {
+    // Detectar si tiene contenido seleccionado
+    const hasValue = selectedOptions.length > 0;
+    const selectId = `multiselect-${Math.random().toString(36).substr(2, 9)}`;
 
-      {/* Select Button */}
-      <button
-        type="button"
-        className={cn(
-          'relative w-full h-10 border rounded-lg text-left cursor-pointer focus:outline-none focus:ring-1 focus:ring-gris-una/20 focus:border-transparent transition-all duration-200',
-          'placeholder-gris-una/60 disabled:cursor-not-allowed px-3 py-2 text-sm',
-          disabled
-            ? 'bg-gris-una/10 border-gris-una/5 text-gray-400'
-            : error
-            ? 'border-rojo-una-2/5 bg-rojo-una-2/2'
-            : 'border-gris-una/5 bg-gris-una/10 hover:border-gris-una/10',
-          isOpen && !disabled && 'border-gris-una/20'
-        )}
-        onClick={() => !disabled && setIsOpen(!isOpen)}
-        disabled={disabled}
-      >
-        <span className={cn(
-          'block truncate',
-          selectedOptions.length === 0 && 'text-gris-una/60'
-        )}>
-          {getDisplayText()}
-        </span>
-        
-        {/* Arrow Icon */}
-        <span className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
-          <svg
+    return (
+      <div className={cn('relative w-full space-y-2', className)} ref={selectRef}>
+        <div className="relative">
+          {/* Select Button */}
+          <button
+            type="button"
+            id={selectId}
             className={cn(
-              'w-5 h-5 text-gris-una transition-transform duration-200',
-              isOpen && 'rotate-180'
-            )}
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M19 9l-7 7-7-7"
-            />
-          </svg>
-        </span>
-      </button>
-
-      {/* Dropdown */}
-      {isOpen && !disabled && (
-        <div className="absolute z-50 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg max-h-[140px] overflow-auto custom-scrollbar">
-          <div className="py-1 text-sm">
-            {/* Botón Seleccionar todo dentro del dropdown */}
-            {showSelectAll && options.length > 1 && (
-              <button
-                type="button"
-                onClick={handleSelectAll}
-                className="w-full text-left px-4 py-2.5 text-azul-una hover:bg-blue-50 focus:bg-blue-50 focus:outline-none transition-colors duration-150 border-b border-gray-200 bg-gray-50/50"
-              >
-                <span className="font-semibold text-sm">
-                  {isAllSelected() ? deselectAllText : selectAllText}
-                </span>
-              </button>
-            )}
-            
-            {options.map((option) => {
-              const isSelected = selectedOptions.some(selected => selected.value === option.value);
+              // Base styles - Similar al Input actualizado
+              'relative w-full px-4 py-3 text-sm border rounded-lg text-left cursor-pointer transition-all duration-300',
+              'focus:outline-none focus:border-gris-una',
+              'disabled:bg-gris-una/10 disabled:cursor-not-allowed',
+              'peer', // Para usar peer selectors de Tailwind
               
-              return (
-                <button
-                  key={option.value}
-                  type="button"
-                  className={cn(
-                    'relative w-full text-left px-4 py-2 hover:bg-gray-100 focus:bg-gray-100 focus:outline-none transition-colors duration-150 flex items-center justify-between',
-                    option.disabled
-                      ? 'text-gray-400 cursor-not-allowed'
-                      : 'text-gray-900 cursor-pointer',
-                    isSelected && 'bg-blue-50 text-blue-900 font-medium'
-                  )}
-                  onClick={() => handleOptionToggle(option)}
-                  disabled={option.disabled}
-                >
-                  <span className="flex-1">{option.label}</span>
-                  
-                  {/* Check icon for selected options */}
-                  {isSelected && (
-                    <span className="flex-shrink-0 ml-2">
-                      <svg
-                        className="w-5 h-5 text-blue-600"
-                        fill="currentColor"
-                        viewBox="0 0 20 20"
-                      >
-                        <path
-                          fillRule="evenodd"
-                          d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-                          clipRule="evenodd"
-                        />
-                      </svg>
-                    </span>
-                  )}
-                </button>
-              );
-            })}
-          </div>
-        </div>
-      )}
+              // State variants - mismo estilo que Input
+              error
+                ? 'border-rojo-una-2' 
+                : 'border-gris-una bg-blanco-una-2',
+              
+              disabled
+                ? 'bg-gris-una/10 border-gris-una/5 text-gray-400'
+                : isOpen && 'border-gris-una/20'
+            )}
+            onClick={() => !disabled && setIsOpen(!isOpen)}
+            disabled={disabled}
+          >
+            <span className={cn(
+              'block truncate',
+              selectedOptions.length === 0 && 'text-transparent' // Ocultar cuando no hay selección para que no choque con label
+            )}>
+              {hasValue ? getDisplayText() : placeholder}
+            </span>
+            
+            {/* Arrow Icon */}
+            <span className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+              <svg
+                className={cn(
+                  'w-5 h-5 text-gris-una transition-transform duration-200',
+                  isOpen && 'rotate-180'
+                )}
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M19 9l-7 7-7-7"
+                />
+              </svg>
+            </span>
+          </button>
 
-      {/* Error Message */}
-      {error && (
-        <p className="text-rojo-una-2 text-sm flex items-center gap-2">
-          <SystemIcons.interface.alert className="w-4 h-4 flex-shrink-0 text-rojo-una-2" size="sm" />
-          {error}
-        </p>
-      )}
-    </div>
-  );
-};
+          {/* Floating Label */}
+          {label && (
+            <label 
+              htmlFor={selectId}
+              className={cn(
+                // Base floating label styles - Igual al Input
+                'absolute left-4 transition-all duration-300 pointer-events-none',
+                'transform',
+                
+                // Tamaño del texto del label (más pequeño)
+                'text-sm', // Label más pequeño
+                
+                // Posicionamiento dinámico basado en focus o contenido
+                hasValue || isOpen
+                  ? 'top-0 scale-75 -translate-y-1/2' // Label arriba cuando hay contenido o está abierto
+                  : 'top-1/2 scale-100 -translate-y-1/2', // Label centrado cuando está vacío
+                
+                // Comportamiento con focus (peer selectors como fallback)
+                'peer-focus:top-0 peer-focus:scale-75 peer-focus:-translate-y-1/2',
+                
+                // Fondo condicional: blanco solo cuando está arriba (igual al Input)
+                hasValue || isOpen
+                  ? 'bg-blanco-una-2 px-2' // Fondo blanco cuando tiene contenido (label arriba)
+                  : 'bg-transparent px-1', // Transparente cuando está centrado
+                
+                // Fondo blanco también con focus (peer selectors)
+                'peer-focus:bg-blanco-una-2 peer-focus:px-2',
+                
+                // Colors - igual al Input
+                error
+                  ? 'text-rojo-una-2'
+                  : hasValue || isOpen
+                    ? 'text-gris-una font-semibold'  // Color activo cuando tiene contenido
+                    : 'text-gris-una peer-focus:text-gris-una peer-focus:font-semibold',
+              )}
+            >
+              {label}
+              {required && <span className="text-rojo-una-2 ml-1">*</span>}
+            </label>
+          )}
+        </div>
+
+        {/* Dropdown */}
+        {isOpen && !disabled && (
+          <div className="absolute z-50 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg max-h-[140px] overflow-auto custom-scrollbar">
+            <div className="py-1 text-sm">
+              {/* Botón Seleccionar todo dentro del dropdown */}
+              {showSelectAll && options.length > 1 && (
+                <button
+                  type="button"
+                  onClick={handleSelectAll}
+                  className="w-full text-left px-4 py-2.5 text-azul-una hover:bg-blue-50 focus:bg-blue-50 focus:outline-none transition-colors duration-150 border-b border-gray-200 bg-gray-50/50"
+                >
+                  <span className="font-semibold text-sm">
+                    {isAllSelected() ? deselectAllText : selectAllText}
+                  </span>
+                </button>
+              )}
+              
+              {options.map((option) => {
+                const isSelected = selectedOptions.some(selected => selected.value === option.value);
+                
+                return (
+                  <button
+                    key={option.value}
+                    type="button"
+                    className={cn(
+                      'relative w-full text-left px-4 py-2 hover:bg-gray-100 focus:bg-gray-100 focus:outline-none transition-colors duration-150 flex items-center justify-between',
+                      option.disabled
+                        ? 'text-gray-400 cursor-not-allowed'
+                        : 'text-gray-900 cursor-pointer',
+                      isSelected && 'bg-blue-50 text-blue-900 font-medium'
+                    )}
+                    onClick={() => handleOptionToggle(option)}
+                    disabled={option.disabled}
+                  >
+                    <span className="flex-1">{option.label}</span>
+                    
+                    {/* Check icon for selected options */}
+                    {isSelected && (
+                      <span className="flex-shrink-0 ml-2">
+                        <svg
+                          className="w-5 h-5 text-blue-600"
+                          fill="currentColor"
+                          viewBox="0 0 20 20"
+                        >
+                          <path
+                            fillRule="evenodd"
+                            d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                            clipRule="evenodd"
+                          />
+                          </svg>
+                        </span>
+                      )}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+
+          {/* Error Message */}
+          {error && (
+            <p className="text-rojo-una-2 text-sm flex items-center gap-2">
+              <SystemIcons.interface.alert className="w-4 h-4 flex-shrink-0 text-rojo-una-2" size="sm" />
+              {error}
+            </p>
+          )}
+        </div>
+      );
+    }
+
+    // Variante tradicional (para compatibilidad)
+    return (
+      <div className={cn('relative w-full', className)} ref={selectRef}>
+        {/* Label */}
+        {label && (
+          <label className={cn(
+            'block font-medium text-sm mb-2', // Actualizado para consistencia
+            disabled ? 'text-gray-400' : 'text-negro-una'
+          )}>
+            {label}
+            {required && <span className="text-rojo-una-2 ml-1">*</span>}
+          </label>
+        )}
+
+        {/* Select Button */}
+        <button
+          type="button"
+          className={cn(
+            // Base styles actualizados para consistencia con Input
+            'relative w-full border rounded-lg text-left cursor-pointer transition-all duration-300 px-4 py-3 text-sm',
+            'focus:outline-none focus:border-gris-una',
+            'disabled:bg-gris-una/10 disabled:cursor-not-allowed',
+            
+            // State variants - actualizados para consistencia con Input
+            disabled
+              ? 'bg-gris-una/10 border-gris-una/5 text-gray-400'
+              : error
+              ? 'border-rojo-una-2' 
+              : 'border-gris-una bg-blanco-una-2 hover:border-gris-una/50',
+            isOpen && !disabled && 'border-gris-una/20'
+          )}
+          onClick={() => !disabled && setIsOpen(!isOpen)}
+          disabled={disabled}
+        >
+          <span className={cn(
+            'block truncate',
+            selectedOptions.length === 0 && 'text-gris-una/60'
+          )}>
+            {getDisplayText()}
+          </span>
+          
+          {/* Arrow Icon */}
+          <span className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+            <svg
+              className={cn(
+                'w-5 h-5 text-gris-una transition-transform duration-200',
+                isOpen && 'rotate-180'
+              )}
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M19 9l-7 7-7-7"
+              />
+            </svg>
+          </span>
+        </button>
+
+        {/* Dropdown */}
+        {isOpen && !disabled && (
+          <div className="absolute z-50 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg max-h-[140px] overflow-auto custom-scrollbar">
+            <div className="py-1 text-sm">
+              {/* Botón Seleccionar todo dentro del dropdown */}
+              {showSelectAll && options.length > 1 && (
+                <button
+                  type="button"
+                  onClick={handleSelectAll}
+                  className="w-full text-left px-4 py-2.5 text-azul-una hover:bg-blue-50 focus:bg-blue-50 focus:outline-none transition-colors duration-150 border-b border-gray-200 bg-gray-50/50"
+                >
+                  <span className="font-semibold text-sm">
+                    {isAllSelected() ? deselectAllText : selectAllText}
+                  </span>
+                </button>
+              )}
+              
+              {options.map((option) => {
+                const isSelected = selectedOptions.some(selected => selected.value === option.value);
+                
+                return (
+                  <button
+                    key={option.value}
+                    type="button"
+                    className={cn(
+                      'relative w-full text-left px-4 py-2 hover:bg-gray-100 focus:bg-gray-100 focus:outline-none transition-colors duration-150 flex items-center justify-between',
+                      option.disabled
+                        ? 'text-gray-400 cursor-not-allowed'
+                        : 'text-gray-900 cursor-pointer',
+                      isSelected && 'bg-blue-50 text-blue-900 font-medium'
+                    )}
+                    onClick={() => handleOptionToggle(option)}
+                    disabled={option.disabled}
+                  >
+                    <span className="flex-1">{option.label}</span>
+                    
+                    {/* Check icon for selected options */}
+                    {isSelected && (
+                      <span className="flex-shrink-0 ml-2">
+                        <svg
+                          className="w-5 h-5 text-blue-600"
+                          fill="currentColor"
+                          viewBox="0 0 20 20"
+                        >
+                          <path
+                            fillRule="evenodd"
+                            d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                            clipRule="evenodd"
+                          />
+                          </svg>
+                        </span>
+                      )}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+
+          {/* Error Message */}
+          {error && (
+            <p className="text-rojo-una-2 text-sm flex items-center gap-2">
+              <SystemIcons.interface.alert className="w-4 h-4 flex-shrink-0 text-rojo-una-2" size="sm" />
+              {error}
+            </p>
+          )}
+        </div>
+      );
+    };

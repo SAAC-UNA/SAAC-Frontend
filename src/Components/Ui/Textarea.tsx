@@ -7,32 +7,132 @@ interface TextareaProps extends Omit<React.TextareaHTMLAttributes<HTMLTextAreaEl
   label?: string;
   error?: string;
   helperText?: string;
+  variant?: 'default' | 'floating';
   size?: ComponentSize;
   required?: boolean;
-  resize?: 'none' | 'vertical' | 'horizontal' | 'both';
+  resize?: 'none' | 'vertical' | 'horizontal' | 'both'; // Mantenemos el tipo por compatibilidad, pero siempre será 'none'
 }
-
-const RESIZE_CLASSES = {
-  none: 'resize-none',
-  vertical: 'resize-y',
-  horizontal: 'resize-x',
-  both: 'resize'
-};
 
 export const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(({
   label,
   error,
   helperText,
+  variant = 'floating', // Cambiar default a floating para consistencia con Input
   size = 'sm', // Cambiar default a sm para consistencia
-  resize = 'vertical',
+  resize = 'none', // Deshabilitar resize por defecto
   required = false,
   className,
   id,
   rows = 4,
+  value, // Asegurar que tenemos acceso al value
+  placeholder, // Extraer placeholder por separado
   ...props
 }, ref) => {
   const textareaId = id || `textarea-${Math.random().toString(36).substr(2, 9)}`;
 
+  // Floating label variant (nuevo diseño por defecto, igual al Input)
+  if (variant === 'floating') {
+    // Detectar si el textarea tiene contenido
+    const hasValue = Boolean(value && value.toString().trim() !== '');
+
+    return (
+      <div className="space-y-2">
+        <div className="relative">
+          {/* Textarea */}
+          <textarea
+            ref={ref}
+            id={textareaId}
+            value={value}
+            rows={rows}
+            className={cn(
+              // Base styles - Similar al Input actualizado
+              'w-full px-4 py-3 text-sm border rounded-lg transition-all duration-300',
+              'focus:outline-none focus:border-gris-una',
+              'disabled:bg-gris-una/10 disabled:cursor-not-allowed',
+              'peer', // Para usar peer selectors de Tailwind
+              
+              // Placeholder condicional - solo visible en focus (igual al Input)
+              'placeholder-transparent focus:placeholder-gris-una/60 placeholder:text-sm',
+              
+              // Forzar resize-none siempre para evitar redimensionamiento
+              '!resize-none',
+              
+              // State variants - mismo estilo que Input
+              error
+                ? 'border-rojo-una-2' 
+                : 'border-gris-una bg-blanco-una-2',
+              
+              // Custom classes
+              className
+            )}
+            // Placeholder que se muestra solo en focus
+            placeholder={placeholder || ""}
+            {...props}
+          />
+
+          {/* Floating Label */}
+          {label && (
+            <label 
+              htmlFor={textareaId}
+              className={cn(
+                // Base floating label styles - Igual al Input
+                'absolute left-4 transition-all duration-300 pointer-events-none',
+                'transform',
+                
+                // Tamaño del texto del label (más pequeño)
+                'text-sm', // Label más pequeño
+                
+                // Posicionamiento dinámico basado en focus o contenido
+                hasValue 
+                  ? 'top-0 scale-75 -translate-y-1/2' // Label arriba cuando hay contenido
+                  : 'top-6 scale-100 -translate-y-1/2', // Label un poco más abajo que Input por el padding del textarea
+                
+                // Comportamiento con focus (peer selectors como fallback)
+                'peer-focus:top-0 peer-focus:scale-75 peer-focus:-translate-y-1/2',
+                'peer-[:not(:placeholder-shown)]:top-0 peer-[:not(:placeholder-shown)]:scale-75 peer-[:not(:placeholder-shown)]:-translate-y-1/2',
+                
+                // Fondo condicional: blanco solo cuando está arriba (igual al Input)
+                hasValue 
+                  ? 'bg-blanco-una-2 px-2' // Fondo blanco cuando tiene contenido (label arriba)
+                  : 'bg-transparent px-1', // Transparente cuando está centrado
+                
+                // Fondo blanco también con focus (peer selectors)
+                'peer-focus:bg-blanco-una-2 peer-focus:px-2',
+                'peer-[:not(:placeholder-shown)]:bg-blanco-una-2 peer-[:not(:placeholder-shown)]:px-2',
+                
+                // Colors - igual al Input
+                error
+                  ? 'text-rojo-una-2'
+                  : hasValue 
+                    ? 'text-gris-una font-semibold'  // Color activo cuando tiene contenido
+                    : 'text-gris-una peer-focus:text-gris-una peer-focus:font-semibold',
+              )}
+            >
+              {label}
+              {required && <span className="text-rojo-una-2 ml-1">*</span>}
+            </label>
+          )}
+        </div>
+
+        {/* Error message */}
+        {error && (
+          <p className="text-rojo-una-2 text-sm flex items-center gap-2">
+            <SystemIcons.interface.alert className="w-4 h-4 flex-shrink-0 text-rojo-una-2" size="sm" />
+            {error}
+          </p>
+        )}
+
+        {/* Helper text */}
+        {helperText && !error && (
+          <p className="text-gris-una text-sm">
+            {helperText}
+          </p>
+        )}
+      </div>
+    );
+  }
+
+  // Variante tradicional (para compatibilidad)
   return (
     <div className="space-y-2">
       {/* Label */}
@@ -52,18 +152,18 @@ export const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(({
         id={textareaId}
         rows={rows}
         className={cn(
-          // Base styles
-          'w-full border rounded-lg transition-all duration-200 px-3 py-2 text-sm',
-          'focus:outline-none focus:ring-1 focus:ring-gris-una/20 focus:border-transparent',
+          // Base styles actualizados para consistencia con Input
+          'w-full border rounded-lg transition-all duration-300 px-4 py-3 text-sm',
+          'focus:outline-none focus:border-gris-una',
           'placeholder-gris-una/60 disabled:bg-gris-una/10 disabled:cursor-not-allowed',
           
-          // Resize behavior
-          RESIZE_CLASSES[resize],
+          // Forzar resize-none siempre para evitar redimensionamiento
+          '!resize-none',
           
-          // State variants
+          // State variants - actualizados para consistencia con Input
           error 
-            ? 'border-rojo-una-2/5 bg-rojo-una-2/2' 
-            : 'border-gris-una/5 bg-gris-una/10',
+            ? 'border-rojo-una-2' 
+            : 'border-gris-una bg-blanco-una-2',
           
           // Custom classes
           className

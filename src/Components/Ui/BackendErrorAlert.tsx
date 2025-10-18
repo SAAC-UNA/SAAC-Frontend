@@ -18,7 +18,7 @@ import { SystemIcons } from './Icons/SystemIcons';
 
 interface BackendErrorAlertProps {
   error: string;
-  onRetry?: () => void;
+  onRetry?: () => void | Promise<void>;
   className?: string;
 }
 
@@ -34,6 +34,22 @@ export const BackendErrorAlert: React.FC<BackendErrorAlertProps> = ({
   onRetry,
   className = ""
 }) => {
+  const [isRetrying, setIsRetrying] = React.useState(false);
+
+  /**
+   * Maneja el reintento con estado de carga
+   */
+  const handleRetry = async () => {
+    if (!onRetry || isRetrying) return;
+    
+    setIsRetrying(true);
+    try {
+      await onRetry();
+    } finally {
+      // Mantener el estado de "retrying" por un momento para evitar parpadeos
+      setTimeout(() => setIsRetrying(false), 500);
+    }
+  };
 
   /**
    * Detecta el tipo de error y devuelve la configuración apropiada
@@ -146,11 +162,12 @@ export const BackendErrorAlert: React.FC<BackendErrorAlertProps> = ({
               <div className="mt-3">
                 <Button
                   variant="error"
-                  onClick={onRetry}
+                  onClick={handleRetry}
                   size="sm"
                   standardWidth={true}
+                  disabled={isRetrying}
                 >
-                  Reintentar
+                  {isRetrying ? 'Reintentando...' : 'Reintentar'}
                 </Button>
               </div>
             )}

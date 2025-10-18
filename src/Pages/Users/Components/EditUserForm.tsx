@@ -13,9 +13,8 @@
  * @param onSubmit - Callback ejecutado al guardar exitosamente
  * @param onCancel - Callback ejecutado al cancelar la operación
  */
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Input, CustomSelect, Button, LoadingSpinner, BackendErrorAlert } from '@/components/Ui/Index';
-import { cn } from '@/Utils/ClassNames';
 import { roleService } from '@/Services/RoleService';
 import type { User } from '@/Services/UserService';
 import type { Role, BackendPermission } from '@/Services/RoleService';
@@ -41,25 +40,11 @@ export const EditUserForm: React.FC<EditUserFormProps> = ({
   const [error, setError] = useState<string | null>(null);
 
   // Estados para vista previa de permisos
-  const [previewPermissions, setPreviewPermissions] = useState<BackendPermission[]>([]);
-  const [isPermissionsOpen, setIsPermissionsOpen] = useState(false);
-  const permissionsRef = useRef<HTMLDivElement>(null);
+  const [previewPermissions, setPreviewPermissions] = useState<string[] | BackendPermission[]>([]);
 
   // Cargar roles al montar el componente
   useEffect(() => {
     loadRoles();
-  }, []);
-
-  // Cerrar dropdown al hacer click fuera
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (permissionsRef.current && !permissionsRef.current.contains(event.target as Node)) {
-        setIsPermissionsOpen(false);
-      }
-    };
-
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
   // Establecer rol actual del usuario
@@ -147,18 +132,45 @@ export const EditUserForm: React.FC<EditUserFormProps> = ({
     <div className="w-full">
       {/* Header con información del usuario */}
       <div className="mb-8">
-        <h2 className="text-2xl font-bold text-negro-una mb-6">
-          Información del Usuario
-        </h2>
+        {/* Título principal con Estado y Rol Actual alineados */}
+        <div className="flex justify-between items-start mb-6">
+          <h2 className="text-2xl font-bold text-negro-una">
+            Información del Usuario
+          </h2>
+          
+          {/* Estado y Rol Actual - alineados con el título */}
+          <div className="flex gap-6">
+            <div className="text-right">
+              <label className="block text-sm font-medium text-negro-una mb-2">
+                Estado
+              </label>
+              <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${
+                user.status === 'active' 
+                  ? 'bg-green-100 text-green-800' 
+                  : 'bg-red-100 text-red-800'
+              }`}>
+                {user.status === 'active' ? 'Activo' : 'Inactivo'}
+              </span>
+            </div>
+            <div className="text-right">
+              <label className="block text-sm font-medium text-negro-una mb-2">
+                Rol Actual
+              </label>
+              <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800">
+                {user.role || 'Sin rol asignado'}
+              </span>
+            </div>
+          </div>
+        </div>
 
         {/* Error Alert */}
         {error && (
           <div className="mb-6">
             <BackendErrorAlert
               error={error}
-              onRetry={() => {
+              onRetry={async () => {
                 setError(null);
-                loadRoles();
+                await loadRoles();
               }}
             />
           </div>
@@ -168,12 +180,12 @@ export const EditUserForm: React.FC<EditUserFormProps> = ({
         <div className="grid grid-cols-2 gap-6">
           {/* Columna izquierda: Gestión de Roles y Permisos */}
           <div>
-            {/* Título de sección */}
+            {/* Título de sección - alineado con subtítulo derecho */}
             <h3 className="text-xl font-semibold text-gray-900 mb-6">
               Gestión de Roles
             </h3>
 
-            <div className="space-y-8">
+            <div className="space-y-6">
               {/* Selector de Rol - alineado con Nombre */}
               <div>
                 <div className="mb-3">
@@ -200,69 +212,17 @@ export const EditUserForm: React.FC<EditUserFormProps> = ({
 
               {/* Vista previa de permisos - alineado con Email */}
               {previewPermissions.length > 0 && (
-                <div className="relative w-full" ref={permissionsRef}>
-                  <div>
-                    <h4 className="block text-sm font-medium text-negro-una mb-1">
-                      Permisos que tendrá el usuario
-                      <span className="text-sm font-normal text-gray-600 ml-2">
-                        ({previewPermissions.length} permisos)
-                      </span>
-                    </h4>
-
-                    {/* Botón para mostrar/ocultar permisos */}
-                    <button
-                      type="button"
-                      className={cn(
-                        'relative w-full h-10 border rounded-lg text-left cursor-pointer focus:outline-none focus:ring-1 focus:ring-gris-una/20 focus:border-transparent transition-all duration-200',
-                        'placeholder-gris-una/60 px-3 py-2 text-sm',
-                        'border-gris-una/5 bg-gris-una/10 hover:border-gris-una/10',
-                        isPermissionsOpen && 'border-gris-una/20'
-                      )}
-                      onClick={() => setIsPermissionsOpen(!isPermissionsOpen)}
-                    >
-                      <span className="block truncate text-gris-una/80">
-                        {isPermissionsOpen ? 'Ocultar permisos' : 'Ver permisos del rol'}
-                      </span>
-                      
-                      {/* Arrow Icon */}
-                      <span className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
-                        <svg
-                          className={cn(
-                            'w-5 h-5 text-gris-una transition-transform duration-200',
-                            isPermissionsOpen && 'rotate-180'
-                          )}
-                          fill="none"
-                          stroke="currentColor"
-                          viewBox="0 0 24 24"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M19 9l-7 7-7-7"
-                          />
-                        </svg>
-                      </span>
-                    </button>
-
-                    {/* Dropdown de permisos */}
-                    {isPermissionsOpen && (
-                      <div className="absolute z-50 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg max-h-[120px] overflow-auto custom-scrollbar">
-                        <div className="py-1 text-sm">
-                          {previewPermissions.map((permission) => (
-                            <div 
-                              key={permission.id}
-                              className="relative w-full text-left px-4 py-2 text-gray-900"
-                            >
-                              <span className="text-sm text-gray-700">
-                                {permission.label || permission.name}
-                              </span>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    )}
-                  </div>
+                <div>
+                  <CustomSelect
+                    label={`Permisos que tendrá el usuario (${previewPermissions.length} permisos)`}
+                    options={previewPermissions.map((permission, index) => ({
+                      value: index.toString(),
+                      label: typeof permission === 'string' ? permission : permission.label || permission.name
+                    }))}
+                    value="" // Sin valor seleccionado
+                    readonly={true}
+                    className="w-full"
+                  />
                 </div>
               )}
             </div>
@@ -270,60 +230,36 @@ export const EditUserForm: React.FC<EditUserFormProps> = ({
 
           {/* Columna derecha: Estado/Rol y Datos del usuario */}
           <div>
-            {/* Estado y Rol Actual - arriba del subtítulo */}
-            <div className="grid grid-cols-2 gap-4 mb-6">
-              <div>
-                <label className="block text-sm font-medium text-negro-una mb-1">
-                  Estado
-                </label>
-                <div className="mt-1">
-                  <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${
-                    user.status === 'active' 
-                      ? 'bg-green-100 text-green-800' 
-                      : 'bg-red-100 text-red-800'
-                  }`}>
-                    {user.status === 'active' ? 'Activo' : 'Inactivo'}
-                  </span>
-                </div>
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-negro-una mb-1">
-                  Rol Actual
-                </label>
-                <div className="mt-1">
-                  <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800">
-                    {user.role || 'Sin rol asignado'}
-                  </span>
-                </div>
-              </div>
-            </div>
-
+            {/* Título de sección - alineado con subtítulo izquierdo */}
             <h3 className="text-xl font-semibold text-gray-900 mb-6">
               Información Personal
             </h3>
 
-            <div className="space-y-8">
+            <div className="space-y-6">
               {/* Nombre - alineado con Rol del Usuario */}
               <div>
-                <label className="block text-sm font-medium text-negro-una mb-1">
-                  Nombre
-                </label>
+                {/* Espaciado equivalente al texto de ayuda del rol */}
+                <div className="mb-3">
+                  <span className="text-xs text-gray-500">
+                    &nbsp; {/* Espaciado invisible para alineación */}
+                  </span>
+                </div>
+                
                 <Input
+                  label="Nombre"
                   value={user.name}
                   disabled
-                  className="bg-white/50"
+                  className="!bg-blanco-una-2"
                 />
               </div>
 
               {/* Email - alineado con Permisos */}
               <div>
-                <label className="block text-sm font-medium text-negro-una mb-1">
-                  Email
-                </label>
                 <Input
+                  label="Email"
                   value={user.email}
                   disabled
-                  className="bg-white/50"
+                  className="!bg-blanco-una-2"
                 />
               </div>
             </div>

@@ -180,9 +180,9 @@ export const RolesTable: React.FC<RolesTableProps> = ({
         return (
             <BackendErrorAlert
                 error={error}
-                onRetry={() => {
+                onRetry={async () => {
                     clearError();
-                    loadRoles();
+                    await loadRoles();
                 }}
             />
         );

@@ -33,7 +33,6 @@ export const ReviewStep: React.FC<ReviewStepProps> = ({
   // Estados para secciones colapsables
   const [expandedEvidences, setExpandedEvidences] = useState(false);
   const [expandedDestinators, setExpandedDestinators] = useState(false);
-  const [expandedConfig, setExpandedConfig] = useState(false);
 
   // Cargar datos necesarios para mostrar nombres
   useEffect(() => {
@@ -280,60 +279,43 @@ export const ReviewStep: React.FC<ReviewStepProps> = ({
               )}
             </div>
 
-            {/* Configuración - Colapsable */}
+            {/* Configuración - Siempre visible */}
             <div className="relative overflow-hidden rounded-xl border-2 border-gris-una/30 bg-gradient-to-br from-gris-una/5 to-gris-una/10">
-              {/*<div className="absolute top-0 right-0 w-32 h-32 bg-gris-una/5 rounded-full -mr-16 -mt-16 opacity-20"></div>*/}
-              <button
-                onClick={() => setExpandedConfig(!expandedConfig)}
-                className="w-full relative z-10 p-6 text-left hover:bg-gris-una/5 transition-all"
-              >
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <div className="flex items-center justify-center w-10 h-10 rounded-full bg-gris-una text-white">
-                      <SystemIcons.interface.calendar size="md" />
-                    </div>
-                    <h3 className="text-lg font-semibold text-gris-una">Configuración</h3>
+              <div className="relative z-10 p-6">
+                <div className="flex items-center gap-3 mb-6">
+                  <div className="flex items-center justify-center w-10 h-10 rounded-full bg-gris-una text-white">
+                    <SystemIcons.interface.calendar size="md" />
                   </div>
-                  <SystemIcons.interface.chevronDown
-                    className={cn(
-                      'text-gris-una transition-transform duration-200',
-                      expandedConfig && 'rotate-180'
-                    )}
-                    size="md"
-                  />
+                  <h3 className="text-lg font-semibold text-gris-una">Configuración</h3>
                 </div>
-              </button>
 
-              {expandedConfig && (
-                <div className="relative z-10 border-t border-gris-una p-6">
-                  <div className="space-y-4">
+                <div className="space-y-4">
+                  <div>
+                    <p className="text-xs font-semibold text-gris-una uppercase tracking-wide mb-2">
+                      Fecha Límite de Entrega
+                    </p>
+                    <p className="text-sm font-medium text-negro-una bg-white/60 rounded-lg p-3">
+                      {formData.fecha_limite ? formatDate(formData.fecha_limite) : '— No especificada'}
+                    </p>
+                    {formData.fecha_limite && (
+                      <p className="text-xs text-gris-una mt-2">
+                        Los destinatarios recibirán recordatorios antes de esta fecha
+                      </p>
+                    )}
+                  </div>
+                  
+                  {formData.comentario && (
                     <div>
                       <p className="text-xs font-semibold text-gris-una uppercase tracking-wide mb-2">
-                        Fecha Límite de Entrega
+                        Comentario
                       </p>
-                      <p className="text-sm font-medium text-negro-una bg-white/60 rounded-lg p-3">
-                        {formData.fecha_limite ? formatDate(formData.fecha_limite) : '— No especificada'}
+                      <p className="text-sm text-negro-una bg-white/60 rounded-lg p-3 max-h-32 overflow-y-auto whitespace-pre-wrap break-all overflow-x-hidden">
+                        {formData.comentario}
                       </p>
-                      {formData.fecha_limite && (
-                        <p className="text-xs text-gris-una mt-2">
-                          Los destinatarios recibirán recordatorios antes de esta fecha
-                        </p>
-                      )}
                     </div>
-                    
-                    {formData.comentario && (
-                      <div>
-                        <p className="text-xs font-semibold text-gris-una uppercase tracking-wide mb-2">
-                          Comentario
-                        </p>
-                        <p className="text-sm text-negro-una bg-white/60 rounded-lg p-3 max-h-24 overflow-y-auto whitespace-pre-wrap break-words">
-                          {formData.comentario}
-                        </p>
-                      </div>
-                    )}
-                  </div>
+                  )}
                 </div>
-              )}
+              </div>
             </div>
           </div>
         </>

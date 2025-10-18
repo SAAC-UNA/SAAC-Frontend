@@ -6,20 +6,24 @@ import React, { useState, useEffect } from 'react';
 import { MultiSelect } from '@/Components/Ui/MultiSelect';
 import { BackendErrorAlert } from '@/Components/Ui/BackendErrorAlert';
 import { LoadingSpinner } from '@/Components/Ui/Loading';
+import { SystemIcons } from '@/Components/Ui/Icons/SystemIcons';
 import { userService, type User } from '@/Services/UserService';
 import { roleService, type Role } from '@/Services/RoleService';
 import type { 
-  EvidenceAssignmentFormData
+  EvidenceAssignmentFormData,
+  ValidationErrors
 } from '@/Types/EvidenceAssignment';
 
 interface AddresseeStepProps {
   formData: EvidenceAssignmentFormData;
   updateFormData: (updates: Partial<EvidenceAssignmentFormData>) => void;
+  errors: ValidationErrors;
 }
 
 export const AddresseeStep: React.FC<AddresseeStepProps> = ({
   formData,
-  updateFormData
+  updateFormData,
+  errors
 }) => {
   const [availableUsers, setAvailableUsers] = useState<User[]>([]);
   const [availableRoles, setAvailableRoles] = useState<Role[]>([]);
@@ -105,21 +109,29 @@ export const AddresseeStep: React.FC<AddresseeStepProps> = ({
         </p>
       </div>
 
+      {/* Error de validación - Debe seleccionar al menos un usuario o rol */}
+      {errors.destinatarios && (
+        <div className="p-4 bg-rojo-una-2/10 border border-rojo-una-2/20 rounded-lg flex items-center gap-3">
+          <SystemIcons.interface.alert size="md" className="text-rojo-una-2" />
+          <span className="text-rojo-una-2">{errors.destinatarios}</span>
+        </div>
+      )}
+
       {loading ? (
         <div className="flex flex-col items-center justify-center py-12">
           <LoadingSpinner size="lg" className="mb-4" />
         </div>
       ) : (
-        <>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {/* Selección de Usuarios */}
           <div>
             {userError ? (
               <div className="mb-4">
                 <BackendErrorAlert
                   error={userError}
-                  onRetry={() => {
+                  onRetry={async () => {
                     setUserError(null);
-                    loadUsers();
+                    await loadUsers();
                   }}
                 />
               </div>
@@ -143,9 +155,9 @@ export const AddresseeStep: React.FC<AddresseeStepProps> = ({
               <div className="mb-4">
                 <BackendErrorAlert
                   error={roleError}
-                  onRetry={() => {
+                  onRetry={async () => {
                     setRoleError(null);
-                    loadRoles();
+                    await loadRoles();
                   }}
                 />
               </div>
@@ -162,7 +174,7 @@ export const AddresseeStep: React.FC<AddresseeStepProps> = ({
               />
             )}
           </div>
-        </>
+        </div>
       )}
     </div>
   );

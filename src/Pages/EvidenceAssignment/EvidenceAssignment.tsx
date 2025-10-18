@@ -241,19 +241,30 @@ const EvidenceAssignment: React.FC = () => {
 
   return (
     <ScreenContainer
-        title={moduleInfo.title}
-        description={moduleInfo.description}
-        variant="full-width"
-      >
-      <div className="space-y-6">
-        {/* Progress Steps */}
+      title={moduleInfo.title}
+      description={moduleInfo.description}
+      variant="full-width"
+      headerExtra={
+        <div className="hidden md:block">
+          <WizardProgress 
+            steps={steps} 
+            currentStep={currentStep} 
+            onStepClick={setCurrentStep}
+            variant="compact"
+          />
+        </div>
+      }
+    >
+      {/* Progress móvil - Solo se muestra en dispositivos pequeños */}
+      <div className="block md:hidden mb-6">
         <WizardProgress 
           steps={steps} 
           currentStep={currentStep} 
           onStepClick={setCurrentStep}
         />
+      </div>
 
-        {/* Form Content */}
+      <div className="space-y-6">{/* Form Content */}
         <>
           {isSubmitting ? (
             <div className="text-center py-12">

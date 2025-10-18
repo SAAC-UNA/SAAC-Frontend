@@ -136,33 +136,35 @@ export const CriterionEvidenceStep: React.FC<CriterionEvidenceStepProps> = ({
         </div>
       )}
 
-      {/* Selector de Criterio */}
+      {/* Selectores en paralelo: Criterio y Evidencias */}
       {formData.proceso_id && (
-        <div>
-          <CustomSelect
-            label="Criterio de Evaluación"
-            value={formData.criterio_id?.toString() || ''}
-            options={criterionOptions}
-            placeholder="Seleccione un criterio..."
-            onChange={handleCriterionChange}
-          />
-        </div>
-      )}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {/* Selector de Criterio */}
+          <div>
+            <CustomSelect
+              label="Criterio de Evaluación"
+              value={formData.criterio_id?.toString() || ''}
+              options={criterionOptions}
+              placeholder="Seleccione un criterio..."
+              onChange={handleCriterionChange}
+            />
+          </div>
 
-      {/* Selección de Evidencias */}
-      {formData.criterio_id && (
-        <div>
-          <MultiSelect
-            label="Evidencias a asignar"
-            options={evidenceOptions}
-            value={formData.selectedEvidences.map(id => id.toString())}
-            onChange={handleEvidenceChange}
-            placeholder="Seleccione evidencias..."
-            required
-            selectAllText="Seleccionar todas"
-            deselectAllText="Deseleccionar todas"
-            showSelectAll={true}
-          />
+          {/* Selección de Evidencias - Siempre visible, deshabilitado si no hay criterio */}
+          <div>
+            <MultiSelect
+              label="Evidencias a asignar"
+              options={evidenceOptions}
+              value={formData.selectedEvidences.map(id => id.toString())}
+              onChange={handleEvidenceChange}
+              placeholder={formData.criterio_id ? "Seleccione evidencias..." : "Primero seleccione un criterio"}
+              required
+              selectAllText="Seleccionar todas"
+              deselectAllText="Deseleccionar todas"
+              showSelectAll={true}
+              disabled={!formData.criterio_id}
+            />
+          </div>
         </div>
       )}
     </div>

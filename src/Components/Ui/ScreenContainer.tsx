@@ -9,6 +9,7 @@ interface ScreenContainerProps {
   showHeader?: boolean;
   className?: string;
   variant?: 'default' | 'full-width' | 'extra-wide';
+  headerExtra?: React.ReactNode;
 }
 
 export const ScreenContainer: React.FC<ScreenContainerProps> = ({
@@ -17,7 +18,8 @@ export const ScreenContainer: React.FC<ScreenContainerProps> = ({
   description,
   showHeader = true,
   className = '',
-  variant = 'default'
+  variant = 'default',
+  headerExtra
 }) => {
   const { isMobile } = useBreakpoint();
 
@@ -31,6 +33,44 @@ export const ScreenContainer: React.FC<ScreenContainerProps> = ({
   const getOuterContainer = () => {
     // Ancho máximo consistente, sin padding extra
     return 'max-w-7xl mx-auto';
+  };
+
+  // Función helper para renderizar el header consistentemente
+  const renderHeader = () => {
+    if (!title) return null;
+
+    return (
+      <>
+        <div className={getFormPadding()}>
+          <div className="flex items-center justify-between">
+            <div className="flex-1">
+              <h1 className={cn(
+                'font-bold text-negro-una mb-2',
+                isMobile ? 'text-xl' : 'text-2xl'
+              )}>
+                {title}
+              </h1>
+              {description && (
+                <p className={cn(
+                  'text-gris-una',
+                  isMobile ? 'text-sm' : 'text-base'
+                )}>
+                  {description}
+                </p>
+              )}
+            </div>
+            
+            {/* Contenido adicional del header */}
+            {headerExtra && (
+              <div className="ml-4 flex-shrink-0">
+                {headerExtra}
+              </div>
+            )}
+          </div>
+        </div>
+        <hr className="border-0 border-t border-gris-una/20 mx-6" />
+      </>
+    );
   };
 
   // Si no se muestra header y es full-width, retornar solo el contenido
@@ -52,21 +92,7 @@ export const ScreenContainer: React.FC<ScreenContainerProps> = ({
           )}
         >
           {/* Header */}
-          {title && (
-            <>
-              <div className={getFormPadding()}>
-                <h1 className={cn('font-bold text-negro-una mb-2', isMobile ? 'text-xl' : 'text-2xl')}>
-                  {title}
-                </h1>
-                {description && (
-                  <p className={cn('text-gris-una', isMobile ? 'text-sm' : 'text-base')}>
-                    {description}
-                  </p>
-                )}
-              </div>
-              <hr className="border-0 border-t border-gris-una/20 mx-6" />
-            </>
-          )}
+          {renderHeader()}
           <div className={getFormPadding()}>
             {children}
           </div>
@@ -82,28 +108,7 @@ export const ScreenContainer: React.FC<ScreenContainerProps> = ({
         className
       )}>
         {/* Header */}
-        {title && (
-          <>
-            <div className={getFormPadding()}>
-              <h1 className={cn(
-                'font-bold text-negro-una mb-2',
-                isMobile ? 'text-xl' : 'text-2xl'
-              )}>
-                {title}
-              </h1>
-              {description && (
-                <p className={cn(
-                  'text-gris-una',
-                  isMobile ? 'text-sm' : 'text-base'
-                )}>
-                  {description}
-                </p>
-              )}
-            </div>
-            {/* Línea divisoria con márgenes */}
-            <hr className="border-0 border-t border-gris-una/20 mx-6" />
-          </>
-        )}
+        {renderHeader()}
 
         {/* Contenido */}
         <div className={getFormPadding()}>

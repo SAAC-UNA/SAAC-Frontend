@@ -27,13 +27,15 @@ interface AppHeaderProps {
   title?: string;
   logo?: string;
   logoAlt?: string;
+  rightContent?: React.ReactNode;
 }
 
 export const AppHeader: React.FC<AppHeaderProps> = ({
   className,
   title = "SAAC",
   logo = "/Images/SAAC.png",
-  logoAlt = "SAAC Logo"
+  logoAlt = "SAAC Logo",
+  rightContent
 }) => {
   const { toggleSidebar } = useSidebar();
 
@@ -64,6 +66,13 @@ export const AppHeader: React.FC<AppHeaderProps> = ({
       <h1 className="text-lg text-negro-una font-semibold">
         {title}
       </h1>
+
+      {/* Contenido adicional en la derecha */}
+      {rightContent && (
+        <div className="ml-auto">
+          {rightContent}
+        </div>
+      )}
     </header>
   );
 };

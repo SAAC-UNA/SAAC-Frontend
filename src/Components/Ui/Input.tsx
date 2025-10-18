@@ -7,7 +7,7 @@ interface InputProps extends Omit<React.InputHTMLAttributes<HTMLInputElement>, '
   label?: string;
   error?: string;
   helperText?: string;
-  variant?: 'default' | 'outline' | 'filled';
+  variant?: 'default' | 'outline' | 'filled' | 'floating';
   size?: ComponentSize;
   required?: boolean;
 }
@@ -16,15 +16,117 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(({
   label,
   error,
   helperText,
-  variant = 'default',
-  size = 'sm', // Cambiar default a sm para consistencia
+  variant = 'floating', // Cambiar default a floating
+  size = 'sm',
   required = false,
   className,
   id,
+  value, // Asegurar que tenemos acceso al value
+  placeholder, // Extraer placeholder por separado
   ...props
 }, ref) => {
   const inputId = id || `input-${Math.random().toString(36).substr(2, 9)}`;
 
+  // Floating label variant (nuevo diseño por defecto)
+  if (variant === 'floating') {
+    // Detectar si el input tiene contenido
+    const hasValue = Boolean(value && value.toString().trim() !== '');
+
+    return (
+      <div className="space-y-2">
+        <div className="relative">
+          {/* Input */}
+          <input
+            ref={ref}
+            id={inputId}
+            value={value}
+            className={cn(
+              // Base styles - Similar al login de tu compañera
+              'w-full px-4 py-3 text-sm border rounded-lg transition-all duration-300', // Cambiado de text-base a text-sm
+              'focus:outline-none focus:border-gris-una',
+              'disabled:bg-gris-una/10 disabled:cursor-not-allowed',
+              'peer', // Para usar peer selectors de Tailwind
+              
+              // Placeholder condicional - solo visible en focus (más pequeño)
+              'placeholder-transparent focus:placeholder-gris-una/60 placeholder:text-sm', // Placeholder más pequeño
+              
+              // State variants
+              error
+                ? 'border-rojo-una-2' 
+                : 'border-gris-una bg-blanco-una-2',
+              
+              // Custom classes
+              className
+            )}
+            // Placeholder que se muestra solo en focus
+            placeholder={placeholder || ""}
+            // Ya no necesitamos los data attributes
+            {...props}
+          />
+
+          {/* Floating Label */}
+          {label && (
+            <label 
+              htmlFor={inputId}
+              className={cn(
+                // Base floating label styles - Inspirado en el login
+                'absolute left-4 transition-all duration-300 pointer-events-none',
+                'transform',
+                
+                // Tamaño del texto del label (más pequeño)
+                'text-sm', // Label más pequeño
+                
+                // Posicionamiento dinámico basado en focus o contenido
+                hasValue 
+                  ? 'top-0 scale-75 -translate-y-1/2' // Label arriba cuando hay contenido (scale-75 lo hará aún más pequeño)
+                  : 'top-1/2 scale-100 -translate-y-1/2', // Label centrado cuando está vacío
+                
+                // Comportamiento con focus (peer selectors como fallback)
+                'peer-focus:top-0 peer-focus:scale-75 peer-focus:-translate-y-1/2',
+                'peer-[:not(:placeholder-shown)]:top-0 peer-[:not(:placeholder-shown)]:scale-75 peer-[:not(:placeholder-shown)]:-translate-y-1/2',
+                
+                // Fondo condicional: blanco solo cuando está arriba (para cortar la línea del border)
+                hasValue 
+                  ? 'bg-blanco-una-2 px-2' // Fondo blanco cuando tiene contenido (label arriba)
+                  : 'bg-transparent px-1', // Transparente cuando está centrado
+                
+                // Fondo blanco también con focus (peer selectors)
+                'peer-focus:bg-blanco-una-2 peer-focus:px-2',
+                'peer-[:not(:placeholder-shown)]:bg-blanco-una-2 peer-[:not(:placeholder-shown)]:px-2',
+                
+                // Colors
+                error
+                  ? 'text-rojo-una-2'
+                  : hasValue 
+                    ? 'text-gris-una font-semibold'  // Color activo cuando tiene contenido
+                    : 'text-gris-una peer-focus:text-gris-una peer-focus:font-semibold',
+              )}
+            >
+              {label}
+              {required && <span className="text-rojo-una-2 ml-1">*</span>}
+            </label>
+          )}
+        </div>
+
+        {/* Error message */}
+        {error && (
+          <p className="text-rojo-una-2 text-sm flex items-center gap-2">
+            <SystemIcons.interface.alert className="w-4 h-4 flex-shrink-0 text-rojo-una-2" size="sm" />
+            {error}
+          </p>
+        )}
+
+        {/* Helper text */}
+        {helperText && !error && (
+          <p className="text-gris-una text-sm">
+            {helperText}
+          </p>
+        )}
+      </div>
+    );
+  }
+
+  // Variante tradicional (para compatibilidad)
   return (
     <div className="space-y-2">
       {/* Label */}

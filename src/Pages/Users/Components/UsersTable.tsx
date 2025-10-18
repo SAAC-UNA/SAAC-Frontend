@@ -163,8 +163,8 @@ export const UsersTable: React.FC<UsersTableProps> = ({
         return (
             <BackendErrorAlert
                 error={error}
-                onRetry={() => {
-                    loadUsers();
+                onRetry={async () => {
+                    await loadUsers();
                 }}
             />
         );

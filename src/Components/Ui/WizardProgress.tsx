@@ -23,12 +23,14 @@ export interface WizardProgressProps {
   steps: WizardStep[];
   currentStep: number;
   onStepClick?: (step: number) => void;
+  variant?: 'default' | 'compact';
 }
 
 export const WizardProgress: React.FC<WizardProgressProps> = ({
   steps,
   currentStep,
-  onStepClick
+  onStepClick,
+  variant = 'default'
 }) => {
   const handleStepClick = (step: number) => {
     // Solo permitir navegar a pasos anteriores o el actual
@@ -36,7 +38,54 @@ export const WizardProgress: React.FC<WizardProgressProps> = ({
       onStepClick(step);
     }
   };
+  {/* Wizard compacto para la esquina del formulario */}
+  if (variant === 'compact') {
+    return (
+      <div className="flex items-center">
+        {steps.map((step, index) => {
+          const isCompleted = step.id < currentStep;
+          const isActive = step.id === currentStep;
+          const isClickable = step.id <= currentStep;
 
+          return (
+            <React.Fragment key={step.id}>
+              {/* Step Circle - Compact */}
+              <button
+                onClick={() => handleStepClick(step.id)}
+                disabled={!isClickable}
+                className={cn(
+                  'w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm transition-all duration-200',
+                  isCompleted && 'bg-green-600 text-white hover:bg-green-700',
+                  isActive && !isCompleted && 'bg-azul-una text-white',
+                  !isActive && !isCompleted && 'bg-gris-una/20 text-gris-una',
+                  isClickable && 'cursor-pointer',
+                  !isClickable && 'cursor-not-allowed'
+                )}
+              >
+                {isCompleted ? (
+                  <SystemIcons.interface.checkCircle size="sm" />
+                ) : (
+                  step.id
+                )}
+              </button>
+
+              {/* Connector Line - Compact */}
+              {index < steps.length - 1 && (
+                <div 
+                  className={cn(
+                    'h-0.5 w-6 mx-2 rounded-full transition-all duration-200',
+                    isCompleted ? 'bg-green-600' : 'bg-gris-una/20'
+                  )}
+                />
+              )}
+            </React.Fragment>
+          );
+        })}
+      </div>
+    );
+  }
+
+  {/* Variante default (grande para la página) */}
   return (
       <div className="flex items-start justify-center">
         {steps.map((step, index) => {
@@ -67,7 +116,7 @@ export const WizardProgress: React.FC<WizardProgressProps> = ({
                   )}
                 </button>
 
-                {/* Step Title Only */}
+                {/* Step Title */}
                 <span
                   className={cn(
                     'mt-3 text-sm font-medium text-center max-w-28 leading-tight',
