@@ -9,6 +9,7 @@ import { useStructure } from '@/Hooks/UseStructure';
 import type { StructureElement, ElementType } from '@/Types/StructureTypes';
 import { FORM_CONFIG, VALIDATION_RULES, getDescriptionMaxLength} from '@/Constants/StructureConstants';
 import { SuccessModal } from '@/Components/Ui/SuccessModal';
+import { Textarea } from '@/Components/Ui/Textarea';
 
 interface EditableElement extends StructureElement {
   originalNomenclature: string;
@@ -78,20 +79,20 @@ const validateField = (field: 'nomenclature' | 'name' | 'description', value: st
   switch (field) {
     case 'nomenclature':
       if (config.requiredFields.includes('nomenclature') && !value.trim()) {
-        return 'El código es obligatorio';
+        return 'La nomenclatura es obligatoria';
       }
       if (value && value.length > VALIDATION_RULES.NOMENCLATURE_MAX_LENGTH) {
-        return `El código no puede exceder ${VALIDATION_RULES.NOMENCLATURE_MAX_LENGTH} caracteres`;
+        return `La nomenclatura no puede exceder ${VALIDATION_RULES.NOMENCLATURE_MAX_LENGTH} caracteres`;
       }
       if (value && !VALIDATION_RULES.NOMENCLATURE_PATTERN.test(value)) {
-        return 'El código solo puede contener letras, números, guiones y guiones bajos';
+        return 'La nomenclatura solo puede contener letras, números, guiones y guiones bajos';
       }
 
       // Validar duplicados (excepto el elemento actual)
       const duplicateNomenclature = allElements.find(el => 
         el.nomenclature?.toLowerCase() === value.toLowerCase() &&
         el.type === currentElement.type &&
-        el.id !== currentElement.id  // ← Esta es la línea clave: excluir el elemento actual
+        el.id !== currentElement.id
       );
       if (duplicateNomenclature) {
         return 'Ya existe otro elemento de este tipo con esta nomenclatura';
@@ -369,22 +370,11 @@ const validateForm = (): boolean => {
       title="Editar Elementos"
       description="Selecciona y modifica elementos existentes en la estructura del repositorio. No es posible cambiar el tipo de elemento ni su posición en la jerarquía."
     >
-      {/* Botón de regreso */}
-      <div className="flex items-center space-x-4 mb-6">
-        <Button
-          onClick={goBack}
-          variant="secondary"
-          className="flex items-center gap-2"
-        >
-          <span>←</span>
-          <span>Volver al Listado</span>
-        </Button>
-      </div>
 
       {/* Formulario de edición */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 gap-6">
         {/* Formulario principal */}
-        <div className="lg:col-span-2">
+        <div className="w-full">
           <div>
             <h3 className="text-lg font-semibold text-gray-900 mb-6">
               Editando: {currentElement.originalName}
@@ -407,13 +397,7 @@ const validateForm = (): boolean => {
                   <span className={`ml-2 ${currentElement.active ? 'text-[var(--text-success)]' : 'text-[var(--text-error)]'}`}>
                     {currentElement.active ? 'Activo' : 'Inactivo'}
                   </span>
-                </div>
-                <div className="md:col-span-3">
-                  <span className="font-medium text-gray-700">ID:</span>
-                  <span className="ml-2 font-mono text-xs bg-gray-200 px-2 py-1 rounded">
-                    {currentElement.id}
-                  </span>
-                </div>
+              </div>
               </div>
             </div>
 
@@ -422,121 +406,82 @@ const validateForm = (): boolean => {
 
               {/* Nomenclatura */}
               {shouldShowField('nomenclature') && (
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Código *
-                </label>
                 <Input
+                  label="Nomenclatura"
+                  variant="floating"
                   type="text"
                   value={formData.nomenclature}
                   onChange={(e) => handleInputChange('nomenclature', e.target.value)}
                   placeholder="Nomenclatura única o identificativa del elemento"
-                  className={formData.nomenclature !== currentElement.originalNomenclature ? 'ring-2 ring-blue-500' : ''}
                   error={errors.nomenclature}
                   maxLength={VALIDATION_RULES.NOMENCLATURE_MAX_LENGTH}
+                  required={FORM_CONFIG[currentElement.type].requiredFields.includes('nomenclature')}
+                  size="sm"
                 />
-                <p className="text-xs text-gray-500 mt-1">
-                  Código único o identificativo del elemento
-                </p>
-              </div>
               )}
 
               {/* Nombre */}
               {shouldShowField('name') && (
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Nombre *
-                </label>
                 <Input
+                  label="Nombre"
+                  variant="floating"
                   type="text"
                   value={formData.name}
                   onChange={(e) => handleInputChange('name', e.target.value)}
                   placeholder="Nombre completo y descriptivo"
-                  className={formData.name !== currentElement.originalName ? 'ring-2 ring-blue-500' : ''}
                   error={errors.name}
                   maxLength={VALIDATION_RULES.NAME_MAX_LENGTH}
+                  required={FORM_CONFIG[currentElement.type].requiredFields.includes('name')}
+                  size="sm"
                 />
-                <p className="text-xs text-gray-500 mt-1">
-                  Nombre completo y descriptivo
-                </p>
-              </div>
               )}
 
               {/* Descripción */}
               {shouldShowField('description') && (
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Descripción {currentElement && FORM_CONFIG[currentElement.type].requiredFields.includes('description') ? <span className="text-red-500">*</span> : <span className="text-gray-500">(opcional)</span>}
-                  </label>
-                  <textarea
-                    value={formData.description}
-                    onChange={(e) => handleInputChange('description', e.target.value)}
-                    rows={4}
-                    className={`w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
-                      errors.description
-                        ? 'border-red-500 bg-red-50'
-                        : formData.description !== (currentElement.originalDescription || '') 
-                          ? 'ring-2 ring-blue-500' 
-                          : ''
-                    }`}
-                    placeholder="Descripción detallada del elemento"
-                    maxLength={getDescriptionMaxLength(currentElement.type)}
-                  />
-                  {errors.description && (
-                    <p className="mt-1 text-sm text-red-600">{errors.description}</p>
-                  )}
-                  <div className="flex justify-between items-center mt-1">
-                    <p className="text-xs text-gray-500">
-                      Descripción detallada del elemento
-                    </p>
-                    <span className="text-xs text-gray-400">
-                      {formData.description.length}/{getDescriptionMaxLength(currentElement.type)} caracteres
-                    </span>
-                  </div>
-                </div>
+                <Textarea
+                  label="Descripción"
+                  variant="floating"
+                  placeholder="Descripción detallada del elemento"
+                  value={formData.description}
+                  onChange={(e) => handleInputChange('description', e.target.value)}
+                  error={errors.description}
+                  rows={6}
+                  resize="none"
+                  size="sm"
+                  required={currentElement && FORM_CONFIG[currentElement.type].requiredFields.includes('description')}
+                  maxLength={getDescriptionMaxLength(currentElement.type)}
+                />
               )}
-            </div>
-
+              </div>
             {/* Botones de acción */}
-            <div className="flex justify-end space-x-3 mt-8 pt-6 border-t border-gray-200">
+            <div className="flex justify-between items-center mt-8 pt-6 border-t border-gray-200">
+              {/* Botón izquierdo */}
               <Button
-                onClick={() => handleAction('discard')}
+                onClick={goBack}
                 variant="secondary"
-                disabled={!hasChanges || isLoading}
               >
-                Deshacer Cambios
+                Volver al Listado
               </Button>
-              <Button
-                onClick={() => handleAction('save')}
-                disabled={!hasChanges || isLoading}
-                variant="primary"
-              >
-                {isLoading ? 'Guardando...' : 'Guardar Cambios'}
-              </Button>
+              
+              {/* Botones derechos */}
+              <div className="flex space-x-3">
+                <Button
+                  onClick={() => handleAction('discard')}
+                  variant="secondary"
+                  disabled={!hasChanges || isLoading}
+                >
+                  Deshacer Cambios
+                </Button>
+                <Button
+                  onClick={() => handleAction('save')}
+                  disabled={!hasChanges || isLoading}
+                  variant="primary"
+                >
+                  {isLoading ? 'Guardando...' : 'Guardar Cambios'}
+                </Button>
+              </div>
             </div>
-          </div>
         </div>
-
-        {/* Panel lateral para Cambios Pendientes (1/3 del ancho) */}
-        <div>
-            {hasChanges && (
-                <div className="bg-[var(--bg-info)] border border-[var(--border-info)] rounded-lg p-4 sticky top-4">
-                    <h4 className="text-sm font-medium text-[var(--text-info)] mb-2">
-                        Cambios Pendientes
-                    </h4>
-                    <div className="text-xs text-[var(--text-info)] space-y-1 break-words">
-                        {shouldShowField('nomenclature') && formData.nomenclature !== currentElement.originalNomenclature && (
-                            <div>• Código: "{currentElement.originalNomenclature}" → "{formData.nomenclature}"</div>
-                        )}
-                        {shouldShowField('name') && formData.name !== currentElement.originalName && (
-                            <div>• Nombre: "{currentElement.originalName}" → "{formData.name}"</div>
-                        )}
-                        {shouldShowField('description') && formData.description !== (currentElement.originalDescription || '') && (
-                            <div>• Descripción modificada</div>
-                        )}
-                    </div>
-                </div>
-            )}
         </div>
       </div>
 

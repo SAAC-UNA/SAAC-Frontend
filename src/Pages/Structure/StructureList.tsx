@@ -14,6 +14,7 @@ import type { StructureElement } from '@/Types/StructureTypes';
 import { useStructure } from '@/Hooks/UseStructure';
 import { EditConfirmationModal } from '@/Components/Ui/EditConfirmationModal';
 import { DeleteConfirmationModal } from '@/Components/Ui/DeleteConfirmationModal';
+import { SuccessModal } from '@/Components/Ui/SuccessModal';
 import { LoadingSpinner } from '@/Components/Ui/Loading';
 
 const StructureList: React.FC = () => {
@@ -21,7 +22,16 @@ const StructureList: React.FC = () => {
   // Obtener información del módulo desde ModuleInfo
   const moduleInfo = MODULE_INFO.structure;
   
-  const { isLoading, deleteElement, activateElement, deactivateElement, loadTree, treeData } = useStructure();
+  const { 
+  isLoading, 
+  deleteElement, 
+  activateElement, 
+  deactivateElement, 
+  activateElementWithoutReload,
+  deactivateElementWithoutReload,
+  loadTree,
+  treeData 
+} = useStructure();
   console.log('🗑️ Total elementos en treeData:', treeData.length);
 
   // Estado para el modal de confirmación de eliminación
@@ -31,6 +41,15 @@ const StructureList: React.FC = () => {
   }>({
     isOpen: false,
     element: null
+  });
+
+  // Estado para el modal de éxito después de eliminar
+  const [successModalState, setSuccessModalState] = useState<{
+    isOpen: boolean;
+    elementName: string;
+  }>({
+    isOpen: false,
+    elementName: ''
   });
 
   // Estado para el modal de confirmación de activar/desactivar
@@ -51,10 +70,12 @@ const StructureList: React.FC = () => {
   };
 
   const handleDeleteElement = (element: StructureElement) => {
+    console.log('🗑️ handleDeleteElement llamado con:', element);
     setDeleteModalState({
       isOpen: true,
       element
     });
+    console.log('🗑️ deleteModalState actualizado:', { isOpen: true, element });
   };
 
   const handleToggleActive = async (element: StructureElement) => {
@@ -133,25 +154,19 @@ const StructureList: React.FC = () => {
   try {
     // Aplanar el árbol una sola vez al inicio
     const flattenTree = (nodes: StructureElement[]): StructureElement[] => {
-  const result: StructureElement[] = [];
-  const seen = new Set<string>();
-  const stack = [...nodes];
+      const result: StructureElement[] = [];
+      const flatten = (elements: StructureElement[]) => {
+        for (const element of elements) {
+          result.push(element);
+          if (element.childElements && element.childElements.length > 0) {
+            flatten(element.childElements);
+          }
+        }
+      };
   
-  while (stack.length > 0) {
-    const node = stack.pop()!;
-    
-    // Solo agregar si no lo hemos visto antes (evita duplicados)
-    if (!seen.has(node.id)) {
-      seen.add(node.id);
-      result.push(node);
-      
-      if (node.childElements && node.childElements.length > 0) {
-        stack.push(...node.childElements);
-      }
-    }
-  }
-  return result;
-};
+      flatten(nodes);
+      return result;
+    };
     
     const allElements = flattenTree(treeData);
     
@@ -164,45 +179,80 @@ const StructureList: React.FC = () => {
     
     console.log('🔍 DEBUG - Total elementos disponibles:', allElements.length);
     
-    // Función para encontrar descendientes SOLO de este elemento
-    const getAllDescendants = (parentId: string): StructureElement[] => {
-      const descendants: StructureElement[] = [];
-      const toProcess = [parentId];
-      const processed = new Set<string>();
-      
-      console.log(`🔍 Iniciando búsqueda de descendientes para: ${parentId}`);
-      
-      while (toProcess.length > 0) {
-        const currentId = String(toProcess.shift()!);
-        
-        if (processed.has(currentId)) continue;
-        processed.add(currentId);
-        
-          const children = allElements.filter(el => String(el.parentElementId) === String(currentId));
-        
-        console.log(`  🔍 Hijos directos de ${currentId}:`, children.map(c => ({
-          id: c.id,
-          type: c.type,
-          name: c.name || c.nomenclature,
-          parentId: c.parentElementId
-        })));
-        
-        for (const child of children) {
-        if (!descendants.some(d => d.id === child.id)) {
-          descendants.push(child);
-          toProcess.push(String(child.id)); // convertir a string
-        }
+    // Definir las dos jerarquías del sistema
+const ORGANIZATIONAL_HIERARCHY = ['university', 'campus', 'faculty', 'career'];
+const SINAES_HIERARCHY = ['dimension', 'component', 'criteria', 'standard', 'evidence'];
+
+// Función para encontrar descendientes SOLO de este elemento dentro de su jerarquía
+const getAllDescendants = (parentId: string): StructureElement[] => {
+  const descendants: StructureElement[] = [];
+  const toProcess = [parentId];
+  const processed = new Set<string>();
+  
+  // Encontrar el elemento padre para determinar su jerarquía
+  // Buscar TODOS los elementos con este ID (puede haber duplicados)
+const elementsWithSameId = allElements.filter(el => String(el.id) === String(parentId));
+
+console.log(`🔍 Elementos encontrados con ID ${parentId}:`, elementsWithSameId.map(e => ({
+  id: e.id,
+  type: e.type,
+  name: e.name || e.nomenclature,
+  parentId: e.parentElementId
+})));
+
+// Usar el elemento original que se está activando/desactivando (element)
+// en lugar de buscarlo en allElements
+const parentElement = element.id === parentId ? element : allElements.find(el => String(el.id) === String(parentId));
+  if (!parentElement) {
+    console.log(`⚠️ No se encontró el elemento padre con ID: ${parentId}`);
+    return descendants;
+  }
+  
+  // Determinar a qué jerarquía pertenece el elemento
+  const isOrganizational = ORGANIZATIONAL_HIERARCHY.includes(parentElement.type);
+  const validHierarchy = isOrganizational ? ORGANIZATIONAL_HIERARCHY : SINAES_HIERARCHY;
+  
+  console.log(`🔍 Iniciando búsqueda de descendientes para: ${parentId}`);
+  console.log(`📊 Tipo: ${parentElement.type}, Jerarquía: ${isOrganizational ? 'ORGANIZACIONAL' : 'SINAES'}`);
+  
+  while (toProcess.length > 0) {
+    const currentId = String(toProcess.shift()!);
+    
+    if (processed.has(currentId)) continue;
+    processed.add(currentId);
+    
+    // Filtrar hijos que:
+    // 1. Tengan este elemento como padre
+    // 2. Pertenezcan a la misma jerarquía
+    const children = allElements.filter(el => 
+      String(el.parentElementId) === String(currentId) &&
+      validHierarchy.includes(el.type)
+    );
+    
+    console.log(`  🔍 Hijos directos de ${currentId}:`, children.map(c => ({
+      id: c.id,
+      type: c.type,
+      name: c.name || c.nomenclature,
+      parentId: c.parentElementId
+    })));
+    
+    for (const child of children) {
+      if (!descendants.some(d => d.id === child.id)) {
+        descendants.push(child);
+        toProcess.push(String(child.id));
       }
     }
-      
-      console.log(`✅ Total descendientes encontrados: ${descendants.length}`);
-      return descendants;
-    };
+  }
+  
+  console.log(`✅ Total descendientes encontrados: ${descendants.length}`);
+  console.log(`📋 Tipos encontrados:`, [...new Set(descendants.map(d => d.type))]);
+  return descendants;
+};
     
     if (element.active) {
       // ========== DESACTIVAR elemento ==========
       console.log('⚡ DESACTIVANDO elemento principal');
-      await deactivateElement(element.type, element.id);
+      await deactivateElementWithoutReload(element.type, element.id);
       
       // Si está marcado el checkbox, desactivar hijos en cascada
       if (cascadeChildren) {
@@ -220,7 +270,7 @@ const StructureList: React.FC = () => {
         for (const descendant of descendants) {
           if (descendant.active) {
             console.log(`  ⚡ Desactivando: ${descendant.type} - ${descendant.name || descendant.nomenclature}`);
-            await deactivateElement(descendant.type, descendant.id);
+            await deactivateElementWithoutReload(descendant.type, descendant.id);
           }
         }
       }
@@ -228,34 +278,51 @@ const StructureList: React.FC = () => {
     } else {
       // ========== ACTIVAR elemento ==========
       console.log('✅ ACTIVANDO elemento principal');
-      await activateElement(element.type, element.id);
+      await activateElementWithoutReload(element.type, element.id);
       
       // Si está marcado el checkbox, activar hijos inactivos en cascada
       if (cascadeChildren) {
         const descendants = getAllDescendants(element.id);
         
+        console.log('📋 Descendientes a activar:', descendants.map(d => ({
+          id: d.id,
+          type: d.type,
+          name: d.name || d.nomenclature,
+          parentId: d.parentElementId,
+          active: d.active
+        })));
+        
         // Activar todos los descendientes inactivos
         for (const descendant of descendants) {
           if (!descendant.active) {
             console.log(`  ✅ Activando: ${descendant.type} - ${descendant.name || descendant.nomenclature}`);
-            await activateElement(descendant.type, descendant.id);
+            await activateElementWithoutReload(descendant.type, descendant.id);
+          } else {
+            console.log(`  ⏭️ Saltando (ya activo): ${descendant.type} - ${descendant.name || descendant.nomenclature}`);
           }
         }
       }
     }
     
+    /// Recargar el árbol
+    await loadTree();
+
+    console.log('🔄 Recargando página para reflejar cambios...');
+
     // Cerrar modal
     setToggleActiveModalState({ isOpen: false, element: null });
     setCascadeChildren(false);
 
-    // Recargar el árbol completo desde el backend
-    await loadTree();
-
-    // Forzar re-render de la tabla
-    setRefreshKey(prev => prev + 1);
+    // Recargar página completa después de un delay mínimo
+    setTimeout(() => {
+      window.location.reload();
+    }, 300);
     
   } catch (error) {
     console.error('Error al cambiar estado del elemento:', error);
+    // Cerrar modal incluso si hay error
+    setToggleActiveModalState({ isOpen: false, element: null });
+    setCascadeChildren(false);
   }
 };
 
@@ -270,6 +337,7 @@ const StructureList: React.FC = () => {
   console.log('🎯 Estado toggleActiveModalState:', toggleActiveModalState);
 
  return (
+  <>
     <div className="container mx-auto px-4 py-8">
       <ScreenContainer
         title={moduleInfo.title}
@@ -283,39 +351,20 @@ const StructureList: React.FC = () => {
           onCreate={handleCreateElement}
         />
       </ScreenContainer>
+    </div>
 
-      {/* Modal de confirmación de eliminación */}
-      <Modal
-        isOpen={deleteModalState.isOpen}
-        onClose={cancelDeleteElement}
-        title="Confirmar Eliminación"
-        size="md"
-      >
-        <div className="space-y-4">
-          <p className="text-gray-700">
-            ¿Está seguro de que desea eliminar el elemento <strong>"{deleteModalState.element?.name || deleteModalState.element?.nomenclature}"</strong>?
-          </p>
-          <p className="text-sm text-[var(--text-error)]">
-            Esta acción no se puede deshacer.
-          </p>
-          
-          <div className="flex justify-end gap-3 mt-6">
-            <button
-              onClick={cancelDeleteElement}
-              className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50"
-            >
-              Cancelar
-            </button>
-            <button
-              onClick={confirmDeleteElement}
-              disabled={isLoading}
-              className="px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-md hover:bg-red-700 disabled:opacity-50"
-            >
-              {isLoading ? 'Eliminando...' : 'Eliminar'}
-            </button>
-          </div>
-        </div>
-      </Modal>
+    {/* Modal de confirmación de eliminación*/}
+    <DeleteConfirmationModal
+      isOpen={deleteModalState.isOpen}
+      onClose={cancelDeleteElement}
+      onConfirm={confirmDeleteElement}
+      title="Confirmar Eliminación"
+      itemName={deleteModalState.element?.name || deleteModalState.element?.nomenclature}
+      confirmLabel="Eliminar"
+      cancelLabel="Cancelar"
+      variant="danger"
+      isLoading={isLoading}
+    />
 
       {/* Modal de confirmación para ACTIVAR */}
       {toggleActiveModalState.isOpen && toggleActiveModalState.element && !toggleActiveModalState.element.active && (
@@ -424,7 +473,7 @@ const StructureList: React.FC = () => {
           )}
         </Modal>
 )}
-    </div>
+    </>
   );
 };
 

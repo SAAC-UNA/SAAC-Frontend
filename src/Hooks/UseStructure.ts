@@ -38,6 +38,8 @@ interface UseStructureReturn {
   deleteElement: (elementType: ElementType, elementId: string) => Promise<boolean>;
   activateElement: (elementType: ElementType, elementId: string) => Promise<boolean>;
   deactivateElement: (elementType: ElementType, elementId: string) => Promise<boolean>;
+  activateElementWithoutReload: (elementType: ElementType, elementId: string) => Promise<boolean>;
+  deactivateElementWithoutReload: (elementType: ElementType, elementId: string) => Promise<boolean>;
   clearError: () => void;
 }
 
@@ -213,6 +215,36 @@ const deactivateElement = useCallback(async (elementType: ElementType, elementId
   }
 }, []);
 
+/**
+ * Activar un elemento SIN recargar el árbol
+ * (para uso en operaciones batch)
+ */
+const activateElementWithoutReload = useCallback(async (elementType: ElementType, elementId: string): Promise<boolean> => {
+  try {
+    await structureService.setActive(elementType, elementId, true);
+    return true;
+  } catch (err) {
+    const errorMessage = err instanceof Error ? err.message : 'Error al activar elemento';
+    console.error('Error activando elemento:', err);
+    return false;
+  }
+}, []);
+
+/**
+ * Desactivar un elemento SIN recargar el árbol
+ * (para uso en operaciones batch)
+ */
+const deactivateElementWithoutReload = useCallback(async (elementType: ElementType, elementId: string): Promise<boolean> => {
+  try {
+    await structureService.setActive(elementType, elementId, false);
+    return true;
+  } catch (err) {
+    const errorMessage = err instanceof Error ? err.message : 'Error al desactivar elemento';
+    console.error('Error desactivando elemento:', err);
+    return false;
+  }
+}, []);
+
   return {
   // Estado
   treeData,
@@ -226,6 +258,8 @@ const deactivateElement = useCallback(async (elementType: ElementType, elementId
   deleteElement,
   activateElement,
   deactivateElement,
-  clearError
+  clearError,
+  activateElementWithoutReload,
+  deactivateElementWithoutReload
 };
 };

@@ -7,6 +7,7 @@ import { ScreenContainer } from '@/Components/Ui/ScreenContainer';
 import { CustomSelect } from '@/Components/Ui/SingleSelect';
 import { useStructure } from '@/Hooks/UseStructure';
 import { SuccessModal } from '@/Components/Ui/SuccessModal';
+import { Textarea } from '@/Components/Ui/Textarea';
 import type { 
   StructureElement, 
   CreateElementForm, 
@@ -351,60 +352,48 @@ const handleSubmit = async (e: React.FormEvent) => {
 
           {/* Nomenclatura */}
           {shouldShowField('nomenclature') && (
-          <Input
-            label="Nomenclatura"
-            required={FORM_CONFIG[formData.type].requiredFields.includes('nomenclature')}
-            value={formData.nomenclature}
-            onChange={(e) => handleFieldChange('nomenclature', e.target.value)}
-            error={errors.nomenclature}
-            placeholder="Ej: UNA, SEDE-01, FAC-ING"
-            helperText={`Máximo ${VALIDATION_RULES.NOMENCLATURE_MAX_LENGTH} caracteres. Solo letras, números, guiones y guiones bajos.`}
-            maxLength={VALIDATION_RULES.NOMENCLATURE_MAX_LENGTH}
-          />
+            <Input
+              label="Nomenclatura"
+              variant="floating"
+              required={FORM_CONFIG[formData.type].requiredFields.includes('nomenclature')}
+              value={formData.nomenclature}
+              onChange={(e) => handleFieldChange('nomenclature', e.target.value)}
+              error={errors.nomenclature}
+              placeholder="Ej: UNA, SEDE-01, FAC-ING"
+              maxLength={VALIDATION_RULES.NOMENCLATURE_MAX_LENGTH}
+              size="sm"
+            />
           )}
           {/* Nombre */}
           {shouldShowField('name') && (
-          <Input
-            label="Nombre"
-            required={FORM_CONFIG[formData.type].requiredFields.includes('name')}
-            value={formData.name}
-            onChange={(e) => handleFieldChange('name', e.target.value)}
-            error={errors.name}
-            placeholder="Nombre descriptivo del elemento"
-            helperText={`Máximo ${VALIDATION_RULES.NAME_MAX_LENGTH} caracteres.`}
-            maxLength={VALIDATION_RULES.NAME_MAX_LENGTH}
-          />
+            <Input
+              label="Nombre"
+              variant="floating"
+              required={FORM_CONFIG[formData.type].requiredFields.includes('name')}
+              value={formData.name}
+              onChange={(e) => handleFieldChange('name', e.target.value)}
+              error={errors.name}
+              placeholder="Nombre descriptivo del elemento"
+              maxLength={VALIDATION_RULES.NAME_MAX_LENGTH}
+              size="sm"
+            />
           )}
           {/* Descripción */}
           {shouldShowField('description') && (
-            <div>
-              <label htmlFor="description" className="block text-sm font-medium text-gray-700 mb-1">
-                Descripción {FORM_CONFIG[formData.type].requiredFields.includes('description') ? '' : '(Opcional)'}
-              </label>
-              <textarea
-                id="description"
-                value={formData.description}
-                onChange={(e) => handleFieldChange('description', e.target.value)}
-                maxLength={getDescriptionMaxLength(formData.type)}
-                className={cn(
-                  'w-full border rounded-lg p-3 transition-colors duration-200',
-                  'focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent',
-                  'placeholder-gray-400',
-                errors.description
-                  ? 'border-[var(--border-error)] bg-[var(--bg-error)]'
-                  : 'border-gray-300 hover:border-gray-400'
-                )}
-                rows={3}
-                placeholder="Descripción detallada del elemento"
-              />
-              {errors.description && (
-                <p className="mt-1 text-sm text-[var(--text-error)]">{errors.description}</p>
-            )}
-            <p className="mt-1 text-sm text-gray-500">
-              Máximo {getDescriptionMaxLength(formData.type)} caracteres.
-            </p>
-          </div>
-        )}
+            <Textarea
+              label="Descripción"
+              variant="floating"
+              value={formData.description}
+              onChange={(e) => handleFieldChange('description', e.target.value)}
+              error={errors.description}
+              placeholder="Descripción detallada del elemento"
+              maxLength={getDescriptionMaxLength(formData.type)}
+              required={FORM_CONFIG[formData.type].requiredFields.includes('description')}
+              rows={6}
+              resize="none"
+              size="sm"
+            />
+          )}
 
           {/* Botones */}
           <div className="flex justify-end space-x-4 pt-6 border-t border-gray-200">
@@ -412,6 +401,8 @@ const handleSubmit = async (e: React.FormEvent) => {
               type="button"
               variant="secondary"
               onClick={() => window.history.back()}
+              standardWidth={true}
+              size="sm"
             >
               Cancelar
             </Button>
@@ -420,6 +411,8 @@ const handleSubmit = async (e: React.FormEvent) => {
               variant="primary"
               isLoading={isSubmitting}
               disabled={isSubmitting}
+              standardWidth={true}
+              size="sm"
             >
               {isSubmitting ? 'Creando...' : 'Crear'}
             </Button>
