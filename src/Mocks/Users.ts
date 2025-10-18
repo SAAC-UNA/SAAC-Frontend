@@ -47,15 +47,15 @@ export const MOCK_USERS: MockUser[] = [
     password: 'password', // La contraseña real la maneja el backend
     roles: [
       {
-        id: 2,
+        id: 14,
         name: 'Administrador'
       }
     ],
     careers: [
       {
-        carrera_id: 1,
+        carrera_id: 5,
         nombre: 'Ingeniería en Sistemas',
-        facultad_id: 1
+        facultad_id: 6
       }
     ]
   },

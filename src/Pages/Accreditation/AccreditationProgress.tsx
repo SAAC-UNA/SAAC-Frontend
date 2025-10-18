@@ -93,10 +93,10 @@ const AccreditationProgress: React.FC = () => {
                                             <div>
                                                 <h3 className="font-medium text-gray-900">{process.tipo_proceso}</h3>
                                                 <p className="text-sm text-gray-600 mt-1">
-                                                    {process.accreditationCycle.nombre}
+                                                    {process.accreditation_cycle.nombre}
                                                 </p>
                                                 <p className="text-xs text-gray-500 mt-1">
-                                                    {process.accreditationCycle.careerCampus.career.nombre}
+                                                    {process.accreditation_cycle.career_campus.career.nombre}
                                                 </p>
                                             </div>
                                             <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
@@ -116,10 +116,10 @@ const AccreditationProgress: React.FC = () => {
                                     <div key={cycle.ciclo_acreditacion_id} className="bg-white border border-gray-200 rounded-lg p-4 shadow-sm">
                                         <h3 className="font-medium text-gray-900">{cycle.nombre}</h3>
                                         <p className="text-sm text-gray-600 mt-1">
-                                            {cycle.careerCampus.career.nombre}
+                                            {cycle.career_campus.career.nombre}
                                         </p>
                                         <p className="text-xs text-gray-500 mt-1">
-                                            {cycle.careerCampus.campus.nombre}
+                                            {cycle.career_campus.campus.nombre}
                                         </p>
                                     </div>
                                 ))}

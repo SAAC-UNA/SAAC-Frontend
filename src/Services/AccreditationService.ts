@@ -17,6 +17,8 @@ export interface Career {
 export interface Campus {
     sede_id: number;
     nombre: string;
+    universidad_id: number;
+    activo: number;
 }
 
 export interface CareerCampus {
@@ -24,21 +26,21 @@ export interface CareerCampus {
     carrera_id: number;
     sede_id: number;
     career: Career;
-    campus: Campus;
+    campus: Campus; // Ahora siempre viene del backend
 }
 
 export interface AccreditationCycle {
     ciclo_acreditacion_id: number;
     carrera_sede_id: number;
     nombre: string;
-    careerCampus: CareerCampus;
+    career_campus: CareerCampus; // ⚠️ snake_case como devuelve el backend
 }
 
 export interface Process {
     proceso_id: number;
     ciclo_acreditacion_id: number;
     tipo_proceso: string;
-    accreditationCycle: AccreditationCycle;
+    accreditation_cycle: AccreditationCycle; // ⚠️ snake_case como devuelve el backend
 }
 
 /**

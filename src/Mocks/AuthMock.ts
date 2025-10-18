@@ -37,12 +37,12 @@ export const MOCK_USERS: Record<string, MockUser> = {
     cedula: '203948609',
     nombre: 'Cristopher Montero Jimenez',
     email: 'cristopher.montero.jimenez@una.ac.cr',
-    roles: [{ id: 2, name: 'Administrador' }],
+    roles: [{ id: 14, name: 'Administrador' }],
     careers: [
       {
-        carrera_id: 1,
+        carrera_id: 5,
         nombre: 'Ingeniería',
-        facultad_id: 1
+        facultad_id: 6
       }
     ]
   },
