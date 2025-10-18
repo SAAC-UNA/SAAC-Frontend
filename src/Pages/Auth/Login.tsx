@@ -34,24 +34,24 @@ export const Login = () => {
   };
 
   // Login rápido para testing - Usando datos del seeder
-  const quickLogin = async (role: 'SuperUsuario' | 'AdminInge' | 'AdminQuimi') => {
-    const credentials = {
-      SuperUsuario: { cedula: '101010101', password: 'password' },
-      AdminInge: { cedula: '203948609', password: 'password' },
-      AdminQuimi: { cedula: '402290552', password: 'password' }
-    };
+  // const quickLogin = async (role: 'SuperUsuario' | 'AdminInge' | 'AdminQuimi') => {
+  //   const credentials = {
+  //     SuperUsuario: { cedula: '101010101', password: 'password' },
+  //     AdminInge: { cedula: '203948609', password: 'password' },
+  //     AdminQuimi: { cedula: '402290552', password: 'password' }
+  //   };
 
-    setLoading(true);
+  //   setLoading(true);
     
-    try {
-      await login(credentials[role]);
-      navigate('/');
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Error al iniciar sesión');
-    } finally {
-      setLoading(false);
-    }
-  };
+  //   try {
+  //     await login(credentials[role]);
+  //     navigate('/');
+  //   } catch (err) {
+  //     setError(err instanceof Error ? err.message : 'Error al iniciar sesión');
+  //   } finally {
+  //     setLoading(false);
+  //   }
+  // };
 
   return (
     <div className={styles['login-page']}>

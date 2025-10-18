@@ -12,10 +12,7 @@ import { Modal } from '@/Components/Ui/Modal';
 import { MODULE_INFO } from '@/Constants/ModuleInfo';
 import type { StructureElement } from '@/Types/StructureTypes';
 import { useStructure } from '@/Hooks/UseStructure';
-import { EditConfirmationModal } from '@/Components/Ui/EditConfirmationModal';
 import { DeleteConfirmationModal } from '@/Components/Ui/DeleteConfirmationModal';
-import { SuccessModal } from '@/Components/Ui/SuccessModal';
-import { LoadingSpinner } from '@/Components/Ui/Loading';
 
 const StructureList: React.FC = () => {
   
@@ -24,9 +21,7 @@ const StructureList: React.FC = () => {
   
   const { 
   isLoading, 
-  deleteElement, 
-  activateElement, 
-  deactivateElement, 
+  deleteElement,
   activateElementWithoutReload,
   deactivateElementWithoutReload,
   loadTree,
@@ -43,15 +38,6 @@ const StructureList: React.FC = () => {
     element: null
   });
 
-  // Estado para el modal de éxito después de eliminar
-  const [successModalState, setSuccessModalState] = useState<{
-    isOpen: boolean;
-    elementName: string;
-  }>({
-    isOpen: false,
-    elementName: ''
-  });
-
   // Estado para el modal de confirmación de activar/desactivar
   const [toggleActiveModalState, setToggleActiveModalState] = useState<{
     isOpen: boolean;
@@ -62,7 +48,6 @@ const StructureList: React.FC = () => {
   });
 
   const [refreshKey, setRefreshKey] = useState(0);
-  const [cascadeChildren, setCascadeChildren] = useState(false);
 
   const handleEditElement = (element: StructureElement) => {
     // Navegar directamente a la página de edición con el ID del elemento
@@ -79,8 +64,6 @@ const StructureList: React.FC = () => {
   };
 
   const handleToggleActive = async (element: StructureElement) => {
-    setCascadeChildren(false); // Resetear el checkbox
-    
     // Cargar los datos si están vacíos
     if (treeData.length === 0) {
       console.log('⚠️ treeData vacío, recargando...');
@@ -147,184 +130,47 @@ const StructureList: React.FC = () => {
   };
 
   const confirmToggleActive = async () => {
-  if (!toggleActiveModalState.element) return;
+    if (!toggleActiveModalState.element) return;
 
-  const element = toggleActiveModalState.element;
-  
-  try {
-    // Aplanar el árbol una sola vez al inicio
-    const flattenTree = (nodes: StructureElement[]): StructureElement[] => {
-      const result: StructureElement[] = [];
-      const flatten = (elements: StructureElement[]) => {
-        for (const element of elements) {
-          result.push(element);
-          if (element.childElements && element.childElements.length > 0) {
-            flatten(element.childElements);
-          }
-        }
-      };
-  
-      flatten(nodes);
-      return result;
-    };
+    const element = toggleActiveModalState.element;
     
-    const allElements = flattenTree(treeData);
-    
-    console.log('🔍 DEBUG - Elemento seleccionado:', {
-      id: element.id,
-      type: element.type,
-      name: element.name || element.nomenclature,
-      active: element.active
-    });
-    
-    console.log('🔍 DEBUG - Total elementos disponibles:', allElements.length);
-    
-    // Definir las dos jerarquías del sistema
-const ORGANIZATIONAL_HIERARCHY = ['university', 'campus', 'faculty', 'career'];
-const SINAES_HIERARCHY = ['dimension', 'component', 'criteria', 'standard', 'evidence'];
-
-// Función para encontrar descendientes SOLO de este elemento dentro de su jerarquía
-const getAllDescendants = (parentId: string): StructureElement[] => {
-  const descendants: StructureElement[] = [];
-  const toProcess = [parentId];
-  const processed = new Set<string>();
-  
-  // Encontrar el elemento padre para determinar su jerarquía
-  // Buscar TODOS los elementos con este ID (puede haber duplicados)
-const elementsWithSameId = allElements.filter(el => String(el.id) === String(parentId));
-
-console.log(`🔍 Elementos encontrados con ID ${parentId}:`, elementsWithSameId.map(e => ({
-  id: e.id,
-  type: e.type,
-  name: e.name || e.nomenclature,
-  parentId: e.parentElementId
-})));
-
-// Usar el elemento original que se está activando/desactivando (element)
-// en lugar de buscarlo en allElements
-const parentElement = element.id === parentId ? element : allElements.find(el => String(el.id) === String(parentId));
-  if (!parentElement) {
-    console.log(`⚠️ No se encontró el elemento padre con ID: ${parentId}`);
-    return descendants;
-  }
-  
-  // Determinar a qué jerarquía pertenece el elemento
-  const isOrganizational = ORGANIZATIONAL_HIERARCHY.includes(parentElement.type);
-  const validHierarchy = isOrganizational ? ORGANIZATIONAL_HIERARCHY : SINAES_HIERARCHY;
-  
-  console.log(`🔍 Iniciando búsqueda de descendientes para: ${parentId}`);
-  console.log(`📊 Tipo: ${parentElement.type}, Jerarquía: ${isOrganizational ? 'ORGANIZACIONAL' : 'SINAES'}`);
-  
-  while (toProcess.length > 0) {
-    const currentId = String(toProcess.shift()!);
-    
-    if (processed.has(currentId)) continue;
-    processed.add(currentId);
-    
-    // Filtrar hijos que:
-    // 1. Tengan este elemento como padre
-    // 2. Pertenezcan a la misma jerarquía
-    const children = allElements.filter(el => 
-      String(el.parentElementId) === String(currentId) &&
-      validHierarchy.includes(el.type)
-    );
-    
-    console.log(`  🔍 Hijos directos de ${currentId}:`, children.map(c => ({
-      id: c.id,
-      type: c.type,
-      name: c.name || c.nomenclature,
-      parentId: c.parentElementId
-    })));
-    
-    for (const child of children) {
-      if (!descendants.some(d => d.id === child.id)) {
-        descendants.push(child);
-        toProcess.push(String(child.id));
+    try {
+      console.log('🔍 DEBUG - Elemento seleccionado:', {
+        id: element.id,
+        type: element.type,
+        name: element.name || element.nomenclature,
+        active: element.active
+      });
+      
+      // El backend ahora maneja la desactivación en cascada automáticamente
+      // Solo necesitamos cambiar el estado del elemento padre
+      if (element.active) {
+        console.log('⚡ DESACTIVANDO elemento (backend desactivará hijos automáticamente)');
+        await deactivateElementWithoutReload(element.type, element.id);
+      } else {
+        console.log('✅ ACTIVANDO elemento');
+        await activateElementWithoutReload(element.type, element.id);
       }
+      
+      // Recargar el árbol
+      await loadTree();
+
+      console.log('🔄 Recargando página para reflejar cambios...');
+
+      // Cerrar modal
+      setToggleActiveModalState({ isOpen: false, element: null });
+
+      // Recargar página completa después de un delay mínimo
+      setTimeout(() => {
+        window.location.reload();
+      }, 300);
+      
+    } catch (error) {
+      console.error('Error al cambiar estado del elemento:', error);
+      // Cerrar modal incluso si hay error
+      setToggleActiveModalState({ isOpen: false, element: null });
     }
-  }
-  
-  console.log(`✅ Total descendientes encontrados: ${descendants.length}`);
-  console.log(`📋 Tipos encontrados:`, [...new Set(descendants.map(d => d.type))]);
-  return descendants;
-};
-    
-    if (element.active) {
-      // ========== DESACTIVAR elemento ==========
-      console.log('⚡ DESACTIVANDO elemento principal');
-      await deactivateElementWithoutReload(element.type, element.id);
-      
-      // Si está marcado el checkbox, desactivar hijos en cascada
-      if (cascadeChildren) {
-        const descendants = getAllDescendants(element.id);
-        
-        console.log('📋 Descendientes a desactivar:', descendants.map(d => ({
-          id: d.id,
-          type: d.type,
-          name: d.name || d.nomenclature,
-          parentId: d.parentElementId,
-          active: d.active
-        })));
-        
-        // Desactivar todos los descendientes activos
-        for (const descendant of descendants) {
-          if (descendant.active) {
-            console.log(`  ⚡ Desactivando: ${descendant.type} - ${descendant.name || descendant.nomenclature}`);
-            await deactivateElementWithoutReload(descendant.type, descendant.id);
-          }
-        }
-      }
-      
-    } else {
-      // ========== ACTIVAR elemento ==========
-      console.log('✅ ACTIVANDO elemento principal');
-      await activateElementWithoutReload(element.type, element.id);
-      
-      // Si está marcado el checkbox, activar hijos inactivos en cascada
-      if (cascadeChildren) {
-        const descendants = getAllDescendants(element.id);
-        
-        console.log('📋 Descendientes a activar:', descendants.map(d => ({
-          id: d.id,
-          type: d.type,
-          name: d.name || d.nomenclature,
-          parentId: d.parentElementId,
-          active: d.active
-        })));
-        
-        // Activar todos los descendientes inactivos
-        for (const descendant of descendants) {
-          if (!descendant.active) {
-            console.log(`  ✅ Activando: ${descendant.type} - ${descendant.name || descendant.nomenclature}`);
-            await activateElementWithoutReload(descendant.type, descendant.id);
-          } else {
-            console.log(`  ⏭️ Saltando (ya activo): ${descendant.type} - ${descendant.name || descendant.nomenclature}`);
-          }
-        }
-      }
-    }
-    
-    /// Recargar el árbol
-    await loadTree();
-
-    console.log('🔄 Recargando página para reflejar cambios...');
-
-    // Cerrar modal
-    setToggleActiveModalState({ isOpen: false, element: null });
-    setCascadeChildren(false);
-
-    // Recargar página completa después de un delay mínimo
-    setTimeout(() => {
-      window.location.reload();
-    }, 300);
-    
-  } catch (error) {
-    console.error('Error al cambiar estado del elemento:', error);
-    // Cerrar modal incluso si hay error
-    setToggleActiveModalState({ isOpen: false, element: null });
-    setCascadeChildren(false);
-  }
-};
+  };
 
   const cancelToggleActive = () => {
     setToggleActiveModalState({ isOpen: false, element: null });
@@ -386,39 +232,16 @@ const parentElement = element.id === parentId ? element : allElements.find(el =>
           showCancel={true}
           showConfirm={true}
         >
-
           <div className="mt-4 p-3 bg-[var(--bg-info)] border border-[var(--border-info)] rounded-lg">
             <p className="text-sm text-[var(--text-info)]">
               Al activar este elemento, volverá a estar disponible para su uso en el sistema.
             </p>
+            {hasChildren(toggleActiveModalState.element) && (
+              <p className="text-xs text-[var(--text-info)] mt-2">
+                <strong>Cascada automática:</strong> Todos los elementos dependientes (hijos) se activarán automáticamente en cascada.
+              </p>
+            )}
           </div>
-
-          {/* Checkbox para activar hijos en cascada */}
-          {(() => {
-            const hasChildrenResult = hasChildren(toggleActiveModalState.element);
-            console.log('🔍 Modal ACTIVAR - hasChildren:', hasChildrenResult);
-            return hasChildrenResult;
-          })() && (
-            <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
-              <div className="flex items-start space-x-3">
-                <input
-                  type="checkbox"
-                  id="cascadeChildrenActivate"
-                  checked={cascadeChildren}
-                  onChange={(e) => setCascadeChildren(e.target.checked)}
-                  className="mt-1 h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
-                />
-                <div className="flex-1">
-                  <label htmlFor="cascadeChildrenActivate" className="text-sm font-medium text-blue-900 cursor-pointer">
-                    Activar también todos los elementos dependientes inactivos
-                  </label>
-                  <p className="text-xs text-blue-700 mt-1">
-                    Al marcar esta opción, se activarán automáticamente todos los elementos inactivos que dependen de este.
-                  </p>
-                </div>
-              </div>
-            </div>
-          )}
         </Modal>
       )}
 
@@ -442,37 +265,18 @@ const parentElement = element.id === parentId ? element : allElements.find(el =>
           showCancel={true}
           showConfirm={true}
         >
-
           <div className="mt-4 p-3 bg-[var(--bg-warning)] border border-[var(--border-warning)] rounded-lg">
             <p className="text-sm text-[var(--text-warning)]">
               Al desactivar este elemento, dejará de estar disponible en el sistema. Esta acción es reversible.
             </p>
+            {hasChildren(toggleActiveModalState.element) && (
+              <p className="text-xs text-[var(--text-warning)] mt-2">
+                <strong>⚠️ Importante:</strong> Todos los elementos dependientes (hijos) se desactivarán automáticamente en cascada.
+              </p>
+            )}
           </div>
-
-          {/* Checkbox para desactivar hijos en cascada */}
-          {hasChildren(toggleActiveModalState.element) && (
-            <div className="mt-4 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
-              <div className="flex items-start space-x-3">
-                <input
-                  type="checkbox"
-                  id="cascadeChildrenDeactivate"
-                  checked={cascadeChildren}
-                  onChange={(e) => setCascadeChildren(e.target.checked)}
-                  className="mt-1 h-4 w-4 text-yellow-600 focus:ring-yellow-500 border-gray-300 rounded"
-                />
-                <div className="flex-1">
-                  <label htmlFor="cascadeChildrenDeactivate" className="text-sm font-medium text-yellow-900 cursor-pointer">
-                    Desactivar también todos los elementos dependientes
-                  </label>
-                  <p className="text-xs text-yellow-700 mt-1">
-                    Al marcar esta opción, se desactivarán automáticamente todos los elementos que dependen de este.
-                  </p>
-                </div>
-              </div>
-            </div>
-          )}
         </Modal>
-)}
+      )}
     </>
   );
 };

@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { cn } from '@/Utils/ClassNames';
 import { Button } from '@/Components/Ui/Button';
 import { Input } from '@/Components/Ui/Input';
 import { ScreenContainer } from '@/Components/Ui/ScreenContainer';
@@ -17,7 +16,6 @@ import { ElementType } from '@/Types/StructureTypes';
 import {
   ELEMENT_TYPE_LABELS,
   VALIDATION_RULES,
-  USER_MESSAGES,
   FORM_CONFIG,
   getRequiredParentType,
   getDescriptionMaxLength

@@ -78,6 +78,9 @@ export function mapBackendToFrontend(data: any, type: ElementType): StructureEle
  * - Facultad: necesita sede_id Y universidad_id (tanto para crear como actualizar)
  * - Estándar: NO tiene nomenclatura, solo descripcion
  * - Evidencia: necesita descripcion y nomenclatura
+ * 
+ * NOTA: Para facultades, si no se puede determinar universidad_id desde allElements,
+ * se debe hacer una petición separada al backend para obtener el campus completo.
  */
 export function mapFrontendToBackend(
   data: Partial<StructureElement>, 
@@ -113,15 +116,52 @@ export function mapFrontendToBackend(
   
   // **CASO ESPECIAL 3: FACULTAD requiere 2 padres siempre**
   if (type === 'faculty') {
+    console.log('🏫 CREANDO FACULTAD - Debug:', {
+      parentElementId: data.parentElementId,
+      hasAllElements: !!allElements,
+      allElementsLength: allElements?.length || 0,
+      dataCompleto: data
+    });
+    
     if (data.parentElementId) {
-      // Crear: Tiene parentElementId nuevo
+      // Crear: Tiene parentElementId nuevo (que es el sede_id)
       payload.sede_id = Number(data.parentElementId);
+      console.log('✅ Asignado sede_id:', payload.sede_id);
       
-      if (allElements) {
-        const campus = allElements.find(el => el.id === data.parentElementId);
+      // OPCIÓN 1: Buscar en allElements (árbol)
+      if (allElements && allElements.length > 0) {
+        // Función auxiliar para buscar en árbol jerárquico
+        const findInTree = (elements: StructureElement[], id: string): StructureElement | undefined => {
+          for (const el of elements) {
+            if (el.id === id) return el;
+            if (el.childElements && el.childElements.length > 0) {
+              const found = findInTree(el.childElements, id);
+              if (found) return found;
+            }
+          }
+          return undefined;
+        };
+        
+        const campus = findInTree(allElements, data.parentElementId);
+        console.log('🔍 Campus encontrado en árbol:', campus);
+        
         if (campus && campus.parentElementId) {
           payload.universidad_id = Number(campus.parentElementId);
+          console.log('✅ universidad_id obtenido del árbol:', payload.universidad_id);
+        } else if (campus && campus.type === 'campus') {
+          // Si encontramos el campus pero no tiene parentElementId visible,
+          // intentar buscarlo en la lista plana
+          console.warn('⚠️ Campus encontrado pero sin parentElementId en el árbol');
         }
+      }
+      
+      // OPCIÓN 2: Si no se encontró, marcar para que el service haga fetch
+      if (!payload.universidad_id) {
+        console.error('❌ No se pudo determinar universidad_id desde allElements');
+        console.error('Se necesitará hacer fetch del campus para obtener universidad_id');
+        // Marcamos el payload con un flag especial
+        payload._needsCampusFetch = true;
+        payload._campusId = data.parentElementId;
       }
     } else if (allElements && allElements.length > 0) {
       // Actualizar: Usar los padres del elemento actual

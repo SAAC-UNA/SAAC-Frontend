@@ -26,6 +26,25 @@ export interface ApiResponse<T = any> {
  */
 async function createSystemComment(): Promise<number> {
   try {
+    // Primero, obtener un usuario válido del sistema
+    const usersResponse = await fetch('http://127.0.0.1:8000/api/admin/users', {
+      method: 'GET',
+      headers: {
+        'Accept': 'application/json',
+      },
+    });
+
+    let userId = 5; // Valor por defecto
+
+    if (usersResponse.ok) {
+      const usersData = await usersResponse.json();
+      // Usar el primer usuario disponible
+      if (usersData && usersData.length > 0) {
+        userId = usersData[0].usuario_id;
+        console.log('✅ Usando usuario_id:', userId, 'para crear comentario');
+      }
+    }
+
     const response = await fetch('http://127.0.0.1:8000/api/dev/comments', {
       method: 'POST',
       headers: {
@@ -33,12 +52,14 @@ async function createSystemComment(): Promise<number> {
         'Accept': 'application/json',
       },
       body: JSON.stringify({
-        usuario_id: 1, // Usuario del sistema (debe existir en BD)
+        usuario_id: userId,
         texto: 'Comentario generado automáticamente por el sistema'
       }),
     });
 
     if (!response.ok) {
+      const errorData = await response.json();
+      console.error('Error del backend al crear comentario:', errorData);
       throw new Error(`Error creando comentario: ${response.status}`);
     }
 
@@ -201,16 +222,18 @@ class StructureService {
       }
 
       const data = await response.json();
+      console.log(`📥 Backend response for ${type} ${id}:`, data);
       
-      if (data.data) {
-        const transformedElement = mapBackendToFrontend(data.data, type);
-        return {
-          ...data,
-          data: transformedElement
-        };
-      }
-
-      return data;
+      // El backend puede devolver { data: {...} } o directamente {...}
+      const rawData = data.data || data;
+      const transformedElement = mapBackendToFrontend(rawData, type);
+      
+      console.log(`✨ Transformed ${type}:`, transformedElement);
+      
+      return {
+        message: data.message || 'Elemento obtenido exitosamente',
+        data: transformedElement
+      };
     } catch (error) {
       console.error(`Error obteniendo ${type} ${id}:`, error);
       throw error;
@@ -223,13 +246,39 @@ class StructureService {
   async create(elementData: CreateElementForm, allElements?: StructureElement[]): Promise<ApiResponse<StructureElement>> {
     try {
       const endpoint = ELEMENT_TYPE_TO_ENDPOINT[elementData.type];
-      const payload = mapFrontendToBackend(elementData, elementData.type, allElements);
+      let payload = mapFrontendToBackend(elementData, elementData.type, allElements);
 
       console.log('🔍 DEBUG CREATE:', {
         type: elementData.type,
         elementData: elementData,
         payload: payload
       });
+
+      // **CASO ESPECIAL: Si es facultad y necesita fetch del campus**
+      if (elementData.type === 'faculty' && payload._needsCampusFetch) {
+        console.log('🔄 Haciendo fetch del campus para obtener universidad_id...');
+        try {
+          const campusResponse = await this.getById('campus', payload._campusId);
+          console.log('📥 Respuesta completa del campus:', campusResponse);
+          console.log('📥 Data del campus:', campusResponse.data);
+          console.log('📥 ParentElementId del campus:', campusResponse.data?.parentElementId);
+          
+          if (campusResponse.data && campusResponse.data.parentElementId) {
+            payload.universidad_id = Number(campusResponse.data.parentElementId);
+            console.log('✅ universidad_id obtenido del fetch:', payload.universidad_id);
+          } else {
+            console.error('❌ No se pudo obtener universidad_id del campus');
+            console.error('Campus data recibido:', campusResponse.data);
+            throw new Error('No se pudo determinar la universidad del campus seleccionado');
+          }
+        } catch (error) {
+          console.error('Error obteniendo información del campus:', error);
+          throw new Error('Error al obtener información del campus. Verifica que el campus exista.');
+        }
+        // Limpiar flags temporales
+        delete payload._needsCampusFetch;
+        delete payload._campusId;
+      }
 
       const requiresComment = ['dimension', 'component', 'criteria'].includes(elementData.type);
       
@@ -242,6 +291,8 @@ class StructureService {
         const estadoId = await ensureEvidenceState();
         payload.estado_evidencia_id = estadoId;
       }
+
+      console.log('📤 PAYLOAD FINAL A ENVIAR:', payload);
 
       const response = await fetch(`${this.baseURL}/${endpoint}`, {
         method: 'POST',

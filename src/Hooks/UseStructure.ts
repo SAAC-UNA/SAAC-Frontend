@@ -4,8 +4,7 @@ import type {
   StructureElement,
   CreateElementForm,
   EditElementForm,
-  ElementType,
-  StructureSearchCriteria
+  ElementType
 } from '@/types/StructureTypes';
 import type { ApiResponse } from '@/Services/StructureService';
 
@@ -224,7 +223,6 @@ const activateElementWithoutReload = useCallback(async (elementType: ElementType
     await structureService.setActive(elementType, elementId, true);
     return true;
   } catch (err) {
-    const errorMessage = err instanceof Error ? err.message : 'Error al activar elemento';
     console.error('Error activando elemento:', err);
     return false;
   }
@@ -239,7 +237,6 @@ const deactivateElementWithoutReload = useCallback(async (elementType: ElementTy
     await structureService.setActive(elementType, elementId, false);
     return true;
   } catch (err) {
-    const errorMessage = err instanceof Error ? err.message : 'Error al desactivar elemento';
     console.error('Error desactivando elemento:', err);
     return false;
   }
