@@ -14,6 +14,7 @@ export interface MockUser {
   }>;
   careers: Array<{
     carrera_id: number;
+    carrera_sede_id: number;
     nombre: string;
     facultad_id: number;
   }>;
@@ -24,9 +25,9 @@ export interface MockUser {
  * Basados en el seeder del backend
  */
 export const MOCK_USERS: Record<string, MockUser> = {
-  '101010101': {
+  '203849675': {
     usuario_id: 2,
-    cedula: '101010101',
+    cedula: '203849675',
     nombre: 'Pablo Castillo Quesada',
     email: 'pablo.castillo.quesada@una.cr',
     roles: [{ id: 4, name: 'SuperUsuario' }],
@@ -41,20 +42,22 @@ export const MOCK_USERS: Record<string, MockUser> = {
     careers: [
       {
         carrera_id: 10,
+        carrera_sede_id: 3,        
         nombre: 'Ingeniería en Sistemas ',
         facultad_id: 11
       }
     ]
   },
-  '402290552': {
+  '208738943': {
     usuario_id: 4,
-    cedula: '402290552',
+    cedula: '208738943',
     nombre: 'Alejandro Ugalde Villalobos',
     email: 'alejandro.ugalde.villalobos@est.una.ac.cr',
     roles: [{ id: 2, name: 'Administrador' }],
     careers: [
       {
         carrera_id: 12,
+        carrera_sede_id: 4,
         nombre: 'Química',
         facultad_id: 11
       }

@@ -10,6 +10,7 @@ import { authService } from '@/Services/AuthService';
 // Tipos basados en la respuesta del backend
 interface Career {
   carrera_id: number;
+  carrera_sede_id: number;
   nombre: string;
   facultad_id: number;
 }

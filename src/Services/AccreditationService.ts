@@ -52,10 +52,10 @@ export async function getProcesses(careerIds?: number[]): Promise<Process[]> {
         // Construir query params
         const params = new URLSearchParams();
         
-        // Si hay carreras específicas, enviar el primer ID
+        // Si hay carreras-sedes específicas, enviar el primer ID
         // (el backend filtrará automáticamente según el usuario autenticado)
         if (careerIds && careerIds.length > 0) {
-            params.append('career_id', careerIds[0].toString());
+            params.append('career_campus_id', careerIds[0].toString());
         }
         
         const url = `${ACCREDITATION_ENDPOINTS.PROCESSES}${params.toString() ? `?${params.toString()}` : ''}`;
@@ -93,9 +93,9 @@ export async function getAccreditationCycles(careerIds?: number[]): Promise<Accr
         // Construir query params
         const params = new URLSearchParams();
         
-        // Si hay carreras específicas, enviar el primer ID
+        // Si hay carreras-sedes específicas, enviar el primer ID
         if (careerIds && careerIds.length > 0) {
-            params.append('career_id', careerIds[0].toString());
+            params.append('career_campus_id', careerIds[0].toString());
         }
         
         const url = `${ACCREDITATION_ENDPOINTS.CYCLES}${params.toString() ? `?${params.toString()}` : ''}`;

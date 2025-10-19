@@ -27,15 +27,15 @@ const AccreditationProgress: React.FC = () => {
                 setError(null);
                 
                 // Obtener los career_ids del usuario
-                const careerIds = user.careers?.map(c => c.carrera_id) || [];
+                const careerCampusIds = user.careers?.map(c => c.carrera_sede_id) || [];
                 
                 console.log('👤 Usuario:', user.nombre);
-                console.log('🎓 Carreras del usuario:', careerIds);
+                console.log('🎓 Carreras del usuario:', careerCampusIds);
                 
                 // Llamar al backend con los career_ids
                 const [processesData, cyclesData] = await Promise.all([
-                    getProcesses(careerIds.length > 0 ? careerIds : undefined),
-                    getAccreditationCycles(careerIds.length > 0 ? careerIds : undefined)
+                    getProcesses(careerCampusIds.length > 0 ? careerCampusIds : undefined),
+                    getAccreditationCycles(careerCampusIds.length > 0 ? careerCampusIds : undefined)
                 ]);
                 
                 console.log('📦 Procesos recibidos:', processesData);
