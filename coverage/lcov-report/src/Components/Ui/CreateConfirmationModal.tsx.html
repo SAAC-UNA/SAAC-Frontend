@@ -32,7 +32,7 @@
             <div class='fl pad1y space-right2'>
                 <span class="strong">0% </span>
                 <span class="quiet">Branches</span>
-                <span class='fraction'>0/9</span>
+                <span class='fraction'>0/12</span>
             </div>
         
             
@@ -116,7 +116,31 @@
 <a name='L51'></a><a href='#L51'>51</a>
 <a name='L52'></a><a href='#L52'>52</a>
 <a name='L53'></a><a href='#L53'>53</a>
-<a name='L54'></a><a href='#L54'>54</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
+<a name='L54'></a><a href='#L54'>54</a>
+<a name='L55'></a><a href='#L55'>55</a>
+<a name='L56'></a><a href='#L56'>56</a>
+<a name='L57'></a><a href='#L57'>57</a>
+<a name='L58'></a><a href='#L58'>58</a>
+<a name='L59'></a><a href='#L59'>59</a>
+<a name='L60'></a><a href='#L60'>60</a>
+<a name='L61'></a><a href='#L61'>61</a>
+<a name='L62'></a><a href='#L62'>62</a>
+<a name='L63'></a><a href='#L63'>63</a>
+<a name='L64'></a><a href='#L64'>64</a>
+<a name='L65'></a><a href='#L65'>65</a>
+<a name='L66'></a><a href='#L66'>66</a>
+<a name='L67'></a><a href='#L67'>67</a>
+<a name='L68'></a><a href='#L68'>68</a>
+<a name='L69'></a><a href='#L69'>69</a>
+<a name='L70'></a><a href='#L70'>70</a>
+<a name='L71'></a><a href='#L71'>71</a>
+<a name='L72'></a><a href='#L72'>72</a>
+<a name='L73'></a><a href='#L73'>73</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -148,13 +172,27 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -171,6 +209,9 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js">/**
  * CreateConfirmationModal - Modal de confirmación para operaciones de creación
+ * 
+ * Utiliza el componente Modal base con variant="success" o "info".
+ * Los botones tienen ancho fijo de 128px (standardWidth={true}) por estandarización.
  */
 &nbsp;
 import React from 'react';
@@ -183,10 +224,12 @@ interface CreateConfirmationModalProps {
     title?: string;
     message?: string;
     itemName?: string;
+    itemType?: string;
     confirmLabel?: string;
     cancelLabel?: string;
     isLoading?: boolean;
     variant?: 'success' | 'info';
+    description?: string;
 }
 &nbsp;
 export const CreateConfirmationModal: React.FC&lt;CreateConfirmationModalProps&gt; = <span class="cstat-no" title="statement not covered" ><span class="fstat-no" title="function not covered" >({</span></span>
@@ -196,14 +239,20 @@ export const CreateConfirmationModal: React.FC&lt;CreateConfirmationModalProps&g
     title = <span class="branch-0 cbranch-no" title="branch not covered" >'Confirmar creación',</span>
     message,
     itemName,
+    itemType = <span class="branch-0 cbranch-no" title="branch not covered" >'elemento',</span>
     confirmLabel = <span class="branch-0 cbranch-no" title="branch not covered" >'Crear',</span>
     cancelLabel = <span class="branch-0 cbranch-no" title="branch not covered" >'Cancelar',</span>
     isLoading = <span class="branch-0 cbranch-no" title="branch not covered" >false,</span>
-    variant = <span class="branch-0 cbranch-no" title="branch not covered" >'success'</span>
+    variant = <span class="branch-0 cbranch-no" title="branch not covered" >'success',</span>
+    description
 }) =&gt; {
     const defaultMessage = <span class="cstat-no" title="statement not covered" >itemName</span>
-        ? `¿Está seguro de que desea crear "${itemName}"?`
-        : '¿Está seguro de que desea crear este elemento?';
+        ? (
+            &lt;&gt;
+              ¿Está seguro de que desea crear el {itemType} "&lt;span className="font-bold"&gt;{itemName}&lt;/span&gt;"?
+            &lt;/&gt;
+          )
+        : `¿Está seguro de que desea crear este ${itemType}?`;
 &nbsp;
     const finalMessage = <span class="cstat-no" title="statement not covered" >message || defaultMessage;</span>
 &nbsp;
@@ -220,7 +269,15 @@ export const CreateConfirmationModal: React.FC&lt;CreateConfirmationModalProps&g
             confirmLoading={isLoading}
             showCancel={true}
             showConfirm={true}
-        /&gt;
+        &gt;
+            {description &amp;&amp; (
+                &lt;div className="mt-4 p-4 bg-gray-50 rounded-lg"&gt;
+                    &lt;p className="text-sm text-gray-600"&gt;
+                        &lt;strong&gt;Descripción:&lt;/strong&gt; {description}
+                    &lt;/p&gt;
+                &lt;/div&gt;
+            )}
+        &lt;/Modal&gt;
     );
 };</pre></td></tr></table></pre>
 
@@ -229,7 +286,7 @@ export const CreateConfirmationModal: React.FC&lt;CreateConfirmationModalProps&g
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2025-10-01T01:11:56.651Z
+                at 2025-10-19T18:33:03.308Z
             </div>
         <script src="../../../prettify.js"></script>
         <script>

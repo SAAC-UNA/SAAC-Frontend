@@ -1,7 +1,28 @@
 import React from 'react';
 import { render, screen, act } from '@testing-library/react';
 import { NavigationProvider, useNavigation } from './NavigationContext';
+import { AuthContext } from './AuthContext';
 import { MemoryRouter } from 'react-router-dom';
+
+// Mock de AuthContext para las pruebas
+const mockAuthContextValue = {
+  user: {
+    usuario_id: 1,
+    cedula: '123456789',
+    nombre: 'Usuario Test',
+    email: 'test@test.com',
+    roles: [{ id: 1, name: 'Admin' }],
+    careers: []
+  },
+  loading: false,
+  isAuthenticated: true,
+  isSuperUser: () => false,
+  isAdmin: () => true,
+  getUserCareer: () => null,
+  login: jest.fn(),
+  logout: jest.fn(),
+  error: null
+};
 
 describe('NavigationContext', () => {
   function TestComponent() {
@@ -19,11 +40,13 @@ describe('NavigationContext', () => {
 
   it('proporciona valores iniciales y permite cambiar el activo', () => {
     render(
-      <MemoryRouter initialEntries={["/inicio"]}>
-        <NavigationProvider>
-          <TestComponent />
-        </NavigationProvider>
-      </MemoryRouter>
+      <AuthContext.Provider value={mockAuthContextValue}>
+        <MemoryRouter initialEntries={["/inicio"]}>
+          <NavigationProvider>
+            <TestComponent />
+          </NavigationProvider>
+        </MemoryRouter>
+      </AuthContext.Provider>
     );
     expect(screen.getByTestId('active').textContent).toBe('inicio');
     expect(screen.getByTestId('expanded').textContent).toBe('');
@@ -35,11 +58,13 @@ describe('NavigationContext', () => {
 
   it('permite cambiar el expandido y alternar', () => {
     render(
-      <MemoryRouter initialEntries={["/inicio"]}>
-        <NavigationProvider>
-          <TestComponent />
-        </NavigationProvider>
-      </MemoryRouter>
+      <AuthContext.Provider value={mockAuthContextValue}>
+        <MemoryRouter initialEntries={["/inicio"]}>
+          <NavigationProvider>
+            <TestComponent />
+          </NavigationProvider>
+        </MemoryRouter>
+      </AuthContext.Provider>
     );
     act(() => {
       screen.getByText('Set Expanded').click();

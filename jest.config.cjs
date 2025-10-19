@@ -8,7 +8,8 @@ module.exports = {
   setupFiles: ["<rootDir>/jest.setup.cjs"],
   setupFilesAfterEnv: ["@testing-library/jest-dom"],
   moduleNameMapper: {
-    "^@/(.*)$": "<rootDir>/src/$1"
+    "^@/(.*)$": "<rootDir>/src/$1",
+    "\\.(css|less|scss|sass)$": "identity-obj-proxy"
   },
 
   // 📊 Configuración de cobertura

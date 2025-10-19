@@ -17,3 +17,15 @@ Object.defineProperty(window, "matchMedia", {
     dispatchEvent: jest.fn(),
   })),
 });
+
+// Mock para import.meta.env (Vite)
+global.import = {
+  meta: {
+    env: {
+      VITE_API_URL: 'http://localhost:8000/api',
+      MODE: 'test',
+      DEV: false,
+      PROD: false,
+    },
+  },
+};

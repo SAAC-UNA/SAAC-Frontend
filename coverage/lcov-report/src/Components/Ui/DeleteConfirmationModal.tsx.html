@@ -25,14 +25,14 @@
             <div class='fl pad1y space-right2'>
                 <span class="strong">0% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>0/5</span>
+                <span class='fraction'>0/4</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
                 <span class="strong">0% </span>
                 <span class="quiet">Branches</span>
-                <span class='fraction'>0/11</span>
+                <span class='fraction'>0/12</span>
             </div>
         
             
@@ -46,7 +46,7 @@
             <div class='fl pad1y space-right2'>
                 <span class="strong">0% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>0/5</span>
+                <span class='fraction'>0/4</span>
             </div>
         
             
@@ -125,13 +125,43 @@
 <a name='L60'></a><a href='#L60'>60</a>
 <a name='L61'></a><a href='#L61'>61</a>
 <a name='L62'></a><a href='#L62'>62</a>
-<a name='L63'></a><a href='#L63'>63</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
+<a name='L63'></a><a href='#L63'>63</a>
+<a name='L64'></a><a href='#L64'>64</a>
+<a name='L65'></a><a href='#L65'>65</a>
+<a name='L66'></a><a href='#L66'>66</a>
+<a name='L67'></a><a href='#L67'>67</a>
+<a name='L68'></a><a href='#L68'>68</a>
+<a name='L69'></a><a href='#L69'>69</a>
+<a name='L70'></a><a href='#L70'>70</a>
+<a name='L71'></a><a href='#L71'>71</a>
+<a name='L72'></a><a href='#L72'>72</a>
+<a name='L73'></a><a href='#L73'>73</a>
+<a name='L74'></a><a href='#L74'>74</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -153,16 +183,7 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -170,7 +191,8 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -189,6 +211,9 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js">/**
  * DeleteConfirmationModal - Modal de confirmación para operaciones de eliminación
+ * 
+ * Utiliza el componente Modal base con variant="danger" o "warning".
+ * Los botones tienen ancho fijo de 128px (standardWidth={true}) por estandarización.
  */
 &nbsp;
 import React from 'react';
@@ -205,6 +230,8 @@ interface DeleteConfirmationModalProps {
   cancelLabel?: string;
   isLoading?: boolean;
   variant?: 'danger' | 'warning';
+  description?: string;
+  hideDefaultDangerMessage?: boolean;
 }
 &nbsp;
 export const DeleteConfirmationModal: React.FC&lt;DeleteConfirmationModalProps&gt; = <span class="cstat-no" title="statement not covered" ><span class="fstat-no" title="function not covered" >({</span></span>
@@ -217,20 +244,19 @@ export const DeleteConfirmationModal: React.FC&lt;DeleteConfirmationModalProps&g
   confirmLabel = <span class="branch-0 cbranch-no" title="branch not covered" >'Eliminar',</span>
   cancelLabel = <span class="branch-0 cbranch-no" title="branch not covered" >'Cancelar',</span>
   isLoading = <span class="branch-0 cbranch-no" title="branch not covered" >false,</span>
-  variant = <span class="branch-0 cbranch-no" title="branch not covered" >'danger'</span>
+  variant = <span class="branch-0 cbranch-no" title="branch not covered" >'danger',</span>
+  description,
+  hideDefaultDangerMessage = <span class="branch-0 cbranch-no" title="branch not covered" >false</span>
 }) =&gt; {
   const defaultMessage = <span class="cstat-no" title="statement not covered" >itemName</span>
-    ? `¿Está seguro de que desea eliminar "${itemName}"?`
+    ? (
+        &lt;&gt;
+          ¿Está seguro de que desea eliminar "&lt;span className="font-bold"&gt;{itemName}&lt;/span&gt;"?
+        &lt;/&gt;
+      )
     : '¿Está seguro de que desea eliminar este elemento?';
 &nbsp;
   const finalMessage = <span class="cstat-no" title="statement not covered" >message || defaultMessage;</span>
-&nbsp;
-  // Mensaje adicional solo para danger
-  const additionalMessage = <span class="cstat-no" title="statement not covered" >variant === 'danger' ? (</span>
-    &lt;p className="text-xs text-rojo-una mt-2"&gt;
-      Esta acción no se puede deshacer.
-    &lt;/p&gt;
-  ) : null;
 &nbsp;
 <span class="cstat-no" title="statement not covered" >  return (</span>
     &lt;Modal
@@ -238,6 +264,7 @@ export const DeleteConfirmationModal: React.FC&lt;DeleteConfirmationModalProps&g
       onClose={onClose}
       onConfirm={onConfirm}
       variant={variant}
+      hideDefaultDangerMessage={hideDefaultDangerMessage}
       title={title}
       message={finalMessage}
       confirmLabel={confirmLabel}
@@ -246,7 +273,13 @@ export const DeleteConfirmationModal: React.FC&lt;DeleteConfirmationModalProps&g
       showCancel={true}
       showConfirm={true}
     &gt;
-      {additionalMessage}
+      {description &amp;&amp; (
+        &lt;div className="mt-4 p-3 bg-[var(--bg-error)] border border-[var(--border-error)] rounded-lg"&gt;
+          &lt;p className="text-sm text-[var(--text-error)]"&gt;
+            {description}
+          &lt;/p&gt;
+        &lt;/div&gt;
+      )}
     &lt;/Modal&gt;
   );
 };</pre></td></tr></table></pre>
@@ -256,7 +289,7 @@ export const DeleteConfirmationModal: React.FC&lt;DeleteConfirmationModalProps&g
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2025-10-01T01:11:56.651Z
+                at 2025-10-19T18:33:03.308Z
             </div>
         <script src="../../../prettify.js"></script>
         <script>

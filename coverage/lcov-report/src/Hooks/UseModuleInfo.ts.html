@@ -23,9 +23,9 @@
         <div class='clearfix'>
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">25.92% </span>
+                <span class="strong">0% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>7/27</span>
+                <span class='fraction'>0/27</span>
             </div>
         
             
@@ -37,16 +37,16 @@
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">37.5% </span>
+                <span class="strong">0% </span>
                 <span class="quiet">Functions</span>
-                <span class='fraction'>3/8</span>
+                <span class='fraction'>0/8</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">28.57% </span>
+                <span class="strong">0% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>6/21</span>
+                <span class='fraction'>0/21</span>
             </div>
         
             
@@ -169,30 +169,10 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">3x</span>
-<span class="cline-any cline-yes">15x</span>
-<span class="cline-any cline-yes">7x</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">15x</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">3x</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -202,7 +182,27 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">3x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
@@ -225,7 +225,7 @@
  */
 &nbsp;
 import { useMemo } from 'react';
-import { getModuleInfo, getContextualInfo, type ModuleInfo } from '../Constants/ModuleInfo';
+import { getModuleInfo, getContextualInfo, type ModuleInfo } from '@/constants/ModuleInfo';
 &nbsp;
 export interface UseModuleInfoReturn {
   /** Información completa del módulo */
@@ -246,12 +246,12 @@ export interface UseModuleInfoReturn {
  * @param action - Acción específica (ej: 'create', 'edit', 'list')
  * @returns Información completa del módulo
  */
-export const useModuleInfo = (moduleKey: string, action?: string): UseModuleInfoReturn =&gt; {
-  const moduleInfo = useMemo(() =&gt; {
-    return getContextualInfo(moduleKey, action);
+export const useModuleInfo = <span class="cstat-no" title="statement not covered" ><span class="fstat-no" title="function not covered" >(m</span>oduleKey: string, action?: string): UseModuleInfoReturn =&gt; {</span>
+  const moduleInfo = <span class="cstat-no" title="statement not covered" >useMemo(<span class="fstat-no" title="function not covered" >()</span> =&gt; {</span>
+<span class="cstat-no" title="statement not covered" >    return getContextualInfo(moduleKey, action);</span>
   }, [moduleKey, action]);
 &nbsp;
-  return useMemo(() =&gt; ({
+<span class="cstat-no" title="statement not covered" >  return useMemo(<span class="fstat-no" title="function not covered" >()</span> =&gt; (<span class="cstat-no" title="statement not covered" >{</span></span>
     moduleInfo,
     title: moduleInfo.title,
     description: moduleInfo.description,
@@ -265,7 +265,7 @@ export const useModuleInfo = (moduleKey: string, action?: string): UseModuleInfo
  * @param moduleKeys - Array de claves de módulos
  * @returns Mapa de información de módulos
  */
-export const useMultipleModuleInfo = <span class="fstat-no" title="function not covered" >(m</span>oduleKeys: string[]): Record&lt;string, ModuleInfo&gt; =&gt; {
+export const useMultipleModuleInfo = <span class="cstat-no" title="statement not covered" ><span class="fstat-no" title="function not covered" >(m</span>oduleKeys: string[]): Record&lt;string, ModuleInfo&gt; =&gt; {</span>
 <span class="cstat-no" title="statement not covered" >  return useMemo(<span class="fstat-no" title="function not covered" >()</span> =&gt; {</span>
     const result: Record&lt;string, ModuleInfo&gt; = <span class="cstat-no" title="statement not covered" >{};</span>
 <span class="cstat-no" title="statement not covered" >    moduleKeys.forEach(<span class="fstat-no" title="function not covered" >ke</span>y =&gt; {</span>
@@ -279,7 +279,7 @@ export const useMultipleModuleInfo = <span class="fstat-no" title="function not 
  * Hook para obtener información basada en la URL actual
  * Útil para páginas que necesitan detectar automáticamente su contexto
  */
-export const useCurrentModuleInfo = <span class="fstat-no" title="function not covered" >()</span>: UseModuleInfoReturn =&gt; {
+export const useCurrentModuleInfo = <span class="cstat-no" title="statement not covered" ><span class="fstat-no" title="function not covered" >()</span>: UseModuleInfoReturn =&gt; {</span>
   const moduleKey = <span class="cstat-no" title="statement not covered" >useMemo(<span class="fstat-no" title="function not covered" >()</span> =&gt; {</span>
     // Lógica simple para detectar el módulo basado en la URL
 <span class="cstat-no" title="statement not covered" >    if (typeof window !== 'undefined') {</span>
@@ -301,7 +301,7 @@ export const useCurrentModuleInfo = <span class="fstat-no" title="function not c
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2025-10-01T01:11:56.651Z
+                at 2025-10-19T18:33:03.308Z
             </div>
         <script src="../../prettify.js"></script>
         <script>

@@ -23,30 +23,30 @@
         <div class='clearfix'>
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">100% </span>
+                <span class="strong">0% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>5/5</span>
+                <span class='fraction'>0/5</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">45.83% </span>
+                <span class="strong">0% </span>
                 <span class="quiet">Branches</span>
-                <span class='fraction'>11/24</span>
+                <span class='fraction'>0/24</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">100% </span>
+                <span class="strong">0% </span>
                 <span class="quiet">Functions</span>
-                <span class='fraction'>1/1</span>
+                <span class='fraction'>0/1</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">100% </span>
+                <span class="strong">0% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>5/5</span>
+                <span class='fraction'>0/5</span>
             </div>
         
             
@@ -61,7 +61,7 @@
             </div>
         </template>
     </div>
-    <div class='status-line high'></div>
+    <div class='status-line low'></div>
     <pre><table class="coverage">
 <tr><td class="line-count quiet"><a name='L1'></a><a href='#L1'>1</a>
 <a name='L2'></a><a href='#L2'>2</a>
@@ -152,7 +152,7 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">3x</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -160,13 +160,13 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">16x</span>
-<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -214,7 +214,7 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js">import React from 'react';
-import { cn } from '@/utils/ClassNames';
+import { cn } from '@/Utils/ClassNames';
 import { useSidebar } from '@/context/SidebarContext';
 import { useBreakpoint } from '@/hooks/UseBreakpoint';
 &nbsp;
@@ -227,37 +227,37 @@ interface PageHeaderProps {
   forceLeftAlign?: boolean; // Para forzar alineación a la izquierda
 }
 &nbsp;
-export const PageHeader: React.FC&lt;PageHeaderProps&gt; = ({
+export const PageHeader: React.FC&lt;PageHeaderProps&gt; = <span class="cstat-no" title="statement not covered" ><span class="fstat-no" title="function not covered" >({</span></span>
   title,
   subtitle,
   description,
   className,
   children,
-  forceLeftAlign = false
+  forceLeftAlign = <span class="branch-0 cbranch-no" title="branch not covered" >false</span>
 }) =&gt; {
-  const { isCollapsed } = useSidebar();
-  const { isDesktop, isMobile } = useBreakpoint();
+  const { isCollapsed } = <span class="cstat-no" title="statement not covered" >useSidebar();</span>
+  const { isDesktop, isMobile } = <span class="cstat-no" title="statement not covered" >useBreakpoint();</span>
 &nbsp;
   // Determinar si debemos centrar el contenido
-  const shouldCenterContent = !forceLeftAlign &amp;&amp; isCollapsed &amp;&amp; <span class="branch-2 cbranch-no" title="branch not covered" >isDesktop;</span>
+  const shouldCenterContent = <span class="cstat-no" title="statement not covered" >!forceLeftAlign &amp;&amp; isCollapsed &amp;&amp; isDesktop;</span>
 &nbsp;
-  return (
+<span class="cstat-no" title="statement not covered" >  return (</span>
     &lt;div className={cn(
       'mb-8 transition-all duration-300',
-      shouldCenterContent ? <span class="branch-0 cbranch-no" title="branch not covered" >'text-center w-full max-w-4xl' </span>: 'text-left w-full',
+      shouldCenterContent ? 'text-center w-full max-w-4xl' : 'text-left w-full',
       className
     )}&gt;
       {/* Título principal */}
       &lt;h1 className={cn(
         'font-bold text-negro-una mb-2',
-        isMobile ? <span class="branch-0 cbranch-no" title="branch not covered" >'text-xl' </span>: 'text-2xl'
+        isMobile ? 'text-xl' : 'text-2xl'
       )}&gt;
         {title}
       &lt;/h1&gt;
       
       {/* Subtítulo opcional */}
       {subtitle &amp;&amp; (
-<span class="branch-1 cbranch-no" title="branch not covered" >        &lt;h2 className={cn(</span>
+        &lt;h2 className={cn(
           'font-medium text-azul-una mb-2',
           isMobile ? 'text-base' : 'text-lg'
         )}&gt;
@@ -269,8 +269,8 @@ export const PageHeader: React.FC&lt;PageHeaderProps&gt; = ({
       {description &amp;&amp; (
         &lt;p className={cn(
           'text-gris-una',
-          isMobile ? <span class="branch-0 cbranch-no" title="branch not covered" >'text-sm' </span>: 'text-base',
-          children ? <span class="branch-0 cbranch-no" title="branch not covered" >'mb-4' </span>: '' // Si hay children, dar más espacio
+          isMobile ? 'text-sm' : 'text-base',
+          children ? 'mb-4' : '' // Si hay children, dar más espacio
         )}&gt;
           {description}
         &lt;/p&gt;
@@ -278,7 +278,7 @@ export const PageHeader: React.FC&lt;PageHeaderProps&gt; = ({
 &nbsp;
       {/* Contenido adicional (botones, breadcrumbs, etc.) */}
       {children &amp;&amp; (
-<span class="branch-1 cbranch-no" title="branch not covered" >        &lt;div className={cn(</span>
+        &lt;div className={cn(
           'flex items-center gap-4',
           shouldCenterContent ? 'justify-center' : 'justify-start',
           isMobile ? 'flex-col' : 'flex-row'
@@ -295,7 +295,7 @@ export const PageHeader: React.FC&lt;PageHeaderProps&gt; = ({
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2025-10-01T01:11:56.651Z
+                at 2025-10-19T18:33:03.308Z
             </div>
         <script src="../../../prettify.js"></script>
         <script>

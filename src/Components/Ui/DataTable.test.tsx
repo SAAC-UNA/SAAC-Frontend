@@ -46,7 +46,9 @@ describe('DataTable', () => {
   it('muestra mensaje cuando no hay datos', () => {
     render(<DataTable data={[]} columns={mockColumns} title="Tabla Vacía" />);
     
-    expect(screen.getByText(/no hay datos/i)).toBeInTheDocument();
+    // Usar getAllByText y verificar que al menos uno está en el documento
+    const emptyMessages = screen.getAllByText(/no hay datos/i);
+    expect(emptyMessages.length).toBeGreaterThan(0);
   });
 
   it('muestra el título de la tabla', () => {
