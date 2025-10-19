@@ -21,6 +21,7 @@ export interface MultiSelectProps {
   showSelectAll?: boolean;
   selectAllText?: string;
   deselectAllText?: string;
+  maxVisibleItems?: number; // Número máximo de items visibles antes de scroll
   onChange?: (values: string[]) => void;
 }
 
@@ -37,6 +38,7 @@ export const MultiSelect: React.FC<MultiSelectProps> = ({
   showSelectAll = true,
   selectAllText = 'Seleccionar todo',
   deselectAllText = 'Deseleccionar todo',
+  maxVisibleItems = 3, // Por defecto mostrar 3 items (140px ≈ 3 items de ~46px cada uno)
   onChange
 }) => {
   const [isOpen, setIsOpen] = useState(false);
@@ -44,6 +46,14 @@ export const MultiSelect: React.FC<MultiSelectProps> = ({
     value ? options.filter(opt => value.includes(opt.value)) : []
   );
   const selectRef = useRef<HTMLDivElement>(null);
+
+  // Calcular altura máxima basada en el número de items visibles
+  // Cada item tiene aproximadamente 46px de altura (incluyendo padding y border)
+  const getMaxHeight = () => {
+    const itemHeight = 46; // Altura aproximada de cada item
+    const maxHeight = maxVisibleItems * itemHeight;
+    return `${maxHeight}px`;
+  };
 
   // Cerrar dropdown al hacer click fuera
   useEffect(() => {
@@ -226,7 +236,10 @@ export const MultiSelect: React.FC<MultiSelectProps> = ({
 
         {/* Dropdown */}
         {isOpen && !disabled && (
-          <div className="absolute z-50 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg max-h-[140px] overflow-auto custom-scrollbar">
+          <div 
+            className="absolute z-50 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg overflow-auto custom-scrollbar"
+            style={{ maxHeight: getMaxHeight() }}
+          >
             <div className="py-1 text-sm">
               {/* Botón Seleccionar todo dentro del dropdown */}
               {showSelectAll && options.length > 1 && (
@@ -358,7 +371,10 @@ export const MultiSelect: React.FC<MultiSelectProps> = ({
 
         {/* Dropdown */}
         {isOpen && !disabled && (
-          <div className="absolute z-50 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg max-h-[140px] overflow-auto custom-scrollbar">
+          <div 
+            className="absolute z-50 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg overflow-auto custom-scrollbar"
+            style={{ maxHeight: getMaxHeight() }}
+          >
             <div className="py-1 text-sm">
               {/* Botón Seleccionar todo dentro del dropdown */}
               {showSelectAll && options.length > 1 && (

@@ -36,6 +36,8 @@ export interface CustomSelectProps {
   onChange?: (value: string) => void;
   // Modo readonly - solo mostrar información, no permitir selección
   readonly?: boolean;
+  // Número máximo de items visibles en el dropdown (por defecto 3)
+  maxVisibleItems?: number;
 }
 
 export const CustomSelect: React.FC<CustomSelectProps> = ({
@@ -50,7 +52,8 @@ export const CustomSelect: React.FC<CustomSelectProps> = ({
   className,
   required = false,
   onChange,
-  readonly = false
+  readonly = false,
+  maxVisibleItems = 3
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [selectedOption, setSelectedOption] = useState<SelectOption | null>(
@@ -97,6 +100,12 @@ export const CustomSelect: React.FC<CustomSelectProps> = ({
       default:
         return 'py-1 text-base';
     }
+  };
+
+  // Calcular altura máxima del dropdown basada en maxVisibleItems
+  const getMaxHeight = () => {
+    const itemHeight = 40; // Altura aproximada de cada item en px
+    return `${itemHeight * maxVisibleItems}px`;
   };
 
   // Floating label variant (nuevo diseño por defecto)
@@ -207,7 +216,10 @@ export const CustomSelect: React.FC<CustomSelectProps> = ({
         {/* Dropdown */}
         {/* Allow showing dropdown in readonly mode (view-only) */}
         {isOpen && !disabled && (
-          <div className="absolute z-50 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg max-h-[120px] overflow-auto custom-scrollbar">
+          <div 
+            className="absolute z-50 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg overflow-auto custom-scrollbar"
+            style={{ maxHeight: getMaxHeight() }}
+          >
             <div className={cn('py-1', getDropdownSizeClasses())}>
               {options.map((option) => (
                 <button
@@ -330,7 +342,10 @@ export const CustomSelect: React.FC<CustomSelectProps> = ({
       {/* Dropdown */}
       {/* Allow showing dropdown in readonly mode (view-only) */}
       {isOpen && !disabled && (
-        <div className="absolute z-50 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg max-h-[120px] overflow-auto custom-scrollbar">
+        <div 
+          className="absolute z-50 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg overflow-auto custom-scrollbar"
+          style={{ maxHeight: getMaxHeight() }}
+        >
           <div className={cn('py-1', getDropdownSizeClasses())}>
             {options.map((option) => (
               <button

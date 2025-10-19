@@ -11,6 +11,10 @@ interface TextareaProps extends Omit<React.TextareaHTMLAttributes<HTMLTextAreaEl
   size?: ComponentSize;
   required?: boolean;
   resize?: 'none' | 'vertical' | 'horizontal' | 'both'; // Mantenemos el tipo por compatibilidad, pero siempre será 'none'
+  onValidateChange?: (value: string, error?: string) => void;
+  validateOnChange?: boolean;
+  characterCount?: boolean;
+  maxLength?: number;
 }
 
 export const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(({
@@ -26,9 +30,42 @@ export const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(({
   rows = 4,
   value, // Asegurar que tenemos acceso al value
   placeholder, // Extraer placeholder por separado
+  onValidateChange,
+  validateOnChange = false,
+  characterCount = false,
+  maxLength,
+  onChange,
   ...props
 }, ref) => {
   const textareaId = id || `textarea-${Math.random().toString(36).substr(2, 9)}`;
+
+  // Función para manejar cambios con validación en tiempo real
+  const handleChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    const newValue = e.target.value;
+    
+    // Respeta el maxLength si está definido
+    if (maxLength && newValue.length > maxLength) {
+      return;
+    }
+    
+    // Ejecuta onChange original si existe
+    onChange?.(e);
+    
+    // Ejecuta validación en tiempo real si está habilitada
+    if (validateOnChange && onValidateChange) {
+      onValidateChange(newValue);
+    }
+  };
+
+  // Generar helperText dinámico con contador de caracteres
+  const getHelperText = () => {
+    if (characterCount && value !== undefined) {
+      const currentLength = value.toString().length;
+      const counter = maxLength ? `${currentLength}/${maxLength} caracteres` : `${currentLength} caracteres`;
+      return helperText ? `${helperText} • ${counter}` : counter;
+    }
+    return helperText;
+  };
 
   // Floating label variant (nuevo diseño por defecto, igual al Input)
   if (variant === 'floating') {
@@ -44,6 +81,7 @@ export const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(({
             id={textareaId}
             value={value}
             rows={rows}
+            maxLength={maxLength}
             className={cn(
               // Base styles - Similar al Input actualizado
               'w-full px-4 py-3 text-sm border rounded-lg transition-all duration-300',
@@ -67,6 +105,7 @@ export const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(({
             )}
             // Placeholder que se muestra solo en focus
             placeholder={placeholder || ""}
+            onChange={handleChange}
             {...props}
           />
 
@@ -123,9 +162,9 @@ export const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(({
         )}
 
         {/* Helper text */}
-        {helperText && !error && (
+        {getHelperText() && !error && (
           <p className="text-gris-una text-sm">
-            {helperText}
+            {getHelperText()}
           </p>
         )}
       </div>
@@ -151,6 +190,7 @@ export const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(({
         ref={ref}
         id={textareaId}
         rows={rows}
+        maxLength={maxLength}
         className={cn(
           // Base styles actualizados para consistencia con Input
           'w-full border rounded-lg transition-all duration-300 px-4 py-3 text-sm',
@@ -168,6 +208,7 @@ export const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(({
           // Custom classes
           className
         )}
+        onChange={handleChange}
         {...props}
       />
 
@@ -180,9 +221,9 @@ export const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(({
       )}
 
       {/* Helper text */}
-      {helperText && !error && (
+      {getHelperText() && !error && (
         <p className="text-gris-una text-sm">
-          {helperText}
+          {getHelperText()}
         </p>
       )}
     </div>

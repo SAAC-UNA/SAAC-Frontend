@@ -53,12 +53,13 @@ const validationSchema = {
   name: [
     validationRules.required('El nombre del rol es obligatorio'),
     validationRules.minLength(3, 'El nombre debe tener al menos 3 caracteres'),
-    validationRules.maxLength(255, 'El nombre no puede exceder 255 caracteres'),
+    validationRules.maxLength(50, 'El nombre no puede exceder 50 caracteres'),
     validationRules.roleName('Solo se permiten letras, espacios y acentos')
   ],
   description: [
     validationRules.minLength(10, 'La descripción debe tener al menos 10 caracteres'),
-    validationRules.maxLength(255, 'La descripción no puede exceder 255 caracteres')
+    validationRules.maxLength(255, 'La descripción no puede exceder 255 caracteres'),
+    validationRules.comment('Solo se permiten letras, números, espacios y signos de puntuación básicos')
   ],
   permissions: [
     validationRules.minSelected(1, 'Debe seleccionar al menos un permiso')
@@ -115,9 +116,10 @@ export const CreateRoleForm: React.FC<CreateRoleFormProps> = ({
           [field]: undefined
         }));
       }
+      
+      // Para modo simple, la validación en tiempo real se maneja en handleRealTimeValidation
     } else {
-      // Validación en tiempo real - DESHABILITADA temporalmente para evitar ciclos
-      // advancedValidation.validateSingleField(field, value, newFormData);
+      // Para modo avanzado, la validación en tiempo real se maneja en handleRealTimeValidation
     }
 
     // Limpiar error de la API cuando el usuario haga cambios
@@ -131,18 +133,33 @@ export const CreateRoleForm: React.FC<CreateRoleFormProps> = ({
       // Validación simple para desarrollo rápido
       const newErrors: Partial<Record<keyof RoleFormData, string>> = {};
 
-      if (!formData.name.trim()) {
-        newErrors.name = 'El nombre del rol es requerido';
-      } else if (formData.name.trim().length < 3) {
-        newErrors.name = 'El nombre debe tener al menos 3 caracteres';
+      // Validar campo nombre usando reglas centralizadas
+      const nameRules = validationSchema.name;
+      for (const rule of nameRules) {
+        if (!rule.validate(formData.name)) {
+          newErrors.name = rule.message;
+          break;
+        }
       }
 
-      if (formData.description.trim() && formData.description.trim().length < 10) {
-        newErrors.description = 'La descripción debe tener al menos 10 caracteres';
+      // Validar campo descripción usando reglas centralizadas
+      if (formData.description.trim()) {
+        const descRules = validationSchema.description;
+        for (const rule of descRules) {
+          if (!rule.validate(formData.description)) {
+            newErrors.description = rule.message;
+            break;
+          }
+        }
       }
 
-      if (formData.permissions.length === 0) {
-        newErrors.permissions = 'Debe seleccionar al menos un permiso';
+      // Validar permisos usando reglas centralizadas
+      const permRules = validationSchema.permissions;
+      for (const rule of permRules) {
+        if (!rule.validate(formData.permissions)) {
+          newErrors.permissions = rule.message;
+          break;
+        }
       }
 
       setFormErrors(newErrors);
@@ -174,6 +191,61 @@ export const CreateRoleForm: React.FC<CreateRoleFormProps> = ({
     } else {
       if (field in advancedValidation.errors && advancedValidation.errors[field]) {
         advancedValidation.clearFieldError(field);
+      }
+    }
+  };
+
+  // Función para validación en tiempo real usando el sistema centralizado
+  const handleRealTimeValidation = (field: keyof RoleFormData, value: string) => {
+    if (simplified) {
+      // En modo simple, usar validación básica con las reglas centralizadas
+      if (field === 'name') {
+        const validation = validationRules.roleNameImmediate();
+        if (!validation.validate(value)) {
+          setFormErrors(prev => ({
+            ...prev,
+            [field]: validation.message
+          }));
+        } else if (formErrors[field]) {
+          setFormErrors(prev => ({
+            ...prev,
+            [field]: undefined
+          }));
+        }
+      } else if (field === 'description') {
+        const validation = validationRules.commentImmediate();
+        if (!validation.validate(value)) {
+          setFormErrors(prev => ({
+            ...prev,
+            [field]: validation.message
+          }));
+        } else if (formErrors[field]) {
+          setFormErrors(prev => ({
+            ...prev,
+            [field]: undefined
+          }));
+        }
+      }
+    } else {
+      // En modo avanzado, usar el sistema de validación avanzado
+      if (field === 'name') {
+        const validation = validationRules.roleNameImmediate();
+        if (!validation.validate(value)) {
+          // Mostrar error inmediato para caracteres no permitidos
+          advancedValidation.errors[field] = validation.message;
+        } else {
+          // Si no hay caracteres inválidos, limpiar errores
+          advancedValidation.clearFieldError(field);
+        }
+      } else if (field === 'description') {
+        const validation = validationRules.commentImmediate();
+        if (!validation.validate(value)) {
+          // Mostrar error inmediato para caracteres no permitidos
+          advancedValidation.errors[field] = validation.message;
+        } else {
+          // Si no hay caracteres inválidos, limpiar errores
+          advancedValidation.clearFieldError(field);
+        }
       }
     }
   };
@@ -260,8 +332,12 @@ export const CreateRoleForm: React.FC<CreateRoleFormProps> = ({
                 value={formData.name}
                 onChange={(e) => handleInputChange('name', e.target.value)}
                 onFocus={() => handleFieldFocus('name')}
+                onValidateChange={(value) => handleRealTimeValidation('name', value)}
                 error={getFieldError('name')}
                 required
+                maxLength={50}
+                characterCount={true}
+                validateOnChange={true}
                 size="sm"
               />
 
@@ -288,8 +364,13 @@ export const CreateRoleForm: React.FC<CreateRoleFormProps> = ({
                   onFocus={() => handleFieldFocus('description')}
                   error={getFieldError('description')}
                   rows={8}
+                  maxLength={255}
+                  characterCount={true}
+                  helperText="Descripción opcional del rol y sus responsabilidades"
                   resize="vertical"
                   size="sm"
+                  validateOnChange={true}
+                  onValidateChange={(value) => handleRealTimeValidation('description', value)}
                 />
                 {/* Mostrar error de la API si existe */}
                 {error && (
@@ -339,8 +420,12 @@ export const CreateRoleForm: React.FC<CreateRoleFormProps> = ({
             value={formData.name}
             onChange={(e) => handleInputChange('name', e.target.value)}
             onFocus={() => handleFieldFocus('name')}
+            onValidateChange={(value) => handleRealTimeValidation('name', value)}
             error={getFieldError('name')}
             required
+            maxLength={50}
+            characterCount={true}
+            validateOnChange={true}
             size="sm"
           />
 
@@ -355,6 +440,11 @@ export const CreateRoleForm: React.FC<CreateRoleFormProps> = ({
             rows={4}
             resize="vertical"
             size="sm"
+            maxLength={255}
+            characterCount={true}
+            helperText="Descripción opcional del rol y sus responsabilidades"
+            validateOnChange={true}
+            onValidateChange={(value) => handleRealTimeValidation('description', value)}
           />
 
           {/* Campo: Privilegios */}

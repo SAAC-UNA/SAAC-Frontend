@@ -3,9 +3,10 @@
  * Permite configurar fecha límite y comentarios adicionales
  */
 
-import React from 'react';
+import React, { useState } from 'react';
 import { DatePicker } from '@/Components/Ui/Calendar/DatePicker';
 import { Textarea } from '@/Components/Ui/Textarea';
+import { validationRules } from '@/utils/Validation';
 import type { 
   EvidenceAssignmentFormData, 
   ValidationErrors 
@@ -22,6 +23,9 @@ export const ConfigurationStep: React.FC<ConfigurationStepProps> = ({
   updateFormData,
   errors
 }) => {
+  // Estado para errores de validación en tiempo real
+  const [realtimeErrors, setRealtimeErrors] = useState<Record<string, string | undefined>>({});
+
   // Manejar cambio de fecha límite
   const handleDateChange = (date: string) => {
     updateFormData({ fecha_limite: date });
@@ -30,9 +34,22 @@ export const ConfigurationStep: React.FC<ConfigurationStepProps> = ({
   // Manejar cambio de comentario
   const handleCommentChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     const value = e.target.value;
-    // Limitar a 300 caracteres
-    if (value.length <= 300) {
-      updateFormData({ comentario: value });
+    updateFormData({ comentario: value });
+  };
+
+  // Validación en tiempo real para comentarios
+  const handleCommentValidation = (value: string) => {
+    const validation = validationRules.commentImmediate();
+    if (!validation.validate(value)) {
+      setRealtimeErrors(prev => ({
+        ...prev,
+        comentario: validation.message
+      }));
+    } else {
+      setRealtimeErrors(prev => ({
+        ...prev,
+        comentario: undefined
+      }));
     }
   };
 
@@ -85,9 +102,12 @@ export const ConfigurationStep: React.FC<ConfigurationStepProps> = ({
             onChange={handleCommentChange}
             placeholder="Añada instrucciones especiales, contexto o notas sobre esta asignación..."
             rows={5}
-            maxLength={300}
-            helperText={`${(formData.comentario || '').length}/300 caracteres`}
-            className="resize-none"
+            maxLength={500}
+            characterCount={true}
+            error={realtimeErrors.comentario || errors.comentario}
+            helperText="Instrucciones opcionales para los destinatarios"
+            validateOnChange={true}
+            onValidateChange={handleCommentValidation}
           />
         </div>
       </div>

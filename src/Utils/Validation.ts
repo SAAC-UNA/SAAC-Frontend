@@ -73,6 +73,34 @@ export const validationRules = {
     message
   }),
 
+  // Validación inmediata para caracteres no permitidos en nombres de roles
+  roleNameImmediate: (message = 'Caracter no permitido'): ValidationRule<string> => ({
+    validate: (value) => {
+      if (!value) return true;
+      // Verificar si hay caracteres no permitidos
+      const hasInvalidChars = /[^A-Za-zÁÉÍÓÚáéíóúÑñ ]/.test(value);
+      return !hasInvalidChars;
+    },
+    message
+  }),
+
+  // Validación para comentarios - misma regex que backend (EvidenceAssignmentRequest)
+  comment: (message = 'Solo se permiten letras, números, espacios y signos de puntuación básicos'): ValidationRule<string> => ({
+    validate: (value) => !value || /^[a-zA-Z0-9áéíóúÁÉÍÓÚñÑüÜ\s\.,;:\-_()¿?¡!\[\]\/]+$/.test(value),
+    message
+  }),
+
+  // Validación inmediata para comentarios
+  commentImmediate: (message = 'Caracter no permitido en comentario'): ValidationRule<string> => ({
+    validate: (value) => {
+      if (!value) return true;
+      // Verificar si hay caracteres no permitidos usando la misma regex que el backend
+      const hasInvalidChars = /[^a-zA-Z0-9áéíóúÁÉÍÓÚñÑüÜ\s\.,;:\-_()¿?¡!\[\]\/]/.test(value);
+      return !hasInvalidChars;
+    },
+    message
+  }),
+
   // Al menos un elemento seleccionado (arrays)
   minSelected: (min: number, message?: string): ValidationRule<any[]> => ({
     validate: (value) => Array.isArray(value) && value.length >= min,

@@ -10,6 +10,7 @@ import { useNavigate } from 'react-router-dom';
 import { UsersTable } from './Components/UsersTable';
 import { UserDetailsModal } from './Components/UserDetailsModal';
 import { DeleteConfirmationModal } from '@/Components/Ui/DeleteConfirmationModal';
+import { SuccessModal } from '@/Components/Ui/SuccessModal';
 import { ScreenContainer } from '@/Components/Ui/ScreenContainer';
 import { getContextualInfo } from '@/Constants/ModuleInfo';
 import { useUsers } from '@/Hooks/UseUsers';
@@ -41,6 +42,17 @@ const UsersRepository: React.FC = () => {
     user: null
   });
 
+  // Estado para el modal de éxito
+  const [successModalState, setSuccessModalState] = useState<{
+    isOpen: boolean;
+    userName: string;
+    action: 'activate' | 'deactivate';
+  }>({
+    isOpen: false,
+    userName: '',
+    action: 'activate'
+  });
+
   const handleEditUser = (user: User) => {
     navigate(`/usuarios/editar/${user.id}`);
   };
@@ -67,6 +79,7 @@ const UsersRepository: React.FC = () => {
     if (!stateChangeModalState.user) return;
 
     const user = stateChangeModalState.user;
+    const isActivating = user.status === 'inactive';
     
     try {
       if (user.status === 'active') {
@@ -74,16 +87,29 @@ const UsersRepository: React.FC = () => {
       } else {
         await activarUsuario(user.id);
       }
+      
+      // Cerrar modal de confirmación
+      setStateChangeModalState({ isOpen: false, user: null });
+      
+      // Mostrar modal de éxito
+      setSuccessModalState({
+        isOpen: true,
+        userName: user.name,
+        action: isActivating ? 'activate' : 'deactivate'
+      });
     } catch (error) {
       console.error('Error cambiando estado del usuario:', error);
-    } finally {
-      // Siempre cerrar el modal, sin importar si hubo error o no
+      // En caso de error, solo cerrar el modal de confirmación
       setStateChangeModalState({ isOpen: false, user: null });
     }
   };
 
   const closeStateChangeModal = () => {
     setStateChangeModalState({ isOpen: false, user: null });
+  };
+
+  const closeSuccessModal = () => {
+    setSuccessModalState({ isOpen: false, userName: '', action: 'activate' });
   };
 
   // Cargar usuarios al montar el componente
@@ -147,6 +173,18 @@ const UsersRepository: React.FC = () => {
             description="Al desactivar este usuario, se revocará su acceso al sistema. Esta acción puede ser revertida en el futuro."
           />
         )}
+
+        {/* Modal de éxito */}
+        <SuccessModal
+          isOpen={successModalState.isOpen}
+          onClose={closeSuccessModal}
+          title={successModalState.action === 'activate' ? 'Usuario activado' : 'Usuario desactivado'}
+          message={
+            successModalState.action === 'activate'
+              ? `El usuario "${successModalState.userName}" ha sido activado correctamente.`
+              : `El usuario "${successModalState.userName}" ha sido desactivado correctamente.`
+          }
+        />
         </ScreenContainer>
   );
 };

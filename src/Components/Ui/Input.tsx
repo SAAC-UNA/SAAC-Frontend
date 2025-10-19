@@ -10,6 +10,10 @@ interface InputProps extends Omit<React.InputHTMLAttributes<HTMLInputElement>, '
   variant?: 'default' | 'outline' | 'filled' | 'floating';
   size?: ComponentSize;
   required?: boolean;
+  onValidateChange?: (value: string, error?: string) => void;
+  validateOnChange?: boolean;
+  characterCount?: boolean;
+  maxLength?: number;
 }
 
 export const Input = forwardRef<HTMLInputElement, InputProps>(({
@@ -23,9 +27,42 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(({
   id,
   value, // Asegurar que tenemos acceso al value
   placeholder, // Extraer placeholder por separado
+  onValidateChange,
+  validateOnChange = false,
+  characterCount = false,
+  maxLength,
+  onChange,
   ...props
 }, ref) => {
   const inputId = id || `input-${Math.random().toString(36).substr(2, 9)}`;
+
+  // Función para manejar cambios con validación en tiempo real
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const newValue = e.target.value;
+    
+    // Respeta el maxLength si está definido
+    if (maxLength && newValue.length > maxLength) {
+      return;
+    }
+    
+    // Ejecuta onChange original si existe
+    onChange?.(e);
+    
+    // Ejecuta validación en tiempo real si está habilitada
+    if (validateOnChange && onValidateChange) {
+      onValidateChange(newValue);
+    }
+  };
+
+  // Generar helperText dinámico con contador de caracteres
+  const getHelperText = () => {
+    if (characterCount && value) {
+      const currentLength = value.toString().length;
+      const counter = maxLength ? `${currentLength}/${maxLength} caracteres` : `${currentLength} caracteres`;
+      return helperText ? `${helperText} (${counter})` : counter;
+    }
+    return helperText;
+  };
 
   // Floating label variant (nuevo diseño por defecto)
   if (variant === 'floating') {
@@ -40,6 +77,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(({
             ref={ref}
             id={inputId}
             value={value}
+            maxLength={maxLength}
             className={cn(
               // Base styles - Similar al login de tu compañera
               'w-full px-4 py-3 text-sm border rounded-lg transition-all duration-300', // Cambiado de text-base a text-sm
@@ -60,6 +98,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(({
             )}
             // Placeholder que se muestra solo en focus
             placeholder={placeholder || ""}
+            onChange={handleChange}
             // Ya no necesitamos los data attributes
             {...props}
           />
@@ -117,9 +156,9 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(({
         )}
 
         {/* Helper text */}
-        {helperText && !error && (
+        {getHelperText() && !error && (
           <p className="text-gris-una text-sm">
-            {helperText}
+            {getHelperText()}
           </p>
         )}
       </div>
@@ -144,6 +183,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(({
       <input
         ref={ref}
         id={inputId}
+        maxLength={maxLength}
         className={cn(
           // Base styles
           'w-full h-10 border rounded-lg transition-all duration-200 px-3 py-2 text-sm',
@@ -158,6 +198,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(({
           // Custom classes
           className
         )}
+        onChange={handleChange}
         {...props}
       />
 
@@ -170,9 +211,9 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(({
       )}
 
       {/* Helper text */}
-      {helperText && !error && (
+      {getHelperText() && !error && (
         <p className="text-gris-una text-sm">
-          {helperText}
+          {getHelperText()}
         </p>
       )}
     </div>
