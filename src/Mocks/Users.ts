@@ -26,41 +26,41 @@ export interface MockUser {
 
 export const MOCK_USERS: MockUser[] = [
   {
-    usuario_id: 1,
+    usuario_id: 2,
     cedula: '101010101',
     nombre: 'Pablo Castillo Quesada',
     email: 'pablo.castillo.quesada@una.cr',
     password: 'password', // La contraseña real la maneja el backend
     roles: [
       {
-        id: 1,
+        id: 4,
         name: 'SuperUsuario'
       }
     ],
     careers: [] // SuperUsuario NO tiene carreras asignadas (ve todas)
   },
   {
-    usuario_id: 2,
+    usuario_id: 3,
     cedula: '203948609',
     nombre: 'Cristopher Montero Jimenez',
     email: 'cristopher.montero.jimenez@una.ac.cr',
     password: 'password', // La contraseña real la maneja el backend
     roles: [
       {
-        id: 14,
+        id: 2,
         name: 'Administrador'
       }
     ],
     careers: [
       {
-        carrera_id: 5,
+        carrera_id: 10,
         nombre: 'Ingeniería en Sistemas',
-        facultad_id: 6
+        facultad_id: 11
       }
     ]
   },
   {
-    usuario_id: 3,
+    usuario_id: 4,
     cedula: '402290552',
     nombre: 'Alejandro Ugalde Villalobos',
     email: 'alejandro.ugalde.villalobos@est.una.ac.cr',
@@ -73,9 +73,9 @@ export const MOCK_USERS: MockUser[] = [
     ],
     careers: [
       {
-        carrera_id: 2,
+        carrera_id: 12,
         nombre: 'Química',
-        facultad_id: 2
+        facultad_id: 11
       }
     ]
   }

@@ -25,38 +25,38 @@ export interface MockUser {
  */
 export const MOCK_USERS: Record<string, MockUser> = {
   '101010101': {
-    usuario_id: 1,
+    usuario_id: 2,
     cedula: '101010101',
     nombre: 'Pablo Castillo Quesada',
     email: 'pablo.castillo.quesada@una.cr',
-    roles: [{ id: 1, name: 'SuperUsuario' }],
+    roles: [{ id: 4, name: 'SuperUsuario' }],
     careers: [] // SuperUsuario ve todas las carreras
   },
   '203948609': {
-    usuario_id: 2,
+    usuario_id: 3,
     cedula: '203948609',
     nombre: 'Cristopher Montero Jimenez',
     email: 'cristopher.montero.jimenez@una.ac.cr',
-    roles: [{ id: 14, name: 'Administrador' }],
+    roles: [{ id: 2, name: 'Administrador' }],
     careers: [
       {
-        carrera_id: 5,
-        nombre: 'Ingeniería',
-        facultad_id: 6
+        carrera_id: 10,
+        nombre: 'Ingeniería en Sistemas ',
+        facultad_id: 11
       }
     ]
   },
   '402290552': {
-    usuario_id: 3,
+    usuario_id: 4,
     cedula: '402290552',
     nombre: 'Alejandro Ugalde Villalobos',
     email: 'alejandro.ugalde.villalobos@est.una.ac.cr',
     roles: [{ id: 2, name: 'Administrador' }],
     careers: [
       {
-        carrera_id: 2,
+        carrera_id: 12,
         nombre: 'Química',
-        facultad_id: 1
+        facultad_id: 11
       }
     ]
   }
