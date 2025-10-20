@@ -120,37 +120,9 @@ export const StructureTable: React.FC<StructureTableProps> = ({
 
     // Obtener el nombre del elemento padre
     const getParentName = (element: StructureElement): string => {
-    if (!element.parentElementId) return 'Sin elemento padre';
-    
-    // Determinar qué tipo de padre debería tener este elemento
-    const expectedParentType = getExpectedParentType(element.type);
-    
-    if (!expectedParentType) return 'Sin elemento padre';
-    
-    // Buscar el padre correcto por tipo E id
-    const parent = allElements.find(el => 
-        el.type === expectedParentType && 
-        el.id === element.parentElementId
-    );
-    
-        return parent?.name || parent?.nomenclature || parent?.description || 'Elemento padre no encontrado';
-    };
-
-    // Helper: Determinar qué tipo de padre debe tener cada elemento
-    const getExpectedParentType = (elementType: ElementType): ElementType | null => {
-        const parentTypeMap: Record<ElementType, ElementType | null> = {
-            'university': null,
-            'campus': 'university',
-            'faculty': 'campus',
-            'career': 'faculty',
-            'dimension': null,
-            'component': 'dimension',
-            'criteria': 'component',
-            'standard': 'criteria',
-            'evidence': 'criteria'
-        };
-        
-        return parentTypeMap[elementType];
+        if (!element.parentElementId) return 'Sin elemento padre';
+        const parent = allElements.find(el => el.id === element.parentElementId);
+        return parent?.name || parent?.nomenclature || 'Elemento padre no encontrado';
     };
 
     // Configuración de columnas de la tabla
