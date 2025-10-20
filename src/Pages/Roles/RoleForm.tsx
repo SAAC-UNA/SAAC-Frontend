@@ -282,7 +282,6 @@ const RoleForm: React.FC = () => {
           itemType="rol"
           confirmLabel="Crear"
           variant="success"
-          description={confirmModalState.roleData?.description}
         />
       )}
 
@@ -297,7 +296,6 @@ const RoleForm: React.FC = () => {
           itemType="rol"
           confirmLabel="Guardar"
           variant="warning"
-          description={confirmModalState.roleData?.description}
         />
       )}
 
