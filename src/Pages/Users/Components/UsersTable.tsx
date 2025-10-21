@@ -100,8 +100,8 @@ export const UsersTable: React.FC<UsersTableProps> = ({
             align: 'center',
             render: (role) => (
                 <div className="w-max mx-auto">
-                    <div className="relative grid items-center px-2 py-1 font-sans text-xs font-semibold text-gray-900 uppercase rounded-md select-none whitespace-nowrap">
-                        <span>{role || 'Sin rol'}</span>
+                    <div className="relative grid items-center px-2 py-1 font-sans text-xs font-semibold text-gray-900 uppercase rounded-md select-none whitespace-nowrap" title={role || 'Sin rol'}>
+                        <span>{truncateText(role || 'Sin rol', 20)}</span>
                     </div>
                 </div>
             )

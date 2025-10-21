@@ -115,10 +115,10 @@ export const RolesTable: React.FC<RolesTableProps> = ({
             header: 'Permisos',
             accessor: 'permissions',
             align: 'center',
-            render: (permissions: string[]) => (
+            render: (permissions: any[]) => (
                 <div className="w-max mx-auto">
                     <div className="relative grid items-center px-2 py-1 font-sans text-xs font-bold text-gray-900 uppercase rounded-md select-none whitespace-nowrap bg-gray-500/20">
-                        <span>{permissions.length} permisos</span>
+                        <span>{Array.isArray(permissions) ? permissions.length : 0} permisos</span>
                     </div>
                 </div>
             )
