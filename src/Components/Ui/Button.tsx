@@ -95,8 +95,8 @@ const VARIANT_CLASSES = {
   ].join(' '),
 
   tablePower: [
-    'bg-transparent text-[var(--icon-active)] border-0 p-2 rounded-md',
-    'hover:bg-[var(--bg-error)] hover:text-[var(--icon-active)] transition-colors duration-200',
+    'bg-transparent text-[var(--icon-check)] border-0 p-2 rounded-md',
+    'hover:bg-[var(--bg-success)] hover:text-[var(--icon-check)] transition-colors duration-200',
     'disabled:opacity-50 disabled:cursor-not-allowed'
   ].join(' '),
 
