@@ -112,7 +112,7 @@ export const StructureTable: React.FC<StructureTableProps> = ({
     );
 
     // Función para truncar descripción
-    const truncateDescription = (text: string | undefined, maxLength: number = 50): string => {
+    const truncateDescription = (text: string | undefined, maxLength: number = 20): string => {
         if (!text) return '-';
         if (text.length <= maxLength) return text;
         return text.substring(0, maxLength) + '...';
@@ -222,7 +222,7 @@ export const StructureTable: React.FC<StructureTableProps> = ({
                         !canActivate 
                             ? "No se puede activar: el padre está inactivo"
                             : element.active 
-                                ? "Desactivar elemento" 
+                                ? "Inactivar elemento" 
                                 : "Activar elemento"
                     }
                     onClick={() => onToggleActive?.(element)}

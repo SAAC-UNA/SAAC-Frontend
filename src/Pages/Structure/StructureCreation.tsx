@@ -22,6 +22,16 @@ import {
 } from '@/Constants/StructureConstants';
 
 /**
+ * Función auxiliar para truncar texto largo
+ */
+const truncateText = (text: string, maxLength: number = 25): string => {
+  if (!text || text.length <= maxLength) {
+    return text;
+  }
+  return text.substring(0, maxLength).trim() + '...';
+};
+
+/**
  * Interface para errores de validación del formulario
  */
 interface FormErrors {
@@ -421,8 +431,7 @@ const handleSubmit = async (e: React.FormEvent) => {
       <SuccessModal
         isOpen={successModalState.isOpen}
         title="¡Elemento creado exitosamente!"
-        message={`El elemento "${successModalState.elementName}" ha sido agregado correctamente`}
-        onClose={handleSuccessModalClose}
+        message={`El elemento "${truncateText(successModalState.elementName)}" ha sido agregado correctamente`}        onClose={handleSuccessModalClose}
         autoClose={true}
         autoCloseDelay={3000}
       />

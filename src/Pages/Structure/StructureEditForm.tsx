@@ -11,6 +11,16 @@ import { FORM_CONFIG, VALIDATION_RULES, getDescriptionMaxLength} from '@/Constan
 import { SuccessModal } from '@/Components/Ui/SuccessModal';
 import { Textarea } from '@/Components/Ui/Textarea';
 
+/**
+ * Función auxiliar para truncar texto largo
+ */
+const truncateText = (text: string, maxLength: number = 25): string => {
+  if (!text || text.length <= maxLength) {
+    return text;
+  }
+  return text.substring(0, maxLength).trim() + '...';
+};
+
 interface EditableElement extends StructureElement {
   originalNomenclature: string;
   originalName: string;
@@ -518,8 +528,7 @@ const validateForm = (): boolean => {
       <SuccessModal
         isOpen={successModalState.isOpen}
         title="¡Elemento editado exitosamente!"
-        message={`El elemento "${successModalState.elementName}" ha sido modificado correctamente`}
-        onClose={handleSuccessModalClose}
+        message={`El elemento "${truncateText(successModalState.elementName)}" ha sido modificado correctamente`}        onClose={handleSuccessModalClose}
         autoClose={true}
         autoCloseDelay={3000}
       />

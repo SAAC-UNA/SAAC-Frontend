@@ -13,6 +13,17 @@ import { MODULE_INFO } from '@/Constants/ModuleInfo';
 import type { StructureElement } from '@/Types/StructureTypes';
 import { useStructure } from '@/Hooks/UseStructure';
 import { DeleteConfirmationModal } from '@/Components/Ui/DeleteConfirmationModal';
+import { SuccessModal } from '@/Components/Ui/SuccessModal';  
+
+/**
+ * Función auxiliar para truncar texto largo
+ */
+const truncateText = (text: string, maxLength: number = 25): string => {
+  if (!text || text.length <= maxLength) {
+    return text;
+  }
+  return text.substring(0, maxLength).trim() + '...';
+};
 
 const StructureList: React.FC = () => {
   
@@ -48,6 +59,16 @@ const StructureList: React.FC = () => {
   });
 
   const [refreshKey, setRefreshKey] = useState(0);
+
+  const [successModalState, setSuccessModalState] = useState<{
+    isOpen: boolean;
+    elementName: string;
+    action: 'activate' | 'deactivate' | 'delete';
+  }>({
+    isOpen: false,
+    elementName: '',
+    action: 'activate'
+  });
 
   const handleEditElement = (element: StructureElement) => {
     // Navegar directamente a la página de edición con el ID del elemento
@@ -110,29 +131,38 @@ const StructureList: React.FC = () => {
   };
 
   const confirmDeleteElement = async () => {
-  if (deleteModalState.element) {
-    try {
-      const result = await deleteElement(deleteModalState.element.type, deleteModalState.element.id);
-      
-      if (result) {
-        setDeleteModalState({ isOpen: false, element: null });
-        setRefreshKey(prev => prev + 1);
-        // TODO: Mostrar notificación de éxito
+    if (deleteModalState.element) {
+      try {
+        const result = await deleteElement(deleteModalState.element.type, deleteModalState.element.id);
+        
+        if (result) {
+          const elementName = deleteModalState.element.name || deleteModalState.element.nomenclature || 'Elemento';
+          setDeleteModalState({ isOpen: false, element: null });
+          
+          // Mostrar modal de éxito
+          setSuccessModalState({
+            isOpen: true,
+            elementName: elementName,
+            action: 'delete'
+          });
+          
+          setRefreshKey(prev => prev + 1);
+        }
+      } catch (error) {
+        console.error('Error al eliminar elemento:', error);
       }
-    } catch (error) {
-      console.error('Error al eliminar elemento:', error);
     }
-  }
-};
+  };
 
   const cancelDeleteElement = () => {
     setDeleteModalState({ isOpen: false, element: null });
   };
 
-  const confirmToggleActive = async () => {
+   const confirmToggleActive = async () => {
     if (!toggleActiveModalState.element) return;
 
     const element = toggleActiveModalState.element;
+    const action = element.active ? 'deactivate' : 'activate';
     
     try {
       console.log('🔍 DEBUG - Elemento seleccionado:', {
@@ -142,10 +172,9 @@ const StructureList: React.FC = () => {
         active: element.active
       });
       
-      // El backend ahora maneja la desactivación en cascada automáticamente
-      // Solo necesitamos cambiar el estado del elemento padre
+      // Cambiar el estado del elemento
       if (element.active) {
-        console.log('⚡ DESACTIVANDO elemento (backend desactivará hijos automáticamente)');
+        console.log('⚡ DESACTIVANDO elemento');
         await deactivateElementWithoutReload(element.type, element.id);
       } else {
         console.log('✅ ACTIVANDO elemento');
@@ -155,19 +184,25 @@ const StructureList: React.FC = () => {
       // Recargar el árbol
       await loadTree();
 
-      console.log('🔄 Recargando página para reflejar cambios...');
-
-      // Cerrar modal
+      const elementName = element.name || element.nomenclature || 'Elemento';
+      
+      // Cerrar modal de confirmación
       setToggleActiveModalState({ isOpen: false, element: null });
 
-      // Recargar página completa después de un delay mínimo
+      // Mostrar modal de éxito
+      setSuccessModalState({
+        isOpen: true,
+        elementName: elementName,
+        action: action
+      });
+      
+      // Recargar después de mostrar el éxito
       setTimeout(() => {
-        window.location.reload();
-      }, 300);
+        setRefreshKey(prev => prev + 1);
+      }, 1500);
       
     } catch (error) {
       console.error('Error al cambiar estado del elemento:', error);
-      // Cerrar modal incluso si hay error
       setToggleActiveModalState({ isOpen: false, element: null });
     }
   };
@@ -181,6 +216,10 @@ const StructureList: React.FC = () => {
   };
 
   console.log('🎯 Estado toggleActiveModalState:', toggleActiveModalState);
+
+  const closeSuccessModal = () => {
+    setSuccessModalState({ isOpen: false, elementName: '', action: 'activate' });
+  };
 
  return (
   <>
@@ -205,8 +244,7 @@ const StructureList: React.FC = () => {
       onClose={cancelDeleteElement}
       onConfirm={confirmDeleteElement}
       title="Confirmar Eliminación"
-      itemName={deleteModalState.element?.name || deleteModalState.element?.nomenclature}
-      confirmLabel="Eliminar"
+      itemName={truncateText(deleteModalState.element?.name || deleteModalState.element?.nomenclature || '')}      confirmLabel="Eliminar"
       cancelLabel="Cancelar"
       variant="danger"
       isLoading={isLoading}
@@ -223,8 +261,7 @@ const StructureList: React.FC = () => {
           title="Confirmar activación"
           message={
             <>
-              ¿Está seguro de que desea activar "<span className="font-bold">{toggleActiveModalState.element?.name || toggleActiveModalState.element?.nomenclature}</span>"?
-            </>
+              ¿Está seguro de que desea activar "<span className="font-bold">{truncateText(toggleActiveModalState.element?.name || toggleActiveModalState.element?.nomenclature || '')}</span>"?            </>
           }
           confirmLabel="Activar"
           cancelLabel="Cancelar"
@@ -245,7 +282,7 @@ const StructureList: React.FC = () => {
         </Modal>
       )}
 
-      {/* Modal de confirmación para DESACTIVAR */}
+      {/* Modal de confirmación para INACTIVAR */}
       {toggleActiveModalState.isOpen && toggleActiveModalState.element && toggleActiveModalState.element.active && (
         <Modal
           isOpen={true}
@@ -253,13 +290,12 @@ const StructureList: React.FC = () => {
           onConfirm={confirmToggleActive}
           variant="warning"
           hideDefaultDangerMessage={false}
-          title="Confirmar desactivación"
+          title="Confirmar inactivación"
           message={
             <>
-              ¿Está seguro de que desea desactivar "<span className="font-bold">{toggleActiveModalState.element?.name || toggleActiveModalState.element?.nomenclature}</span>"?
-            </>
+              ¿Está seguro de que desea inactivar "<span className="font-bold">{truncateText(toggleActiveModalState.element?.name || toggleActiveModalState.element?.nomenclature || '')}</span>"?            </>
           }
-          confirmLabel="Desactivar"
+          confirmLabel="Inactivar"
           cancelLabel="Cancelar"
           confirmLoading={isLoading}
           showCancel={true}
@@ -267,16 +303,39 @@ const StructureList: React.FC = () => {
         >
           <div className="mt-4 p-3 bg-[var(--bg-warning)] border border-[var(--border-warning)] rounded-lg">
             <p className="text-sm text-[var(--text-warning)]">
-              Al desactivar este elemento, dejará de estar disponible en el sistema. Esta acción es reversible.
+              Al inactivar este elemento, dejará de estar disponible en el sistema. Esta acción es reversible.
             </p>
             {hasChildren(toggleActiveModalState.element) && (
               <p className="text-xs text-[var(--text-warning)] mt-2">
-                <strong>⚠️ Importante:</strong> Todos los elementos dependientes (hijos) se desactivarán automáticamente en cascada.
+                <strong>⚠️ Importante:</strong> Todos los elementos dependientes (hijos) se inactivarán automáticamente en cascada.
               </p>
             )}
           </div>
         </Modal>
       )}
+            {/* Modal de éxito */}
+      <SuccessModal
+        isOpen={successModalState.isOpen}
+        onClose={closeSuccessModal}
+        title={
+          successModalState.action === 'activate' 
+            ? '¡Elemento activado exitosamente!' 
+            : successModalState.action === 'deactivate'
+            ? '¡Elemento inactivado exitosamente!'
+            : '¡Elemento eliminado exitosamente!'
+        }
+        message={`El elemento "${
+          successModalState.elementName.length > 25 
+            ? successModalState.elementName.substring(0, 25).trim() + '...' 
+            : successModalState.elementName
+        }" ha sido ${
+          successModalState.action === 'activate' 
+            ? 'activado' 
+            : successModalState.action === 'deactivate'
+            ? 'inactivado'
+            : 'eliminado'
+        } correctamente.`}
+      />
     </>
   );
 };
