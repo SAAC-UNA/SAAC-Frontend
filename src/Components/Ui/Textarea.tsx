@@ -1,4 +1,4 @@
-import React, { forwardRef } from 'react';
+import React, { forwardRef, useId } from 'react';
 import { cn } from '@/Utils/ClassNames';
 import { type ComponentSize } from '@/constants/ComponentSizes';
 import { SystemIcons } from './Icons/SystemIcons';
@@ -37,7 +37,8 @@ export const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(({
   onChange,
   ...props
 }, ref) => {
-  const textareaId = id || `textarea-${Math.random().toString(36).substr(2, 9)}`;
+  const generatedId = useId();
+  const textareaId = id || generatedId;
 
   // Función para manejar cambios con validación en tiempo real
   const handleChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {

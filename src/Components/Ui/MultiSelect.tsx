@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useId } from 'react';
 import { cn } from '@/Utils/ClassNames';
 import { SystemIcons } from './Icons/SystemIcons';
 
@@ -22,6 +22,7 @@ export interface MultiSelectProps {
   selectAllText?: string;
   deselectAllText?: string;
   maxVisibleItems?: number; // Número máximo de items visibles antes de scroll
+  id?: string;
   onChange?: (values: string[]) => void;
 }
 
@@ -39,6 +40,7 @@ export const MultiSelect: React.FC<MultiSelectProps> = ({
   selectAllText = 'Seleccionar todo',
   deselectAllText = 'Deseleccionar todo',
   maxVisibleItems = 3, // Por defecto mostrar 3 items (140px ≈ 3 items de ~46px cada uno)
+  id,
   onChange
 }) => {
   const [isOpen, setIsOpen] = useState(false);
@@ -46,6 +48,8 @@ export const MultiSelect: React.FC<MultiSelectProps> = ({
     value ? options.filter(opt => value.includes(opt.value)) : []
   );
   const selectRef = useRef<HTMLDivElement>(null);
+  const generatedId = useId();
+  const selectId = id || generatedId;
 
   // Calcular altura máxima basada en el número de items visibles
   // Cada item tiene aproximadamente 46px de altura (incluyendo padding y border)
@@ -136,7 +140,6 @@ export const MultiSelect: React.FC<MultiSelectProps> = ({
   if (variant === 'floating') {
     // Detectar si tiene contenido seleccionado
     const hasValue = selectedOptions.length > 0;
-    const selectId = `multiselect-${Math.random().toString(36).substr(2, 9)}`;
 
     return (
       <div className={cn('relative w-full space-y-2', className)} ref={selectRef}>

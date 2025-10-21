@@ -11,7 +11,7 @@
  * - Mejor accesibilidad
  */
 
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useId } from 'react';
 import { cn } from '@/Utils/ClassNames';
 import { type ComponentSize } from '@/Constants/ComponentSizes';
 import { SystemIcons } from './Icons/SystemIcons';
@@ -33,6 +33,7 @@ export interface CustomSelectProps {
   error?: string;
   className?: string;
   required?: boolean;
+  id?: string;
   onChange?: (value: string) => void;
   // Modo readonly - solo mostrar información, no permitir selección
   readonly?: boolean;
@@ -51,6 +52,7 @@ export const CustomSelect: React.FC<CustomSelectProps> = ({
   error,
   className,
   required = false,
+  id,
   onChange,
   readonly = false,
   maxVisibleItems = 3
@@ -60,6 +62,8 @@ export const CustomSelect: React.FC<CustomSelectProps> = ({
     value ? options.find(opt => opt.value === value) || null : null
   );
   const selectRef = useRef<HTMLDivElement>(null);
+  const generatedId = useId();
+  const selectId = id || generatedId;
 
   // Cerrar dropdown al hacer click fuera
   useEffect(() => {
@@ -112,7 +116,6 @@ export const CustomSelect: React.FC<CustomSelectProps> = ({
   if (variant === 'floating') {
     // Detectar si tiene contenido seleccionado
     const hasValue = Boolean(selectedOption);
-    const selectId = `customselect-${Math.random().toString(36).substr(2, 9)}`;
 
     return (
       <div className={cn('relative w-full space-y-2', className)} ref={selectRef}>

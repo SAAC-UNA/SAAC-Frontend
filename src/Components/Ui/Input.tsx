@@ -1,4 +1,4 @@
-import React, { forwardRef } from 'react';
+import React, { forwardRef, useId } from 'react';
 import { cn } from '@/Utils/ClassNames';
 import { type ComponentSize } from '@/constants/ComponentSizes';
 import { SystemIcons } from './Icons/SystemIcons';
@@ -34,7 +34,8 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(({
   onChange,
   ...props
 }, ref) => {
-  const inputId = id || `input-${Math.random().toString(36).substr(2, 9)}`;
+  const generatedId = useId();
+  const inputId = id || generatedId;
 
   // Función para manejar cambios con validación en tiempo real
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {

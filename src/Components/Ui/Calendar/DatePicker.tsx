@@ -10,7 +10,7 @@
  * - Estados disabled/readonly
  */
 
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useId } from 'react';
 import { cn } from '@/Utils/ClassNames';
 import { SystemIcons } from '@/Components/Ui/Icons/SystemIcons';
 
@@ -25,6 +25,7 @@ export interface DatePickerProps {
   className?: string;
   minDate?: string;
   maxDate?: string;
+  id?: string;
   onChange?: (date: string) => void;
 }
 
@@ -39,6 +40,7 @@ export const DatePicker: React.FC<DatePickerProps> = ({
   className,
   minDate,
   maxDate,
+  id,
   onChange
 }) => {
   const [currentDate, setCurrentDate] = useState(() => {
@@ -54,7 +56,8 @@ export const DatePicker: React.FC<DatePickerProps> = ({
   
   const [showPicker, setShowPicker] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
-  const inputId = `datepicker-${Math.random().toString(36).substr(2, 9)}`;
+  const generatedId = useId();
+  const inputId = id || generatedId;
 
   // Cerrar calendario al hacer clic fuera
   useEffect(() => {
