@@ -319,10 +319,10 @@ const StructureList: React.FC = () => {
         onClose={closeSuccessModal}
         title={
           successModalState.action === 'activate' 
-            ? '¡Elemento activado exitosamente!' 
+            ? 'Elemento activado' 
             : successModalState.action === 'deactivate'
-            ? '¡Elemento inactivado exitosamente!'
-            : '¡Elemento eliminado exitosamente!'
+            ? 'Elemento inactivado'
+            : 'Elemento eliminado'
         }
         message={`El elemento "${
           successModalState.elementName.length > 25 

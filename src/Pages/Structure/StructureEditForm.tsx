@@ -527,7 +527,7 @@ const validateForm = (): boolean => {
       {/* Modal de éxito */}
       <SuccessModal
         isOpen={successModalState.isOpen}
-        title="¡Elemento editado exitosamente!"
+        title="Elemento editado"
         message={`El elemento "${truncateText(successModalState.elementName)}" ha sido modificado correctamente`}        onClose={handleSuccessModalClose}
         autoClose={true}
         autoCloseDelay={3000}
