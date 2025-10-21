@@ -137,7 +137,7 @@ export const AddresseeStep: React.FC<AddresseeStepProps> = ({
               </div>
             ) : (
               <MultiSelect
-                label="Usuarios Individuales"
+                label="Usuarios"
                 options={userOptions}
                 value={formData.selectedUsers.map(id => id.toString())}
                 onChange={handleUserSelectionChange}

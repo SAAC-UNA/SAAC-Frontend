@@ -24,6 +24,16 @@ import { useRoles } from '@/hooks/UseRoles';
 import { getModuleInfoWithDynamicTitle } from '@/Constants/ModuleInfo';
 import type { CreateRoleData, Role } from '@/Services/RoleService';
 
+/**
+ * Función auxiliar para truncar texto y agregar puntos suspensivos
+ */
+const truncateText = (text: string, maxLength: number = 25): string => {
+  if (text.length <= maxLength) {
+    return text;
+  }
+  return text.substring(0, maxLength).trim() + '...';
+};
+
 const RoleForm: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
@@ -304,8 +314,8 @@ const RoleForm: React.FC = () => {
         isOpen={successModalState.isOpen}
         title={successModalState.isEditing ? '¡Rol editado exitosamente!' : '¡Rol creado exitosamente!'}
         message={successModalState.isEditing 
-          ? `El rol "${successModalState.roleName}" ha sido modificado correctamente` 
-          : `El rol "${successModalState.roleName}" ha sido agregado correctamente`
+          ? `El rol "${truncateText(successModalState.roleName)}" ha sido modificado correctamente` 
+          : `El rol "${truncateText(successModalState.roleName)}" ha sido agregado correctamente`
         }
         onClose={handleSuccessModalClose}
         autoClose={true}
