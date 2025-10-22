@@ -328,7 +328,6 @@ const EvidenceAssignment: React.FC = () => {
         message={`Se asignaron ${assignedEvidencesCount} evidencia(s) exitosamente.`}
         onClose={() => setShowSuccessModal(false)}
         autoClose={true}
-        autoCloseDelay={3000}
       />
     </ScreenContainer>
   );

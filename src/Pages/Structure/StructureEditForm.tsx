@@ -530,7 +530,6 @@ const validateForm = (): boolean => {
         title="Elemento editado"
         message={`El elemento "${truncateText(successModalState.elementName)}" ha sido modificado correctamente`}        onClose={handleSuccessModalClose}
         autoClose={true}
-        autoCloseDelay={3000}
       />
     </ScreenContainer>
   );

@@ -161,7 +161,6 @@ const RolesRepository: React.FC = () => {
           message={`El rol "${successModalState.roleName}" ha sido eliminado correctamente`}
           onClose={handleSuccessModalClose}
           autoClose={true}
-          autoCloseDelay={3000}
         />
     </>
   );

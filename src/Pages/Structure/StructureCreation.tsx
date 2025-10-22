@@ -433,7 +433,6 @@ const handleSubmit = async (e: React.FormEvent) => {
         title="Elemento creado"
         message={`El elemento "${truncateText(successModalState.elementName)}" ha sido agregado correctamente`}        onClose={handleSuccessModalClose}
         autoClose={true}
-        autoCloseDelay={3000}
       />
     </>
   );

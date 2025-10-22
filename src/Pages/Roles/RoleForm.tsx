@@ -319,7 +319,6 @@ const RoleForm: React.FC = () => {
         }
         onClose={handleSuccessModalClose}
         autoClose={true}
-        autoCloseDelay={3000}
       />
     </>
   );

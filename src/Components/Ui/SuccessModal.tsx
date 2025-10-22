@@ -31,9 +31,9 @@ export const SuccessModal: React.FC<SuccessModalProps> = ({
 
   const handleClose = () => {
     setIsClosing(true);
+    onClose?.();
     setTimeout(() => {
       setIsClosing(false);
-      onClose?.();
     }, 400);
   };
 
