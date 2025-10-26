@@ -40,40 +40,40 @@ const VARIANT_CLASSES = {
   primary: [
     'bg-transparent text-azul-una font-poppins font-semibold border-2 border-azul-una',
     'hover:bg-azul-una/5 transition-colors duration-200',
-    'disabled:bg-gris-una disabled:cursor-not-allowed'
+    'disabled:!bg-transparent disabled:!text-gris-una disabled:!border-gris-una/30 disabled:cursor-not-allowed'
   ].join(' '),
   
   // Botón secundario con color Rojo UNA
   secondary: [
     'bg-transparent text-rojo-una-2 font-poppins font-semibold border-2 border-rojo-una-2', 
-    'hover:bg-rojo-una-2/5 transition-colors duration-200 shadow-sm',
-    'disabled:bg-gris-una/10 disabled:cursor-not-allowed'
+    'hover:bg-rojo-una-2/5 transition-colors duration-200',
+    'disabled:!bg-transparent disabled:!text-gris-una disabled:!border-gris-una/30 disabled:cursor-not-allowed'
   ].join(' '),
 
   tertiary: [
     'bg-transparent text-gris-una font-poppins font-semibold border-2 border-gris-una', 
-    'hover:bg-gris-una/5 transition-colors duration-200 shadow-sm',
-    'disabled:bg-negro-una/10 disabled:cursor-not-allowed'
+    'hover:bg-gris-una/5 transition-colors duration-200',
+    'disabled:!bg-transparent disabled:!text-gris-una disabled:!border-gris-una/30 disabled:cursor-not-allowed'
   ].join(' '),
 
   // Botón de éxito/activar con color verde
   success: [
     'btn-success font-poppins font-semibold', 
-    'transition-colors duration-200 shadow-sm',
-    'disabled:bg-gris-una/10 disabled:cursor-not-allowed'
+    'transition-colors duration-200',
+    'disabled:!bg-transparent disabled:!text-gris-una disabled:!border-gris-una/30 disabled:cursor-not-allowed'
   ].join(' '),
 
   // Botón transparente para acciones discretas
   transparent: [
     'bg-transparent text-azul-una font-poppins font-semibold border-0', 
     'hover:bg-azul-una/10 transition-colors duration-200',
-    'disabled:bg-gris-una/5 disabled:cursor-not-allowed disabled:text-gris-una'
+    'disabled:!bg-transparent disabled:!text-gris-una disabled:!border-gris-una/30 disabled:cursor-not-allowed'
   ].join(' '),
 
   // Botón con solo borde
-  outline: 'border border-gris-una/30 bg-transparent text-negro-una hover:bg-gris-una/5',
+  outline: 'border border-gris-una/30 bg-transparent text-negro-una hover:bg-gris-una/5 disabled:!bg-transparent disabled:!text-gris-una disabled:!border-gris-una/30 disabled:cursor-not-allowed',
   // Botón fantasma para acciones sutiles
-  ghost: 'bg-transparent text-gris-una hover:bg-gris-una/10',
+  ghost: 'bg-transparent text-gris-una hover:bg-gris-una/10 disabled:!bg-transparent disabled:!text-gris-una disabled:!border-gris-una/30 disabled:cursor-not-allowed',
   
   // Botones de la tabla (ojo, lapiz, basurero)
   tableView: [
@@ -152,7 +152,6 @@ export const Button: React.FC<ButtonProps> = ({
         fullWidth && !standardWidth && 'w-full',
         flex && !standardWidth && 'flex-1',
         responsive && !standardWidth && getResponsiveClasses(),
-        (disabled || isLoading) && 'opacity-50',
         className
       )}
       disabled={disabled || isLoading}

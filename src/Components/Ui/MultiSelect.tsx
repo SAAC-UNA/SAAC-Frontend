@@ -24,6 +24,10 @@ export interface MultiSelectProps {
   maxVisibleItems?: number; // Número máximo de items visibles antes de scroll
   id?: string;
   onChange?: (values: string[]) => void;
+  // Búsqueda/Filtrado
+  searchable?: boolean; // Habilitar búsqueda en el dropdown
+  searchPlaceholder?: string; // Placeholder del campo de búsqueda
+  minItemsForSearch?: number; // Número mínimo de items para mostrar búsqueda (default: 5)
 }
 
 export const MultiSelect: React.FC<MultiSelectProps> = ({
@@ -39,15 +43,20 @@ export const MultiSelect: React.FC<MultiSelectProps> = ({
   showSelectAll = true,
   selectAllText = 'Seleccionar todo',
   deselectAllText = 'Deseleccionar todo',
-  maxVisibleItems = 3, // Por defecto mostrar 3 items (140px ≈ 3 items de ~46px cada uno)
+  maxVisibleItems = 5, // Por defecto mostrar 3 items (140px ≈ 3 items de ~46px cada uno)
   id,
-  onChange
+  onChange,
+  searchable = true, // Habilitado por defecto
+  searchPlaceholder = 'Buscar...',
+  minItemsForSearch = 5 // Mostrar búsqueda si hay 5 o más items
 }) => {
   const [isOpen, setIsOpen] = useState(false);
+  const [searchTerm, setSearchTerm] = useState('');
   const [selectedOptions, setSelectedOptions] = useState<MultiSelectOption[]>(
     value ? options.filter(opt => value.includes(opt.value)) : []
   );
   const selectRef = useRef<HTMLDivElement>(null);
+  const searchInputRef = useRef<HTMLInputElement>(null);
   const generatedId = useId();
   const selectId = id || generatedId;
 
@@ -64,12 +73,23 @@ export const MultiSelect: React.FC<MultiSelectProps> = ({
     const handleClickOutside = (event: MouseEvent) => {
       if (selectRef.current && !selectRef.current.contains(event.target as Node)) {
         setIsOpen(false);
+        setSearchTerm(''); // Limpiar búsqueda al cerrar
       }
     };
 
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
+
+  // Focus en el input de búsqueda cuando se abre el dropdown
+  useEffect(() => {
+    if (isOpen && searchable && options.length >= minItemsForSearch && searchInputRef.current) {
+      // Pequeño delay para asegurar que el dropdown esté renderizado
+      setTimeout(() => {
+        searchInputRef.current?.focus();
+      }, 100);
+    }
+  }, [isOpen, searchable, options.length, minItemsForSearch]);
 
   // Actualizar opciones seleccionadas cuando cambia el value prop
   useEffect(() => {
@@ -135,6 +155,20 @@ export const MultiSelect: React.FC<MultiSelectProps> = ({
     if (selectedOptions.length === 1) return selectedOptions[0].label;
     return `${selectedOptions.length} elementos seleccionados`;
   };
+
+  // Filtrar opciones según el término de búsqueda
+  const filteredOptions = React.useMemo(() => {
+    if (!searchTerm.trim()) return options;
+    
+    const searchLower = searchTerm.toLowerCase().trim();
+    return options.filter(option => 
+      option.label.toLowerCase().includes(searchLower) ||
+      option.value.toLowerCase().includes(searchLower)
+    );
+  }, [options, searchTerm]);
+
+  // Determinar si se debe mostrar el campo de búsqueda
+  const showSearch = searchable && options.length >= minItemsForSearch;
 
   // Floating label variant (nuevo diseño por defecto)
   if (variant === 'floating') {
@@ -240,55 +274,105 @@ export const MultiSelect: React.FC<MultiSelectProps> = ({
         {/* Dropdown */}
         {isOpen && !disabled && (
           <div 
-            className="absolute z-50 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg overflow-auto custom-scrollbar"
-            style={{ maxHeight: getMaxHeight() }}
+            className="absolute z-50 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg overflow-hidden"
           >
-            <div className="py-1 text-sm">
-              {/* Botón Seleccionar todo dentro del dropdown */}
-              {showSelectAll && options.length > 1 && (
-                <button
-                  type="button"
-                  onClick={handleSelectAll}
-                  className="w-full text-left px-4 py-2.5 text-azul-una hover:bg-blue-50 focus:bg-blue-50 focus:outline-none transition-colors duration-150 border-b border-gray-200 bg-gray-50/50"
-                >
-                  <span className="font-semibold text-sm">
-                    {isAllSelected() ? deselectAllText : selectAllText}
-                  </span>
-                </button>
-              )}
-              
-              {options.map((option) => {
-                const isSelected = selectedOptions.some(selected => selected.value === option.value);
-                
-                return (
+            {/* Campo de búsqueda (si está habilitado y hay suficientes items) */}
+            {showSearch && (
+              <div className="p-2 border-b border-gray-200 bg-gray-50/50 sticky top-0 z-10">
+                <div className="relative">
+                  <SystemIcons.interface.search 
+                    className="absolute left-3 top-1/2 -translate-y-1/2 text-gris-una w-4 h-4" 
+                    size="sm" 
+                  />
+                  <input
+                    ref={searchInputRef}
+                    type="text"
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    placeholder={searchPlaceholder}
+                    className="w-full pl-9 pr-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:border-azul-una focus:ring-1 focus:ring-azul-una"
+                    onClick={(e) => e.stopPropagation()} // Evitar que cierre el dropdown
+                  />
+                  {searchTerm && (
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setSearchTerm('');
+                        searchInputRef.current?.focus();
+                      }}
+                      className="absolute right-2 top-1/2 -translate-y-1/2 text-gris-una hover:text-negro-una p-1"
+                    >
+                      <SystemIcons.interface.closeCircle className="w-4 h-4" size="sm" />
+                    </button>
+                  )}
+                </div>
+              </div>
+            )}
+
+            <div 
+              className="overflow-auto custom-scrollbar"
+              style={{ maxHeight: getMaxHeight() }}
+            >
+              <div className="py-1 text-sm">
+                {/* Botón Seleccionar todo dentro del dropdown */}
+                {showSelectAll && filteredOptions.length > 1 && (
                   <button
-                    key={option.value}
                     type="button"
-                    className={cn(
-                      'relative w-full text-left px-4 py-2 hover:bg-gray-100 focus:bg-gray-100 focus:outline-none transition-colors duration-150 flex items-center justify-between',
-                      option.disabled
-                        ? 'text-gray-400 cursor-not-allowed'
-                        : 'text-gray-900 cursor-pointer',
-                      isSelected && 'bg-blue-50 text-blue-900 font-medium'
-                    )}
-                    onClick={() => handleOptionToggle(option)}
-                    disabled={option.disabled}
+                    onClick={handleSelectAll}
+                    className="w-full text-left px-4 py-2.5 text-azul-una hover:bg-blue-50 focus:bg-blue-50 focus:outline-none transition-colors duration-150 border-b border-gray-200 bg-gray-50/50"
                   >
-                    <span className="flex-1">{option.label}</span>
-                    
-                    {/* Check icon for selected options */}
-                    {isSelected && (
-                      <span className="flex-shrink-0 ml-2">
-                        <svg
-                          className="w-5 h-5 text-blue-600"
-                          fill="currentColor"
-                          viewBox="0 0 20 20"
-                        >
-                          <path
-                            fillRule="evenodd"
-                            d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-                            clipRule="evenodd"
-                          />
+                    <span className="font-semibold text-sm">
+                      {isAllSelected() ? deselectAllText : selectAllText}
+                    </span>
+                  </button>
+                )}
+                
+                {/* Mensaje cuando no hay resultados */}
+                {filteredOptions.length === 0 && (
+                  <div className="px-4 py-8 text-center text-gris-una">
+                    <SystemIcons.interface.search className="w-8 h-8 mx-auto mb-2 opacity-50" size="md" />
+                    <p className="text-sm">No se encontraron resultados</p>
+                    {searchTerm && (
+                      <p className="text-xs mt-1">
+                        Intenta con otro término de búsqueda
+                      </p>
+                    )}
+                  </div>
+                )}
+
+                {filteredOptions.map((option) => {
+                  const isSelected = selectedOptions.some(selected => selected.value === option.value);
+                  
+                  return (
+                    <button
+                      key={option.value}
+                      type="button"
+                      className={cn(
+                        'relative w-full text-left px-4 py-2 hover:bg-gray-100 focus:bg-gray-100 focus:outline-none transition-colors duration-150 flex items-center justify-between',
+                        option.disabled
+                          ? 'text-gray-400 cursor-not-allowed'
+                          : 'text-gray-900 cursor-pointer',
+                        isSelected && 'bg-blue-50 text-blue-900 font-medium'
+                      )}
+                      onClick={() => handleOptionToggle(option)}
+                      disabled={option.disabled}
+                    >
+                      <span className="flex-1">{option.label}</span>
+                      
+                      {/* Check icon for selected options */}
+                      {isSelected && (
+                        <span className="flex-shrink-0 ml-2">
+                          <svg
+                            className="w-5 h-5 text-blue-600"
+                            fill="currentColor"
+                            viewBox="0 0 20 20"
+                          >
+                            <path
+                              fillRule="evenodd"
+                              d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                              clipRule="evenodd"
+                            />
                           </svg>
                         </span>
                       )}
@@ -297,7 +381,8 @@ export const MultiSelect: React.FC<MultiSelectProps> = ({
                 })}
               </div>
             </div>
-          )}
+          </div>
+        )}
 
           {/* Error Message */}
           {error && (
@@ -375,55 +460,105 @@ export const MultiSelect: React.FC<MultiSelectProps> = ({
         {/* Dropdown */}
         {isOpen && !disabled && (
           <div 
-            className="absolute z-50 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg overflow-auto custom-scrollbar"
-            style={{ maxHeight: getMaxHeight() }}
+            className="absolute z-50 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg overflow-hidden"
           >
-            <div className="py-1 text-sm">
-              {/* Botón Seleccionar todo dentro del dropdown */}
-              {showSelectAll && options.length > 1 && (
-                <button
-                  type="button"
-                  onClick={handleSelectAll}
-                  className="w-full text-left px-4 py-2.5 text-azul-una hover:bg-blue-50 focus:bg-blue-50 focus:outline-none transition-colors duration-150 border-b border-gray-200 bg-gray-50/50"
-                >
-                  <span className="font-semibold text-sm">
-                    {isAllSelected() ? deselectAllText : selectAllText}
-                  </span>
-                </button>
-              )}
-              
-              {options.map((option) => {
-                const isSelected = selectedOptions.some(selected => selected.value === option.value);
-                
-                return (
+            {/* Campo de búsqueda (si está habilitado y hay suficientes items) */}
+            {showSearch && (
+              <div className="p-2 border-b border-gray-200 bg-gray-50/50 sticky top-0 z-10">
+                <div className="relative">
+                  <SystemIcons.interface.search 
+                    className="absolute left-3 top-1/2 -translate-y-1/2 text-gris-una w-4 h-4" 
+                    size="sm" 
+                  />
+                  <input
+                    ref={searchInputRef}
+                    type="text"
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    placeholder={searchPlaceholder}
+                    className="w-full pl-9 pr-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:border-azul-una focus:ring-1 focus:ring-azul-una"
+                    onClick={(e) => e.stopPropagation()} // Evitar que cierre el dropdown
+                  />
+                  {searchTerm && (
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setSearchTerm('');
+                        searchInputRef.current?.focus();
+                      }}
+                      className="absolute right-2 top-1/2 -translate-y-1/2 text-gris-una hover:text-negro-una p-1"
+                    >
+                      <SystemIcons.interface.closeCircle className="w-4 h-4" size="sm" />
+                    </button>
+                  )}
+                </div>
+              </div>
+            )}
+
+            <div 
+              className="overflow-auto custom-scrollbar"
+              style={{ maxHeight: getMaxHeight() }}
+            >
+              <div className="py-1 text-sm">
+                {/* Botón Seleccionar todo dentro del dropdown */}
+                {showSelectAll && filteredOptions.length > 1 && (
                   <button
-                    key={option.value}
                     type="button"
-                    className={cn(
-                      'relative w-full text-left px-4 py-2 hover:bg-gray-100 focus:bg-gray-100 focus:outline-none transition-colors duration-150 flex items-center justify-between',
-                      option.disabled
-                        ? 'text-gray-400 cursor-not-allowed'
-                        : 'text-gray-900 cursor-pointer',
-                      isSelected && 'bg-blue-50 text-blue-900 font-medium'
-                    )}
-                    onClick={() => handleOptionToggle(option)}
-                    disabled={option.disabled}
+                    onClick={handleSelectAll}
+                    className="w-full text-left px-4 py-2.5 text-azul-una hover:bg-blue-50 focus:bg-blue-50 focus:outline-none transition-colors duration-150 border-b border-gray-200 bg-gray-50/50"
                   >
-                    <span className="flex-1">{option.label}</span>
-                    
-                    {/* Check icon for selected options */}
-                    {isSelected && (
-                      <span className="flex-shrink-0 ml-2">
-                        <svg
-                          className="w-5 h-5 text-blue-600"
-                          fill="currentColor"
-                          viewBox="0 0 20 20"
-                        >
-                          <path
-                            fillRule="evenodd"
-                            d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-                            clipRule="evenodd"
-                          />
+                    <span className="font-semibold text-sm">
+                      {isAllSelected() ? deselectAllText : selectAllText}
+                    </span>
+                  </button>
+                )}
+                
+                {/* Mensaje cuando no hay resultados */}
+                {filteredOptions.length === 0 && (
+                  <div className="px-4 py-8 text-center text-gris-una">
+                    <SystemIcons.interface.search className="w-8 h-8 mx-auto mb-2 opacity-50" size="md" />
+                    <p className="text-sm">No se encontraron resultados</p>
+                    {searchTerm && (
+                      <p className="text-xs mt-1">
+                        Intenta con otro término de búsqueda
+                      </p>
+                    )}
+                  </div>
+                )}
+
+                {filteredOptions.map((option) => {
+                  const isSelected = selectedOptions.some(selected => selected.value === option.value);
+                  
+                  return (
+                    <button
+                      key={option.value}
+                      type="button"
+                      className={cn(
+                        'relative w-full text-left px-4 py-2 hover:bg-gray-100 focus:bg-gray-100 focus:outline-none transition-colors duration-150 flex items-center justify-between',
+                        option.disabled
+                          ? 'text-gray-400 cursor-not-allowed'
+                          : 'text-gray-900 cursor-pointer',
+                        isSelected && 'bg-blue-50 text-blue-900 font-medium'
+                      )}
+                      onClick={() => handleOptionToggle(option)}
+                      disabled={option.disabled}
+                    >
+                      <span className="flex-1">{option.label}</span>
+                      
+                      {/* Check icon for selected options */}
+                      {isSelected && (
+                        <span className="flex-shrink-0 ml-2">
+                          <svg
+                            className="w-5 h-5 text-blue-600"
+                            fill="currentColor"
+                            viewBox="0 0 20 20"
+                          >
+                            <path
+                              fillRule="evenodd"
+                              d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                              clipRule="evenodd"
+                            />
                           </svg>
                         </span>
                       )}
@@ -432,7 +567,8 @@ export const MultiSelect: React.FC<MultiSelectProps> = ({
                 })}
               </div>
             </div>
-          )}
+          </div>
+        )}
 
           {/* Error Message */}
           {error && (

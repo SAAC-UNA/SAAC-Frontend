@@ -148,7 +148,11 @@ const UsersRepository: React.FC = () => {
             onClose={closeStateChangeModal}
             onConfirm={confirmStateChange}
             title="Confirmar activación de usuario"
-            message={`¿Está seguro de que desea activar al usuario "${stateChangeModalState.user?.name}"?`}
+            message={
+              <>
+                ¿Está seguro de que desea activar al usuario <strong>"{stateChangeModalState.user?.name}"</strong>?
+              </>
+            }
             confirmLabel="Activar"
             cancelLabel="Cancelar"
             variant="warning"
@@ -157,20 +161,24 @@ const UsersRepository: React.FC = () => {
           />
         )}
 
-        {/* Modal de confirmación para desactivación */}
+        {/* Modal de confirmación para inactivación */}
         {stateChangeModalState.user?.status === 'active' && (
           <DeleteConfirmationModal
             isOpen={stateChangeModalState.isOpen}
             onClose={closeStateChangeModal}
             onConfirm={confirmStateChange}
-            title="Confirmar desactivación de usuario"
-            message={`¿Está seguro de que desea desactivar al usuario "${stateChangeModalState.user?.name}"?`}
-            confirmLabel="Desactivar"
+            title="Confirmar inactivación de usuario"
+            message={
+              <>
+                ¿Está seguro de que desea inactivar al usuario <strong>"{stateChangeModalState.user?.name}"</strong>?
+              </>
+            }
+            confirmLabel="Inactivar"
             cancelLabel="Cancelar"
             variant="danger"
             hideDefaultDangerMessage={true}
             isLoading={isLoading}
-            description="Al desactivar este usuario, se revocará su acceso al sistema. Esta acción puede ser revertida en el futuro."
+            description="Al inactivar este usuario, se revocará su acceso al sistema. Esta acción puede ser revertida en el futuro."
           />
         )}
 
@@ -178,11 +186,11 @@ const UsersRepository: React.FC = () => {
         <SuccessModal
           isOpen={successModalState.isOpen}
           onClose={closeSuccessModal}
-          title={successModalState.action === 'activate' ? 'Usuario activado' : 'Usuario desactivado'}
+          title={successModalState.action === 'activate' ? 'Usuario activado' : 'Usuario inactivado'}
           message={
             successModalState.action === 'activate'
               ? `El usuario "${successModalState.userName}" ha sido activado correctamente.`
-              : `El usuario "${successModalState.userName}" ha sido desactivado correctamente.`
+              : `El usuario "${successModalState.userName}" ha sido inactivado correctamente.`
           }
         />
         </ScreenContainer>

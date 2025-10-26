@@ -130,7 +130,7 @@ export const UserDetailsModal: React.FC<UserDetailsModalProps> = ({
             </div>
             
             <div className="mt-3 text-xs text-gray-500">
-                Total: {user.directPermissions?.length || 0} permiso{(user.directPermissions?.length || 0) !== 1 ? 's' : ''}
+                Total: {user.allPermissions?.length || 0} permiso{(user.allPermissions?.length || 0) !== 1 ? 's' : ''}
             </div>
         </div>
     );
