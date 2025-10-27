@@ -13,7 +13,7 @@ interface DeleteConfirmationModalProps {
   onClose: () => void;
   onConfirm: () => void;
   title?: string;
-  message?: string;
+  message?: string | React.ReactNode;
   itemName?: string;
   confirmLabel?: string;
   cancelLabel?: string;

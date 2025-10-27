@@ -142,7 +142,7 @@ export const UsersTable: React.FC<UsersTableProps> = ({
 
                     <TableActionButton
                         action="power"
-                        tooltip={user.status === 'active' ? 'Desactivar usuario' : 'Activar usuario'}
+                        tooltip={user.status === 'active' ? 'Inactivar usuario' : 'Activar usuario'}
                         onClick={() => onState?.(user)}
                         isActive={user.status === 'active'}
                     />

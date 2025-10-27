@@ -42,6 +42,9 @@ export const EditUserForm: React.FC<EditUserFormProps> = ({
   // Estados para vista previa de permisos
   const [previewPermissions, setPreviewPermissions] = useState<string[] | BackendPermission[]>([]);
 
+  // Estado para detectar cambios
+  const [hasChanges, setHasChanges] = useState<boolean>(false);
+
   // Cargar roles al montar el componente
   useEffect(() => {
     loadRoles();
@@ -57,6 +60,12 @@ export const EditUserForm: React.FC<EditUserFormProps> = ({
       }
     }
   }, [roles, user.role]);
+
+  // Detectar cambios en el rol seleccionado
+  useEffect(() => {
+    const roleHasChanged = selectedRole !== '' && selectedRole !== user.role;
+    setHasChanges(roleHasChanged);
+  }, [selectedRole, user.role]);
 
   /**
    * Cargar roles disponibles
@@ -125,8 +134,22 @@ export const EditUserForm: React.FC<EditUserFormProps> = ({
    */
   const roleOptions: SelectOption[] = roles.map(role => ({
     value: role.name,
-    label: role.description ? `${role.name} - ${role.description}` : role.name
+    label: role.description ? `${role.name}` : role.name
   }));
+
+  /**
+   * Obtener lista de roles para mostrar (soporta uno o múltiples)
+   */
+  const getUserRoles = (): string[] => {
+    // Si en el futuro user.roles es un array, usarlo
+    // Por ahora, convertir user.role (string) a array
+    if (user.role) {
+      return [user.role];
+    }
+    return [];
+  };
+
+  const userRoles = getUserRoles();
 
   return (
     <div className="w-full">
@@ -154,11 +177,24 @@ export const EditUserForm: React.FC<EditUserFormProps> = ({
             </div>
             <div className="text-right">
               <label className="block text-sm font-medium text-negro-una mb-2">
-                Rol Actual
+                Rol{userRoles.length !== 1 ? 'es' : ''} Actual{userRoles.length !== 1 ? 'es' : ''}
               </label>
-              <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800">
-                {user.role || 'Sin rol asignado'}
-              </span>
+              <div className="flex flex-wrap gap-2 justify-end">
+                {userRoles.length > 0 ? (
+                  userRoles.map((roleName, index) => (
+                    <div 
+                      key={index}
+                      className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800 max-w-[200px] break-all"
+                    >
+                      {roleName}
+                    </div>
+                  ))
+                ) : (
+                  <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-gray-100 text-gray-600">
+                    Sin rol asignado
+                  </span>
+                )}
+              </div>
             </div>
           </div>
         </div>
@@ -282,7 +318,7 @@ export const EditUserForm: React.FC<EditUserFormProps> = ({
           type="button"
           variant="primary"
           onClick={handleSubmit}
-          disabled={isSaving || !selectedRole}
+          disabled={isSaving || !selectedRole || !hasChanges}
           standardWidth={true}
         >
           {isSaving ? 'Guardando...' : 'Guardar'}

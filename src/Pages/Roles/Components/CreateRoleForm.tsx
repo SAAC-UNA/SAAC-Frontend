@@ -37,6 +37,8 @@ interface CreateRoleFormProps {
   simplified?: boolean;
   /** Ocultar botones internos (para manejarlos externamente) */
   hideButtons?: boolean;
+  /** Callback para notificar cambios en el formulario */
+  onHasChangesChange?: (hasChanges: boolean) => void;
 }
 
 /**
@@ -71,7 +73,8 @@ export const CreateRoleForm: React.FC<CreateRoleFormProps> = ({
   onCancel,
   initialData,
   simplified = false,
-  hideButtons = false
+  hideButtons = false,
+  onHasChangesChange
 }) => {
   const { isDesktop } = useBreakpoint();
   const { editRole, loadPermissions, isLoading, error, availablePermissions, clearError } = useRoles();
@@ -84,6 +87,9 @@ export const CreateRoleForm: React.FC<CreateRoleFormProps> = ({
     description: initialData?.description || '',
     permissions: initialData?.permissions.map(p => p.name) || []
   });
+
+  // Estado para detectar cambios en el formulario
+  const [hasChanges, setHasChanges] = useState(false);
 
   // Sistema de validación avanzado
   const advancedValidation = useValidation({
@@ -98,6 +104,29 @@ export const CreateRoleForm: React.FC<CreateRoleFormProps> = ({
   useEffect(() => {
     loadPermissions();
   }, []);
+
+  // Detectar cambios en el formulario comparando con initialData
+  useEffect(() => {
+    // En modo creación, el botón siempre está habilitado (no aplicar detección de cambios)
+    if (!isEditing) {
+      setHasChanges(true);
+      onHasChangesChange?.(true);
+      return;
+    }
+
+    // En modo edición, comparar con datos iniciales
+    const nameChanged = formData.name.trim() !== (initialData?.name || '');
+    const descriptionChanged = formData.description.trim() !== (initialData?.description || '');
+    
+    // Comparar arrays de permisos
+    const initialPermissions = initialData?.permissions.map(p => p.name).sort() || [];
+    const currentPermissions = [...formData.permissions].sort();
+    const permissionsChanged = JSON.stringify(initialPermissions) !== JSON.stringify(currentPermissions);
+
+    const hasFormChanges = nameChanged || descriptionChanged || permissionsChanged;
+    setHasChanges(hasFormChanges);
+    onHasChangesChange?.(hasFormChanges);
+  }, [formData, initialData, isEditing, onHasChangesChange]);
 
   const handleInputChange = (field: keyof RoleFormData, value: string | string[]) => {
     const newFormData = {
@@ -395,7 +424,7 @@ export const CreateRoleForm: React.FC<CreateRoleFormProps> = ({
                     <Button
                       type="submit"
                       variant="primary"
-                      disabled={isLoading}
+                      disabled={isLoading || !hasChanges}
                       standardWidth={true}
                       size="sm"
                     >
@@ -481,7 +510,7 @@ export const CreateRoleForm: React.FC<CreateRoleFormProps> = ({
                 <Button
                   type="submit"
                   variant="primary"
-                  disabled={isLoading}
+                  disabled={isLoading || !hasChanges}
                   standardWidth={true}
                   size="sm"
                 >

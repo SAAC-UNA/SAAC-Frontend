@@ -39,6 +39,10 @@ export interface CustomSelectProps {
   readonly?: boolean;
   // Número máximo de items visibles en el dropdown (por defecto 3)
   maxVisibleItems?: number;
+  // Búsqueda/Filtrado
+  searchable?: boolean; // Habilitar búsqueda en el dropdown
+  searchPlaceholder?: string; // Placeholder del campo de búsqueda
+  minItemsForSearch?: number; // Número mínimo de items para mostrar búsqueda (default: 5)
 }
 
 export const CustomSelect: React.FC<CustomSelectProps> = ({
@@ -55,13 +59,18 @@ export const CustomSelect: React.FC<CustomSelectProps> = ({
   id,
   onChange,
   readonly = false,
-  maxVisibleItems = 3
+  maxVisibleItems = 5,
+  searchable = true, // Habilitado por defecto
+  searchPlaceholder = 'Buscar...',
+  minItemsForSearch = 5 // Mostrar búsqueda si hay 5 o más items
 }) => {
   const [isOpen, setIsOpen] = useState(false);
+  const [searchTerm, setSearchTerm] = useState('');
   const [selectedOption, setSelectedOption] = useState<SelectOption | null>(
     value ? options.find(opt => opt.value === value) || null : null
   );
   const selectRef = useRef<HTMLDivElement>(null);
+  const searchInputRef = useRef<HTMLInputElement>(null);
   const generatedId = useId();
   const selectId = id || generatedId;
 
@@ -70,12 +79,23 @@ export const CustomSelect: React.FC<CustomSelectProps> = ({
     const handleClickOutside = (event: MouseEvent) => {
       if (selectRef.current && !selectRef.current.contains(event.target as Node)) {
         setIsOpen(false);
+        setSearchTerm(''); // Limpiar búsqueda al cerrar
       }
     };
 
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
+
+  // Focus en el input de búsqueda cuando se abre el dropdown
+  useEffect(() => {
+    if (isOpen && searchable && options.length >= minItemsForSearch && searchInputRef.current) {
+      // Pequeño delay para asegurar que el dropdown esté renderizado
+      setTimeout(() => {
+        searchInputRef.current?.focus();
+      }, 100);
+    }
+  }, [isOpen, searchable, options.length, minItemsForSearch]);
 
   // Actualizar opción seleccionada cuando cambia el value prop
   useEffect(() => {
@@ -111,6 +131,20 @@ export const CustomSelect: React.FC<CustomSelectProps> = ({
     const itemHeight = 40; // Altura aproximada de cada item en px
     return `${itemHeight * maxVisibleItems}px`;
   };
+
+  // Filtrar opciones según el término de búsqueda
+  const filteredOptions = React.useMemo(() => {
+    if (!searchTerm.trim()) return options;
+    
+    const searchLower = searchTerm.toLowerCase().trim();
+    return options.filter(option => 
+      option.label.toLowerCase().includes(searchLower) ||
+      option.value.toLowerCase().includes(searchLower)
+    );
+  }, [options, searchTerm]);
+
+  // Determinar si se debe mostrar el campo de búsqueda
+  const showSearch = searchable && options.length >= minItemsForSearch;
 
   // Floating label variant (nuevo diseño por defecto)
   if (variant === 'floating') {
@@ -220,46 +254,97 @@ export const CustomSelect: React.FC<CustomSelectProps> = ({
         {/* Allow showing dropdown in readonly mode (view-only) */}
         {isOpen && !disabled && (
           <div 
-            className="absolute z-50 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg overflow-auto custom-scrollbar"
-            style={{ maxHeight: getMaxHeight() }}
+            className="absolute z-50 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg overflow-hidden"
           >
-            <div className={cn('py-1', getDropdownSizeClasses())}>
-              {options.map((option) => (
-                <button
-                  key={option.value}
-                  type="button"
-                  className={cn(
-                    'relative w-full text-left px-4 py-2 hover:bg-gray-100 focus:bg-gray-100 focus:outline-none transition-colors duration-150',
-                    option.disabled
-                      ? 'text-gray-400 cursor-not-allowed'
-                      : readonly
-                        ? 'text-gray-900 cursor-default'
-                        : 'text-gray-900 cursor-pointer',
-                    selectedOption?.value === option.value && 'bg-blue-50 text-blue-900 font-medium'
+            {/* Campo de búsqueda (si está habilitado y hay suficientes items) */}
+            {showSearch && (
+              <div className="p-2 border-b border-gray-200 bg-gray-50/50 sticky top-0 z-10">
+                <div className="relative">
+                  <SystemIcons.interface.search 
+                    className="absolute left-3 top-1/2 -translate-y-1/2 text-gris-una w-4 h-4" 
+                    size="sm" 
+                  />
+                  <input
+                    ref={searchInputRef}
+                    type="text"
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    placeholder={searchPlaceholder}
+                    className="w-full pl-9 pr-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:border-azul-una focus:ring-1 focus:ring-azul-una"
+                    onClick={(e) => e.stopPropagation()} // Evitar que cierre el dropdown
+                  />
+                  {searchTerm && (
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setSearchTerm('');
+                        searchInputRef.current?.focus();
+                      }}
+                      className="absolute right-2 top-1/2 -translate-y-1/2 text-gris-una hover:text-negro-una p-1"
+                    >
+                      <SystemIcons.interface.closeCircle className="w-4 h-4" size="sm" />
+                    </button>
                   )}
-                  onClick={() => !readonly && handleOptionSelect(option)}
-                  disabled={option.disabled}
-                >
-                  {option.label}
-                  
-                  {/* Check icon for selected option */}
-                  {selectedOption?.value === option.value && (
-                    <span className="absolute inset-y-0 right-0 flex items-center pr-3">
-                      <svg
-                        className="w-5 h-5 text-blue-600"
-                        fill="currentColor"
-                        viewBox="0 0 20 20"
-                      >
-                        <path
-                          fillRule="evenodd"
-                          d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-                          clipRule="evenodd"
-                        />
-                      </svg>
-                    </span>
-                  )}
-                </button>
-              ))}
+                </div>
+              </div>
+            )}
+
+            <div 
+              className="overflow-auto custom-scrollbar"
+              style={{ maxHeight: getMaxHeight() }}
+            >
+              <div className={cn('py-1', getDropdownSizeClasses())}>
+                {/* Mensaje cuando no hay resultados */}
+                {filteredOptions.length === 0 && (
+                  <div className="px-4 py-8 text-center text-gris-una">
+                    <SystemIcons.interface.search className="w-8 h-8 mx-auto mb-2 opacity-50" size="md" />
+                    <p className="text-sm">No se encontraron resultados</p>
+                    {searchTerm && (
+                      <p className="text-xs mt-1">
+                        Intenta con otro término de búsqueda
+                      </p>
+                    )}
+                  </div>
+                )}
+
+                {filteredOptions.map((option) => (
+                  <button
+                    key={option.value}
+                    type="button"
+                    className={cn(
+                      'relative w-full text-left px-4 py-2 hover:bg-gray-100 focus:bg-gray-100 focus:outline-none transition-colors duration-150',
+                      option.disabled
+                        ? 'text-gray-400 cursor-not-allowed'
+                        : readonly
+                          ? 'text-gray-900 cursor-default'
+                          : 'text-gray-900 cursor-pointer',
+                      selectedOption?.value === option.value && 'bg-blue-50 text-blue-900 font-medium'
+                    )}
+                    onClick={() => !readonly && handleOptionSelect(option)}
+                    disabled={option.disabled}
+                  >
+                    {option.label}
+                    
+                    {/* Check icon for selected option */}
+                    {selectedOption?.value === option.value && (
+                      <span className="absolute inset-y-0 right-0 flex items-center pr-3">
+                        <svg
+                          className="w-5 h-5 text-blue-600"
+                          fill="currentColor"
+                          viewBox="0 0 20 20"
+                        >
+                          <path
+                            fillRule="evenodd"
+                            d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                            clipRule="evenodd"
+                          />
+                        </svg>
+                      </span>
+                    )}
+                  </button>
+                ))}
+              </div>
             </div>
           </div>
         )}
@@ -346,46 +431,97 @@ export const CustomSelect: React.FC<CustomSelectProps> = ({
       {/* Allow showing dropdown in readonly mode (view-only) */}
       {isOpen && !disabled && (
         <div 
-          className="absolute z-50 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg overflow-auto custom-scrollbar"
-          style={{ maxHeight: getMaxHeight() }}
+          className="absolute z-50 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg overflow-hidden"
         >
-          <div className={cn('py-1', getDropdownSizeClasses())}>
-            {options.map((option) => (
-              <button
-                key={option.value}
-                type="button"
-                className={cn(
-                  'relative w-full text-left px-4 py-2 hover:bg-gray-100 focus:bg-gray-100 focus:outline-none transition-colors duration-150',
-                  option.disabled
-                    ? 'text-gray-400 cursor-not-allowed'
-                    : readonly
-                      ? 'text-gray-900 cursor-default'
-                      : 'text-gray-900 cursor-pointer',
-                  selectedOption?.value === option.value && 'bg-blue-50 text-blue-900 font-medium'
+          {/* Campo de búsqueda (si está habilitado y hay suficientes items) */}
+          {showSearch && (
+            <div className="p-2 border-b border-gray-200 bg-gray-50/50 sticky top-0 z-10">
+              <div className="relative">
+                <SystemIcons.interface.search 
+                  className="absolute left-3 top-1/2 -translate-y-1/2 text-gris-una w-4 h-4" 
+                  size="sm" 
+                />
+                <input
+                  ref={searchInputRef}
+                  type="text"
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  placeholder={searchPlaceholder}
+                  className="w-full pl-9 pr-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:border-azul-una focus:ring-1 focus:ring-azul-una"
+                  onClick={(e) => e.stopPropagation()} // Evitar que cierre el dropdown
+                />
+                {searchTerm && (
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setSearchTerm('');
+                      searchInputRef.current?.focus();
+                    }}
+                    className="absolute right-2 top-1/2 -translate-y-1/2 text-gris-una hover:text-negro-una p-1"
+                  >
+                    <SystemIcons.interface.closeCircle className="w-4 h-4" size="sm" />
+                  </button>
                 )}
-                onClick={() => !readonly && handleOptionSelect(option)}
-                disabled={option.disabled}
-              >
-                {option.label}
-                
-                {/* Check icon for selected option */}
-                {selectedOption?.value === option.value && (
-                  <span className="absolute inset-y-0 right-0 flex items-center pr-3">
-                    <svg
-                      className="w-5 h-5 text-blue-600"
-                      fill="currentColor"
-                      viewBox="0 0 20 20"
-                    >
-                      <path
-                        fillRule="evenodd"
-                        d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-                        clipRule="evenodd"
-                      />
-                    </svg>
-                  </span>
-                )}
-              </button>
-            ))}
+              </div>
+            </div>
+          )}
+
+          <div 
+            className="overflow-auto custom-scrollbar"
+            style={{ maxHeight: getMaxHeight() }}
+          >
+            <div className={cn('py-1', getDropdownSizeClasses())}>
+              {/* Mensaje cuando no hay resultados */}
+              {filteredOptions.length === 0 && (
+                <div className="px-4 py-8 text-center text-gris-una">
+                  <SystemIcons.interface.search className="w-8 h-8 mx-auto mb-2 opacity-50" size="md" />
+                  <p className="text-sm">No se encontraron resultados</p>
+                  {searchTerm && (
+                    <p className="text-xs mt-1">
+                      Intenta con otro término de búsqueda
+                    </p>
+                  )}
+                </div>
+              )}
+
+              {filteredOptions.map((option) => (
+                <button
+                  key={option.value}
+                  type="button"
+                  className={cn(
+                    'relative w-full text-left px-4 py-2 hover:bg-gray-100 focus:bg-gray-100 focus:outline-none transition-colors duration-150',
+                    option.disabled
+                      ? 'text-gray-400 cursor-not-allowed'
+                      : readonly
+                        ? 'text-gray-900 cursor-default'
+                        : 'text-gray-900 cursor-pointer',
+                    selectedOption?.value === option.value && 'bg-blue-50 text-blue-900 font-medium'
+                  )}
+                  onClick={() => !readonly && handleOptionSelect(option)}
+                  disabled={option.disabled}
+                >
+                  {option.label}
+                  
+                  {/* Check icon for selected option */}
+                  {selectedOption?.value === option.value && (
+                    <span className="absolute inset-y-0 right-0 flex items-center pr-3">
+                      <svg
+                        className="w-5 h-5 text-blue-600"
+                        fill="currentColor"
+                        viewBox="0 0 20 20"
+                      >
+                        <path
+                          fillRule="evenodd"
+                          d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                          clipRule="evenodd"
+                        />
+                      </svg>
+                    </span>
+                  )}
+                </button>
+              ))}
+            </div>
           </div>
         </div>
       )}

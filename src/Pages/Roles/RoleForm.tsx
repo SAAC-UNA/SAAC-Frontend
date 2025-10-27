@@ -47,6 +47,9 @@ const RoleForm: React.FC = () => {
   const [isLoadingRole, setIsLoadingRole] = useState(isEditing);
   const [loadError, setLoadError] = useState<string | null>(null);
 
+  // Estado para detectar cambios en el formulario
+  const [hasChanges, setHasChanges] = useState(false);
+
   // Estado para el modal de confirmación
   const [confirmModalState, setConfirmModalState] = useState<{
     isOpen: boolean;
@@ -238,6 +241,7 @@ const RoleForm: React.FC = () => {
             initialData={isEditing && role ? role : undefined}
             onSubmit={handleFormSubmit}
             hideButtons={true}
+            onHasChangesChange={setHasChanges}
           />
         </div>
         
@@ -266,6 +270,7 @@ const RoleForm: React.FC = () => {
                   form.requestSubmit();
                 }
               }}
+              disabled={!hasChanges}
               standardWidth={true}
               size="sm"
             >
