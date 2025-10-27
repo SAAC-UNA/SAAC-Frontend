@@ -133,10 +133,10 @@ export const DataTable = <T extends Record<string, any>>({
         buttons.push(
           <Button
             key={i}
-            variant={currentPage === i ? "transparent" : "ghost"}
+            variant="ghost"
             size="sm"
             onClick={() => onPageChange(i)}
-            className="h-8 w-8 p-0 min-w-0 text-xs"
+            className={`h-8 w-8 p-0 min-w-0 text-xs !border-0 ${currentPage === i ? 'bg-azul-una/10 text-azul-una font-bold' : ''}`}
           >
             {i}
           </Button>
@@ -147,10 +147,10 @@ export const DataTable = <T extends Record<string, any>>({
       buttons.push(
         <Button
           key={1}
-          variant="secondary"
+          variant="ghost"
           size="sm"
           onClick={() => onPageChange(1)}
-          className="h-8 w-8 p-0 min-w-0 text-xs"
+          className={`h-8 w-8 p-0 min-w-0 text-xs !border-0 ${currentPage === 1 ? 'bg-azul-una/10 text-azul-una font-bold' : ''}`}
         >
           1
         </Button>
@@ -172,10 +172,10 @@ export const DataTable = <T extends Record<string, any>>({
         buttons.push(
           <Button
             key={i}
-            variant={currentPage === i ? "primary" : "ghost"}
+            variant="ghost"
             size="sm"
             onClick={() => onPageChange(i)}
-            className="h-8 w-8 p-0 min-w-0 text-xs"
+            className={`h-8 w-8 p-0 min-w-0 text-xs !border-0 ${currentPage === i ? 'bg-azul-una/10 text-azul-una font-bold' : ''}`}
           >
             {i}
           </Button>
@@ -194,10 +194,10 @@ export const DataTable = <T extends Record<string, any>>({
         buttons.push(
           <Button
             key={totalPages}
-            variant="primary"
+            variant="ghost"
             size="sm"
             onClick={() => onPageChange(totalPages)}
-            className="h-8 w-8 p-0 min-w-0 text-xs"
+            className={`h-8 w-8 p-0 min-w-0 text-xs !border-0 ${currentPage === totalPages ? 'bg-azul-una/10 text-azul-una font-bold' : ''}`}
           >
             {totalPages}
           </Button>

@@ -378,7 +378,7 @@ const validateForm = (): boolean => {
   return (
     <ScreenContainer
       title="Editar Elementos"
-      description="Selecciona y modifica elementos existentes en la estructura del repositorio. No es posible cambiar el tipo de elemento ni su posición en la jerarquía."
+      description="Selecciona y modifica elementos existentes en la estructura del repositorio"
     >
 
       {/* Formulario de edición */}
@@ -464,36 +464,42 @@ const validateForm = (): boolean => {
               )}
               </div>
             {/* Botones de acción */}
-            <div className="flex justify-between items-center mt-8 pt-6 border-t border-gray-200">
-              {/* Botón izquierdo */}
-              <Button
-                onClick={goBack}
-                variant="secondary"
-              >
-                Volver al Listado
-              </Button>
-              
-              {/* Botones derechos */}
-              <div className="flex space-x-3">
+              <div className="flex justify-between items-center mt-8 pt-6 border-t border-gray-200">
+                {/* Botón izquierdo */}
                 <Button
-                  onClick={() => handleAction('discard')}
+                  onClick={goBack}
                   variant="secondary"
-                  disabled={!hasChanges || isLoading}
+                  standardWidth={true}
+                  size="sm"
                 >
-                  Deshacer Cambios
+                  Volver
                 </Button>
-                <Button
-                  onClick={() => handleAction('save')}
-                  disabled={!hasChanges || isLoading}
-                  variant="primary"
-                >
-                  {isLoading ? 'Guardando...' : 'Guardar Cambios'}
-                </Button>
+                
+                {/* Botones derechos */}
+                <div className="flex space-x-3">
+                  <Button
+                    onClick={() => handleAction('discard')}
+                    variant="secondary"
+                    disabled={!hasChanges || isLoading}
+                    standardWidth={true}
+                    size="sm"
+                  >
+                    Deshacer
+                  </Button>
+                  <Button
+                    onClick={() => handleAction('save')}
+                    disabled={!hasChanges || isLoading}
+                    variant="primary"
+                    standardWidth={true}
+                    size="sm"
+                  >
+                    {isLoading ? 'Guardando...' : 'Guardar'}
+                  </Button>
+                </div>
               </div>
             </div>
+          </div>
         </div>
-        </div>
-      </div>
 
       {/* Modal de confirmación */}
       <Modal
@@ -511,6 +517,8 @@ const validateForm = (): boolean => {
             <Button
               onClick={confirmModal.closeModal}
               variant="secondary"
+              standardWidth={true}
+              size="sm"
             >
               Cancelar
             </Button>
@@ -518,6 +526,8 @@ const validateForm = (): boolean => {
               onClick={confirmAction}
               disabled={isLoading}
               variant={pendingAction === 'save' ? 'primary' : 'secondary'}
+              standardWidth={true}
+              size="sm"
             >
               {isLoading ? 'Procesando...' : 'Confirmar'}
             </Button>
