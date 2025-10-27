@@ -222,8 +222,7 @@ const StructureList: React.FC = () => {
   };
 
  return (
-  <>
-    <div className="container mx-auto px-4 py-8">
+    <>
       <ScreenContainer
         title={moduleInfo.title}
         description={moduleInfo.description}
@@ -236,7 +235,6 @@ const StructureList: React.FC = () => {
           onCreate={handleCreateElement}
         />
       </ScreenContainer>
-    </div>
 
     {/* Modal de confirmación de eliminación*/}
     <DeleteConfirmationModal

@@ -51,6 +51,8 @@ export interface DataTableProps<T = any> {
   searchPlaceholder?: string;
   onSearch?: (query: string) => void;
   
+  customFilters?: React.ReactNode;
+
   // Botón principal
   primaryAction?: {
     label: string;
@@ -83,6 +85,7 @@ export const DataTable = <T extends Record<string, any>>({
   searchable = true,
   searchPlaceholder = "Buscar...",
   onSearch,
+  customFilters,
   primaryAction,
   pagination,
   loading = false,
@@ -230,6 +233,13 @@ export const DataTable = <T extends Record<string, any>>({
             )}
           </div>
           <div className="flex flex-col sm:flex-row w-full gap-2 shrink-0 lg:w-auto">
+
+            {customFilters && (
+              <div className="flex items-center gap-2 flex-1">
+                {customFilters}
+              </div>
+            )}
+            
             {searchable && (
               <SearchInput
                 placeholder={searchPlaceholder}
@@ -281,10 +291,8 @@ export const DataTable = <T extends Record<string, any>>({
                   <th 
                     key={index} 
                     className={cn(
-                      "py-4 border-y border-blue-gray-100",
-                      index === 0 ? "pl-8 pr-4" : "px-4", // Más padding en todas las columnas
-                      column.align === 'center' && "text-center",
-                      column.align === 'right' && "text-right"
+                      "py-4 border-y border-blue-gray-100 text-center",
+                      index === 0 ? "pl-8 pr-4" : "px-4"
                     )}
                   >
                     <p className="block font-sans text-sm antialiased font-normal leading-none text-blue-gray-900 opacity-70">

@@ -25,6 +25,8 @@ import type { DataTableColumn} from '@/Components/Ui/DataTable';
 import type { StructureElement, ElementType } from '@/Types/StructureTypes';
 import { SystemIcons } from '@/Components/Ui/Icons/SystemIcons';
 import { CustomSelect } from '@/Components/Ui/SingleSelect';
+import { MultiSelect } from '@/Components/Ui/MultiSelect';
+import type { MultiSelectOption } from '@/Components/Ui/MultiSelect';
 import type { SelectOption } from '@/Types/StructureTypes';
 import { TableActionButton } from '@/Components/Ui/TableActionButton';
 
@@ -49,7 +51,7 @@ export const StructureTable: React.FC<StructureTableProps> = ({
     const { treeData, isLoading, loadTree } = useStructure();
 
     const [searchQuery, setSearchQuery] = useState('');
-    const [typeFilter, setTypeFilter] = useState<ElementType | 'all'>('all');
+    const [typeFilter, setTypeFilter] = useState<ElementType[]>([]);
     const [filteredElements, setFilteredElements] = useState<StructureElement[]>([]);
     const [currentPage, setCurrentPage] = useState(1);
     const [modalState, setModalState] = useState<{
@@ -83,21 +85,39 @@ export const StructureTable: React.FC<StructureTableProps> = ({
         
         // Filtro por búsqueda
         if (searchQuery.trim()) {
-            filtered = filtered.filter(element =>
-                element.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                element.nomenclature?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                element.description?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                ELEMENT_TYPE_LABELS[element.type].toLowerCase().includes(searchQuery.toLowerCase())
-            );
+            const query = searchQuery.toLowerCase();
+            
+            // Verificar si está buscando SOLO por estado (palabra exacta)
+            const isOnlyActiveSearch = query === 'activo';
+            const isOnlyInactiveSearch = query === 'inactivo';
+            
+            filtered = filtered.filter(element => {
+                // Si está buscando solo "activo" o "inactivo", filtrar solo por estado
+                if (isOnlyActiveSearch) {
+                    return element.active === true;
+                }
+                
+                if (isOnlyInactiveSearch) {
+                    return element.active === false;
+                }
+                
+                // Para cualquier otra búsqueda, buscar SOLO en nombre y nomenclatura
+                const matchesName = element.name?.toLowerCase().includes(query);
+                const matchesNomenclature = element.nomenclature?.toLowerCase().includes(query);
+                const matchesDescription = element.description?.toLowerCase().includes(query);
+                
+                return matchesName || matchesNomenclature || matchesDescription;
+            });
         }
         
-        // Filtro por tipo
-        if (typeFilter !== 'all') {
-            filtered = filtered.filter(element => element.type === typeFilter);
+        // Filtro por tipo (múltiples tipos)
+        if (typeFilter.length > 0) {
+            filtered = filtered.filter(element => typeFilter.includes(element.type));
         }
-    
+        
         setFilteredElements(filtered);
-    }, [allElements, searchQuery, typeFilter]);
+        setCurrentPage(1); // Reset a primera página cuando cambian los filtros
+    }, [searchQuery, typeFilter, allElements]);
 
     // Resetear página solo cuando cambian los filtros, no cuando cambian los datos
     useEffect(() => {
@@ -130,6 +150,7 @@ export const StructureTable: React.FC<StructureTableProps> = ({
         {
             key: 'type',
             header: 'Tipo',
+            align: 'left',
             render: (_, element) => (
                 <p className="block font-sans text-sm antialiased font-bold leading-normal text-negro-una">
                     {ELEMENT_TYPE_LABELS[element.type]}
@@ -139,8 +160,9 @@ export const StructureTable: React.FC<StructureTableProps> = ({
         {
             key: 'nomenclature',
             header: 'Nomenclatura',
+            align: 'center',
             render: (_, element) => (
-                <p className="block font-sans text-sm antialiased font-bold leading-normal text-negro-una">
+                <p className="block font-sans text-sm antialiased font-normal leading-normal text-gris-una">
                     {element.nomenclature || '-'}
                 </p>
             )
@@ -148,9 +170,10 @@ export const StructureTable: React.FC<StructureTableProps> = ({
         {
             key: 'name',
             header: 'Nombre',
+            align: 'left',
             render: (_, element) => (
                 <p 
-                    className="block font-sans text-sm antialiased font-bold leading-normal text-negro-una max-w-xs truncate"
+                    className="block font-sans text-sm antialiased font-normal leading-normal text-gris-una max-w-xs truncate"
                     title={element.name || '-'}
                 >
                     {element.name || '-'}
@@ -160,6 +183,7 @@ export const StructureTable: React.FC<StructureTableProps> = ({
         {
             key: 'description',
             header: 'Descripción',
+            align: 'left',
             render: (_, element) => (
                 <p className="block font-sans text-sm antialiased font-normal leading-normal text-gris-una">
                     {truncateDescription(element.description)}
@@ -169,8 +193,9 @@ export const StructureTable: React.FC<StructureTableProps> = ({
         {
             key: 'status',
             header: 'Estado',
+            align: 'center',
             render: (_, element) => (
-                <div className="w-max">
+                <div className="w-max mx-auto">
                     <div className={`relative grid items-center px-2 py-1 font-sans text-xs font-bold uppercase rounded-md select-none whitespace-nowrap ${
                         element.active 
                             ? 'text-green-900 bg-green-500/20' 
@@ -182,102 +207,98 @@ export const StructureTable: React.FC<StructureTableProps> = ({
             )
         },
         {
-    key: 'actions',
-    header: 'Acciones',
-    align: 'center',
-    render: (_, element) => {
-        // Lógica para bloquear botones
-        const canDelete = !element.hasChildren; // Solo puede eliminar si NO tiene hijos
-        const canActivate = element.active || !element.parentElement || element.parentElement.active; // Puede activar si ya está activo, o si no tiene padre, o si el padre está activo
-        
-        return (
-            <div className="flex items-center justify-center gap-2 pr-2">
-                {/* Botón Ver */}
-                <ButtonWithTooltip
-                    variant="tableView"
-                    size="sm"
-                    tooltip="Ver detalles"
-                    onClick={() => setModalState({ isOpen: true, element })}
-                    className="h-8 w-8 p-2"
-                >
-                    <SystemIcons.actions.view className="w-4 h-4" />
-                </ButtonWithTooltip>
-                
-                {/* Botón Editar */}
-                <ButtonWithTooltip
-                    variant="tableEdit"
-                    size="sm"
-                    tooltip="Editar elemento"
-                    onClick={() => onEdit?.(element)}
-                    className="h-8 w-8 p-2"
-                >
-                    <SystemIcons.actions.edit className="w-4 h-4" />
-                </ButtonWithTooltip>
-                
-                {/* Botón Power - Activar/Desactivar */}
-                <TableActionButton
-                    action="power"
-                    isActive={element.active}
-                    tooltip={
-                        !canActivate 
-                            ? "No se puede activar: el padre está inactivo"
-                            : element.active 
-                                ? "Inactivar elemento" 
-                                : "Activar elemento"
-                    }
-                    onClick={() => onToggleActive?.(element)}
-                    disabled={!canActivate}
-                />
-                
-                {/* Botón Eliminar */}
-                <ButtonWithTooltip
-                    variant="tableDelete"
-                    size="sm"
-                    tooltip={
-                        canDelete 
-                            ? "Eliminar elemento" 
-                            : "No se puede eliminar: tiene elementos dependientes"
-                    }
-                    onClick={() => onDelete?.(element)}
-                    className="h-8 w-8 p-2"
-                    disabled={!canDelete}
-                >
-                    <SystemIcons.actions.delete className="w-4 h-4" />
-                </ButtonWithTooltip>
-            </div>
-        );
+        key: 'actions',
+        header: 'Acciones',
+        align: 'center',
+        render: (_, element) => {
+            // Lógica para bloquear botones
+            const canDelete = !element.hasChildren; // Solo puede eliminar si NO tiene hijos
+            const canActivate = element.active || !element.parentElement || element.parentElement.active; // Puede activar si ya está activo, o si no tiene padre, o si el padre está activo
+            
+            return (
+                <div className="flex items-center justify-center gap-2 pr-2">
+                    {/* Botón Ver */}
+                    <ButtonWithTooltip
+                        variant="tableView"
+                        size="sm"
+                        tooltip="Ver detalles"
+                        onClick={() => setModalState({ isOpen: true, element })}
+                        className="h-8 w-8 p-2"
+                    >
+                        <SystemIcons.actions.view className="w-4 h-4" />
+                    </ButtonWithTooltip>
+                    
+                    {/* Botón Editar */}
+                    <ButtonWithTooltip
+                        variant="tableEdit"
+                        size="sm"
+                        tooltip="Editar elemento"
+                        onClick={() => onEdit?.(element)}
+                        className="h-8 w-8 p-2"
+                    >
+                        <SystemIcons.actions.edit className="w-4 h-4" />
+                    </ButtonWithTooltip>
+                    
+                    {/* Botón Power - Activar/Desactivar */}
+                    <TableActionButton
+                        action="power"
+                        isActive={element.active}
+                        tooltip={
+                            !canActivate 
+                                ? "No se puede activar: el padre está inactivo"
+                                : element.active 
+                                    ? "Inactivar elemento" 
+                                    : "Activar elemento"
+                        }
+                        onClick={() => onToggleActive?.(element)}
+                        disabled={!canActivate}
+                    />
+                    
+                    {/* Botón Eliminar */}
+                    <ButtonWithTooltip
+                        variant="tableDelete"
+                        size="sm"
+                        tooltip={
+                            canDelete 
+                                ? "Eliminar elemento" 
+                                : "No se puede eliminar: tiene elementos dependientes"
+                        }
+                        onClick={() => onDelete?.(element)}
+                        className="h-8 w-8 p-2"
+                        disabled={!canDelete}
+                    >
+                        <SystemIcons.actions.delete className="w-4 h-4" />
+                    </ButtonWithTooltip>
+                </div>
+            );
+        }
     }
-}
     ];
 
-    // Opciones para el filtro de tipo
-    const typeOptions: SelectOption[] = [
-        { value: 'all', label: 'Todos los tipos' },
-        ...Object.entries(ELEMENT_TYPE_LABELS).map(([value, label]) => ({
-            value,
-            label
-        }))
-    ];
+    // Opciones para el MultiSelect de tipo
+    const typeOptions: MultiSelectOption[] = Object.entries(ELEMENT_TYPE_LABELS).map(([value, label]) => ({
+        value,
+        label
+    }));
 
     return (
         <>
-            {/* Filtro por tipo */}
-            <div className="flex gap-4 mb-4">
-                <div className="w-64">
-                    <CustomSelect
-                        label="Filtrar por tipo"
-                        options={typeOptions}
-                        value={typeFilter}
-                        onChange={(value) => setTypeFilter(value as ElementType | 'all')}
-                        placeholder="Todos los tipos"
-                    />
-                </div>
-        </div>
-
             <DataTable
                 data={paginatedData}
                 columns={columns}
                 title=""
+                customFilters={
+                    <div className="w-72">
+                        <MultiSelect
+                            label="Filtrar por elemento"
+                            options={typeOptions}
+                            value={typeFilter}
+                            onChange={(values) => setTypeFilter(values as ElementType[])}
+                            placeholder="Seleccionar tipos..."
+                            variant="floating"
+                        />
+                    </div>
+                }
                 searchable={true}
                 searchPlaceholder="Buscar elementos..."
                 onSearch={setSearchQuery}
