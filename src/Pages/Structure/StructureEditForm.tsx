@@ -348,16 +348,16 @@ const validateForm = (): boolean => {
     if (!pendingAction) return '';
     
     if (pendingAction === 'save') {
-      return '¿Estás seguro de que deseas guardar los cambios realizados?';
+      return '¿Está seguro de que desea guardar los cambios realizados?';
     } else {
-      return '¿Estás seguro de que deseas descartar todos los cambios? Esta acción no se puede deshacer.';
+      return '¿Está seguro de que desea descartar todos los cambios? Esta acción no se puede deshacer.';
     }
   };
 
   // Volver al listado
   const goBack = () => {
   if (hasChanges) {
-    if (confirm('Tienes cambios sin guardar. ¿Deseas salir sin guardar?')) {
+    if (confirm('Tiene cambios sin guardar. ¿Desea salir sin guardar?')) {
       navigate('/estructura/listar');
     }
   } else {
@@ -507,33 +507,15 @@ const validateForm = (): boolean => {
         onClose={confirmModal.closeModal}
         title={pendingAction === 'save' ? 'Confirmar Guardado' : 'Confirmar Descarte'}
         size="md"
-      >
-        <div className="space-y-4">
-          <p className="text-gray-700">
-            {getConfirmationText()}
-          </p>
-          
-          <div className="flex justify-end space-x-3">
-            <Button
-              onClick={confirmModal.closeModal}
-              variant="secondary"
-              standardWidth={true}
-              size="sm"
-            >
-              Cancelar
-            </Button>
-            <Button
-              onClick={confirmAction}
-              disabled={isLoading}
-              variant={pendingAction === 'save' ? 'primary' : 'secondary'}
-              standardWidth={true}
-              size="sm"
-            >
-              {isLoading ? 'Procesando...' : 'Confirmar'}
-            </Button>
-          </div>
-        </div>
-      </Modal>
+        variant="warning"
+        message={getConfirmationText()}
+        showConfirm={true}
+        confirmLabel="Confirmar"
+        onConfirm={confirmAction}
+        confirmLoading={isLoading}
+        showCancel={true}
+        cancelLabel="Cancelar"
+      />
       {/* Modal de éxito */}
       <SuccessModal
         isOpen={successModalState.isOpen}
