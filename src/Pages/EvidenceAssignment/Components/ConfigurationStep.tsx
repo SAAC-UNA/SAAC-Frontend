@@ -53,10 +53,9 @@ export const ConfigurationStep: React.FC<ConfigurationStepProps> = ({
     }
   };
 
-  // Fecha mínima (mañana)
-  const tomorrow = new Date();
-  tomorrow.setDate(tomorrow.getDate() + 1);
-  const minDate = tomorrow.toISOString().split('T')[0];
+  // Fecha mínima (hoy)
+  const today = new Date();
+  const minDate = today.toISOString().split('T')[0];
 
   return (
     <div className="space-y-6">

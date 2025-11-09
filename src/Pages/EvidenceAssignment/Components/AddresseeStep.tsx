@@ -30,6 +30,7 @@ export const AddresseeStep: React.FC<AddresseeStepProps> = ({
   const [loading, setLoading] = useState(true);
   const [userError, setUserError] = useState<string | null>(null);
   const [roleError, setRoleError] = useState<string | null>(null);
+  const [userCountByRole, setUserCountByRole] = useState<Record<number, number>>({});
 
   useEffect(() => {
     loadData();
@@ -60,10 +61,29 @@ export const AddresseeStep: React.FC<AddresseeStepProps> = ({
         role: user.roles?.[0]?.name
       }));
       setAvailableUsers(transformedUsers);
+      
+      // Calcular cantidad de usuarios por rol
+      calculateUserCountByRole(users);
     } catch (error) {
       console.error('Error loading users:', error);
       setUserError('Error al cargar la lista de usuarios');
     }
+  };
+
+  const calculateUserCountByRole = (users: any[]) => {
+    const countMap: Record<number, number> = {};
+    
+    users.forEach(user => {
+      if (user.roles && user.roles.length > 0) {
+        user.roles.forEach((role: any) => {
+          if (role.id) {
+            countMap[role.id] = (countMap[role.id] || 0) + 1;
+          }
+        });
+      }
+    });
+    
+    setUserCountByRole(countMap);
   };
 
   const loadRoles = async () => {
@@ -95,7 +115,8 @@ export const AddresseeStep: React.FC<AddresseeStepProps> = ({
   const roleOptions = availableRoles.map(role => ({
     id: role.id,
     label: role.name,
-    value: role.id.toString()
+    value: role.id.toString(),
+    metadata: `${userCountByRole[role.id] || 0} ${(userCountByRole[role.id] || 0) === 1 ? 'usuario' : 'usuarios'}`
   }));
 
   return (

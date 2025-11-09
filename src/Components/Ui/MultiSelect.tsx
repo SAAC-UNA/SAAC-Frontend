@@ -6,6 +6,7 @@ export interface MultiSelectOption {
   value: string;
   label: string;
   disabled?: boolean;
+  metadata?: string; // Texto adicional a mostrar al lado del label (ej: contador de usuarios)
 }
 
 export interface MultiSelectProps {
@@ -358,7 +359,14 @@ export const MultiSelect: React.FC<MultiSelectProps> = ({
                       onClick={() => handleOptionToggle(option)}
                       disabled={option.disabled}
                     >
-                      <span className="flex-1">{option.label}</span>
+                      <span className="flex-1 flex items-center gap-2">
+                        <span>{option.label}</span>
+                        {option.metadata && (
+                          <span className="text-xs text-gris-una font-normal bg-gris-una/10 px-2 py-0.5 rounded-full">
+                            {option.metadata}
+                          </span>
+                        )}
+                      </span>
                       
                       {/* Check icon for selected options */}
                       {isSelected && (
@@ -544,7 +552,14 @@ export const MultiSelect: React.FC<MultiSelectProps> = ({
                       onClick={() => handleOptionToggle(option)}
                       disabled={option.disabled}
                     >
-                      <span className="flex-1">{option.label}</span>
+                      <span className="flex-1 flex items-center gap-2">
+                        <span>{option.label}</span>
+                        {option.metadata && (
+                          <span className="text-xs text-gris-una font-normal bg-gris-una/10 px-2 py-0.5 rounded-full">
+                            {option.metadata}
+                          </span>
+                        )}
+                      </span>
                       
                       {/* Check icon for selected options */}
                       {isSelected && (

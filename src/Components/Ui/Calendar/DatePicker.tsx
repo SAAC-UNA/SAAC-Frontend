@@ -45,13 +45,20 @@ export const DatePicker: React.FC<DatePickerProps> = ({
 }) => {
   const [currentDate, setCurrentDate] = useState(() => {
     if (value) {
-      return new Date(value);
+      // Parsear fecha en zona local
+      const dateParts = value.split('-');
+      return new Date(parseInt(dateParts[0]), parseInt(dateParts[1]) - 1, parseInt(dateParts[2]));
     }
     return new Date();
   });
   
   const [selectedDate, setSelectedDate] = useState<Date | null>(() => {
-    return value ? new Date(value) : null;
+    if (value) {
+      // Parsear fecha en zona local
+      const dateParts = value.split('-');
+      return new Date(parseInt(dateParts[0]), parseInt(dateParts[1]) - 1, parseInt(dateParts[2]));
+    }
+    return null;
   });
   
   const [showPicker, setShowPicker] = useState(false);
@@ -74,7 +81,9 @@ export const DatePicker: React.FC<DatePickerProps> = ({
   // Actualizar fecha seleccionada cuando cambia el valor
   useEffect(() => {
     if (value) {
-      const newDate = new Date(value);
+      // Parsear fecha en zona local
+      const dateParts = value.split('-');
+      const newDate = new Date(parseInt(dateParts[0]), parseInt(dateParts[1]) - 1, parseInt(dateParts[2]));
       setSelectedDate(newDate);
       setCurrentDate(newDate);
     } else {
@@ -105,22 +114,67 @@ export const DatePicker: React.FC<DatePickerProps> = ({
     setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() + 1));
   };
 
+  const handleMonthChange = (monthIndex: number) => {
+    setCurrentDate(new Date(currentDate.getFullYear(), monthIndex));
+  };
+
+  const handleYearChange = (year: number) => {
+    setCurrentDate(new Date(year, currentDate.getMonth()));
+  };
+
+  // Generar rango de años (considera minDate y maxDate si están definidos)
+  const currentYear = new Date().getFullYear();
+  const minYear = minDate ? new Date(minDate + 'T00:00:00').getFullYear() : currentYear - 10;
+  const maxYear = maxDate ? new Date(maxDate + 'T00:00:00').getFullYear() : currentYear + 10;
+  
+  const yearRange = Array.from(
+    { length: maxYear - minYear + 1 }, 
+    (_, i) => minYear + i
+  );
+
   const handleSelectDate = (day: number) => {
     const selected = new Date(currentDate.getFullYear(), currentDate.getMonth(), day);
     
-    // Validar fecha mínima
-    if (minDate && selected < new Date(minDate)) {
+    // Si se hace clic en el mismo día ya seleccionado, des-seleccionar
+    if (isSelected(day)) {
+      handleClearDate();
       return;
+    }
+    
+    // Crear fechas locales para comparación (sin conversión UTC)
+    const selectedDateOnly = new Date(selected.getFullYear(), selected.getMonth(), selected.getDate());
+    
+    // Validar fecha mínima
+    if (minDate) {
+      const minDateObj = new Date(minDate + 'T00:00:00');
+      const minDateOnly = new Date(minDateObj.getFullYear(), minDateObj.getMonth(), minDateObj.getDate());
+      if (selectedDateOnly < minDateOnly) {
+        return;
+      }
     }
     
     // Validar fecha máxima
-    if (maxDate && selected > new Date(maxDate)) {
-      return;
+    if (maxDate) {
+      const maxDateObj = new Date(maxDate + 'T00:00:00');
+      const maxDateOnly = new Date(maxDateObj.getFullYear(), maxDateObj.getMonth(), maxDateObj.getDate());
+      if (selectedDateOnly > maxDateOnly) {
+        return;
+      }
     }
     
     setSelectedDate(selected);
-    const formattedDate = selected.toISOString().split('T')[0];
+    // Formatear fecha en zona local para evitar desfase
+    const year = selected.getFullYear();
+    const month = String(selected.getMonth() + 1).padStart(2, '0');
+    const dayFormatted = String(selected.getDate()).padStart(2, '0');
+    const formattedDate = `${year}-${month}-${dayFormatted}`;
     onChange?.(formattedDate);
+    setShowPicker(false);
+  };
+
+  const handleClearDate = () => {
+    setSelectedDate(null);
+    onChange?.('');
     setShowPicker(false);
   };
 
@@ -135,9 +189,20 @@ export const DatePicker: React.FC<DatePickerProps> = ({
 
   const isDateDisabled = (day: number) => {
     const date = new Date(currentDate.getFullYear(), currentDate.getMonth(), day);
+    const dateOnly = new Date(date.getFullYear(), date.getMonth(), date.getDate());
     
-    if (minDate && date < new Date(minDate)) return true;
-    if (maxDate && date > new Date(maxDate)) return true;
+    // Comparar solo fechas, sin horas
+    if (minDate) {
+      const minDateObj = new Date(minDate + 'T00:00:00');
+      const minDateOnly = new Date(minDateObj.getFullYear(), minDateObj.getMonth(), minDateObj.getDate());
+      if (dateOnly < minDateOnly) return true;
+    }
+    
+    if (maxDate) {
+      const maxDateObj = new Date(maxDate + 'T00:00:00');
+      const maxDateOnly = new Date(maxDateObj.getFullYear(), maxDateObj.getMonth(), maxDateObj.getDate());
+      if (dateOnly > maxDateOnly) return true;
+    }
     
     return false;
   };
@@ -215,37 +280,80 @@ export const DatePicker: React.FC<DatePickerProps> = ({
           aria-label={label || 'Selector de fecha'}
         >
           <span className={cn(
-            'text-left',
+            'text-left flex-1',
             !selectedDate && 'text-gris-una/60'
           )}>
             {formatDate(selectedDate)}
           </span>
           
-          <SystemIcons.interface.calendar size="sm" className="text-gris-una" />
+          <div className="flex items-center gap-1">
+            {/* Botón para limpiar la fecha */}
+            {selectedDate && !disabled && (
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleClearDate();
+                }}
+                className="p-0.5 hover:bg-gris-una/20 rounded transition-colors"
+                aria-label="Limpiar fecha"
+              >
+                <SystemIcons.actions.cancel size="sm" className="text-gris-una" />
+              </button>
+            )}
+            
+            <SystemIcons.interface.calendar size="sm" className="text-gris-una" />
+          </div>
         </button>
 
         {/* Calendar Dropdown */}
         {showPicker && (
           <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-gris-una/30 rounded-lg shadow-lg p-3 z-50 max-w-xs">
-            {/* Header with navigation */}
-            <div className="flex items-center justify-between mb-3">
+            {/* Header with navigation and selectors */}
+            <div className="flex items-center justify-between gap-2 mb-3">
               <button
                 type="button"
                 onClick={handlePrevMonth}
-                className="p-1 hover:bg-gris-una/10 rounded transition-colors"
+                className="p-1 hover:bg-gris-una/10 rounded transition-colors flex-shrink-0"
                 aria-label="Mes anterior"
               >
                 <SystemIcons.navigation.arrow.left size="sm" className="text-gris-una" />
               </button>
               
-              <h3 className="text-sm font-semibold text-negro-una">
-                {monthNames[currentDate.getMonth()]} {currentDate.getFullYear()}
-              </h3>
+              <div className="flex items-center gap-2 flex-1 justify-center">
+                {/* Selector de Mes */}
+                <select
+                  value={currentDate.getMonth()}
+                  onChange={(e) => handleMonthChange(parseInt(e.target.value))}
+                  className="text-sm font-semibold text-negro-una bg-transparent border border-gris-una/20 rounded px-2 py-1 hover:border-gris-una/40 focus:outline-none focus:ring-1 focus:ring-azul-una/30 cursor-pointer"
+                  aria-label="Seleccionar mes"
+                >
+                  {monthNames.map((month, index) => (
+                    <option key={index} value={index}>
+                      {month}
+                    </option>
+                  ))}
+                </select>
+
+                {/* Selector de Año */}
+                <select
+                  value={currentDate.getFullYear()}
+                  onChange={(e) => handleYearChange(parseInt(e.target.value))}
+                  className="text-sm font-semibold text-negro-una bg-transparent border border-gris-una/20 rounded px-2 py-1 hover:border-gris-una/40 focus:outline-none focus:ring-1 focus:ring-azul-una/30 cursor-pointer"
+                  aria-label="Seleccionar año"
+                >
+                  {yearRange.map((year) => (
+                    <option key={year} value={year}>
+                      {year}
+                    </option>
+                  ))}
+                </select>
+              </div>
               
               <button
                 type="button"
                 onClick={handleNextMonth}
-                className="p-1 hover:bg-gris-una/10 rounded transition-colors"
+                className="p-1 hover:bg-gris-una/10 rounded transition-colors flex-shrink-0"
                 aria-label="Mes siguiente"
               >
                 <SystemIcons.navigation.arrow.right size="sm" className="text-gris-una" />
