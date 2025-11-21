@@ -5,13 +5,15 @@
  * entre las diferentes acciones (crear, editar, eliminar).
  */
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, lazy, Suspense } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { UsersTable } from './Components/UsersTable';
-import { UserDetailsModal } from './Components/UserDetailsModal';
-import { DeleteConfirmationModal } from '@/Components/Ui/DeleteConfirmationModal';
-import { SuccessModal } from '@/Components/Ui/SuccessModal';
 import { ScreenContainer } from '@/Components/Ui/ScreenContainer';
+
+// Lazy load de modales para mejor rendimiento
+const UserDetailsModal = lazy(() => import('./Components/UserDetailsModal').then(m => ({ default: m.UserDetailsModal })));
+const DeleteConfirmationModal = lazy(() => import('@/Components/Ui/DeleteConfirmationModal').then(m => ({ default: m.DeleteConfirmationModal })));
+const SuccessModal = lazy(() => import('@/Components/Ui/SuccessModal').then(m => ({ default: m.SuccessModal })));
 import { getContextualInfo } from '@/Constants/ModuleInfo';
 import { useUsers } from '@/Hooks/UseUsers';
 import type { User } from '@/Services/UserService';
@@ -135,15 +137,18 @@ const UsersRepository: React.FC = () => {
 
 
         {/* Modal de detalles del usuario */}
-        <UserDetailsModal
-          isOpen={userDetailsModalState.isOpen}
-          onClose={closeUserDetailsModal}
-          user={userDetailsModalState.user}
-        />
+        <Suspense fallback={null}>
+          <UserDetailsModal
+            isOpen={userDetailsModalState.isOpen}
+            onClose={closeUserDetailsModal}
+            user={userDetailsModalState.user}
+          />
+        </Suspense>
 
         {/* Modal de confirmación para activación */}
         {stateChangeModalState.user?.status === 'inactive' && (
-          <DeleteConfirmationModal
+          <Suspense fallback={null}>
+            <DeleteConfirmationModal
             isOpen={stateChangeModalState.isOpen}
             onClose={closeStateChangeModal}
             onConfirm={confirmStateChange}
@@ -159,11 +164,13 @@ const UsersRepository: React.FC = () => {
             isLoading={isLoading}
             description="Al activar este usuario, podrá acceder al sistema con sus credenciales."
           />
+          </Suspense>
         )}
 
         {/* Modal de confirmación para inactivación */}
         {stateChangeModalState.user?.status === 'active' && (
-          <DeleteConfirmationModal
+          <Suspense fallback={null}>
+            <DeleteConfirmationModal
             isOpen={stateChangeModalState.isOpen}
             onClose={closeStateChangeModal}
             onConfirm={confirmStateChange}
@@ -180,19 +187,22 @@ const UsersRepository: React.FC = () => {
             isLoading={isLoading}
             description="Al inactivar este usuario, se revocará su acceso al sistema. Esta acción puede ser revertida en el futuro."
           />
+          </Suspense>
         )}
 
         {/* Modal de éxito */}
-        <SuccessModal
-          isOpen={successModalState.isOpen}
-          onClose={closeSuccessModal}
-          title={successModalState.action === 'activate' ? 'Usuario activado' : 'Usuario inactivado'}
-          message={
-            successModalState.action === 'activate'
-              ? `El usuario "${successModalState.userName}" ha sido activado correctamente.`
-              : `El usuario "${successModalState.userName}" ha sido inactivado correctamente.`
-          }
-        />
+        <Suspense fallback={null}>
+          <SuccessModal
+            isOpen={successModalState.isOpen}
+            onClose={closeSuccessModal}
+            title={successModalState.action === 'activate' ? 'Usuario activado' : 'Usuario inactivado'}
+            message={
+              successModalState.action === 'activate'
+                ? `El usuario "${successModalState.userName}" ha sido activado correctamente.`
+                : `El usuario "${successModalState.userName}" ha sido inactivado correctamente.`
+            }
+          />
+        </Suspense>
         </ScreenContainer>
   );
 };

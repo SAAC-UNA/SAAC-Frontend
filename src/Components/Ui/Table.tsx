@@ -226,7 +226,7 @@ export const Table = React.memo(<T extends Record<string, unknown>>({
                         column.align === 'right' && "text-right"
                       )}
                     >
-                      {getCellValue(item, column)}
+                      {getCellValue(item, column) as React.ReactNode}
                     </td>
                   ))}
                   {actions && actions.length > 0 && (

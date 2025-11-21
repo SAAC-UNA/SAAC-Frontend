@@ -86,16 +86,16 @@ export const UsersTable: React.FC<UsersTableProps> = ({
         return { totalPages: total, paginatedData: paginated };
     }, [filteredUsers, currentPage, itemsPerPage]);
 
-    // Configuración de columnas de la tabla
-    const columns: DataTableColumn<User>[] = [
+    // Configuración de columnas de la tabla - memoizada para evitar recreación
+    const columns: DataTableColumn<User>[] = useMemo(() => [
         {
             key: 'name',
             header: 'Nombre',
             accessor: 'name',
             render: (value, user) => (
                 <div className="flex flex-col pl-2">
-                    <p className="block font-sans text-sm antialiased font-bold leading-normal text-negro-una" title={value}>
-                        {truncateText(value, 20)}
+                    <p className="block font-sans text-sm antialiased font-bold leading-normal text-negro-una" title={String(value)}>
+                        {truncateText(String(value), 20)}
                     </p>
                     <p className="block font-sans text-sm antialiased font-normal leading-normal text-gris-una opacity-70" title={user.email}>
                         {truncateText(user.email, 25)}
@@ -110,8 +110,8 @@ export const UsersTable: React.FC<UsersTableProps> = ({
             align: 'center',
             render: (role) => (
                 <div className="w-max mx-auto">
-                    <div className="relative grid items-center px-2 py-1 font-sans text-xs font-semibold text-gray-900 uppercase rounded-md select-none whitespace-nowrap" title={role || 'Sin rol'}>
-                        <span>{truncateText(role || 'Sin rol', 20)}</span>
+                    <div className="relative grid items-center px-2 py-1 font-sans text-xs font-semibold text-gray-900 uppercase rounded-md select-none whitespace-nowrap" title={String(role || 'Sin rol')}>
+                        <span>{truncateText(String(role || 'Sin rol'), 20)}</span>
                     </div>
                 </div>
             )
@@ -159,7 +159,7 @@ export const UsersTable: React.FC<UsersTableProps> = ({
                 </div>
             )
         }
-    ];
+    ], [truncateText, onViewUser, onEdit, onState]);
 
     const handleSearch = useCallback((query: string) => {
         setSearchQuery(query);
@@ -183,8 +183,8 @@ export const UsersTable: React.FC<UsersTableProps> = ({
     return (
         <div className="w-full">
             <DataTable
-                data={paginatedData}
-                columns={columns}
+                data={paginatedData as any}
+                columns={columns as any}
                 title=""
                 searchable={true}
                 searchPlaceholder="Buscar usuarios..."

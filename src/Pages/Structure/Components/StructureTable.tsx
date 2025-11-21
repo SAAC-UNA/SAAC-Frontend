@@ -314,8 +314,8 @@ export const StructureTable: React.FC<StructureTableProps> = ({
     return (
         <>
             <DataTable
-                data={paginatedData}
-                columns={columns}
+                data={paginatedData as any}
+                columns={columns as any}
                 title=""
                 customFilters={
                     <div className="w-72">

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useCallback } from 'react';
 import type { NavItem } from '@/Types/CommonTypes';
 import { cn } from '@/Utils/ClassNames';
 import { useNavigationItems } from '@/Hooks/UseNavigation';
@@ -12,7 +12,7 @@ interface ModernSidebarItemProps {
   isCollapsed?: boolean;
 }
 
-export const ModernSidebarItem: React.FC<ModernSidebarItemProps> = ({ 
+const ModernSidebarItemComponent: React.FC<ModernSidebarItemProps> = ({ 
   item, 
   isSubItem = false,
   isCollapsed = false
@@ -22,7 +22,7 @@ export const ModernSidebarItem: React.FC<ModernSidebarItemProps> = ({
   const isExpanded = isItemExpanded(item.id);
   const isActive = isItemActive(item.id);
 
-  const handleClick = () => {
+  const handleClick = useCallback(() => {
     // Si el item tiene un onClick personalizado (como logout), ejecutarlo
     if (item.onClick) {
       item.onClick();
@@ -31,7 +31,7 @@ export const ModernSidebarItem: React.FC<ModernSidebarItemProps> = ({
     
     // Comportamiento normal de navegación
     handleItemClick(item.id, item.href, item.isExpandable);
-  };
+  }, [item.onClick, item.id, item.href, item.isExpandable, handleItemClick]);
 
   const buttonContent = (
     <div className={cn(
@@ -171,3 +171,6 @@ export const ModernSidebarItem: React.FC<ModernSidebarItemProps> = ({
     </div>
   );
 };
+
+// Memoizar componente para evitar re-renders innecesarios
+export const ModernSidebarItem = React.memo(ModernSidebarItemComponent);

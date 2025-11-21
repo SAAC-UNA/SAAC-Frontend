@@ -12,7 +12,7 @@
  * - Estados responsive
  */
 
-import React, { useState, useMemo, useCallback } from 'react';
+import React, { useState, useCallback } from 'react';
 import { cn } from '@/Utils/ClassNames';
 import { Button } from './Button';
 import { SearchInput } from './SearchInput';
@@ -325,7 +325,7 @@ export const DataTable = React.memo(<T extends Record<string, unknown>>({
                         column.align === 'center' && "text-center",
                         column.align === 'right' && "text-right"
                       )}>
-                        {getCellValue(item, column)}
+                        {getCellValue(item, column) as React.ReactNode}
                       </div>
                     </td>
                   ))}
