@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useMemo, useCallback } from 'react';
 import { DataTable, TableActionButton } from '@/components/index';
 import { BackendErrorAlert } from '@/Components/Ui/BackendErrorAlert';
 import { useUsers } from '@/Hooks/UseUsers';
@@ -38,14 +38,13 @@ export const UsersTable: React.FC<UsersTableProps> = ({
     const { loadUsers } = internalHook;
 
     const [searchQuery, setSearchQuery] = useState('');
-    const [filteredUsers, setFilteredUsers] = useState<User[]>([]);
     const [currentPage, setCurrentPage] = useState(1);
 
-    // Función para truncar texto
-    const truncateText = (text: string, maxLength: number = 20): string => {
+    // Función para truncar texto - memoizada
+    const truncateText = useCallback((text: string, maxLength: number = 20): string => {
         if (text.length <= maxLength) return text;
         return text.substring(0, maxLength) + '...';
-    };
+    }, []);
 
     // Cargar usuarios al montar el componente solo si no se pasan como props
     useEffect(() => {
@@ -54,27 +53,34 @@ export const UsersTable: React.FC<UsersTableProps> = ({
         }
     }, [shouldUseExternal, loadUsers]);
 
-    // Filtrar usuarios basado en la búsqueda
-    useEffect(() => {
+    // Filtrar usuarios basado en la búsqueda - memoizado
+    const filteredUsers = useMemo(() => {
         if (!searchQuery.trim()) {
-            setFilteredUsers(users);
-        } else {
-            const filtered = users.filter(user =>
-                user.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                user.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                (user.role && user.role.toLowerCase().includes(searchQuery.toLowerCase()))
-            );
-            setFilteredUsers(filtered);
+            return users;
         }
-        setCurrentPage(1);
+        
+        const query = searchQuery.toLowerCase();
+        return users.filter(user =>
+            user.name.toLowerCase().includes(query) ||
+            user.email.toLowerCase().includes(query) ||
+            (user.role && user.role.toLowerCase().includes(query))
+        );
     }, [users, searchQuery]);
 
-    // Calcular datos paginados
-    const totalPages = Math.ceil(filteredUsers.length / itemsPerPage);
-    const paginatedData = filteredUsers.slice(
-        (currentPage - 1) * itemsPerPage,
-        currentPage * itemsPerPage
-    );
+    // Reset página cuando cambian los filtros
+    useEffect(() => {
+        setCurrentPage(1);
+    }, [searchQuery]);
+
+    // Calcular datos paginados - memoizado
+    const { totalPages, paginatedData } = useMemo(() => {
+        const total = Math.ceil(filteredUsers.length / itemsPerPage);
+        const paginated = filteredUsers.slice(
+            (currentPage - 1) * itemsPerPage,
+            currentPage * itemsPerPage
+        );
+        return { totalPages: total, paginatedData: paginated };
+    }, [filteredUsers, currentPage, itemsPerPage]);
 
     // Configuración de columnas de la tabla
     const columns: DataTableColumn<User>[] = [
@@ -151,13 +157,13 @@ export const UsersTable: React.FC<UsersTableProps> = ({
         }
     ];
 
-    const handleSearch = (query: string) => {
+    const handleSearch = useCallback((query: string) => {
         setSearchQuery(query);
-    };
+    }, []);
 
-    const handlePageChange = (page: number) => {
+    const handlePageChange = useCallback((page: number) => {
         setCurrentPage(page);
-    };
+    }, []);
 
     if (error) {
         return (

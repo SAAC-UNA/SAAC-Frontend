@@ -12,7 +12,7 @@
  * - Estados responsive
  */
 
-import React, { useState } from 'react';
+import React, { useState, useMemo, useCallback } from 'react';
 import { cn } from '@/Utils/ClassNames';
 import { Button } from './Button';
 import { SearchInput } from './SearchInput';
@@ -76,7 +76,7 @@ export interface DataTableProps<T = any> {
   unstyled?: boolean; // Para usar sin contenedor cuando está dentro de otro contenedor
 }
 
-export const DataTable = <T extends Record<string, any>>({
+export const DataTable = React.memo(<T extends Record<string, any>>({
   data,
   columns,
   actions,
@@ -95,12 +95,12 @@ export const DataTable = <T extends Record<string, any>>({
 }: DataTableProps<T>) => {
   const [searchQuery, setSearchQuery] = useState('');
 
-  const handleSearch = (value: string) => {
+  const handleSearch = useCallback((value: string) => {
     setSearchQuery(value);
     onSearch?.(value);
-  };
+  }, [onSearch]);
 
-  const getCellValue = (item: T, column: DataTableColumn<T>) => {
+  const getCellValue = useCallback((item: T, column: DataTableColumn<T>) => {
     if (column.render) {
       const accessor = column.accessor;
       const value = typeof accessor === 'function' 
@@ -118,9 +118,9 @@ export const DataTable = <T extends Record<string, any>>({
     }
     
     return item[column.key];
-  };
+  }, []);
 
-  const renderPaginationButtons = () => {
+  const renderPaginationButtons = useMemo(() => {
     if (!pagination || pagination.totalPages <= 1) return null;
 
     const { currentPage, totalPages, onPageChange } = pagination;
@@ -206,7 +206,7 @@ export const DataTable = <T extends Record<string, any>>({
     }
 
     return buttons;
-  };
+  }, [pagination]);
 
   return (
     <div className={cn(
@@ -374,7 +374,7 @@ export const DataTable = <T extends Record<string, any>>({
             Anterior
           </Button>
           <div className="flex items-center gap-2">
-            {renderPaginationButtons()}
+            {renderPaginationButtons}
           </div>
           <Button
             variant="outline"
@@ -388,4 +388,4 @@ export const DataTable = <T extends Record<string, any>>({
       )}
     </div>
   );
-};
+}) as <T extends Record<string, any>>(props: DataTableProps<T>) => JSX.Element;

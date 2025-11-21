@@ -5,7 +5,7 @@
  * entre las diferentes acciones (crear, editar, eliminar).
  */
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { UsersTable } from './Components/UsersTable';
 import { UserDetailsModal } from './Components/UserDetailsModal';
@@ -53,27 +53,27 @@ const UsersRepository: React.FC = () => {
     action: 'activate'
   });
 
-  const handleEditUser = (user: User) => {
+  const handleEditUser = useCallback((user: User) => {
     navigate(`/usuarios/editar/${user.id}`);
-  };
+  }, [navigate]);
 
-  const handleViewUser = (user: User) => {
+  const handleViewUser = useCallback((user: User) => {
     setUserDetailsModalState({
       isOpen: true,
       user
     });
-  };
+  }, []);
 
-  const closeUserDetailsModal = () => {
+  const closeUserDetailsModal = useCallback(() => {
     setUserDetailsModalState({ isOpen: false, user: null });
-  };
+  }, []);
 
-  const handleChangeState = (user: User) => {
+  const handleChangeState = useCallback((user: User) => {
     setStateChangeModalState({
       isOpen: true,
       user
     });
-  };
+  }, []);
 
   const confirmStateChange = async () => {
     if (!stateChangeModalState.user) return;
@@ -104,13 +104,13 @@ const UsersRepository: React.FC = () => {
     }
   };
 
-  const closeStateChangeModal = () => {
+  const closeStateChangeModal = useCallback(() => {
     setStateChangeModalState({ isOpen: false, user: null });
-  };
+  }, []);
 
-  const closeSuccessModal = () => {
+  const closeSuccessModal = useCallback(() => {
     setSuccessModalState({ isOpen: false, userName: '', action: 'activate' });
-  };
+  }, []);
 
   // Cargar usuarios al montar el componente
   useEffect(() => {

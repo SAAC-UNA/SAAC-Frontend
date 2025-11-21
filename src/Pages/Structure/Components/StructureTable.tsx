@@ -16,7 +16,7 @@
  * @param showHeader - Mostrar/ocultar el header
  */
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useMemo, useCallback } from 'react';
 import { Modal } from '@/Components/Ui/Modal';
 import { DataTable, ButtonWithTooltip } from '@/components/index';
 import { useStructure } from '@/Hooks/UseStructure';
@@ -59,28 +59,27 @@ export const StructureTable: React.FC<StructureTableProps> = ({
         element: StructureElement | null;
     }>({ isOpen: false, element: null });
 
-    // Aplanar el árbol para obtener todos los elementos como lista
-    const allElements = React.useMemo(() => {
-        const flattenTree = (nodes: StructureElement[]): StructureElement[] => {
-            return nodes.reduce((acc, node) => {
-                acc.push(node);
-                if (node.childElements && node.childElements.length > 0) {
-                    acc.push(...flattenTree(node.childElements));
-                }
-                return acc;
-            }, [] as StructureElement[]);
-        };
-        return flattenTree(treeData);
-    }, [treeData]);
+    // Función para aplanar árbol - extraída para reutilización
+    const flattenTree = useCallback((nodes: StructureElement[]): StructureElement[] => {
+        return nodes.reduce((acc, node) => {
+            acc.push(node);
+            if (node.childElements && node.childElements.length > 0) {
+                acc.push(...flattenTree(node.childElements));
+            }
+            return acc;
+        }, [] as StructureElement[]);
+    }, []);
+
+    // Aplanar el árbol para obtener todos los elementos como lista - MEMOIZADO
+    const allElements = useMemo(() => flattenTree(treeData), [treeData, flattenTree]);
 
     // Cargar elementos al montar el componente
     useEffect(() => {
         loadTree();
     }, [loadTree]);
 
-
-    // Filtrar elementos basado en la búsqueda y tipo
-    useEffect(() => {
+    // Filtrar elementos basado en la búsqueda y tipo - MEMOIZADO
+    const filteredElements = useMemo(() => {
         let filtered = allElements;
         
         // Filtro por búsqueda
@@ -115,31 +114,33 @@ export const StructureTable: React.FC<StructureTableProps> = ({
             filtered = filtered.filter(element => typeFilter.includes(element.type));
         }
         
-        setFilteredElements(filtered);
-        setCurrentPage(1); // Reset a primera página cuando cambian los filtros
+        return filtered;
     }, [searchQuery, typeFilter, allElements]);
 
-    // Resetear página solo cuando cambian los filtros, no cuando cambian los datos
+    // Resetear página cuando cambian los filtros
     useEffect(() => {
         setCurrentPage(1);
     }, [searchQuery, typeFilter]);
 
-    // Calcular datos paginados
-    const totalPages = Math.ceil(filteredElements.length / itemsPerPage);
-    const paginatedData = filteredElements.slice(
-        (currentPage - 1) * itemsPerPage,
-        currentPage * itemsPerPage
-    );
+    // Calcular datos paginados - MEMOIZADO
+    const { totalPages, paginatedData } = useMemo(() => {
+        const total = Math.ceil(filteredElements.length / itemsPerPage);
+        const paginated = filteredElements.slice(
+            (currentPage - 1) * itemsPerPage,
+            currentPage * itemsPerPage
+        );
+        return { totalPages: total, paginatedData: paginated };
+    }, [filteredElements, currentPage, itemsPerPage]);
 
-    // Función para truncar descripción
-    const truncateDescription = (text: string | undefined, maxLength: number = 20): string => {
+    // Función para truncar descripción - MEMOIZADA
+    const truncateDescription = useCallback((text: string | undefined, maxLength: number = 20): string => {
         if (!text) return '-';
         if (text.length <= maxLength) return text;
         return text.substring(0, maxLength) + '...';
-    };
+    }, []);
 
-    // Obtener el nombre del elemento padre
-    const getParentName = (element: StructureElement): string => {
+    // Obtener el nombre del elemento padre - MEMOIZADA
+    const getParentName = useCallback((element: StructureElement): string => {
         if (!element.parentElementId) return 'Sin elemento padre';
         
         // Determinar qué tipo de padre debería tener este elemento
@@ -153,10 +154,10 @@ export const StructureTable: React.FC<StructureTableProps> = ({
         );
         
         return parent?.name || parent?.nomenclature || parent?.description || 'Elemento padre no encontrado';
-    };
+    }, [allElements]);
 
-    // Helper: Determinar qué tipo de padre debe tener cada elemento
-    const getExpectedParentType = (elementType: ElementType): ElementType | null => {
+    // Helper: Determinar qué tipo de padre debe tener cada elemento - MEMOIZADA
+    const getExpectedParentType = useCallback((elementType: ElementType): ElementType | null => {
         const parentTypeMap: Record<ElementType, ElementType | null> = {
             'university': null,
             'campus': 'university',
@@ -169,7 +170,7 @@ export const StructureTable: React.FC<StructureTableProps> = ({
             'evidence': 'criteria'
         };
         return parentTypeMap[elementType];
-    };
+    }, []);
 
     // Configuración de columnas de la tabla
     const columns: DataTableColumn<StructureElement>[] = [
@@ -301,11 +302,13 @@ export const StructureTable: React.FC<StructureTableProps> = ({
     }
     ];
 
-    // Opciones para el MultiSelect de tipo
-    const typeOptions: MultiSelectOption[] = Object.entries(ELEMENT_TYPE_LABELS).map(([value, label]) => ({
-        value,
-        label
-    }));
+    // Opciones para el MultiSelect de tipo - MEMOIZADO
+    const typeOptions: MultiSelectOption[] = useMemo(() => 
+        Object.entries(ELEMENT_TYPE_LABELS).map(([value, label]) => ({
+            value,
+            label
+        }))
+    , []);
 
     return (
         <>
