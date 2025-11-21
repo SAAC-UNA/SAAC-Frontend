@@ -2,6 +2,7 @@ import React, { useEffect, useState, useMemo, useCallback } from 'react';
 import { DataTable, TableActionButton } from '@/components/index';
 import { BackendErrorAlert } from '@/Components/Ui/BackendErrorAlert';
 import { useUsers } from '@/Hooks/UseUsers';
+import { useDebounce } from '@/Hooks/UseDebounce';
 import type { DataTableColumn } from '@/components/Ui/DataTable';
 import type { User } from '@/Services/UserService';
 
@@ -40,6 +41,9 @@ export const UsersTable: React.FC<UsersTableProps> = ({
     const [searchQuery, setSearchQuery] = useState('');
     const [currentPage, setCurrentPage] = useState(1);
 
+    // Debounce de búsqueda para evitar filtrados innecesarios mientras se escribe
+    const debouncedSearchQuery = useDebounce(searchQuery, 300);
+
     // Función para truncar texto - memoizada
     const truncateText = useCallback((text: string, maxLength: number = 20): string => {
         if (text.length <= maxLength) return text;
@@ -53,24 +57,24 @@ export const UsersTable: React.FC<UsersTableProps> = ({
         }
     }, [shouldUseExternal, loadUsers]);
 
-    // Filtrar usuarios basado en la búsqueda - memoizado
+    // Filtrar usuarios basado en la búsqueda debounced - memoizado
     const filteredUsers = useMemo(() => {
-        if (!searchQuery.trim()) {
+        if (!debouncedSearchQuery.trim()) {
             return users;
         }
         
-        const query = searchQuery.toLowerCase();
+        const query = debouncedSearchQuery.toLowerCase();
         return users.filter(user =>
             user.name.toLowerCase().includes(query) ||
             user.email.toLowerCase().includes(query) ||
             (user.role && user.role.toLowerCase().includes(query))
         );
-    }, [users, searchQuery]);
+    }, [users, debouncedSearchQuery]);
 
-    // Reset página cuando cambian los filtros
+    // Reset página cuando cambian los filtros (usar debounced para evitar resets innecesarios)
     useEffect(() => {
         setCurrentPage(1);
-    }, [searchQuery]);
+    }, [debouncedSearchQuery]);
 
     // Calcular datos paginados - memoizado
     const { totalPages, paginatedData } = useMemo(() => {
@@ -192,8 +196,8 @@ export const UsersTable: React.FC<UsersTableProps> = ({
                 } : undefined}
                 loading={isLoading}
                 emptyMessage={
-                    searchQuery
-                        ? `No se encontraron usuarios que coincidan con "${searchQuery}"`
+                    debouncedSearchQuery
+                        ? `No se encontraron usuarios que coincidan con "${debouncedSearchQuery}"`
                         : "No hay usuarios registrados aún."
                 }
                 unstyled={unstyled}

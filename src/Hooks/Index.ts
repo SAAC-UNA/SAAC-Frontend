@@ -4,4 +4,5 @@ export { useApi, useFormApi } from './UseApi';
 export { useRoles } from './UseRoles';
 export { useStructure } from './UseStructure';
 export { useModuleInfo, useMultipleModuleInfo, useCurrentModuleInfo } from './UseModuleInfo';
+export { useDebounce } from './UseDebounce';
 export type { ScreenInfo } from './UseBreakpoint';

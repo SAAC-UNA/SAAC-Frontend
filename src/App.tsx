@@ -1,20 +1,32 @@
+import { lazy, Suspense } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider } from '@/Context/AuthContext';
 import { NavigationProvider } from '@/Context/NavigationContext';
 import { ToastProvider } from './Context/ToastContext';
 import { ProtectedRoute } from '@/Components/Ui/ProtectedRoute';
 import { Layout } from './Components/Layout/Index';
+import { LoadingSpinner } from '@/Components/Ui/Loading';
+
+// Lazy load de páginas para code splitting y mejor rendimiento
 import { Login } from '@/Pages/Auth/Login';
-import RoleForm from '@/Pages/Roles/RoleForm';
-import { RolesRepository } from './Pages/Roles';
-import { UsersRepository, EditUserPage } from './Pages/Users';
-import StructureList from '@/Pages/Structure/StructureList';
-import StructureCreation from '@/Pages/Structure/StructureCreation';
-import StructureEditForm from '@/Pages/Structure/StructureEditForm';
-import StructureEditList from './Pages/Structure/StructureEditList';
-import AccreditationProgress from '@/Pages/Accreditation/AccreditationProgress';
-import { HomePage } from './Pages/Index';
-import { EvidenceAssignment } from './Pages/EvidenceAssignment';
+const HomePage = lazy(() => import('./Pages/Index').then(m => ({ default: m.HomePage })));
+const RoleForm = lazy(() => import('@/Pages/Roles/RoleForm'));
+const RolesRepository = lazy(() => import('./Pages/Roles').then(m => ({ default: m.RolesRepository })));
+const UsersRepository = lazy(() => import('./Pages/Users').then(m => ({ default: m.UsersRepository })));
+const EditUserPage = lazy(() => import('./Pages/Users').then(m => ({ default: m.EditUserPage })));
+const StructureList = lazy(() => import('@/Pages/Structure/StructureList'));
+const StructureCreation = lazy(() => import('@/Pages/Structure/StructureCreation'));
+const StructureEditForm = lazy(() => import('@/Pages/Structure/StructureEditForm'));
+const StructureEditList = lazy(() => import('./Pages/Structure/StructureEditList'));
+const AccreditationProgress = lazy(() => import('@/Pages/Accreditation/AccreditationProgress'));
+const EvidenceAssignment = lazy(() => import('./Pages/EvidenceAssignment').then(m => ({ default: m.EvidenceAssignment })));
+
+// Componente de loading para Suspense
+const PageLoader = () => (
+  <div className="flex items-center justify-center min-h-screen">
+    <LoadingSpinner size="lg" />
+  </div>
+);
  
 function App() {
   return (
@@ -32,7 +44,8 @@ function App() {
                 element={
                   <ProtectedRoute>
                     <Layout>
-                      <Routes>
+                      <Suspense fallback={<PageLoader />}>
+                        <Routes>
                         {/* Página de inicio */}
                         <Route path="/" element={<HomePage />} />
  
@@ -136,7 +149,8 @@ function App() {
  
                         {/* Redirigir cualquier ruta no encontrada */}
                         <Route path="*" element={<Navigate to="/" replace />} />
-                      </Routes>
+                        </Routes>
+                      </Suspense>
                     </Layout>
                   </ProtectedRoute>
                 }

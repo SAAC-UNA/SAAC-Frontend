@@ -20,6 +20,7 @@ import React, { useEffect, useState, useMemo, useCallback } from 'react';
 import { Modal } from '@/Components/Ui/Modal';
 import { DataTable, ButtonWithTooltip } from '@/components/index';
 import { useStructure } from '@/Hooks/UseStructure';
+import { useDebounce } from '@/Hooks/UseDebounce';
 import { ELEMENT_TYPE_LABELS } from '@/Constants/StructureConstants';
 import type { DataTableColumn} from '@/Components/Ui/DataTable';
 import type { StructureElement, ElementType } from '@/Types/StructureTypes';
@@ -78,13 +79,13 @@ export const StructureTable: React.FC<StructureTableProps> = ({
         loadTree();
     }, [loadTree]);
 
-    // Filtrar elementos basado en la búsqueda y tipo - MEMOIZADO
+    // Filtrar elementos basado en la búsqueda y tipo - MEMOIZADO con debounced search
     const filteredElements = useMemo(() => {
         let filtered = allElements;
         
-        // Filtro por búsqueda
-        if (searchQuery.trim()) {
-            const query = searchQuery.toLowerCase();
+        // Filtro por búsqueda (usar debounced query)
+        if (debouncedSearchQuery.trim()) {
+            const query = debouncedSearchQuery.toLowerCase();
             
             // Verificar si está buscando SOLO por estado (palabra exacta)
             const isOnlyActiveSearch = query === 'activo';
@@ -115,12 +116,12 @@ export const StructureTable: React.FC<StructureTableProps> = ({
         }
         
         return filtered;
-    }, [searchQuery, typeFilter, allElements]);
+    }, [debouncedSearchQuery, typeFilter, allElements]);
 
-    // Resetear página cuando cambian los filtros
+    // Resetear página cuando cambian los filtros (usar debounced para evitar resets innecesarios)
     useEffect(() => {
         setCurrentPage(1);
-    }, [searchQuery, typeFilter]);
+    }, [debouncedSearchQuery, typeFilter]);
 
     // Calcular datos paginados - MEMOIZADO
     const { totalPages, paginatedData } = useMemo(() => {
@@ -343,8 +344,8 @@ export const StructureTable: React.FC<StructureTableProps> = ({
                 } : undefined}
                 loading={isLoading}
                 emptyMessage={
-                    searchQuery
-                        ? `No se encontraron elementos que coincidan con "${searchQuery}"`
+                    debouncedSearchQuery
+                        ? `No se encontraron elementos que coincidan con "${debouncedSearchQuery}"`
                         : "No hay elementos creados aún. ¡Crea el primer elemento!"
                 }
                 unstyled={unstyled}
