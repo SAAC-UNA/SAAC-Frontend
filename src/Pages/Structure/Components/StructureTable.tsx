@@ -60,19 +60,19 @@ export const StructureTable: React.FC<StructureTableProps> = ({
     // Debounce de búsqueda para evitar filtrados innecesarios mientras se escribe
     const debouncedSearchQuery = useDebounce(searchQuery, 300);
 
-    // Función para aplanar árbol - extraída para reutilización
-    const flattenTree = useCallback((nodes: StructureElement[]): StructureElement[] => {
-        return nodes.reduce((acc, node) => {
-            acc.push(node);
-            if (node.childElements && node.childElements.length > 0) {
-                acc.push(...flattenTree(node.childElements));
-            }
-            return acc;
-        }, [] as StructureElement[]);
-    }, []);
-
     // Aplanar el árbol para obtener todos los elementos como lista - MEMOIZADO
-    const allElements = useMemo(() => flattenTree(treeData), [treeData, flattenTree]);
+    const allElements = useMemo(() => {
+        const flattenTree = (nodes: StructureElement[]): StructureElement[] => {
+            return nodes.reduce((acc, node) => {
+                acc.push(node);
+                if (node.childElements && node.childElements.length > 0) {
+                    acc.push(...flattenTree(node.childElements));
+                }
+                return acc;
+            }, [] as StructureElement[]);
+        };
+        return flattenTree(treeData);
+    }, [treeData]);
 
     // Cargar elementos al montar el componente
     useEffect(() => {

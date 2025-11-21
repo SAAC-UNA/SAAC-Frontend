@@ -16,17 +16,17 @@ import { Button } from './Button';
 import { Input } from './Input';
 import { LoadingSpinner } from './Loading';
 
-export interface TableColumn<T = any> {
+export interface TableColumn<T = unknown> {
   key: string;
   header: string;
   accessor?: keyof T | ((item: T) => React.ReactNode);
   sortable?: boolean;
   width?: string;
   align?: 'left' | 'center' | 'right';
-  render?: (value: any, item: T, index: number) => React.ReactNode;
+  render?: (value: unknown, item: T, index: number) => React.ReactNode;
 }
 
-export interface TableAction<T = any> {
+export interface TableAction<T = unknown> {
   label: string;
   icon?: React.ReactNode;
   onClick: (item: T) => void;
@@ -34,7 +34,7 @@ export interface TableAction<T = any> {
   disabled?: (item: T) => boolean;
 }
 
-export interface TableProps<T = any> {
+export interface TableProps<T = unknown> {
   data: T[];
   columns: TableColumn<T>[];
   actions?: TableAction<T>[];
@@ -62,7 +62,7 @@ export interface TableProps<T = any> {
   onSort?: (key: string) => void;
 }
 
-export const Table = React.memo(<T extends Record<string, any>>({
+export const Table = React.memo(<T extends Record<string, unknown>>({
   data,
   columns,
   actions,
@@ -282,4 +282,4 @@ export const Table = React.memo(<T extends Record<string, any>>({
       )}
     </div>
   );
-}) as <T extends Record<string, any>>(props: TableProps<T>) => React.ReactElement;
+}) as <T extends Record<string, unknown>>(props: TableProps<T>) => React.ReactElement;

@@ -19,16 +19,16 @@ import { SearchInput } from './SearchInput';
 import { LoadingSpinner } from './Loading';
 import { SystemIcons } from './Icons/SystemIcons';
 
-export interface DataTableColumn<T = any> {
+export interface DataTableColumn<T = unknown> {
   key: string;
   header: string;
   accessor?: keyof T | ((item: T) => React.ReactNode);
-  render?: (value: any, item: T, index: number) => React.ReactNode;
+  render?: (value: unknown, item: T, index: number) => React.ReactNode;
   width?: string;
   align?: 'left' | 'center' | 'right';
 }
 
-export interface DataTableAction<T = any> {
+export interface DataTableAction<T = unknown> {
   icon: React.ReactNode;
   label: string;
   onClick: (item: T) => void;
@@ -36,7 +36,7 @@ export interface DataTableAction<T = any> {
   disabled?: (item: T) => boolean;
 }
 
-export interface DataTableProps<T = any> {
+export interface DataTableProps<T = unknown> {
   // Datos y estructura
   data: T[];
   columns: DataTableColumn<T>[];
@@ -76,7 +76,7 @@ export interface DataTableProps<T = any> {
   unstyled?: boolean; // Para usar sin contenedor cuando está dentro de otro contenedor
 }
 
-export const DataTable = React.memo(<T extends Record<string, any>>({
+export const DataTable = React.memo(<T extends Record<string, unknown>>({
   data,
   columns,
   actions,
@@ -388,4 +388,4 @@ export const DataTable = React.memo(<T extends Record<string, any>>({
       )}
     </div>
   );
-}) as <T extends Record<string, any>>(props: DataTableProps<T>) => React.ReactElement;
+}) as <T extends Record<string, unknown>>(props: DataTableProps<T>) => React.ReactElement;
