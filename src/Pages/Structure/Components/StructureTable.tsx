@@ -25,10 +25,8 @@ import { ELEMENT_TYPE_LABELS } from '@/Constants/StructureConstants';
 import type { DataTableColumn} from '@/Components/Ui/DataTable';
 import type { StructureElement, ElementType } from '@/Types/StructureTypes';
 import { SystemIcons } from '@/Components/Ui/Icons/SystemIcons';
-import { CustomSelect } from '@/Components/Ui/SingleSelect';
 import { MultiSelect } from '@/Components/Ui/MultiSelect';
 import type { MultiSelectOption } from '@/Components/Ui/MultiSelect';
-import type { SelectOption } from '@/Types/StructureTypes';
 import { TableActionButton } from '@/Components/Ui/TableActionButton';
 
 
@@ -53,12 +51,14 @@ export const StructureTable: React.FC<StructureTableProps> = ({
 
     const [searchQuery, setSearchQuery] = useState('');
     const [typeFilter, setTypeFilter] = useState<ElementType[]>([]);
-    const [filteredElements, setFilteredElements] = useState<StructureElement[]>([]);
     const [currentPage, setCurrentPage] = useState(1);
     const [modalState, setModalState] = useState<{
         isOpen: boolean;
         element: StructureElement | null;
     }>({ isOpen: false, element: null });
+
+    // Debounce de búsqueda para evitar filtrados innecesarios mientras se escribe
+    const debouncedSearchQuery = useDebounce(searchQuery, 300);
 
     // Función para aplanar árbol - extraída para reutilización
     const flattenTree = useCallback((nodes: StructureElement[]): StructureElement[] => {

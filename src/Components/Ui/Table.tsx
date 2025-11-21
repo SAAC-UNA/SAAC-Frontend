@@ -10,7 +10,7 @@
  * - Búsqueda
  */
 
-import React, { useMemo, useCallback } from 'react';
+import React, { useCallback } from 'react';
 import { cn } from '@/Utils/ClassNames';
 import { Button } from './Button';
 import { Input } from './Input';
@@ -282,4 +282,4 @@ export const Table = React.memo(<T extends Record<string, any>>({
       )}
     </div>
   );
-}) as <T extends Record<string, any>>(props: TableProps<T>) => JSX.Element;
+}) as <T extends Record<string, any>>(props: TableProps<T>) => React.ReactElement;

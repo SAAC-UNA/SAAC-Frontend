@@ -388,4 +388,4 @@ export const DataTable = React.memo(<T extends Record<string, any>>({
       )}
     </div>
   );
-}) as <T extends Record<string, any>>(props: DataTableProps<T>) => JSX.Element;
+}) as <T extends Record<string, any>>(props: DataTableProps<T>) => React.ReactElement;
