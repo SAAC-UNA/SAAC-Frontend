@@ -80,11 +80,11 @@ Este documento detalla las optimizaciones de rendimiento implementadas en el fro
 
 ### 1. React.memo()
 ```tsx
-export const DataTable = React.memo(<T extends Record<string, any>>({
+export const DataTable = React.memo(<T extends Record<string, unknown>>({
   // props
 }: DataTableProps<T>) => {
   // component logic
-}) as <T extends Record<string, any>>(props: DataTableProps<T>) => JSX.Element;
+}) as <T extends Record<string, unknown>>(props: DataTableProps<T>) => React.ReactElement;
 ```
 
 **Cuándo usar:**
