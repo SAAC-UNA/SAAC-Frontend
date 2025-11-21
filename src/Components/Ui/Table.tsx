@@ -136,7 +136,7 @@ export const Table = React.memo(<T extends Record<string, any>>({
         </svg>
       </span>
     );
-  }, [sortConfig]);
+  }, [sortConfig, onSort]);
 
   if (loading) {
     return (

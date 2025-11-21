@@ -120,7 +120,7 @@ export const DataTable = React.memo(<T extends Record<string, any>>({
     return item[column.key];
   }, []);
 
-  const renderPaginationButtons = useMemo(() => {
+  const renderPaginationButtons = useCallback(() => {
     if (!pagination || pagination.totalPages <= 1) return null;
 
     const { currentPage, totalPages, onPageChange } = pagination;
@@ -374,7 +374,7 @@ export const DataTable = React.memo(<T extends Record<string, any>>({
             Anterior
           </Button>
           <div className="flex items-center gap-2">
-            {renderPaginationButtons}
+            {renderPaginationButtons()}
           </div>
           <Button
             variant="outline"
