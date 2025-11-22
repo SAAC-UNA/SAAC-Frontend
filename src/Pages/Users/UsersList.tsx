@@ -9,6 +9,9 @@ import React, { useState, useEffect, useCallback, lazy, Suspense } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { UsersTable } from './Components/UsersTable';
 import { ScreenContainer } from '@/Components/Ui/ScreenContainer';
+import { SearchInput } from '@/Components/Ui/SearchInput';
+import { Button } from '@/Components/Ui/Button';
+import { SystemIcons } from '@/Components/Ui/Icons/SystemIcons';
 
 // Lazy load de modales para mejor rendimiento
 const UserDetailsModal = lazy(() => import('./Components/UserDetailsModal').then(m => ({ default: m.UserDetailsModal })));
@@ -22,6 +25,9 @@ const UsersRepository: React.FC = () => {
   // Obtener información del módulo desde ModuleInfo
   const moduleInfo = getContextualInfo('users', 'list');
   const navigate = useNavigate();
+
+  // Estado para búsqueda
+  const [searchQuery, setSearchQuery] = useState('');
 
   // Usar el hook de usuarios
   const { activarUsuario, desactivarUsuario, isLoading, users, loadUsers, error } = useUsers();
@@ -125,6 +131,16 @@ const UsersRepository: React.FC = () => {
         title={moduleInfo.title}
         description={moduleInfo.description}
         variant="full-width"
+        headerExtra={
+          <div className="flex flex-col sm:flex-row w-full gap-2 shrink-0 lg:w-auto">
+            <SearchInput
+              placeholder="Buscar usuarios..."
+              value={searchQuery}
+              onChange={setSearchQuery}
+              className="w-full sm:w-72"
+            />
+          </div>
+        }
       >
           <UsersTable
             onViewUser={handleViewUser}
@@ -133,6 +149,7 @@ const UsersRepository: React.FC = () => {
             users={users}
             isLoading={isLoading}
             error={error}
+            searchQuery={searchQuery}
           />
 
 

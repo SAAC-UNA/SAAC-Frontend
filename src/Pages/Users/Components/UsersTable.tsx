@@ -16,6 +16,7 @@ interface UsersTableProps {
     users?: User[];
     isLoading?: boolean;
     error?: string | null;
+    searchQuery?: string; // Búsqueda controlada externamente
 }
 
 export const UsersTable: React.FC<UsersTableProps> = ({
@@ -26,7 +27,8 @@ export const UsersTable: React.FC<UsersTableProps> = ({
     unstyled = false,
     users: externalUsers,
     isLoading: externalIsLoading,
-    error: externalError
+    error: externalError,
+    searchQuery: externalSearchQuery = ''
 }) => {
     // Usar datos externos si están disponibles, sino usar hook interno
     const internalHook = useUsers();
@@ -38,11 +40,10 @@ export const UsersTable: React.FC<UsersTableProps> = ({
     const error = shouldUseExternal ? (externalError ?? null) : internalHook.error;
     const { loadUsers } = internalHook;
 
-    const [searchQuery, setSearchQuery] = useState('');
     const [currentPage, setCurrentPage] = useState(1);
 
     // Debounce de búsqueda para evitar filtrados innecesarios mientras se escribe
-    const debouncedSearchQuery = useDebounce(searchQuery, 300);
+    const debouncedSearchQuery = useDebounce(externalSearchQuery, 300);
 
     // Función para truncar texto - memoizada
     const truncateText = useCallback((text: string, maxLength: number = 20): string => {
@@ -161,10 +162,6 @@ export const UsersTable: React.FC<UsersTableProps> = ({
         }
     ], [truncateText, onViewUser, onEdit, onState]);
 
-    const handleSearch = useCallback((query: string) => {
-        setSearchQuery(query);
-    }, []);
-
     const handlePageChange = useCallback((page: number) => {
         setCurrentPage(page);
     }, []);
@@ -186,9 +183,7 @@ export const UsersTable: React.FC<UsersTableProps> = ({
                 data={paginatedData as any}
                 columns={columns as any}
                 title=""
-                searchable={true}
-                searchPlaceholder="Buscar usuarios..."
-                onSearch={handleSearch}
+                searchable={false}
                 pagination={totalPages > 1 ? {
                     currentPage,
                     totalPages,

@@ -9,6 +9,9 @@ import React, { useState, useEffect, lazy, Suspense } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { RolesTable } from './Components/RolesTable';
 import { ScreenContainer } from '@/Components/Ui/ScreenContainer';
+import { SearchInput } from '@/Components/Ui/SearchInput';
+import { Button } from '@/Components/Ui/Button';
+import { SystemIcons } from '@/Components/Ui/Icons/SystemIcons';
 import { useRoles } from '@/Hooks/UseRoles';
 import { getContextualInfo } from '@/Constants/ModuleInfo';
 import type { Role } from '@/Services/RoleService';
@@ -24,6 +27,9 @@ const RolesRepository: React.FC = () => {
   
   // Obtener información del módulo desde ModuleInfo
   const moduleInfo = getContextualInfo('roles', 'list');
+  
+  // Estado para búsqueda
+  const [searchQuery, setSearchQuery] = useState('');
   
   // Estado para el modal de confirmación de eliminación
   const [deleteModalState, setDeleteModalState] = useState<{
@@ -122,15 +128,33 @@ const RolesRepository: React.FC = () => {
         title={moduleInfo.title}
         description={moduleInfo.description}
         variant="full-width"
+        headerExtra={
+          <div className="flex flex-col sm:flex-row w-full gap-2 shrink-0 lg:w-auto">
+            <SearchInput
+              placeholder="Buscar roles..."
+              value={searchQuery}
+              onChange={setSearchQuery}
+              className="w-full sm:w-72"
+            />
+            <Button
+              onClick={handleCreateRole}
+              variant="secondary"
+              className="gap-2"
+            >
+              <SystemIcons.actions.add className="w-4 h-4" size="sm" />
+              Crear
+            </Button>
+          </div>
+        }
       >
           <RolesTable
             onEdit={handleEditRole}
             onDelete={handleDeleteRole}
-            onCreate={handleCreateRole}
             onViewPermissions={handleViewPermissions}
             roles={roles}
             isLoading={isLoading}
             error={error}
+            searchQuery={searchQuery}
           />
         </ScreenContainer>
 

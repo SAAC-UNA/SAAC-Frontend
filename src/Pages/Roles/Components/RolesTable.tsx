@@ -17,7 +17,6 @@
 
 import React, { useEffect, useState, useMemo, useCallback } from 'react';
 import { DataTable, TableActionButton } from '@/components/index';
-import { SystemIcons } from '@/components/Ui/Icons/SystemIcons';
 import { BackendErrorAlert } from '@/Components/Ui/BackendErrorAlert';
 import { useRoles } from '@/hooks/UseRoles';
 import type { Role } from '@/Services/RoleService';
@@ -25,7 +24,6 @@ import type { Role } from '@/Services/RoleService';
 interface RolesTableProps {
     onEdit?: (role: Role) => void;
     onDelete?: (role: Role) => void;
-    onCreate?: () => void;
     onViewPermissions?: (role: Role) => void;
     itemsPerPage?: number;
     unstyled?: boolean; // Para usar sin contenedor
@@ -33,18 +31,19 @@ interface RolesTableProps {
     roles?: Role[];
     isLoading?: boolean;
     error?: string | null;
+    searchQuery?: string; // Búsqueda controlada externamente
 }
 
 export const RolesTable: React.FC<RolesTableProps> = ({
     onEdit,
     onDelete,
-    onCreate,
     onViewPermissions,
     itemsPerPage = 4,
     unstyled = false,
     roles: externalRoles,
     isLoading: externalIsLoading,
-    error: externalError
+    error: externalError,
+    searchQuery: externalSearchQuery = ''
 }) => {
     // Usar datos externos si están disponibles, sino usar hook interno
     const internalHook = useRoles();
@@ -53,7 +52,7 @@ export const RolesTable: React.FC<RolesTableProps> = ({
     const error = externalError ?? internalHook.error;
     const { loadRoles, clearError } = internalHook;
 
-    const [searchQuery, setSearchQuery] = useState('');
+    const searchQuery = externalSearchQuery;
     const [currentPage, setCurrentPage] = useState(1);
 
     // Función para truncar texto - memoizada
@@ -99,10 +98,6 @@ export const RolesTable: React.FC<RolesTableProps> = ({
     const handleEdit = useCallback((role: Role) => {
         onEdit?.(role);
     }, [onEdit]);
-
-    const handleSearch = useCallback((query: string) => {
-        setSearchQuery(query);
-    }, []);
 
     const handlePageChange = useCallback((page: number) => {
         setCurrentPage(page);
@@ -197,14 +192,7 @@ export const RolesTable: React.FC<RolesTableProps> = ({
                 data={paginatedData as any}
                 columns={columns as any}
                 title="" // Sin título, ScreenContainer lo maneja
-                searchable={true}
-                searchPlaceholder="Buscar roles..."
-                onSearch={handleSearch}
-                primaryAction={onCreate ? {
-                    label: 'Crear',
-                    icon: <SystemIcons.actions.add className="w-4 h-4" size="sm" />,
-                    onClick: onCreate
-                } : undefined}
+                searchable={false}
                 pagination={totalPages > 1 ? {
                     currentPage,
                     totalPages,
