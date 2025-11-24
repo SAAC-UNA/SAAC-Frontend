@@ -56,7 +56,7 @@ export const WizardProgress: React.FC<WizardProgressProps> = ({
                 className={cn(
                   'w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm transition-all duration-200',
                   isCompleted && 'bg-green-600 text-white hover:bg-green-700',
-                  isActive && !isCompleted && 'bg-azul-una text-white',
+                  isActive && !isCompleted && 'bg-rojo-una-2 text-white',
                   !isActive && !isCompleted && 'bg-gris-una/20 text-gris-una',
                   isClickable && 'cursor-pointer',
                   !isClickable && 'cursor-not-allowed'
@@ -72,10 +72,7 @@ export const WizardProgress: React.FC<WizardProgressProps> = ({
               {/* Connector Line - Compact */}
               {index < steps.length - 1 && (
                 <div 
-                  className={cn(
-                    'h-0.5 w-6 mx-2 rounded-full transition-all duration-200',
-                    isCompleted ? 'bg-green-600' : 'bg-gris-una/20'
-                  )}
+                  className="h-0.5 w-10 mx-3 rounded-full transition-all duration-200 bg-gris-una/20"
                 />
               )}
             </React.Fragment>
@@ -121,7 +118,7 @@ export const WizardProgress: React.FC<WizardProgressProps> = ({
                   className={cn(
                     'mt-3 text-sm font-medium text-center max-w-28 leading-tight',
                     isActive && 'text-azul-una',
-                    isCompleted && 'text-green-600',
+                    isCompleted && 'text-verde',
                     !isActive && !isCompleted && 'text-gris-una'
                   )}
                 >
@@ -132,10 +129,7 @@ export const WizardProgress: React.FC<WizardProgressProps> = ({
               {/* Connector Line */}
               {index < steps.length - 1 && (
                 <div 
-                  className={cn(
-                    'h-1 w-16 mt-6 mx-4 rounded-full transition-all duration-200',
-                    isCompleted ? 'bg-green-600' : 'bg-gris-una/20'
-                  )}
+                  className="h-1 w-24 mt-10 mx-6 rounded-full transition-all duration-200 bg-gris-una/20"
                 />
               )}
             </div>

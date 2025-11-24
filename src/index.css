@@ -76,6 +76,7 @@
   --color-blanco-una: #FFFFFF;
   --color-blanco-una-2: #F8F9FA;
   --color-negro-una: #000000;
+  --color-verde: #10b981;
 
   /* Extensiones para el sidebar (usando colores UNA) */
   --color-rojo-sidebar: var(--color-rojo-una);
@@ -84,7 +85,7 @@
   --font-poppins: 'Poppins', sans-serif;
 
   /* Colores para estados */
-  --color-success: #10b981;
+  --color-verde: #10b981;
   --color-warning: #f59e0b;
   --color-error: #ef4444;
   --color-info: #3b82f6;
@@ -99,8 +100,8 @@
   --icon-active: var(--color-error);       /* Estado - activo */
   --icon-inactive: var(--color-gris-una);     /* Estado - inactivo */
   --icon-cancel: var(--color-gris-una);   /* Cancelar - gris UNA */
-  --icon-save: var(--color-success);      /* Guardar - verde/success */
-  --icon-check: var(--color-success);     /* Confirmar/Éxito - verde/success */
+  --icon-save: var(--color-verde);      /* Guardar - verde/success */
+  --icon-check: var(--color-verde);     /* Confirmar/Éxito - verde/success */
   --icon-alert: var(--color-warning);     /* Alerta/Advertencia - amarillo/warning */
   --icon-search: var(--color-gris-una);   /* Buscar - gris UNA */
   --icon-refresh: var(--color-info);      /* Actualizar - azul info */
@@ -112,18 +113,18 @@
   --icon-error-screen: var(--color-error-screen); /* Error de pantalla - gris/error */
 
   /* Colores para fondos y estados de mensajes */
-  --bg-success: #f0fdf4;     /* Fondo verde claro para éxito */
+  --bg-verde: #f0fdf4;     /* Fondo verde claro para éxito */
   --bg-warning: #fffbeb;     /* Fondo amarillo claro para advertencias */
   --bg-error: #fef2f2;       /* Fondo rojo claro para errores */
   --bg-info: #eff6ff;        /* Fondo azul claro para información */
   --bg-inactive: #f0f0f0;   /* Fondo gris claro para inactivo */
   
-  --border-success: #bbf7d0; /* Borde verde para éxito */
+  --border-verde: #bbf7d0; /* Borde verde para éxito */
   --border-warning: #fde68a; /* Borde amarillo para advertencias */
   --border-error: #fecaca;   /* Borde rojo para errores */
   --border-info: #bfdbfe;    /* Borde azul para información */
 
-  --text-success: #166534;   /* Texto verde oscuro para éxito */
+  --text-verde: #166534;   /* Texto verde oscuro para éxito */
   --text-warning: #92400e;   /* Texto amarillo oscuro para advertencias */
   --text-error: var(--color-error);      /* Texto rojo oscuro para errores */
   --text-info: #1e40af;      /* Texto azul oscuro para información */
