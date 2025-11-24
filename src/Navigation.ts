@@ -6,6 +6,7 @@ const nutIcon = 'system-icon:nut';
 const userIcon = 'system-icon:user';
 const processIcon = 'system-icon:box-archive';
 const evidenceIcon = 'system-icon:shield';
+const auditLogIcon = 'system-icon:clipboard-list';
 
 /**
  * Obtener items de navegación filtrados por rol
@@ -31,6 +32,17 @@ export const getNavigationItems = (userRole?: string): NavItem[] => {
       label: 'Roles',
       icon: rolesIcon,
       href: '/roles/listar',
+      isActive: false
+    });
+  }
+
+  // Bitácora del Sistema - Solo SuperUsuario
+  if (isSuperUser) {
+    items.push({
+      id: 'bitacora',
+      label: 'Bitácora del Sistema',
+      icon: auditLogIcon,
+      href: '/bitacora',
       isActive: false
     });
   }

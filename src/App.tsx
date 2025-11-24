@@ -20,6 +20,7 @@ const StructureEditForm = lazy(() => import('@/Pages/Structure/StructureEditForm
 const StructureEditList = lazy(() => import('./Pages/Structure/StructureEditList'));
 const AccreditationProgress = lazy(() => import('@/Pages/Accreditation/AccreditationProgress'));
 const EvidenceAssignment = lazy(() => import('./Pages/EvidenceAssignment').then(m => ({ default: m.EvidenceAssignment })));
+const AuditLogPage = lazy(() => import('@/Pages/AuditLog/AuditLogPage'));
 
 // Componente de loading para Suspense
 const PageLoader = () => (
@@ -71,6 +72,16 @@ function App() {
                           element={
                             <ProtectedRoute requireRole="SuperUsuario">
                               <RoleForm />
+                            </ProtectedRoute>
+                          }
+                        />
+
+                        {/* Bitácora del Sistema - Solo SuperUsuario */}
+                        <Route
+                          path="/bitacora"
+                          element={
+                            <ProtectedRoute requireRole="SuperUsuario">
+                              <AuditLogPage />
                             </ProtectedRoute>
                           }
                         />
