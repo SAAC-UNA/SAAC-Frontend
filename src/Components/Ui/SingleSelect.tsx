@@ -160,7 +160,7 @@ export const CustomSelect: React.FC<CustomSelectProps> = ({
             id={selectId}
             className={cn(
               // Base styles - Similar al Input actualizado
-              'relative w-full px-4 py-3 text-sm border rounded-lg text-left cursor-pointer transition-all duration-300',
+              'relative w-full h-10 px-4 text-sm border rounded-lg text-left cursor-pointer transition-all duration-300',
               'focus:outline-none focus:border-gris-una',
               'disabled:bg-gris-una/10 disabled:cursor-not-allowed',
               'peer', // Para usar peer selectors de Tailwind

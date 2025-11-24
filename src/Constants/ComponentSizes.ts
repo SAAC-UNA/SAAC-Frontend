@@ -6,6 +6,7 @@
 export const COMPONENT_SIZES = {
   sm: {
     text: 'text-sm',           // 14px
+    height: 'h-10',            // 40px - Altura estándar
     padding: {
       x: 'px-3',               // 12px horizontal
       y: 'py-2'                // 8px vertical  
@@ -14,6 +15,7 @@ export const COMPONENT_SIZES = {
   },
   md: {
     text: 'text-base',         // 16px
+    height: 'h-10',            // 40px - Altura estándar
     padding: {
       x: 'px-4',               // 16px horizontal
       y: 'py-3'                // 12px vertical
@@ -22,6 +24,7 @@ export const COMPONENT_SIZES = {
   },
   lg: {
     text: 'text-lg',           // 18px
+    height: 'h-10',            // 40px - Altura estándar
     padding: {
       x: 'px-4',               // 16px horizontal (mismo que md)
       y: 'py-4'                // 16px vertical
@@ -37,21 +40,22 @@ export const getComponentSizeClasses = {
   // Para Input y Textarea (sin border-radius específico)
   input: (size: keyof typeof COMPONENT_SIZES) => {
     const s = COMPONENT_SIZES[size];
-    return `${s.padding.x} ${s.padding.y} ${s.text}`;
+    return `${s.height} ${s.padding.x} ${s.text}`;
   },
 
   // Para Button (con border-radius específico) 
   button: (size: keyof typeof COMPONENT_SIZES) => {
     const s = COMPONENT_SIZES[size];
-    return `${s.padding.x} ${s.padding.y} ${s.text} ${s.borderRadius}`;
+    return `${s.height} ${s.padding.x} ${s.text} ${s.borderRadius}`;
   },
 
   // Para MultiSelect y otros contenedores
   container: (size: keyof typeof COMPONENT_SIZES) => {
     const s = COMPONENT_SIZES[size];
     return {
+      height: s.height,
       text: s.text,
-      padding: `${s.padding.x} ${s.padding.y}`,
+      padding: `${s.padding.x}`,
       borderRadius: s.borderRadius
     };
   }
