@@ -59,14 +59,6 @@ export const ConfigurationStep: React.FC<ConfigurationStepProps> = ({
 
   return (
     <div className="space-y-6">
-      <div>
-        <h2 className="text-lg font-bold text-negro-una mb-3">
-          Configuración Adicional
-        </h2>
-        <p className="text-gris-una">
-          Establezca parámetros opcionales para la asignación de evidencias
-        </p>
-      </div>
 
       <div className="space-y-6">
         {/* Fecha Límite */}
