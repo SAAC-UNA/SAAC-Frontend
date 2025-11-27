@@ -20,6 +20,7 @@ const StructureEditForm = lazy(() => import('@/Pages/Structure/StructureEditForm
 const StructureEditList = lazy(() => import('./Pages/Structure/StructureEditList'));
 const AccreditationProgress = lazy(() => import('@/Pages/Accreditation/AccreditationProgress'));
 const EvidenceAssignment = lazy(() => import('./Pages/EvidenceAssignment').then(m => ({ default: m.EvidenceAssignment })));
+const EvidenceUploadPage = lazy(() => import('./Pages/Evidence').then(m => ({ default: m.EvidenceUploadPage })));
 const AuditLogPage = lazy(() => import('@/Pages/AuditLog/AuditLogPage'));
 
 // Componente de loading para Suspense
@@ -144,6 +145,14 @@ function App() {
                           element={
                             <ProtectedRoute>
                               <EvidenceAssignment />
+                            </ProtectedRoute>
+                          }
+                        />
+                        <Route
+                          path="/evidencias/subir"
+                          element={
+                            <ProtectedRoute>
+                              <EvidenceUploadPage />
                             </ProtectedRoute>
                           }
                         />

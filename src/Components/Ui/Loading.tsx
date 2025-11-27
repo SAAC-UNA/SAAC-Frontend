@@ -6,7 +6,7 @@ interface LoadingSpinnerProps {
   color?: 'primary' | 'secondary' | 'white' | 'gray' | 'current' | 'loading';
   className?: string;
   thickness?: 'thin' | 'normal' | 'thick';
-  variant?: 'spinner' | 'bounce';
+  variant?: 'spinner' | 'bounce' | 'uploading';
 }
 
 export const LoadingSpinner: React.FC<LoadingSpinnerProps> = ({
@@ -42,6 +42,65 @@ export const LoadingSpinner: React.FC<LoadingSpinnerProps> = ({
 /* 
   *Nuevo loader, este me gustó más para mantenerlo
 */
+
+  // Uploading loader - Animación de carga de archivos
+  if (variant === 'uploading') {
+    const uploadingSizeMap = {
+      xs: { container: 'w-12 h-2', ball: 'w-2 h-2', shadow: '4px' },
+      sm: { container: 'w-16 h-3', ball: 'w-3 h-3', shadow: '6px' },
+      md: { container: 'w-20 h-4', ball: 'w-4 h-4', shadow: '8px' },
+      lg: { container: 'w-24 h-5', ball: 'w-5 h-5', shadow: '10px' },
+      xl: { container: 'w-32 h-6', ball: 'w-6 h-6', shadow: '12px' }
+    };
+
+    const sizeConfig = uploadingSizeMap[size];
+
+    return (
+      <div 
+        className={cn('relative', sizeConfig.container, className)}
+        role="status"
+        aria-label="Subiendo..."
+      >
+        <style>{`
+          @keyframes rotateUploadLoader {
+            0%, 10% { transform: rotate(-153deg); }
+            90%, 100% { transform: rotate(0deg); }
+          }
+          @keyframes ballMoveUploadX {
+            0%, 10% { transform: translateX(0); }
+            90%, 100% { transform: translateX(${sizeConfig.shadow}); }
+          }
+        `}</style>
+        <div
+          className={cn(
+            'absolute rounded-full',
+            sizeConfig.ball,
+            colorClasses[color].replace('border-', 'bg-')
+          )}
+          style={{
+            left: 0,
+            top: 0,
+            boxShadow: `${sizeConfig.shadow} 0 currentColor`,
+            animation: 'ballMoveUploadX 1s linear infinite'
+          }}
+        />
+        <div
+          className={cn(
+            'absolute rounded-full',
+            sizeConfig.ball,
+            colorClasses[color].replace('border-', 'bg-')
+          )}
+          style={{
+            left: 0,
+            top: 0,
+            transformOrigin: `calc(${sizeConfig.shadow} * 2.5) 0`,
+            animation: 'rotateUploadLoader 1s linear infinite'
+          }}
+        />
+      </div>
+    );
+  }
+
   // Bounce loader 
   if (variant === 'bounce') {
     // Tamaños para las esferas del bounce

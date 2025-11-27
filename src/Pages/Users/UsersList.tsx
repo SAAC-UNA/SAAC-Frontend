@@ -10,8 +10,6 @@ import { useNavigate } from 'react-router-dom';
 import { UsersTable } from './Components/UsersTable';
 import { ScreenContainer } from '@/Components/Ui/ScreenContainer';
 import { SearchInput } from '@/Components/Ui/SearchInput';
-import { Button } from '@/Components/Ui/Button';
-import { SystemIcons } from '@/Components/Ui/Icons/SystemIcons';
 
 // Lazy load de modales para mejor rendimiento
 const UserDetailsModal = lazy(() => import('./Components/UserDetailsModal').then(m => ({ default: m.UserDetailsModal })));

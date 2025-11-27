@@ -97,6 +97,14 @@ export const MODULE_INFO: Record<string, ModuleInfo> = {
     shortDescription: 'Wizard de asignación de evidencias'
   },
 
+  // Subida de Evidencias
+  evidence_upload: {
+    title: 'Subir Evidencias',
+    subtitle: 'Carga de Archivos',
+    description: 'Suba archivos digitales como respaldo de las evidencias del proceso de acreditación',
+    shortDescription: 'Subir archivos de evidencias'
+  },
+
   // Gestión de Reportes
   reports: {
     title: 'Gestión de Reportes',

@@ -6,6 +6,7 @@ const nutIcon = 'system-icon:nut';
 const userIcon = 'system-icon:user';
 const processIcon = 'system-icon:box-archive';
 const evidenceIcon = 'system-icon:shield';
+const uploadIcon = 'system-icon:upload';
 const auditLogIcon = 'system-icon:clipboard-list';
 
 /**
@@ -63,6 +64,13 @@ export const getNavigationItems = (userRole?: string): NavItem[] => {
     label: 'Asignar Evidencias',
     icon: evidenceIcon,
     href: '/evidencias/asignar',
+    isActive: false,
+  },
+  {
+    id: 'evidenciasSubir',
+    label: 'Subir Evidencias',
+    icon: uploadIcon,
+    href: '/evidencias/subir',
     isActive: false,
   },
   {
