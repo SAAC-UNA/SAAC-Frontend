@@ -25,8 +25,6 @@ import { ELEMENT_TYPE_LABELS } from '@/Constants/StructureConstants';
 import type { DataTableColumn} from '@/Components/Ui/DataTable';
 import type { StructureElement, ElementType } from '@/Types/StructureTypes';
 import { SystemIcons } from '@/Components/Ui/Icons/SystemIcons';
-import { MultiSelect } from '@/Components/Ui/MultiSelect';
-import type { MultiSelectOption } from '@/Components/Ui/MultiSelect';
 import { TableActionButton } from '@/Components/Ui/TableActionButton';
 
 
@@ -34,7 +32,7 @@ interface StructureTableProps {
     onEdit?: (element: StructureElement) => void;
     onDelete?: (element: StructureElement) => void;
     onToggleActive?: (element: StructureElement) => void;
-    onCreate?: () => void;
+    searchQuery?: string;
     itemsPerPage?: number;
     unstyled?: boolean;
 }
@@ -43,14 +41,12 @@ export const StructureTable: React.FC<StructureTableProps> = ({
     onEdit,
     onDelete,
     onToggleActive,
-    onCreate,
+    searchQuery = '',
     itemsPerPage = 4,
     unstyled = false
 }) => {
     const { treeData, isLoading, loadTree } = useStructure();
 
-    const [searchQuery, setSearchQuery] = useState('');
-    const [typeFilter, setTypeFilter] = useState<ElementType[]>([]);
     const [currentPage, setCurrentPage] = useState(1);
     const [modalState, setModalState] = useState<{
         isOpen: boolean;
@@ -110,18 +106,13 @@ export const StructureTable: React.FC<StructureTableProps> = ({
             });
         }
         
-        // Filtro por tipo (múltiples tipos)
-        if (typeFilter.length > 0) {
-            filtered = filtered.filter(element => typeFilter.includes(element.type));
-        }
-        
         return filtered;
-    }, [debouncedSearchQuery, typeFilter, allElements]);
+    }, [debouncedSearchQuery, allElements]);
 
     // Resetear página cuando cambian los filtros (usar debounced para evitar resets innecesarios)
     useEffect(() => {
         setCurrentPage(1);
-    }, [debouncedSearchQuery, typeFilter]);
+    }, [debouncedSearchQuery]);
 
     // Calcular datos paginados - MEMOIZADO
     const { totalPages, paginatedData } = useMemo(() => {
@@ -201,7 +192,9 @@ export const StructureTable: React.FC<StructureTableProps> = ({
             align: 'left',
             render: (_, element) => (
                 <p 
-                    className="block font-sans text-sm antialiased font-normal leading-normal text-gris-una max-w-xs truncate"
+                    className={`block font-sans text-sm antialiased font-normal leading-normal text-gris-una max-w-xs truncate ${
+                        !element.name ? 'text-center' : 'text-left'
+                    }`}
                     title={element.name || '-'}
                 >
                     {element.name || '-'}
@@ -211,10 +204,13 @@ export const StructureTable: React.FC<StructureTableProps> = ({
         {
             key: 'description',
             header: 'Descripción',
+
             align: 'left',
             render: (_, element) => (
-                <p className="block font-sans text-sm antialiased font-normal leading-normal text-gris-una">
-                    {truncateDescription(element.description)}
+                <p className={`block font-sans text-sm antialiased font-normal leading-normal text-gris-una ${
+                    !element.description ? 'text-center' : 'text-left'
+                }`}>
+                    {truncateDescription(element.description) || '-'}
                 </p>
             )
         },
@@ -303,40 +299,13 @@ export const StructureTable: React.FC<StructureTableProps> = ({
     }
     ];
 
-    // Opciones para el MultiSelect de tipo - MEMOIZADO
-    const typeOptions: MultiSelectOption[] = useMemo(() => 
-        Object.entries(ELEMENT_TYPE_LABELS).map(([value, label]) => ({
-            value,
-            label
-        }))
-    , []);
-
     return (
         <>
             <DataTable
                 data={paginatedData as any}
                 columns={columns as any}
                 title=""
-                customFilters={
-                    <div className="w-72">
-                        <MultiSelect
-                            label="Filtrar por elemento"
-                            options={typeOptions}
-                            value={typeFilter}
-                            onChange={(values) => setTypeFilter(values as ElementType[])}
-                            placeholder="Seleccionar tipos..."
-                            variant="floating"
-                        />
-                    </div>
-                }
-                searchable={true}
-                searchPlaceholder="Buscar elementos..."
-                onSearch={setSearchQuery}
-                primaryAction={onCreate ? {
-                    label: 'Crear',
-                    icon: <SystemIcons.actions.add className="w-4 h-4" />,
-                    onClick: onCreate
-                } : undefined}
+                searchable={false}
                 pagination={totalPages > 1 ? {
                     currentPage,
                     totalPages,
