@@ -7,6 +7,7 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/Context/AuthContext';
 import { SystemIcons } from '@/Components/Ui/Icons/SystemIcons';
+import { useToast } from '@/Hooks/useToast';
 import styles from './Login.module.css';
 
 export const Login = () => {
@@ -18,6 +19,7 @@ export const Login = () => {
   
   const { login } = useAuth();
   const navigate = useNavigate();
+  const toast = useToast();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -28,7 +30,9 @@ export const Login = () => {
       await login({ cedula, password });
       navigate('/');
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Error al iniciar sesión');
+      const errorMessage = err instanceof Error ? err.message : 'Error al iniciar sesión';
+      setError(errorMessage);
+      toast.error(errorMessage);
     } finally {
       setLoading(false);
     }
@@ -68,23 +72,18 @@ export const Login = () => {
       {/* Right Section - Form (40%) */}
       <div className={styles['login-form-section']}>
         <div className={styles['login-form-wrapper']}>
+          <img 
+            src="/Images/Logo-SAAC.png" 
+            alt="SAAC Logo" 
+            className={styles['login-logo-image']}
+          />
           <h1 className={styles['login-form-title']}>Inicio de Sesión</h1>
           
           <form onSubmit={handleSubmit} className={styles['login-form']}>
-            {error && (
-              <div style={{
-                padding: '12px 16px',
-                borderRadius: '8px',
-                backgroundColor: '#fed7d7',
-                color: '#c53030',
-                border: '1px solid #fc8181',
-                fontSize: '14px'
-              }}>
-                {error}
-              </div>
-            )}
-
             <div className={styles['login-input-field']}>
+              <div className={styles['login-input-icon']}>
+                {SystemIcons.interface.user({ size: 'sm', color: '#a0aec0' })}
+              </div>
               <input
                 type="text"
                 value={cedula}
@@ -92,10 +91,13 @@ export const Login = () => {
                 required
                 disabled={loading}
               />
-              <label>Cédula</label>
+              <label>Identificación</label>
             </div>
 
             <div className={styles['login-input-field-password']}>
+              <div className={styles['login-input-icon']}>
+                {SystemIcons.interface.lock({ size: 'sm', color: '#a0aec0' })}
+              </div>
               <input
                 type={showPassword ? 'text' : 'password'}
                 value={password}
@@ -104,25 +106,27 @@ export const Login = () => {
                 disabled={loading}
               />
               <label>Contraseña</label>
+              <button
+                type="button"
+                className={styles['login-toggle-password']}
+                onClick={() => setShowPassword(!showPassword)}
+                disabled={loading}
+              >
+                {showPassword ? 'Ocultar' : 'Mostrar'}
+              </button>
               <div className={styles['login-info-tooltip']}>
                 {SystemIcons.interface.infoCircle({ size: 'sm', color: '#a0aec0' })}
                 <span className={styles['login-tooltip-text']}>
                   Ingrese la contraseña que emplea en los demás sistemas de la universidad
                 </span>
               </div>
-              <button
-                type="button"
-                className={styles['login-passicon']}
-                onClick={() => setShowPassword(!showPassword)}
-                disabled={loading}
-              >
-                {showPassword ? SystemIcons.interface.eyeSlash({ size: 'sm' }) : SystemIcons.interface.eye({ size: 'sm' })}
-              </button>
             </div>
 
-            <a href="https://recuperacion.una.ac.cr/" target="_blank" rel="noopener noreferrer" className={styles['login-forgot-password']}>
-              ¿Olvidó su contraseña?
-            </a>
+            <div style={{ textAlign: 'center' }}>
+              <a href="https://recuperacion.una.ac.cr/" target="_blank" rel="noopener noreferrer" className={styles['login-forgot-password']}>
+                ¿Olvidó su contraseña?
+              </a>
+            </div>
 
             <div className={styles['login-btn-container']}>
               <button type="submit" className={styles['login-btn']} disabled={loading}>
@@ -131,6 +135,10 @@ export const Login = () => {
             </div>
           </form>
         </div>
+        
+        <footer className={styles['login-footer']}>
+          © 2025 — SAAC · Universidad Nacional de Costa Rica
+        </footer>
       </div>
     </div>
   );
