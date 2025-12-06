@@ -15,7 +15,7 @@ import React from 'react';
 import { SystemIcons } from '@/Components/Ui/Icons/SystemIcons';
 import { ButtonWithTooltip } from './ButtonWithTooltip';
 
-export type TableActionType = 'view' | 'edit' | 'delete' | 'power' | 'add' | 'search' | 'roles' | 'users' | 'custom';
+export type TableActionType = 'view' | 'edit' | 'delete' | 'power' | 'add' | 'upload' | 'uploadArrow' | 'search' | 'roles' | 'users' | 'custom';
 
 interface TableActionButtonProps extends Omit<React.ButtonHTMLAttributes<HTMLButtonElement>, 'onClick'> {
   /**
@@ -84,6 +84,14 @@ const actionConfig: Record<TableActionType, {
   },
   add: {
     icon: <SystemIcons.actions.add className="w-4 h-4" size="sm" />,
+    variant: 'tableEdit'
+  },
+  upload: {
+    icon: <SystemIcons.interface.upload className="w-4 h-4" size="sm" />,
+    variant: 'tableEdit'
+  },
+  uploadArrow: {
+    icon: <SystemIcons.interface.uploadArrow className="w-4 h-4" size="sm" />,
     variant: 'tableEdit'
   },
   search: {

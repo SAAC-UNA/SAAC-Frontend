@@ -97,6 +97,14 @@ export const MODULE_INFO: Record<string, ModuleInfo> = {
     shortDescription: 'Wizard de asignación de evidencias'
   },
 
+  // Mis Evidencias Asignadas
+  my_evidence_assignments: {
+    title: 'Mis Evidencias Asignadas',
+    subtitle: 'Evidencias Pendientes y Completadas',
+    description: 'Visualice y administre las evidencias que le han sido asignadas, suba archivos y actualice su estado',
+    shortDescription: 'Ver evidencias asignadas a mí'
+  },
+
   // Subida de Evidencias
   evidence_upload: {
     title: 'Subir Evidencias',

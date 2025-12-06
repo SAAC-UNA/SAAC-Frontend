@@ -13,7 +13,7 @@ import type {
   FileListParams
 } from '@/Types/FileTypes';
 
-const BASE_URL = '/api/archivos';
+const BASE_URL = '/archivos';
 
 export const fileService = {
   /**

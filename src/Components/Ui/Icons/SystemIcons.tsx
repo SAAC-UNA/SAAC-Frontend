@@ -283,6 +283,25 @@ export const SystemIcons = {
       </svg>
     ),
 
+    uploadArrow: ({ className, size, color }: IconProps) => (
+        <svg
+          className={`${getSizeClasses(size)} ${className || ''}`}
+          viewBox="0 0 24 24"
+          fill={color || "currentColor"}
+        >
+          <path
+            fillRule="evenodd"
+            d="M5 16.25a.75.75 0 0 1 .75.75v2c0 .138.112.25.25.25h12a.25.25 0 0 0 .25-.25v-2a.75.75 0 0 1 1.5 0v2A1.75 1.75 0 0 1 18 20.75H6A1.75 1.75 0 0 1 4.25 19v-2a.75.75 0 0 1 .75-.75Z"
+            clipRule="evenodd"
+          />
+          <path
+            fillRule="evenodd"
+            d="M10.738 16.127a.992.992 0 0 1-.989-.905 36.618 36.618 0 0 1-.08-5.27c-.248-.014-.495-.03-.741-.048l-1.49-.109a.76.76 0 0 1-.585-1.167 15.555 15.555 0 0 1 4.032-4.258l.597-.429a.888.888 0 0 1 1.036 0l.597.43a15.556 15.556 0 0 1 4.032 4.257.76.76 0 0 1-.585 1.167l-1.49.109c-.246.018-.493.034-.74.047.1 1.757.072 3.518-.082 5.27a.992.992 0 0 1-.988.906h-2.524Z"
+            clipRule="evenodd"
+          />
+        </svg>
+    ),
+
     calendar: ({ className, size }: IconProps) => (
       <svg
         className={`${getSizeClasses(size)} ${className || ''}`}
@@ -320,6 +339,17 @@ export const SystemIcons = {
           d="M19 9l-7 7-7-7"
         />
       </svg>
+    ),
+
+    /** Filter - Para filtros y opciones de filtrado */
+    filter: ({ className, size, color }: IconProps) => (
+      <svg
+        className={`${getSizeClasses(size)} ${className || ''}`}
+        viewBox="0 0 24 24"
+        fill={color || "currentColor"}
+      >
+        <path d="M18.523 4.226a58.727 58.727 0 0 0-13.046 0 1.373 1.373 0 0 0-.915 2.229l3.769 4.659A7.5 7.5 0 0 1 10 15.83v3.142a.75.75 0 0 0 .306.605l2.77 2.032a.58.58 0 0 0 .924-.468V15.83a7.5 7.5 0 0 1 1.669-4.717l3.769-4.66a1.373 1.373 0 0 0-.915-2.228Z" />
+  </svg>
     ),
 
     // ===== ICONOS ESPECÍFICOS PARA MODALES =====
@@ -646,6 +676,8 @@ export const getIconByName = (iconName: string, size: IconProps['size'] = 'md'):
     'collapse': () => SystemIcons.interface.collapse({ size }),
     'calendar': () => SystemIcons.interface.calendar({ size }),
     'chevron-down': () => SystemIcons.interface.chevronDown({ size }),
+    'cloud': () => SystemIcons.interface.cloud({ size }),
+    'upload-arrow': () => SystemIcons.interface.uploadArrow({ size }),
 
     // Modal icons
     'exclamation-triangle': () => SystemIcons.interface.alert({ size }),
