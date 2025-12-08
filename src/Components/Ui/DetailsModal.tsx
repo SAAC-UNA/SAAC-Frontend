@@ -29,9 +29,13 @@ export const DetailsModal: React.FC<DetailsModalProps> = ({
   size = 'lg',
   children
 }) => {
-  const defaultMessage = itemName
-    ? `Información detallada del ${itemType}: ${itemName}`
-    : `Información detallada del ${itemType}`;
+  const defaultMessage = itemName ? (
+    <>
+      Información detallada del {itemType}: <span className="font-semibold">{itemName}</span>
+    </>
+  ) : (
+    `Información detallada del ${itemType}`
+  );
 
   return (
     <Modal

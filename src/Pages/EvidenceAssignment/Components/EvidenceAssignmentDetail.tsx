@@ -107,22 +107,22 @@ export const EvidenceAssignmentDetail: React.FC<EvidenceAssignmentDetailProps> =
   const isOverdue = daysUntilDeadline !== null && daysUntilDeadline < 0;
   const isNearDue = assignment.fecha_limite && isNearDeadline(assignment.fecha_limite);
 
-  const modalTitle = assignment.evidencia 
-    ? `${assignment.evidencia.nomenclatura}`
-    : 'Evidencia';
+  const modalTitle = 'Detalles de la evidencia';
 
-  const itemName = assignment.evidencia?.descripcion || '';
+  const itemName = assignment.evidencia
+    ? `${assignment.evidencia.nomenclatura} - ${assignment.evidencia.descripcion}`
+    : '';
 
   const renderStatusAndDeadline = () => (
     <div className="bg-white border border-gray-200 rounded-lg p-4 mb-6">
       <div className="flex items-center justify-between flex-wrap gap-3">
         <div className="flex items-center gap-3">
-          <span className="text-sm font-sm text-gray-800">Estado:</span>
+          <span className="text-sm font-semibold text-gray-800">Estado:</span>
           <AssignmentStatusBadge estado={assignment.estado} size="md" showIcon />
         </div>
         {assignment.fecha_limite && (
           <div className="flex items-center gap-2">
-            <span className="text-sm font-sm text-gray-800">Fecha Límite:</span>
+            <span className="text-sm font-semibold text-gray-800">Fecha Límite:</span>
             <span className={`text-sm font-medium ${
               isOverdue ? 'text-red-600' : isNearDue ? 'text-orange-600' : 'text-gray-700'
             }`}>
@@ -161,40 +161,7 @@ export const EvidenceAssignmentDetail: React.FC<EvidenceAssignmentDetailProps> =
     );
   };
 
-  const renderEvidenceInfo = () => {
-    if (!assignment.evidencia) return null;
 
-    return (
-      <div className="mb-6">
-        <div className="flex items-center space-x-2 mb-3">
-          <SystemIcons.users.roles className="w-5 h-5 text-gray-600" />
-          <h3 className="font-sm text-gray-800">Detalles de la Evidencia</h3>
-        </div>
-        
-        <div className="bg-white border border-gray-200 rounded-lg p-4 max-h-60 overflow-y-auto">
-          <div className="space-y-2">
-            <div>
-              <span className="text-sm font-sm text-gray-800">Nomenclatura:</span>
-              <p className="text-sm text-gray-700">{assignment.evidencia.nomenclatura}</p>
-            </div>
-            <div>
-              <span className="text-sm font-sm text-gray-800">Descripción:</span>
-              <p className="text-sm text-gray-700">{assignment.evidencia.descripcion}</p>
-            </div>
-            {assignment.evidencia.criterion && (
-              <div>
-                <span className="text-sm font-sm text-gray-800">Criterio:</span>
-                <p className="text-sm text-gray-700">
-                  {assignment.evidencia.criterion.nomenclatura} - {assignment.evidencia.criterion.descripcion}
-                </p>
-              </div>
-            )}
-
-          </div>
-        </div>
-      </div>
-    );
-  };
 
   const renderComments = () => {
     if (!assignment.comentario) return null;
@@ -213,6 +180,53 @@ export const EvidenceAssignmentDetail: React.FC<EvidenceAssignmentDetailProps> =
     );
   };
 
+  const renderCriterionInfo = () => {
+    if (!assignment.evidencia?.criterion) return null;
+
+    return (
+      <div className="mb-6">
+        <div className="flex items-center space-x-2 mb-3">
+          <SystemIcons.users.roles className="w-5 h-5 text-gray-600" />
+          <h3 className="font-sm text-gray-800">Criterio</h3>
+        </div>
+        
+        <div className="bg-white border border-gray-200 rounded-lg p-4 max-h-60 overflow-y-auto">
+          <div className="space-y-2">
+            <div>
+              <span className="text-sm font-semibold text-gray-800">Nomenclatura:</span>
+              <p className="text-sm text-gray-700">{assignment.evidencia.criterion.nomenclatura}</p>
+            </div>
+            <div>
+              <span className="text-sm font-semibold text-gray-800">Descripción:</span>
+              <p className="text-sm text-gray-700">{assignment.evidencia.criterion.descripcion}</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
+  const formatAssignmentDate = (fechaAsignacion: string): string => {
+    const assignmentDate = new Date(fechaAsignacion);
+    const now = new Date();
+    const diffTime = now.getTime() - assignmentDate.getTime();
+    const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+    
+    if (diffDays === 0) {
+      return 'Asignado hoy';
+    } else if (diffDays === 1) {
+      return 'Asignado ayer';
+    } else if (diffDays <= 7) {
+      return `Asignado hace ${diffDays} días`;
+    } else {
+      return new Intl.DateTimeFormat('es-CR', {
+        day: '2-digit',
+        month: 'short',
+        year: 'numeric'
+      }).format(assignmentDate);
+    }
+  };
+
   const renderDates = () => (
     <div className="mb-6">
       <div className="flex items-center space-x-2 mb-3">
@@ -223,12 +237,12 @@ export const EvidenceAssignmentDetail: React.FC<EvidenceAssignmentDetailProps> =
       <div className="bg-white border border-gray-200 rounded-lg p-4 max-h-60 overflow-y-auto">
         <div className="space-y-2">
           <div>
-            <span className="text-sm font-sm text-gray-800">Fecha de Asignación:</span>
-            <p className="text-sm text-gray-700">{formatDeadline(assignment.fecha_asignacion)}</p>
+            <span className="text-sm font-semibold text-gray-800">Fecha de Asignación:</span>
+            <p className="text-sm text-gray-700">{formatAssignmentDate(assignment.fecha_asignacion)}</p>
           </div>
           {assignment.fecha_limite && (
             <div>
-              <span className="text-sm font-sm text-gray-800">Fecha Límite:</span>
+              <span className="text-sm font-semibold text-gray-800">Fecha Límite:</span>
               <p className={`text-sm font-medium ${
                 isOverdue ? 'text-red-600' : isNearDue ? 'text-orange-600' : 'text-gray-700'
               }`}>
@@ -292,7 +306,7 @@ export const EvidenceAssignmentDetail: React.FC<EvidenceAssignmentDetailProps> =
     >
       {renderStatusAndDeadline()}
       {renderDeadlineWarning()}
-      {renderEvidenceInfo()}
+      {renderCriterionInfo()}
       {renderComments()}
       {renderDates()}
       {renderActions()}

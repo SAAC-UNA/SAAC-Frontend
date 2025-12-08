@@ -101,7 +101,7 @@ export const MODULE_INFO: Record<string, ModuleInfo> = {
   my_evidence_assignments: {
     title: 'Mis Evidencias Asignadas',
     subtitle: 'Evidencias Pendientes y Completadas',
-    description: 'Visualice y administre las evidencias que le han sido asignadas, suba archivos y actualice su estado',
+    description: 'Visualice y administre las evidencias que le han sido asignadas',
     shortDescription: 'Ver evidencias asignadas a mí'
   },
 

@@ -11,7 +11,6 @@
 import React, { useMemo, useCallback } from 'react';
 import { DataTable, type DataTableColumn } from '@/Components/Ui/DataTable';
 import { TableActionButton } from '@/Components/index';
-import { SystemIcons } from '@/Components/Ui/Icons/SystemIcons';
 import type { EvidenceAssignment } from '@/Types/EvidenceAssignmentTypes';
 import { getStatusBadgeInfo, formatDate, isOverdue } from '@/Types/EvidenceAssignmentTypes';
 
@@ -20,6 +19,8 @@ interface EvidenceAssignmentsTableProps {
   assignments: EvidenceAssignment[];
   /** Estado de carga */
   loading?: boolean;
+  /** Indica si hay filtros activos */
+  hasFilters?: boolean;
   /** Callback al ver detalles */
   onViewDetails: (assignment: EvidenceAssignment) => void;
   /** Callback al subir archivos */
@@ -35,6 +36,7 @@ interface EvidenceAssignmentsTableProps {
 export const EvidenceAssignmentsTable: React.FC<EvidenceAssignmentsTableProps> = ({
   assignments,
   loading = false,
+  hasFilters = false,
   onViewDetails,
   onUploadFiles,
   pagination
@@ -155,11 +157,9 @@ export const EvidenceAssignmentsTable: React.FC<EvidenceAssignmentsTableProps> =
       loading={loading}
       searchable={false}
       emptyMessage={
-        <div className="flex flex-col items-center py-8">
-          <SystemIcons.modal.document size="2xl" className="text-gris-una mb-4" />
-          <p className="text-lg font-medium text-negro-una mb-1">No hay asignaciones</p>
-          <p className="text-sm text-gris-una">No se encontraron evidencias asignadas</p>
-        </div>
+        hasFilters
+          ? "No se encontraron asignaciones que coincidan con los filtros aplicados."
+          : "No tienes evidencias asignadas. Cuando se te asigne una evidencia, aparecerá aquí."
       }
       pagination={pagination}
       unstyled={false}

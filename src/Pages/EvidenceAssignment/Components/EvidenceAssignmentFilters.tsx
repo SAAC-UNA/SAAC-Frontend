@@ -38,7 +38,7 @@ export const EvidenceAssignmentFilters: React.FC<EvidenceAssignmentFiltersProps>
       {/* Búsqueda y Filtro por estado */}
       <div className="flex gap-2 items-start">
         <SearchInput
-          placeholder="Buscar por nombre de evidencia..."
+          placeholder="Buscar evidencias.."
           value={filters.search || ''}
           onChange={(value) => onFiltersChange({ ...filters, search: value })}
         />

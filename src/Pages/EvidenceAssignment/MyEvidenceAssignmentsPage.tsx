@@ -6,8 +6,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ScreenContainer } from '@/Components/Ui/ScreenContainer';
-import { LoadingSpinner } from '@/Components/Ui/Loading';
-import { SystemIcons } from '@/Components/Ui/Icons/SystemIcons';
+import { BackendErrorAlert } from '@/Components/Ui/BackendErrorAlert';
 import { getModuleInfo } from '@/Constants/ModuleInfo';
 import { useToast } from '@/Context/ToastContext';
 import { useAuth } from '@/Context/AuthContext';
@@ -27,6 +26,7 @@ export const MyEvidenceAssignmentsPage: React.FC = () => {
   
   const [assignments, setAssignments] = useState<EvidenceAssignment[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [filters, setFilters] = useState<AssignmentFilters>({
     estado: 'todos',
     search: '',
@@ -45,25 +45,18 @@ export const MyEvidenceAssignmentsPage: React.FC = () => {
 
   const loadAssignments = async () => {
     if (!user?.usuario_id) {
-      showToast({
-        type: 'error',
-        title: 'Error',
-        message: 'No se pudo obtener la información del usuario'
-      });
+      setError('No se pudo obtener la información del usuario');
       setLoading(false);
       return;
     }
 
     try {
       setLoading(true);
+      setError(null);
       const data = await evidenceAssignmentService.getMyAssignments(user.usuario_id);
       setAssignments(data);
     } catch (error: any) {
-      showToast({
-        type: 'error',
-        title: 'Error al cargar asignaciones',
-        message: error.message || 'No se pudieron obtener las evidencias asignadas'
-      });
+      setError(error.message || 'No se pudieron obtener las evidencias asignadas');
     } finally {
       setLoading(false);
     }
@@ -128,77 +121,34 @@ export const MyEvidenceAssignmentsPage: React.FC = () => {
       title={moduleInfo.title}
       description={moduleInfo.description}
       variant="full-width"
-    >
-      <div className="max-w-7xl mx-auto space-y-6">
-        {/* Filtros */}
-        {!loading && assignments.length > 0 && (
+      headerExtra={
+        !error && assignments.length > 0 ? (
           <EvidenceAssignmentFilters
             filters={filters}
             onFiltersChange={setFilters}
             totalCount={assignments.length}
             filteredCount={filteredAssignments.length}
           />
-        )}
-
-        {/* Loading */}
-        {loading && (
-          <div className="flex items-center justify-center py-12">
-            <div className="flex flex-col items-center gap-3">
-              <LoadingSpinner size="lg" />
-              <p className="text-sm text-gris-una">Cargando asignaciones...</p>
-            </div>
-          </div>
-        )}
-
-        {/* Estado vacío - sin asignaciones */}
-        {!loading && assignments.length === 0 && (
-          <div className="text-center py-12 bg-white rounded-lg border-2 border-dashed border-gray-300">
-            <div className="mx-auto flex justify-center text-gris-una mb-4">
-              {SystemIcons.modal.document({ size: '2xl' })}
-            </div>
-            <h3 className="text-lg font-semibold text-negro-una mb-2">
-              No tienes evidencias asignadas
-            </h3>
-            <p className="text-sm text-gris-una max-w-md mx-auto">
-              Actualmente no tienes evidencias asignadas. Cuando se te asigne una evidencia, 
-              aparecerá aquí para que puedas gestionarla.
-            </p>
-          </div>
-        )}
-
-        {/* Estado vacío - filtros sin resultados */}
-        {!loading && assignments.length > 0 && filteredAssignments.length === 0 && (
-          <div className="text-center py-12 bg-white rounded-lg border-2 border-dashed border-gray-300">
-            <div className="mx-auto flex justify-center text-gris-una mb-4">
-              {SystemIcons.interface.search({ size: '2xl' })}
-            </div>
-            <h3 className="text-lg font-semibold text-negro-una mb-2">
-              No se encontraron resultados
-            </h3>
-            <p className="text-sm text-gris-una max-w-md mx-auto mb-4">
-              No hay asignaciones que coincidan con los filtros aplicados.
-              Intenta ajustar los filtros de búsqueda.
-            </p>
-            <button
-              onClick={() => setFilters({
-                estado: 'todos',
-                search: '',
-                sortBy: 'fecha_asignacion',
-                sortDirection: 'desc'
-              })}
-              className="text-sm text-azul-una hover:text-azul-una-dark font-medium"
-            >
-              Limpiar todos los filtros
-            </button>
-          </div>
+        ) : undefined
+      }
+    >
+      <div className="max-w-7xl mx-auto space-y-6">
+        {/* Error del backend */}
+        {error && (
+          <BackendErrorAlert
+            error={error}
+            onRetry={loadAssignments}
+          />
         )}
 
         {/* Tabla de asignaciones */}
-        {!loading && filteredAssignments.length > 0 && (
+        {!error && (
           <EvidenceAssignmentsTable
             assignments={paginatedAssignments}
+            loading={loading}
             onViewDetails={handleViewDetails}
             onUploadFiles={handleUploadFiles}
+            hasFilters={filters.estado !== 'todos' || filters.search !== ''}
             pagination={totalPages > 1 ? {
               currentPage,
               totalPages,

@@ -1,8 +1,23 @@
 /**
- * FilterButton - Botón de filtro con dropdown
+ * FilterButton - Wrapper de SingleSelect para filtros compactos
  * 
- * Solo muestra un ícono de filtro con tooltip. Al hacer click despliega opciones.
- * Cuando se selecciona algo diferente al default, muestra un badge con la opción seleccionada.
+ * Reutiliza SingleSelect pero con presentación simplificada:
+ * - Solo muestra ícono de filtro con tooltip
+ * - Badge cuando hay filtro activo (diferente al default)
+ * - Mismo dropdown y lógica que SingleSelect
+ * 
+ * DECISIÓN DE DISEÑO:
+ * Aunque reutiliza la lógica de SingleSelect mediante composición,
+ * mantiene su propia implementación de dropdown por razones de UX:
+ * 1. SingleSelect está optimizado para formularios (labels, floating, etc)
+ * 2. FilterButton necesita un trigger visual completamente diferente (solo ícono)
+ * 3. El dropdown es simple y compartir código aquí agregaría complejidad innecesaria
+ * 
+ * REFACTORIZACIÓN FUTURA:
+ * Si se necesitan más variantes de selects compactos, considerar:
+ * - Extraer lógica de dropdown a un hook useDropdown()
+ * - Crear componente DropdownMenu reutilizable
+ * - SingleSelect y FilterButton usarían estos primitivos
  */
 
 import { useState, useRef, useEffect } from 'react';
@@ -39,9 +54,11 @@ export function FilterButton<T = string>({
   disabled = false
 }: FilterButtonProps<T>) {
   const [isOpen, setIsOpen] = useState(false);
+  const [dropdownPosition, setDropdownPosition] = useState<'left' | 'right'>('left');
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const buttonRef = useRef<HTMLButtonElement>(null);
 
-  // Cerrar dropdown al hacer click fuera
+  // Cerrar dropdown al hacer click fuera (misma lógica que SingleSelect)
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
@@ -52,6 +69,24 @@ export function FilterButton<T = string>({
     if (isOpen) {
       document.addEventListener('mousedown', handleClickOutside);
       return () => document.removeEventListener('mousedown', handleClickOutside);
+    }
+  }, [isOpen]);
+
+  // Calcular posición del dropdown basado en espacio disponible
+  useEffect(() => {
+    if (isOpen && buttonRef.current) {
+      const buttonRect = buttonRef.current.getBoundingClientRect();
+      const dropdownWidth = 224; // w-56 = 14rem = 224px
+      const viewportWidth = window.innerWidth;
+      const spaceOnRight = viewportWidth - buttonRect.right;
+      
+      // Si no hay suficiente espacio a la izquierda (posición por defecto),
+      // abrirlo hacia la derecha
+      if (spaceOnRight < dropdownWidth && buttonRect.left > dropdownWidth) {
+        setDropdownPosition('right');
+      } else {
+        setDropdownPosition('left');
+      }
     }
   }, [isOpen]);
 
@@ -69,16 +104,16 @@ export function FilterButton<T = string>({
       <Tooltip>
         <TooltipTrigger>
           <button
+            ref={buttonRef}
             type="button"
             onClick={() => !disabled && setIsOpen(!isOpen)}
             disabled={disabled}
             className={cn(
-              "p-2 rounded-lg",
-              "border border-gray-300 bg-white",
-              "hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-azul-una",
-              "transition-colors duration-150",
+              "p-2 rounded-lg border transition-colors",
+              "border-gris-una/5 bg-gris-una/10",
+              "hover:bg-gris-una/20",
               disabled && "opacity-50 cursor-not-allowed",
-              hasActiveFilter && "border-azul-una bg-azul-una/5"
+              hasActiveFilter && "bg-azul-una/10"
             )}
           >
             <div className="text-gris-una">
@@ -91,16 +126,34 @@ export function FilterButton<T = string>({
         </TooltipContent>
       </Tooltip>
 
-      {/* Badge de filtro activo */}
+      {/* Badge de filtro activo con botón para eliminar */}
       {hasActiveFilter && selectedOption && (
-        <span className="text-xs px-2 py-1 rounded-full bg-azul-una text-white font-medium whitespace-nowrap">
-          {selectedOption.label}
-        </span>
+        <div className="flex items-center gap-1 px-2 py-1 rounded-full bg-azul-una text-white">
+          <span className="text-xs font-medium whitespace-nowrap">
+            {selectedOption.label}
+          </span>
+          <button
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              onChange(options[0].value); // Reset al primer valor (default)
+            }}
+            className="ml-1 hover:bg-white/20 rounded-full p-0.5 transition-colors"
+            aria-label="Eliminar filtro"
+          >
+            <SystemIcons.actions.cancel size="xs" color="currentColor" />
+          </button>
+        </div>
       )}
 
-      {/* Dropdown menu */}
+      {/* Dropdown menu - Se posiciona automáticamente según espacio disponible */}
       {isOpen && (
-        <div className="absolute left-0 top-full mt-2 w-56 rounded-lg bg-white shadow-lg border border-gray-300 overflow-hidden z-50">
+        <div 
+          className={cn(
+            "absolute top-full mt-2 w-56 rounded-lg bg-white shadow-lg border border-gray-300 overflow-hidden z-50",
+            dropdownPosition === 'left' ? 'left-0' : 'right-0'
+          )}
+        >
           <div className="py-1 overflow-auto custom-scrollbar" style={{ maxHeight: '240px' }}>
             {options.map((option) => {
               const isSelected = option.value === value;
@@ -120,20 +173,10 @@ export function FilterButton<T = string>({
                 >
                   {option.label}
                   
-                  {/* Check icon para opción seleccionada - mismo diseño que SingleSelect */}
+                  {/* Check icon - Mismo que SingleSelect para consistencia visual */}
                   {isSelected && (
-                    <span className="absolute inset-y-0 right-0 flex items-center pr-3">
-                      <svg
-                        className="w-5 h-5 text-blue-600"
-                        fill="currentColor"
-                        viewBox="0 0 20 20"
-                      >
-                        <path
-                          fillRule="evenodd"
-                          d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-                          clipRule="evenodd"
-                        />
-                      </svg>
+                    <span className="absolute inset-y-0 right-0 flex items-center pr-3 text-blue-600">
+                      <SystemIcons.interface.check size="sm" color="currentColor" />
                     </span>
                   )}
                 </button>
