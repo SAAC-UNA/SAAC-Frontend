@@ -289,17 +289,25 @@ export const DatePicker: React.FC<DatePickerProps> = ({
           <div className="flex items-center gap-1">
             {/* Botón para limpiar la fecha */}
             {selectedDate && !disabled && (
-              <button
-                type="button"
+              <div
+                role="button"
+                tabIndex={0}
                 onClick={(e) => {
                   e.stopPropagation();
                   handleClearDate();
                 }}
-                className="p-0.5 hover:bg-gris-una/20 rounded transition-colors"
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    handleClearDate();
+                  }
+                }}
+                className="p-0.5 hover:bg-gris-una/20 rounded transition-colors cursor-pointer"
                 aria-label="Limpiar fecha"
               >
                 <SystemIcons.actions.cancel size="sm" className="text-gris-una" />
-              </button>
+              </div>
             )}
             
             <SystemIcons.interface.calendar size="sm" className="text-gris-una" />

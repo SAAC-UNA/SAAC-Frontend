@@ -93,3 +93,26 @@ export interface WizardStep {
 export interface ValidationErrors {
   [key: string]: string;
 }
+
+/**
+ * Tipos para validación de asignaciones duplicadas
+ */
+export interface DuplicateAssignment {
+  usuario_id: number;
+  usuario_nombre: string;
+  estado: 'pendiente' | 'en_progreso' | 'completado' | 'vencido';
+  fecha_asignacion: string;
+  asignacion_id?: number;
+}
+
+export interface DuplicateValidationRequest {
+  proceso_id: number;
+  evidencia_id: number;
+  usuarios: number[];
+}
+
+export interface DuplicateValidationResponse {
+  tiene_duplicados: boolean;
+  duplicados: DuplicateAssignment[];
+  total_duplicados: number;
+}

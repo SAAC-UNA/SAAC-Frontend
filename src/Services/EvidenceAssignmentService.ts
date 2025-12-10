@@ -14,11 +14,31 @@ import type {
   EvidenceAssignmentApiResponse,
   Evidence,
   Criterion,
-  Process
+  Process,
+  DuplicateValidationRequest,
+  DuplicateValidationResponse
 } from '@/Types/EvidenceAssignment';
 import { devLog } from '@/Utils/devLogger';
 
 class EvidenceAssignmentService {
+  /**
+   * Validar asignaciones duplicadas antes de crear
+   */
+  async validateDuplicates(data: DuplicateValidationRequest): Promise<DuplicateValidationResponse> {
+    try {
+      const response = await axiosInstance.post<DuplicateValidationResponse>(
+        '/evidencias-asignaciones/validar-duplicados',
+        data
+      );
+      return response.data;
+    } catch (error: any) {
+      throw new Error(
+        error.response?.data?.message || 
+        'Error al validar asignaciones duplicadas'
+      );
+    }
+  }
+
   /**
    * Crear nuevas asignaciones de evidencias
    */
