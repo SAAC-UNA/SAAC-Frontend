@@ -125,17 +125,38 @@ const AuditLogPage: React.FC = () => {
   }, []);
 
   /**
-   * Exportar registros (preparado para cuando backend lo implemente)
+   * Exportar registros (requiere rango de fechas obligatorio)
    */
   const handleExport = useCallback(async (format: ExportFormat) => {
+    // Validar que se hayan seleccionado las fechas obligatorias
+    if (!appliedFilters.fecha_desde || !appliedFilters.fecha_hasta) {
+      showToast({
+        type: 'error',
+        title: 'Fechas requeridas',
+        message: 'Debe seleccionar un rango de fechas (desde - hasta) para exportar la bitácora',
+      });
+      return;
+    }
+
     try {
       showToast({
-        type: 'warning',
+        type: 'info',
         title: 'Exportando...',
-        message: `Exportando bitácora a ${format.toUpperCase()}...`,
+        message: `Generando archivo ${format.toUpperCase()}...`,
       });
 
-      const blob = await AuditLogService.exportAuditLogs(format, appliedFilters);
+      const blob = await AuditLogService.exportAuditLogs(
+        format,
+        appliedFilters.fecha_desde,
+        appliedFilters.fecha_hasta,
+        {
+          usuario_id: appliedFilters.usuario_id,
+          tipo_accion_id: appliedFilters.tipo_accion_id,
+          tipo_accion: appliedFilters.tipo_accion,
+          modulo: appliedFilters.modulo,
+        }
+      );
+      
       AuditLogService.downloadExportedFile(blob, format);
 
       showToast({
@@ -167,7 +188,11 @@ const AuditLogPage: React.FC = () => {
           variant="outline"
           onClick={() => handleExport('pdf')}
           disabled={isLoading || logs.length === 0}
-          tooltip="⚠️ Funcionalidad pendiente de implementación en el backend"
+          tooltip={
+            !appliedFilters.fecha_desde || !appliedFilters.fecha_hasta
+              ? 'Debe seleccionar un rango de fechas para exportar'
+              : 'Exportar registros de bitácora a PDF'
+          }
           className="flex items-center gap-2"
         >
           <SystemIcons.modal.document className="w-4 h-4" />
@@ -177,7 +202,11 @@ const AuditLogPage: React.FC = () => {
           variant="outline"
           onClick={() => handleExport('excel')}
           disabled={isLoading || logs.length === 0}
-          tooltip="⚠️ Funcionalidad pendiente de implementación en el backend"
+          tooltip={
+            !appliedFilters.fecha_desde || !appliedFilters.fecha_hasta
+              ? 'Debe seleccionar un rango de fechas para exportar'
+              : 'Exportar registros de bitácora a Excel'
+          }
           className="flex items-center gap-2"
         >
           <SystemIcons.repository.boxArchive className="w-4 h-4" />
