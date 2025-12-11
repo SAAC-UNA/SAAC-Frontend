@@ -527,6 +527,24 @@ export const SystemIcons = {
         />
       </svg>
     ),
+    pdf: ({ className, size, color }: IconProps) => (
+      <svg
+        className={`${getSizeClasses(size)} ${className || ''}`}
+        viewBox="0 0 24 24"
+        fill={color || "currentColor"}
+      >
+        <path d="M6 15H4.5a.75.75 0 0 0-.75.75v4.5a.75.75 0 1 0 1.5 0v-.75H6A2.25 2.25 0 1 0 6 15Zm0 3h-.75v-1.5H6A.75.75 0 1 1 6 18Zm12.375-1.5v1.125h1.5a.75.75 0 1 1 0 1.5h-1.5v1.125a.75.75 0 1 1-1.5 0v-4.5a.75.75 0 0 1 .75-.75h2.625a.75.75 0 1 1 0 1.5h-1.875ZM12 15h-1.313a.75.75 0 0 0-.75.75v4.5a.75.75 0 0 0 .75.75H12a3 3 0 0 0 0-6Zm0 4.5h-.563v-3H12a1.5 1.5 0 1 1 0 3Zm-7.5-6.75h15a.75.75 0 0 0 .75-.75V8.25a.76.76 0 0 0-.216-.534l-5.25-5.25a.76.76 0 0 0-.534-.216h-9a1.5 1.5 0 0 0-1.5 1.5V12a.75.75 0 0 0 .75.75Zm9.75-8.625 4.125 4.125H14.25V4.125Z" />
+      </svg>
+    ),
+    excel: ({ className, size, color }: IconProps) => (
+      <svg
+        className={`${getSizeClasses(size)} ${className || ''}`}
+        viewBox="0 0 24 24"
+        fill={color || "currentColor"}
+      >
+        <path d="M18.75 2.25h-12a1.5 1.5 0 0 0-1.5 1.5V6h-1.5a1.5 1.5 0 0 0-1.5 1.5v9a1.5 1.5 0 0 0 1.5 1.5h1.5v2.25a1.5 1.5 0 0 0 1.5 1.5h12a1.5 1.5 0 0 0 1.5-1.5V3.75a1.5 1.5 0 0 0-1.5-1.5ZM6.488 14.85a.75.75 0 0 1-.15-1.05l1.35-1.8-1.35-1.8a.75.75 0 0 1 1.2-.9l1.087 1.453L9.713 9.3a.75.75 0 1 1 1.2.9L9.563 12l1.35 1.8a.75.75 0 0 1-1.2.9l-1.088-1.453L7.537 14.7a.75.75 0 0 1-1.05.15ZM12 20.25H6.75V18H12v2.25ZM12 6H6.75V3.75H12V6Zm6.75 14.25H13.5V18a1.5 1.5 0 0 0 1.5-1.5v-.75h3.75v4.5Zm0-6H15v-4.5h3.75v4.5Zm0-6H15V7.5A1.5 1.5 0 0 0 13.5 6V3.75h5.25v4.5Z" />
+      </svg>
+    ),
     key: ({ className, size, color }: IconProps) => (
       <svg
         className={`${getSizeClasses(size)} ${className || ''}`}
