@@ -117,7 +117,7 @@ export const AuditLogDetailModal: React.FC<AuditLogDetailModalProps> = ({
               <div className="flex items-center gap-2">
                 <SystemIcons.auth.AlertCircle className="w-4 h-4 text-orange-500" />
                 <span className="text-sm text-gray-600 italic">
-                  Sistema (acción sin usuario autenticado)
+                  Usuario desconocido
                 </span>
               </div>
             )}

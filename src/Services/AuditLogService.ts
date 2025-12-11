@@ -13,6 +13,7 @@ import type {
   AuditLogFilters,
   AuditLogPaginatedResponse,
   ExportFormat,
+  ActionType,
 } from '../Types/AuditLogTypes';
 
 class AuditLogService {
@@ -101,29 +102,39 @@ class AuditLogService {
   /**
    * Exportar registros de bitácora a PDF o Excel
    * 
-   * ⚠️ NOTA: Este endpoint AÚN NO ESTÁ IMPLEMENTADO en el backend
-   * Se debe agregar: GET /api/bitacora/export?format=pdf|excel
-   * 
-   * Endpoint planeado: GET /api/bitacora/export
+   * Endpoint: GET /api/bitacora/export
    * Requiere: Rol Superusuario
+   * ⚠️ IMPORTANTE: Las fechas son OBLIGATORIAS para exportar
    * 
    * @param format - Formato de exportación ('pdf' | 'excel')
-   * @param filters - Filtros opcionales (se aplican a la exportación)
+   * @param fechaDesde - Fecha desde (OBLIGATORIA) formato YYYY-MM-DD
+   * @param fechaHasta - Fecha hasta (OBLIGATORIA) formato YYYY-MM-DD
+   * @param filters - Filtros adicionales opcionales
    * @returns Blob con el archivo generado
    */
-  async exportAuditLogs(format: ExportFormat, filters?: AuditLogFilters): Promise<Blob> {
+  async exportAuditLogs(
+    format: ExportFormat,
+    fechaDesde: string,
+    fechaHasta: string,
+    filters?: Omit<AuditLogFilters, 'fecha_desde' | 'fecha_hasta'>
+  ): Promise<Blob> {
     try {
+      // Validación de fechas obligatorias
+      if (!fechaDesde || !fechaHasta) {
+        throw new Error('Las fechas desde y hasta son obligatorias para exportar');
+      }
+
       const params = new URLSearchParams();
       params.append('format', format);
+      params.append('fecha_desde', fechaDesde);
+      params.append('fecha_hasta', fechaHasta);
 
-      // Agregar filtros si existen
+      // Agregar filtros adicionales si existen
       if (filters) {
         if (filters.usuario_id) params.append('usuario_id', filters.usuario_id.toString());
         if (filters.tipo_accion_id) params.append('tipo_accion_id', filters.tipo_accion_id.toString());
         if (filters.tipo_accion) params.append('tipo_accion', filters.tipo_accion);
         if (filters.modulo) params.append('modulo', filters.modulo);
-        if (filters.fecha_desde) params.append('fecha_desde', filters.fecha_desde);
-        if (filters.fecha_hasta) params.append('fecha_hasta', filters.fecha_hasta);
       }
 
       const response = await axiosInstance.get(`${this.baseURL}/export?${params.toString()}`, {
@@ -138,11 +149,13 @@ class AuditLogService {
         throw new Error('Acceso denegado. Solo usuarios con rol Superusuario pueden exportar la bitácora.');
       }
       
-      if (error.response?.status === 404 || error.response?.status === 501) {
-        throw new Error('La funcionalidad de exportación aún no está disponible. Por favor, contacte al equipo de backend.');
+      if (error.response?.status === 422) {
+        // Error de validación del backend (fechas inválidas o límite excedido)
+        const message = error.response?.data?.message || 'Error de validación en la exportación';
+        throw new Error(message);
       }
       
-      throw new Error('Error al exportar registros de bitácora');
+      throw new Error(error.response?.data?.message || 'Error al exportar registros de bitácora');
     }
   }
 
@@ -166,6 +179,42 @@ class AuditLogService {
     link.click();
     document.body.removeChild(link);
     window.URL.revokeObjectURL(url);
+  }
+
+  /**
+   * Obtener catálogo de módulos disponibles
+   * 
+   * Endpoint: GET /api/bitacora/modulos
+   * Requiere: Rol Superusuario
+   * 
+   * @returns Lista de módulos registrados en la bitácora
+   */
+  async getModulos(): Promise<string[]> {
+    try {
+      const response = await axiosInstance.get<{ data: string[] }>(`${this.baseURL}/modulos`);
+      return response.data.data;
+    } catch (error: any) {
+      console.error('Error obteniendo módulos:', error);
+      throw new Error(error.response?.data?.message || 'Error al obtener módulos');
+    }
+  }
+
+  /**
+   * Obtener catálogo de tipos de acción disponibles
+   * 
+   * Endpoint: GET /api/bitacora/acciones
+   * Requiere: Rol Superusuario
+   * 
+   * @returns Lista de tipos de acción con ID y descripción
+   */
+  async getAcciones(): Promise<ActionType[]> {
+    try {
+      const response = await axiosInstance.get<{ data: ActionType[] }>(`${this.baseURL}/acciones`);
+      return response.data.data;
+    } catch (error: any) {
+      console.error('Error obteniendo acciones:', error);
+      throw new Error(error.response?.data?.message || 'Error al obtener tipos de acción');
+    }
   }
 }
 

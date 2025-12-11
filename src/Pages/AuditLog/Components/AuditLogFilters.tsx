@@ -8,11 +8,12 @@
  * - Rango de fechas (desde - hasta)
  */
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Button } from '@/Components/Ui/Button';
 import { Input } from '@/Components/Ui/Input';
 import { SystemIcons } from '@/Components/Ui/Icons/SystemIcons';
-import type { AuditLogFilters as Filters } from '@/Types/AuditLogTypes';
+import type { AuditLogFilters as Filters, ActionType } from '@/Types/AuditLogTypes';
+import AuditLogService from '@/Services/AuditLogService';
 
 interface AuditLogFiltersProps {
   onApplyFilters: (filters: Filters) => void;
@@ -32,35 +33,46 @@ export const AuditLogFilters: React.FC<AuditLogFiltersProps> = ({
     fecha_hasta: undefined,
   });
 
-  // Lista de módulos comunes (en el futuro puede venir del backend)
-  const modulos = [
-    'Autenticación',
-    'Usuarios',
-    'Roles',
-    'Permisos',
-    'Evidencias',
-    'Ciclos',
-    'Reportes',
-    'Estructura',
-    'Procesos',
-  ];
+  // Estados para catálogos dinámicos del backend
+  const [modulos, setModulos] = useState<string[]>([]);
+  const [tiposAccion, setTiposAccion] = useState<Array<{ value: string; label: string }>>([]);
+  const [catalogsLoading, setCatalogsLoading] = useState(true);
 
-  // Lista de tipos de acción (basado en ActionTypeSeeder del backend)
-  const tiposAccion = [
-    { value: 'crear', label: 'Crear' },
-    { value: 'editar', label: 'Editar' },
-    { value: 'eliminar', label: 'Eliminar' },
-    { value: 'consultar', label: 'Consultar' },
-    { value: 'login', label: 'Inicio de sesión' },
-    { value: 'logout', label: 'Cierre de sesión' },
-    { value: 'login_fallido', label: 'Intento fallido' },
-    { value: 'activar', label: 'Activar' },
-    { value: 'desactivar', label: 'Desactivar' },
-    { value: 'asignar_rol', label: 'Asignar rol' },
-    { value: 'asignar_permisos', label: 'Asignar permisos' },
-    { value: 'exportar', label: 'Exportar' },
-    { value: 'asignar', label: 'Asignar' },
-  ];
+  // Cargar catálogos al montar el componente
+  useEffect(() => {
+    const loadCatalogs = async () => {
+      try {
+        const [modulosData, accionesData] = await Promise.all([
+          AuditLogService.getModulos(),
+          AuditLogService.getAcciones(),
+        ]);
+
+        setModulos(modulosData);
+        
+        // Transformar ActionType[] a formato de opciones para el select
+        const accionesOptions = accionesData.map((accion: ActionType) => ({
+          value: accion.descripcion,
+          label: capitalize(accion.descripcion),
+        }));
+        setTiposAccion(accionesOptions);
+      } catch (error) {
+        console.error('Error cargando catálogos:', error);
+        // Mantener arrays vacíos en caso de error
+      } finally {
+        setCatalogsLoading(false);
+      }
+    };
+
+    loadCatalogs();
+  }, []);
+
+  // Función auxiliar para capitalizar texto
+  const capitalize = (text: string): string => {
+    return text
+      .split('_')
+      .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+      .join(' ');
+  };
 
   const handleInputChange = (field: keyof Filters, value: string) => {
     setFilters(prev => ({
@@ -118,9 +130,11 @@ export const AuditLogFilters: React.FC<AuditLogFiltersProps> = ({
             value={filters.modulo || ''}
             onChange={(e) => handleInputChange('modulo', e.target.value)}
             className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 text-sm"
-            disabled={isLoading}
+            disabled={isLoading || catalogsLoading}
           >
-            <option value="">Todos los módulos</option>
+            <option value="">
+              {catalogsLoading ? 'Cargando módulos...' : 'Todos los módulos'}
+            </option>
             {modulos.map((modulo) => (
               <option key={modulo} value={modulo}>
                 {modulo}
@@ -139,9 +153,11 @@ export const AuditLogFilters: React.FC<AuditLogFiltersProps> = ({
             value={filters.tipo_accion || ''}
             onChange={(e) => handleInputChange('tipo_accion', e.target.value)}
             className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 text-sm"
-            disabled={isLoading}
+            disabled={isLoading || catalogsLoading}
           >
-            <option value="">Todas las acciones</option>
+            <option value="">
+              {catalogsLoading ? 'Cargando acciones...' : 'Todas las acciones'}
+            </option>
             {tiposAccion.map((tipo) => (
               <option key={tipo.value} value={tipo.value}>
                 {tipo.label}
