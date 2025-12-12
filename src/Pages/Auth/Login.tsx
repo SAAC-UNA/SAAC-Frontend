@@ -60,7 +60,7 @@ export const Login = () => {
 
   return (
     <div className={styles['login-page']}>
-      {/* Left Section - Branding (60%) */}
+      {/* Left Section - Branding Text */}
       <div className={styles['login-branding-section']}>
         <div className={styles['login-branding']}>
           <div className={styles['login-logo']}>SAAC</div>
@@ -69,7 +69,7 @@ export const Login = () => {
         </div>
       </div>
 
-      {/* Right Section - Form (40%) */}
+      {/* Right Section - Form Container */}
       <div className={styles['login-form-section']}>
         <div className={styles['login-form-wrapper']}>
           <img 

@@ -4,28 +4,21 @@
   min-height: 100vh;
   display: flex;
   width: 100%;
-  background: #fff;
-  position: relative;
-  overflow: hidden;
-}
-
-/* Left Section - Branding (55%) */
-.login-branding-section {
-  flex: 0 0 55%;
   background: linear-gradient(135deg, #c8102e 0%, #8a081d 100%);
   background-image: 
     linear-gradient(135deg, rgba(200, 16, 46, 0.65) 0%, rgba(138, 8, 29, 0.65) 100%),
     url('/Images/Login-UNA.jpg');
   background-size: cover;
   background-position: center;
-  display: flex;
+  position: relative;
+  overflow: hidden;
   align-items: center;
   justify-content: center;
-  padding: 60px 80px;
-  position: relative;
+  padding: 20px;
+  gap: 60px;
 }
 
-.login-branding-section::before {
+.login-page::before {
   content: '';
   position: absolute;
   top: -50%;
@@ -37,7 +30,7 @@
   z-index: 0;
 }
 
-.login-branding-section::after {
+.login-page::after {
   content: '';
   position: absolute;
   bottom: -30%;
@@ -49,9 +42,18 @@
   z-index: 0;
 }
 
-/* Right Section - Form (45%) */
+/* Left Section - Branding */
+.login-branding-section {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 1 auto;
+  z-index: 1;
+  margin-left: 60px;
+}
+
+/* Form Section - Left Container */
 .login-form-section {
-  flex: 0 0 45%;
   background: #fff;
   display: flex;
   flex-direction: column;
@@ -59,6 +61,14 @@
   justify-content: flex-start;
   padding: 40px 60px 60px 60px;
   position: relative;
+  width: 100%;
+  max-width: 480px;
+  border-radius: 12px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  z-index: 1;
+  min-height: auto;
+  flex-shrink: 0;
+  margin-left: 60px;
 }
 
 .login-branding {
@@ -67,6 +77,7 @@
   max-width: 100%;
   animation: fadeInUp 0.8s ease-out;
   color: #fff;
+  flex: 0 1 auto;
 }
 
 @keyframes fadeInUp {
@@ -89,6 +100,7 @@
   font-family: 'Poppins', sans-serif;
   text-shadow: 0 8px 16px rgba(0, 0, 0, 0.3), 0 4px 8px rgba(0, 0, 0, 0.2);
   filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.15));
+  display: block;
 }
 
 .login-title {
@@ -98,6 +110,7 @@
   line-height: 1.5;
   color: #fff;
   letter-spacing: 0.5px;
+  display: block;
 }
 
 .login-subtitle {
@@ -106,6 +119,7 @@
   margin: 0;
   font-weight: 300;
   letter-spacing: 0.3px;
+  display: block;
 }
 
 .login-form-wrapper {
@@ -153,8 +167,8 @@
   letter-spacing: 1.5px;
   border-radius: 25px;
   border: 2px solid #c8102e;
-  background: #fff;
-  color: #c8102e;
+  background: #c8102e;
+  color: #fff;
   font-weight: 700;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   box-shadow: none;
@@ -172,13 +186,13 @@
   left: 0;
   height: 100%;
   width: 0;
-  background-color: #c8102e;
+  background-color: #fff;
   z-index: -1;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .login-form .login-btn:hover:not(:disabled) {
-  color: #fff;
+  color: #c8102e;
 }
 
 .login-form .login-btn:hover:not(:disabled)::before {
@@ -263,7 +277,7 @@
 
 .login-info-tooltip {
   position: absolute;
-  left: -24px;
+  right: -24px;
   top: 16px;
   display: flex;
   align-items: center;

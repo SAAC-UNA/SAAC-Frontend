@@ -5,29 +5,7 @@
 
 import { createContext, useContext, useState, useEffect } from 'react';
 import type { ReactNode } from 'react';
-import { authService } from '@/Services/AuthService';
-
-// Tipos basados en la respuesta del backend
-interface Career {
-  carrera_id: number;
-  carrera_sede_id: number;
-  nombre: string;
-  facultad_id: number;
-}
-
-interface Role {
-  id: number;
-  name: string;
-}
-
-interface User {
-  usuario_id: number;
-  cedula: string;
-  nombre: string;
-  email: string;
-  roles: Role[];
-  careers: Career[];
-}
+import { authService, type User, type Role, type Career } from '@/Services/AuthService';
 
 interface LoginCredentials {
   cedula: string;
@@ -61,7 +39,12 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
     // Cargar usuario desde localStorage al montar
     const savedUser = localStorage.getItem('auth_user');
     if (savedUser) {
-      setUser(JSON.parse(savedUser));
+      try {
+        setUser(JSON.parse(savedUser));
+      } catch {
+        // Si hay error al parsear, limpiar localStorage
+        localStorage.removeItem('auth_user');
+      }
     }
     setLoading(false);
   }, []);
@@ -82,8 +65,8 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
 
   const logout = async (): Promise<void> => {
     try {
+      authService.logout();
       setUser(null);
-      localStorage.removeItem('auth_user');
       setError(null);
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Error al cerrar sesión');
