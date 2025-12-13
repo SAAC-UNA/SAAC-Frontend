@@ -13,8 +13,9 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { ScreenContainer } from '@/Components/Ui/ScreenContainer';
 import { BackendErrorAlert } from '@/Components/Ui/BackendErrorAlert';
 import { SystemIcons } from '@/Components/Ui/Icons/SystemIcons';
-import { ButtonWithTooltip } from '@/Components/Ui/ButtonWithTooltip';
 import { SearchInput } from '@/Components/Ui/SearchInput';
+import { DropdownButton } from '@/Components/Ui/DropdownButton';
+import type { DropdownOption } from '@/Components/Ui/DropdownButton';
 import { getModuleInfo } from '@/Constants/ModuleInfo';
 import { AuditLogFilters } from './Components/AuditLogFilters';
 import { AuditLogTable } from './Components/AuditLogTable';
@@ -212,6 +213,24 @@ const AuditLogPage: React.FC = () => {
 
   const moduleInfo = getModuleInfo('auditlog');
 
+  // Opciones del menú de exportación
+  const exportOptions: DropdownOption[] = [
+    {
+      id: 'pdf',
+      label: 'Exportar a PDF',
+      icon: <SystemIcons.modal.pdf className="w-4 h-4" />,
+      onClick: () => handleExport('pdf'),
+      disabled: !appliedFilters.fecha_desde || !appliedFilters.fecha_hasta || logs.length === 0
+    },
+    {
+      id: 'excel',
+      label: 'Exportar a Excel',
+      icon: <SystemIcons.modal.excel className="w-4 h-4" />,
+      onClick: () => handleExport('excel'),
+      disabled: !appliedFilters.fecha_desde || !appliedFilters.fecha_hasta || logs.length === 0
+    }
+  ];
+
   return (
     <ScreenContainer
       title={moduleInfo.title}
@@ -228,36 +247,20 @@ const AuditLogPage: React.FC = () => {
         </div>
       }
     >
-      {/* Botones de exportación */}
-      <div className="flex justify-end gap-3 mb-6">
-        <ButtonWithTooltip
+      {/* Botón de exportación con menú desplegable */}
+      <div className="flex justify-end mb-6">
+        <DropdownButton
+          label="Exportar"
+          icon={<SystemIcons.actions.export className="w-4 h-4" />}
           variant="outline"
-          onClick={() => handleExport('pdf')}
+          options={exportOptions}
           disabled={isLoading || logs.length === 0}
           tooltip={
             !appliedFilters.fecha_desde || !appliedFilters.fecha_hasta
               ? 'Debe seleccionar un rango de fechas para exportar'
-              : 'Exportar registros de bitácora a PDF'
+              : 'Exportar registros de bitácora'
           }
-          className="flex items-center gap-2"
-        >
-          <SystemIcons.modal.pdf className="w-4 h-4" />
-          Exportar PDF
-        </ButtonWithTooltip>
-        <ButtonWithTooltip
-          variant="outline"
-          onClick={() => handleExport('excel')}
-          disabled={isLoading || logs.length === 0}
-          tooltip={
-            !appliedFilters.fecha_desde || !appliedFilters.fecha_hasta
-              ? 'Debe seleccionar un rango de fechas para exportar'
-              : 'Exportar registros de bitácora a Excel'
-          }
-          className="flex items-center gap-2"
-        >
-          <SystemIcons.modal.excel className="w-4 h-4" />
-          Exportar Excel
-        </ButtonWithTooltip>
+        />
       </div>
 
       {/* Alerta de error */}

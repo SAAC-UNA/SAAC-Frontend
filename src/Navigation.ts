@@ -5,8 +5,9 @@ const rolesIcon = 'system-icon:shield';
 const nutIcon = 'system-icon:nut';
 const userIcon = 'system-icon:user';
 const processIcon = 'system-icon:box-archive';
-const evidenceIcon = 'system-icon:shield';
-const auditLogIcon = 'system-icon:clipboard-list';
+const evidenceIcon = 'system-icon:assignEvidence';
+const myEvidencesIcon = 'system-icon:myEvidences';
+const auditLogIcon = 'system-icon:auditLog';
 
 /**
  * Obtener items de navegación filtrados por rol
@@ -68,7 +69,7 @@ export const getNavigationItems = (userRole?: string): NavItem[] => {
   {
     id: 'misEvidenciasAsignadas',
     label: 'Mis Evidencias Asignadas',
-    icon: evidenceIcon,
+    icon: myEvidencesIcon,
     href: '/mis-evidencias-asignadas',
     isActive: false,
   },
