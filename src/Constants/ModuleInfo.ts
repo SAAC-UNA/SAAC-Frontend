@@ -171,6 +171,21 @@ export const MODULE_INFO: Record<string, ModuleInfo> = {
     subtitle: 'Elementos de la Estructura',
     description: 'Visualiza y administra todos los elementos existentes en la estructura del repositorio',
     shortDescription: 'Ver todos los elementos'
+  },
+
+  // Solicitudes de Ampliación
+  extension_requests_my: {
+    title: 'Mis Solicitudes de Ampliación',
+    subtitle: 'Estado de Mis Solicitudes',
+    description: 'Consulte el estado de sus solicitudes de ampliación de plazo',
+    shortDescription: 'Ver mis solicitudes de ampliación'
+  },
+
+  extension_requests_manage: {
+    title: 'Gestionar Solicitudes de Ampliación',
+    subtitle: 'Revisión de Solicitudes',
+    description: 'Revise, apruebe o rechace las solicitudes de ampliación de plazo',
+    shortDescription: 'Revisar solicitudes de ampliación'
   }
 };
 

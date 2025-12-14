@@ -25,6 +25,8 @@ interface EvidenceAssignmentsTableProps {
   onViewDetails: (assignment: EvidenceAssignment) => void;
   /** Callback al subir archivos */
   onUploadFiles: (assignment: EvidenceAssignment) => void;
+  /** HU-016: Callback al solicitar ampliación */
+  onRequestExtension?: (assignment: EvidenceAssignment) => void;
   /** Paginación */
   pagination?: {
     currentPage: number;
@@ -39,6 +41,7 @@ export const EvidenceAssignmentsTable: React.FC<EvidenceAssignmentsTableProps> =
   hasFilters = false,
   onViewDetails,
   onUploadFiles,
+  onRequestExtension,
   pagination
 }) => {
   // Función para truncar texto
@@ -131,21 +134,41 @@ export const EvidenceAssignmentsTable: React.FC<EvidenceAssignmentsTableProps> =
       key: 'actions',
       header: 'Acciones',
       align: 'center',
-      render: (_: unknown, assignment: EvidenceAssignment) => (
-        <div className="flex items-center justify-center gap-2 pr-2">
-          <TableActionButton
-            action="view"
-            tooltip="Ver detalles"
-            onClick={() => onViewDetails(assignment)}
-          />
-          
-          <TableActionButton
-            action="uploadArrow"
-            tooltip="Subir archivos"
-            onClick={() => onUploadFiles(assignment)}
-          />
-        </div>
-      )
+      render: (_: unknown, assignment: EvidenceAssignment) => {
+        // HU-016: Determinar si puede solicitar ampliación
+        // Puede solicitar si el estado es pendiente o en_progreso
+        const canRequestExtension = ['pendiente', 'en_progreso'].includes(assignment.estado);
+        
+        return (
+          <div className="flex items-center justify-center gap-2 pr-2">
+            <TableActionButton
+              action="view"
+              tooltip="Ver detalles"
+              onClick={() => onViewDetails(assignment)}
+            />
+            
+            <TableActionButton
+              action="uploadArrow"
+              tooltip="Subir archivos"
+              onClick={() => onUploadFiles(assignment)}
+            />
+            
+            {/* HU-016: Botón de solicitar ampliación - siempre visible */}
+            {onRequestExtension && (
+              <TableActionButton
+                action="clock"
+                tooltip={
+                  canRequestExtension 
+                    ? "Solicitar ampliación de plazo"
+                    : "No se puede solicitar ampliación"
+                }
+                onClick={() => onRequestExtension(assignment)}
+                disabled={!canRequestExtension}
+              />
+            )}
+          </div>
+        );
+      }
     }
   ], [truncateText, onViewDetails, onUploadFiles]);
 

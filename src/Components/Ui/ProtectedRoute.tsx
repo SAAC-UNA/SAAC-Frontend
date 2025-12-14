@@ -10,7 +10,7 @@ import type { ReactNode } from 'react';
 
 interface ProtectedRouteProps {
   children: ReactNode;
-  requireRole?: 'SuperUsuario' | 'Administrador';
+  requireRole?: 'SuperUsuario' | 'Administrador' | 'Encargado de Acreditación';
 }
 
 export const ProtectedRoute = ({ children, requireRole }: ProtectedRouteProps) => {

@@ -11,6 +11,7 @@ import { getModuleInfo } from '@/Constants/ModuleInfo';
 import { useToast } from '@/Context/ToastContext';
 import { useAuth } from '@/Context/AuthContext';
 import { evidenceAssignmentService } from '@/Services/EvidenceAssignmentService';
+import { extensionRequestService } from '@/Services/ExtensionRequestService';
 import type { EvidenceAssignment, AssignmentFilters } from '@/Types/EvidenceAssignmentTypes';
 import { filterAndSortAssignments } from '@/Types/EvidenceAssignmentTypes';
 import {
@@ -18,6 +19,7 @@ import {
   EvidenceAssignmentDetail,
   EvidenceAssignmentsTable
 } from './Components';
+import { CreateExtensionRequestModal } from '@/Components/Ui/CreateExtensionRequestModal';
 
 export const MyEvidenceAssignmentsPage: React.FC = () => {
   const { showToast } = useToast();
@@ -37,6 +39,10 @@ export const MyEvidenceAssignmentsPage: React.FC = () => {
   const [selectedAssignment, setSelectedAssignment] = useState<EvidenceAssignment | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
+  
+  // HU-016: Estado para modal de solicitud de ampliación
+  const [showExtensionModal, setShowExtensionModal] = useState(false);
+  const [selectedAssignmentForExtension, setSelectedAssignmentForExtension] = useState<EvidenceAssignment | null>(null);
 
   // Cargar asignaciones al montar
   useEffect(() => {
@@ -101,6 +107,39 @@ export const MyEvidenceAssignmentsPage: React.FC = () => {
     navigate(`/evidencias/subir?${params.toString()}`);
   };
 
+  // HU-016: Handler para solicitar ampliación
+  const handleRequestExtension = (assignment: EvidenceAssignment) => {
+    setSelectedAssignmentForExtension(assignment);
+    setShowExtensionModal(true);
+  };
+
+  const handleConfirmExtensionRequest = async (data: any) => {
+    try {
+      await extensionRequestService.createRequest(data);
+      setShowExtensionModal(false);
+      setSelectedAssignmentForExtension(null);
+      showToast({
+        type: 'success',
+        title: 'Solicitud enviada',
+        message: 'Su solicitud de ampliación ha sido enviada correctamente'
+      });
+      // Recargar asignaciones para actualizar estados
+      loadAssignments();
+    } catch (error: any) {
+      showToast({
+        type: 'error',
+        title: 'Error',
+        message: error.message || 'No se pudo enviar la solicitud'
+      });
+      throw error; // Re-lanzar para que el modal maneje el estado de loading
+    }
+  };
+
+  const handleCloseExtensionModal = () => {
+    setShowExtensionModal(false);
+    setSelectedAssignmentForExtension(null);
+  };
+
   const filteredAssignments = filterAndSortAssignments(assignments, filters);
   const moduleInfo = getModuleInfo('my_evidence_assignments');
 
@@ -148,6 +187,7 @@ export const MyEvidenceAssignmentsPage: React.FC = () => {
             loading={loading}
             onViewDetails={handleViewDetails}
             onUploadFiles={handleUploadFiles}
+            onRequestExtension={handleRequestExtension}
             hasFilters={filters.estado !== 'todos' || filters.search !== ''}
             pagination={totalPages > 1 ? {
               currentPage,
@@ -165,6 +205,17 @@ export const MyEvidenceAssignmentsPage: React.FC = () => {
           onClose={handleCloseDetail}
           onStatusUpdate={handleStatusUpdate}
           onUploadFiles={handleUploadFiles}
+        />
+      )}
+
+      {/* HU-016: Modal para solicitar ampliación */}
+      {showExtensionModal && selectedAssignmentForExtension && (
+        <CreateExtensionRequestModal
+          isOpen={showExtensionModal}
+          onClose={handleCloseExtensionModal}
+          onConfirm={handleConfirmExtensionRequest}
+          evidenciaAsignacionId={selectedAssignmentForExtension.evidencia_asignacion_id}
+          fechaLimiteActual={selectedAssignmentForExtension.fecha_limite || undefined}
         />
       )}
     </ScreenContainer>
