@@ -21,6 +21,8 @@ const StructureEditList = lazy(() => import('./Pages/Structure/StructureEditList
 const AccreditationProgress = lazy(() => import('@/Pages/Accreditation/AccreditationProgress'));
 const EvidenceAssignment = lazy(() => import('./Pages/EvidenceAssignment').then(m => ({ default: m.EvidenceAssignment })));
 const AuditLogPage = lazy(() => import('@/Pages/AuditLog/AuditLogPage'));
+const CompromisosList = lazy(() => import('./Pages/CompromisosMejora/CompromisosList').then(m => ({ default: m.CompromisosList })));
+const CrearCompromiso = lazy(() => import('./Pages/CompromisosMejora/CrearCompromiso'));
 
 // Componente de loading para Suspense
 const PageLoader = () => (
@@ -154,6 +156,24 @@ function App() {
                           element={
                             <ProtectedRoute>
                               <AccreditationProgress />
+                            </ProtectedRoute>
+                          }
+                        />
+
+                        {/* Compromisos de Mejora - Todos los autenticados */}
+                        <Route
+                          path="/compromisos/listar"
+                          element={
+                            <ProtectedRoute>
+                              <CompromisosList />
+                            </ProtectedRoute>
+                          }
+                        />
+                        <Route
+                          path="/compromisos/crear"
+                          element={
+                            <ProtectedRoute>
+                              <CrearCompromiso />
                             </ProtectedRoute>
                           }
                         />

@@ -7,6 +7,7 @@ const userIcon = 'system-icon:user';
 const processIcon = 'system-icon:box-archive';
 const evidenceIcon = 'system-icon:shield';
 const auditLogIcon = 'system-icon:clipboard-list';
+const commitmentIcon = 'system-icon:clipboard-check';
 
 /**
  * Obtener items de navegación filtrados por rol
@@ -79,6 +80,15 @@ export const getNavigationItems = (userRole?: string): NavItem[] => {
     label: 'Avance de Acreditación',
     icon: processIcon,
     href: '/acreditacion/avance',
+    isActive: false
+  });
+
+  // Compromisos de Mejora - Todos los autenticados
+  items.push({
+    id: 'compromisos-mejora',
+    label: 'Compromisos de Mejora',
+    icon: commitmentIcon,
+    href: '/compromisos/listar',
     isActive: false
   });
 
