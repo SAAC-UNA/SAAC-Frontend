@@ -4,10 +4,9 @@
   min-height: 100vh;
   display: flex;
   width: 100%;
-  background: linear-gradient(135deg, #c8102e 0%, #8a081d 100%);
   background-image: 
-    linear-gradient(135deg, rgba(200, 16, 46, 0.65) 0%, rgba(138, 8, 29, 0.65) 100%),
-    url('/Images/Login-UNA.jpg');
+    linear-gradient(135deg, rgba(0, 0, 0, 0.2) 0%, rgba(0, 0, 0, 0.3) 100%),
+    url('/Images/Fondo login.png');
   background-size: cover;
   background-position: center;
   position: relative;
@@ -44,17 +43,14 @@
 
 /* Left Section - Branding */
 .login-branding-section {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex: 0 1 auto;
-  z-index: 1;
-  margin-left: 60px;
+  display: none;
 }
 
 /* Form Section - Left Container */
 .login-form-section {
-  background: #fff;
+  background: rgba(255, 255, 255, 0.75);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -64,11 +60,11 @@
   width: 100%;
   max-width: 480px;
   border-radius: 12px;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
   z-index: 1;
   min-height: auto;
   flex-shrink: 0;
-  margin-left: 60px;
+  margin: 0;
 }
 
 .login-branding {
@@ -132,7 +128,7 @@
   width: 100%;
   max-width: 150px;
   height: auto;
-  margin: 0 auto 20px auto;
+  margin: 0 auto 10px auto;
   display: block;
   filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.15));
 }
@@ -141,6 +137,14 @@
   font-size: 1.5rem;
   font-weight: 700;
   color: #1a202c;
+  margin: 0 0 8px 0;
+  text-align: center;
+}
+
+.login-form-subtitle {
+  font-size: 0.8rem;
+  font-weight: 400;
+  color: #718096;
   margin: 0 0 30px 0;
   text-align: center;
 }
@@ -229,7 +233,7 @@
   position: absolute;
   color: #a0aec0;
   pointer-events: none;
-  background-color: #fafbfc;
+  background-color: rgba(250, 251, 252, 0.5);
   left: 44px;
   top: 50%;
   transform: translateY(-50%);
@@ -251,7 +255,7 @@
   position: absolute;
   color: #a0aec0;
   pointer-events: none;
-  background-color: #fafbfc;
+  background-color: rgba(250, 251, 252, 0.5);
   left: 44px;
   top: 50%;
   transform: translateY(-50%);
@@ -323,13 +327,13 @@
   width: 100%;
   font-family: inherit;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  background-color: #fafbfc;
+  background-color: rgba(250, 251, 252, 0.5);
 }
 
 .login-input-field input:hover,
 .login-input-field-password input:hover {
   border-color: #cbd5e0;
-  background-color: #fff;
+  background-color: rgba(255, 255, 255, 0.7);
 }
 
 .login-input-field input:focus,
@@ -338,28 +342,36 @@
 .login-input-field-password input:valid {
   outline: none;
   border: 2px solid #c8102e;
-  background-color: #fff;
+  background-color: rgba(255, 255, 255, 0.8);
   box-shadow: 0 0 0 3px rgba(200, 16, 46, 0.1);
 }
 
 .login-input-field input:focus ~ label,
-.login-input-field input:valid ~ label {
+.login-input-field input:valid ~ label,
+.login-input-field input:not(:placeholder-shown) ~ label {
   transform: translateY(-150%) translateX(-4px) scale(0.75);
-  background-color: #fff;
-  padding: 0px 6px;
+  background: rgba(255, 255, 255, 0.75);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  padding: 0px 4px;
   color: #c8102e;
   font-weight: 700;
   letter-spacing: 0.3px;
+  border-radius: 8px;
 }
 
 .login-input-field-password input:focus ~ label,
-.login-input-field-password input:valid ~ label {
+.login-input-field-password input:valid ~ label,
+.login-input-field-password input:not(:placeholder-shown) ~ label {
   transform: translateY(-150%) translateX(-4px) scale(0.75);
-  background-color: #fff;
-  padding: 0px 6px;
+  background: rgba(255, 255, 255, 0.75);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  padding: 0px 4px;
   color: #c8102e;
   font-weight: 700;
   letter-spacing: 0.3px;
+  border-radius: 8px;
 }
 
 .login-toggle-password {
@@ -411,7 +423,9 @@
 
 .login-form-section {
   flex: 0 0 45%;
-  background: #fff;
+  background: rgba(255, 255, 255, 0.75);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
   display: flex;
   flex-direction: column;
   align-items: center;

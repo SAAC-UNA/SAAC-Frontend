@@ -77,7 +77,8 @@ export const Login = () => {
             alt="SAAC Logo" 
             className={styles['login-logo-image']}
           />
-          <h1 className={styles['login-form-title']}>Inicio de Sesión</h1>
+          <h1 className={styles['login-form-title']}>Bienvenido a SAAC</h1>
+          <p className={styles['login-form-subtitle']}>Ingrese con sus credenciales institucionales</p>
           
           <form onSubmit={handleSubmit} className={styles['login-form']}>
             <div className={styles['login-input-field']}>
@@ -90,6 +91,7 @@ export const Login = () => {
                 onChange={(e) => setCedula(e.target.value)}
                 required
                 disabled={loading}
+                placeholder=""
               />
               <label>Identificación</label>
             </div>
@@ -104,6 +106,7 @@ export const Login = () => {
                 onChange={(e) => setPassword(e.target.value)}
                 required
                 disabled={loading}
+                placeholder=""
               />
               <label>Contraseña</label>
               <button
