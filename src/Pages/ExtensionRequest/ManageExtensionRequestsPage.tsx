@@ -10,6 +10,7 @@ import { Button } from '@/Components/Ui/Button';
 import { PageHeader } from '@/Components/Ui/PageHeader';
 import { ReviewExtensionRequestModal } from '@/Components/Ui/ReviewExtensionRequestModal';
 import { useToast } from '@/Context/ToastContext';
+import { useAuth } from '@/Context/AuthContext';
 import { extensionRequestService } from '@/Services/ExtensionRequestService';
 import type { 
   ExtensionRequest, 
@@ -20,6 +21,7 @@ import { SystemIcons } from '@/Components/Ui/Icons/SystemIcons';
 
 export const ManageExtensionRequestsPage: React.FC = () => {
   const { showToast } = useToast();
+  const { user, isAuthenticated } = useAuth();
   
   const [solicitudes, setSolicitudes] = useState<ExtensionRequest[]>([]);
   const [loading, setLoading] = useState(true);
@@ -139,6 +141,41 @@ export const ManageExtensionRequestsPage: React.FC = () => {
       </span>
     );
   };
+
+  // Validar autenticación y permisos
+  if (!isAuthenticated) {
+    return (
+      <ScreenContainer>
+        <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-6 text-center">
+          <SystemIcons.interface.xCircle size="3xl" className="text-yellow-600 mx-auto mb-3" />
+          <h3 className="text-lg font-semibold text-yellow-900 mb-2">
+            Autenticación Requerida
+          </h3>
+          <p className="text-yellow-700">
+            Debe iniciar sesión para acceder a esta sección.
+          </p>
+        </div>
+      </ScreenContainer>
+    );
+  }
+
+  // Validar que tenga rol de Encargado de Acreditación
+  const hasPermission = user?.roles?.some(r => r.name === 'Encargado de Acreditación');
+  if (!hasPermission) {
+    return (
+      <ScreenContainer>
+        <div className="bg-red-50 border border-red-200 rounded-lg p-6 text-center">
+          <SystemIcons.interface.xCircle size="3xl" className="text-red-600 mx-auto mb-3" />
+          <h3 className="text-lg font-semibold text-red-900 mb-2">
+            Acceso Denegado
+          </h3>
+          <p className="text-red-700">
+            No tiene permisos para gestionar solicitudes de ampliación. Esta sección es solo para Encargados de Acreditación.
+          </p>
+        </div>
+      </ScreenContainer>
+    );
+  }
 
   return (
     <ScreenContainer>

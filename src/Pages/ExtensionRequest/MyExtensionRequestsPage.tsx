@@ -8,6 +8,7 @@ import { ScreenContainer } from '@/Components/Ui/ScreenContainer';
 import { BackendErrorAlert } from '@/Components/Ui/BackendErrorAlert';
 import { extensionRequestService } from '@/Services/ExtensionRequestService';
 import { getContextualInfo } from '@/Constants/ModuleInfo';
+import { useAuth } from '@/Context/AuthContext';
 import type { 
   ExtensionRequest, 
   ExtensionRequestStatus 
@@ -18,6 +19,7 @@ import { FilterButton, type FilterOption } from '@/Components/Ui/FilterButton';
 import { Table, type TableColumn, type TableAction } from '@/Components/Ui/Table';
 
 export const MyExtensionRequestsPage: React.FC = () => {
+  const { user, isAuthenticated } = useAuth();
   
   // Obtener información del módulo desde ModuleInfo
   const moduleInfo = getContextualInfo('extension_requests', 'my');
@@ -91,6 +93,27 @@ export const MyExtensionRequestsPage: React.FC = () => {
   const handleCloseDetails = () => {
     setSelectedSolicitud(null);
   };
+
+  // Validar autenticación
+  if (!isAuthenticated) {
+    return (
+      <ScreenContainer
+        title={moduleInfo.title}
+        description={moduleInfo.description}
+        variant="full-width"
+      >
+        <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-6 text-center">
+          <SystemIcons.interface.xCircle size="3xl" className="text-yellow-600 mx-auto mb-3" />
+          <h3 className="text-lg font-semibold text-yellow-900 mb-2">
+            Autenticación Requerida
+          </h3>
+          <p className="text-yellow-700">
+            Debe iniciar sesión para ver sus solicitudes de ampliación.
+          </p>
+        </div>
+      </ScreenContainer>
+    );
+  }
 
   // Definir columnas de la tabla
   const columns = useMemo<TableColumn<ExtensionRequest>[]>(() => [
