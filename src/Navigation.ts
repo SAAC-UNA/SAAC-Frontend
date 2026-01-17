@@ -70,7 +70,7 @@ export const getNavigationItems = (userRole?: string): NavItem[] => {
   },
   {
     id: 'misEvidenciasAsignadas',
-    label: 'Mis Evidencias Asignadas',
+    label: 'Mis Evidencias',
     icon: myEvidencesIcon,
     href: '/mis-evidencias-asignadas',
     isActive: false,
