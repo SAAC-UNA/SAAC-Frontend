@@ -1,10 +1,10 @@
 /**
- * authService - Servicio de autenticación mock
- * Los datos de usuarios coinciden con el seeder del backend para simular
- * un ambiente similar al de producción.
+ * authService - Servicio de autenticación
+ * Conecta con el backend real de Laravel para obtener tokens Sanctum válidos.
  */
 
-import { MOCK_USERS, type MockUser } from '@/Mocks/Users';
+import { axiosInstance } from '@/Config/axios';
+import type { MockUser } from '@/Mocks/Users';
 
 export type { MockUser as User };
 
@@ -13,30 +13,45 @@ const USER_DATA_KEY = 'auth_user';
 
 export const authService = {
   loginWithCedula: async (cedula: string, password: string): Promise<{ user: MockUser; token: string }> => {
-    // Simular delay de red
-    await new Promise(resolve => setTimeout(resolve, 500));
-
     // Validar formato de cédula (9 dígitos como en el backend)
     if (!/^\d{9}$/.test(cedula)) {
       throw new Error('La cédula debe tener 9 dígitos');
     }
 
-    // Buscar usuario por cédula (datos del seeder)
-    const user = MOCK_USERS.find(u => u.cedula === cedula);
+    try {
+      // Login real contra el backend usando autenticación LDAP
+      console.log('Enviando request a /auth/login con:', { cedula, password: '***' });
+      const response = await axiosInstance.post('/auth/login', {
+        cedula,
+        password
+      });
 
-    if (!user || password !== 'password') { // En desarrollo siempre es 'password'
-      throw new Error('Credenciales incorrectas');
+      console.log('Respuesta del backend:', response.data);
+      const { token, user: backendUser } = response.data;
+
+      // Mapear la respuesta del backend al formato del frontend
+      const user: MockUser = {
+        usuario_id: backendUser.id,
+        cedula: backendUser.cedula,
+        nombre: backendUser.name,
+        email: backendUser.email,
+        roles: backendUser.roles.map((role: any) => ({ 
+          id: role.id, 
+          name: role.name 
+        })),
+        careers: backendUser.careers || [],
+        permissions: backendUser.permissions || []
+      };
+
+      localStorage.setItem(AUTH_TOKEN_KEY, token);
+      localStorage.setItem(USER_DATA_KEY, JSON.stringify(user));
+
+      return { user, token };
+    } catch (error: any) {
+      console.error('Error en login LDAP:', error);
+      console.error('Detalles del error:', error.response?.data);
+      throw new Error(error.response?.data?.message || 'Error al iniciar sesión');
     }
-
-    const mockToken = btoa(JSON.stringify({ 
-      userId: user.usuario_id, 
-      exp: Date.now() + 3600000 // 1 hora
-    }));
-
-    localStorage.setItem(AUTH_TOKEN_KEY, mockToken);
-    localStorage.setItem(USER_DATA_KEY, JSON.stringify(user));
-
-    return { user, token: mockToken };
   },
 
   logout: (): void => {
@@ -51,13 +66,8 @@ export const authService = {
 
   isAuthenticated: (): boolean => {
     const token = localStorage.getItem(AUTH_TOKEN_KEY);
-    if (!token) return false;
-
-    try {
-      const payload = JSON.parse(atob(token));
-      return payload.exp > Date.now();
-    } catch {
-      return false;
-    }
+    const user = localStorage.getItem(USER_DATA_KEY);
+    // Los tokens de Laravel Sanctum son strings simples, no JWTs
+    return !!(token && user);
   }
 };

@@ -100,7 +100,7 @@ export const WizardProgress: React.FC<WizardProgressProps> = ({
                   className={cn(
                     'w-12 h-12 rounded-full flex items-center justify-center font-bold text-lg transition-all duration-200',
                     isCompleted && 'bg-green-600 text-white hover:bg-green-700',
-                    isActive && !isCompleted && 'bg-azul-una text-white',
+                    isActive && !isCompleted && 'bg-rojo-una-2 text-white',
                     !isActive && !isCompleted && 'bg-gris-una/20 text-gris-una',
                     isClickable && 'cursor-pointer',
                     !isClickable && 'cursor-not-allowed'
@@ -117,7 +117,7 @@ export const WizardProgress: React.FC<WizardProgressProps> = ({
                 <span
                   className={cn(
                     'mt-3 text-sm font-medium text-center max-w-28 leading-tight',
-                    isActive && 'text-azul-una',
+                    isActive && 'text-rojo-una-2',
                     isCompleted && 'text-verde',
                     !isActive && !isCompleted && 'text-gris-una'
                   )}

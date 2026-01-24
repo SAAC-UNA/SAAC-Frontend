@@ -11,6 +11,7 @@ import { SystemIcons } from '@/Components/Ui/Icons/SystemIcons';
 import { FileUploader } from './Components/FileUploader';
 import { FileUploadProgress, type FileUploadProgressItem } from './Components/FileUploadProgress';
 import { FileList } from './Components/FileList';
+import LinkInput from '@/Components/Ui/LinkInput';
 import { fileService } from '@/Services/FileService';
 import { useToast } from '@/Context/ToastContext';
 import { getModuleInfo } from '@/Constants/ModuleInfo';
@@ -37,6 +38,7 @@ export const EvidenceUploadPage: React.FC<EvidenceUploadPageProps> = ({
   
   // Estados
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
+  const [selectedLinks, setSelectedLinks] = useState<string[]>([]);
   const [uploadProgress, setUploadProgress] = useState<FileUploadProgressItem[]>([]);
   const [isUploading, setIsUploading] = useState(false);
   const [uploadedFiles, setUploadedFiles] = useState<FileModel[]>([]);
@@ -81,11 +83,11 @@ export const EvidenceUploadPage: React.FC<EvidenceUploadPageProps> = ({
       return;
     }
 
-    if (selectedFiles.length === 0) {
+    if (selectedFiles.length === 0 && selectedLinks.length === 0) {
       showToast({
         type: 'warning',
-        title: 'No hay archivos seleccionados',
-        message: 'Por favor, seleccione al menos un archivo para subir'
+        title: 'No hay evidencias seleccionadas',
+        message: 'Por favor, seleccione archivos o agregue enlaces para subir'
       });
       return;
     }
@@ -101,23 +103,50 @@ export const EvidenceUploadPage: React.FC<EvidenceUploadPageProps> = ({
     setUploadProgress(initialProgress);
 
     try {
-      // Subir todos los archivos simultáneamente
-      const result = await fileService.uploadMultipleFiles(
-        selectedFiles,
-        evidenciaId,
-        procesoId,
-        // onProgress - progreso general de la subida
-        (progress) => {
-          // Actualizar progreso en todos los archivos que están "uploading"
-          setUploadProgress(prev => 
-            prev.map(item => ({
-              ...item,
-              status: item.status === 'pending' ? 'uploading' : item.status,
-              progress: item.status === 'success' || item.status === 'error' ? item.progress : progress
-            }))
-          );
-        }
-      );
+      let result;
+      
+      // Decidir qué método usar según lo que hay seleccionado
+      if (selectedFiles.length > 0 && selectedLinks.length > 0) {
+        // Ambos: archivos y enlaces
+        result = await fileService.uploadFilesAndLinks(
+          selectedFiles,
+          selectedLinks,
+          evidenciaId,
+          procesoId,
+          (progress) => {
+            setUploadProgress(prev => 
+              prev.map(item => ({
+                ...item,
+                status: item.status === 'pending' ? 'uploading' : item.status,
+                progress: item.status === 'success' || item.status === 'error' ? item.progress : progress
+              }))
+            );
+          }
+        );
+      } else if (selectedFiles.length > 0) {
+        // Solo archivos
+        result = await fileService.uploadMultipleFiles(
+          selectedFiles,
+          evidenciaId,
+          procesoId,
+          (progress) => {
+            setUploadProgress(prev => 
+              prev.map(item => ({
+                ...item,
+                status: item.status === 'pending' ? 'uploading' : item.status,
+                progress: item.status === 'success' || item.status === 'error' ? item.progress : progress
+              }))
+            );
+          }
+        );
+      } else {
+        // Solo enlaces
+        result = await fileService.uploadMultipleLinks(
+          selectedLinks,
+          evidenciaId,
+          procesoId
+        );
+      }
 
       // Actualizar estado de cada archivo según el resultado
       setUploadProgress(prev =>
@@ -126,7 +155,19 @@ export const EvidenceUploadPage: React.FC<EvidenceUploadPageProps> = ({
           const successFile = result.successful.find(
             (_, i) => i === index && index < result.successful.length
           );
-          const failedFile = result.failed.find(f => f.file === item.file);
+          
+          // Para resultado mixto (archivos y enlaces)
+          let failedFile;
+          if (result.failed.length > 0) {
+            const firstFailed = result.failed[0];
+            if ('type' in firstFailed) {
+              // Resultado mixto con tipo
+              failedFile = result.failed.find(f => 'type' in f && 'item' in f && f.item === item.file);
+            } else if ('file' in firstFailed) {
+              // Resultado solo archivos
+              failedFile = result.failed.find(f => 'file' in f && f.file === item.file);
+            }
+          }
 
           if (successFile) {
             return {
@@ -156,14 +197,14 @@ export const EvidenceUploadPage: React.FC<EvidenceUploadPageProps> = ({
         showToast({
           type: 'success',
           title: 'Subida completada',
-          message: `${successCount} archivo(s) subido(s) exitosamente`
+          message: `${successCount} evidencia(s) subida(s) exitosamente`
         });
       } else if (successCount > 0 && failedCount > 0) {
         // Algunos exitosos, algunos fallidos
         showToast({
           type: 'warning',
           title: 'Subida parcial',
-          message: `${successCount} exitosos, ${failedCount} fallidos`
+          message: `${successCount} exitosas, ${failedCount} fallidas`
         });
       } else if (failedCount > 0) {
         // Todos fallidos
@@ -171,7 +212,7 @@ export const EvidenceUploadPage: React.FC<EvidenceUploadPageProps> = ({
         showToast({
           type: 'error',
           title: 'Subida fallida',
-          message: failedCount === 1 ? firstError : `${failedCount} archivos fallaron`
+          message: failedCount === 1 ? firstError : `${failedCount} evidencias fallaron`
         });
       }
 
@@ -183,6 +224,7 @@ export const EvidenceUploadPage: React.FC<EvidenceUploadPageProps> = ({
       // Limpiar selección si todos fueron exitosos
       if (failedCount === 0) {
         setSelectedFiles([]);
+        setSelectedLinks([]);
         setTimeout(() => {
           setUploadProgress([]);
         }, 3000); // Mantener el progreso visible por 3 segundos
@@ -210,6 +252,7 @@ export const EvidenceUploadPage: React.FC<EvidenceUploadPageProps> = ({
 
   const handleCancelUpload = () => {
     setSelectedFiles([]);
+    setSelectedLinks([]);
     setUploadProgress([]);
   };
 
@@ -275,20 +318,35 @@ export const EvidenceUploadPage: React.FC<EvidenceUploadPageProps> = ({
       description={`${moduleInfo.description} - Evidencia: ${evidenciaNombre}`}
       variant="full-width"
     >
-      <div className="max-w-5xl mx-auto space-y-6">
+      <div className="max-w-7xl mx-auto space-y-6">
         {/* Sección de subida */}
-        <div>
-          <h2 className="text-lg font-semibold text-negro-una mb-4">
-            Seleccione archivos
-          </h2>
-          
-          <FileUploader
-            onFilesSelected={handleFilesSelected}
-            disabled={isUploading}
-          />
+        <div className="space-y-6">
+          <div>
+            <h2 className="text-lg font-semibold text-negro-una mb-4">
+              Seleccione archivos
+            </h2>
+            
+            <FileUploader
+              onFilesSelected={handleFilesSelected}
+              disabled={isUploading}
+            />
+          </div>
+
+          {/* Sección de enlaces */}
+          <div>
+            <h2 className="text-lg font-semibold text-negro-una mb-4">
+              Enlaces externos
+            </h2>
+            
+            <LinkInput
+              onLinksChange={setSelectedLinks}
+              disabled={isUploading}
+              className="w-full"
+            />
+          </div>
 
           {/* Botones de acción */}
-          {selectedFiles.length > 0 && !isUploading && (
+          {(selectedFiles.length > 0 || selectedLinks.length > 0) && !isUploading && (
             <div className="mt-4 flex gap-3 justify-end">
               <Button
                 type="button"
@@ -306,10 +364,7 @@ export const EvidenceUploadPage: React.FC<EvidenceUploadPageProps> = ({
                 standardWidth={true}
                 size="sm"
               >
-                Subir 
-                {/*
-                {selectedFiles.length} archivo{selectedFiles.length > 1 ? 's' : ''}
-                */}
+                Subir
               </Button>
             </div>
           )}

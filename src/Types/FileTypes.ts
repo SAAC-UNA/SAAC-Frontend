@@ -23,6 +23,10 @@ export interface FileModel {
   is_publico: boolean;
   url_publica?: string;
   link_expira_en?: string;
+  // Nuevos campos para soporte de enlaces
+  url_externa?: string | null;  // URL externa si es enlace
+  tipo_evidencia?: 'archivo' | 'enlace';  // Tipo de evidencia
+  path?: string | null;  // Ruta física (null para enlaces)
   evidencia_id: number;
   evidencia?: {
     evidencia_id: number;
@@ -145,8 +149,26 @@ export const MAX_FILE_SIZE = 50 * 1024 * 1024; // 50MB
  */
 export const MAX_FILES_PER_UPLOAD = 5;
 
+/**
+ * ⚠️ SOLO PARA UX - NO ES SEGURIDAD
+ * Número máximo de enlaces por request (debe coincidir con backend)
+ */
+export const MAX_LINKS_PER_UPLOAD = 5;
+
+/**
+ * ⚠️ SOLO PARA UX - NO ES SEGURIDAD
+ * Longitud máxima de una URL (debe coincidir con backend)
+ */
+export const MAX_URL_LENGTH = 2048;
+
+/**
+ * ⚠️ SOLO PARA UX - NO ES SEGURIDAD
+ * Patrón de regex para validar URLs HTTP/HTTPS
+ */
+export const URL_REGEX = /^https?:\/\/[^\s]+$/;
+
 // Categorías de archivos para iconos y visualización
-export type FileCategory = 'document' | 'spreadsheet' | 'presentation' | 'image' | 'video' | 'archive' | 'other';
+export type FileCategory = 'document' | 'spreadsheet' | 'presentation' | 'image' | 'video' | 'archive' | 'link' | 'other';
 
 export interface FileCategoryInfo {
   category: FileCategory;

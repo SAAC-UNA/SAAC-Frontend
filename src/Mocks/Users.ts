@@ -20,9 +20,10 @@ export interface MockUser {
   cedula: string;
   nombre: string;
   email: string;
-  password: string; // Solo para mock
+  password?: string; // Solo para mock, el backend no devuelve contraseñas
   roles: MockRole[];
   careers: MockCareer[];
+  permissions?: string[]; // Permisos del usuario
 }
 
 export const MOCK_USERS: MockUser[] = [
@@ -35,10 +36,10 @@ export const MOCK_USERS: MockUser[] = [
     roles: [
       {
         id: 1,
-        name: 'SuperUsuario'
+        name: 'Superusuario'
       }
     ],
-    careers: [] // SuperUsuario NO tiene carreras asignadas (ve todas)
+    careers: [] // Superusuario NO tiene carreras asignadas (ve todas)
   },
   {
     usuario_id: 2,

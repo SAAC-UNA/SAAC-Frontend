@@ -177,6 +177,196 @@ export const fileService = {
   },
 
   /**
+   * Guarda múltiples enlaces/URLs como evidencias
+   * POST /api/archivos con enlaces[] array
+   */
+  uploadMultipleLinks: async (
+    urls: string[],
+    evidenciaId: number,
+    procesoId: number
+  ): Promise<{ successful: FileModel[]; failed: Array<{ url: string; error: string }> }> => {
+    const formData = new FormData();
+    
+    // Agregar todos los enlaces al FormData
+    urls.forEach(url => {
+      formData.append('enlaces[]', url.trim());
+    });
+    
+    formData.append('evidencia_id', evidenciaId.toString());
+    formData.append('proceso_id', procesoId.toString());
+
+    try {
+      const response = await axiosInstance.post<MultipleFileUploadResponse>(
+        BASE_URL,
+        formData,
+        {
+          headers: {
+            'Content-Type': 'multipart/form-data',
+          },
+        }
+      );
+
+      // Manejar respuesta exitosa o parcial
+      const successful = response.data.data || [];
+      const failed: Array<{ url: string; error: string }> = [];
+
+      // Si hay errores en la respuesta
+      if (response.data.errores && response.data.errores.length > 0) {
+        response.data.errores.forEach(error => {
+          const failedUrl = urls[error.indice];
+          if (failedUrl) {
+            failed.push({
+              url: failedUrl,
+              error: error.error
+            });
+          }
+        });
+      }
+
+      return { successful, failed };
+
+    } catch (error: any) {
+      const errorMessage = error.response?.data?.message || error.message || 'Error al guardar enlaces';
+      
+      // Manejar errores de validación (422)
+      if (error.response?.status === 422) {
+        const validationErrors = error.response.data.errors;
+        const firstError = Object.values(validationErrors || {})[0];
+        const message = Array.isArray(firstError) ? firstError[0] : errorMessage;
+        
+        return {
+          successful: [],
+          failed: urls.map(url => ({
+            url,
+            error: message
+          }))
+        };
+      }
+
+      // Errores de autenticación o permisos
+      if (error.response?.status === 401) {
+        throw new Error('Usuario no autenticado. Por favor, inicie sesión.');
+      }
+
+      if (error.response?.status === 403) {
+        throw new Error('No tiene permisos para agregar enlaces a esta evidencia.');
+      }
+
+      // Error general - todos los enlaces fallan
+      return {
+        successful: [],
+        failed: urls.map(url => ({
+          url,
+          error: errorMessage
+        }))
+      };
+    }
+  },
+
+  /**
+   * Sube archivos y enlaces combinados en una sola solicitud
+   * POST /api/archivos con archivos[] y enlaces[]
+   */
+  uploadFilesAndLinks: async (
+    files: File[],
+    urls: string[],
+    evidenciaId: number,
+    procesoId: number,
+    onProgress?: (progress: number) => void
+  ): Promise<{ 
+    successful: FileModel[]; 
+    failed: Array<{ item: File | string; error: string; type: 'file' | 'link' }> 
+  }> => {
+    const formData = new FormData();
+    
+    // Agregar archivos si existen
+    if (files.length > 0) {
+      files.forEach(file => {
+        formData.append('archivos[]', file);
+      });
+    }
+    
+    // Agregar enlaces si existen
+    if (urls.length > 0) {
+      urls.forEach(url => {
+        formData.append('enlaces[]', url.trim());
+      });
+    }
+    
+    formData.append('evidencia_id', evidenciaId.toString());
+    formData.append('proceso_id', procesoId.toString());
+
+    try {
+      const response = await axiosInstance.post<MultipleFileUploadResponse>(
+        BASE_URL,
+        formData,
+        {
+          headers: {
+            'Content-Type': 'multipart/form-data',
+          },
+          onUploadProgress: (progressEvent) => {
+            if (onProgress && progressEvent.total) {
+              const percentCompleted = Math.round(
+                (progressEvent.loaded * 100) / progressEvent.total
+              );
+              onProgress(percentCompleted);
+            }
+          },
+        }
+      );
+
+      const successful = response.data.data || [];
+      const failed: Array<{ item: File | string; error: string; type: 'file' | 'link' }> = [];
+
+      // Si hay errores en la respuesta
+      if (response.data.errores && response.data.errores.length > 0) {
+        response.data.errores.forEach(error => {
+          // Determinar si el error corresponde a un archivo o enlace
+          if (error.indice < files.length) {
+            failed.push({
+              item: files[error.indice],
+              error: error.error,
+              type: 'file'
+            });
+          } else {
+            const linkIndex = error.indice - files.length;
+            failed.push({
+              item: urls[linkIndex],
+              error: error.error,
+              type: 'link'
+            });
+          }
+        });
+      }
+
+      return { successful, failed };
+
+    } catch (error: any) {
+      const errorMessage = error.response?.data?.message || error.message || 'Error al guardar evidencias';
+      
+      // Errores de autenticación o permisos
+      if (error.response?.status === 401) {
+        throw new Error('Usuario no autenticado. Por favor, inicie sesión.');
+      }
+
+      if (error.response?.status === 403) {
+        throw new Error('No tiene permisos para agregar evidencias.');
+      }
+
+      // Error general - todos fallan
+      const allFailed: Array<{ item: File | string; error: string; type: 'file' | 'link' }> = [
+        ...files.map(file => ({ item: file, error: errorMessage, type: 'file' as const })),
+        ...urls.map(url => ({ item: url, error: errorMessage, type: 'link' as const }))
+      ];
+
+      return {
+        successful: [],
+        failed: allFailed
+      };
+    }
+  },
+
+  /**
    * Lista archivos por evidencia o proceso
    * GET /api/archivos?evidencia_id={id}&proceso_id={id}
    */

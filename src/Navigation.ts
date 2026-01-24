@@ -11,10 +11,12 @@ const auditLogIcon = 'system-icon:auditLog';
 
 /**
  * Obtener items de navegación filtrados por rol
- * @param userRole - Rol del usuario autenticado ('SuperUsuario' o 'Administrador')
+ * @param userRole - Rol del usuario autenticado ('Superusuario' o 'Administrador')
  */
 export const getNavigationItems = (userRole?: string): NavItem[] => {
-  const isSuperUser = userRole === 'SuperUsuario';
+  console.log('[Navigation] userRole recibido:', userRole);
+  const isSuperUser = userRole === 'Superusuario';
+  console.log('[Navigation] isSuperUser:', isSuperUser);
   
   const items: NavItem[] = [
     {

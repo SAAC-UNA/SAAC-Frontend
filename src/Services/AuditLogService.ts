@@ -17,7 +17,7 @@ import type {
 } from '../Types/AuditLogTypes';
 
 class AuditLogService {
-  private baseURL = '/api/bitacora';
+  private baseURL = '/bitacora';
 
   /**
    * Obtener listado de registros de bitácora con filtros opcionales

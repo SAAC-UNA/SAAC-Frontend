@@ -52,7 +52,7 @@ function App() {
                         {/* Página de inicio */}
                         <Route path="/" element={<HomePage />} />
  
-                        {/* Roles - Solo SuperUsuario */}
+                        {/* Roles - Solo Superusuario */}
                         <Route
                           path="/roles/listar"
                           element={
@@ -78,7 +78,7 @@ function App() {
                           }
                         />
 
-                        {/* Bitácora del Sistema - Solo SuperUsuario */}
+                        {/* Bitácora del Sistema - Solo Superusuario */}
                         <Route
                           path="/bitacora"
                           element={
