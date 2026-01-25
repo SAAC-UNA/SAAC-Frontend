@@ -56,7 +56,7 @@ function App() {
                         <Route
                           path="/roles/listar"
                           element={
-                            <ProtectedRoute requireRole="SuperUsuario">
+                            <ProtectedRoute requireRole="Superusuario">
                               <RolesRepository />
                             </ProtectedRoute>
                           }
@@ -64,7 +64,7 @@ function App() {
                         <Route
                           path="/roles/crear"
                           element={
-                            <ProtectedRoute requireRole="SuperUsuario">
+                            <ProtectedRoute requireRole="Superusuario">
                               <RoleForm />
                             </ProtectedRoute>
                           }
@@ -72,7 +72,7 @@ function App() {
                         <Route
                           path="/roles/editar/:id"
                           element={
-                            <ProtectedRoute requireRole="SuperUsuario">
+                            <ProtectedRoute requireRole="Superusuario">
                               <RoleForm />
                             </ProtectedRoute>
                           }
@@ -82,7 +82,7 @@ function App() {
                         <Route
                           path="/bitacora"
                           element={
-                            <ProtectedRoute requireRole="SuperUsuario">
+                            <ProtectedRoute requireRole="Superusuario">
                               <AuditLogPage />
                             </ProtectedRoute>
                           }

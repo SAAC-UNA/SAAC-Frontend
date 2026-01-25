@@ -47,17 +47,27 @@ class AuditLogService {
       const queryString = params.toString();
       const url = queryString ? `${this.baseURL}?${queryString}` : this.baseURL;
 
-      const response = await axiosInstance.get<{ data: AuditLog[] } & Omit<AuditLogPaginatedResponse, 'data'>>(url);
+      const response = await axiosInstance.get<{
+        data: AuditLog[];
+        meta: {
+          current_page: number;
+          last_page: number;
+          per_page: number;
+          total: number;
+          from: number;
+          to: number;
+        };
+      }>(url);
 
-      // El backend usa Laravel Resource con paginación estándar
+      // El backend devuelve la paginación dentro de "meta"
       return {
         data: response.data.data,
-        current_page: response.data.current_page,
-        last_page: response.data.last_page,
-        per_page: response.data.per_page,
-        total: response.data.total,
-        from: response.data.from,
-        to: response.data.to,
+        current_page: response.data.meta.current_page,
+        last_page: response.data.meta.last_page,
+        per_page: response.data.meta.per_page,
+        total: response.data.meta.total,
+        from: response.data.meta.from,
+        to: response.data.meta.to,
       };
     } catch (error: any) {
       console.error('Error obteniendo registros de bitácora:', error);
@@ -189,10 +199,10 @@ class AuditLogService {
    * 
    * @returns Lista de módulos registrados en la bitácora
    */
-  async getModulos(): Promise<string[]> {
+  async getModules(): Promise<string[]> {
     try {
-      const response = await axiosInstance.get<{ data: string[] }>(`${this.baseURL}/modulos`);
-      return response.data.data;
+      const response = await axiosInstance.get<string[]>(`${this.baseURL}/modulos`);
+      return response.data;
     } catch (error: any) {
       console.error('Error obteniendo módulos:', error);
       throw new Error(error.response?.data?.message || 'Error al obtener módulos');
@@ -202,17 +212,17 @@ class AuditLogService {
   /**
    * Obtener catálogo de tipos de acción disponibles
    * 
-   * Endpoint: GET /api/bitacora/acciones
+   * Endpoint: GET /api/bitacora/tipos-accion
    * Requiere: Rol Superusuario
    * 
    * @returns Lista de tipos de acción con ID y descripción
    */
-  async getAcciones(): Promise<ActionType[]> {
+  async getActionTypes(): Promise<ActionType[]> {
     try {
-      const response = await axiosInstance.get<{ data: ActionType[] }>(`${this.baseURL}/acciones`);
-      return response.data.data;
+      const response = await axiosInstance.get<ActionType[]>(`${this.baseURL}/tipos-accion`);
+      return response.data;
     } catch (error: any) {
-      console.error('Error obteniendo acciones:', error);
+      console.error('Error obteniendo tipos de acción:', error);
       throw new Error(error.response?.data?.message || 'Error al obtener tipos de acción');
     }
   }

@@ -247,6 +247,13 @@ const AuditLogPage: React.FC = () => {
         </div>
       }
     >
+
+      {/* Componente de filtros */}
+      <AuditLogFilters
+        onApplyFilters={handleApplyFilters}
+        isLoading={isLoading}
+      />
+
       {/* Botón de exportación con menú desplegable */}
       <div className="flex justify-end mb-6">
         <DropdownButton
@@ -271,12 +278,6 @@ const AuditLogPage: React.FC = () => {
           />
         </div>
       )}
-
-      {/* Componente de filtros */}
-      <AuditLogFilters
-        onApplyFilters={handleApplyFilters}
-        isLoading={isLoading}
-      />
 
       {/* Información de registros */}
       {!isLoading && !error && filteredLogs.length > 0 && (
