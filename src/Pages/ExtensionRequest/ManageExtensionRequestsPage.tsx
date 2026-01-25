@@ -3,10 +3,9 @@
  * HU-016 - Vista de gestión para encargados de acreditación
  */
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { ScreenContainer } from '@/Components/Ui/ScreenContainer';
 import { BackendErrorAlert } from '@/Components/Ui/BackendErrorAlert';
-import { Button } from '@/Components/Ui/Button';
 import { PageHeader } from '@/Components/Ui/PageHeader';
 import { ReviewExtensionRequestModal } from '@/Components/Ui/ReviewExtensionRequestModal';
 import { useToast } from '@/Context/ToastContext';
@@ -18,6 +17,9 @@ import type {
   ReviewFormData 
 } from '@/Types/ExtensionRequestTypes';
 import { SystemIcons } from '@/Components/Ui/Icons/SystemIcons';
+import { Table, type TableColumn } from '@/Components/Ui/Table';
+import { TableActionButton } from '@/Components/Ui/TableActionButton';
+import { FilterButton, type FilterOption } from '@/Components/Ui/FilterButton';
 
 export const ManageExtensionRequestsPage: React.FC = () => {
   const { showToast } = useToast();
@@ -142,6 +144,83 @@ export const ManageExtensionRequestsPage: React.FC = () => {
     );
   };
 
+  // Opciones para el filtro de estado
+  const estadoOptions: FilterOption<ExtensionRequestStatus | 'todos'>[] = [
+    { value: 'todos', label: 'Todos' },
+    { value: 'pendiente', label: 'Pendiente' },
+    { value: 'aprobada', label: 'Aprobada' },
+    { value: 'rechazada', label: 'Rechazada' }
+  ];
+
+  // Definir columnas de la tabla
+  const columns = useMemo<TableColumn<ExtensionRequest>[]>(() => [
+    {
+      key: 'usuario',
+      header: 'Solicitante',
+      render: (_value, item) => (
+        <div>
+          <div className="text-sm font-medium text-gray-900">
+            {item.usuario?.nombre || 'N/A'}
+          </div>
+          <div className="text-sm text-gray-500">
+            {item.usuario?.email || ''}
+          </div>
+        </div>
+      )
+    },
+    {
+      key: 'motivo',
+      header: 'Motivo',
+      render: (_value, item) => (
+        <div className="text-sm text-gray-900 max-w-xs truncate" title={item.motivo}>
+          {item.motivo}
+        </div>
+      )
+    },
+    {
+      key: 'fecha_solicitud',
+      header: 'Fecha Solicitud',
+      render: (_value, item) => (
+        <span className="text-sm text-gray-500">
+          {new Date(item.fecha_solicitud).toLocaleDateString('es-ES')}
+        </span>
+      )
+    },
+    {
+      key: 'fecha_sugerida',
+      header: 'Fecha Sugerida',
+      render: (_value, item) => (
+        <span className="text-sm font-medium text-gray-900">
+          {new Date(item.fecha_sugerida).toLocaleDateString('es-ES')}
+        </span>
+      )
+    },
+    {
+      key: 'estado',
+      header: 'Estado',
+      render: (_value, item) => getEstadoBadge(item.estado)
+    },
+    {
+      key: 'acciones',
+      header: 'Acciones',
+      render: (_value, item) => (
+        <div className="flex justify-end gap-2">
+          {item.estado === 'pendiente' ? (
+            <TableActionButton
+              action="edit"
+              tooltip="Revisar solicitud"
+              onClick={() => handleReviewClick(item)}
+            />
+          ) : (
+            <span className="text-xs text-gray-500">
+              {item.resolutor?.nombre || 'N/A'}
+            </span>
+          )}
+        </div>
+      )
+    }
+  ], []);
+
   // Validar autenticación y permisos
   if (!isAuthenticated) {
     return (
@@ -192,141 +271,38 @@ export const ManageExtensionRequestsPage: React.FC = () => {
       )}
 
       {/* Filtros */}
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 mb-6">
-        <div className="flex items-center gap-2 mb-3">
-          <SystemIcons.interface.filter size="md" className="text-gray-500" />
-          <h3 className="text-sm font-semibold text-gray-700">Filtrar por estado</h3>
-        </div>
-        <div className="flex flex-wrap gap-2">
-          {(['todos', 'pendiente', 'aprobada', 'rechazada'] as const).map((estado) => (
-            <Button
-              key={estado}
-              variant={filtroEstado === estado ? 'primary' : 'secondary'}
-              onClick={() => {
-                setFiltroEstado(estado);
-                setCurrentPage(1);
-              }}
-              size="sm"
-            >
-              {estado.charAt(0).toUpperCase() + estado.slice(1)}
-            </Button>
-          ))}
-        </div>
+      <div className="mb-6 flex justify-end">
+        <FilterButton
+          tooltipText="Filtrar por estado"
+          options={estadoOptions}
+          value={filtroEstado}
+          onChange={(value) => {
+            setFiltroEstado(value);
+            setCurrentPage(1);
+          }}
+        />
       </div>
 
       {/* Tabla de solicitudes */}
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
-        {loading ? (
-          <div className="p-8 text-center">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
-            <p className="mt-4 text-gray-600">Cargando solicitudes...</p>
-          </div>
-        ) : solicitudes.length === 0 ? (
-          <div className="p-8 text-center">
-            <SystemIcons.interface.clock size="3xl" className="text-gray-400 mx-auto mb-3" />
-            <p className="text-gray-600">No hay solicitudes {filtroEstado !== 'todos' && filtroEstado}</p>
-          </div>
-        ) : (
-          <>
-            <div className="overflow-x-auto">
-              <table className="min-w-full divide-y divide-gray-200">
-                <thead className="bg-gray-50">
-                  <tr>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Solicitante
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Motivo
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Fecha Solicitud
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Fecha Sugerida
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Estado
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Acciones
-                    </th>
-                  </tr>
-                </thead>
-                <tbody className="bg-white divide-y divide-gray-200">
-                  {solicitudes.map((solicitud) => (
-                    <tr key={solicitud.solicitud_ampliacion_id} className="hover:bg-gray-50">
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm font-medium text-gray-900">
-                          {solicitud.usuario?.nombre}
-                        </div>
-                        <div className="text-sm text-gray-500">
-                          {solicitud.usuario?.email}
-                        </div>
-                      </td>
-                      <td className="px-6 py-4">
-                        <div className="text-sm text-gray-900 max-w-xs truncate" title={solicitud.motivo}>
-                          {solicitud.motivo}
-                        </div>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        {new Date(solicitud.fecha_solicitud).toLocaleDateString('es-ES')}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 font-medium">
-                        {new Date(solicitud.fecha_sugerida).toLocaleDateString('es-ES')}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        {getEstadoBadge(solicitud.estado)}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm">
-                        {solicitud.estado === 'pendiente' ? (
-                          <Button
-                            variant="primary"
-                            size="sm"
-                            onClick={() => handleReviewClick(solicitud)}
-                          >
-                            Revisar
-                          </Button>
-                        ) : (
-                          <span className="text-gray-500 text-xs">
-                            {solicitud.resolutor?.nombre || 'N/A'}
-                          </span>
-                        )}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-
-            {/* Paginación */}
-            {totalPages > 1 && (
-              <div className="bg-gray-50 px-6 py-3 flex items-center justify-between border-t border-gray-200">
-                <div className="text-sm text-gray-700">
-                  Página {currentPage} de {totalPages}
-                </div>
-                <div className="flex gap-2">
-                  <Button
-                    variant="secondary"
-                    size="sm"
-                    onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
-                    disabled={currentPage === 1}
-                  >
-                    Anterior
-                  </Button>
-                  <Button
-                    variant="secondary"
-                    size="sm"
-                    onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
-                    disabled={currentPage === totalPages}
-                  >
-                    Siguiente
-                  </Button>
-                </div>
-              </div>
-            )}
-          </>
-        )}
-      </div>
+      <Table
+        data={solicitudes as unknown as Record<string, unknown>[]}
+        columns={columns as unknown as TableColumn<Record<string, unknown>>[]}
+        loading={loading}
+        emptyMessage={
+          filtroEstado !== 'todos' 
+            ? `No hay solicitudes ${filtroEstado}` 
+            : 'No hay solicitudes de ampliación registradas'
+        }
+        pagination={
+          totalPages > 1
+            ? {
+                currentPage,
+                totalPages,
+                onPageChange: setCurrentPage
+              }
+            : undefined
+        }
+      />
 
       {/* Modal de revisión */}
       {selectedSolicitud && (
