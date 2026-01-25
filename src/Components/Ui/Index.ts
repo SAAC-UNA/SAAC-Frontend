@@ -29,3 +29,7 @@ export { DatePicker } from './Calendar';
 export type { DatePickerProps } from './Calendar';
 export { WizardProgress } from './WizardProgress';
 export type { WizardStep, WizardProgressProps } from './WizardProgress';
+
+// HU-016: Modales de solicitudes de ampliación
+export { CreateExtensionRequestModal } from './CreateExtensionRequestModal';
+export { ReviewExtensionRequestModal } from './ReviewExtensionRequestModal';

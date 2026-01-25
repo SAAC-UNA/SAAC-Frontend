@@ -8,15 +8,14 @@ const processIcon = 'system-icon:box-archive';
 const evidenceIcon = 'system-icon:assignEvidence';
 const myEvidencesIcon = 'system-icon:myEvidences';
 const auditLogIcon = 'system-icon:auditLog';
+const extensionRequestIcon = 'system-icon:clock';
 
 /**
  * Obtener items de navegación filtrados por rol
  * @param userRole - Rol del usuario autenticado ('Superusuario' o 'Administrador')
  */
 export const getNavigationItems = (userRole?: string): NavItem[] => {
-  console.log('[Navigation] userRole recibido:', userRole);
-  const isSuperUser = userRole === 'Superusuario';
-  console.log('[Navigation] isSuperUser:', isSuperUser);
+  const isSuperUser = userRole === 'SuperUsuario';
   
   const items: NavItem[] = [
     {
@@ -70,7 +69,7 @@ export const getNavigationItems = (userRole?: string): NavItem[] => {
   },
   {
     id: 'misEvidenciasAsignadas',
-    label: 'Mis Evidencias Asignadas',
+    label: 'Mis Evidencias',
     icon: myEvidencesIcon,
     href: '/mis-evidencias-asignadas',
     isActive: false,
@@ -81,6 +80,27 @@ export const getNavigationItems = (userRole?: string): NavItem[] => {
     icon: nutIcon,
     href: '/estructura/listar',
     isActive: false
+  });
+
+  // HU-016: Solicitudes de Ampliación
+  // Gestionar solicitudes - Solo Encargados
+  if (isEncargado || isSuperUser) {
+    items.push({
+      id: 'gestionarSolicitudesAmpliacion',
+      label: 'Gestionar Solicitudes',
+      icon: extensionRequestIcon,
+      href: '/solicitudes-ampliacion/gestionar',
+      isActive: false,
+    });
+  }
+
+  // Mis solicitudes - Todos los autenticados
+  items.push({
+    id: 'misSolicitudesAmpliacion',
+    label: 'Mis Solicitudes de Ampliación',
+    icon: extensionRequestIcon,
+    href: '/solicitudes-ampliacion/mis-solicitudes',
+    isActive: false,
   });
 
   // Avance de Acreditación - Todos los autenticados (filtrado por carrera en el backend)

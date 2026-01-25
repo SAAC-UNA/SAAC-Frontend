@@ -355,6 +355,16 @@ export const SystemIcons = {
       </svg>
     ),
 
+    hourglass: ({ className, size, color }: IconProps) => (
+      <svg
+        className={`${getSizeClasses(size)} ${className || ''}`}
+        viewBox="0 0 24 24"
+        fill={color || "currentColor"}
+      >
+        <path d="M18.75 7.088V3.75a1.5 1.5 0 0 0-1.5-1.5H6.75a1.5 1.5 0 0 0-1.5 1.5v3.375a1.51 1.51 0 0 0 .6 1.2L10.753 12 5.85 15.675a1.51 1.51 0 0 0-.6 1.2v3.375a1.5 1.5 0 0 0 1.5 1.5h10.5a1.5 1.5 0 0 0 1.5-1.5v-3.337a1.51 1.51 0 0 0-.6-1.2L13.247 12l4.903-3.713a1.51 1.51 0 0 0 .6-1.2Z" />
+      </svg>
+    ),
+
     /** Chevron down - Para dropdowns y secciones colapsables */
     chevronDown: ({ className, size, color }: IconProps) => (
       <svg
@@ -408,6 +418,17 @@ export const SystemIcons = {
         fill="currentColor"
       >
         <path d="M12 2.25A9.75 9.75 0 1 0 21.75 12 9.769 9.769 0 0 0 12 2.25Zm4.64 8.044-5.493 5.25a.76.76 0 0 1-.525.206.722.722 0 0 1-.516-.206L7.36 12.919a.75.75 0 1 1 1.032-1.088l2.23 2.128 4.988-4.753a.75.75 0 0 1 1.032 1.088Z" />
+      </svg>
+    ),
+
+    /** Círculo con X - Para mensajes de error o rechazo */
+    xCircle: ({ className, size }: IconProps) => (
+      <svg
+        className={`${getSizeClasses(size)} ${className || ''}`}
+        viewBox="0 0 24 24"
+        fill="currentColor"
+      >
+        <path d="M12 2.25A9.75 9.75 0 1 0 21.75 12 9.769 9.769 0 0 0 12 2.25Zm3.53 12.22a.75.75 0 1 1-1.06 1.06L12 13.06l-2.47 2.47a.75.75 0 0 1-1.06-1.06L10.94 12 8.47 9.53a.75.75 0 0 1 1.06-1.06L12 10.94l2.47-2.47a.75.75 0 1 1 1.06 1.06L13.06 12l2.47 2.47Z" />
       </svg>
     ),
 
@@ -776,6 +797,8 @@ export const getIconByName = (iconName: string, size: IconProps['size'] = 'md'):
     'chevron-down': () => SystemIcons.interface.chevronDown({ size }),
     'cloud': () => SystemIcons.interface.cloud({ size }),
     'upload-arrow': () => SystemIcons.interface.uploadArrow({ size }),
+    'clock': () => SystemIcons.interface.clock({ size }),
+    'hourglass': () => SystemIcons.interface.hourglass({ size }),
 
     // Modal icons
     'exclamation-triangle': () => SystemIcons.interface.alert({ size }),

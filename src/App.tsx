@@ -24,6 +24,10 @@ const EvidenceUploadPage = lazy(() => import('./Pages/Evidence').then(m => ({ de
 const MyEvidenceAssignmentsPage = lazy(() => import('./Pages/EvidenceAssignment/MyEvidenceAssignmentsPage'));
 const AuditLogPage = lazy(() => import('@/Pages/AuditLog/AuditLogPage'));
 
+// HU-016: Páginas de solicitudes de ampliación
+const ManageExtensionRequestsPage = lazy(() => import('./Pages/ExtensionRequest').then(m => ({ default: m.ManageExtensionRequestsPage })));
+const MyExtensionRequestsPage = lazy(() => import('./Pages/ExtensionRequest').then(m => ({ default: m.MyExtensionRequestsPage })));
+
 // Componente de loading para Suspense
 const PageLoader = () => (
   <div className="flex items-center justify-center min-h-screen">
@@ -162,6 +166,24 @@ function App() {
                           element={
                             <ProtectedRoute>
                               <EvidenceUploadPage />
+                            </ProtectedRoute>
+                          }
+                        />
+
+                        {/* HU-016: Solicitudes de Ampliación */}
+                        <Route
+                          path="/solicitudes-ampliacion/gestionar"
+                          element={
+                            <ProtectedRoute requireRole="Encargado de Acreditación">
+                              <ManageExtensionRequestsPage />
+                            </ProtectedRoute>
+                          }
+                        />
+                        <Route
+                          path="/solicitudes-ampliacion/mis-solicitudes"
+                          element={
+                            <ProtectedRoute>
+                              <MyExtensionRequestsPage />
                             </ProtectedRoute>
                           }
                         />
