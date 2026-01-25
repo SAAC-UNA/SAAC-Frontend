@@ -81,7 +81,7 @@ export const Login = () => {
           <p className={styles['login-form-subtitle']}>Ingrese con sus credenciales institucionales</p>
           
           <form onSubmit={handleSubmit} className={styles['login-form']}>
-            <div className={styles['login-input-field']}>
+            <div className={`${styles['login-input-field']} ${error ? styles['error'] : ''}`}>
               <div className={styles['login-input-icon']}>
                 {SystemIcons.interface.user({ size: 'sm', color: '#a0aec0' })}
               </div>
@@ -96,7 +96,7 @@ export const Login = () => {
               <label>Identificación</label>
             </div>
 
-            <div className={styles['login-input-field-password']}>
+            <div className={`${styles['login-input-field-password']} ${error ? styles['error'] : ''}`}>
               <div className={styles['login-input-icon']}>
                 {SystemIcons.interface.lock({ size: 'sm', color: '#a0aec0' })}
               </div>
@@ -140,7 +140,7 @@ export const Login = () => {
         </div>
         
         <footer className={styles['login-footer']}>
-          © 2025 — SAAC · Universidad Nacional de Costa Rica
+          © {new Date().getFullYear()} — SAAC · Universidad Nacional de Costa Rica
         </footer>
       </div>
     </div>

@@ -65,7 +65,7 @@ export const UserProfileHeader: React.FC<UserProfileHeaderProps> = ({ className 
   return (
     <TooltipProvider delayDuration={0}>
       <div className={cn('flex items-center gap-3 pr-6', className)}>
-        {/* Información del Usuario - Avatar + Nombre/Rol con Dropdown */}
+        {/* Información del Usuario - Avatar con Dropdown */}
         <div 
           className="flex items-center gap-2 relative"
           ref={dropdownRef}
@@ -83,7 +83,7 @@ export const UserProfileHeader: React.FC<UserProfileHeaderProps> = ({ className 
               {/* Información del Usuario */}
               <div className="px-3 py-2 border-b border-gris-una/25">
                 <p className="text-[11px] font-semibold text-negro-una leading-none">
-                  {user.nombre}
+                  {user.name}
                 </p>
                 <p className="text-[10px] font-normal text-negro-una/60 leading-none mt-1">
                   {user.roles[0]?.name}

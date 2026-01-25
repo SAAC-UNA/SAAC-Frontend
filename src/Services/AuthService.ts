@@ -18,12 +18,17 @@ export interface Career {
 }
 
 export interface User {
-  usuario_id: number;
+  id: number;
   cedula: string;
-  nombre: string;
+  name: string;
   email: string;
   roles: Role[];
   careers: Career[];
+  status: string;
+  created_at: string;
+  updated_at: string;
+  all_permissions: any[];
+  direct_permissions: any[];
 }
 
 const AUTH_TOKEN_KEY = 'auth_token';
