@@ -40,7 +40,14 @@ export const CompromisosList: React.FC = () => {
       setLoading(true);
       setError(null);
       console.log('Intentando cargar compromisos desde:', `${config.API_BASE_URL}/compromisos-de-mejora`);
-      const response = await fetch(`${config.API_BASE_URL}/compromisos-de-mejora`);
+      
+      const token = localStorage.getItem('auth_token');
+      const response = await fetch(`${config.API_BASE_URL}/compromisos-de-mejora`, {
+        headers: {
+          'Accept': 'application/json',
+          ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
+        }
+      });
       
       console.log('Response status:', response.status);
       console.log('Response ok:', response.ok);
