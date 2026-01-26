@@ -5,6 +5,8 @@
 
 import React, { useEffect, useState } from 'react';
 import { LoadingSpinner } from '@/Components/Ui/Index';
+import { CustomSelect } from '@/Components/Ui/SingleSelect';
+import { config } from '@/Config/app.config';
 
 interface Proceso {
   proceso_id: number;
@@ -25,19 +27,38 @@ interface Proceso {
 interface ProcesoStepProps {
   procesoId: number | null;
   cicloId: number | null;
+  fechaInicio: string;
+  fechaFin: string;
+  descripcion: string;
   onSelectProceso: (procesoId: number) => void;
   onSelectCiclo: (cicloId: number) => void;
+  onChangeFechaInicio: (fecha: string) => void;
+  onChangeFechaFin: (fecha: string) => void;
+  onChangeDescripcion: (descripcion: string) => void;
   error?: string;
+  errorInicio?: string;
+  errorFin?: string;
+  errorDescripcion?: string;
 }
 
 export const ProcesoStep: React.FC<ProcesoStepProps> = ({
   procesoId,
   cicloId,
+  fechaInicio,
+  fechaFin,
+  descripcion,
   onSelectProceso,
-  error
+  onChangeFechaInicio,
+  onChangeFechaFin,
+  onChangeDescripcion,
+  error,
+  errorInicio,
+  errorFin,
+  errorDescripcion
 }) => {
   const [procesos, setProcesos] = useState<Proceso[]>([]);
   const [loading, setLoading] = useState(true);
+  const today = new Date().toISOString().split('T')[0];
 
   useEffect(() => {
     loadProcesos();
@@ -46,8 +67,10 @@ export const ProcesoStep: React.FC<ProcesoStepProps> = ({
   const loadProcesos = async () => {
     try {
       setLoading(true);
-      // TODO: Llamar al servicio
-      const response = await fetch('/api/estructura/procesos');
+      const response = await fetch(`${config.API_BASE_URL}/estructura/procesos`);
+      if (!response.ok) {
+        throw new Error('Error al cargar procesos');
+      }
       const data = await response.json();
       setProcesos(data);
     } catch (error) {
@@ -66,64 +89,110 @@ export const ProcesoStep: React.FC<ProcesoStepProps> = ({
   }
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-6">
       <div>
-        <h3 className="text-lg font-semibold text-gray-900 mb-2">
-          Seleccione el Proceso
+        <h3 className="text-base font-semibold text-gray-900 mb-0.5">
+          Proceso y Periodo
         </h3>
-        <p className="text-sm text-gray-600 mb-4">
-          Seleccione el proceso de acreditación al que pertenece este compromiso de mejora
+        <p className="text-xs text-gray-600 mb-2">
+          Seleccione el proceso de acreditación y establezca las fechas del compromiso
         </p>
       </div>
 
-      {/* Procesos List */}
-      <div className="space-y-2 max-h-96 overflow-y-auto">
-        {procesos.map((proceso) => (
-          <button
-            key={proceso.proceso_id}
-            onClick={() => onSelectProceso(proceso.proceso_id)}
-            className={`w-full text-left p-4 rounded-lg border-2 transition-all ${
-              procesoId === proceso.proceso_id
-                ? 'border-rojo-una bg-rojo-una/5'
-                : 'border-gray-200 hover:border-gray-300'
+      {/* Proceso Select */}
+      <CustomSelect
+        label="Proceso de Acreditación"
+        value={procesoId?.toString() || ''}
+        placeholder="Seleccione un proceso"
+        size="sm"
+        onChange={(value) => onSelectProceso(Number(value))}
+        options={procesos.filter(proceso => 
+          proceso.accreditation_cycle?.career_campus?.career?.nombre && 
+          proceso.accreditation_cycle?.career_campus?.campus?.nombre
+        ).map((proceso) => ({
+          value: proceso.proceso_id.toString(),
+          label: `${proceso.accreditation_cycle.career_campus.career.nombre} - ${proceso.accreditation_cycle.career_campus.campus.nombre} (${proceso.accreditation_cycle.nombre})`
+        }))}
+        maxVisibleItems={3}
+      />
+
+      {/* Fechas lado a lado */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div>
+          <label htmlFor="fecha_inicio" className="block text-xs font-medium text-gray-700 mb-1.5">
+            Fecha de Inicio *
+          </label>
+          <input
+            type="date"
+            id="fecha_inicio"
+            value={fechaInicio}
+            onChange={(e) => onChangeFechaInicio(e.target.value)}
+            min={today}
+            className={`w-full px-3 py-2 text-sm border rounded-lg focus:outline-none focus:ring-2 focus:ring-rojo-una focus:border-transparent ${
+              errorInicio ? 'border-red-500' : 'border-gray-300'
             }`}
-          >
-            <div className="flex items-start justify-between">
-              <div className="flex-1">
-                <div className="flex items-center gap-2 mb-1">
-                  <span className="font-semibold text-gray-900">
-                    {proceso.accreditation_cycle.career_campus.career.nombre}
-                  </span>
-                  <span className="text-xs px-2 py-0.5 bg-gray-100 text-gray-600 rounded">
-                    {proceso.accreditation_cycle.career_campus.campus.nombre}
-                  </span>
-                </div>
-                <p className="text-sm text-gray-700">
-                  Ciclo: {proceso.accreditation_cycle.nombre}
-                </p>
-              </div>
-              {procesoId === proceso.proceso_id && (
-                <div className="flex-shrink-0 ml-4">
-                  <div className="w-6 h-6 bg-rojo-una rounded-full flex items-center justify-center">
-                    <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                    </svg>
-                  </div>
-                </div>
-              )}
-            </div>
-          </button>
-        ))}
+          />
+          {errorInicio && (
+            <p className="text-xs text-red-600 mt-1">{errorInicio}</p>
+          )}
+        </div>
+
+        <div>
+          <label htmlFor="fecha_fin" className="block text-xs font-medium text-gray-700 mb-1.5">
+            Fecha de Finalización *
+          </label>
+          <input
+            type="date"
+            id="fecha_fin"
+            value={fechaFin}
+            onChange={(e) => onChangeFechaFin(e.target.value)}
+            min={fechaInicio || today}
+            className={`w-full px-3 py-2 text-sm border rounded-lg focus:outline-none focus:ring-2 focus:ring-rojo-una focus:border-transparent ${
+              errorFin ? 'border-red-500' : 'border-gray-300'
+            }`}
+          />
+          {errorFin && (
+            <p className="text-xs text-red-600 mt-1">{errorFin}</p>
+          )}
+        </div>
+      </div>
+
+      {/* Descripción del Compromiso */}
+      <div>
+        <label htmlFor="descripcion" className="block text-xs font-medium text-gray-700 mb-1.5">
+          Descripción del compromiso (opcional)
+        </label>
+        <textarea
+          id="descripcion"
+          value={descripcion}
+          onChange={(e) => onChangeDescripcion(e.target.value)}
+          placeholder="Describa las acciones necesarias para cumplir con el compromiso de mejora"
+          rows={3}
+          maxLength={250}
+          className={`w-full px-3 py-2 text-sm border rounded-lg focus:outline-none focus:ring-2 focus:ring-rojo-una focus:border-transparent resize-none ${
+            errorDescripcion ? 'border-red-500' : 'border-gray-300'
+          }`}
+        />
+        <div className="flex justify-between items-center mt-1.5">
+          {errorDescripcion ? (
+            <p className="text-xs text-red-600">{errorDescripcion}</p>
+          ) : (
+            <p className="text-xs text-gray-500">Descripción breve del compromiso</p>
+          )}
+          <p className={`text-xs ${
+            250 - descripcion.length < 50 ? 'text-orange-600' : 'text-gray-500'
+          }`}>
+            {250 - descripcion.length} caracteres restantes
+          </p>
+        </div>
       </div>
 
       {procesos.length === 0 && (
-        <div className="text-center py-8 text-gray-500">
-          No hay procesos disponibles
-        </div>
+        <p className="text-xs text-gray-500 mt-2">No hay procesos disponibles</p>
       )}
 
       {error && (
-        <p className="text-sm text-red-600 mt-2">{error}</p>
+        <p className="text-xs text-red-600 mt-2">{error}</p>
       )}
     </div>
   );

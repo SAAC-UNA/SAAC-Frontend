@@ -11,13 +11,11 @@ import { Button, LoadingSpinner, WizardProgress } from '@/Components/Ui/Index';
 import { SuccessModal } from '@/Components/Ui/SuccessModal';
 import { useToast } from '@/Context/ToastContext';
 import { useNavigate } from 'react-router-dom';
+import { config } from '@/Config/app.config';
 
 // Importar los componentes de cada paso
 import ProcesoStep from './Components/ProcesoStep';
 import SeleccionesStep from './Components/SeleccionesStep';
-import DescripcionStep from './Components/DescripcionStep';
-import FechasStep from './Components/FechasStep';
-import EvidenciasStep from './Components/EvidenciasStep';
 import ReviewStep from './Components/ReviewStep';
 
 interface Seleccion {
@@ -68,12 +66,9 @@ const CrearCompromiso: React.FC = () => {
   });
 
   const steps: WizardStep[] = [
-    { id: 1, title: 'Proceso/Ciclo' },
+    { id: 1, title: 'Proceso, Fechas y Descripción' },
     { id: 2, title: 'Selecciones' },
-    { id: 3, title: 'Descripción' },
-    { id: 4, title: 'Fechas' },
-    { id: 5, title: 'Evidencias' },
-    { id: 6, title: 'Revisión' }
+    { id: 3, title: 'Revisión' }
   ];
 
   /**
@@ -87,20 +82,6 @@ const CrearCompromiso: React.FC = () => {
         if (!formData.proceso_id && !formData.ciclo_acreditacion_id) {
           newErrors.proceso = 'Debe seleccionar un proceso o ciclo de acreditación';
         }
-        break;
-      case 2:
-        if (formData.selecciones.length === 0) {
-          newErrors.selecciones = 'Debe seleccionar al menos un criterio o evidencia';
-        }
-        break;
-      case 3:
-        if (!formData.descripcion.trim()) {
-          newErrors.descripcion = 'La descripción es obligatoria';
-        } else if (formData.descripcion.trim().length > 100) {
-          newErrors.descripcion = 'La descripción no puede exceder 100 caracteres';
-        }
-        break;
-      case 4:
         if (!formData.fecha_inicio) {
           newErrors.fecha_inicio = 'La fecha de inicio es obligatoria';
         } else {
@@ -120,9 +101,18 @@ const CrearCompromiso: React.FC = () => {
             newErrors.fecha_fin = 'La fecha fin debe ser posterior a la fecha de inicio';
           }
         }
+        // Descripción es opcional, solo validar longitud si hay contenido
+        if (formData.descripcion.trim().length > 250) {
+          newErrors.descripcion = 'La descripción no puede exceder 250 caracteres';
+        }
         break;
-      case 5:
-        // Evidencias asignadas son opcionales, no se valida
+      case 2:
+        if (formData.selecciones.length === 0) {
+          newErrors.selecciones = 'Debe seleccionar al menos un criterio o evidencia';
+        }
+        break;
+      case 3:
+        // Revisión final, no hay validación adicional
         break;
     }
     
@@ -161,14 +151,48 @@ const CrearCompromiso: React.FC = () => {
 
     setIsSubmitting(true);
     try {
-      // TODO: Llamar al servicio para crear el compromiso
-      // await compromisoService.create(formData);
+      // Preparar datos eliminando campos null
+      const dataToSend: any = {
+        descripcion: formData.descripcion,
+        fecha_inicio: formData.fecha_inicio,
+        fecha_fin: formData.fecha_fin,
+        selecciones: formData.selecciones,
+        evidencias_asignadas: formData.evidencias_asignadas
+      };
       
-      // Simular llamada API
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      // Solo agregar proceso_id si tiene valor
+      if (formData.proceso_id !== null) {
+        dataToSend.proceso_id = formData.proceso_id;
+      }
       
+      // Solo agregar ciclo_acreditacion_id si tiene valor
+      if (formData.ciclo_acreditacion_id !== null) {
+        dataToSend.ciclo_acreditacion_id = formData.ciclo_acreditacion_id;
+      }
+      
+      console.log('Datos a enviar:', dataToSend);
+      
+      const response = await fetch(`${config.API_BASE_URL}/compromisos-de-mejora`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+        },
+        credentials: 'include',
+        body: JSON.stringify(dataToSend)
+      });
+
+      console.log('Response status:', response.status);
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        console.error('Error del backend:', errorData);
+        throw new Error(errorData.message || 'Error al registrar el compromiso');
+      }
+
       setShowSuccessModal(true);
     } catch (error) {
+      console.error('Error completo:', error);
       showToast(
         error instanceof Error ? error.message : 'Error al registrar el compromiso',
         'error'
@@ -196,9 +220,18 @@ const CrearCompromiso: React.FC = () => {
           <ProcesoStep
             procesoId={formData.proceso_id}
             cicloId={formData.ciclo_acreditacion_id}
+            fechaInicio={formData.fecha_inicio}
+            fechaFin={formData.fecha_fin}
             onSelectProceso={(id: number) => setFormData({ ...formData, proceso_id: id, ciclo_acreditacion_id: null })}
             onSelectCiclo={(id: number) => setFormData({ ...formData, ciclo_acreditacion_id: id, proceso_id: null })}
+            onChangeFechaInicio={(fecha) => setFormData({ ...formData, fecha_inicio: fecha })}
+            onChangeFechaFin={(fecha) => setFormData({ ...formData, fecha_fin: fecha })}
+            descripcion={formData.descripcion}
+            onChangeDescripcion={(desc) => setFormData({ ...formData, descripcion: desc })}
             error={errors.proceso}
+            errorInicio={errors.fecha_inicio}
+            errorFin={errors.fecha_fin}
+            errorDescripcion={errors.descripcion}
           />
         );
       case 2:
@@ -212,33 +245,6 @@ const CrearCompromiso: React.FC = () => {
           />
         );
       case 3:
-        return (
-          <DescripcionStep
-            descripcion={formData.descripcion}
-            onChange={(desc) => setFormData({ ...formData, descripcion: desc })}
-            error={errors.descripcion}
-          />
-        );
-      case 4:
-        return (
-          <FechasStep
-            fechaInicio={formData.fecha_inicio}
-            fechaFin={formData.fecha_fin}
-            onChangeFechaInicio={(fecha) => setFormData({ ...formData, fecha_inicio: fecha })}
-            onChangeFechaFin={(fecha) => setFormData({ ...formData, fecha_fin: fecha })}
-            errorInicio={errors.fecha_inicio}
-            errorFin={errors.fecha_fin}
-          />
-        );
-      case 5:
-        return (
-          <EvidenciasStep
-            evidenciasAsignadas={formData.evidencias_asignadas}
-            onChangeEvidenciasAsignadas={(evidencias) => setFormData({ ...formData, evidencias_asignadas: evidencias })}
-            procesoId={formData.proceso_id || undefined}
-          />
-        );
-      case 6:
         return (
           <ReviewStep
             procesoId={formData.proceso_id || undefined}
@@ -258,24 +264,35 @@ const CrearCompromiso: React.FC = () => {
   return (
     <ScreenContainer
       title="Registrar Compromiso de Mejora"
+      description="Complete el proceso de asignación de compromisos de mejora siguiendo los pasos"
       showBackButton
       onBack={() => navigate('/compromisos/listar')}
+      headerExtra={
+        <div className="hidden md:block">
+          <WizardProgress 
+            steps={steps} 
+            currentStep={currentStep} 
+            variant="compact"
+          />
+        </div>
+      }
     >
-      <div className="max-w-4xl mx-auto">
-        {/* Progress */}
-        <WizardProgress
-          steps={steps}
+      {/* Progress móvil - Solo se muestra en dispositivos pequeños */}
+      <div className="block md:hidden mb-6">
+        <WizardProgress 
+          steps={steps} 
           currentStep={currentStep}
-          className="mb-8"
         />
+      </div>
 
+      <div className="max-w-7xl mx-auto">
         {/* Step Content */}
-        <div className="bg-white rounded-lg shadow-sm p-6 mb-6">
+        <div className="py-4">
           {renderStepContent()}
         </div>
 
         {/* Navigation */}
-        <div className="flex justify-between items-center">
+        <div className="flex justify-between items-center pt-4 border-t border-gray-200">
           <div>
             {currentStep > 1 && (
               <Button

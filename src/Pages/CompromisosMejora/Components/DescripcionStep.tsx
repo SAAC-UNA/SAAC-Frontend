@@ -16,24 +16,21 @@ export const DescripcionStep: React.FC<DescripcionStepProps> = ({
   onChange,
   error
 }) => {
-  const maxLength = 100;
+  const maxLength = 250;
   const remainingChars = maxLength - descripcion.length;
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-2">
       <div>
-        <h3 className="text-lg font-semibold text-gray-900 mb-2">
+        <h3 className="text-base font-semibold text-gray-900 mb-0.5">
           Descripción del Compromiso
         </h3>
-        <p className="text-sm text-gray-600 mb-4">
+        <p className="text-xs text-gray-600 mb-1">
           Describa detalladamente las acciones necesarias para cumplir con las observaciones de los entes evaluadores
         </p>
       </div>
 
       <div>
-        <label htmlFor="descripcion" className="block text-sm font-medium text-gray-700 mb-2">
-          Descripción *
-        </label>
         <textarea
           id="descripcion"
           value={descripcion}
@@ -58,18 +55,6 @@ export const DescripcionStep: React.FC<DescripcionStepProps> = ({
             {remainingChars} caracteres restantes
           </p>
         </div>
-      </div>
-
-      {/* Tips */}
-      <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-        <h4 className="text-sm font-semibold text-blue-900 mb-2">
-          💡 Recomendaciones
-        </h4>
-        <ul className="text-sm text-blue-800 space-y-1">
-          <li>• Sea específico y conciso (máximo 100 caracteres)</li>
-          <li>• Describa el objetivo principal del compromiso</li>
-          <li>• Evite tecnicismos innecesarios</li>
-        </ul>
       </div>
     </div>
   );

@@ -3,12 +3,45 @@
  * Revisión final antes de crear el compromiso
  */
 
-import React from 'react';
+import React, { useEffect, useState } from 'react';
+import { config } from '@/Config/app.config';
+import { LoadingSpinner } from '@/Components/Ui/Index';
 
 interface Seleccion {
   entidad_tipo: 'ESTANDAR' | 'DIMENSION' | 'COMPONENTE' | 'CRITERIO' | 'EVIDENCIA';
   entidad_id: number;
   nombre?: string;
+}
+
+interface Proceso {
+  proceso_id: number;
+  accreditation_cycle: {
+    ciclo_acreditacion_id: number;
+    nombre: string;
+    career_campus: {
+      career: {
+        nombre: string;
+      };
+      campus: {
+        nombre: string;
+      };
+    };
+  };
+}
+
+interface Criterio {
+  criterio_id: number;
+  codigo: string;
+  nombre: string;
+  descripcion?: string;
+}
+
+interface Evidencia {
+  evidencia_id: number;
+  criterio_id: number;
+  codigo: string;
+  nombre: string;
+  descripcion?: string;
 }
 
 interface ReviewStepProps {
@@ -25,8 +58,6 @@ interface ReviewStepProps {
 
 export const ReviewStep: React.FC<ReviewStepProps> = ({
   procesoId,
-  cicloAcreditacionId,
-  procesoNombre,
   selecciones,
   descripcion,
   fechaInicio,
@@ -34,6 +65,72 @@ export const ReviewStep: React.FC<ReviewStepProps> = ({
   evidenciasAsignadas,
   evidenciasNombres
 }) => {
+  const [proceso, setProceso] = useState<Proceso | null>(null);
+  const [criterios, setCriterios] = useState<Criterio[]>([]);
+  const [evidencias, setEvidencias] = useState<Evidencia[]>([]);
+  const [expandedCriterioIds, setExpandedCriterioIds] = useState<number[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    loadData();
+  }, [procesoId]);
+
+  const loadData = async () => {
+    try {
+      setLoading(true);
+      
+      // Cargar proceso si hay procesoId
+      if (procesoId) {
+        const procesoResponse = await fetch(`${config.API_BASE_URL}/estructura/procesos`);
+        if (procesoResponse.ok) {
+          const procesosData = await procesoResponse.json();
+          const foundProceso = procesosData.find((p: Proceso) => p.proceso_id === procesoId);
+          setProceso(foundProceso || null);
+        }
+      }
+
+      // Cargar criterios
+      const criteriosResponse = await fetch(`${config.API_BASE_URL}/estructura/criterios`);
+      if (criteriosResponse.ok) {
+        const criteriosResult = await criteriosResponse.json();
+        console.log('Criterios cargados (raw):', criteriosResult);
+        const criteriosData = criteriosResult.data || criteriosResult;
+        console.log('Primer criterio ejemplo:', criteriosData[0]);
+        const mappedCriterios = criteriosData.map((c: any) => ({
+          criterio_id: c.criterio_id || c.id,
+          codigo: c.nomenclature || c.codigo || c.nomenclatura || '',
+          nombre: c.description || c.nombre || c.descripcion || '',
+          descripcion: c.descripcion || c.description || c.nombre || ''
+        }));
+        console.log('Criterios mapeados:', mappedCriterios);
+        console.log('Primer criterio mapeado:', mappedCriterios[0]);
+        setCriterios(mappedCriterios);
+      }
+
+      // Cargar evidencias
+      const evidenciasResponse = await fetch(`${config.API_BASE_URL}/estructura/evidencias`);
+      if (evidenciasResponse.ok) {
+        const evidenciasResult = await evidenciasResponse.json();
+        console.log('Evidencias cargadas (raw):', evidenciasResult);
+        const evidenciasData = evidenciasResult.data || evidenciasResult;
+        console.log('Primera evidencia ejemplo:', evidenciasData[0]);
+        const mappedEvidencias = evidenciasData.map((e: any) => ({
+          evidencia_id: e.evidencia_id || e.id,
+          criterio_id: e.criterio_id || e.criterion_id,
+          codigo: e.nomenclature || e.codigo || e.nomenclatura || '',
+          nombre: e.description || e.nombre || e.descripcion || '',
+          descripcion: e.descripcion || e.description || e.nombre || ''
+        }));
+        console.log('Evidencias mapeadas:', mappedEvidencias);
+        console.log('Primera evidencia mapeada:', mappedEvidencias[0]);
+        setEvidencias(mappedEvidencias);
+      }
+    } catch (error) {
+      console.error('Error al cargar datos:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
   const formatDate = (dateString: string) => {
     if (!dateString) return '';
     const date = new Date(dateString + 'T00:00:00');
@@ -60,16 +157,13 @@ export const ReviewStep: React.FC<ReviewStepProps> = ({
     return `${diffDays} día${diffDays !== 1 ? 's' : ''}`;
   };
 
-  const getTipoLabel = (tipo: string) => {
-    const labels: Record<string, string> = {
-      'ESTANDAR': 'Estándar',
-      'DIMENSION': 'Dimensión',
-      'COMPONENTE': 'Componente',
-      'CRITERIO': 'Criterio',
-      'EVIDENCIA': 'Evidencia'
-    };
-    return labels[tipo] || tipo;
-  };
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center py-12">
+        <LoadingSpinner size="lg" />
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -88,15 +182,15 @@ export const ReviewStep: React.FC<ReviewStepProps> = ({
           <svg className="w-5 h-5 text-rojo-una" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
           </svg>
-          {procesoId ? 'Proceso' : 'Ciclo de Acreditación'}
+          Proceso de Acreditación
         </h4>
         <p className="text-sm text-gray-700">
-          {procesoNombre || (cicloAcreditacionId ? `Ciclo ${cicloAcreditacionId}` : 'No especificado')}
+          {proceso ? `${proceso.accreditation_cycle.career_campus.career.nombre} - ${proceso.accreditation_cycle.career_campus.campus.nombre} (${proceso.accreditation_cycle.nombre})` : 'Cargando...'}
         </p>
       </div>
 
-      {/* Selecciones */}
-      {selecciones.length > 0 && (
+      {/* Criterios y Evidencias */}
+      {selecciones.filter(s => s.entidad_tipo === 'EVIDENCIA').length > 0 && (
         <div className="bg-white border border-gray-200 rounded-lg p-4">
           <h4 className="text-sm font-semibold text-gray-900 mb-3 flex items-center gap-2">
             <svg className="w-5 h-5 text-rojo-una" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -104,21 +198,107 @@ export const ReviewStep: React.FC<ReviewStepProps> = ({
             </svg>
             Criterios y Evidencias Seleccionados
           </h4>
-          <div className="space-y-2">
-            {selecciones.map((sel, index) => (
-              <div key={index} className="flex items-center gap-2 text-sm">
-                <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-blue-100 text-blue-800">
-                  {getTipoLabel(sel.entidad_tipo)}
-                </span>
-                <span className="text-gray-700">
-                  {sel.nombre || `ID: ${sel.entidad_id}`}
-                </span>
-              </div>
-            ))}
-          </div>
-          <p className="text-xs text-gray-500 mt-2">
-            Total: {selecciones.length} elemento{selecciones.length !== 1 ? 's' : ''} seleccionado{selecciones.length !== 1 ? 's' : ''}
-          </p>
+          {loading ? (
+            <p className="text-sm text-gray-500">Cargando criterios y evidencias...</p>
+          ) : criterios.length === 0 || evidencias.length === 0 ? (
+            <div>
+              <p className="text-sm text-red-600">No se pudieron cargar los datos</p>
+              <p className="text-xs text-gray-500 mt-1">
+                Criterios: {criterios.length}, Evidencias: {evidencias.length}
+              </p>
+            </div>
+          ) : (
+            <div className="space-y-2">
+              {(() => {
+                // Obtener evidencias seleccionadas
+                const evidenciasSeleccionadasIds = selecciones
+                  .filter(s => s.entidad_tipo === 'EVIDENCIA')
+                  .map(s => s.entidad_id);
+
+                console.log('Evidencias seleccionadas IDs:', evidenciasSeleccionadasIds);
+                console.log('Total criterios disponibles:', criterios.length);
+                console.log('Total evidencias disponibles:', evidencias.length);
+
+                // Agrupar evidencias por criterio
+                const criteriosConEvidencias = new Map<number, Evidencia[]>();
+                
+                evidencias.forEach(evidencia => {
+                  if (evidenciasSeleccionadasIds.includes(evidencia.evidencia_id)) {
+                    if (!criteriosConEvidencias.has(evidencia.criterio_id)) {
+                      criteriosConEvidencias.set(evidencia.criterio_id, []);
+                    }
+                    criteriosConEvidencias.get(evidencia.criterio_id)!.push(evidencia);
+                  }
+                });
+
+                console.log('Criterios con evidencias:', Array.from(criteriosConEvidencias.keys()));
+
+                if (criteriosConEvidencias.size === 0) {
+                  return <p className="text-sm text-gray-500">No se encontraron criterios para las evidencias seleccionadas</p>;
+                }
+
+                // Renderizar cada criterio con sus evidencias
+                return Array.from(criteriosConEvidencias.entries()).map(([criterioId, evidenciasDelCriterio]) => {
+                  const criterio = criterios.find(c => c.criterio_id === criterioId);
+                  if (!criterio) {
+                    console.warn('Criterio no encontrado:', criterioId);
+                    return null;
+                  }
+
+                  const isExpanded = expandedCriterioIds.includes(criterioId);
+
+                  return (
+                    <div key={criterioId} className="border border-gray-200 rounded-lg overflow-hidden">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          if (isExpanded) {
+                            setExpandedCriterioIds(expandedCriterioIds.filter(id => id !== criterioId));
+                          } else {
+                            setExpandedCriterioIds([...expandedCriterioIds, criterioId]);
+                          }
+                        }}
+                        className="w-full text-left px-3 py-2 bg-white hover:bg-gray-50 transition-colors"
+                      >
+                        <div className="flex items-center justify-between">
+                          <div className="flex-1">
+                            <p className="font-semibold text-gray-900 text-sm">{criterio.codigo}</p>
+                            <p className="text-xs text-gray-600 mt-0.5">{criterio.nombre}</p>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <span className="text-xs text-gray-500">
+                              {evidenciasDelCriterio.length} evidencia{evidenciasDelCriterio.length !== 1 ? 's' : ''}
+                            </span>
+                            <svg
+                              className={`w-4 h-4 text-gray-400 transition-transform ${isExpanded ? 'rotate-180' : ''}`}
+                              fill="none"
+                              stroke="currentColor"
+                              viewBox="0 0 24 24"
+                            >
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                            </svg>
+                          </div>
+                        </div>
+                      </button>
+                      {isExpanded && (
+                        <div className="bg-gray-50 px-4 py-3 border-t border-gray-200">
+                          <p className="text-xs font-medium text-gray-600 mb-2">Evidencias seleccionadas:</p>
+                          <div className="space-y-2">
+                            {evidenciasDelCriterio.map((evidencia) => (
+                              <div key={evidencia.evidencia_id} className="bg-white p-2 rounded border border-gray-200">
+                                <p className="text-xs font-semibold text-gray-900">{evidencia.codigo}</p>
+                                <p className="text-xs text-gray-600 mt-0.5">{evidencia.nombre}</p>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  );
+                });
+              })()}
+            </div>
+          )}
         </div>
       )}
 
@@ -130,10 +310,12 @@ export const ReviewStep: React.FC<ReviewStepProps> = ({
           </svg>
           Descripción del Compromiso
         </h4>
-        <p className="text-sm text-gray-700 whitespace-pre-wrap">{descripcion}</p>
-        <p className="text-xs text-gray-500 mt-2">
-          {descripcion.length} / 100 caracteres
-        </p>
+        <p className="text-sm text-gray-700 whitespace-pre-wrap">{descripcion || 'Sin descripción'}</p>
+        {descripcion && (
+          <p className="text-xs text-gray-500 mt-2">
+            {descripcion.length} / 250 caracteres
+          </p>
+        )}
       </div>
 
       {/* Fechas */}
@@ -196,43 +378,7 @@ export const ReviewStep: React.FC<ReviewStepProps> = ({
         </div>
       )}
 
-      {/* Estado */}
-      <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
-        <div className="flex gap-3">
-          <div className="flex-shrink-0">
-            <svg className="w-5 h-5 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-            </svg>
-          </div>
-          <div>
-            <h4 className="text-sm font-semibold text-yellow-900 mb-1">
-              Estado Inicial: Pendiente
-            </h4>
-            <p className="text-sm text-yellow-800">
-              El compromiso se creará con estado "Pendiente". Podrá actualizar el estado a "En Progreso" o "Completado" posteriormente.
-            </p>
-          </div>
-        </div>
-      </div>
 
-      {/* Confirmación */}
-      <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-        <div className="flex gap-3">
-          <div className="flex-shrink-0">
-            <svg className="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-            </svg>
-          </div>
-          <div>
-            <h4 className="text-sm font-semibold text-blue-900 mb-1">
-              ¿Todo listo?
-            </h4>
-            <p className="text-sm text-blue-800">
-              Al hacer clic en "Crear Compromiso", se guardará esta información y se registrará en la bitácora del sistema.
-            </p>
-          </div>
-        </div>
-      </div>
     </div>
   );
 };

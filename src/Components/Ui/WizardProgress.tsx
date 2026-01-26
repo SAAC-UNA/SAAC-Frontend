@@ -54,7 +54,7 @@ export const WizardProgress: React.FC<WizardProgressProps> = ({
                 onClick={() => handleStepClick(step.id)}
                 disabled={!isClickable}
                 className={cn(
-                  'w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm transition-all duration-200',
+                  'w-6 h-6 rounded-full flex items-center justify-center font-semibold text-xs transition-all duration-200',
                   isCompleted && 'bg-green-600 text-white hover:bg-green-700',
                   isActive && !isCompleted && 'bg-rojo-una-2 text-white',
                   !isActive && !isCompleted && 'bg-gris-una/20 text-gris-una',
@@ -63,7 +63,7 @@ export const WizardProgress: React.FC<WizardProgressProps> = ({
                 )}
               >
                 {isCompleted ? (
-                  <SystemIcons.interface.checkCircle size="sm" />
+                  <SystemIcons.interface.checkCircle size="xs" className="w-3 h-3" />
                 ) : (
                   step.id
                 )}
@@ -72,7 +72,7 @@ export const WizardProgress: React.FC<WizardProgressProps> = ({
               {/* Connector Line - Compact */}
               {index < steps.length - 1 && (
                 <div 
-                  className="h-0.5 w-10 mx-3 rounded-full transition-all duration-200 bg-gris-una/20"
+                  className="h-0.5 w-6 mx-1.5 rounded-full transition-all duration-200 bg-gris-una/20"
                 />
               )}
             </React.Fragment>
