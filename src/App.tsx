@@ -23,6 +23,7 @@ const EvidenceAssignment = lazy(() => import('./Pages/EvidenceAssignment').then(
 const AuditLogPage = lazy(() => import('@/Pages/AuditLog/AuditLogPage'));
 const CompromisosList = lazy(() => import('./Pages/CompromisosMejora/CompromisosList').then(m => ({ default: m.CompromisosList })));
 const CrearCompromiso = lazy(() => import('./Pages/CompromisosMejora/CrearCompromiso'));
+const AprobacionBloques = lazy(() => import('./Pages/AprobacionBloques/AprobacionBloquesSimple'));
 
 // Componente de loading para Suspense
 const PageLoader = () => (
@@ -174,6 +175,16 @@ function App() {
                           element={
                             <ProtectedRoute>
                               <CrearCompromiso />
+                            </ProtectedRoute>
+                          }
+                        />
+
+                        {/* Aprobación de Bloques - Todos los autenticados */}
+                        <Route
+                          path="/aprobacion-bloques"
+                          element={
+                            <ProtectedRoute>
+                              <AprobacionBloques />
                             </ProtectedRoute>
                           }
                         />

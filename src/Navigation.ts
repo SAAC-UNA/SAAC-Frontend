@@ -8,6 +8,7 @@ const processIcon = 'system-icon:box-archive';
 const evidenceIcon = 'system-icon:shield';
 const auditLogIcon = 'system-icon:clipboard-list';
 const commitmentIcon = 'system-icon:clipboard-check';
+const approvalIcon = 'system-icon:check-circle';
 
 /**
  * Obtener items de navegación filtrados por rol
@@ -89,6 +90,15 @@ export const getNavigationItems = (userRole?: string): NavItem[] => {
     label: 'Compromisos de Mejora',
     icon: commitmentIcon,
     href: '/compromisos/listar',
+    isActive: false
+  });
+
+  // Aprobación de Bloques - Todos los autenticados
+  items.push({
+    id: 'aprobacion-bloques',
+    label: 'Aprobación de Bloques',
+    icon: approvalIcon,
+    href: '/aprobacion-bloques',
     isActive: false
   });
 
