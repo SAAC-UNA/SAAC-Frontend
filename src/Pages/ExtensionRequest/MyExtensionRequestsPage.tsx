@@ -8,6 +8,7 @@ import { ScreenContainer } from '@/Components/Ui/ScreenContainer';
 import { SearchInput } from '@/Components/Ui/SearchInput';
 import { FilterButton, type FilterOption } from '@/Components/Ui/FilterButton';
 import { extensionRequestService } from '@/Services/ExtensionRequestService';
+import { useToast } from '@/Context/ToastContext';
 import { getContextualInfo } from '@/Constants/ModuleInfo';
 import { ExtensionRequestsTable } from './Components/ExtensionRequestsTable';
 import { ExtensionRequestDetailsModal } from './Components/ExtensionRequestDetailsModal';
@@ -17,6 +18,7 @@ import type {
 } from '@/Types/ExtensionRequestTypes';
 
 export const MyExtensionRequestsPage: React.FC = () => {
+  const { showToast } = useToast();
   
   // Obtener información del módulo desde ModuleInfo
   const moduleInfo = getContextualInfo('extension_requests', 'my');
@@ -56,7 +58,13 @@ export const MyExtensionRequestsPage: React.FC = () => {
       const response = await extensionRequestService.getMyRequests(filters);
       setSolicitudes(response.data);
     } catch (error: any) {
-      setError(error.message || 'No se pudieron cargar las solicitudes');
+      const errorMessage = error.message || 'No se pudieron cargar las solicitudes';
+      setError(errorMessage);
+      showToast({
+        type: 'error',
+        title: 'Error al Cargar',
+        message: errorMessage
+      });
     } finally {
       setLoading(false);
     }

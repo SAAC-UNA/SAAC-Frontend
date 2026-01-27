@@ -7,15 +7,20 @@ const userIcon = 'system-icon:user';
 const processIcon = 'system-icon:box-archive';
 const evidenceIcon = 'system-icon:assignEvidence';
 const myEvidencesIcon = 'system-icon:myEvidences';
+const searchEvidenceIcon = 'system-icon:search';
 const auditLogIcon = 'system-icon:auditLog';
 const extensionRequestIcon = 'system-icon:clock';
 
 /**
  * Obtener items de navegación filtrados por rol
- * @param userRole - Rol del usuario autenticado ('Superusuario' o 'Administrador')
+ * @param userRoles - Array de roles del usuario autenticado o un solo rol como string
  */
-export const getNavigationItems = (userRole?: string): NavItem[] => {
-  const isSuperUser = userRole === 'SuperUsuario';
+export const getNavigationItems = (userRoles?: string | string[]): NavItem[] => {
+  // Normalizar a array
+  const roles = Array.isArray(userRoles) ? userRoles : userRoles ? [userRoles] : [];
+  
+  const isSuperUser = roles.includes('SuperUsuario');
+  const isEncargado = roles.includes('Encargado de Acreditación');
   
   const items: NavItem[] = [
     {
@@ -72,6 +77,13 @@ export const getNavigationItems = (userRole?: string): NavItem[] => {
     label: 'Mis Evidencias',
     icon: myEvidencesIcon,
     href: '/mis-evidencias-asignadas',
+    isActive: false,
+  },
+  {
+    id: 'busquedaEvidencias',
+    label: 'Búsqueda de Evidencias',
+    icon: searchEvidenceIcon,
+    href: '/evidencias/busqueda-avanzada',
     isActive: false,
   },
   {

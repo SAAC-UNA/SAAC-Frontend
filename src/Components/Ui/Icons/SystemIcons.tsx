@@ -382,6 +382,40 @@ export const SystemIcons = {
       </svg>
     ),
 
+    /** Chevron left - Para navegación hacia atrás y paginación */
+    chevronLeft: ({ className, size, color }: IconProps) => (
+      <svg
+        className={`${getSizeClasses(size)} ${className || ''}`}
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke={color || "currentColor"}
+      >
+        <path
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          strokeWidth={2}
+          d="M15 19l-7-7 7-7"
+        />
+      </svg>
+    ),
+
+    /** Chevron right - Para navegación hacia adelante y paginación */
+    chevronRight: ({ className, size, color }: IconProps) => (
+      <svg
+        className={`${getSizeClasses(size)} ${className || ''}`}
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke={color || "currentColor"}
+      >
+        <path
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          strokeWidth={2}
+          d="M9 5l7 7-7 7"
+        />
+      </svg>
+    ),
+
     /** Filter - Para filtros y opciones de filtrado */
     filter: ({ className, size, color }: IconProps) => (
       <svg
@@ -799,6 +833,7 @@ export const getIconByName = (iconName: string, size: IconProps['size'] = 'md'):
     'upload-arrow': () => SystemIcons.interface.uploadArrow({ size }),
     'clock': () => SystemIcons.interface.clock({ size }),
     'hourglass': () => SystemIcons.interface.hourglass({ size }),
+    'search': () => SystemIcons.interface.search({ size }),
 
     // Modal icons
     'exclamation-triangle': () => SystemIcons.interface.alert({ size }),

@@ -21,6 +21,7 @@ const StructureEditList = lazy(() => import('./Pages/Structure/StructureEditList
 const AccreditationProgress = lazy(() => import('@/Pages/Accreditation/AccreditationProgress'));
 const EvidenceAssignment = lazy(() => import('./Pages/EvidenceAssignment').then(m => ({ default: m.EvidenceAssignment })));
 const EvidenceUploadPage = lazy(() => import('./Pages/Evidence').then(m => ({ default: m.EvidenceUploadPage })));
+const EvidenceSearchPage = lazy(() => import('./Pages/Evidence').then(m => ({ default: m.EvidenceSearchPage })));
 const MyEvidenceAssignmentsPage = lazy(() => import('./Pages/EvidenceAssignment/MyEvidenceAssignmentsPage'));
 const AuditLogPage = lazy(() => import('@/Pages/AuditLog/AuditLogPage'));
 
@@ -166,6 +167,14 @@ function App() {
                           element={
                             <ProtectedRoute>
                               <EvidenceUploadPage />
+                            </ProtectedRoute>
+                          }
+                        />
+                        <Route
+                          path="/evidencias/busqueda-avanzada"
+                          element={
+                            <ProtectedRoute>
+                              <EvidenceSearchPage />
                             </ProtectedRoute>
                           }
                         />

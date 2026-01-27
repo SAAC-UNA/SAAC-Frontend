@@ -30,8 +30,8 @@ export const NavigationProvider: React.FC<NavigationProviderProps> = ({ children
   const location = useLocation();
   const { user } = useAuth();
   
-  // Obtener items filtrados por rol
-  const navigationItems = getNavigationItems(user?.roles?.[0]?.name);
+  // Obtener items filtrados por rol (pasar todos los roles)
+  const navigationItems = getNavigationItems(user?.roles?.map(r => r.name));
 
   // Función para encontrar el item activo basado en la ruta actual
   const findActiveItemByPath = (path: string) => {
