@@ -24,6 +24,9 @@ const EvidenceUploadPage = lazy(() => import('./Pages/Evidence').then(m => ({ de
 const EvidenceSearchPage = lazy(() => import('./Pages/Evidence').then(m => ({ default: m.EvidenceSearchPage })));
 const MyEvidenceAssignmentsPage = lazy(() => import('./Pages/EvidenceAssignment/MyEvidenceAssignmentsPage'));
 const AuditLogPage = lazy(() => import('@/Pages/AuditLog/AuditLogPage'));
+const CompromisosList = lazy(() => import('./Pages/CompromisosMejora/CompromisosList').then(m => ({ default: m.CompromisosList })));
+const CrearCompromiso = lazy(() => import('./Pages/CompromisosMejora/CrearCompromiso'));
+const AprobacionBloques = lazy(() => import('./Pages/AprobacionBloques/AprobacionBloquesSimple'));
 
 // HU-016: Páginas de solicitudes de ampliación
 const ManageExtensionRequestsPage = lazy(() => import('./Pages/ExtensionRequest').then(m => ({ default: m.ManageExtensionRequestsPage })));
@@ -203,6 +206,34 @@ function App() {
                           element={
                             <ProtectedRoute>
                               <AccreditationProgress />
+                            </ProtectedRoute>
+                          }
+                        />
+
+                        {/* Compromisos de Mejora - Todos los autenticados */}
+                        <Route
+                          path="/compromisos/listar"
+                          element={
+                            <ProtectedRoute>
+                              <CompromisosList />
+                            </ProtectedRoute>
+                          }
+                        />
+                        <Route
+                          path="/compromisos/crear"
+                          element={
+                            <ProtectedRoute>
+                              <CrearCompromiso />
+                            </ProtectedRoute>
+                          }
+                        />
+
+                        {/* Aprobación de Bloques - Todos los autenticados */}
+                        <Route
+                          path="/aprobacion-bloques"
+                          element={
+                            <ProtectedRoute>
+                              <AprobacionBloques />
                             </ProtectedRoute>
                           }
                         />

@@ -6,6 +6,8 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/Context/AuthContext';
+import { SystemIcons } from '@/Components/Ui/Icons/SystemIcons';
+import { useToast } from '@/Hooks/useToast';
 import styles from './Login.module.css';
 
 export const Login = () => {
@@ -17,6 +19,7 @@ export const Login = () => {
   
   const { login } = useAuth();
   const navigate = useNavigate();
+  const toast = useToast();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -27,7 +30,9 @@ export const Login = () => {
       await login({ cedula, password });
       navigate('/');
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Error al iniciar sesión');
+      const errorMessage = err instanceof Error ? err.message : 'Error al iniciar sesión';
+      setError(errorMessage);
+      toast.error(errorMessage);
     } finally {
       setLoading(false);
     }
@@ -55,60 +60,88 @@ export const Login = () => {
 
   return (
     <div className={styles['login-page']}>
-      <div className={styles['login-container']}>
-        <div className={styles['login-heading']}>SAAC-UNA</div>
-        <p style={{ color: '#718096', fontSize: '14px', marginBottom: '20px', marginTop: '-10px' }}>
-          Sistema de Acreditación y Autoevaluación de las Carreras
-        </p>
+      {/* Left Section - Branding Text */}
+      <div className={styles['login-branding-section']}>
+        <div className={styles['login-branding']}>
+          <div className={styles['login-logo']}>SAAC</div>
+          <h2 className={styles['login-title']}>Sistema de Acreditación y Autoevaluación de las Carreras</h2>
+          <p className={styles['login-subtitle']}>UNA - Universidad Nacional de Costa Rica</p>
+        </div>
+      </div>
 
-        <form onSubmit={handleSubmit} className={styles['login-form']}>
-          {error && (
-            <div style={{
-              padding: '12px 16px',
-              borderRadius: '8px',
-              backgroundColor: '#fed7d7',
-              color: '#c53030',
-              border: '1px solid #fc8181',
-              fontSize: '14px'
-            }}>
-              {error}
+      {/* Right Section - Form Container */}
+      <div className={styles['login-form-section']}>
+        <div className={styles['login-form-wrapper']}>
+          <img 
+            src="/Images/Logo-SAAC.png" 
+            alt="SAAC Logo" 
+            className={styles['login-logo-image']}
+          />
+          <h1 className={styles['login-form-title']}>Bienvenido a SAAC</h1>
+          <p className={styles['login-form-subtitle']}>Ingrese con sus credenciales institucionales</p>
+          
+          <form onSubmit={handleSubmit} className={styles['login-form']}>
+            <div className={`${styles['login-input-field']} ${error ? styles['error'] : ''}`}>
+              <div className={styles['login-input-icon']}>
+                {SystemIcons.interface.user({ size: 'sm', color: '#a0aec0' })}
+              </div>
+              <input
+                type="text"
+                value={cedula}
+                onChange={(e) => setCedula(e.target.value)}
+                required
+                disabled={loading}
+                placeholder=""
+              />
+              <label>Identificación</label>
             </div>
-          )}
 
-          <div className={styles['login-input-field']}>
-            <input
-              type="text"
-              value={cedula}
-              onChange={(e) => setCedula(e.target.value)}
-              required
-              disabled={loading}
-            />
-            <label>Cédula</label>
-          </div>
+            <div className={`${styles['login-input-field-password']} ${error ? styles['error'] : ''}`}>
+              <div className={styles['login-input-icon']}>
+                {SystemIcons.interface.lock({ size: 'sm', color: '#a0aec0' })}
+              </div>
+              <input
+                type={showPassword ? 'text' : 'password'}
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+                disabled={loading}
+                placeholder=""
+              />
+              <label>Contraseña</label>
+              <button
+                type="button"
+                className={styles['login-toggle-password']}
+                onClick={() => setShowPassword(!showPassword)}
+                disabled={loading}
+              >
+                {showPassword ? 'Ocultar' : 'Mostrar'}
+              </button>
+              <div className={styles['login-info-tooltip']}>
+                {SystemIcons.interface.infoCircle({ size: 'sm', color: '#a0aec0' })}
+                <span className={styles['login-tooltip-text']}>
+                  Ingrese la contraseña que emplea en los demás sistemas de la universidad
+                </span>
+              </div>
+            </div>
 
-          <div className={styles['login-input-field']}>
-            <input
-              type={showPassword ? 'text' : 'password'}
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-              disabled={loading}
-            />
-            <label>Contraseña</label>
-            <span 
-              className={styles['login-passicon']}
-              onClick={() => setShowPassword(!showPassword)}
-            >
-              {showPassword ? '👁️' : '👁️‍🗨️'}
-            </span>
-          </div>
+            <div style={{ textAlign: 'center' }}>
+              <a href="https://recuperacion.una.ac.cr/" target="_blank" rel="noopener noreferrer" className={styles['login-forgot-password']}>
+                ¿Olvidó su contraseña?
+              </a>
+            </div>
 
-          <div className={styles['login-btn-container']}>
-            <button type="submit" className={styles['login-btn']} disabled={loading}>
-              {loading ? 'Cargando...' : 'Ingresar'}
-            </button>
-          </div>
-        </form>
+            <div className={styles['login-btn-container']}>
+              <button type="submit" className={styles['login-btn']} disabled={loading}>
+                {loading ? 'Cargando...' : 'Ingresar'}
+              </button>
+            </div>
+          </form>
+        </div>
+        
+        <footer className={styles['login-footer']}>
+          © {new Date().getFullYear()} — SAAC · Universidad Nacional de Costa Rica
+        </footer>
       </div>
     </div>
   );

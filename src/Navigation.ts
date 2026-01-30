@@ -5,11 +5,10 @@ const rolesIcon = 'system-icon:shield';
 const nutIcon = 'system-icon:nut';
 const userIcon = 'system-icon:user';
 const processIcon = 'system-icon:box-archive';
-const evidenceIcon = 'system-icon:assignEvidence';
-const myEvidencesIcon = 'system-icon:myEvidences';
-const searchEvidenceIcon = 'system-icon:search';
-const auditLogIcon = 'system-icon:auditLog';
-const extensionRequestIcon = 'system-icon:clock';
+const evidenceIcon = 'system-icon:shield';
+const auditLogIcon = 'system-icon:clipboard-list';
+const commitmentIcon = 'system-icon:clipboard-check';
+const approvalIcon = 'system-icon:check-circle';
 
 /**
  * Obtener items de navegación filtrados por rol
@@ -121,6 +120,24 @@ export const getNavigationItems = (userRoles?: string | string[]): NavItem[] => 
     label: 'Avance de Acreditación',
     icon: processIcon,
     href: '/acreditacion/avance',
+    isActive: false
+  });
+
+  // Compromisos de Mejora - Todos los autenticados
+  items.push({
+    id: 'compromisos-mejora',
+    label: 'Compromisos de Mejora',
+    icon: commitmentIcon,
+    href: '/compromisos/listar',
+    isActive: false
+  });
+
+  // Aprobación de Bloques - Todos los autenticados
+  items.push({
+    id: 'aprobacion-bloques',
+    label: 'Aprobación de Bloques',
+    icon: approvalIcon,
+    href: '/aprobacion-bloques',
     isActive: false
   });
 

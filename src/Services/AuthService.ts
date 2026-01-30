@@ -5,52 +5,98 @@
 
 import { axiosInstance } from '@/Config/axios';
 import type { MockUser } from '@/Mocks/Users';
+ * Conecta con el backend (LDAP) para autenticar usuarios
+ */
 
-export type { MockUser as User };
+import { config } from '@/Config/app.config';
+
+export interface Role {
+  id: number;
+  name: string;
+}
+
+export interface Career {
+  carrera_id: number;
+  carrera_sede_id: number;
+  nombre: string;
+  facultad_id: number;
+}
+
+export interface User {
+  id: number;
+  cedula: string;
+  name: string;
+  email: string;
+  roles: Role[];
+  careers: Career[];
+  status: string;
+  created_at: string;
+  updated_at: string;
+  all_permissions: any[];
+  direct_permissions: any[];
+}
 
 const AUTH_TOKEN_KEY = 'auth_token';
 const USER_DATA_KEY = 'auth_user';
 
 export const authService = {
-  loginWithCedula: async (cedula: string, password: string): Promise<{ user: MockUser; token: string }> => {
-    // Validar formato de cédula (9 dígitos como en el backend)
-    if (!/^\d{9}$/.test(cedula)) {
-      throw new Error('La cédula debe tener 9 dígitos');
-    }
-
+  loginWithCedula: async (cedula: string, password: string): Promise<{ user: User; token: string }> => {
     try {
-      // Login real contra el backend usando autenticación LDAP
-      console.log('Enviando request a /auth/login con:', { cedula, password: '***' });
-      const response = await axiosInstance.post('/auth/login', {
-        cedula,
-        password
+      // Validar que los campos no estén vacíos
+      if (!cedula.trim() || !password.trim()) {
+        throw new Error('La cédula y contraseña son obligatorias');
+      }
+
+      // Realizar solicitud POST al backend
+      const response = await fetch(`${config.API_BASE_URL}/auth/login`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+        },
+        body: JSON.stringify({
+          cedula: cedula.trim(),
+          password: password.trim(),
+        }),
       });
 
-      console.log('Respuesta del backend:', response.data);
-      const { token, user: backendUser } = response.data;
+      // Manejar errores HTTP
+      if (!response.ok) {
+        let errorMessage = 'Credenciales incorrectas. Intente de nuevo o contacte al administrador.';
+        
+        try {
+          const errorData = await response.json();
+          if (errorData.message) {
+            // Mostrar mensaje específico del backend si existe
+            errorMessage = errorData.message;
+          }
+        } catch {
+          // Si no se puede parsear el JSON, usar mensaje genérico
+        }
+        
+        throw new Error(errorMessage);
+      }
 
-      // Mapear la respuesta del backend al formato del frontend
-      const user: MockUser = {
-        usuario_id: backendUser.id,
-        cedula: backendUser.cedula,
-        nombre: backendUser.name,
-        email: backendUser.email,
-        roles: backendUser.roles.map((role: any) => ({ 
-          id: role.id, 
-          name: role.name 
-        })),
-        careers: backendUser.careers || [],
-        permissions: backendUser.permissions || []
+      // Parsear respuesta exitosa
+      const data = await response.json();
+
+      if (!data.user || !data.token) {
+        throw new Error('Respuesta inválida del servidor');
+      }
+
+      // Guardar token y usuario en localStorage
+      localStorage.setItem(AUTH_TOKEN_KEY, data.token);
+      localStorage.setItem(USER_DATA_KEY, JSON.stringify(data.user));
+
+      return {
+        user: data.user,
+        token: data.token,
       };
-
-      localStorage.setItem(AUTH_TOKEN_KEY, token);
-      localStorage.setItem(USER_DATA_KEY, JSON.stringify(user));
-
-      return { user, token };
-    } catch (error: any) {
-      console.error('Error en login LDAP:', error);
-      console.error('Detalles del error:', error.response?.data);
-      throw new Error(error.response?.data?.message || 'Error al iniciar sesión');
+    } catch (error) {
+      // Re-lanzar el error para que el componente lo maneje
+      throw error instanceof Error 
+        ? error 
+        : new Error('Error desconocido al iniciar sesión');
     }
   },
 
@@ -59,7 +105,7 @@ export const authService = {
     localStorage.removeItem(USER_DATA_KEY);
   },
 
-  getCurrentUser: (): MockUser | null => {
+  getCurrentUser: (): User | null => {
     const userData = localStorage.getItem(USER_DATA_KEY);
     return userData ? JSON.parse(userData) : null;
   },
@@ -69,5 +115,11 @@ export const authService = {
     const user = localStorage.getItem(USER_DATA_KEY);
     // Los tokens de Laravel Sanctum son strings simples, no JWTs
     return !!(token && user);
+  getAuthToken: (): string | null => {
+    return localStorage.getItem(AUTH_TOKEN_KEY);
+  },
+
+  isAuthenticated: (): boolean => {
+    return !!localStorage.getItem(AUTH_TOKEN_KEY);
   }
 };

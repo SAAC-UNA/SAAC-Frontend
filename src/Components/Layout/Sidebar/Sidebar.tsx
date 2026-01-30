@@ -31,14 +31,6 @@ export const ModernSidebar: React.FC<SidebarProps> = ({
     navigate('/login');
   };
 
-  const logoutItem = {
-    id: 'logout',
-    label: 'Salir',
-    icon: 'system-icon:logout',
-    href: '#',
-    onClick: handleLogout
-  };
-
   const sidebarContent = (
     <div className="flex flex-col h-full">
       {/* Logo Section */}
@@ -62,23 +54,6 @@ export const ModernSidebar: React.FC<SidebarProps> = ({
             />
           </a>
         </div>
-        
-        {/* User Info - Solo visible cuando no está colapsado */}
-        {!(state === 'collapsed' && !isMobile) && user && (
-          <div className="px-6 py-4 border-t border-blanco-una/20">
-            <p className="text-sm font-semibold text-blanco-una truncate">
-              {user.nombre}
-            </p>
-            <p className="text-xs text-blanco-una/70 truncate">
-              {user.roles[0]?.name}
-            </p>
-            {user.careers && user.careers.length > 0 && (
-              <p className="text-xs text-blanco-una/60 truncate mt-1">
-                {user.careers[0].nombre}
-              </p>
-            )}
-          </div>
-        )}
       </div>
 
       {/* Navigation Menu */}
@@ -93,17 +68,6 @@ export const ModernSidebar: React.FC<SidebarProps> = ({
           ))}
         </div>
       </nav>
-
-      {/* Logout Section */}
-      <div className="flex-shrink-0 p-4">
-        <div className="flex justify-center">
-          <ModernSidebarItem 
-            item={logoutItem} 
-            centered 
-            isCollapsed={state === 'collapsed' && !isMobile}
-          />
-        </div>
-      </div>
     </div>
   );
 

@@ -61,6 +61,18 @@ export const NavigationProvider: React.FC<NavigationProviderProps> = ({ children
     if (path.startsWith('/usuarios')) {
       return 'usuarios';
     }
+    if (path.startsWith('/compromisos')) {
+      return 'compromisos-mejora';
+    }
+    if (path.startsWith('/evidencias')) {
+      return 'evidenciasAsignar';
+    }
+    if (path.startsWith('/acreditacion')) {
+      return 'avance-acreditacion';
+    }
+    if (path.startsWith('/bitacora')) {
+      return 'bitacora';
+    }
 
     return 'inicio'; // Default
   };
