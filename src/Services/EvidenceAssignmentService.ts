@@ -20,73 +20,20 @@ class EvidenceAssignmentService {
    * Crear nuevas asignaciones de evidencias
    */
   async createAssignment(data: EvidenceAssignmentRequest): Promise<EvidenceAssignmentApiResponse> {
-    const isDevelopment = import.meta.env.DEV;
-    
-    try {
-      const response = await fetch(`${API_BASE_URL}/evidencias-asignaciones`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(data),
-      });
+    const response = await fetch(`${API_BASE_URL}/evidencias-asignaciones`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(data),
+    });
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        
-        // Si estamos en desarrollo y es un error de entidades no encontradas, usar mock silenciosamente
-        if (isDevelopment && response.status === 422) {
-          const errors = errorData.errors || {};
-          const hasEntityNotFoundErrors = 
-            (errors.proceso_id && errors.proceso_id.some((msg: string) => msg.includes('no existe'))) ||
-            (errors.evidencia_id && errors.evidencia_id.some((msg: string) => msg.includes('no existe')));
-          
-          if (hasEntityNotFoundErrors) {
-            devLog.info('Using mock response - backend entities not ready', { once: true });
-            return this.createMockAssignmentResponse(data);
-          }
-        }
-        
-        throw new Error(errorData.message || 'Error de validación.');
-      }
-
-      return response.json();
-    } catch (networkError) {
-      // Si hay error de red y estamos en desarrollo, usar mock silenciosamente
-      if (isDevelopment) {
-        devLog.info('Using mock response - network unavailable', { once: true });
-        return this.createMockAssignmentResponse(data);
-      }
-      throw networkError;
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.message || 'Error de validación.');
     }
-  }
 
-  /**
-   * Crear respuesta mock para desarrollo
-   */
-  private createMockAssignmentResponse(data: EvidenceAssignmentRequest): EvidenceAssignmentApiResponse {
-    const mockId = Math.floor(Math.random() * 1000) + 100;
-    const now = new Date().toISOString();
-    
-    return {
-      message: 'Asignación creada exitosamente (modo desarrollo)',
-      data: {
-        total_asignaciones: 1,
-        total_errores: 0,
-        asignaciones: [{
-          evidencia_asignacion_id: mockId,
-          proceso_id: data.proceso_id,
-          evidencia_id: data.evidencia_id,
-          usuario_id: data.usuarios?.[0] || 0,
-          estado: 'pendiente' as const,
-          fecha_asignacion: now,
-          fecha_limite: data.fecha_limite,
-          created_at: now,
-          updated_at: now
-        }],
-        errores: []
-      }
-    };
+    return response.json();
   }
 
   /**

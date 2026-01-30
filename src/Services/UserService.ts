@@ -72,13 +72,25 @@ class UserService {
   private baseURL = 'http://127.0.0.1:8000/api/admin/users';
 
   /**
+   * Obtener headers con autenticación
+   */
+  private getAuthHeaders(): HeadersInit {
+    const token = localStorage.getItem('auth_token');
+    return {
+      'Accept': 'application/json',
+      'Content-Type': 'application/json',
+      ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
+    };
+  }
+
+  /**
    * Listar todos los usuarios
    */
   async listUsers(): Promise<BackendUser[]> {
     try {
       const response = await fetch(this.baseURL, {
         method: 'GET',
-        headers: { 'Accept': 'application/json' },
+        headers: this.getAuthHeaders(),
       });
 
       if (!response.ok) {
@@ -101,7 +113,7 @@ class UserService {
     try {
       const response = await fetch(`${this.baseURL}/${userId}/activate`, {
         method: 'PATCH',
-        headers: { 'Accept': 'application/json' },
+        headers: this.getAuthHeaders(),
       });
 
       if (!response.ok) {
@@ -122,7 +134,7 @@ class UserService {
     try {
       const response = await fetch(`${this.baseURL}/${userId}/deactivate`, {
         method: 'PATCH',
-        headers: { 'Accept': 'application/json' },
+        headers: this.getAuthHeaders(),
       });
 
       if (!response.ok) {
@@ -143,10 +155,7 @@ class UserService {
     try {
       const response = await fetch(`${this.baseURL}/${userId}/role`, {
         method: 'PUT',
-        headers: { 
-          'Content-Type': 'application/json',
-          'Accept': 'application/json' 
-        },
+        headers: this.getAuthHeaders(),
         body: JSON.stringify({ role: roleName }),
       });
 

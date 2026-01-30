@@ -6,6 +6,9 @@ const nutIcon = 'system-icon:nut';
 const userIcon = 'system-icon:user';
 const processIcon = 'system-icon:box-archive';
 const evidenceIcon = 'system-icon:shield';
+const auditLogIcon = 'system-icon:clipboard-list';
+const commitmentIcon = 'system-icon:clipboard-check';
+const approvalIcon = 'system-icon:check-circle';
 
 /**
  * Obtener items de navegación filtrados por rol
@@ -31,6 +34,17 @@ export const getNavigationItems = (userRole?: string): NavItem[] => {
       label: 'Roles',
       icon: rolesIcon,
       href: '/roles/listar',
+      isActive: false
+    });
+  }
+
+  // Bitácora del Sistema - Solo SuperUsuario
+  if (isSuperUser) {
+    items.push({
+      id: 'bitacora',
+      label: 'Bitácora del Sistema',
+      icon: auditLogIcon,
+      href: '/bitacora',
       isActive: false
     });
   }
@@ -67,6 +81,24 @@ export const getNavigationItems = (userRole?: string): NavItem[] => {
     label: 'Avance de Acreditación',
     icon: processIcon,
     href: '/acreditacion/avance',
+    isActive: false
+  });
+
+  // Compromisos de Mejora - Todos los autenticados
+  items.push({
+    id: 'compromisos-mejora',
+    label: 'Compromisos de Mejora',
+    icon: commitmentIcon,
+    href: '/compromisos/listar',
+    isActive: false
+  });
+
+  // Aprobación de Bloques - Todos los autenticados
+  items.push({
+    id: 'aprobacion-bloques',
+    label: 'Aprobación de Bloques',
+    icon: approvalIcon,
+    href: '/aprobacion-bloques',
     isActive: false
   });
 

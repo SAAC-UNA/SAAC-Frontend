@@ -1,6 +1,6 @@
 import React from 'react';
 import { SidebarProvider } from '@/Context/SidebarContext';
-import { ModernSidebar, MainContent, AppHeader } from './Sidebar/Index';
+import { ModernSidebar, MainContent, AppHeader, UserProfileHeader } from './Sidebar/Index';
 import { ToastContainer } from '@/Components/Ui/Toast';
 
 /**
@@ -43,7 +43,7 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
       >
         <ModernSidebar />
         <MainContent>
-          <AppHeader />
+          <AppHeader rightContent={<UserProfileHeader />} />
           <div className="flex-1">
             <div className="px-4 pt-4 pb-8"
               style={{ ['--app-header-height' as any]: '64px' }}

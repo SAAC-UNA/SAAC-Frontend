@@ -12,23 +12,24 @@
  * - Estados responsive
  */
 
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import { cn } from '@/Utils/ClassNames';
 import { Button } from './Button';
 import { SearchInput } from './SearchInput';
 import { LoadingSpinner } from './Loading';
 import { SystemIcons } from './Icons/SystemIcons';
+import { Pagination } from './Pagination';
 
-export interface DataTableColumn<T = any> {
+export interface DataTableColumn<T = unknown> {
   key: string;
   header: string;
   accessor?: keyof T | ((item: T) => React.ReactNode);
-  render?: (value: any, item: T, index: number) => React.ReactNode;
+  render?: (value: unknown, item: T, index: number) => React.ReactNode;
   width?: string;
   align?: 'left' | 'center' | 'right';
 }
 
-export interface DataTableAction<T = any> {
+export interface DataTableAction<T = unknown> {
   icon: React.ReactNode;
   label: string;
   onClick: (item: T) => void;
@@ -36,7 +37,7 @@ export interface DataTableAction<T = any> {
   disabled?: (item: T) => boolean;
 }
 
-export interface DataTableProps<T = any> {
+export interface DataTableProps<T = unknown> {
   // Datos y estructura
   data: T[];
   columns: DataTableColumn<T>[];
@@ -76,7 +77,7 @@ export interface DataTableProps<T = any> {
   unstyled?: boolean; // Para usar sin contenedor cuando está dentro de otro contenedor
 }
 
-export const DataTable = <T extends Record<string, any>>({
+export const DataTable = React.memo(<T extends Record<string, unknown>>({
   data,
   columns,
   actions,
@@ -95,12 +96,12 @@ export const DataTable = <T extends Record<string, any>>({
 }: DataTableProps<T>) => {
   const [searchQuery, setSearchQuery] = useState('');
 
-  const handleSearch = (value: string) => {
+  const handleSearch = useCallback((value: string) => {
     setSearchQuery(value);
     onSearch?.(value);
-  };
+  }, [onSearch]);
 
-  const getCellValue = (item: T, column: DataTableColumn<T>) => {
+  const getCellValue = useCallback((item: T, column: DataTableColumn<T>) => {
     if (column.render) {
       const accessor = column.accessor;
       const value = typeof accessor === 'function' 
@@ -118,95 +119,7 @@ export const DataTable = <T extends Record<string, any>>({
     }
     
     return item[column.key];
-  };
-
-  const renderPaginationButtons = () => {
-    if (!pagination || pagination.totalPages <= 1) return null;
-
-    const { currentPage, totalPages, onPageChange } = pagination;
-    const buttons = [];
-
-    // Lógica para mostrar botones de páginas
-    if (totalPages <= 7) {
-      // Mostrar todas las páginas si son pocas
-      for (let i = 1; i <= totalPages; i++) {
-        buttons.push(
-          <Button
-            key={i}
-            variant="ghost"
-            size="sm"
-            onClick={() => onPageChange(i)}
-            className={`h-8 w-8 p-0 min-w-0 text-xs !border-0 ${currentPage === i ? 'bg-azul-una/10 text-azul-una font-bold' : ''}`}
-          >
-            {i}
-          </Button>
-        );
-      }
-    } else {
-      // Lógica más compleja para muchas páginas
-      buttons.push(
-        <Button
-          key={1}
-          variant="ghost"
-          size="sm"
-          onClick={() => onPageChange(1)}
-          className={`h-8 w-8 p-0 min-w-0 text-xs !border-0 ${currentPage === 1 ? 'bg-azul-una/10 text-azul-una font-bold' : ''}`}
-        >
-          1
-        </Button>
-      );
-      
-      if (currentPage > 3) {
-        buttons.push(
-          <span key="dots1" className="flex items-center justify-center h-8 w-8 text-gris-una">
-            ...
-          </span>
-        );
-      }
-      
-      // Agregar páginas cercanas a la actual
-      const start = Math.max(2, currentPage - 1);
-      const end = Math.min(totalPages - 1, currentPage + 1);
-      
-      for (let i = start; i <= end; i++) {
-        buttons.push(
-          <Button
-            key={i}
-            variant="ghost"
-            size="sm"
-            onClick={() => onPageChange(i)}
-            className={`h-8 w-8 p-0 min-w-0 text-xs !border-0 ${currentPage === i ? 'bg-azul-una/10 text-azul-una font-bold' : ''}`}
-          >
-            {i}
-          </Button>
-        );
-      }
-      
-      if (currentPage < totalPages - 2) {
-        buttons.push(
-          <span key="dots2" className="flex items-center justify-center h-8 w-8 text-gris-una">
-            ...
-          </span>
-        );
-      }
-      
-      if (totalPages > 1) {
-        buttons.push(
-          <Button
-            key={totalPages}
-            variant="ghost"
-            size="sm"
-            onClick={() => onPageChange(totalPages)}
-            className={`h-8 w-8 p-0 min-w-0 text-xs !border-0 ${currentPage === totalPages ? 'bg-azul-una/10 text-azul-una font-bold' : ''}`}
-          >
-            {totalPages}
-          </Button>
-        );
-      }
-    }
-
-    return buttons;
-  };
+  }, []);
 
   return (
     <div className={cn(
@@ -325,7 +238,7 @@ export const DataTable = <T extends Record<string, any>>({
                         column.align === 'center' && "text-center",
                         column.align === 'right' && "text-right"
                       )}>
-                        {getCellValue(item, column)}
+                        {getCellValue(item, column) as React.ReactNode}
                       </div>
                     </td>
                   ))}
@@ -364,28 +277,14 @@ export const DataTable = <T extends Record<string, any>>({
 
       {/* Paginación */}
       {pagination && pagination.totalPages > 1 && (
-        <div className="flex items-center justify-between p-4 border-t border-blue-gray-50">
-          <Button
-            variant="outline"
-            size="sm"
-            disabled={pagination.currentPage === 1}
-            onClick={() => pagination.onPageChange(pagination.currentPage - 1)}
-          >
-            Anterior
-          </Button>
-          <div className="flex items-center gap-2">
-            {renderPaginationButtons()}
-          </div>
-          <Button
-            variant="outline"
-            size="sm"
-            disabled={pagination.currentPage === pagination.totalPages}
-            onClick={() => pagination.onPageChange(pagination.currentPage + 1)}
-          >
-            Siguiente
-          </Button>
+        <div className="flex items-center justify-center p-4 border-t border-blue-gray-50">
+          <Pagination
+            currentPage={pagination.currentPage}
+            totalPages={pagination.totalPages}
+            onPageChange={pagination.onPageChange}
+          />
         </div>
       )}
     </div>
   );
-};
+}) as <T extends Record<string, unknown>>(props: DataTableProps<T>) => React.ReactElement;

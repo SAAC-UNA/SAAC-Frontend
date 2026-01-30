@@ -63,7 +63,7 @@ interface UnifiedModalProps {
   cancelLabel?: string;
 }
 
-export const Modal: React.FC<UnifiedModalProps> = ({
+export const Modal: React.FC<UnifiedModalProps> = React.memo(({
   isOpen,
   onClose,
   title,
@@ -319,7 +319,7 @@ export const Modal: React.FC<UnifiedModalProps> = ({
       </div>
     </Dialog>
   );
-};
+});
 
 /**
  * Hook para manejar estado de modales

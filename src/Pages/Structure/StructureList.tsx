@@ -13,7 +13,10 @@ import { MODULE_INFO } from '@/Constants/ModuleInfo';
 import type { StructureElement } from '@/Types/StructureTypes';
 import { useStructure } from '@/Hooks/UseStructure';
 import { DeleteConfirmationModal } from '@/Components/Ui/DeleteConfirmationModal';
-import { SuccessModal } from '@/Components/Ui/SuccessModal';  
+import { SuccessModal } from '@/Components/Ui/SuccessModal';
+import { SearchInput } from '@/Components/Ui/SearchInput';
+import { Button } from '@/Components/Ui/Button';
+import { SystemIcons } from '@/Components/Ui/Icons/SystemIcons';
 
 /**
  * Función auxiliar para truncar texto largo
@@ -69,6 +72,9 @@ const StructureList: React.FC = () => {
     elementName: '',
     action: 'activate'
   });
+
+  // Estado para búsqueda
+  const [searchQuery, setSearchQuery] = useState('');
 
   const handleEditElement = (element: StructureElement) => {
     // Navegar directamente a la página de edición con el ID del elemento
@@ -226,13 +232,31 @@ const StructureList: React.FC = () => {
       <ScreenContainer
         title={moduleInfo.title}
         description={moduleInfo.description}
+        headerExtra={
+          <div className="flex flex-col sm:flex-row w-full gap-2 shrink-0 lg:w-auto">
+            <SearchInput
+              placeholder="Buscar elementos..."
+              value={searchQuery}
+              onChange={setSearchQuery}
+              className="w-full sm:w-72"
+            />
+            <Button
+              onClick={handleCreateElement}
+              variant="secondary"
+              className="gap-2"
+            >
+              <SystemIcons.actions.add className="w-4 h-4" size="sm" />
+              Crear
+            </Button>
+          </div>
+        }
       >
         <StructureTable
           key={refreshKey}
           onEdit={handleEditElement}
           onDelete={handleDeleteElement}
           onToggleActive={handleToggleActive}
-          onCreate={handleCreateElement}
+          searchQuery={searchQuery}
         />
       </ScreenContainer>
 

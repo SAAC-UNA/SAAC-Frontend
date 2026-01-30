@@ -10,23 +10,23 @@
  * - Búsqueda
  */
 
-import React from 'react';
+import React, { useCallback } from 'react';
 import { cn } from '@/Utils/ClassNames';
 import { Button } from './Button';
 import { Input } from './Input';
 import { LoadingSpinner } from './Loading';
 
-export interface TableColumn<T = any> {
+export interface TableColumn<T = unknown> {
   key: string;
   header: string;
   accessor?: keyof T | ((item: T) => React.ReactNode);
   sortable?: boolean;
   width?: string;
   align?: 'left' | 'center' | 'right';
-  render?: (value: any, item: T, index: number) => React.ReactNode;
+  render?: (value: unknown, item: T, index: number) => React.ReactNode;
 }
 
-export interface TableAction<T = any> {
+export interface TableAction<T = unknown> {
   label: string;
   icon?: React.ReactNode;
   onClick: (item: T) => void;
@@ -34,7 +34,7 @@ export interface TableAction<T = any> {
   disabled?: (item: T) => boolean;
 }
 
-export interface TableProps<T = any> {
+export interface TableProps<T = unknown> {
   data: T[];
   columns: TableColumn<T>[];
   actions?: TableAction<T>[];
@@ -62,7 +62,7 @@ export interface TableProps<T = any> {
   onSort?: (key: string) => void;
 }
 
-export const Table = <T extends Record<string, any>>({
+export const Table = React.memo(<T extends Record<string, unknown>>({
   data,
   columns,
   actions,
@@ -78,12 +78,12 @@ export const Table = <T extends Record<string, any>>({
 }: TableProps<T>) => {
   const [searchQuery, setSearchQuery] = React.useState('');
 
-  const handleSearch = (value: string) => {
+  const handleSearch = useCallback((value: string) => {
     setSearchQuery(value);
     onSearch?.(value);
-  };
+  }, [onSearch]);
 
-  const getCellValue = (item: T, column: TableColumn<T>) => {
+  const getCellValue = useCallback((item: T, column: TableColumn<T>) => {
     if (column.render) {
       const accessor = column.accessor;
       const value = typeof accessor === 'function' 
@@ -101,9 +101,9 @@ export const Table = <T extends Record<string, any>>({
     }
     
     return item[column.key];
-  };
+  }, []);
 
-  const renderSortIcon = (columnKey: string) => {
+  const renderSortIcon = useCallback((columnKey: string) => {
     if (!onSort || !sortConfig) return null;
     
     const isActive = sortConfig.key === columnKey;
@@ -136,7 +136,7 @@ export const Table = <T extends Record<string, any>>({
         </svg>
       </span>
     );
-  };
+  }, [sortConfig, onSort]);
 
   if (loading) {
     return (
@@ -226,7 +226,7 @@ export const Table = <T extends Record<string, any>>({
                         column.align === 'right' && "text-right"
                       )}
                     >
-                      {getCellValue(item, column)}
+                      {getCellValue(item, column) as React.ReactNode}
                     </td>
                   ))}
                   {actions && actions.length > 0 && (
@@ -282,4 +282,4 @@ export const Table = <T extends Record<string, any>>({
       )}
     </div>
   );
-};
+}) as <T extends Record<string, unknown>>(props: TableProps<T>) => React.ReactElement;

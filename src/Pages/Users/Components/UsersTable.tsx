@@ -1,7 +1,8 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useMemo, useCallback } from 'react';
 import { DataTable, TableActionButton } from '@/components/index';
 import { BackendErrorAlert } from '@/Components/Ui/BackendErrorAlert';
 import { useUsers } from '@/Hooks/UseUsers';
+import { useDebounce } from '@/Hooks/UseDebounce';
 import type { DataTableColumn } from '@/components/Ui/DataTable';
 import type { User } from '@/Services/UserService';
 
@@ -15,6 +16,7 @@ interface UsersTableProps {
     users?: User[];
     isLoading?: boolean;
     error?: string | null;
+    searchQuery?: string; // Búsqueda controlada externamente
 }
 
 export const UsersTable: React.FC<UsersTableProps> = ({
@@ -25,7 +27,8 @@ export const UsersTable: React.FC<UsersTableProps> = ({
     unstyled = false,
     users: externalUsers,
     isLoading: externalIsLoading,
-    error: externalError
+    error: externalError,
+    searchQuery: externalSearchQuery = ''
 }) => {
     // Usar datos externos si están disponibles, sino usar hook interno
     const internalHook = useUsers();
@@ -37,15 +40,16 @@ export const UsersTable: React.FC<UsersTableProps> = ({
     const error = shouldUseExternal ? (externalError ?? null) : internalHook.error;
     const { loadUsers } = internalHook;
 
-    const [searchQuery, setSearchQuery] = useState('');
-    const [filteredUsers, setFilteredUsers] = useState<User[]>([]);
     const [currentPage, setCurrentPage] = useState(1);
 
-    // Función para truncar texto
-    const truncateText = (text: string, maxLength: number = 20): string => {
+    // Debounce de búsqueda para evitar filtrados innecesarios mientras se escribe
+    const debouncedSearchQuery = useDebounce(externalSearchQuery, 300);
+
+    // Función para truncar texto - memoizada
+    const truncateText = useCallback((text: string, maxLength: number = 20): string => {
         if (text.length <= maxLength) return text;
         return text.substring(0, maxLength) + '...';
-    };
+    }, []);
 
     // Cargar usuarios al montar el componente solo si no se pasan como props
     useEffect(() => {
@@ -54,38 +58,45 @@ export const UsersTable: React.FC<UsersTableProps> = ({
         }
     }, [shouldUseExternal, loadUsers]);
 
-    // Filtrar usuarios basado en la búsqueda
-    useEffect(() => {
-        if (!searchQuery.trim()) {
-            setFilteredUsers(users);
-        } else {
-            const filtered = users.filter(user =>
-                user.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                user.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                (user.role && user.role.toLowerCase().includes(searchQuery.toLowerCase()))
-            );
-            setFilteredUsers(filtered);
+    // Filtrar usuarios basado en la búsqueda debounced - memoizado
+    const filteredUsers = useMemo(() => {
+        if (!debouncedSearchQuery.trim()) {
+            return users;
         }
+        
+        const query = debouncedSearchQuery.toLowerCase();
+        return users.filter(user =>
+            user.name.toLowerCase().includes(query) ||
+            user.email.toLowerCase().includes(query) ||
+            (user.role && user.role.toLowerCase().includes(query))
+        );
+    }, [users, debouncedSearchQuery]);
+
+    // Reset página cuando cambian los filtros (usar debounced para evitar resets innecesarios)
+    useEffect(() => {
         setCurrentPage(1);
-    }, [users, searchQuery]);
+    }, [debouncedSearchQuery]);
 
-    // Calcular datos paginados
-    const totalPages = Math.ceil(filteredUsers.length / itemsPerPage);
-    const paginatedData = filteredUsers.slice(
-        (currentPage - 1) * itemsPerPage,
-        currentPage * itemsPerPage
-    );
+    // Calcular datos paginados - memoizado
+    const { totalPages, paginatedData } = useMemo(() => {
+        const total = Math.ceil(filteredUsers.length / itemsPerPage);
+        const paginated = filteredUsers.slice(
+            (currentPage - 1) * itemsPerPage,
+            currentPage * itemsPerPage
+        );
+        return { totalPages: total, paginatedData: paginated };
+    }, [filteredUsers, currentPage, itemsPerPage]);
 
-    // Configuración de columnas de la tabla
-    const columns: DataTableColumn<User>[] = [
+    // Configuración de columnas de la tabla - memoizada para evitar recreación
+    const columns: DataTableColumn<User>[] = useMemo(() => [
         {
             key: 'name',
             header: 'Nombre',
             accessor: 'name',
             render: (value, user) => (
                 <div className="flex flex-col pl-2">
-                    <p className="block font-sans text-sm antialiased font-bold leading-normal text-negro-una" title={value}>
-                        {truncateText(value, 20)}
+                    <p className="block font-sans text-sm antialiased font-bold leading-normal text-negro-una" title={String(value)}>
+                        {truncateText(String(value), 20)}
                     </p>
                     <p className="block font-sans text-sm antialiased font-normal leading-normal text-gris-una opacity-70" title={user.email}>
                         {truncateText(user.email, 25)}
@@ -100,8 +111,8 @@ export const UsersTable: React.FC<UsersTableProps> = ({
             align: 'center',
             render: (role) => (
                 <div className="w-max mx-auto">
-                    <div className="relative grid items-center px-2 py-1 font-sans text-xs font-semibold text-gray-900 uppercase rounded-md select-none whitespace-nowrap" title={role || 'Sin rol'}>
-                        <span>{truncateText(role || 'Sin rol', 20)}</span>
+                    <div className="relative grid items-center px-2 py-1 font-sans text-xs font-semibold text-gray-900 uppercase rounded-md select-none whitespace-nowrap" title={String(role || 'Sin rol')}>
+                        <span>{truncateText(String(role || 'Sin rol'), 20)}</span>
                     </div>
                 </div>
             )
@@ -149,15 +160,11 @@ export const UsersTable: React.FC<UsersTableProps> = ({
                 </div>
             )
         }
-    ];
+    ], [truncateText, onViewUser, onEdit, onState]);
 
-    const handleSearch = (query: string) => {
-        setSearchQuery(query);
-    };
-
-    const handlePageChange = (page: number) => {
+    const handlePageChange = useCallback((page: number) => {
         setCurrentPage(page);
-    };
+    }, []);
 
     if (error) {
         return (
@@ -173,12 +180,10 @@ export const UsersTable: React.FC<UsersTableProps> = ({
     return (
         <div className="w-full">
             <DataTable
-                data={paginatedData}
-                columns={columns}
+                data={paginatedData as any}
+                columns={columns as any}
                 title=""
-                searchable={true}
-                searchPlaceholder="Buscar usuarios..."
-                onSearch={handleSearch}
+                searchable={false}
                 pagination={totalPages > 1 ? {
                     currentPage,
                     totalPages,
@@ -186,8 +191,8 @@ export const UsersTable: React.FC<UsersTableProps> = ({
                 } : undefined}
                 loading={isLoading}
                 emptyMessage={
-                    searchQuery
-                        ? `No se encontraron usuarios que coincidan con "${searchQuery}"`
+                    debouncedSearchQuery
+                        ? `No se encontraron usuarios que coincidan con "${debouncedSearchQuery}"`
                         : "No hay usuarios registrados aún."
                 }
                 unstyled={unstyled}

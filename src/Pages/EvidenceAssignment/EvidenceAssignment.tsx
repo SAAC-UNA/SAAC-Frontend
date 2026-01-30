@@ -20,8 +20,7 @@ import type {
 import evidenceAssignmentService from '@/Services/EvidenceAssignmentService';
 
 // Importar los componentes de cada paso
-import { CriterionEvidenceStep } from './Components/CriterionEvidenceStep.tsx';
-import { AddresseeStep } from './Components/AddresseeStep.tsx';
+import { SelectionStep } from './Components/SelectionStep.tsx';
 import { ConfigurationStep } from './Components/ConfigurationStep.tsx';
 import { ReviewStep } from './Components/ReviewStep.tsx';
 
@@ -50,19 +49,15 @@ const EvidenceAssignment: React.FC = () => {
   const steps: WizardStep[] = [
     {
       id: 1,
-      title: 'Seleccionar Criterio y Evidencias',
+      title: 'Selección',
     },
     {
       id: 2,
-      title: 'Seleccionar Destinatarios',
+      title: 'Configuración',
     },
     {
       id: 3,
-      title: 'Configuración Adicional',
-    },
-    {
-      id: 4,
-      title: 'Revisión y Confirmación',
+      title: 'Revisión',
     }
   ];
 
@@ -74,21 +69,19 @@ const EvidenceAssignment: React.FC = () => {
     
     switch (step) {
       case 1:
+        // Validar proceso, evidencias y destinatarios (ahora todo en paso 1)
         if (!formData.proceso_id) {
           newErrors.proceso = 'Debe seleccionar un proceso';
         }
         if (formData.selectedEvidences.length === 0) {
           newErrors.evidences = 'Debe seleccionar al menos una evidencia';
         }
-        break;
-        
-      case 2:
         if (formData.selectedUsers.length === 0 && formData.selectedRoles.length === 0) {
           newErrors.destinatarios = 'Debe seleccionar al menos un usuario o rol';
         }
         break;
         
-      case 3:
+      case 2:
         // Validaciones opcionales para configuración
         if (formData.fecha_limite) {
           const selectedDate = new Date(formData.fecha_limite);
@@ -99,13 +92,12 @@ const EvidenceAssignment: React.FC = () => {
         }
         break;
         
-      case 4:
+      case 3:
         // Validación final - revalidar todos los pasos
         const step1Valid = validateStep(1);
         const step2Valid = validateStep(2);
-        const step3Valid = validateStep(3);
         
-        return step1Valid && step2Valid && step3Valid;
+        return step1Valid && step2Valid;
     }
     
     setErrors(newErrors);
@@ -227,12 +219,10 @@ const EvidenceAssignment: React.FC = () => {
 
     switch (currentStep) {
       case 1:
-        return <CriterionEvidenceStep {...commonProps} />;
+        return <SelectionStep {...commonProps} />;
       case 2:
-        return <AddresseeStep {...commonProps} />;
-      case 3:
         return <ConfigurationStep {...commonProps} />;
-      case 4:
+      case 3:
         return <ReviewStep {...commonProps} />;
       default:
         return null;
@@ -286,7 +276,7 @@ const EvidenceAssignment: React.FC = () => {
                 Anterior
               </Button>
 
-              {currentStep < 4 ? (
+              {currentStep < 3 ? (
                 <Button
                   variant="primary"
                   onClick={handleNextStep}

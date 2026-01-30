@@ -357,9 +357,8 @@ const validateForm = (): boolean => {
   // Volver al listado
   const goBack = () => {
   if (hasChanges) {
-    if (confirm('Tiene cambios sin guardar. ¿Desea salir sin guardar?')) {
-      navigate('/estructura/listar');
-    }
+    setPendingAction('discard');
+    confirmModal.openModal();
   } else {
     navigate('/estructura/listar');
   }
@@ -464,27 +463,17 @@ const validateForm = (): boolean => {
               )}
               </div>
             {/* Botones de acción */}
-              <div className="flex justify-between items-center mt-8 pt-6 border-t border-gray-200">
-                {/* Botón izquierdo */}
-                <Button
-                  onClick={goBack}
-                  variant="secondary"
-                  standardWidth={true}
-                  size="sm"
-                >
-                  Volver
-                </Button>
-                
+              <div className="flex justify-end items-center mt-8 pt-6 border-t border-gray-200">
                 {/* Botones derechos */}
                 <div className="flex space-x-3">
                   <Button
-                    onClick={() => handleAction('discard')}
+                    onClick={goBack}
                     variant="secondary"
-                    disabled={!hasChanges || isLoading}
+                    disabled={isLoading}
                     standardWidth={true}
                     size="sm"
                   >
-                    Deshacer
+                    Cancelar
                   </Button>
                   <Button
                     onClick={() => handleAction('save')}

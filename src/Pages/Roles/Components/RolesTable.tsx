@@ -15,18 +15,15 @@
  * @param showHeader - Mostrar/ocultar el header
  */
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useMemo, useCallback } from 'react';
 import { DataTable, TableActionButton } from '@/components/index';
-import { SystemIcons } from '@/components/Ui/Icons/SystemIcons';
 import { BackendErrorAlert } from '@/Components/Ui/BackendErrorAlert';
 import { useRoles } from '@/hooks/UseRoles';
-import type { DataTableColumn } from '@/components/Ui/DataTable';
 import type { Role } from '@/Services/RoleService';
 
 interface RolesTableProps {
     onEdit?: (role: Role) => void;
     onDelete?: (role: Role) => void;
-    onCreate?: () => void;
     onViewPermissions?: (role: Role) => void;
     itemsPerPage?: number;
     unstyled?: boolean; // Para usar sin contenedor
@@ -34,18 +31,19 @@ interface RolesTableProps {
     roles?: Role[];
     isLoading?: boolean;
     error?: string | null;
+    searchQuery?: string; // Búsqueda controlada externamente
 }
 
 export const RolesTable: React.FC<RolesTableProps> = ({
     onEdit,
     onDelete,
-    onCreate,
     onViewPermissions,
     itemsPerPage = 4,
     unstyled = false,
     roles: externalRoles,
     isLoading: externalIsLoading,
-    error: externalError
+    error: externalError,
+    searchQuery: externalSearchQuery = ''
 }) => {
     // Usar datos externos si están disponibles, sino usar hook interno
     const internalHook = useRoles();
@@ -54,15 +52,14 @@ export const RolesTable: React.FC<RolesTableProps> = ({
     const error = externalError ?? internalHook.error;
     const { loadRoles, clearError } = internalHook;
 
-    const [searchQuery, setSearchQuery] = useState('');
-    const [filteredRoles, setFilteredRoles] = useState<Role[]>([]);
+    const searchQuery = externalSearchQuery;
     const [currentPage, setCurrentPage] = useState(1);
 
-    // Función para truncar texto
-    const truncateText = (text: string, maxLength: number = 20): string => {
+    // Función para truncar texto - memoizada
+    const truncateText = useCallback((text: string, maxLength: number = 20): string => {
         if (text.length <= maxLength) return text;
         return text.substring(0, maxLength) + '...';
-    };
+    }, []);
 
     // Cargar roles al montar el componente solo si no se pasan como props
     useEffect(() => {
@@ -71,38 +68,51 @@ export const RolesTable: React.FC<RolesTableProps> = ({
         }
     }, [externalRoles]);
 
-    // Filtrar roles basado en la búsqueda
-    useEffect(() => {
+    // Filtrar roles basado en la búsqueda - memoizado para mejor rendimiento
+    const filteredRolesData = useMemo(() => {
         if (!searchQuery.trim()) {
-            setFilteredRoles(roles);
-        } else {
-            const filtered = roles.filter(role =>
-                role.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                (role.description && role.description.toLowerCase().includes(searchQuery.toLowerCase()))
-            );
-            setFilteredRoles(filtered);
+            return roles;
         }
-        setCurrentPage(1);
+        return roles.filter(role =>
+            role.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+            (role.description && role.description.toLowerCase().includes(searchQuery.toLowerCase()))
+        );
     }, [roles, searchQuery]);
 
-    // Calcular datos paginados
-    const totalPages = Math.ceil(filteredRoles.length / itemsPerPage);
-    const paginatedData = filteredRoles.slice(
-        (currentPage - 1) * itemsPerPage,
-        currentPage * itemsPerPage
-    );
+    // Reset página cuando cambian los filtros
+    useEffect(() => {
+        setCurrentPage(1);
+    }, [searchQuery]);
 
-    // Configuración de columnas de la tabla
-    const columns: DataTableColumn<Role>[] = [
-        
+    // Calcular datos paginados - memoizado
+    const { totalPages, paginatedData } = useMemo(() => {
+        const total = Math.ceil(filteredRolesData.length / itemsPerPage);
+        const paginated = filteredRolesData.slice(
+            (currentPage - 1) * itemsPerPage,
+            currentPage * itemsPerPage
+        );
+        return { totalPages: total, paginatedData: paginated };
+    }, [filteredRolesData, currentPage, itemsPerPage]);
+
+    // Handlers memoizados
+    const handleEdit = useCallback((role: Role) => {
+        onEdit?.(role);
+    }, [onEdit]);
+
+    const handlePageChange = useCallback((page: number) => {
+        setCurrentPage(page);
+    }, []);
+
+    // Configuración de columnas de la tabla - memoizada
+    const columns = useMemo(() => [
         {
             key: 'name',
             header: 'Nombre',
             accessor: 'name',
-            render: (value, item) => (
+            render: (value: unknown, item: Role) => (
                 <div className="flex flex-col pl-2">
-                    <p className="block font-sans text-sm antialiased font-bold leading-normal text-negro-una" title={value}>
-                        {truncateText(value, 20)}
+                    <p className="block font-sans text-sm antialiased font-bold leading-normal text-negro-una" title={String(value)}>
+                        {truncateText(String(value), 20)}
                     </p>
                     <p className="block font-sans text-sm antialiased font-normal leading-normal text-gris-una opacity-70" title={item.description || 'Sin descripción'}>
                         {truncateText(item.description || 'Sin descripción', 20)}
@@ -115,10 +125,10 @@ export const RolesTable: React.FC<RolesTableProps> = ({
             header: 'Permisos',
             accessor: 'permissions',
             align: 'center',
-            render: (permissions: any[]) => (
+            render: (_: unknown, role: Role) => (
                 <div className="w-max mx-auto">
                     <div className="relative grid items-center px-2 py-1 font-sans text-xs font-bold text-gray-900 uppercase rounded-md select-none whitespace-nowrap bg-gray-500/20">
-                        <span>{Array.isArray(permissions) ? permissions.length : 0} permisos</span>
+                        <span>{Array.isArray(role.permissions) ? role.permissions.length : 0} permisos</span>
                     </div>
                 </div>
             )
@@ -127,7 +137,7 @@ export const RolesTable: React.FC<RolesTableProps> = ({
             key: 'status',
             header: 'Estado',
             align: 'center',
-            render: () => (
+            render: (_: unknown) => (
                 <div className="w-max mx-auto">
                     <div className="relative grid items-center px-2 py-1 font-sans text-xs font-bold text-green-900 uppercase rounded-md select-none whitespace-nowrap bg-green-500/20">
                         <span>Activo</span>
@@ -139,7 +149,7 @@ export const RolesTable: React.FC<RolesTableProps> = ({
             key: 'actions',
             header: 'Acciones',
             align: 'center',
-            render: (_, role) => (
+            render: (_: unknown, role: Role) => (
                 <div className="flex items-center justify-center gap-2 pr-2">
                     <TableActionButton
                         action="view"
@@ -161,20 +171,7 @@ export const RolesTable: React.FC<RolesTableProps> = ({
                 </div>
             )
         }
-    ];
-
-    // Función para manejar edición
-    const handleEdit = (role: Role) => {
-        onEdit?.(role);
-    };
-
-    const handleSearch = (query: string) => {
-        setSearchQuery(query);
-    };
-
-    const handlePageChange = (page: number) => {
-        setCurrentPage(page);
-    };
+    ], [truncateText, onViewPermissions, onDelete, handleEdit]);
 
     if (error) {
         return (
@@ -192,17 +189,10 @@ export const RolesTable: React.FC<RolesTableProps> = ({
 
         <div className="w-full">
             <DataTable
-                data={paginatedData}
-                columns={columns}
+                data={paginatedData as any}
+                columns={columns as any}
                 title="" // Sin título, ScreenContainer lo maneja
-                searchable={true}
-                searchPlaceholder="Buscar roles..."
-                onSearch={handleSearch}
-                primaryAction={onCreate ? {
-                    label: 'Crear',
-                    icon: <SystemIcons.actions.add className="w-4 h-4" size="sm" />,
-                    onClick: onCreate
-                } : undefined}
+                searchable={false}
                 pagination={totalPages > 1 ? {
                     currentPage,
                     totalPages,

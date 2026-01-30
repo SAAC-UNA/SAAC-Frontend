@@ -15,6 +15,7 @@ export { Table } from './Table';
 export type { TableColumn, TableAction, TableProps } from './Table';
 export { DataTable } from './DataTable';
 export type { DataTableColumn, DataTableAction, DataTableProps } from './DataTable';
+export { Pagination } from './Pagination';
 export { PermissionsModal } from './PermissionsRoleModal';
 export { Modal, useModal } from './Modal';
 export { BackendErrorAlert } from './BackendErrorAlert';

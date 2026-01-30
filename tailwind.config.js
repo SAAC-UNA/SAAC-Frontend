@@ -37,4 +37,4 @@ module.exports = {
     // Para scrollbars personalizadas (útil para el sidebar)
     // require('tailwind-scrollbar'),
   ],
-}
+};

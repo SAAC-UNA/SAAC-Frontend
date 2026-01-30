@@ -5,13 +5,18 @@
  * entre las diferentes acciones (crear, editar, eliminar).
  */
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback, lazy, Suspense } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { UsersTable } from './Components/UsersTable';
-import { UserDetailsModal } from './Components/UserDetailsModal';
-import { DeleteConfirmationModal } from '@/Components/Ui/DeleteConfirmationModal';
-import { SuccessModal } from '@/Components/Ui/SuccessModal';
 import { ScreenContainer } from '@/Components/Ui/ScreenContainer';
+import { SearchInput } from '@/Components/Ui/SearchInput';
+import { Button } from '@/Components/Ui/Button';
+import { SystemIcons } from '@/Components/Ui/Icons/SystemIcons';
+
+// Lazy load de modales para mejor rendimiento
+const UserDetailsModal = lazy(() => import('./Components/UserDetailsModal').then(m => ({ default: m.UserDetailsModal })));
+const DeleteConfirmationModal = lazy(() => import('@/Components/Ui/DeleteConfirmationModal').then(m => ({ default: m.DeleteConfirmationModal })));
+const SuccessModal = lazy(() => import('@/Components/Ui/SuccessModal').then(m => ({ default: m.SuccessModal })));
 import { getContextualInfo } from '@/Constants/ModuleInfo';
 import { useUsers } from '@/Hooks/UseUsers';
 import type { User } from '@/Services/UserService';
@@ -20,6 +25,9 @@ const UsersRepository: React.FC = () => {
   // Obtener información del módulo desde ModuleInfo
   const moduleInfo = getContextualInfo('users', 'list');
   const navigate = useNavigate();
+
+  // Estado para búsqueda
+  const [searchQuery, setSearchQuery] = useState('');
 
   // Usar el hook de usuarios
   const { activarUsuario, desactivarUsuario, isLoading, users, loadUsers, error } = useUsers();
@@ -53,27 +61,27 @@ const UsersRepository: React.FC = () => {
     action: 'activate'
   });
 
-  const handleEditUser = (user: User) => {
+  const handleEditUser = useCallback((user: User) => {
     navigate(`/usuarios/editar/${user.id}`);
-  };
+  }, [navigate]);
 
-  const handleViewUser = (user: User) => {
+  const handleViewUser = useCallback((user: User) => {
     setUserDetailsModalState({
       isOpen: true,
       user
     });
-  };
+  }, []);
 
-  const closeUserDetailsModal = () => {
+  const closeUserDetailsModal = useCallback(() => {
     setUserDetailsModalState({ isOpen: false, user: null });
-  };
+  }, []);
 
-  const handleChangeState = (user: User) => {
+  const handleChangeState = useCallback((user: User) => {
     setStateChangeModalState({
       isOpen: true,
       user
     });
-  };
+  }, []);
 
   const confirmStateChange = async () => {
     if (!stateChangeModalState.user) return;
@@ -104,13 +112,13 @@ const UsersRepository: React.FC = () => {
     }
   };
 
-  const closeStateChangeModal = () => {
+  const closeStateChangeModal = useCallback(() => {
     setStateChangeModalState({ isOpen: false, user: null });
-  };
+  }, []);
 
-  const closeSuccessModal = () => {
+  const closeSuccessModal = useCallback(() => {
     setSuccessModalState({ isOpen: false, userName: '', action: 'activate' });
-  };
+  }, []);
 
   // Cargar usuarios al montar el componente
   useEffect(() => {
@@ -123,6 +131,16 @@ const UsersRepository: React.FC = () => {
         title={moduleInfo.title}
         description={moduleInfo.description}
         variant="full-width"
+        headerExtra={
+          <div className="flex flex-col sm:flex-row w-full gap-2 shrink-0 lg:w-auto">
+            <SearchInput
+              placeholder="Buscar usuarios..."
+              value={searchQuery}
+              onChange={setSearchQuery}
+              className="w-full sm:w-72"
+            />
+          </div>
+        }
       >
           <UsersTable
             onViewUser={handleViewUser}
@@ -131,19 +149,23 @@ const UsersRepository: React.FC = () => {
             users={users}
             isLoading={isLoading}
             error={error}
+            searchQuery={searchQuery}
           />
 
 
         {/* Modal de detalles del usuario */}
-        <UserDetailsModal
-          isOpen={userDetailsModalState.isOpen}
-          onClose={closeUserDetailsModal}
-          user={userDetailsModalState.user}
-        />
+        <Suspense fallback={null}>
+          <UserDetailsModal
+            isOpen={userDetailsModalState.isOpen}
+            onClose={closeUserDetailsModal}
+            user={userDetailsModalState.user}
+          />
+        </Suspense>
 
         {/* Modal de confirmación para activación */}
         {stateChangeModalState.user?.status === 'inactive' && (
-          <DeleteConfirmationModal
+          <Suspense fallback={null}>
+            <DeleteConfirmationModal
             isOpen={stateChangeModalState.isOpen}
             onClose={closeStateChangeModal}
             onConfirm={confirmStateChange}
@@ -159,11 +181,13 @@ const UsersRepository: React.FC = () => {
             isLoading={isLoading}
             description="Al activar este usuario, podrá acceder al sistema con sus credenciales."
           />
+          </Suspense>
         )}
 
         {/* Modal de confirmación para inactivación */}
         {stateChangeModalState.user?.status === 'active' && (
-          <DeleteConfirmationModal
+          <Suspense fallback={null}>
+            <DeleteConfirmationModal
             isOpen={stateChangeModalState.isOpen}
             onClose={closeStateChangeModal}
             onConfirm={confirmStateChange}
@@ -180,19 +204,22 @@ const UsersRepository: React.FC = () => {
             isLoading={isLoading}
             description="Al inactivar este usuario, se revocará su acceso al sistema. Esta acción puede ser revertida en el futuro."
           />
+          </Suspense>
         )}
 
         {/* Modal de éxito */}
-        <SuccessModal
-          isOpen={successModalState.isOpen}
-          onClose={closeSuccessModal}
-          title={successModalState.action === 'activate' ? 'Usuario activado' : 'Usuario inactivado'}
-          message={
-            successModalState.action === 'activate'
-              ? `El usuario "${successModalState.userName}" ha sido activado correctamente.`
-              : `El usuario "${successModalState.userName}" ha sido inactivado correctamente.`
-          }
-        />
+        <Suspense fallback={null}>
+          <SuccessModal
+            isOpen={successModalState.isOpen}
+            onClose={closeSuccessModal}
+            title={successModalState.action === 'activate' ? 'Usuario activado' : 'Usuario inactivado'}
+            message={
+              successModalState.action === 'activate'
+                ? `El usuario "${successModalState.userName}" ha sido activado correctamente.`
+                : `El usuario "${successModalState.userName}" ha sido inactivado correctamente.`
+            }
+          />
+        </Suspense>
         </ScreenContainer>
   );
 };

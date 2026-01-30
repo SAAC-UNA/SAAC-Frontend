@@ -16,18 +16,15 @@
  * @param showHeader - Mostrar/ocultar el header
  */
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useMemo, useCallback } from 'react';
 import { Modal } from '@/Components/Ui/Modal';
 import { DataTable, ButtonWithTooltip } from '@/components/index';
 import { useStructure } from '@/Hooks/UseStructure';
+import { useDebounce } from '@/Hooks/UseDebounce';
 import { ELEMENT_TYPE_LABELS } from '@/Constants/StructureConstants';
 import type { DataTableColumn} from '@/Components/Ui/DataTable';
 import type { StructureElement, ElementType } from '@/Types/StructureTypes';
 import { SystemIcons } from '@/Components/Ui/Icons/SystemIcons';
-import { CustomSelect } from '@/Components/Ui/SingleSelect';
-import { MultiSelect } from '@/Components/Ui/MultiSelect';
-import type { MultiSelectOption } from '@/Components/Ui/MultiSelect';
-import type { SelectOption } from '@/Types/StructureTypes';
 import { TableActionButton } from '@/Components/Ui/TableActionButton';
 
 
@@ -35,7 +32,7 @@ interface StructureTableProps {
     onEdit?: (element: StructureElement) => void;
     onDelete?: (element: StructureElement) => void;
     onToggleActive?: (element: StructureElement) => void;
-    onCreate?: () => void;
+    searchQuery?: string;
     itemsPerPage?: number;
     unstyled?: boolean;
 }
@@ -44,23 +41,23 @@ export const StructureTable: React.FC<StructureTableProps> = ({
     onEdit,
     onDelete,
     onToggleActive,
-    onCreate,
+    searchQuery = '',
     itemsPerPage = 4,
     unstyled = false
 }) => {
     const { treeData, isLoading, loadTree } = useStructure();
 
-    const [searchQuery, setSearchQuery] = useState('');
-    const [typeFilter, setTypeFilter] = useState<ElementType[]>([]);
-    const [filteredElements, setFilteredElements] = useState<StructureElement[]>([]);
     const [currentPage, setCurrentPage] = useState(1);
     const [modalState, setModalState] = useState<{
         isOpen: boolean;
         element: StructureElement | null;
     }>({ isOpen: false, element: null });
 
-    // Aplanar el árbol para obtener todos los elementos como lista
-    const allElements = React.useMemo(() => {
+    // Debounce de búsqueda para evitar filtrados innecesarios mientras se escribe
+    const debouncedSearchQuery = useDebounce(searchQuery, 300);
+
+    // Aplanar el árbol para obtener todos los elementos como lista - MEMOIZADO
+    const allElements = useMemo(() => {
         const flattenTree = (nodes: StructureElement[]): StructureElement[] => {
             return nodes.reduce((acc, node) => {
                 acc.push(node);
@@ -78,14 +75,13 @@ export const StructureTable: React.FC<StructureTableProps> = ({
         loadTree();
     }, [loadTree]);
 
-
-    // Filtrar elementos basado en la búsqueda y tipo
-    useEffect(() => {
+    // Filtrar elementos basado en la búsqueda y tipo - MEMOIZADO con debounced search
+    const filteredElements = useMemo(() => {
         let filtered = allElements;
         
-        // Filtro por búsqueda
-        if (searchQuery.trim()) {
-            const query = searchQuery.toLowerCase();
+        // Filtro por búsqueda (usar debounced query)
+        if (debouncedSearchQuery.trim()) {
+            const query = debouncedSearchQuery.toLowerCase();
             
             // Verificar si está buscando SOLO por estado (palabra exacta)
             const isOnlyActiveSearch = query === 'activo';
@@ -110,36 +106,33 @@ export const StructureTable: React.FC<StructureTableProps> = ({
             });
         }
         
-        // Filtro por tipo (múltiples tipos)
-        if (typeFilter.length > 0) {
-            filtered = filtered.filter(element => typeFilter.includes(element.type));
-        }
-        
-        setFilteredElements(filtered);
-        setCurrentPage(1); // Reset a primera página cuando cambian los filtros
-    }, [searchQuery, typeFilter, allElements]);
+        return filtered;
+    }, [debouncedSearchQuery, allElements]);
 
-    // Resetear página solo cuando cambian los filtros, no cuando cambian los datos
+    // Resetear página cuando cambian los filtros (usar debounced para evitar resets innecesarios)
     useEffect(() => {
         setCurrentPage(1);
-    }, [searchQuery, typeFilter]);
+    }, [debouncedSearchQuery]);
 
-    // Calcular datos paginados
-    const totalPages = Math.ceil(filteredElements.length / itemsPerPage);
-    const paginatedData = filteredElements.slice(
-        (currentPage - 1) * itemsPerPage,
-        currentPage * itemsPerPage
-    );
+    // Calcular datos paginados - MEMOIZADO
+    const { totalPages, paginatedData } = useMemo(() => {
+        const total = Math.ceil(filteredElements.length / itemsPerPage);
+        const paginated = filteredElements.slice(
+            (currentPage - 1) * itemsPerPage,
+            currentPage * itemsPerPage
+        );
+        return { totalPages: total, paginatedData: paginated };
+    }, [filteredElements, currentPage, itemsPerPage]);
 
-    // Función para truncar descripción
-    const truncateDescription = (text: string | undefined, maxLength: number = 20): string => {
+    // Función para truncar descripción - MEMOIZADA
+    const truncateDescription = useCallback((text: string | undefined, maxLength: number = 20): string => {
         if (!text) return '-';
         if (text.length <= maxLength) return text;
         return text.substring(0, maxLength) + '...';
-    };
+    }, []);
 
-    // Obtener el nombre del elemento padre
-    const getParentName = (element: StructureElement): string => {
+    // Obtener el nombre del elemento padre - MEMOIZADA
+    const getParentName = useCallback((element: StructureElement): string => {
         if (!element.parentElementId) return 'Sin elemento padre';
         
         // Determinar qué tipo de padre debería tener este elemento
@@ -153,10 +146,10 @@ export const StructureTable: React.FC<StructureTableProps> = ({
         );
         
         return parent?.name || parent?.nomenclature || parent?.description || 'Elemento padre no encontrado';
-    };
+    }, [allElements]);
 
-    // Helper: Determinar qué tipo de padre debe tener cada elemento
-    const getExpectedParentType = (elementType: ElementType): ElementType | null => {
+    // Helper: Determinar qué tipo de padre debe tener cada elemento - MEMOIZADA
+    const getExpectedParentType = useCallback((elementType: ElementType): ElementType | null => {
         const parentTypeMap: Record<ElementType, ElementType | null> = {
             'university': null,
             'campus': 'university',
@@ -169,7 +162,7 @@ export const StructureTable: React.FC<StructureTableProps> = ({
             'evidence': 'criteria'
         };
         return parentTypeMap[elementType];
-    };
+    }, []);
 
     // Configuración de columnas de la tabla
     const columns: DataTableColumn<StructureElement>[] = [
@@ -199,7 +192,9 @@ export const StructureTable: React.FC<StructureTableProps> = ({
             align: 'left',
             render: (_, element) => (
                 <p 
-                    className="block font-sans text-sm antialiased font-normal leading-normal text-gris-una max-w-xs truncate"
+                    className={`block font-sans text-sm antialiased font-normal leading-normal text-gris-una max-w-xs truncate ${
+                        !element.name ? 'text-center' : 'text-left'
+                    }`}
                     title={element.name || '-'}
                 >
                     {element.name || '-'}
@@ -209,10 +204,13 @@ export const StructureTable: React.FC<StructureTableProps> = ({
         {
             key: 'description',
             header: 'Descripción',
+
             align: 'left',
             render: (_, element) => (
-                <p className="block font-sans text-sm antialiased font-normal leading-normal text-gris-una">
-                    {truncateDescription(element.description)}
+                <p className={`block font-sans text-sm antialiased font-normal leading-normal text-gris-una ${
+                    !element.description ? 'text-center' : 'text-left'
+                }`}>
+                    {truncateDescription(element.description) || '-'}
                 </p>
             )
         },
@@ -301,38 +299,13 @@ export const StructureTable: React.FC<StructureTableProps> = ({
     }
     ];
 
-    // Opciones para el MultiSelect de tipo
-    const typeOptions: MultiSelectOption[] = Object.entries(ELEMENT_TYPE_LABELS).map(([value, label]) => ({
-        value,
-        label
-    }));
-
     return (
         <>
             <DataTable
-                data={paginatedData}
-                columns={columns}
+                data={paginatedData as any}
+                columns={columns as any}
                 title=""
-                customFilters={
-                    <div className="w-72">
-                        <MultiSelect
-                            label="Filtrar por elemento"
-                            options={typeOptions}
-                            value={typeFilter}
-                            onChange={(values) => setTypeFilter(values as ElementType[])}
-                            placeholder="Seleccionar tipos..."
-                            variant="floating"
-                        />
-                    </div>
-                }
-                searchable={true}
-                searchPlaceholder="Buscar elementos..."
-                onSearch={setSearchQuery}
-                primaryAction={onCreate ? {
-                    label: 'Crear',
-                    icon: <SystemIcons.actions.add className="w-4 h-4" />,
-                    onClick: onCreate
-                } : undefined}
+                searchable={false}
                 pagination={totalPages > 1 ? {
                     currentPage,
                     totalPages,
@@ -340,8 +313,8 @@ export const StructureTable: React.FC<StructureTableProps> = ({
                 } : undefined}
                 loading={isLoading}
                 emptyMessage={
-                    searchQuery
-                        ? `No se encontraron elementos que coincidan con "${searchQuery}"`
+                    debouncedSearchQuery
+                        ? `No se encontraron elementos que coincidan con "${debouncedSearchQuery}"`
                         : "No hay elementos creados aún. ¡Crea el primer elemento!"
                 }
                 unstyled={unstyled}

@@ -104,7 +104,7 @@ const actionConfig: Record<TableActionType, {
   }
 };
 
-export const TableActionButton: React.FC<TableActionButtonProps> = ({
+export const TableActionButton = React.memo<TableActionButtonProps>(({
   action,
   tooltip,
   onClick,
@@ -142,4 +142,4 @@ export const TableActionButton: React.FC<TableActionButtonProps> = ({
       {icon}
     </ButtonWithTooltip>
   );
-};
+});

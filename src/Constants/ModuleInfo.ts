@@ -121,6 +121,21 @@ export const MODULE_INFO: Record<string, ModuleInfo> = {
     shortDescription: 'Administrar ciclos académicos'
   },
 
+  // Bitácora del Sistema
+  auditlog: {
+    title: 'Bitácora del Sistema',
+    subtitle: 'Registro de Auditoría',
+    description: 'Consulte todos los registros de acciones realizadas en el sistema para garantizar trazabilidad y seguridad',
+    shortDescription: 'Ver bitácora del sistema'
+  },
+
+  auditlog_list: {
+    title: 'Bitácora del Sistema',
+    subtitle: 'Consulta de Registros',
+    description: 'Visualice y filtre todos los registros de auditoría del sistema',
+    shortDescription: 'Consultar bitácora'
+  },
+
   listRoles: {
     title: 'Lista de Roles',
     subtitle: 'Roles Existentes',

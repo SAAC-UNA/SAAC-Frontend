@@ -2,6 +2,7 @@ import React from 'react';
 import { Button } from '@/Components/Ui/Button';
 import { SystemIcons } from '@/Components/Ui/Icons/SystemIcons';
 import { useSidebar } from '@/Context/SidebarContext';
+import { UserProfileHeader } from './UserProfileHeader';
 import { cn } from '@/Utils/ClassNames';
 
 /**
