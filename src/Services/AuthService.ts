@@ -1,5 +1,10 @@
 /**
  * authService - Servicio de autenticación
+ * Conecta con el backend real de Laravel para obtener tokens Sanctum válidos.
+ */
+
+import { axiosInstance } from '@/Config/axios';
+import type { MockUser } from '@/Mocks/Users';
  * Conecta con el backend (LDAP) para autenticar usuarios
  */
 
@@ -105,6 +110,11 @@ export const authService = {
     return userData ? JSON.parse(userData) : null;
   },
 
+  isAuthenticated: (): boolean => {
+    const token = localStorage.getItem(AUTH_TOKEN_KEY);
+    const user = localStorage.getItem(USER_DATA_KEY);
+    // Los tokens de Laravel Sanctum son strings simples, no JWTs
+    return !!(token && user);
   getAuthToken: (): string | null => {
     return localStorage.getItem(AUTH_TOKEN_KEY);
   },

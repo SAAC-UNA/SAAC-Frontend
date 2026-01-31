@@ -75,7 +75,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
   };
 
   const isSuperUser = (): boolean => {
-    return user?.roles?.some(r => r.name === 'SuperUsuario') || false;
+    return user?.roles?.some(r => r.name === 'Superusuario') || false;
   };
 
   const isAdmin = (): boolean => {

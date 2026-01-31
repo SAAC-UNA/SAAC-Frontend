@@ -20,10 +20,17 @@ const StructureEditForm = lazy(() => import('@/Pages/Structure/StructureEditForm
 const StructureEditList = lazy(() => import('./Pages/Structure/StructureEditList'));
 const AccreditationProgress = lazy(() => import('@/Pages/Accreditation/AccreditationProgress'));
 const EvidenceAssignment = lazy(() => import('./Pages/EvidenceAssignment').then(m => ({ default: m.EvidenceAssignment })));
+const EvidenceUploadPage = lazy(() => import('./Pages/Evidence').then(m => ({ default: m.EvidenceUploadPage })));
+const EvidenceSearchPage = lazy(() => import('./Pages/Evidence').then(m => ({ default: m.EvidenceSearchPage })));
+const MyEvidenceAssignmentsPage = lazy(() => import('./Pages/EvidenceAssignment/MyEvidenceAssignmentsPage'));
 const AuditLogPage = lazy(() => import('@/Pages/AuditLog/AuditLogPage'));
 const CompromisosList = lazy(() => import('./Pages/CompromisosMejora/CompromisosList').then(m => ({ default: m.CompromisosList })));
 const CrearCompromiso = lazy(() => import('./Pages/CompromisosMejora/CrearCompromiso'));
 const AprobacionBloques = lazy(() => import('./Pages/AprobacionBloques/AprobacionBloquesSimple'));
+
+// HU-016: Páginas de solicitudes de ampliación
+const ManageExtensionRequestsPage = lazy(() => import('./Pages/ExtensionRequest').then(m => ({ default: m.ManageExtensionRequestsPage })));
+const MyExtensionRequestsPage = lazy(() => import('./Pages/ExtensionRequest').then(m => ({ default: m.MyExtensionRequestsPage })));
 
 // Componente de loading para Suspense
 const PageLoader = () => (
@@ -53,11 +60,11 @@ function App() {
                         {/* Página de inicio */}
                         <Route path="/" element={<HomePage />} />
  
-                        {/* Roles - Solo SuperUsuario */}
+                        {/* Roles - Solo Superusuario */}
                         <Route
                           path="/roles/listar"
                           element={
-                            <ProtectedRoute requireRole="SuperUsuario">
+                            <ProtectedRoute requireRole="Superusuario">
                               <RolesRepository />
                             </ProtectedRoute>
                           }
@@ -65,7 +72,7 @@ function App() {
                         <Route
                           path="/roles/crear"
                           element={
-                            <ProtectedRoute requireRole="SuperUsuario">
+                            <ProtectedRoute requireRole="Superusuario">
                               <RoleForm />
                             </ProtectedRoute>
                           }
@@ -73,17 +80,17 @@ function App() {
                         <Route
                           path="/roles/editar/:id"
                           element={
-                            <ProtectedRoute requireRole="SuperUsuario">
+                            <ProtectedRoute requireRole="Superusuario">
                               <RoleForm />
                             </ProtectedRoute>
                           }
                         />
 
-                        {/* Bitácora del Sistema - Solo SuperUsuario */}
+                        {/* Bitácora del Sistema - Solo Superusuario */}
                         <Route
                           path="/bitacora"
                           element={
-                            <ProtectedRoute requireRole="SuperUsuario">
+                            <ProtectedRoute requireRole="Superusuario">
                               <AuditLogPage />
                             </ProtectedRoute>
                           }
@@ -147,6 +154,48 @@ function App() {
                           element={
                             <ProtectedRoute>
                               <EvidenceAssignment />
+                            </ProtectedRoute>
+                          }
+                        />
+                        <Route
+                          path="/mis-evidencias-asignadas"
+                          element={
+                            <ProtectedRoute>
+                              <MyEvidenceAssignmentsPage />
+                            </ProtectedRoute>
+                          }
+                        />
+                        <Route
+                          path="/evidencias/subir"
+                          element={
+                            <ProtectedRoute>
+                              <EvidenceUploadPage />
+                            </ProtectedRoute>
+                          }
+                        />
+                        <Route
+                          path="/evidencias/busqueda-avanzada"
+                          element={
+                            <ProtectedRoute>
+                              <EvidenceSearchPage />
+                            </ProtectedRoute>
+                          }
+                        />
+
+                        {/* HU-016: Solicitudes de Ampliación */}
+                        <Route
+                          path="/solicitudes-ampliacion/gestionar"
+                          element={
+                            <ProtectedRoute requireRole="Encargado de Acreditación">
+                              <ManageExtensionRequestsPage />
+                            </ProtectedRoute>
+                          }
+                        />
+                        <Route
+                          path="/solicitudes-ampliacion/mis-solicitudes"
+                          element={
+                            <ProtectedRoute>
+                              <MyExtensionRequestsPage />
                             </ProtectedRoute>
                           }
                         />

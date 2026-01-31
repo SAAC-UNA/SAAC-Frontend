@@ -19,7 +19,6 @@ export { Pagination } from './Pagination';
 export { PermissionsModal } from './PermissionsRoleModal';
 export { Modal, useModal } from './Modal';
 export { BackendErrorAlert } from './BackendErrorAlert';
-export { PageErrorState } from './PageErrorState';
 export { DetailsModal } from './DetailsModal';
 export { CustomSelect } from './SingleSelect';
 export type { SelectOption, CustomSelectProps } from './SingleSelect';
@@ -31,3 +30,7 @@ export { DatePicker } from './Calendar';
 export type { DatePickerProps } from './Calendar';
 export { WizardProgress } from './WizardProgress';
 export type { WizardStep, WizardProgressProps } from './WizardProgress';
+
+// HU-016: Modales de solicitudes de ampliación
+export { CreateExtensionRequestModal } from './CreateExtensionRequestModal';
+export { ReviewExtensionRequestModal } from './ReviewExtensionRequestModal';

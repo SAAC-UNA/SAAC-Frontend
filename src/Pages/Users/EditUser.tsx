@@ -14,7 +14,7 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { EditUserForm } from './Components/EditUserForm';
-import { LoadingSpinner, PageErrorState, ScreenContainer } from '@/components/Ui/Index';
+import { LoadingSpinner, BackendErrorAlert, ScreenContainer } from '@/components/Ui/Index';
 import { EditConfirmationModal } from '@/Components/Ui/EditConfirmationModal';
 import { SuccessModal } from '@/Components/Ui/SuccessModal';
 import { userService } from '@/Services/UserService';
@@ -180,13 +180,9 @@ const EditUserPage: React.FC = () => {
   if (loadError || !user) {
     return (
       <ScreenContainer showHeader={false}>
-        <PageErrorState
-          title="Error al cargar usuario"
-          description={loadError || 'Usuario no encontrado'}
-          primaryActionLabel="Reintentar"
-          onPrimaryAction={handleRetry}
-          secondaryActionLabel="Volver a la lista"
-          onSecondaryAction={handleCancel}
+        <BackendErrorAlert
+          error={loadError || 'Usuario no encontrado'}
+          onRetry={handleRetry}
         />
       </ScreenContainer>
     );

@@ -26,6 +26,7 @@ export interface DatePickerProps {
   minDate?: string;
   maxDate?: string;
   id?: string;
+  placement?: 'top' | 'bottom';
   onChange?: (date: string) => void;
 }
 
@@ -41,6 +42,7 @@ export const DatePicker: React.FC<DatePickerProps> = ({
   minDate,
   maxDate,
   id,
+  placement = 'bottom',
   onChange
 }) => {
   const [currentDate, setCurrentDate] = useState(() => {
@@ -289,17 +291,25 @@ export const DatePicker: React.FC<DatePickerProps> = ({
           <div className="flex items-center gap-1">
             {/* Botón para limpiar la fecha */}
             {selectedDate && !disabled && (
-              <button
-                type="button"
+              <div
+                role="button"
+                tabIndex={0}
                 onClick={(e) => {
                   e.stopPropagation();
                   handleClearDate();
                 }}
-                className="p-0.5 hover:bg-gris-una/20 rounded transition-colors"
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    handleClearDate();
+                  }
+                }}
+                className="p-0.5 hover:bg-gris-una/20 rounded transition-colors cursor-pointer"
                 aria-label="Limpiar fecha"
               >
                 <SystemIcons.actions.cancel size="sm" className="text-gris-una" />
-              </button>
+              </div>
             )}
             
             <SystemIcons.interface.calendar size="sm" className="text-gris-una" />
@@ -308,7 +318,10 @@ export const DatePicker: React.FC<DatePickerProps> = ({
 
         {/* Calendar Dropdown */}
         {showPicker && (
-          <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-gris-una/30 rounded-lg shadow-lg p-3 z-50 max-w-xs">
+          <div className={cn(
+            "absolute left-0 right-0 bg-white border border-gris-una/30 rounded-lg shadow-lg p-3 z-50 max-w-xs",
+            placement === 'top' ? 'bottom-full mb-1' : 'top-full mt-1'
+          )}>
             {/* Header with navigation and selectors */}
             <div className="flex items-center justify-between gap-2 mb-3">
               <button

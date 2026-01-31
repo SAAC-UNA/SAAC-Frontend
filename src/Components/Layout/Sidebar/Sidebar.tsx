@@ -59,7 +59,7 @@ export const ModernSidebar: React.FC<SidebarProps> = ({
       {/* Navigation Menu */}
       <nav className="flex-1 py-6 overflow-hidden">
         <div className="space-y-2 flex flex-col">
-          {getNavigationItems(user?.roles?.[0]?.name || undefined).map((item) => (
+          {getNavigationItems(user?.roles?.map(r => r.name)).map((item) => (
             <ModernSidebarItem 
               key={item.id} 
               item={item}

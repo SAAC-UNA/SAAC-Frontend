@@ -97,6 +97,22 @@ export const MODULE_INFO: Record<string, ModuleInfo> = {
     shortDescription: 'Wizard de asignación de evidencias'
   },
 
+  // Mis Evidencias Asignadas
+  my_evidence_assignments: {
+    title: 'Mis Evidencias Asignadas',
+    subtitle: 'Evidencias Pendientes y Completadas',
+    description: 'Visualice y administre las evidencias que le han sido asignadas',
+    shortDescription: 'Ver evidencias asignadas a mí'
+  },
+
+  // Subida de Evidencias
+  evidence_upload: {
+    title: 'Subir Evidencias',
+    subtitle: 'Carga de Archivos',
+    description: 'Suba archivos digitales como respaldo de las evidencias del proceso de acreditación',
+    shortDescription: 'Subir archivos de evidencias'
+  },
+
   // Gestión de Reportes
   reports: {
     title: 'Gestión de Reportes',
@@ -155,6 +171,21 @@ export const MODULE_INFO: Record<string, ModuleInfo> = {
     subtitle: 'Elementos de la Estructura',
     description: 'Visualiza y administra todos los elementos existentes en la estructura del repositorio',
     shortDescription: 'Ver todos los elementos'
+  },
+
+  // Solicitudes de Ampliación
+  extension_requests_my: {
+    title: 'Mis Solicitudes de Ampliación',
+    subtitle: 'Estado de Mis Solicitudes',
+    description: 'Consulte el estado de sus solicitudes de ampliación de plazo',
+    shortDescription: 'Ver mis solicitudes de ampliación'
+  },
+
+  extension_requests_manage: {
+    title: 'Gestionar Solicitudes de Ampliación',
+    subtitle: 'Revisión de Solicitudes',
+    description: 'Revise, apruebe o rechace las solicitudes de ampliación de plazo',
+    shortDescription: 'Revisar solicitudes de ampliación'
   }
 };
 

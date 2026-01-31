@@ -35,6 +35,7 @@ export const AppHeader: React.FC<AppHeaderProps> = ({
   className,
   title = "SAAC",
   logo = "/Images/SAAC.png",
+  //logo = "/Images/book.svg",
   logoAlt = "SAAC Logo",
   rightContent
 }) => {
@@ -53,6 +54,7 @@ export const AppHeader: React.FC<AppHeaderProps> = ({
         onClick={() => toggleSidebar()}
       >
         <SystemIcons.navigation.menu className="h-5 w-5" size="sm" />
+        {/* Este texto salta cuando el usuario usa un lector de pantalla como NVDA o JAWS */}
         <span className="sr-only">Toggle Sidebar</span>
       </Button>
 

@@ -2,207 +2,231 @@
  * AuditLogFilters - Componente de filtros para la Bitácora del Sistema (HU-005)
  * 
  * Permite filtrar registros por:
- * - Usuario (autocompletado)
- * - Módulo (select de módulos existentes)
- * - Tipo de acción (select de acciones)
- * - Rango de fechas (desde - hasta)
+ * - Módulo del sistema
+ * - Tipo de acción
+ * - Rango de fechas (importantes para exportación)
  */
 
-import React, { useState } from 'react';
-import { Button } from '@/Components/Ui/Button';
-import { Input } from '@/Components/Ui/Input';
-import { SystemIcons } from '@/Components/Ui/Icons/SystemIcons';
-import type { AuditLogFilters as Filters } from '@/Types/AuditLogTypes';
+import React, { useState, useEffect, useMemo } from 'react';
+import { CustomSelect } from '@/Components/Ui/SingleSelect';
+import { DatePicker } from '@/Components/Ui/Calendar/DatePicker';
+import type { SelectOption } from '@/Components/Ui/SingleSelect';
+import type { AuditLogFilters as Filters, ActionType } from '@/Types/AuditLogTypes';
+import AuditLogService from '@/Services/AuditLogService';
+import { userService } from '@/Services/UserService';
+import type { BackendUser } from '@/Services/UserService';
 
 interface AuditLogFiltersProps {
   onApplyFilters: (filters: Filters) => void;
-  onClearFilters: () => void;
   isLoading?: boolean;
 }
 
 export const AuditLogFilters: React.FC<AuditLogFiltersProps> = ({
   onApplyFilters,
-  onClearFilters,
   isLoading = false,
 }) => {
   const [filters, setFilters] = useState<Filters>({
+    usuario_id: undefined,
     modulo: undefined,
     tipo_accion: undefined,
     fecha_desde: undefined,
     fecha_hasta: undefined,
   });
 
-  // Lista de módulos comunes (en el futuro puede venir del backend)
-  const modulos = [
-    'Autenticación',
-    'Usuarios',
-    'Roles',
-    'Permisos',
-    'Evidencias',
-    'Ciclos',
-    'Reportes',
-    'Estructura',
-    'Procesos',
-  ];
+  // Catálogos desde el backend
+  const [users, setUsers] = useState<BackendUser[]>([]);
+  const [modules, setModules] = useState<string[]>([]);
+  const [actionTypes, setActionTypes] = useState<ActionType[]>([]);
+  const [loadingCatalogs, setLoadingCatalogs] = useState(false);
 
-  // Lista de tipos de acción (basado en ActionTypeSeeder del backend)
-  const tiposAccion = [
-    { value: 'crear', label: 'Crear' },
-    { value: 'editar', label: 'Editar' },
-    { value: 'eliminar', label: 'Eliminar' },
-    { value: 'consultar', label: 'Consultar' },
-    { value: 'login', label: 'Inicio de sesión' },
-    { value: 'logout', label: 'Cierre de sesión' },
-    { value: 'login_fallido', label: 'Intento fallido' },
-    { value: 'activar', label: 'Activar' },
-    { value: 'desactivar', label: 'Desactivar' },
-    { value: 'asignar_rol', label: 'Asignar rol' },
-    { value: 'asignar_permisos', label: 'Asignar permisos' },
-    { value: 'exportar', label: 'Exportar' },
-    { value: 'asignar', label: 'Asignar' },
-  ];
+  /**
+   * Cargar catálogos de módulos y tipos de acción al montar el componente
+   */
+  useEffect(() => {
+    const loadCatalogs = async () => {
+      setLoadingCatalogs(true);
+      try {
+        // Cargar cada catálogo independientemente para que si uno falla, los otros se carguen
+        const [usersResult, modulesResult, actionTypesResult] = await Promise.allSettled([
+          userService.listUsers(),
+          AuditLogService.getModules(),
+          AuditLogService.getActionTypes(),
+        ]);
 
-  const handleInputChange = (field: keyof Filters, value: string) => {
-    setFilters(prev => ({
-      ...prev,
+        if (usersResult.status === 'fulfilled') {
+          setUsers(usersResult.value);
+        } else {
+          console.error('Error cargando usuarios:', usersResult.reason);
+        }
+
+        if (modulesResult.status === 'fulfilled') {
+          setModules(modulesResult.value);
+        } else {
+          console.error('Error cargando módulos:', modulesResult.reason);
+        }
+
+        if (actionTypesResult.status === 'fulfilled') {
+          setActionTypes(actionTypesResult.value);
+        } else {
+          console.error('Error cargando tipos de acción:', actionTypesResult.reason);
+        }
+      } catch (error) {
+        console.error('Error inesperado cargando catálogos:', error);
+      } finally {
+        setLoadingCatalogs(false);
+      }
+    };
+
+    loadCatalogs();
+  }, []);
+
+  const handleInputChange = (field: keyof Filters, value: string | number | undefined) => {
+    const newFilters = {
+      ...filters,
       [field]: value || undefined,
-    }));
-  };
-
-  const handleApplyFilters = () => {
-    // Filtrar valores vacíos
-    const activeFilters = Object.entries(filters).reduce((acc, [key, value]) => {
-      if (value !== undefined && value !== '') {
-        acc[key as keyof Filters] = value;
+    };
+    setFilters(newFilters);
+    
+    // Auto-aplicar filtros al cambiar
+    const activeFilters = Object.entries(newFilters).reduce((acc, [key, val]) => {
+      if (val !== undefined && val !== '') {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (acc as any)[key] = val;
       }
       return acc;
     }, {} as Filters);
-
+    
     onApplyFilters(activeFilters);
   };
 
   const handleClearFilters = () => {
-    setFilters({
+    const clearedFilters: Filters = {
+      usuario_id: undefined,
       modulo: undefined,
       tipo_accion: undefined,
       fecha_desde: undefined,
       fecha_hasta: undefined,
-    });
-    onClearFilters();
+    };
+    setFilters(clearedFilters);
+    onApplyFilters({});
   };
 
-  const hasActiveFilters = Object.values(filters).some(value => value !== undefined && value !== '');
+  // Verificar si hay filtros activos
+  const hasActiveFilters = Object.values(filters).some(val => val !== undefined && val !== '');
+
+  // Convertir usuarios a SelectOption[]
+  const userOptions = useMemo((): SelectOption[] => {
+    return users.map(user => ({
+      value: user.id.toString(),
+      label: `${user.name} (${user.email})`
+    }));
+  }, [users]);
+
+  // Convertir módulos a SelectOption[]
+  const moduleOptions = useMemo((): SelectOption[] => {
+    return modules.map(module => ({
+      value: module,
+      label: module
+    }));
+  }, [modules]);
+
+  // Convertir tipos de acción a SelectOption[]
+  const actionTypeOptions = useMemo((): SelectOption[] => {
+    return actionTypes.map(actionType => ({
+      value: actionType.descripcion,
+      label: actionType.descripcion
+    }));
+  }, [actionTypes]);
 
   return (
-    <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
-      <div className="flex items-center justify-between mb-4">
-        <h3 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
-          <SystemIcons.interface.search className="w-5 h-5 text-primary-600" />
-          Filtros de Búsqueda
-        </h3>
-        {hasActiveFilters && (
-          <span className="text-sm text-primary-600 font-medium">
-            {Object.values(filters).filter(v => v !== undefined && v !== '').length} filtro(s) activo(s)
-          </span>
-        )}
-      </div>
+    <div>
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 mb-4">
+        {/* Filtro por Usuario */}
+        <div>
+          <CustomSelect
+            label="Usuario"
+            value={filters.usuario_id?.toString() || ''}
+            options={userOptions}
+            placeholder="Todos los usuarios"
+            onChange={(value) => handleInputChange('usuario_id', value ? parseInt(value) : '')}
+            disabled={isLoading || loadingCatalogs}
+            searchable={true}
+            searchPlaceholder="Buscar usuario..."
+            minItemsForSearch={3}
+            variant="floating"
+          />
+        </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         {/* Filtro por Módulo */}
         <div>
-          <label htmlFor="modulo" className="block text-sm font-medium text-gray-700 mb-1">
-            Módulo
-          </label>
-          <select
-            id="modulo"
+          <CustomSelect
+            label="Módulo del Sistema"
             value={filters.modulo || ''}
-            onChange={(e) => handleInputChange('modulo', e.target.value)}
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 text-sm"
-            disabled={isLoading}
-          >
-            <option value="">Todos los módulos</option>
-            {modulos.map((modulo) => (
-              <option key={modulo} value={modulo}>
-                {modulo}
-              </option>
-            ))}
-          </select>
+            options={moduleOptions}
+            placeholder="Todos los módulos"
+            onChange={(value) => handleInputChange('modulo', value)}
+            disabled={isLoading || loadingCatalogs}
+            searchable={true}
+            searchPlaceholder="Buscar módulo..."
+            minItemsForSearch={10}
+            variant="floating"
+          />
         </div>
 
         {/* Filtro por Tipo de Acción */}
         <div>
-          <label htmlFor="tipo_accion" className="block text-sm font-medium text-gray-700 mb-1">
-            Tipo de Acción
-          </label>
-          <select
-            id="tipo_accion"
+          <CustomSelect
+            label="Tipo de Acción"
             value={filters.tipo_accion || ''}
-            onChange={(e) => handleInputChange('tipo_accion', e.target.value)}
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 text-sm"
-            disabled={isLoading}
-          >
-            <option value="">Todas las acciones</option>
-            {tiposAccion.map((tipo) => (
-              <option key={tipo.value} value={tipo.value}>
-                {tipo.label}
-              </option>
-            ))}
-          </select>
+            options={actionTypeOptions}
+            placeholder="Todas las acciones"
+            onChange={(value) => handleInputChange('tipo_accion', value)}
+            disabled={isLoading || loadingCatalogs}
+            searchable={true}
+            searchPlaceholder="Buscar acción..."
+            minItemsForSearch={10}
+            variant="floating"
+          />
         </div>
 
         {/* Filtro por Fecha Desde */}
         <div>
-          <label htmlFor="fecha_desde" className="block text-sm font-medium text-gray-700 mb-1">
-            Fecha Desde
-          </label>
-          <Input
+          <DatePicker
             id="fecha_desde"
-            type="date"
             value={filters.fecha_desde || ''}
-            onChange={(e) => handleInputChange('fecha_desde', e.target.value)}
+            onChange={(date) => handleInputChange('fecha_desde', date)}
             disabled={isLoading}
-            className="w-full"
+            placeholder="Seleccione fecha inicio"
+            maxDate={filters.fecha_hasta || undefined}
           />
         </div>
 
         {/* Filtro por Fecha Hasta */}
         <div>
-          <label htmlFor="fecha_hasta" className="block text-sm font-medium text-gray-700 mb-1">
-            Fecha Hasta
-          </label>
-          <Input
+          <DatePicker
             id="fecha_hasta"
-            type="date"
             value={filters.fecha_hasta || ''}
-            onChange={(e) => handleInputChange('fecha_hasta', e.target.value)}
+            onChange={(date) => handleInputChange('fecha_hasta', date)}
             disabled={isLoading}
-            min={filters.fecha_desde || undefined}
-            className="w-full"
+            minDate={filters.fecha_desde || undefined}
+            placeholder="Seleccione fecha fin"
           />
         </div>
       </div>
 
-      {/* Botones de acción */}
-      <div className="flex items-center justify-end gap-3 mt-6">
-        <Button
-          variant="outline"
-          onClick={handleClearFilters}
-          disabled={isLoading || !hasActiveFilters}
-          className="flex items-center gap-2"
-        >
-          <SystemIcons.actions.cancel className="w-4 h-4" />
-          Limpiar Filtros
-        </Button>
-        <Button
-          variant="primary"
-          onClick={handleApplyFilters}
-          disabled={isLoading}
-          className="flex items-center gap-2"
-        >
-          <SystemIcons.interface.search className="w-4 h-4" />
-          Aplicar Filtros
-        </Button>
-      </div>
+      {/* Botón para limpiar filtros */}
+      {hasActiveFilters && (
+        <div className="flex justify-end">
+          <button
+            type="button"
+            onClick={handleClearFilters}
+            disabled={isLoading}
+            className="text-sm text-blue-600 hover:text-blue-800 font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            Limpiar filtros
+          </button>
+        </div>
+      )}
     </div>
   );
 };

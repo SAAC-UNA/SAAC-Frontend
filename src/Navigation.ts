@@ -12,10 +12,14 @@ const approvalIcon = 'system-icon:check-circle';
 
 /**
  * Obtener items de navegación filtrados por rol
- * @param userRole - Rol del usuario autenticado ('SuperUsuario' o 'Administrador')
+ * @param userRoles - Array de roles del usuario autenticado o un solo rol como string
  */
-export const getNavigationItems = (userRole?: string): NavItem[] => {
-  const isSuperUser = userRole === 'SuperUsuario';
+export const getNavigationItems = (userRoles?: string | string[]): NavItem[] => {
+  // Normalizar a array
+  const roles = Array.isArray(userRoles) ? userRoles : userRoles ? [userRoles] : [];
+  
+  const isSuperUser = roles.includes('SuperUsuario');
+  const isEncargado = roles.includes('Encargado de Acreditación');
   
   const items: NavItem[] = [
     {
@@ -68,11 +72,46 @@ export const getNavigationItems = (userRole?: string): NavItem[] => {
     isActive: false,
   },
   {
+    id: 'misEvidenciasAsignadas',
+    label: 'Mis Evidencias',
+    icon: myEvidencesIcon,
+    href: '/mis-evidencias-asignadas',
+    isActive: false,
+  },
+  {
+    id: 'busquedaEvidencias',
+    label: 'Búsqueda de Evidencias',
+    icon: searchEvidenceIcon,
+    href: '/evidencias/busqueda-avanzada',
+    isActive: false,
+  },
+  {
     id: 'estructura',
     label: 'Gestión de Estructura',
     icon: nutIcon,
     href: '/estructura/listar',
     isActive: false
+  });
+
+  // HU-016: Solicitudes de Ampliación
+  // Gestionar solicitudes - Solo Encargados
+  if (isEncargado || isSuperUser) {
+    items.push({
+      id: 'gestionarSolicitudesAmpliacion',
+      label: 'Gestionar Solicitudes',
+      icon: extensionRequestIcon,
+      href: '/solicitudes-ampliacion/gestionar',
+      isActive: false,
+    });
+  }
+
+  // Mis solicitudes - Todos los autenticados
+  items.push({
+    id: 'misSolicitudesAmpliacion',
+    label: 'Mis Solicitudes de Ampliación',
+    icon: extensionRequestIcon,
+    href: '/solicitudes-ampliacion/mis-solicitudes',
+    isActive: false,
   });
 
   // Avance de Acreditación - Todos los autenticados (filtrado por carrera en el backend)

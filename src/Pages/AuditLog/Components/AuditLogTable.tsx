@@ -175,9 +175,10 @@ export const AuditLogTable: React.FC<AuditLogTableProps> = ({
     <DataTable
       data={logs as unknown as Record<string, unknown>[]}
       columns={columns as unknown as DataTableColumn<Record<string, unknown>>[]}
-      title="Registros de Bitácora"
-      description={logs.length === 0 ? 'No se encontraron registros' : `Mostrando ${logs.length} registro(s)`}
+      title=""
+      description=""
       loading={isLoading}
+      searchable={false}
       emptyMessage="No hay registros de bitácora que coincidan con los filtros aplicados"
       pagination={{
         currentPage,

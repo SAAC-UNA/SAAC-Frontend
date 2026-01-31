@@ -11,10 +11,12 @@
 
 import React, { useState, useEffect, useCallback } from 'react';
 import { ScreenContainer } from '@/Components/Ui/ScreenContainer';
-import { PageHeader } from '@/Components/Ui/PageHeader';
 import { BackendErrorAlert } from '@/Components/Ui/BackendErrorAlert';
 import { SystemIcons } from '@/Components/Ui/Icons/SystemIcons';
-import { ButtonWithTooltip } from '@/Components/Ui/ButtonWithTooltip';
+import { SearchInput } from '@/Components/Ui/SearchInput';
+import { DropdownButton } from '@/Components/Ui/DropdownButton';
+import type { DropdownOption } from '@/Components/Ui/DropdownButton';
+import { getModuleInfo } from '@/Constants/ModuleInfo';
 import { AuditLogFilters } from './Components/AuditLogFilters';
 import { AuditLogTable } from './Components/AuditLogTable';
 import { AuditLogDetailModal } from './Components/AuditLogDetailModal';
@@ -38,6 +40,10 @@ const AuditLogPage: React.FC = () => {
 
   // Estado de filtros aplicados
   const [appliedFilters, setAppliedFilters] = useState<Filters>({});
+  
+  // Estado de búsqueda
+  const [searchTerm, setSearchTerm] = useState('');
+  const [filteredLogs, setFilteredLogs] = useState<AuditLog[]>([]);
 
   // Estado del modal de detalle
   const [detailModal, setDetailModal] = useState<{
@@ -63,6 +69,7 @@ const AuditLogPage: React.FC = () => {
       });
 
       setLogs(response.data);
+      setFilteredLogs(response.data);
       setCurrentPage(response.current_page);
       setTotalPages(response.last_page);
     } catch (err: any) {
@@ -82,6 +89,37 @@ const AuditLogPage: React.FC = () => {
   }, [loadAuditLogs]);
 
   /**
+   * Filtrar logs localmente según el término de búsqueda
+   */
+  useEffect(() => {
+    if (!searchTerm.trim()) {
+      setFilteredLogs(logs);
+      return;
+    }
+
+    const term = searchTerm.toLowerCase();
+    const filtered = logs.filter(log => {
+      const usuario = log.usuario?.nombre?.toLowerCase() || '';
+      const email = log.usuario?.email?.toLowerCase() || '';
+      const modulo = log.modulo?.toLowerCase() || '';
+      const accion = log.tipo_accion?.descripcion?.toLowerCase() || '';
+      const detalle = log.detalle?.toLowerCase() || '';
+      const fecha = log.fecha_hora?.toLowerCase() || '';
+
+      return (
+        usuario.includes(term) ||
+        email.includes(term) ||
+        modulo.includes(term) ||
+        accion.includes(term) ||
+        detalle.includes(term) ||
+        fecha.includes(term)
+      );
+    });
+
+    setFilteredLogs(filtered);
+  }, [logs, searchTerm]);
+
+  /**
    * Aplicar filtros
    */
   const handleApplyFilters = useCallback((filters: Filters) => {
@@ -90,12 +128,11 @@ const AuditLogPage: React.FC = () => {
   }, [loadAuditLogs]);
 
   /**
-   * Limpiar filtros
+   * Manejar cambio en el buscador
    */
-  const handleClearFilters = useCallback(() => {
-    setAppliedFilters({});
-    loadAuditLogs({}, 1);
-  }, [loadAuditLogs]);
+  const handleSearchChange = useCallback((term: string) => {
+    setSearchTerm(term);
+  }, []);
 
   /**
    * Cambiar página
@@ -125,17 +162,38 @@ const AuditLogPage: React.FC = () => {
   }, []);
 
   /**
-   * Exportar registros (preparado para cuando backend lo implemente)
+   * Exportar registros (requiere rango de fechas obligatorio)
    */
   const handleExport = useCallback(async (format: ExportFormat) => {
+    // Validar que se hayan seleccionado las fechas obligatorias
+    if (!appliedFilters.fecha_desde || !appliedFilters.fecha_hasta) {
+      showToast({
+        type: 'error',
+        title: 'Fechas requeridas',
+        message: 'Debe seleccionar un rango de fechas (desde - hasta) para exportar la bitácora',
+      });
+      return;
+    }
+
     try {
       showToast({
-        type: 'warning',
+        type: 'info',
         title: 'Exportando...',
-        message: `Exportando bitácora a ${format.toUpperCase()}...`,
+        message: `Generando archivo ${format.toUpperCase()}...`,
       });
 
-      const blob = await AuditLogService.exportAuditLogs(format, appliedFilters);
+      const blob = await AuditLogService.exportAuditLogs(
+        format,
+        appliedFilters.fecha_desde,
+        appliedFilters.fecha_hasta,
+        {
+          usuario_id: appliedFilters.usuario_id,
+          tipo_accion_id: appliedFilters.tipo_accion_id,
+          tipo_accion: appliedFilters.tipo_accion,
+          modulo: appliedFilters.modulo,
+        }
+      );
+      
       AuditLogService.downloadExportedFile(blob, format);
 
       showToast({
@@ -153,36 +211,63 @@ const AuditLogPage: React.FC = () => {
     }
   }, [appliedFilters, showToast]);
 
+  const moduleInfo = getModuleInfo('auditlog');
+
+  // Opciones del menú de exportación
+  const exportOptions: DropdownOption[] = [
+    {
+      id: 'pdf',
+      label: 'Exportar a PDF',
+      icon: <SystemIcons.modal.pdf className="w-4 h-4" />,
+      onClick: () => handleExport('pdf'),
+      disabled: !appliedFilters.fecha_desde || !appliedFilters.fecha_hasta || logs.length === 0
+    },
+    {
+      id: 'excel',
+      label: 'Exportar a Excel',
+      icon: <SystemIcons.modal.excel className="w-4 h-4" />,
+      onClick: () => handleExport('excel'),
+      disabled: !appliedFilters.fecha_desde || !appliedFilters.fecha_hasta || logs.length === 0
+    }
+  ];
+
   return (
-    <ScreenContainer>
-      {/* Header de la página */}
-      <PageHeader
-        title="Bitácora del Sistema"
-        subtitle="Consulta y monitoreo de todas las acciones realizadas en el sistema"
+    <ScreenContainer
+      title={moduleInfo.title}
+      description={moduleInfo.description}
+      variant="full-width"
+      headerExtra={
+        <div className="flex-1 max-w-md">
+          <SearchInput
+            placeholder="Buscar por usuario, módulo, acción, detalle..."
+            value={searchTerm}
+            onChange={handleSearchChange}
+            disabled={isLoading}
+          />
+        </div>
+      }
+    >
+
+      {/* Componente de filtros */}
+      <AuditLogFilters
+        onApplyFilters={handleApplyFilters}
+        isLoading={isLoading}
       />
 
-      {/* Botones de exportación */}
-      <div className="flex justify-end gap-3 mb-6">
-        <ButtonWithTooltip
+      {/* Botón de exportación con menú desplegable */}
+      <div className="flex justify-end mb-6">
+        <DropdownButton
+          label="Exportar"
+          icon={<SystemIcons.actions.export className="w-4 h-4" />}
           variant="outline"
-          onClick={() => handleExport('pdf')}
+          options={exportOptions}
           disabled={isLoading || logs.length === 0}
-          tooltip="⚠️ Funcionalidad pendiente de implementación en el backend"
-          className="flex items-center gap-2"
-        >
-          <SystemIcons.modal.document className="w-4 h-4" />
-          Exportar PDF
-        </ButtonWithTooltip>
-        <ButtonWithTooltip
-          variant="outline"
-          onClick={() => handleExport('excel')}
-          disabled={isLoading || logs.length === 0}
-          tooltip="⚠️ Funcionalidad pendiente de implementación en el backend"
-          className="flex items-center gap-2"
-        >
-          <SystemIcons.repository.boxArchive className="w-4 h-4" />
-          Exportar Excel
-        </ButtonWithTooltip>
+          tooltip={
+            !appliedFilters.fecha_desde || !appliedFilters.fecha_hasta
+              ? 'Debe seleccionar un rango de fechas para exportar'
+              : 'Exportar registros de bitácora'
+          }
+        />
       </div>
 
       {/* Alerta de error */}
@@ -194,36 +279,20 @@ const AuditLogPage: React.FC = () => {
         </div>
       )}
 
-      {/* Componente de filtros */}
-      <AuditLogFilters
-        onApplyFilters={handleApplyFilters}
-        onClearFilters={handleClearFilters}
-        isLoading={isLoading}
-      />
-
       {/* Información de registros */}
-      {!isLoading && !error && (
-        <div className="mb-4 flex items-center justify-between">
-          <div className="flex items-center gap-2 text-sm text-gray-600">
-            <SystemIcons.interface.informationCircle className="w-4 h-4" />
-            <span>
-              {logs.length > 0
-                ? `Mostrando ${logs.length} registro(s) de la página ${currentPage} de ${totalPages}`
-                : 'No se encontraron registros'}
-            </span>
-          </div>
-          {Object.keys(appliedFilters).length > 0 && (
-            <div className="flex items-center gap-2 text-sm text-primary-600">
-              <SystemIcons.interface.search className="w-4 h-4" />
-              <span>{Object.keys(appliedFilters).length} filtro(s) aplicado(s)</span>
-            </div>
-          )}
+      {!isLoading && !error && filteredLogs.length > 0 && (
+        <div className="mb-4 flex items-center gap-2 text-sm text-gray-600">
+          <SystemIcons.interface.informationCircle className="w-4 h-4" />
+          <span>
+            Mostrando {filteredLogs.length} registro(s) de la página {currentPage} de {totalPages}
+            {searchTerm && ` (filtrados de ${logs.length} total)`}
+          </span>
         </div>
       )}
 
       {/* Tabla de registros */}
       <AuditLogTable
-        logs={logs}
+        logs={filteredLogs}
         isLoading={isLoading}
         currentPage={currentPage}
         totalPages={totalPages}
@@ -237,25 +306,6 @@ const AuditLogPage: React.FC = () => {
         onClose={handleCloseDetailModal}
         log={detailModal.log}
       />
-
-      {/* Información adicional */}
-      <div className="mt-6 bg-blue-50 border border-blue-200 rounded-lg p-4">
-        <div className="flex items-start gap-3">
-          <SystemIcons.interface.informationCircle className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" />
-          <div>
-            <h4 className="text-sm font-semibold text-blue-900 mb-1">
-              Acerca de la Bitácora del Sistema
-            </h4>
-            <ul className="text-sm text-blue-800 space-y-1">
-              <li>• Los registros se muestran en orden cronológico descendente (más recientes primero)</li>
-              <li>• Solo los usuarios con rol de <strong>Superusuario</strong> pueden acceder a esta sección</li>
-              <li>• Los registros de la bitácora son <strong>inmutables</strong> y no pueden ser modificados ni eliminados</li>
-              <li>• Use los filtros para buscar registros específicos por usuario, módulo, tipo de acción o fechas</li>
-              <li>• Las funciones de exportación estarán disponibles cuando el backend las implemente</li>
-            </ul>
-          </div>
-        </div>
-      </div>
     </ScreenContainer>
   );
 };

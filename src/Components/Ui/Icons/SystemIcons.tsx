@@ -19,7 +19,7 @@
 
 export interface IconProps {
   className?: string;
-  size?: 'xs' | 'sm' | 'md' | 'lg' | 'xl';
+  size?: 'xs' | 'sm' | 'md' | 'lg' | 'xl' | '2xl' | '3xl';
   color?: string;
 }
 
@@ -32,7 +32,9 @@ const getSizeClasses = (size: IconProps['size'] = 'md'): string => {
     sm: 'w-4 h-4',
     md: 'w-5 h-5',
     lg: 'w-6 h-6',
-    xl: 'w-8 h-8'
+    xl: 'w-8 h-8',
+    '2xl': 'w-12 h-12',
+    '3xl': 'w-16 h-16'
   };
   return sizes[size];
 };
@@ -113,11 +115,11 @@ export const SystemIcons = {
       </svg>
     ),
 
-    cancel: ({ className, size, color = 'var(--icon-cancel)' }: IconProps) => (
+    cancel: ({ className, size, color }: IconProps) => (
       <svg
         className={`${getSizeClasses(size)} ${className || ''}`}
         viewBox="0 0 24 24"
-        fill={color}
+        fill={color || "currentColor"}
       >
         <path fillRule="evenodd" d="M5.47 5.47a.75.75 0 011.06 0L12 10.94l5.47-5.47a.75.75 0 111.06 1.06L13.06 12l5.47 5.47a.75.75 0 11-1.06 1.06L12 13.06l-5.47 5.47a.75.75 0 01-1.06-1.06L10.94 12 5.47 6.53a.75.75 0 010-1.06z" clipRule="evenodd" />
       </svg>
@@ -131,6 +133,22 @@ export const SystemIcons = {
       >
         <path d="M11.25 19a.75.75 0 0 1 .75-.75h6a.25.25 0 0 0 .25-.25V6a.25.25 0 0 0-.25-.25h-6a.75.75 0 0 1 0-1.5h6c.966 0 1.75.784 1.75 1.75v12A1.75 1.75 0 0 1 18 19.75h-6a.75.75 0 0 1-.75-.75Z" />
         <path d="M15.612 13.115a1 1 0 0 1-1 1H9.756c-.023.356-.052.71-.086 1.066l-.03.305a.718.718 0 0 1-1.025.578 16.844 16.844 0 0 1-4.885-3.539l-.03-.031a.721.721 0 0 1 0-.998l.03-.031a16.843 16.843 0 0 1 4.885-3.539.718.718 0 0 1 1.025.578l.03.305c.034.355.063.71.086 1.066h4.856a1 1 0 0 1 1 1v2.24Z" />
+      </svg>
+    ),
+
+    export: ({ className, size, color }: IconProps) => (
+      <svg
+        className={`${getSizeClasses(size)} ${className || ''}`}
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke={color || "currentColor"}
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth="2"
+      >
+        <path d="M8.063 5.438 12 1.5l3.938 3.938" />
+        <path d="M12 12V1.5" />
+        <path d="M16.5 9.375h2.25a.75.75 0 0 1 .75.75V19.5a.75.75 0 0 1-.75.75H5.25a.75.75 0 0 1-.75-.75v-9.375a.75.75 0 0 1 .75-.75H7.5" />
       </svg>
     )
   },
@@ -264,11 +282,11 @@ export const SystemIcons = {
         </svg>
     ),
 
-    refresh: ({ className, size, color = 'var(--icon-refresh)' }: IconProps) => (
+    refresh: ({ className, size, color }: IconProps) => (
       <svg
         className={`${getSizeClasses(size)} ${className || ''}`}
         viewBox="0 0 24 24"
-        fill={color}
+        fill={color || "currentColor"}
       >
         <path fillRule="evenodd" d="M4.755 10.059a7.5 7.5 0 0112.548-3.364l1.903 1.903h-3.183a.75.75 0 100 1.5h4.992a.75.75 0 00.75-.75V4.356a.75.75 0 00-1.5 0v3.18l-1.9-1.9A9 9 0 003.306 9.67a.75.75 0 101.45.388zm15.408 3.352a.75.75 0 00-.919.53 7.5 7.5 0 01-12.548 3.364l-1.902-1.903h3.183a.75.75 0 000-1.5H2.984a.75.75 0 00-.75.75v4.992a.75.75 0 001.5 0v-3.18l1.9 1.9a9 9 0 0015.059-4.035.75.75 0 00-.53-.918z" clipRule="evenodd" />
       </svg>
@@ -300,6 +318,21 @@ export const SystemIcons = {
         d="M10.336 6.343a.75.75 0 0 1-.75.75H7.093v2.493a.75.75 0 1 1-1.5 0V6.343a.75.75 0 0 1 .75-.75h3.243a.75.75 0 0 1 .75.75Z"
         clipRule="evenodd"
       />
+      </svg>
+    ),
+
+    link: ({ className, size, color = 'currentColor' }: IconProps) => (
+      <svg
+        className={`${getSizeClasses(size)} ${className || ''}`}
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke={color}
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth="2"
+      >
+        <path d="m12.421 5.746.9-.91a4.134 4.134 0 0 1 5.841 5.841l-2.84 2.832a4.116 4.116 0 0 1-5.832 0" />
+        <path d="m11.578 18.255-.9.909a4.135 4.135 0 0 1-5.84-5.84l2.84-2.832a4.115 4.115 0 0 1 5.831 0" />
       </svg>
     ),
 
@@ -347,6 +380,35 @@ export const SystemIcons = {
       </svg>
     ),
 
+    upload: ({ className, size, color }: IconProps) => (
+      <svg
+        className={`${getSizeClasses(size)} ${className || ''}`}
+        viewBox="0 0 24 24"
+        fill={color || "currentColor"}
+      >
+        <path d="M15.01 3.75a8.26 8.26 0 0 0-7.388 4.566 8.119 8.119 0 0 0-.872 3.656.769.769 0 0 1-.694.778.75.75 0 0 1-.806-.75c0-1.048.168-2.09.497-3.084a.375.375 0 0 0-.44-.488A6 6 0 0 0 .75 14.25c0 3.3 2.794 6 6.084 6H15a8.25 8.25 0 0 0 .01-16.5Zm2.952 10.463a.778.778 0 0 1-.534.215.75.75 0 0 1-.525-.216L15 12.31V18a.75.75 0 1 1-1.5 0v-5.69l-1.903 1.902a.75.75 0 0 1-1.06-1.059l3.179-3.187a.76.76 0 0 1 1.068 0l3.178 3.187a.75.75 0 0 1 0 1.06Z" />
+      </svg>
+    ),
+
+    uploadArrow: ({ className, size, color }: IconProps) => (
+        <svg
+          className={`${getSizeClasses(size)} ${className || ''}`}
+          viewBox="0 0 24 24"
+          fill={color || "currentColor"}
+        >
+          <path
+            fillRule="evenodd"
+            d="M5 16.25a.75.75 0 0 1 .75.75v2c0 .138.112.25.25.25h12a.25.25 0 0 0 .25-.25v-2a.75.75 0 0 1 1.5 0v2A1.75 1.75 0 0 1 18 20.75H6A1.75 1.75 0 0 1 4.25 19v-2a.75.75 0 0 1 .75-.75Z"
+            clipRule="evenodd"
+          />
+          <path
+            fillRule="evenodd"
+            d="M10.738 16.127a.992.992 0 0 1-.989-.905 36.618 36.618 0 0 1-.08-5.27c-.248-.014-.495-.03-.741-.048l-1.49-.109a.76.76 0 0 1-.585-1.167 15.555 15.555 0 0 1 4.032-4.258l.597-.429a.888.888 0 0 1 1.036 0l.597.43a15.556 15.556 0 0 1 4.032 4.257.76.76 0 0 1-.585 1.167l-1.49.109c-.246.018-.493.034-.74.047.1 1.757.072 3.518-.082 5.27a.992.992 0 0 1-.988.906h-2.524Z"
+            clipRule="evenodd"
+          />
+        </svg>
+    ),
+
     calendar: ({ className, size }: IconProps) => (
       <svg
         className={`${getSizeClasses(size)} ${className || ''}`}
@@ -355,6 +417,27 @@ export const SystemIcons = {
       >
         <path d="M7.75 4a.75.75 0 0 0-1.5 0v1.816a3.375 3.375 0 0 0-2.872 2.899l-.087.653-.042.332a.493.493 0 0 0 .492.55H20.26a.493.493 0 0 0 .492-.55c-.013-.11-.027-.222-.042-.332l-.087-.653a3.375 3.375 0 0 0-2.872-2.899V4a.75.75 0 0 0-1.5 0v1.668a47.912 47.912 0 0 0-8.5 0V4Z" />
         <path d="M20.945 12.226a.494.494 0 0 0-.496-.476H3.551a.494.494 0 0 0-.496.476 28.92 28.92 0 0 0 .33 5.41 3.01 3.01 0 0 0 2.678 2.532l1.193.118c3.155.31 6.333.31 9.488 0l1.193-.118a3.01 3.01 0 0 0 2.678-2.532 28.92 28.92 0 0 0 .33-5.41Z" />
+      </svg>
+    ),
+
+    /** Reloj - Para estados pendientes y tiempos de espera */
+    clock: ({ className, size, color }: IconProps) => (
+      <svg
+        className={`${getSizeClasses(size)} ${className || ''}`}
+        viewBox="0 0 24 24"
+        fill={color || "currentColor"}
+      >
+        <path d="M12 2.25A9.75 9.75 0 1 0 21.75 12 9.769 9.769 0 0 0 12 2.25Zm5.25 10.5H12a.75.75 0 0 1-.75-.75V6.75a.75.75 0 1 1 1.5 0v4.5h4.5a.75.75 0 1 1 0 1.5Z" />
+      </svg>
+    ),
+
+    hourglass: ({ className, size, color }: IconProps) => (
+      <svg
+        className={`${getSizeClasses(size)} ${className || ''}`}
+        viewBox="0 0 24 24"
+        fill={color || "currentColor"}
+      >
+        <path d="M18.75 7.088V3.75a1.5 1.5 0 0 0-1.5-1.5H6.75a1.5 1.5 0 0 0-1.5 1.5v3.375a1.51 1.51 0 0 0 .6 1.2L10.753 12 5.85 15.675a1.51 1.51 0 0 0-.6 1.2v3.375a1.5 1.5 0 0 0 1.5 1.5h10.5a1.5 1.5 0 0 0 1.5-1.5v-3.337a1.51 1.51 0 0 0-.6-1.2L13.247 12l4.903-3.713a1.51 1.51 0 0 0 .6-1.2Z" />
       </svg>
     ),
 
@@ -373,6 +456,51 @@ export const SystemIcons = {
           d="M19 9l-7 7-7-7"
         />
       </svg>
+    ),
+
+    /** Chevron left - Para navegación hacia atrás y paginación */
+    chevronLeft: ({ className, size, color }: IconProps) => (
+      <svg
+        className={`${getSizeClasses(size)} ${className || ''}`}
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke={color || "currentColor"}
+      >
+        <path
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          strokeWidth={2}
+          d="M15 19l-7-7 7-7"
+        />
+      </svg>
+    ),
+
+    /** Chevron right - Para navegación hacia adelante y paginación */
+    chevronRight: ({ className, size, color }: IconProps) => (
+      <svg
+        className={`${getSizeClasses(size)} ${className || ''}`}
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke={color || "currentColor"}
+      >
+        <path
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          strokeWidth={2}
+          d="M9 5l7 7-7 7"
+        />
+      </svg>
+    ),
+
+    /** Filter - Para filtros y opciones de filtrado */
+    filter: ({ className, size, color }: IconProps) => (
+      <svg
+        className={`${getSizeClasses(size)} ${className || ''}`}
+        viewBox="0 0 24 24"
+        fill={color || "currentColor"}
+      >
+        <path d="M18.523 4.226a58.727 58.727 0 0 0-13.046 0 1.373 1.373 0 0 0-.915 2.229l3.769 4.659A7.5 7.5 0 0 1 10 15.83v3.142a.75.75 0 0 0 .306.605l2.77 2.032a.58.58 0 0 0 .924-.468V15.83a7.5 7.5 0 0 1 1.669-4.717l3.769-4.66a1.373 1.373 0 0 0-.915-2.228Z" />
+  </svg>
     ),
 
     // ===== ICONOS ESPECÍFICOS PARA MODALES =====
@@ -400,6 +528,32 @@ export const SystemIcons = {
         fill="currentColor"
       >
         <path d="M12 2.25A9.75 9.75 0 1 0 21.75 12 9.769 9.769 0 0 0 12 2.25Zm4.64 8.044-5.493 5.25a.76.76 0 0 1-.525.206.722.722 0 0 1-.516-.206L7.36 12.919a.75.75 0 1 1 1.032-1.088l2.23 2.128 4.988-4.753a.75.75 0 0 1 1.032 1.088Z" />
+      </svg>
+    ),
+
+    /** Círculo con X - Para mensajes de error o rechazo */
+    xCircle: ({ className, size }: IconProps) => (
+      <svg
+        className={`${getSizeClasses(size)} ${className || ''}`}
+        viewBox="0 0 24 24"
+        fill="currentColor"
+      >
+        <path d="M12 2.25A9.75 9.75 0 1 0 21.75 12 9.769 9.769 0 0 0 12 2.25Zm3.53 12.22a.75.75 0 1 1-1.06 1.06L12 13.06l-2.47 2.47a.75.75 0 0 1-1.06-1.06L10.94 12 8.47 9.53a.75.75 0 0 1 1.06-1.06L12 10.94l2.47-2.47a.75.75 0 1 1 1.06 1.06L13.06 12l2.47 2.47Z" />
+      </svg>
+    ),
+
+    /** Check simple - Para items seleccionados en dropdowns/listas */
+    check: ({ className, size, color }: IconProps) => (
+      <svg
+        className={`${getSizeClasses(size)} ${className || ''}`}
+        fill={color || "currentColor"}
+        viewBox="0 0 20 20"
+      >
+        <path
+          fillRule="evenodd"
+          d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+          clipRule="evenodd"
+        />
       </svg>
     )
   },
@@ -429,6 +583,16 @@ export const SystemIcons = {
         fill={color || "currentColor"}
       >
         <path d="M13.796 4.136a2.5 2.5 0 0 0-3.592 0L5.405 9.092c-.275.284-.46.644-.532 1.034a28.756 28.756 0 0 0-.127 9.624l.176 1.13c.056.357.364.62.725.62H9a.5.5 0 0 0 .5-.5v-7h5v7a.5.5 0 0 0 .5.5h3.353a.733.733 0 0 0 .724-.62l.177-1.13a28.759 28.759 0 0 0-.127-9.624 2.007 2.007 0 0 0-.533-1.034l-4.798-4.956Z" />
+      </svg>
+    ),
+
+    auditLog: ({ className, size, color }: IconProps) => (
+      <svg
+        className={`${getSizeClasses(size)} ${className || ''}`}
+        viewBox="0 0 24 24"
+        fill={color || "currentColor"}
+      >
+        <path d="M20.25 4.5h-15A1.5 1.5 0 0 0 3.75 6v11.25a.75.75 0 1 1-1.5 0v-9a.75.75 0 0 0-1.5 0v9A2.25 2.25 0 0 0 3 19.5h16.5a2.26 2.26 0 0 0 2.25-2.25V6a1.5 1.5 0 0 0-1.5-1.5Zm-3.75 9.75H9a.75.75 0 1 1 0-1.5h7.5a.75.75 0 1 1 0 1.5Zm0-3H9a.75.75 0 1 1 0-1.5h7.5a.75.75 0 1 1 0 1.5Z" />
       </svg>
     ),
 
@@ -500,6 +664,27 @@ export const SystemIcons = {
         <path fillRule="evenodd" d="M7.25 5.461v1.42l-1.694.138a2.61 2.61 0 0 0-2.367 2.184c-.041.258-.08.516-.114.775a.298.298 0 0 0 .169.308l.077.036c5.429 2.57 11.93 2.57 17.358 0l.077-.036a.298.298 0 0 0 .168-.308 26.748 26.748 0 0 0-.113-.775 2.61 2.61 0 0 0-2.367-2.184l-1.694-.137v-1.42a1.75 1.75 0 0 0-1.49-1.731l-1.22-.183a13.75 13.75 0 0 0-4.08 0l-1.22.183a1.75 1.75 0 0 0-1.49 1.73Zm6.567-.43a12.25 12.25 0 0 0-3.634 0l-1.22.183a.25.25 0 0 0-.213.247v1.315a56.826 56.826 0 0 1 6.5 0V5.461a.25.25 0 0 0-.213-.247l-1.22-.183Z" clipRule="evenodd" />
         <path d="M21.118 12.07a.2.2 0 0 0-.282-.17c-5.571 2.467-12.101 2.467-17.672 0a.2.2 0 0 0-.282.17 26.88 26.88 0 0 0 .307 5.727 2.61 2.61 0 0 0 2.367 2.184l1.872.152c3.043.245 6.1.245 9.144 0l1.872-.151a2.61 2.61 0 0 0 2.367-2.185c.306-1.895.41-3.815.307-5.726Z" />
       </svg>
+    ),
+
+    assignEvidence: ({ className, size, color }: IconProps) => (
+      <svg
+        className={`${getSizeClasses(size)} ${className || ''}`}
+        viewBox="0 0 24 24"
+        fill={color || "currentColor"}
+      >
+        <path d="m20.025 7.715-5.24-5.25-.029-.019-.028-.028-.028-.019-.028-.019c-.01-.009-.019-.009-.019-.018l-.047-.028h-.018l-.047-.029h-.01l-.065-.028H5.25a1.5 1.5 0 0 0-1.5 1.472v16.5a1.5 1.5 0 0 0 1.5 1.5h13.5a1.5 1.5 0 0 0 1.5-1.5v-12a.731.731 0 0 0-.225-.534Zm-4.519 10.05a.75.75 0 0 1-.525.215.776.776 0 0 1-.534-.215l-1.022-1.031a3.45 3.45 0 0 1-1.8.515A3.375 3.375 0 1 1 15 13.874a3.356 3.356 0 0 1-.516 1.8l1.022 1.022a.75.75 0 0 1 0 1.069ZM14.25 8.249V4.06l4.19 4.19h-4.19Z" />
+        <path d="M11.625 12a1.865 1.865 0 0 0-1.322.553 1.856 1.856 0 0 0 0 2.644 1.865 1.865 0 0 0 2.644 0 1.855 1.855 0 0 0 0-2.644A1.866 1.866 0 0 0 11.625 12Z" />
+      </svg>
+    ),
+
+    myEvidences: ({ className, size, color }: IconProps) => (
+      <svg
+        className={`${getSizeClasses(size)} ${className || ''}`}
+        viewBox="0 0 24 24"
+        fill={color || "currentColor"}
+      >
+        <path d="m20.034 6.216-3.75-3.75a.76.76 0 0 0-.534-.216h-7.5a1.5 1.5 0 0 0-1.5 1.5v1.5h-1.5a1.5 1.5 0 0 0-1.5 1.5v13.5a1.5 1.5 0 0 0 1.5 1.5h10.5a1.5 1.5 0 0 0 1.5-1.5v-1.5h1.5a1.5 1.5 0 0 0 1.5-1.5V6.75a.76.76 0 0 0-.216-.534ZM12.75 18h-4.5a.75.75 0 1 1 0-1.5h4.5a.75.75 0 1 1 0 1.5Zm0-3h-4.5a.75.75 0 1 1 0-1.5h4.5a.75.75 0 1 1 0 1.5Zm6 2.25h-1.5v-7.5a.76.76 0 0 0-.216-.534l-3.75-3.75a.76.76 0 0 0-.534-.216h-4.5v-1.5h7.19l3.31 3.31v10.19Z" />
+      </svg>
     )
   },
   // ===== REPOSITORIO =====
@@ -533,6 +718,24 @@ export const SystemIcons = {
           d="M7 2.25A2.75 2.75 0 0 0 4.25 5v14A2.75 2.75 0 0 0 7 21.75h10A2.75 2.75 0 0 0 19.75 19V7.968c0-.381-.124-.751-.354-1.055l-2.998-3.968a1.75 1.75 0 0 0-1.396-.695H7ZM5.75 5c0-.69.56-1.25 1.25-1.25h7.25v4.397c0 .414.336.75.75.75h3.25V19c0 .69-.56 1.25-1.25 1.25H7c-.69 0-1.25-.56-1.25-1.25V5Z"
           clipRule="evenodd"
         />
+      </svg>
+    ),
+    pdf: ({ className, size, color }: IconProps) => (
+      <svg
+        className={`${getSizeClasses(size)} ${className || ''}`}
+        viewBox="0 0 24 24"
+        fill={color || "currentColor"}
+      >
+        <path d="M6 15H4.5a.75.75 0 0 0-.75.75v4.5a.75.75 0 1 0 1.5 0v-.75H6A2.25 2.25 0 1 0 6 15Zm0 3h-.75v-1.5H6A.75.75 0 1 1 6 18Zm12.375-1.5v1.125h1.5a.75.75 0 1 1 0 1.5h-1.5v1.125a.75.75 0 1 1-1.5 0v-4.5a.75.75 0 0 1 .75-.75h2.625a.75.75 0 1 1 0 1.5h-1.875ZM12 15h-1.313a.75.75 0 0 0-.75.75v4.5a.75.75 0 0 0 .75.75H12a3 3 0 0 0 0-6Zm0 4.5h-.563v-3H12a1.5 1.5 0 1 1 0 3Zm-7.5-6.75h15a.75.75 0 0 0 .75-.75V8.25a.76.76 0 0 0-.216-.534l-5.25-5.25a.76.76 0 0 0-.534-.216h-9a1.5 1.5 0 0 0-1.5 1.5V12a.75.75 0 0 0 .75.75Zm9.75-8.625 4.125 4.125H14.25V4.125Z" />
+      </svg>
+    ),
+    excel: ({ className, size, color }: IconProps) => (
+      <svg
+        className={`${getSizeClasses(size)} ${className || ''}`}
+        viewBox="0 0 24 24"
+        fill={color || "currentColor"}
+      >
+        <path d="M18.75 2.25h-12a1.5 1.5 0 0 0-1.5 1.5V6h-1.5a1.5 1.5 0 0 0-1.5 1.5v9a1.5 1.5 0 0 0 1.5 1.5h1.5v2.25a1.5 1.5 0 0 0 1.5 1.5h12a1.5 1.5 0 0 0 1.5-1.5V3.75a1.5 1.5 0 0 0-1.5-1.5ZM6.488 14.85a.75.75 0 0 1-.15-1.05l1.35-1.8-1.35-1.8a.75.75 0 0 1 1.2-.9l1.087 1.453L9.713 9.3a.75.75 0 1 1 1.2.9L9.563 12l1.35 1.8a.75.75 0 0 1-1.2.9l-1.088-1.453L7.537 14.7a.75.75 0 0 1-1.05.15ZM12 20.25H6.75V18H12v2.25ZM12 6H6.75V3.75H12V6Zm6.75 14.25H13.5V18a1.5 1.5 0 0 0 1.5-1.5v-.75h3.75v4.5Zm0-6H15v-4.5h3.75v4.5Zm0-6H15V7.5A1.5 1.5 0 0 0 13.5 6V3.75h5.25v4.5Z" />
       </svg>
     ),
     key: ({ className, size, color }: IconProps) => (
@@ -668,6 +871,7 @@ export const getIconByName = (iconName: string, size: IconProps['size'] = 'md'):
     // Navigation
     'home': () => SystemIcons.navigation.home({ size }),
     'caret-left': () => SystemIcons.navigation.arrow.left({ size }),
+    'auditLog': () => SystemIcons.navigation.auditLog({ size }),
 
     // Actions
     'add': () => SystemIcons.actions.add({ size }),
@@ -683,6 +887,8 @@ export const getIconByName = (iconName: string, size: IconProps['size'] = 'md'):
     // Work & Security
     'shield': () => SystemIcons.users.roles({ size }), // Usando roles que tiene el shield
     'bag': () => SystemIcons.work.bag({ size }),
+    'assignEvidence': () => SystemIcons.work.assignEvidence({ size }),
+    'myEvidences': () => SystemIcons.work.myEvidences({ size }),
 
     // Structure - nuevos iconos
     'nut': () => SystemIcons.structure.nut({ size }),
@@ -699,6 +905,11 @@ export const getIconByName = (iconName: string, size: IconProps['size'] = 'md'):
     'collapse': () => SystemIcons.interface.collapse({ size }),
     'calendar': () => SystemIcons.interface.calendar({ size }),
     'chevron-down': () => SystemIcons.interface.chevronDown({ size }),
+    'cloud': () => SystemIcons.interface.cloud({ size }),
+    'upload-arrow': () => SystemIcons.interface.uploadArrow({ size }),
+    'clock': () => SystemIcons.interface.clock({ size }),
+    'hourglass': () => SystemIcons.interface.hourglass({ size }),
+    'search': () => SystemIcons.interface.search({ size }),
 
     // Modal icons
     'exclamation-triangle': () => SystemIcons.interface.alert({ size }),

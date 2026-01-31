@@ -1,95 +1,128 @@
 /**
- * Servicio para manejar las asignaciones de evidencias
- * Refactorizado para usar datos reales del backend en lugar de mocks
+ * EvidenceAssignmentService - Servicio para operaciones con asignaciones de evidencias (HU-029)
+ * Integración con backend Laravel endpoints de EvidenceAssignmentController
+ * Refactorizado para usar axiosInstance y nuevos tipos TypeScript
  */
 
+import { axiosInstance } from '@/Config/axios';
+import type {
+  EvidenceAssignment,
+  UpdateAssignmentParams
+} from '@/Types/EvidenceAssignmentTypes';
 import type { 
   EvidenceAssignmentRequest, 
   EvidenceAssignmentApiResponse,
-  EvidenceAssignmentResponse,
   Evidence,
   Criterion,
-  Process
+  Process,
+  DuplicateValidationRequest,
+  DuplicateValidationResponse
 } from '@/Types/EvidenceAssignment';
 import { devLog } from '@/Utils/devLogger';
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000/api';
-
 class EvidenceAssignmentService {
+  /**
+   * Validar asignaciones duplicadas antes de crear
+   */
+  async validateDuplicates(data: DuplicateValidationRequest): Promise<DuplicateValidationResponse> {
+    try {
+      const response = await axiosInstance.post<DuplicateValidationResponse>(
+        '/evidencias-asignaciones/validar-duplicados',
+        data
+      );
+      return response.data;
+    } catch (error: any) {
+      throw new Error(
+        error.response?.data?.message || 
+        'Error al validar asignaciones duplicadas'
+      );
+    }
+  }
+
   /**
    * Crear nuevas asignaciones de evidencias
    */
   async createAssignment(data: EvidenceAssignmentRequest): Promise<EvidenceAssignmentApiResponse> {
-    const response = await fetch(`${API_BASE_URL}/evidencias-asignaciones`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(data),
-    });
-
-    if (!response.ok) {
-      const errorData = await response.json();
-      throw new Error(errorData.message || 'Error de validación.');
+    try {
+      const response = await axiosInstance.post<EvidenceAssignmentApiResponse>(
+        '/evidencias-asignaciones',
+        data
+      );
+      return response.data;
+    } catch (error: any) {
+      throw new Error(error.response?.data?.message || 'Error de validación.');
     }
-
-    return response.json();
   }
 
   /**
    * Obtener todas las asignaciones
    */
-  async getAllAssignments(): Promise<EvidenceAssignmentResponse[]> {
-    const response = await fetch(`${API_BASE_URL}/evidencias-asignaciones`);
-    
-    if (!response.ok) {
+  async getAllAssignments(): Promise<EvidenceAssignment[]> {
+    try {
+      const response = await axiosInstance.get<{ data: EvidenceAssignment[] }>('/evidencias-asignaciones');
+      return response.data.data || [];
+    } catch (error) {
       throw new Error('Error al obtener las asignaciones');
     }
-
-    const data = await response.json();
-    return data.data || [];
   }
 
   /**
-   * Obtener asignaciones por usuario
+   * Obtiene todas las evidencias asignadas a un usuario específico
+   * GET /api/usuarios/{usuarioId}/evidencias-asignadas
+   * 
+   * Usa los nuevos tipos de HU-029 para mejor type-safety
    */
-  async getAssignmentsByUser(userId: number): Promise<EvidenceAssignmentResponse[]> {
-    const response = await fetch(`${API_BASE_URL}/usuarios/${userId}/evidencias-asignadas`);
-    
-    if (!response.ok) {
-      throw new Error('Error al obtener las asignaciones del usuario');
+  async getMyAssignments(userId: number): Promise<EvidenceAssignment[]> {
+    try {
+      const response = await axiosInstance.get<{ data: EvidenceAssignment[] }>(
+        `/usuarios/${userId}/evidencias-asignadas`
+      );
+      
+      return response.data.data || [];
+    } catch (error: any) {
+      if (error.response?.status === 404) {
+        return [];
+      }
+      
+      throw new Error(
+        error.response?.data?.message || 
+        error.message || 
+        'Error al obtener las asignaciones de evidencias'
+      );
     }
+  }
 
-    const data = await response.json();
-    return data.data || [];
+  /**
+   * Obtener asignaciones por usuario (método legacy - usar getMyAssignments)
+   * @deprecated Usar getMyAssignments en su lugar
+   */
+  async getAssignmentsByUser(userId: number): Promise<EvidenceAssignment[]> {
+    const response = await axiosInstance.get(`/usuarios/${userId}/evidencias-asignadas`);
+    return response.data.data || [];
   }
 
   /**
    * Obtener asignaciones por evidencia
    */
-  async getAssignmentsByEvidence(evidenceId: number): Promise<EvidenceAssignmentResponse[]> {
-    const response = await fetch(`${API_BASE_URL}/evidencias/${evidenceId}/asignaciones`);
-    
-    if (!response.ok) {
+  async getAssignmentsByEvidence(evidenceId: number): Promise<EvidenceAssignment[]> {
+    try {
+      const response = await axiosInstance.get<{ data: EvidenceAssignment[] }>(`/evidencias/${evidenceId}/asignaciones`);
+      return response.data.data || [];
+    } catch (error) {
       throw new Error('Error al obtener las asignaciones de la evidencia');
     }
-
-    const data = await response.json();
-    return data.data || [];
   }
 
   /**
    * Obtener asignaciones por proceso
    */
-  async getAssignmentsByProcess(processId: number): Promise<EvidenceAssignmentResponse[]> {
-    const response = await fetch(`${API_BASE_URL}/procesos/${processId}/asignaciones`);
-    
-    if (!response.ok) {
+  async getAssignmentsByProcess(processId: number): Promise<EvidenceAssignment[]> {
+    try {
+      const response = await axiosInstance.get<{ data: EvidenceAssignment[] }>(`/procesos/${processId}/asignaciones`);
+      return response.data.data || [];
+    } catch (error) {
       throw new Error('Error al obtener las asignaciones del proceso');
     }
-
-    const data = await response.json();
-    return data.data || [];
   }
 
   /**
@@ -97,19 +130,9 @@ class EvidenceAssignmentService {
    */
   async getAllEvidences(): Promise<Evidence[]> {
     try {
-      const response = await fetch(`${API_BASE_URL}/estructura/evidencias`, {
-        method: 'GET',
-        headers: {
-          'Accept': 'application/json',
-        },
-      });
+      const response = await axiosInstance.get<{ data: any[] }>('/estructura/evidencias');
       
-      if (!response.ok) {
-        throw new Error(`Error al obtener las evidencias: ${response.status} ${response.statusText}`);
-      }
-
-      const data = await response.json();
-      const rawEvidences = data.data || data || [];
+      const rawEvidences = response.data.data || response.data || [];
       
       // Mapear respuesta del backend: id -> evidencia_id
       return rawEvidences.map((item: any) => ({
@@ -133,19 +156,9 @@ class EvidenceAssignmentService {
    */
   async getAllCriteria(): Promise<Criterion[]> {
     try {
-      const response = await fetch(`${API_BASE_URL}/estructura/criterios`, {
-        method: 'GET',
-        headers: {
-          'Accept': 'application/json',
-        },
-      });
+      const response = await axiosInstance.get<{ data: any[] }>('/estructura/criterios');
       
-      if (!response.ok) {
-        throw new Error(`Error al obtener los criterios: ${response.status} ${response.statusText}`);
-      }
-
-      const data = await response.json();
-      const rawCriteria = data.data || data || [];
+      const rawCriteria = response.data.data || response.data || [];
       
       // Mapear respuesta del backend: id -> criterio_id
       return rawCriteria.map((item: any) => ({
@@ -169,19 +182,9 @@ class EvidenceAssignmentService {
    */
   async getAllProcesses(): Promise<Process[]> {
     try {
-      const response = await fetch(`${API_BASE_URL}/estructura/procesos`, {
-        method: 'GET',
-        headers: {
-          'Accept': 'application/json',
-        },
-      });
+      const response = await axiosInstance.get<{ data: any[] }>('/estructura/procesos');
       
-      if (!response.ok) {
-        throw new Error(`Error al obtener los procesos: ${response.status} ${response.statusText}`);
-      }
-
-      const data = await response.json();
-      const rawProcesses = data.data || data || [];
+      const rawProcesses = response.data.data || response.data || [];
       
       // Mapear respuesta del backend: id -> proceso_id
       return rawProcesses.map((item: any) => ({
@@ -200,38 +203,89 @@ class EvidenceAssignmentService {
    * Eliminar una asignación
    */
   async deleteAssignment(assignmentId: number): Promise<void> {
-    const response = await fetch(`${API_BASE_URL}/evidencias-asignaciones/${assignmentId}`, {
-      method: 'DELETE',
-    });
-
-    if (!response.ok) {
-      const errorData = await response.json();
-      throw new Error(errorData.message || 'Error al eliminar la asignación');
+    try {
+      await axiosInstance.delete(`/evidencias-asignaciones/${assignmentId}`);
+    } catch (error: any) {
+      throw new Error(error.response?.data?.message || 'Error al eliminar la asignación');
     }
   }
 
   /**
-   * Actualizar una asignación
+   * Actualiza el estado de una asignación
+   * PUT /api/evidencias-asignaciones/{id}
+   * 
+   * Usa los nuevos tipos de HU-029
+   */
+  async updateStatus(
+    assignmentId: number,
+    params: UpdateAssignmentParams
+  ): Promise<EvidenceAssignment> {
+    try {
+      const response = await axiosInstance.put<{ data: EvidenceAssignment }>(
+        `/evidencias-asignaciones/${assignmentId}`,
+        params
+      );
+      
+      return response.data.data;
+    } catch (error: any) {
+      if (error.response?.status === 404) {
+        throw new Error('La asignación no fue encontrada.');
+      }
+      
+      if (error.response?.status === 403) {
+        throw new Error('No tiene permisos para actualizar esta asignación.');
+      }
+      
+      if (error.response?.status === 422) {
+        const validationErrors = error.response.data.errors;
+        const firstError = Object.values(validationErrors || {})[0];
+        throw new Error(
+          Array.isArray(firstError) ? firstError[0] : 'Error de validación'
+        );
+      }
+      
+      throw new Error(
+        error.response?.data?.message || 
+        error.message || 
+        'Error al actualizar la asignación'
+      );
+    }
+  }
+
+  /**
+   * Obtiene una asignación específica por ID
+   * GET /api/evidencias-asignaciones/{id}
+   */
+  async getById(assignmentId: number): Promise<EvidenceAssignment> {
+    try {
+      const response = await axiosInstance.get<{ data: EvidenceAssignment }>(
+        `/evidencias-asignaciones/${assignmentId}`
+      );
+      
+      return response.data.data;
+    } catch (error: any) {
+      if (error.response?.status === 404) {
+        throw new Error('La asignación no fue encontrada.');
+      }
+      
+      throw new Error(
+        error.response?.data?.message || 
+        error.message || 
+        'Error al obtener la asignación'
+      );
+    }
+  }
+
+  /**
+   * Actualizar una asignación (método legacy - usar updateStatus)
+   * @deprecated Usar updateStatus en su lugar
    */
   async updateAssignment(
     assignmentId: number, 
-    data: Partial<Pick<EvidenceAssignmentResponse, 'estado' | 'fecha_limite'>>
-  ): Promise<EvidenceAssignmentResponse> {
-    const response = await fetch(`${API_BASE_URL}/evidencias-asignaciones/${assignmentId}`, {
-      method: 'PATCH',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(data),
-    });
-
-    if (!response.ok) {
-      const errorData = await response.json();
-      throw new Error(errorData.message || 'Error al actualizar la asignación');
-    }
-
-    const result = await response.json();
-    return result.data;
+    data: Partial<Pick<EvidenceAssignment, 'estado' | 'fecha_limite'>>
+  ): Promise<EvidenceAssignment> {
+    const response = await axiosInstance.patch(`/evidencias-asignaciones/${assignmentId}`, data);
+    return response.data.data;
   }
 }
 

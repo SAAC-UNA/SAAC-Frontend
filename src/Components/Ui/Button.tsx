@@ -71,7 +71,7 @@ const VARIANT_CLASSES = {
   ].join(' '),
 
   // Botón con solo borde
-  outline: 'border border-gris-una/30 bg-transparent text-negro-una hover:bg-gris-una/5 disabled:!bg-transparent disabled:!text-gris-una disabled:!border-gris-una/30 disabled:cursor-not-allowed',
+  outline: 'border border-gris-una/30 bg-transparent text-negro-una font-poppins font-semibold hover:bg-gris-una/5 disabled:!bg-transparent disabled:!text-gris-una disabled:!border-gris-una/30 disabled:cursor-not-allowed',
   // Botón fantasma para acciones sutiles
   ghost: 'bg-transparent text-gris-una hover:bg-gris-una/10 disabled:!bg-transparent disabled:!text-gris-una disabled:!border-gris-una/30 disabled:cursor-not-allowed',
   

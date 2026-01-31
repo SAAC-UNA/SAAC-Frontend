@@ -15,7 +15,7 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { CreateRoleForm } from './Components/CreateRoleForm';
-import { LoadingSpinner, Button, PageErrorState } from '@/components/Ui/Index';
+import { LoadingSpinner, Button, BackendErrorAlert } from '@/components/Ui/Index';
 import { CreateConfirmationModal } from '@/Components/Ui/CreateConfirmationModal';
 import { EditConfirmationModal } from '@/Components/Ui/EditConfirmationModal';
 import { SuccessModal } from '@/Components/Ui/SuccessModal';
@@ -201,13 +201,9 @@ const RoleForm: React.FC = () => {
     if (loadError) {
       return (
         <ScreenContainer showHeader={false}>
-          <PageErrorState
-            title="Error al cargar rol"
-            description={loadError}
-            primaryActionLabel="Volver a la lista"
-            onPrimaryAction={() => navigate('/roles/listar')}
-            secondaryActionLabel="Reintentar"
-            onSecondaryAction={() => window.location.reload()}
+          <BackendErrorAlert
+            error={loadError}
+            onRetry={() => window.location.reload()}
           />
         </ScreenContainer>
       );
@@ -216,11 +212,9 @@ const RoleForm: React.FC = () => {
     // Rol no encontrado (solo en modo edición)
     if (isEditing && !role) {
       return (
-        <PageErrorState
-          title="Rol no encontrado"
-          description="El rol que está buscando no existe o ha sido eliminado."
-          primaryActionLabel="Volver a la lista"
-          onPrimaryAction={() => navigate('/roles/listar')}
+        <BackendErrorAlert
+          error="El rol que está buscando no existe o ha sido eliminado."
+          onRetry={() => navigate('/roles/listar')}
         />
       );
     }
