@@ -6,9 +6,12 @@ const nutIcon = 'system-icon:nut';
 const userIcon = 'system-icon:user';
 const processIcon = 'system-icon:box-archive';
 const evidenceIcon = 'system-icon:shield';
+const myEvidencesIcon = 'system-icon:clipboard-list';
+const searchEvidenceIcon = 'system-icon:magnifying-glass';
 const auditLogIcon = 'system-icon:clipboard-list';
 const commitmentIcon = 'system-icon:clipboard-check';
 const approvalIcon = 'system-icon:check-circle';
+const extensionRequestIcon = 'system-icon:clock';
 
 /**
  * Obtener items de navegación filtrados por rol
@@ -18,7 +21,7 @@ export const getNavigationItems = (userRoles?: string | string[]): NavItem[] => 
   // Normalizar a array
   const roles = Array.isArray(userRoles) ? userRoles : userRoles ? [userRoles] : [];
   
-  const isSuperUser = roles.includes('SuperUsuario');
+  const isSuperUser = roles.includes('Superusuario');
   const isEncargado = roles.includes('Encargado de Acreditación');
   
   const items: NavItem[] = [

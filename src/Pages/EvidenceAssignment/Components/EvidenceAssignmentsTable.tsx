@@ -136,8 +136,20 @@ export const EvidenceAssignmentsTable: React.FC<EvidenceAssignmentsTableProps> =
       align: 'center',
       render: (_: unknown, assignment: EvidenceAssignment) => {
         // HU-016: Determinar si puede solicitar ampliación
-        // Puede solicitar si el estado es pendiente o en_progreso
-        const canRequestExtension = ['pendiente', 'en_progreso'].includes(assignment.estado);
+        // No puede solicitar si:
+        // 1. Ya tiene una solicitud pendiente
+        // 2. El estado no es pendiente o en_progreso
+        const hasPendingRequest = assignment.has_pending_extension_request === true;
+        const validStatus = ['pendiente', 'en_progreso'].includes(assignment.estado);
+        const canRequestExtension = !hasPendingRequest && validStatus;
+        
+        // Tooltip dinámico
+        let tooltip = "Solicitar ampliación";
+        if (hasPendingRequest) {
+          tooltip = "Ya hay una solicitud pendiente";
+        } else if (!validStatus) {
+          tooltip = "No se puede solicitar ampliación para este estado";
+        }
         
         return (
           <div className="flex items-center justify-center gap-2 pr-2">
@@ -153,15 +165,11 @@ export const EvidenceAssignmentsTable: React.FC<EvidenceAssignmentsTableProps> =
               onClick={() => onUploadFiles(assignment)}
             />
             
-            {/* HU-016: Botón de solicitar ampliación - siempre visible */}
+            {/* HU-016: Botón de solicitar ampliación */}
             {onRequestExtension && (
               <TableActionButton
                 action="clock"
-                tooltip={
-                  canRequestExtension 
-                    ? "Solicitar ampliación de plazo"
-                    : "No se puede solicitar ampliación"
-                }
+                tooltip={tooltip}
                 onClick={() => onRequestExtension(assignment)}
                 disabled={!canRequestExtension}
               />

@@ -4,10 +4,11 @@
  */
 
 import React, { useState, useEffect } from 'react';
-import { useSearchParams } from 'react-router-dom';
+import { useSearchParams, useNavigate } from 'react-router-dom';
 import { ScreenContainer } from '@/Components/Ui/ScreenContainer';
 import { Button } from '@/Components/Ui/Button';
 import { SystemIcons } from '@/Components/Ui/Icons/SystemIcons';
+import { Tooltip, TooltipTrigger, TooltipContent } from '@/Components/Ui/Tooltip';
 import { FileUploader } from './Components/FileUploader';
 import { FileUploadProgress, type FileUploadProgressItem } from './Components/FileUploadProgress';
 import { FileList } from './Components/FileList';
@@ -30,6 +31,7 @@ export const EvidenceUploadPage: React.FC<EvidenceUploadPageProps> = ({
 }) => {
   const { showToast } = useToast();
   const [searchParams] = useSearchParams();
+  const navigate = useNavigate();
   
   // Obtener IDs desde props o desde URL query params
   const evidenciaId = propEvidenciaId ?? (Number(searchParams.get('evidenciaId')) || undefined);
@@ -312,6 +314,10 @@ export const EvidenceUploadPage: React.FC<EvidenceUploadPageProps> = ({
 
   const moduleInfo = getModuleInfo('evidence_upload');
 
+  const handleGoBack = () => {
+    navigate('/mis-evidencias-asignadas');
+  };
+
   return (
     <ScreenContainer
       title={moduleInfo.title}
@@ -383,19 +389,25 @@ export const EvidenceUploadPage: React.FC<EvidenceUploadPageProps> = ({
             <h2 className="text-lg font-semibold text-negro-una">
               Archivos subidos
             </h2>
-            <Button
-              type="button"
-              onClick={loadFiles}
-              disabled={loadingFiles}
-              variant="transparent"
-              size="sm"
-            >
-              {SystemIcons.interface.refresh({ 
-                size: 'sm', 
-                className: loadingFiles ? 'animate-spin' : '' 
-              })}
-              Actualizar
-            </Button>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  type="button"
+                  onClick={loadFiles}
+                  disabled={loadingFiles}
+                  variant="transparent"
+                  size="sm"
+                >
+                  {SystemIcons.interface.refresh({ 
+                    size: 'sm', 
+                    className: loadingFiles ? 'animate-spin' : '' 
+                  })}
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent side="left">
+                Actualizar lista de archivos
+              </TooltipContent>
+            </Tooltip>
           </div>
 
           <FileList
@@ -406,6 +418,19 @@ export const EvidenceUploadPage: React.FC<EvidenceUploadPageProps> = ({
             onMakePublic={handleMakePublic}
             onRevokePublic={handleRevokePublic}
           />
+        </div>
+
+        {/* Botón para volver a Mis Evidencias */}
+        <div className="mt-6 flex justify-center">
+          <Button
+                type="button"
+                onClick={handleGoBack}
+                variant="secondary"
+                standardWidth={true}
+                size="sm"
+              >
+                Regresar
+          </Button>
         </div>
       </div>
     </ScreenContainer>

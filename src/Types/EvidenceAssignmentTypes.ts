@@ -19,6 +19,9 @@ export interface EvidenceAssignment {
   created_at: string;
   updated_at: string;
   
+  // HU-016: Indica si tiene una solicitud de ampliación pendiente
+  has_pending_extension_request?: boolean;
+  
   // Relaciones opcionales (cuando están cargadas con eager loading)
   proceso?: {
     proceso_id: number;

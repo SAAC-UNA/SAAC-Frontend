@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { SystemIcons } from '@/Components/Ui/Icons/SystemIcons';
 import { Button } from '@/Components/Ui/Button';
 import { DetailsModal } from '@/Components/Ui/DetailsModal';
+import { SuccessModal } from '@/Components/Ui/SuccessModal';
 import { AssignmentStatusBadge } from './AssignmentStatusBadge';
 import type { EvidenceAssignment, AssignmentStatus } from '@/Types/EvidenceAssignmentTypes';
 import { formatDeadline, getDaysUntilDeadline, isNearDeadline } from '@/Types/EvidenceAssignmentTypes';
@@ -38,6 +39,7 @@ export const EvidenceAssignmentDetail: React.FC<EvidenceAssignmentDetailProps> =
   const [assignment, setAssignment] = useState<EvidenceAssignment | null>(null);
   const [loading, setLoading] = useState(true);
   const [updatingStatus, setUpdatingStatus] = useState(false);
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
   const { showToast } = useToast();
 
   useEffect(() => {
@@ -69,7 +71,13 @@ export const EvidenceAssignmentDetail: React.FC<EvidenceAssignmentDetailProps> =
       
       setAssignment(updated);
       onStatusUpdate?.(updated);
-      showToast({ type: 'success', title: 'Éxito', message: `Estado actualizado a: ${newStatus}` });
+      
+      // Mostrar modal de éxito si se marca como completado
+      if (newStatus === 'completado') {
+        setShowSuccessModal(true);
+      } else {
+        showToast({ type: 'success', title: 'Éxito', message: `Estado actualizado a: ${newStatus}` });
+      }
     } catch (error) {
       console.error('Error al actualizar estado:', error);
       showToast({ type: 'error', title: 'Error', message: 'Error al actualizar el estado' });
@@ -310,6 +318,16 @@ export const EvidenceAssignmentDetail: React.FC<EvidenceAssignmentDetailProps> =
       {renderComments()}
       {renderDates()}
       {renderActions()}
+      
+      {/* Modal de éxito al completar */}
+      <SuccessModal
+        isOpen={showSuccessModal}
+        title="¡Evidencia Completada!"
+        message="La evidencia ha sido marcada como completada exitosamente."
+        onClose={() => setShowSuccessModal(false)}
+        autoClose={true}
+        autoCloseDelay={3000}
+      />
     </DetailsModal>
   );
 };

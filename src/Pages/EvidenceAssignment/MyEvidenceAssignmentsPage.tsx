@@ -50,7 +50,10 @@ export const MyEvidenceAssignmentsPage: React.FC = () => {
   }, [user]);
 
   const loadAssignments = async () => {
-    if (!user?.usuario_id) {
+    // Intentar obtener el ID del usuario (puede venir como usuario_id o id)
+    const userId = user?.usuario_id || (user as any)?.id;
+    
+    if (!userId) {
       setError('No se pudo obtener la información del usuario');
       setLoading(false);
       return;
@@ -59,7 +62,7 @@ export const MyEvidenceAssignmentsPage: React.FC = () => {
     try {
       setLoading(true);
       setError(null);
-      const data = await evidenceAssignmentService.getMyAssignments(user.usuario_id);
+      const data = await evidenceAssignmentService.getMyAssignments(userId);
       setAssignments(data);
     } catch (error: any) {
       setError(error.message || 'No se pudieron obtener las evidencias asignadas');
@@ -126,12 +129,25 @@ export const MyEvidenceAssignmentsPage: React.FC = () => {
       // Recargar asignaciones para actualizar estados
       loadAssignments();
     } catch (error: any) {
+      // HU-016: Manejo específico para solicitud duplicada
+      const isDuplicate = error.message?.includes('Ya existe una solicitud pendiente');
+      
       showToast({
         type: 'error',
-        title: 'Error',
-        message: error.message || 'No se pudo enviar la solicitud'
+        title: isDuplicate ? 'Solicitud duplicada' : 'Error',
+        message: isDuplicate 
+          ? 'Ya tienes una solicitud de ampliación pendiente para esta evidencia'
+          : (error.message || 'No se pudo enviar la solicitud')
       });
-      throw error; // Re-lanzar para que el modal maneje el estado de loading
+      
+      // Si es duplicado, cerrar modal y recargar para actualizar el estado
+      if (isDuplicate) {
+        setShowExtensionModal(false);
+        setSelectedAssignmentForExtension(null);
+        loadAssignments();
+      } else {
+        throw error; // Re-lanzar para que el modal maneje el estado de loading
+      }
     }
   };
 

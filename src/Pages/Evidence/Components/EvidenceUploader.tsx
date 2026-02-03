@@ -173,7 +173,7 @@ export const EvidenceUploader: React.FC<EvidenceUploaderProps> = ({
               : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
           }`}
         >
-          📄 Archivos
+          Archivos
         </button>
         <button
           type="button"
@@ -184,7 +184,7 @@ export const EvidenceUploader: React.FC<EvidenceUploaderProps> = ({
               : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
           }`}
         >
-          🔗 Enlaces
+          Enlaces
         </button>
         <button
           type="button"
@@ -195,7 +195,7 @@ export const EvidenceUploader: React.FC<EvidenceUploaderProps> = ({
               : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
           }`}
         >
-          📎 Ambos
+          Ambos
         </button>
       </div>
 
