@@ -10,7 +10,7 @@ import type { ReactNode } from 'react';
 
 interface ProtectedRouteProps {
   children: ReactNode;
-  requireRole?: 'SuperUsuario' | 'Administrador' | 'Encargado de Acreditación';
+  requireRole?: 'Superusuario' | 'Administrador' | 'Encargado de Acreditación';
 }
 
 export const ProtectedRoute = ({ children, requireRole }: ProtectedRouteProps) => {
@@ -33,7 +33,7 @@ export const ProtectedRoute = ({ children, requireRole }: ProtectedRouteProps) =
           margin: '100px auto'
         }}>
           <h2>Acceso Denegado</h2>
-          <p>No tienes permisos para acceder a esta sección.</p>
+          <p>No tiene permisos para acceder a esta sección.</p>
         </div>
       );
     }

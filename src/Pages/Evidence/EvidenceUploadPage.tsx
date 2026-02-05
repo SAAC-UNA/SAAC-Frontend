@@ -411,7 +411,6 @@ export const EvidenceUploadPage: React.FC<EvidenceUploadPageProps> = ({
           </div>
 
           <FileList
-          
             files={uploadedFiles}
             loading={loadingFiles}
             onDelete={handleDeleteFile}

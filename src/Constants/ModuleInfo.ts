@@ -113,6 +113,14 @@ export const MODULE_INFO: Record<string, ModuleInfo> = {
     shortDescription: 'Subir archivos de evidencias'
   },
 
+  // Búsqueda Avanzada de Evidencias
+  evidence_search: {
+    title: 'Búsqueda Avanzada de Evidencias',
+    subtitle: 'Repositorio de Evidencias',
+    description: 'Encuentre evidencias usando filtros por criterio, responsable, fecha, estado y rol',
+    shortDescription: 'Buscar evidencias en el sistema'
+  },
+
   // Gestión de Reportes
   reports: {
     title: 'Gestión de Reportes',

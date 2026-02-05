@@ -4,7 +4,6 @@
 
 // Páginas principales
 export { EvidenceUploadPage } from './EvidenceUploadPage';
-export { EvidenceSearchPage } from './EvidenceSearchPage';
 
 // Re-exportar componentes para facilitar imports externos
 export { FileUploader, FileList, FileUploadProgress } from './Components';
