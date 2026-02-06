@@ -10,7 +10,7 @@ import { DataTable, type DataTableColumn } from '@/Components/Ui/DataTable';
 import { TableActionButton } from '@/Components/index';
 import { 
   EVIDENCE_STATUS_LABELS, 
-  EVIDENCE_STATUS_COLORS,
+  EVIDENCE_STATUS_BADGE,
   type EvidenceSearchResult 
 } from '@/Types/EvidenceSearchTypes';
 
@@ -82,22 +82,25 @@ export const EvidenceSearchResultsTable: React.FC<EvidenceSearchResultsTableProp
       )
     },
     {
-      key: 'responsable',
-      header: 'Responsable',
-      render: (_, item) => (
-        <div className="flex flex-col pl-2 py-1">
-          <p className="block font-sans text-sm antialiased font-bold leading-normal text-negro-una">
-            {item.responsable.nombre}
-          </p>
-          <p className="block font-sans text-sm antialiased font-normal leading-normal text-gris-una opacity-70">
-            {item.responsable.email}
-          </p>
-        </div>
-      )
+      key: 'responsables',
+      header: 'Responsables',
+      align: 'center',
+      render: (_, item) => {
+        const count = item.responsables.length;
+        return (
+          <div className="flex flex-col items-center text-sm">
+            <span className="block font-sans text-sm antialiased font-semibold leading-normal text-negro-una">
+              {count === 0 && 'Sin asignar'}
+              {count === 1 && '1 responsable'}
+              {count > 1 && `${count} responsables`}
+            </span>
+          </div>
+        );
+      }
     },
     {
       key: 'fecha_publicacion',
-      header: 'Fecha Publicación',
+      header: 'Fecha Creación',
       align: 'center',
       render: (_, item) => (
         <div className="flex flex-col items-center text-sm">
@@ -112,13 +115,12 @@ export const EvidenceSearchResultsTable: React.FC<EvidenceSearchResultsTableProp
       header: 'Estado',
       align: 'center',
       render: (_, item) => {
-        const statusColors = EVIDENCE_STATUS_COLORS[item.estado];
+        const badgeClass = EVIDENCE_STATUS_BADGE[item.estado];
         return (
           <div className="w-max mx-auto">
             <div className={cn(
               'relative grid items-center px-2 py-1 font-sans text-xs font-bold uppercase rounded-md select-none whitespace-nowrap',
-              statusColors.bg,
-              statusColors.text
+              badgeClass
             )}>
               <span>{EVIDENCE_STATUS_LABELS[item.estado]}</span>
             </div>
@@ -129,8 +131,9 @@ export const EvidenceSearchResultsTable: React.FC<EvidenceSearchResultsTableProp
     {
       key: 'recursos',
       header: 'Recursos',
+      align: 'center',
       render: (_, item) => (
-        <div className="flex items-center gap-3 text-sm text-gray-600">
+        <div className="flex items-center justify-center gap-3 text-sm text-gray-600">
           {item.archivos_count > 0 && (
             <div className="flex items-center gap-1" title="Archivos adjuntos">
               <SystemIcons.modal.document className="text-gray-400" size="sm" />

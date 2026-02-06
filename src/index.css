@@ -117,17 +117,19 @@
   --bg-warning: #fffbeb;     /* Fondo amarillo claro para advertencias */
   --bg-error: #fef2f2;       /* Fondo rojo claro para errores */
   --bg-info: #eff6ff;        /* Fondo azul claro para información */
-  --bg-inactive: #f0f0f0;   /* Fondo gris claro para inactivo */
+  --bg-inactive: #e7e8ea;   /* Fondo gris claro para inactivo */
   
   --border-verde: #bbf7d0; /* Borde verde para éxito */
   --border-warning: #fde68a; /* Borde amarillo para advertencias */
   --border-error: #fecaca;   /* Borde rojo para errores */
   --border-info: #bfdbfe;    /* Borde azul para información */
+  --border-inactive: var(--color-gris-una); /* Borde gris para inactivo */
 
   --text-verde: #166534;   /* Texto verde oscuro para éxito */
   --text-warning: #92400e;   /* Texto amarillo oscuro para advertencias */
   --text-error: var(--color-error);      /* Texto rojo oscuro para errores */
   --text-info: #1e40af;      /* Texto azul oscuro para información */
+  --text-inactive: var(--color-gris-una); /* Texto gris para inactivo */
   --text-error-screen: #aba9af;
 
   /* Colores para botones principales */

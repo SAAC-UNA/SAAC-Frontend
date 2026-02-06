@@ -1,3 +1,5 @@
+# No borrar hasta comprobar su implementación 06/02/2026
+
 # Problema: Subida de Múltiples Archivos - Solo llega el primer archivo
 
 **Fecha**: 24 de enero de 2026  

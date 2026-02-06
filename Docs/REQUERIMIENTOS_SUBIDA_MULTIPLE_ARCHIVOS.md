@@ -1,3 +1,5 @@
+# No borrar hasta comprobar su implementación 06/02/2026
+
 # Requerimientos Backend - HU008: Subida Múltiple de Evidencias
 
 **Fecha:** 25 de noviembre de 2025  

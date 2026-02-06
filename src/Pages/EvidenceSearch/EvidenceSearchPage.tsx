@@ -16,15 +16,15 @@ import { DropdownButton } from '@/Components/Ui/DropdownButton';
 import { Tooltip, TooltipTrigger, TooltipContent } from '@/Components/Ui/Tooltip';
 import type { DropdownOption } from '@/Components/Ui/DropdownButton';
 import { SystemIcons } from '@/Components/Ui/Icons/SystemIcons';
-import { EvidenceSearchResultsTable, EvidenceSearchFilters } from './Components';
+import { EvidenceSearchResultsTable, EvidenceSearchFilters, EvidenceDetailsModal } from './Components';
 import { useToast } from '@/Context/ToastContext';
 import { getModuleInfo } from '@/Constants/ModuleInfo';
+import { evidenceSearchService, mapBackendToFrontend } from '@/Services/EvidenceSearchService';
 import type {
   EvidenceSearchFilters as EvidenceFilters,
   EvidenceSearchResult,
   ExportFormat
 } from '@/Types/EvidenceSearchTypes';
-import { mockEvidenceResults } from '@/Mocks/EvidenceSearchMockData';
 
 export const EvidenceSearchPage: React.FC = () => {
   const { showToast } = useToast();
@@ -35,11 +35,22 @@ export const EvidenceSearchPage: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [showFilters, setShowFilters] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
+  
+  // Paginación
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
+  
+  // Filtros actuales
+  const [currentFilters, setCurrentFilters] = useState<EvidenceFilters>({});
+
+  // Modal de detalles
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [selectedEvidence, setSelectedEvidence] = useState<EvidenceSearchResult | null>(null);
 
   // Cargar datos iniciales
   useEffect(() => {
-    setFilteredResults(mockEvidenceResults);
-    setDisplayedResults(mockEvidenceResults);
+    // Ejecutar búsqueda inicial sin filtros
+    applyFilters({});
   }, []);
 
   // Filtrar localmente según término de búsqueda
@@ -55,7 +66,7 @@ export const EvidenceSearchPage: React.FC = () => {
         item.descripcion.toLowerCase().includes(term) ||
         item.criterio_nomenclatura.toLowerCase().includes(term) ||
         item.criterio_descripcion.toLowerCase().includes(term) ||
-        item.responsable.nombre.toLowerCase().includes(term)
+        item.responsables.some(r => r.nombre.toLowerCase().includes(term))
     );
 
     setDisplayedResults(filtered);
@@ -67,73 +78,29 @@ export const EvidenceSearchPage: React.FC = () => {
   }, []);
 
   // Aplicar filtros
-  const applyFilters = useCallback((filtersToApply: EvidenceFilters) => {
+  const applyFilters = useCallback(async (filtersToApply: EvidenceFilters, page: number = 1) => {
     setLoading(true);
+    setCurrentFilters(filtersToApply);
+    setCurrentPage(page);
 
-    // Simular delay de API
-    setTimeout(() => {
-      let filtered = [...mockEvidenceResults];
+    try {
+      // Llamar al backend con timestamp para evitar caché
+      const response = await evidenceSearchService.search(
+        filtersToApply,
+        page,
+        itemsPerPage
+      );
 
-      // Filtro por criterio
-      if (filtersToApply.criterio) {
-        filtered = filtered.filter(
-          (item) => item.criterio_nomenclatura === filtersToApply.criterio
-        );
-      }
+      // Mapear datos del backend a nuestro formato
+      const mappedResults = response.data.map(mapBackendToFrontend);
+      
+      setFilteredResults(mappedResults);
+      setDisplayedResults(mappedResults);
 
-      // Filtro por responsable
-      if (filtersToApply.responsable_id) {
-        filtered = filtered.filter(
-          (item) => item.responsable.usuario_id === filtersToApply.responsable_id
-        );
-      }
-
-      // Filtro por fecha desde
-      if (filtersToApply.fecha_publicacion_desde) {
-        filtered = filtered.filter(
-          (item) =>
-            new Date(item.fecha_publicacion) >= new Date(filtersToApply.fecha_publicacion_desde!)
-        );
-      }
-
-      // Filtro por fecha hasta
-      if (filtersToApply.fecha_publicacion_hasta) {
-        const endDate = new Date(filtersToApply.fecha_publicacion_hasta);
-        endDate.setHours(23, 59, 59, 999); // Incluir todo el día
-        filtered = filtered.filter(
-          (item) => new Date(item.fecha_publicacion) <= endDate
-        );
-      }
-
-      // Filtro por estado
-      if (filtersToApply.estado && filtersToApply.estado !== 'todos') {
-        filtered = filtered.filter((item) => item.estado === filtersToApply.estado);
-      }
-
-      // Filtro por rol (simular restricción de permisos)
-      if (filtersToApply.rol_id) {
-        // En un escenario real, esto vendría del backend
-        // Por ahora solo filtramos los que tienen ese rol en roles_acceso
-        const roleNames: Record<number, string> = {
-          1: 'Administrador',
-          2: 'Coordinador',
-          3: 'Auditor',
-          4: 'Docente',
-          5: 'Estudiante'
-        };
-        const roleName = roleNames[filtersToApply.rol_id];
-        if (roleName) {
-          filtered = filtered.filter((item) =>
-            item.roles_acceso.includes(roleName)
-          );
-        }
-      }
-
-      setFilteredResults(filtered);
       setLoading(false);
 
       // Mostrar mensaje con cantidad de resultados
-      if (filtered.length === 0) {
+      if (mappedResults.length === 0) {
         showToast({
           type: 'info',
           title: 'No se encontraron evidencias con los filtros aplicados'
@@ -141,38 +108,59 @@ export const EvidenceSearchPage: React.FC = () => {
       } else {
         showToast({
           type: 'success',
-          title: `Se encontraron ${filtered.length} evidencia(s)`
+          title: `Se encontraron ${response.meta.total} evidencia(s)`
         });
       }
-    }, 800);
-  }, [showToast]);
+    } catch (error) {
+      setLoading(false);
+      setFilteredResults([]);
+      setDisplayedResults([]);
+      showToast({
+        type: 'error',
+        title: 'Error al buscar evidencias. Intente nuevamente.'
+      });
+      console.error('Error en búsqueda:', error);
+    }
+  }, [showToast, currentPage, itemsPerPage]);
 
   // Exportar resultados
-  const handleExport = (format: ExportFormat) => {
+  const handleExport = async (format: ExportFormat) => {
     setLoading(true);
 
-    // Simular exportación
-    setTimeout(() => {
-      setLoading(false);
-      
-      const fileName = `evidencias_${new Date().toISOString().split('T')[0]}.${format === 'pdf' ? 'pdf' : 'xlsx'}`;
+    try {
+      if (format === 'excel') {
+        await evidenceSearchService.exportExcel(currentFilters);
+      } else {
+        await evidenceSearchService.exportPDF(currentFilters);
+      }
 
+      setLoading(false);
       showToast({
         type: 'success',
-        title: `Archivo ${fileName} generado exitosamente. Descarga iniciada.`
+        title: 'Archivo descargado exitosamente'
       });
-
-      // En producción, aquí se generaría y descargaría el archivo real
-      console.log(`Exportando ${displayedResults.length} evidencias a ${format}`);
-    }, 1500);
+    } catch (error) {
+      setLoading(false);
+      showToast({
+        type: 'error',
+        title: 'Error al exportar. Intente nuevamente.'
+      });
+      console.error('Error en exportación:', error);
+    }
   };
 
   // Ver detalles de evidencia
   const handleViewDetails = (evidenceId: number) => {
-    showToast({
-      type: 'info',
-      title: `Mostrando detalles de evidencia #${evidenceId} (funcionalidad pendiente)`
-    });
+    const evidence = displayedResults.find(e => e.evidencia_id === evidenceId);
+    if (evidence) {
+      setSelectedEvidence(evidence);
+      setIsModalOpen(true);
+    }
+  };
+
+  const handleCloseModal = () => {
+    setIsModalOpen(false);
+    setSelectedEvidence(null);
   };
 
   const moduleInfo = getModuleInfo('evidence_search');
@@ -263,6 +251,13 @@ export const EvidenceSearchPage: React.FC = () => {
           onViewDetails={handleViewDetails}
         />
       </div>
+
+      {/* Modal de detalles */}
+      <EvidenceDetailsModal
+        isOpen={isModalOpen}
+        onClose={handleCloseModal}
+        evidence={selectedEvidence}
+      />
     </ScreenContainer>
   );
 };

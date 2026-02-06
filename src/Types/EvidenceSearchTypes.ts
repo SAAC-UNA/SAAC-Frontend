@@ -63,12 +63,12 @@ export interface EvidenceSearchResult {
   fecha_publicacion: string; // ISO 8601
   estado: EvidencePublicationStatus;
   
-  // Información del responsable
-  responsable: {
+  // Información de responsables (puede ser array vacío si no hay asignados)
+  responsables: Array<{
     usuario_id: number;
     nombre: string;
     email: string;
-  };
+  }>;
   
   // Información de archivos/enlaces asociados
   archivos_count: number;
@@ -154,13 +154,24 @@ export const EVIDENCE_STATUS_LABELS: Record<EvidencePublicationStatus, string> =
   vencido: 'Vencido'
 };
 
+// Clases badge usando las variables CSS definidas en index.css
+export const EVIDENCE_STATUS_BADGE: Record<EvidencePublicationStatus, string> = {
+  pendiente: 'bg-[var(--bg-inactive)] text-[var(--text-inactive)]',
+  en_proceso: 'bg-[var(--border-warning)] text-[var(--text-warning)]',
+  aprobado: 'bg-[var(--border-verde)] text-[var(--text-verde)]',
+  rechazado: 'bg-[var(--border-error)] text-[var(--text-error)]',
+  completado: 'bg-[var(--border-info)] text-[var(--text-info)]',
+  vencido: 'bg-[var(--border-error)] text-[var(--text-error)]'
+};
+
+// Mantener compatibilidad con código existente (deprecated - usar EVIDENCE_STATUS_BADGE)
 export const EVIDENCE_STATUS_COLORS: Record<EvidencePublicationStatus, { bg: string; text: string }> = {
-  pendiente: { bg: 'bg-yellow-100', text: 'text-yellow-800' },
-  en_proceso: { bg: 'bg-blue-100', text: 'text-blue-800' },
-  aprobado: { bg: 'bg-green-100', text: 'text-green-800' },
+  pendiente: { bg: 'bg-gray-100', text: 'text-gray-800' },
+  en_proceso: { bg: 'bg-yellow-100', text: 'text-yellow-800' },
+  aprobado: { bg: 'bg-verde', text: 'text-verde' },
   rechazado: { bg: 'bg-red-100', text: 'text-red-800' },
-  completado: { bg: 'bg-teal-100', text: 'text-teal-800' },
-  vencido: { bg: 'bg-gray-100', text: 'text-gray-800' }
+  completado: { bg: 'bg-blue-100', text: 'text-blue-800' },
+  vencido: { bg: 'bg-red-100', text: 'text-red-800' }
 };
 
 export const SORT_FIELD_LABELS: Record<SortField, string> = {
