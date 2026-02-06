@@ -17,7 +17,7 @@ export const mockEvidenceResults: EvidenceSearchResult[] = [
     criterio_descripcion: 'Planificación estratégica institucional',
     descripcion: 'Plan Estratégico Institucional 2024-2028',
     fecha_publicacion: '2024-01-15T10:30:00Z',
-    estado: 'publicada' as EvidencePublicationStatus,
+    estado: 'aprobado' as EvidencePublicationStatus,
     responsable: {
       usuario_id: 101,
       nombre: 'María González Rodríguez',
@@ -35,7 +35,7 @@ export const mockEvidenceResults: EvidenceSearchResult[] = [
     criterio_descripcion: 'Políticas de calidad académica',
     descripcion: 'Política de Evaluación Docente 2024',
     fecha_publicacion: '2024-02-20T14:15:00Z',
-    estado: 'publicada' as EvidencePublicationStatus,
+    estado: 'completado' as EvidencePublicationStatus,
     responsable: {
       usuario_id: 102,
       nombre: 'Carlos Jiménez Mora',
@@ -53,7 +53,7 @@ export const mockEvidenceResults: EvidenceSearchResult[] = [
     criterio_descripcion: 'Programas de formación continua',
     descripcion: 'Informe de Capacitaciones Docentes 2023',
     fecha_publicacion: '2024-03-10T11:00:00Z',
-    estado: 'borrador' as EvidencePublicationStatus,
+    estado: 'pendiente' as EvidencePublicationStatus,
     responsable: {
       usuario_id: 103,
       nombre: 'Ana Patricia Solís',
@@ -71,7 +71,7 @@ export const mockEvidenceResults: EvidenceSearchResult[] = [
     criterio_descripcion: 'Sistemas de evaluación estudiantil',
     descripcion: 'Reglamento de Evaluación de Aprendizajes',
     fecha_publicacion: '2024-01-25T16:45:00Z',
-    estado: 'publicada' as EvidencePublicationStatus,
+    estado: 'aprobado' as EvidencePublicationStatus,
     responsable: {
       usuario_id: 101,
       nombre: 'María González Rodríguez',
@@ -89,7 +89,7 @@ export const mockEvidenceResults: EvidenceSearchResult[] = [
     criterio_descripcion: 'Infraestructura tecnológica',
     descripcion: 'Inventario de Equipos de Cómputo 2024',
     fecha_publicacion: '2024-04-05T09:30:00Z',
-    estado: 'archivada' as EvidencePublicationStatus,
+    estado: 'en_proceso' as EvidencePublicationStatus,
     responsable: {
       usuario_id: 104,
       nombre: 'Roberto Vargas Castro',
@@ -107,7 +107,7 @@ export const mockEvidenceResults: EvidenceSearchResult[] = [
     criterio_descripcion: 'Misión y visión institucional',
     descripcion: 'Documento de Misión y Visión Actualizados',
     fecha_publicacion: '2024-02-10T13:20:00Z',
-    estado: 'publicada' as EvidencePublicationStatus,
+    estado: 'vencido' as EvidencePublicationStatus,
     responsable: {
       usuario_id: 102,
       nombre: 'Carlos Jiménez Mora',
@@ -125,7 +125,7 @@ export const mockEvidenceResults: EvidenceSearchResult[] = [
     criterio_descripcion: 'Programas de investigación',
     descripcion: 'Catálogo de Proyectos de Investigación 2024',
     fecha_publicacion: '2024-03-18T15:00:00Z',
-    estado: 'rechazada' as EvidencePublicationStatus,
+    estado: 'rechazado' as EvidencePublicationStatus,
     responsable: {
       usuario_id: 105,
       nombre: 'Luisa Fernández Pérez',
@@ -143,7 +143,7 @@ export const mockEvidenceResults: EvidenceSearchResult[] = [
     criterio_descripcion: 'Gestión de recursos bibliotecarios',
     descripcion: 'Informe de Adquisiciones Bibliográficas 2023',
     fecha_publicacion: '2024-01-30T10:00:00Z',
-    estado: 'publicada' as EvidencePublicationStatus,
+    estado: 'completado' as EvidencePublicationStatus,
     responsable: {
       usuario_id: 103,
       nombre: 'Ana Patricia Solís',
@@ -161,7 +161,7 @@ export const mockEvidenceResults: EvidenceSearchResult[] = [
     criterio_descripcion: 'Estructura organizacional',
     descripcion: 'Organigrama Institucional 2024',
     fecha_publicacion: '2024-04-12T11:30:00Z',
-    estado: 'borrador' as EvidencePublicationStatus,
+    estado: 'pendiente' as EvidencePublicationStatus,
     responsable: {
       usuario_id: 101,
       nombre: 'María González Rodríguez',
@@ -179,7 +179,7 @@ export const mockEvidenceResults: EvidenceSearchResult[] = [
     criterio_descripcion: 'Mecanismos de seguimiento académico',
     descripcion: 'Sistema de Tutoría Académica',
     fecha_publicacion: '2024-03-25T14:45:00Z',
-    estado: 'publicada' as EvidencePublicationStatus,
+    estado: 'en_proceso' as EvidencePublicationStatus,
     responsable: {
       usuario_id: 104,
       nombre: 'Roberto Vargas Castro',
@@ -225,11 +225,13 @@ export const mockRoleOptions: FilterOption<number>[] = [
   { value: 5, label: 'Estudiante' }
 ];
 
-// Opciones para filtro de estado
+// Opciones para filtro de estado (coinciden con ESTADO_EVIDENCIA del backend)
 export const mockStatusOptions: FilterOption<EvidencePublicationStatus | 'todos'>[] = [
   { value: 'todos', label: 'Todos los estados' },
-  { value: 'publicada', label: 'Publicada' },
-  { value: 'borrador', label: 'Borrador' },
-  { value: 'archivada', label: 'Archivada' },
-  { value: 'rechazada', label: 'Rechazada' }
+  { value: 'pendiente', label: 'Pendiente' },
+  { value: 'en_proceso', label: 'En Proceso' },
+  { value: 'aprobado', label: 'Aprobado' },
+  { value: 'rechazado', label: 'Rechazado' },
+  { value: 'completado', label: 'Completado' },
+  { value: 'vencido', label: 'Vencido' }
 ];

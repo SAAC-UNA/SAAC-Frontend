@@ -3,8 +3,15 @@
  * Definiciones para filtros, resultados y exportación
  */
 
-// Estados posibles de una evidencia publicada
-export type EvidencePublicationStatus = 'publicada' | 'borrador' | 'archivada' | 'rechazada';
+// Estados posibles de una evidencia (deben coincidir con ESTADO_EVIDENCIA del backend)
+// Pendiente, En proceso, Aprobado, Rechazado, Completado, Vencido
+export type EvidencePublicationStatus = 
+  | 'pendiente' 
+  | 'en_proceso' 
+  | 'aprobado' 
+  | 'rechazado' 
+  | 'completado' 
+  | 'vencido';
 
 // Tipos de ordenamiento disponibles
 export type SortField = 'fecha_publicacion' | 'criterio' | 'responsable' | 'estado';
@@ -139,17 +146,21 @@ export interface EvidenceSearchState {
  * Helpers para trabajar con estados de evidencias
  */
 export const EVIDENCE_STATUS_LABELS: Record<EvidencePublicationStatus, string> = {
-  publicada: 'Publicada',
-  borrador: 'Borrador',
-  archivada: 'Archivada',
-  rechazada: 'Rechazada'
+  pendiente: 'Pendiente',
+  en_proceso: 'En Proceso',
+  aprobado: 'Aprobado',
+  rechazado: 'Rechazado',
+  completado: 'Completado',
+  vencido: 'Vencido'
 };
 
 export const EVIDENCE_STATUS_COLORS: Record<EvidencePublicationStatus, { bg: string; text: string }> = {
-  publicada: { bg: 'bg-green-100', text: 'text-green-800' },
-  borrador: { bg: 'bg-yellow-100', text: 'text-yellow-800' },
-  archivada: { bg: 'bg-gray-100', text: 'text-gray-800' },
-  rechazada: { bg: 'bg-red-100', text: 'text-red-800' }
+  pendiente: { bg: 'bg-yellow-100', text: 'text-yellow-800' },
+  en_proceso: { bg: 'bg-blue-100', text: 'text-blue-800' },
+  aprobado: { bg: 'bg-green-100', text: 'text-green-800' },
+  rechazado: { bg: 'bg-red-100', text: 'text-red-800' },
+  completado: { bg: 'bg-teal-100', text: 'text-teal-800' },
+  vencido: { bg: 'bg-gray-100', text: 'text-gray-800' }
 };
 
 export const SORT_FIELD_LABELS: Record<SortField, string> = {
