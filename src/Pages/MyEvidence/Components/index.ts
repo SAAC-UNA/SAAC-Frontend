@@ -1,6 +1,5 @@
 /**
- * Index para exportar componentes de EvidenceAssignment
- * HU-029 - Mis Evidencias Asignadas
+ * Index para exportar componentes de Mis Evidencias
  */
 
 export { AssignmentStatusBadge } from './AssignmentStatusBadge';

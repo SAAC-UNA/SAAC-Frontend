@@ -22,7 +22,7 @@ const AccreditationProgress = lazy(() => import('@/Pages/Accreditation/Accredita
 const EvidenceAssignment = lazy(() => import('./Pages/EvidenceAssignment').then(m => ({ default: m.EvidenceAssignment })));
 const EvidenceUploadPage = lazy(() => import('./Pages/EvidenceUpload').then(m => ({ default: m.EvidenceUploadPage })));
 const EvidenceSearchPage = lazy(() => import('./Pages/EvidenceSearch').then(m => ({ default: m.EvidenceSearchPage })));
-const MyEvidenceAssignmentsPage = lazy(() => import('./Pages/EvidenceAssignment/MyEvidenceAssignmentsPage'));
+const MyEvidenceAssignmentsPage = lazy(() => import('./Pages/MyEvidence').then(m => ({ default: m.MyEvidenceAssignmentsPage })));
 const AuditLogPage = lazy(() => import('@/Pages/AuditLog/AuditLogPage'));
 const CompromisosList = lazy(() => import('./Pages/CompromisosMejora/CompromisosList').then(m => ({ default: m.CompromisosList })));
 const CrearCompromiso = lazy(() => import('./Pages/CompromisosMejora/CrearCompromiso'));
