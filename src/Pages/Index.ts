@@ -27,7 +27,7 @@ export { EvidenceAssignment } from './EvidenceAssignment';
 export { default as MyEvidenceAssignmentsPage } from './EvidenceAssignment/MyEvidenceAssignmentsPage';
 
 // Subida de Evidencias
-export { EvidenceUploadPage } from './Evidence';
+export { EvidenceUploadPage } from './EvidenceUpload';
 
 // Bitácora del Sistema (HU-005)
 export { AuditLogPage } from './AuditLog';
