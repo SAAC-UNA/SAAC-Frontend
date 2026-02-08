@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { ScreenContainer } from '@/Components/Ui/ScreenContainer';
 import { Button, LoadingSpinner } from '@/Components/Ui/Index';
 import { SystemIcons } from '@/Components/Ui/Icons/SystemIcons';
-import { config } from '@/Config/app.config';
+import { axiosInstance } from '@/Config/axios';
 import { ApprovalModal } from './Components/ApprovalModal';
 import { SuccessModal } from '@/Components/Ui/SuccessModal';
 import { CustomSelect } from '@/Components/Ui/SingleSelect';
@@ -73,25 +73,14 @@ const AprobacionBloquesSimple: React.FC = () => {
       
       // Cargar criterios, evidencias y procesos en paralelo
       const [criteriosResponse, evidenciasResponse, procesosResponse] = await Promise.all([
-        fetch(`${config.API_BASE_URL}/estructura/criterios`),
-        fetch(`${config.API_BASE_URL}/estructura/evidencias`),
-        fetch(`${config.API_BASE_URL}/estructura/procesos`, {
-          credentials: 'include',
-          headers: { 'Accept': 'application/json' }
-        })
+        axiosInstance.get('/estructura/criterios'),
+        axiosInstance.get('/estructura/evidencias'),
+        axiosInstance.get('/estructura/procesos')
       ]);
       
-      if (!criteriosResponse.ok) throw new Error('Error al cargar criterios');
-      if (!evidenciasResponse.ok) throw new Error('Error al cargar evidencias');
-      if (!procesosResponse.ok) throw new Error('Error al cargar procesos');
-      
-      const criteriosData = await criteriosResponse.json();
-      const evidenciasData = await evidenciasResponse.json();
-      const procesosData = await procesosResponse.json();
-      
-      const criteriosArray = criteriosData.data || criteriosData;
-      const evidenciasArray = evidenciasData.data || evidenciasData;
-      const procesosArray = procesosData.data || procesosData;
+      const criteriosArray = criteriosResponse.data.data || criteriosResponse.data;
+      const evidenciasArray = evidenciasResponse.data.data || evidenciasResponse.data;
+      const procesosArray = procesosResponse.data.data || procesosResponse.data;
       
       console.log('Procesos cargados:', procesosArray);
       console.log('Criterios cargados:', criteriosArray.length);
@@ -153,26 +142,13 @@ const AprobacionBloquesSimple: React.FC = () => {
 
     try {
       const endpoint = modalAction === 'aprobar' 
-        ? `${config.API_BASE_URL}/criterios/${selectedCriterio.id}/aprobar`
-        : `${config.API_BASE_URL}/criterios/${selectedCriterio.id}/rechazar`;
+        ? `/criterios/${selectedCriterio.id}/aprobar`
+        : `/criterios/${selectedCriterio.id}/rechazar`;
 
-      const response = await fetch(endpoint, {
-        method: 'POST',
-        credentials: 'include',
-        headers: {
-          'Content-Type': 'application/json',
-          'Accept': 'application/json'
-        },
-        body: JSON.stringify({
-          proceso_id: selectedProcesoId,
-          comentario: comentario || null
-        })
+      await axiosInstance.post(endpoint, {
+        proceso_id: selectedProcesoId,
+        comentario: comentario || null
       });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || 'Error al procesar la solicitud');
-      }
 
       // Cerrar modal de confirmación
       setIsModalOpen(false);

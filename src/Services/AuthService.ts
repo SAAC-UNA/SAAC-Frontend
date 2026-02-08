@@ -46,12 +46,20 @@ export const authService = {
         throw new Error('La cédula y contraseña son obligatorias');
       }
 
-      // Realizar solicitud POST al backend
+      // PASO 1: Obtener cookie CSRF de Laravel Sanctum
+      await fetch(`${config.API_BASE_URL.replace('/api', '')}/sanctum/csrf-cookie`, {
+        method: 'GET',
+        credentials: 'include', // Incluir cookies
+      });
+
+      // PASO 2: Realizar login (con cookie CSRF ya seteada)
       const response = await fetch(`${config.API_BASE_URL}/auth/login`, {
         method: 'POST',
+        credentials: 'include', // Incluir cookies (CSRF + recibir auth_token)
         headers: {
           'Content-Type': 'application/json',
           'Accept': 'application/json',
+          'X-Requested-With': 'XMLHttpRequest',
         },
         body: JSON.stringify({
           cedula: cedula.trim(),
@@ -79,17 +87,16 @@ export const authService = {
       // Parsear respuesta exitosa
       const data = await response.json();
 
-      if (!data.user || !data.token) {
+      if (!data.user) {
         throw new Error('Respuesta inválida del servidor');
       }
 
-      // Guardar token y usuario en localStorage
-      localStorage.setItem(AUTH_TOKEN_KEY, data.token);
+      // Guardar SOLO usuario en localStorage (el token está en httpOnly cookie)
       localStorage.setItem(USER_DATA_KEY, JSON.stringify(data.user));
 
       return {
         user: data.user,
-        token: data.token,
+        token: '', // Ya no se usa, está en cookie
       };
     } catch (error) {
       // Re-lanzar el error para que el componente lo maneje
@@ -99,9 +106,24 @@ export const authService = {
     }
   },
 
-  logout: (): void => {
-    localStorage.removeItem(AUTH_TOKEN_KEY);
-    localStorage.removeItem(USER_DATA_KEY);
+  logout: async (): Promise<void> => {
+    try {
+      // Llamar al backend para limpiar la cookie
+      await fetch(`${config.API_BASE_URL}/auth/logout`, {
+        method: 'POST',
+        credentials: 'include', // Enviar cookie para autenticación
+        headers: {
+          'Accept': 'application/json',
+          'X-Requested-With': 'XMLHttpRequest',
+        },
+      });
+    } catch (error) {
+      console.error('Error en logout:', error);
+    } finally {
+      // Limpiar localStorage
+      localStorage.removeItem(AUTH_TOKEN_KEY);
+      localStorage.removeItem(USER_DATA_KEY);
+    }
   },
 
   getCurrentUser: (): User | null => {
@@ -114,9 +136,8 @@ export const authService = {
   },
 
   isAuthenticated: (): boolean => {
-    const token = localStorage.getItem(AUTH_TOKEN_KEY);
     const user = localStorage.getItem(USER_DATA_KEY);
-    // Los tokens de Laravel Sanctum son strings simples, no JWTs
-    return !!(token && user);
+    // El token está en httpOnly cookie, solo verificamos el usuario
+    return !!user;
   }
 };

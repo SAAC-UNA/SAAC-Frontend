@@ -4,7 +4,7 @@
 
 export const config = {
   // URL base del API del backend
-  // Lee desde variable de entorno o usa valor por defecto
+  // IMPORTANTE: Usar 'localhost' (no 127.0.0.1) para que las cookies funcionen correctamente
   API_BASE_URL: import.meta.env.VITE_API_URL || 'http://localhost:8000/api',
   
   // Tiempos de espera
