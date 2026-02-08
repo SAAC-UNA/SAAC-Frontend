@@ -39,6 +39,7 @@ export interface EvidenceAssignmentFormData {
   selectedRoles: number[];
   fecha_limite?: string;
   comentario?: string;
+  excludedUsers?: number[];
 }
 
 export interface EvidenceAssignmentRequest {

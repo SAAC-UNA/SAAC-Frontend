@@ -1,5 +1,7 @@
 @import "tailwindcss";
 
+/* TODO: refactorizar index*/
+
 /* ===== TIPOGRAFÍAS POPPINS ===== */
 
 @font-face {
@@ -446,7 +448,7 @@
 
   /* ===== Border radius personalizado para componentes ===== */
   .rounded-corner {
-    border-radius: 15px;
+    border-radius: 8px;
   }
   /*===== Mínima altura del Layout para el screenContainer =====*/
   .min-h-app {
