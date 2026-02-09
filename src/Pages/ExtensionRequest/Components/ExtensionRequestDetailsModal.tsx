@@ -71,7 +71,7 @@ export const ExtensionRequestDetailsModal: React.FC<ExtensionRequestDetailsModal
               <p className="text-sm font-medium text-gray-700">Fecha de solicitud</p>
             </div>
             <p className="text-base font-semibold text-gray-900">
-              {new Date(solicitud.fecha_solicitud).toLocaleDateString('es-ES', {
+              {new Date(solicitud.created_at).toLocaleDateString('es-ES', {
                 day: '2-digit',
                 month: 'long',
                 year: 'numeric'

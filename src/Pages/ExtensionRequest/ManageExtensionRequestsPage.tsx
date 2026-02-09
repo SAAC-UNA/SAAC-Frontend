@@ -3,35 +3,47 @@
  * HU-016 - Vista de gestión para encargados de acreditación
  */
 
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { ScreenContainer } from '@/Components/Ui/ScreenContainer';
-import { BackendErrorAlert } from '@/Components/Ui/BackendErrorAlert';
-import { PageHeader } from '@/Components/Ui/PageHeader';
-import { ReviewExtensionRequestModal } from '@/Components/Ui/ReviewExtensionRequestModal';
+import { SearchInput } from '@/Components/Ui/SearchInput';
+import { FilterButton, type FilterOption } from '@/Components/Ui/FilterButton';
+import { extensionRequestService } from '@/Services/ExtensionRequestService';
 import { useToast } from '@/Context/ToastContext';
 import { useAuth } from '@/Context/AuthContext';
-import { extensionRequestService } from '@/Services/ExtensionRequestService';
+import { getContextualInfo } from '@/Constants/ModuleInfo';
+import { ManageExtensionRequestsTable } from './Components/ManageExtensionRequestsTable';
+import { ReviewExtensionRequestModal } from '@/Components/Ui/ReviewExtensionRequestModal';
 import type { 
   ExtensionRequest, 
   ExtensionRequestStatus,
   ReviewFormData 
 } from '@/Types/ExtensionRequestTypes';
 import { SystemIcons } from '@/Components/Ui/Icons/SystemIcons';
-import { Table, type TableColumn } from '@/Components/Ui/Table';
-import { TableActionButton } from '@/Components/Ui/TableActionButton';
-import { FilterButton, type FilterOption } from '@/Components/Ui/FilterButton';
 
 export const ManageExtensionRequestsPage: React.FC = () => {
   const { showToast } = useToast();
   const { user, isAuthenticated } = useAuth();
   
+  // Obtener información del módulo desde ModuleInfo
+  const moduleInfo = getContextualInfo('extension_requests', 'manage');
+  
   const [solicitudes, setSolicitudes] = useState<ExtensionRequest[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [searchQuery, setSearchQuery] = useState('');
   const [filtroEstado, setFiltroEstado] = useState<ExtensionRequestStatus | 'todos'>('pendiente');
-  const [selectedSolicitud, setSelectedSolicitud] = useState<ExtensionRequest | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
-  const [totalPages, setTotalPages] = useState(1);
+  
+  // Estado para el modal de revisión
+  const [selectedSolicitud, setSelectedSolicitud] = useState<ExtensionRequest | null>(null);
+
+  // Opciones para el filtro de estado
+  const estadoOptions: FilterOption<ExtensionRequestStatus | 'todos'>[] = [
+    { value: 'todos', label: 'Todos' },
+    { value: 'pendiente', label: 'Pendiente' },
+    { value: 'aprobada', label: 'Aprobada' },
+    { value: 'rechazada', label: 'Rechazada' }
+  ];
 
   useEffect(() => {
     loadSolicitudes();
@@ -53,21 +65,27 @@ export const ManageExtensionRequestsPage: React.FC = () => {
         : await extensionRequestService.getAllRequests(filters);
 
       setSolicitudes(response.data);
-      setTotalPages(response.meta.last_page);
     } catch (error: any) {
-      setError(error.message || 'No se pudieron cargar las solicitudes');
+      const errorMessage = error.message || 'No se pudieron cargar las solicitudes';
+      setError(errorMessage);
+      showToast({
+        type: 'error',
+        title: 'Error al Cargar',
+        message: errorMessage
+      });
     } finally {
       setLoading(false);
     }
   };
 
-  const handleReviewClick = (solicitud: ExtensionRequest) => {
+  // Handlers
+  const handleReviewRequest = useCallback((solicitud: ExtensionRequest) => {
     setSelectedSolicitud(solicitud);
-  };
+  }, []);
 
-  const handleCloseModal = () => {
+  const handleCloseModal = useCallback(() => {
     setSelectedSolicitud(null);
-  };
+  }, []);
 
   const handleApprove = async (data: ReviewFormData) => {
     if (!selectedSolicitud) return;
@@ -86,6 +104,7 @@ export const ManageExtensionRequestsPage: React.FC = () => {
 
       // Recargar la lista
       await loadSolicitudes();
+      handleCloseModal();
     } catch (error: any) {
       showToast({
         type: 'error',
@@ -113,6 +132,7 @@ export const ManageExtensionRequestsPage: React.FC = () => {
 
       // Recargar la lista
       await loadSolicitudes();
+      handleCloseModal();
     } catch (error: any) {
       showToast({
         type: 'error',
@@ -123,108 +143,39 @@ export const ManageExtensionRequestsPage: React.FC = () => {
     }
   };
 
-  const getEstadoBadge = (estado: ExtensionRequestStatus) => {
-    const badges = {
-      pendiente: 'bg-yellow-100 text-yellow-800 border-yellow-300',
-      aprobada: 'bg-green-100 text-green-800 border-green-300',
-      rechazada: 'bg-red-100 text-red-800 border-red-300'
-    };
+  // Validar que tenga rol de Encargado de Acreditación o Superusuario
+  const hasPermission = user?.roles?.some(r => 
+    r.name === 'Encargado de Acreditación' || r.name === 'Superusuario'
+  );
 
-    const icons = {
-      pendiente: <SystemIcons.interface.clock size="sm" />,
-      aprobada: <SystemIcons.interface.checkCircle size="sm" />,
-      rechazada: <SystemIcons.interface.xCircle size="sm" />
-    };
-
-    return (
-      <span className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium border ${badges[estado]}`}>
-        {icons[estado]}
-        {estado.charAt(0).toUpperCase() + estado.slice(1)}
-      </span>
-    );
-  };
-
-  // Opciones para el filtro de estado
-  const estadoOptions: FilterOption<ExtensionRequestStatus | 'todos'>[] = [
-    { value: 'todos', label: 'Todos' },
-    { value: 'pendiente', label: 'Pendiente' },
-    { value: 'aprobada', label: 'Aprobada' },
-    { value: 'rechazada', label: 'Rechazada' }
-  ];
-
-  // Definir columnas de la tabla
-  const columns = useMemo<TableColumn<ExtensionRequest>[]>(() => [
-    {
-      key: 'usuario',
-      header: 'Solicitante',
-      render: (_value, item) => (
-        <div>
-          <div className="text-sm font-medium text-gray-900">
-            {item.usuario?.nombre || 'N/A'}
-          </div>
-          <div className="text-sm text-gray-500">
-            {item.usuario?.email || ''}
-          </div>
-        </div>
-      )
-    },
-    {
-      key: 'motivo',
-      header: 'Motivo',
-      render: (_value, item) => (
-        <div className="text-sm text-gray-900 max-w-xs truncate" title={item.motivo}>
-          {item.motivo}
-        </div>
-      )
-    },
-    {
-      key: 'fecha_solicitud',
-      header: 'Fecha Solicitud',
-      render: (_value, item) => (
-        <span className="text-sm text-gray-500">
-          {new Date(item.fecha_solicitud).toLocaleDateString('es-ES')}
-        </span>
-      )
-    },
-    {
-      key: 'fecha_sugerida',
-      header: 'Fecha Sugerida',
-      render: (_value, item) => (
-        <span className="text-sm font-medium text-gray-900">
-          {new Date(item.fecha_sugerida).toLocaleDateString('es-ES')}
-        </span>
-      )
-    },
-    {
-      key: 'estado',
-      header: 'Estado',
-      render: (_value, item) => getEstadoBadge(item.estado)
-    },
-    {
-      key: 'acciones',
-      header: 'Acciones',
-      render: (_value, item) => (
-        <div className="flex justify-end gap-2">
-          {item.estado === 'pendiente' ? (
-            <TableActionButton
-              action="edit"
-              tooltip="Revisar solicitud"
-              onClick={() => handleReviewClick(item)}
+  return (
+    <ScreenContainer
+      title={moduleInfo.title}
+      description={moduleInfo.description}
+      variant="full-width"
+      headerExtra={
+        isAuthenticated && hasPermission ? (
+          <div className="flex flex-col sm:flex-row w-full gap-2 shrink-0 lg:w-auto">
+            <SearchInput
+              placeholder="Buscar por solicitante, email o motivo..."
+              value={searchQuery}
+              onChange={setSearchQuery}
+              className="w-full sm:w-72"
             />
-          ) : (
-            <span className="text-xs text-gray-500">
-              {item.resolutor?.nombre || 'N/A'}
-            </span>
-          )}
-        </div>
-      )
-    }
-  ], []);
-
-  // Validar autenticación y permisos
-  if (!isAuthenticated) {
-    return (
-      <ScreenContainer>
+            <FilterButton
+              tooltipText="Filtrar por estado"
+              options={estadoOptions}
+              value={filtroEstado}
+              onChange={(value) => {
+                setFiltroEstado(value);
+                setCurrentPage(1);
+              }}
+            />
+          </div>
+        ) : undefined
+      }
+    >
+      {!isAuthenticated ? (
         <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-6 text-center">
           <SystemIcons.interface.xCircle size="3xl" className="text-yellow-600 mx-auto mb-3" />
           <h3 className="text-lg font-semibold text-yellow-900 mb-2">
@@ -234,15 +185,7 @@ export const ManageExtensionRequestsPage: React.FC = () => {
             Debe iniciar sesión para acceder a esta sección.
           </p>
         </div>
-      </ScreenContainer>
-    );
-  }
-
-  // Validar que tenga rol de Encargado de Acreditación
-  const hasPermission = user?.roles?.some(r => r.name === 'Encargado de Acreditación');
-  if (!hasPermission) {
-    return (
-      <ScreenContainer>
+      ) : !hasPermission ? (
         <div className="bg-red-50 border border-red-200 rounded-lg p-6 text-center">
           <SystemIcons.interface.xCircle size="3xl" className="text-red-600 mx-auto mb-3" />
           <h3 className="text-lg font-semibold text-red-900 mb-2">
@@ -252,67 +195,30 @@ export const ManageExtensionRequestsPage: React.FC = () => {
             No tiene permisos para gestionar solicitudes de ampliación. Esta sección es solo para Encargados de Acreditación.
           </p>
         </div>
-      </ScreenContainer>
-    );
-  }
-
-  return (
-    <ScreenContainer>
-      <PageHeader
-        title="Gestión de Solicitudes de Ampliación"
-        description="Revise y gestione las solicitudes de ampliación de plazo para evidencias"
-      />
-
-      {error && (
-        <BackendErrorAlert 
-          error={error} 
-          onRetry={loadSolicitudes}
-        />
-      )}
-
-      {/* Filtros */}
-      <div className="mb-6 flex justify-end">
-        <FilterButton
-          tooltipText="Filtrar por estado"
-          options={estadoOptions}
-          value={filtroEstado}
-          onChange={(value) => {
-            setFiltroEstado(value);
-            setCurrentPage(1);
-          }}
-        />
-      </div>
-
-      {/* Tabla de solicitudes */}
-      <Table
-        data={solicitudes as unknown as Record<string, unknown>[]}
-        columns={columns as unknown as TableColumn<Record<string, unknown>>[]}
-        loading={loading}
-        emptyMessage={
-          filtroEstado !== 'todos' 
-            ? `No hay solicitudes ${filtroEstado}` 
-            : 'No hay solicitudes de ampliación registradas'
-        }
-        pagination={
-          totalPages > 1
-            ? {
-                currentPage,
-                totalPages,
-                onPageChange: setCurrentPage
-              }
-            : undefined
-        }
-      />
-
-      {/* Modal de revisión */}
-      {selectedSolicitud && (
-        <ReviewExtensionRequestModal
-          isOpen={!!selectedSolicitud}
-          onClose={handleCloseModal}
-          onApprove={handleApprove}
-          onReject={handleReject}
-          solicitud={selectedSolicitud}
-        />
+      ) : (
+        <>
+          <ManageExtensionRequestsTable
+            requests={solicitudes}
+            isLoading={loading}
+            error={error}
+            searchQuery={searchQuery}
+            filterEstado={filtroEstado}
+            itemsPerPage={15}
+            onRetry={loadSolicitudes}
+            onReviewRequest={handleReviewRequest}
+          />
+          
+          {/* Modal de revisión */}
+          {selectedSolicitud && (
+            <ReviewExtensionRequestModal
+              isOpen={!!selectedSolicitud}
+              onClose={handleCloseModal}
+              onApprove={handleApprove}
+              onReject={handleReject}
+              solicitud={selectedSolicitud}
+            />
+          )}
+        </>
       )}
     </ScreenContainer>
   );

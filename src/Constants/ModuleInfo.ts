@@ -121,6 +121,21 @@ export const MODULE_INFO: Record<string, ModuleInfo> = {
     shortDescription: 'Buscar evidencias en el sistema'
   },
 
+  // Solicitudes de Ampliación
+  extension_requests_my: {
+    title: 'Mis Solicitudes de Ampliación',
+    subtitle: 'Solicitudes de Extensión de Plazo',
+    description: 'Visualice el estado de sus solicitudes de ampliación de plazo para evidencias',
+    shortDescription: 'Ver mis solicitudes de ampliación'
+  },
+
+  extension_requests_manage: {
+    title: 'Gestión de Solicitudes de Ampliación',
+    subtitle: 'Revisión y Aprobación de Solicitudes',
+    description: 'Revise y gestione las solicitudes de ampliación de plazo para evidencias',
+    shortDescription: 'Gestionar solicitudes de ampliación'
+  },
+
   // Gestión de Reportes
   reports: {
     title: 'Gestión de Reportes',
@@ -181,20 +196,6 @@ export const MODULE_INFO: Record<string, ModuleInfo> = {
     shortDescription: 'Ver todos los elementos'
   },
 
-  // Solicitudes de Ampliación
-  extension_requests_my: {
-    title: 'Mis Solicitudes de Ampliación',
-    subtitle: 'Estado de Mis Solicitudes',
-    description: 'Consulte el estado de sus solicitudes de ampliación de plazo',
-    shortDescription: 'Ver mis solicitudes de ampliación'
-  },
-
-  extension_requests_manage: {
-    title: 'Gestionar Solicitudes de Ampliación',
-    subtitle: 'Revisión de Solicitudes',
-    description: 'Revise, apruebe o rechace las solicitudes de ampliación de plazo',
-    shortDescription: 'Revisar solicitudes de ampliación'
-  }
 };
 
 /**

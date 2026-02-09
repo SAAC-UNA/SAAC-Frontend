@@ -1,11 +1,12 @@
 /**
- * ExtensionRequestsTable - Tabla de solicitudes de ampliación
- * HU-016
+ * ManageExtensionRequestsTable - Tabla de gestión de solicitudes de ampliación
+ * HU-016 - Para Encargados de Acreditación
  * 
  * Características:
  * - DataTable con paginación
  * - Filtros por estado
  * - Búsqueda
+ * - Acción de revisar/aprobar solicitudes
  */
 
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
@@ -13,7 +14,7 @@ import { DataTable, TableActionButton } from '@/components/index';
 import { BackendErrorAlert } from '@/Components/Ui/BackendErrorAlert';
 import type { ExtensionRequest, ExtensionRequestStatus } from '@/Types/ExtensionRequestTypes';
 
-interface ExtensionRequestsTableProps {
+interface ManageExtensionRequestsTableProps {
   requests?: ExtensionRequest[];
   isLoading?: boolean;
   error?: string | null;
@@ -22,10 +23,10 @@ interface ExtensionRequestsTableProps {
   itemsPerPage?: number;
   unstyled?: boolean;
   onRetry?: () => void;
-  onViewDetails?: (request: ExtensionRequest) => void;
+  onReviewRequest?: (request: ExtensionRequest) => void;
 }
 
-export const ExtensionRequestsTable: React.FC<ExtensionRequestsTableProps> = ({
+export const ManageExtensionRequestsTable: React.FC<ManageExtensionRequestsTableProps> = ({
   requests = [],
   isLoading = false,
   error = null,
@@ -34,7 +35,7 @@ export const ExtensionRequestsTable: React.FC<ExtensionRequestsTableProps> = ({
   itemsPerPage = 15,
   unstyled = false,
   onRetry,
-  onViewDetails
+  onReviewRequest
 }) => {
   const [currentPage, setCurrentPage] = useState(1);
 
@@ -44,7 +45,7 @@ export const ExtensionRequestsTable: React.FC<ExtensionRequestsTableProps> = ({
     return text.substring(0, maxLength) + '...';
   }, []);
 
-  // Badge de estado
+  // Badge de estado (sin íconos)
   const getEstadoBadge = useCallback((estado: ExtensionRequestStatus) => {
     const badges = {
       pendiente: 'bg-yellow-100 text-yellow-800 border-yellow-300',
@@ -106,6 +107,20 @@ export const ExtensionRequestsTable: React.FC<ExtensionRequestsTableProps> = ({
   // Columnas de la tabla
   const columns = useMemo(() => [
     {
+      key: 'solicitante',
+      header: 'Solicitante',
+      render: (_: unknown, item: ExtensionRequest) => (
+        <div className="flex flex-col">
+          <p className="relative grid items-center px-2 py-1 font-sans text-xs font-bold text-gray-900 uppercase rounded-md select-none whitespace-nowrap">
+            {item.usuario?.nombre || 'N/A'}
+          </p>
+          <p className="relative grid items-center px-2 py-1 font-sans text-xs text-gray-500 rounded-md select-none whitespace-nowrap">
+            {item.usuario?.email || ''}
+          </p>
+        </div>
+      )
+    },
+    {
       key: 'motivo',
       header: 'Motivo',
       render: (_: unknown, item: ExtensionRequest) => (
@@ -143,20 +158,26 @@ export const ExtensionRequestsTable: React.FC<ExtensionRequestsTableProps> = ({
       render: (_: unknown, item: ExtensionRequest) => getEstadoBadge(item.estado)
     },
     {
-      key: 'actions',
+      key: 'acciones',
       header: 'Acciones',
       align: 'center',
       render: (_: unknown, item: ExtensionRequest) => (
         <div className="flex items-center justify-center gap-2 pr-2">
-          <TableActionButton
-            action="view"
-            tooltip="Ver detalles de la solicitud"
-            onClick={() => onViewDetails?.(item)}
-          />
+          {item.estado === 'pendiente' ? (
+            <TableActionButton
+              action="edit"
+              tooltip="Revisar solicitud"
+              onClick={() => onReviewRequest?.(item)}
+            />
+          ) : (
+            <span className="text-xs text-gray-500">
+              {item.resolutor?.nombre || 'N/A'}
+            </span>
+          )}
         </div>
       )
     }
-  ], [truncateText, getEstadoBadge, onViewDetails]);
+  ], [truncateText, getEstadoBadge, onReviewRequest]);
 
   if (error) {
     return (
@@ -184,8 +205,8 @@ export const ExtensionRequestsTable: React.FC<ExtensionRequestsTableProps> = ({
           searchQuery
             ? `No se encontraron solicitudes que coincidan con "${searchQuery}"`
             : filterEstado !== 'todos'
-              ? `No tiene solicitudes ${filterEstado}`
-              : 'No tiene solicitudes. Puede crear solicitudes desde la sección de evidencias asignadas'
+              ? `No hay solicitudes ${filterEstado}`
+              : 'No hay solicitudes de ampliación registradas'
         }
         unstyled={unstyled}
       />

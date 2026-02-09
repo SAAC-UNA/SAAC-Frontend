@@ -11,7 +11,6 @@ export interface ExtensionRequest {
   solicitud_ampliacion_id: number;
   evidencia_asignacion_id: number;
   usuario_id: number;
-  fecha_solicitud: string; // ISO 8601
   motivo: string;
   fecha_sugerida: string; // ISO 8601
   estado: ExtensionRequestStatus;

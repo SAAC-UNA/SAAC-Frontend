@@ -20,11 +20,14 @@ export const ProtectedRoute = ({ children, requireRole }: ProtectedRouteProps) =
   if (!isAuthenticated) {
     return <Navigate to="/login" replace />;
   }
-
+// TODO cambiar o eliminar este diseño
   // Si requiere un rol específico, validar
   if (requireRole) {
+    // Superusuario tiene acceso a todo
+    const isSuperUser = user?.roles?.some(r => r.name === 'Superusuario');
     const hasRole = user?.roles?.some(r => r.name === requireRole);
-    if (!hasRole) {
+    
+    if (!isSuperUser && !hasRole) {
       return (
         <div style={{ 
           padding: '40px', 
