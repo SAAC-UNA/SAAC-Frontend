@@ -7,14 +7,9 @@
  * - Obtener lista completa de roles
  * - Manejo de errores unificado
  * - Integración completa con Laravel backend
- * 
- * Configuración:
- * - baseURL: Apunta al API de Laravel (puerto 8000)
- * - Headers: Content-Type y Accept application/json
- * - Patrón Singleton para una sola instancia global
  */
 
-// Servicio para manejar operaciones relacionadas con roles
+import { axiosInstance } from '@/Config/axios';
 import type { PermissionOption } from '@/types/RoleTypes';
 
 /**
@@ -83,39 +78,19 @@ const transformBackendRole = (backendRole: BackendRole): Role => {
 };
 
 /**
- * Servicio para gestión de roles - Patrón Singleton
+ * Servicio para gestión de roles
  */
 class RoleService {
-  private baseURL: string;
-
-  constructor() {
-    // URL base del backend Laravel - Configuración para desarrollo
-    this.baseURL = 'http://127.0.0.1:8000/api';
-  }
-
   /**
    * Crear un nuevo rol
    */
   async crearRol(roleData: CreateRoleData): Promise<ApiResponse<Role>> {
     try {
-      const response = await fetch(`${this.baseURL}/roles`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Accept': 'application/json',
-        },
-        body: JSON.stringify(roleData),
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.errorMessage || `HTTP error! status: ${response.status}`);
-      }
-
-      return await response.json();
-    } catch (error) {
+      const response = await axiosInstance.post('/roles', roleData);
+      return response.data;
+    } catch (error: any) {
       console.error('Error creando rol:', error);
-      throw error;
+      throw new Error(error.response?.data?.errorMessage || error.message || 'Error al crear el rol');
     }
   }
 
@@ -124,24 +99,11 @@ class RoleService {
    */
   async editarRol(roleId: number, roleData: CreateRoleData): Promise<ApiResponse<Role>> {
     try {
-      const response = await fetch(`${this.baseURL}/roles/${roleId}`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          'Accept': 'application/json',
-        },
-        body: JSON.stringify(roleData),
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.errorMessage || `HTTP error! status: ${response.status}`);
-      }
-
-      return await response.json();
-    } catch (error) {
+      const response = await axiosInstance.put(`/roles/${roleId}`, roleData);
+      return response.data;
+    } catch (error: any) {
       console.error('Error editando rol:', error);
-      throw error;
+      throw new Error(error.response?.data?.errorMessage || error.message || 'Error al editar el rol');
     }
   }
 
@@ -150,19 +112,8 @@ class RoleService {
    */
   async listarPermisos(): Promise<ApiResponse<PermissionOption[]>> {
     try {
-      const response = await fetch(`${this.baseURL}/roles/permisos`, {
-        method: 'GET',
-        headers: {
-          'Accept': 'application/json',
-        },
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.errorMessage || `HTTP error! status: ${response.status}`);
-      }
-
-      const data = await response.json();
+      const response = await axiosInstance.get('/roles/permisos');
+      const data = response.data;
       
       // El backend ahora devuelve objetos con {id, name, label}
       // Necesitamos transformar a PermissionOption {value, label}
@@ -171,7 +122,7 @@ class RoleService {
           // Fallback: el backend aún envía solo strings - transformar manualmente
           const transformedPermissions = data.data.map((name: string) => ({
             value: name,
-            label: name // Sin transformación, usar el nombre técnico como etiqueta
+            label: name
           }));
           return {
             ...data,
@@ -191,9 +142,9 @@ class RoleService {
       }
 
       return data;
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error obteniendo permisos:', error);
-      throw error;
+      throw new Error(error.response?.data?.errorMessage || error.message || 'Error al obtener permisos');
     }
   }
 
@@ -202,22 +153,11 @@ class RoleService {
    */
   async eliminarRol(roleId: number): Promise<ApiResponse<null>> {
     try {
-      const response = await fetch(`${this.baseURL}/roles/${roleId}`, {
-        method: 'DELETE',
-        headers: {
-          'Accept': 'application/json',
-        },
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.errorMessage || `HTTP error! status: ${response.status}`);
-      }
-
-      return await response.json();
-    } catch (error) {
+      const response = await axiosInstance.delete(`/roles/${roleId}`);
+      return response.data;
+    } catch (error: any) {
       console.error('Error eliminando rol:', error);
-      throw error;
+      throw new Error(error.response?.data?.errorMessage || error.message || 'Error al eliminar el rol');
     }
   }
 
@@ -226,19 +166,8 @@ class RoleService {
    */
   async listarRoles(): Promise<ApiResponse<Role[]>> {
     try {
-      const response = await fetch(`${this.baseURL}/roles`, {
-        method: 'GET',
-        headers: {
-          'Accept': 'application/json',
-        },
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.errorMessage || `HTTP error! status: ${response.status}`);
-      }
-
-      const data: ApiResponse<BackendRole[]> = await response.json();
+      const response = await axiosInstance.get('/roles');
+      const data: ApiResponse<BackendRole[]> = response.data;
       
       // Transformar los roles del backend al formato del frontend
       if (data.data && Array.isArray(data.data)) {
@@ -250,9 +179,9 @@ class RoleService {
       }
 
       return data as unknown as ApiResponse<Role[]>;
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error obteniendo roles:', error);
-      throw error;
+      throw new Error(error.response?.data?.errorMessage || error.message || 'Error al obtener roles');
     }
   }
 
@@ -261,21 +190,8 @@ class RoleService {
    */
   async obtenerRol(roleId: number): Promise<ApiResponse<Role>> {
     try {
-      const url = `${this.baseURL}/roles/${roleId}`;
-      
-      const response = await fetch(url, {
-        method: 'GET',
-        headers: {
-          'Accept': 'application/json',
-        },
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.errorMessage || `HTTP error! status: ${response.status}`);
-      }
-
-      const data: ApiResponse<BackendRole> = await response.json();
+      const response = await axiosInstance.get(`/roles/${roleId}`);
+      const data: ApiResponse<BackendRole> = response.data;
       
       // Transformar el rol del backend al formato del frontend
       if (data.data) {
@@ -287,9 +203,9 @@ class RoleService {
       }
 
       return data as unknown as ApiResponse<Role>;
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error obteniendo rol:', error);
-      throw error;
+      throw new Error(error.response?.data?.errorMessage || error.message || 'Error al obtener el rol');
     }
   }
 }

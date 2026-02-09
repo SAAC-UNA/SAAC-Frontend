@@ -1,11 +1,10 @@
 /**
    Enumeración de tipos de elementos en la jerarquía del repositorio
-   Representa los 9 niveles jerárquicos del sistema SAAC
+   Representa los 8 niveles jerárquicos del sistema SAAC
  */
 export const ElementType = {
   UNIVERSITY: 'university',
   CAMPUS: 'campus',
-  FACULTY: 'faculty', 
   CAREER: 'career',
   DIMENSION: 'dimension',
   COMPONENT: 'component',

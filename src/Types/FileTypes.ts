@@ -18,15 +18,24 @@ export interface FileModel {
   archivo_id: number;
   nombre_original: string;
   fecha_subida: string;
+  
+  // Tipo de evidencia (Backend: enum 'archivo' o 'enlace')
+  tipo: 'archivo' | 'enlace';
+  
+  // URL externa (solo para tipo='enlace')
+  url?: string | null;
+  
+  // Metadatos (solo para tipo='archivo')
   tamanio?: number;
   tipo_mime?: string;
+  path?: string | null;
+  
+  // Acceso público
   is_publico: boolean;
   url_publica?: string;
   link_expira_en?: string;
-  // Nuevos campos para soporte de enlaces
-  url_externa?: string | null;  // URL externa si es enlace
-  tipo_evidencia?: 'archivo' | 'enlace';  // Tipo de evidencia
-  path?: string | null;  // Ruta física (null para enlaces)
+  
+  // Relaciones
   evidencia_id: number;
   evidencia?: {
     evidencia_id: number;

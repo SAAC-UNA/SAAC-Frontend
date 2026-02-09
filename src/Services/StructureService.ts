@@ -1,9 +1,10 @@
 /**
  * StructureService - Servicio para operaciones con la estructura del repositorio
- * * Integración con backend Laravel siguiendo el patrón de RoleService
+ * Integración con backend Laravel siguiendo el patrón de servicios modernos
  * Maneja CRUD completo de todos los tipos de elementos
  */
 
+import { axiosInstance } from '@/Config/axios';
 import type { ElementType, StructureElement, CreateElementForm, EditElementForm } from '@/Types/StructureTypes';
 import { 
   ELEMENT_TYPE_TO_ENDPOINT,
@@ -27,47 +28,30 @@ export interface ApiResponse<T = any> {
 async function createSystemComment(): Promise<number> {
   try {
     // Primero, obtener un usuario válido del sistema
-    const usersResponse = await fetch('http://127.0.0.1:8000/api/admin/users', {
-      method: 'GET',
-      headers: {
-        'Accept': 'application/json',
-      },
-    });
-
     let userId = 5; // Valor por defecto
 
-    if (usersResponse.ok) {
-      const usersData = await usersResponse.json();
+    try {
+      const usersResponse = await axiosInstance.get('/admin/users');
+      const usersData = usersResponse.data;
+      
       // Usar el primer usuario disponible
       if (usersData && usersData.length > 0) {
         userId = usersData[0].usuario_id;
         console.log('✅ Usando usuario_id:', userId, 'para crear comentario');
       }
+    } catch (error) {
+      console.warn('No se pudo obtener usuarios, usando ID por defecto:', userId);
     }
 
-    const response = await fetch('http://127.0.0.1:8000/api/dev/comments', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Accept': 'application/json',
-      },
-      body: JSON.stringify({
-        usuario_id: userId,
-        texto: 'Comentario generado automáticamente por el sistema'
-      }),
+    const response = await axiosInstance.post('/dev/comments', {
+      usuario_id: userId,
+      texto: 'Comentario generado automáticamente por el sistema'
     });
 
-    if (!response.ok) {
-      const errorData = await response.json();
-      console.error('Error del backend al crear comentario:', errorData);
-      throw new Error(`Error creando comentario: ${response.status}`);
-    }
-
-    const data = await response.json();
-    return data.comentario_id;
-  } catch (error) {
+    return response.data.comentario_id;
+  } catch (error: any) {
     console.error('Error creando comentario del sistema:', error);
-    throw new Error('No se pudo crear el comentario requerido');
+    throw new Error(error.response?.data?.message || 'No se pudo crear el comentario requerido');
   }
 }
 
@@ -78,78 +62,39 @@ async function createSystemComment(): Promise<number> {
 async function ensureEvidenceState(): Promise<number> {
   try {
     // Intentar obtener estados existentes
-    const response = await fetch('http://127.0.0.1:8000/api/estructura/estados-evidencia', {
-      method: 'GET',
-      headers: {
-        'Accept': 'application/json',
-      },
-    });
-
-    if (response.ok) {
-      const data = await response.json();
-      const estados = Array.isArray(data) ? data : (data.data || []);
-      
-      if (estados.length > 0) {
-        // Usar el primer estado disponible
-        return estados[0].estado_evidencia_id;
-      }
+    const response = await axiosInstance.get('/estructura/estados-evidencia');
+    const data = response.data;
+    const estados = Array.isArray(data) ? data : (data.data || []);
+    
+    if (estados.length > 0) {
+      // Usar el primer estado disponible
+      return estados[0].estado_evidencia_id;
     }
 
     // Si no existe ninguno, crear uno por defecto
-    const createResponse = await fetch('http://127.0.0.1:8000/api/estructura/estados-evidencia', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Accept': 'application/json',
-      },
-      body: JSON.stringify({
-        nombre: 'Pendiente'
-      }),
+    const createResponse = await axiosInstance.post('/estructura/estados-evidencia', {
+      nombre: 'Pendiente'
     });
 
-    if (!createResponse.ok) {
-      throw new Error(`Error creando estado de evidencia: ${createResponse.status}`);
-    }
-
-    const newState = await createResponse.json();
-    return newState.estado_evidencia_id || newState.data?.estado_evidencia_id;
-    
-  } catch (error) {
+    return createResponse.data.estado_evidencia_id || createResponse.data.data?.estado_evidencia_id;
+  } catch (error: any) {
     console.error('Error obteniendo/creando estado de evidencia:', error);
-    throw new Error('No se pudo obtener un estado de evidencia válido');
+    throw new Error(error.response?.data?.message || 'No se pudo obtener un estado de evidencia válido');
   }
 }
 
 /**
- * Servicio para gestión de estructura - Patrón Singleton
+ * Servicio para gestión de estructura
  */
 class StructureService {
-  private baseURL: string;
-
-  constructor() {
-    // URL base del backend Laravel - igual que RoleService
-    this.baseURL = 'http://127.0.0.1:8000/api/estructura';
-  }
-
   /**
   * Listar todos los elementos de un tipo específico
   */
   async listByType(type: ElementType): Promise<ApiResponse<StructureElement[]>> {
     try {
       const endpoint = ELEMENT_TYPE_TO_ENDPOINT[type];
-      const response = await fetch(`${this.baseURL}/${endpoint}`, {
-        method: 'GET',
-        headers: {
-          'Accept': 'application/json',
-        },
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.errorMessage || `HTTP error! status: ${response.status}`);
-      }
-
-      const data = await response.json();
+      const response = await axiosInstance.get(`/estructura/${endpoint}`);
+      const data = response.data;
       
       let rawElements = Array.isArray(data) ? data : (data.data || []);
       
@@ -161,9 +106,9 @@ class StructureService {
         message: 'Elementos cargados exitosamente',
         data: transformedElements
       };
-    } catch (error) {
+    } catch (error: any) {
       console.error(`Error listando ${type}:`, error);
-      throw error;
+      throw new Error(error.response?.data?.message || error.message || `Error al listar ${type}`);
     }
   }
 
@@ -173,7 +118,7 @@ class StructureService {
   async getFullTree(): Promise<ApiResponse<StructureElement[]>> {
     try {
       const types: ElementType[] = [
-        'university', 'campus', 'faculty', 'career',
+        'university', 'campus', 'career',
         'dimension', 'component', 'criteria', 'standard', 'evidence'
       ];
 
@@ -209,19 +154,9 @@ class StructureService {
   async getById(type: ElementType, id: string): Promise<ApiResponse<StructureElement>> {
     try {
       const endpoint = ELEMENT_TYPE_TO_ENDPOINT[type];
-      const response = await fetch(`${this.baseURL}/${endpoint}/${id}`, {
-        method: 'GET',
-        headers: {
-          'Accept': 'application/json',
-        },
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.errorMessage || `HTTP error! status: ${response.status}`);
-      }
-
-      const data = await response.json();
+      const response = await axiosInstance.get(`/estructura/${endpoint}/${id}`);
+      const data = response.data;
+      
       console.log(`📥 Backend response for ${type} ${id}:`, data);
       
       // El backend puede devolver { data: {...} } o directamente {...}
@@ -234,9 +169,9 @@ class StructureService {
         message: data.message || 'Elemento obtenido exitosamente',
         data: transformedElement
       };
-    } catch (error) {
+    } catch (error: any) {
       console.error(`Error obteniendo ${type} ${id}:`, error);
-      throw error;
+      throw new Error(error.response?.data?.message || error.message || `Error al obtener ${type}`);
     }
   }
 
@@ -294,22 +229,9 @@ class StructureService {
 
       console.log('📤 PAYLOAD FINAL A ENVIAR:', payload);
 
-      const response = await fetch(`${this.baseURL}/${endpoint}`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Accept': 'application/json',
-        },
-        body: JSON.stringify(payload),
-      });
+      const response = await axiosInstance.post(`/estructura/${endpoint}`, payload);
+      const data = response.data;
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        console.error('🔥 ERROR COMPLETO DEL BACKEND:', errorData);
-        throw new Error(errorData.errorMessage || `HTTP error! status: ${response.status}`);
-      }
-
-      const data = await response.json();
       console.log('🔍 Backend response data:', data);
 
       const responseData = data.data || data;
@@ -326,9 +248,10 @@ class StructureService {
 
       throw new Error('No se recibieron datos válidos del servidor');
       
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error creando elemento:', error);
-      throw error;
+      console.error('🔥 ERROR COMPLETO DEL BACKEND:', error.response?.data);
+      throw new Error(error.response?.data?.errorMessage || error.response?.data?.message || error.message || 'Error al crear elemento');
     }
   }
 
@@ -343,37 +266,29 @@ class StructureService {
       const requiresSpecialHandling = ['faculty', 'campus', 'dimension', 'component', 'criteria', 'career', 'standard'].includes(type);
 
       if (requiresSpecialHandling) {
-        const currentResponse = await fetch(`${this.baseURL}/${endpoint}/${id}`, {
-          method: 'GET',
-          headers: { 'Accept': 'application/json' },
-        });
+        const currentResponse = await axiosInstance.get(`/estructura/${endpoint}/${id}`);
+        const currentData = currentResponse.data;
+        const current = currentData.data || currentData;
         
-        if (currentResponse.ok) {
-          const currentData = await currentResponse.json();
-          const current = currentData.data || currentData;
-          
-          console.log(`🔍 Current ${type} data from backend:`, current);
-          
-          payload = {
-            nombre: elementData.name,
-            nomenclatura: elementData.nomenclature,
-            descripcion: elementData.description
-          };
-          
-          if (type === 'faculty') {
-            payload.sede_id = current.sede_id;
-            payload.universidad_id = current.universidad_id;
-          } else if (type === 'campus') {
-            payload.universidad_id = current.universidad_id;
-          } else if (['dimension', 'component', 'criteria'].includes(type)) {
-            payload.comentario_id = current.comentario_id;
-          } else if (type === 'career') {
-            payload.facultad_id = current.facultad_id;
-          } else if (type === 'standard') {
-            payload.criterio_id = current.criterio_id;
-          }
-        } else {
-          throw new Error(`No se pudo obtener los datos actuales del ${type}`);
+        console.log(`🔍 Current ${type} data from backend:`, current);
+        
+        payload = {
+          nombre: elementData.name,
+          nomenclatura: elementData.nomenclature,
+          descripcion: elementData.description
+        };
+        
+        if (type === 'faculty') {
+          payload.sede_id = current.sede_id;
+          payload.universidad_id = current.universidad_id;
+        } else if (type === 'campus') {
+          payload.universidad_id = current.universidad_id;
+        } else if (['dimension', 'component', 'criteria'].includes(type)) {
+          payload.comentario_id = current.comentario_id;
+        } else if (type === 'career') {
+          payload.facultad_id = current.facultad_id;
+        } else if (type === 'standard') {
+          payload.criterio_id = current.criterio_id;
         }
       } else {
         payload = mapFrontendToBackend(elementData, type);
@@ -386,39 +301,26 @@ class StructureService {
         payload: payload
       });
 
-      const response = await fetch(`${this.baseURL}/${endpoint}/${id}`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          'Accept': 'application/json',
-        },
-        body: JSON.stringify(payload),
-      });
+      const response = await axiosInstance.put(`/estructura/${endpoint}/${id}`, payload);
+      const data = response.data;
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.errorMessage || `HTTP error! status: ${response.status}`);
+      // Lógica mejorada: buscar el objeto de datos tanto en data.data como en data directamente.
+      const responseData = data.data || data;
+
+      // Verificar que tenemos un objeto de datos válido antes de transformar
+      if (responseData && typeof responseData === 'object' && Object.keys(responseData).length > 0) {
+          const transformedElement = mapBackendToFrontend(responseData, type);
+          return {
+              message: data.message || 'Elemento actualizado exitosamente',
+              data: transformedElement
+          };
       }
 
-      const data = await response.json();
-
-    // Lógica mejorada: buscar el objeto de datos tanto en data.data como en data directamente.
-    const responseData = data.data || data;
-
-    // Verificar que tenemos un objeto de datos válido antes de transformar
-    if (responseData && typeof responseData === 'object' && Object.keys(responseData).length > 0) {
-        const transformedElement = mapBackendToFrontend(responseData, type);
-        return {
-            message: data.message || 'Elemento actualizado exitosamente',
-            data: transformedElement
-        };
-    }
-
-    // Si no se encuentran datos válidos, puede que la respuesta sea simple (ej. solo un mensaje)
-    return data;
-    } catch (error) {
+      // Si no se encuentran datos válidos, puede que la respuesta sea simple (ej. solo un mensaje)
+      return data;
+    } catch (error: any) {
       console.error(`Error actualizando ${type} ${id}:`, error);
-      throw error;
+      throw new Error(error.response?.data?.message || error.message || `Error al actualizar ${type}`);
     }
   }
 
@@ -428,75 +330,50 @@ class StructureService {
   async delete(type: ElementType, id: string): Promise<ApiResponse<null>> {
     try {
       const endpoint = ELEMENT_TYPE_TO_ENDPOINT[type];
-      const response = await fetch(`${this.baseURL}/${endpoint}/${id}`, {
-        method: 'DELETE',
-        headers: {
-          'Accept': 'application/json',
-        },
-      });
-
-      if (!response.ok) {
-        // Si hay error, el backend SÍ devuelve JSON con el mensaje
-        const errorData = await response.json();
-        throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
-      }
+      await axiosInstance.delete(`/estructura/${endpoint}/${id}`);
 
       // 204 No Content no tiene body, así que devolvemos un objeto vacío
       return {
         message: 'Elemento eliminado exitosamente',
         data: null
       };
-    } catch (error) {
+    } catch (error: any) {
       console.error(`Error eliminando ${type} ${id}:`, error);
-      throw error;
+      throw new Error(error.response?.data?.message || error.message || `Error al eliminar ${type}`);
     }
   }
 
   /**
- * Activar/Desactivar un elemento
- */
-async setActive(type: ElementType, id: string, active: boolean): Promise<ApiResponse<StructureElement>> {
-  try {
-    const endpoint = ELEMENT_TYPE_TO_ENDPOINT[type];
-    const url = `${this.baseURL}/${endpoint}/${id}/active`;
-    const payload = { active };
-    
-    console.log('🔥 setActive REQUEST:', { url, payload });
-    
-    const response = await fetch(url, {
-      method: 'PATCH',
-      headers: {
-        'Content-Type': 'application/json',
-        'Accept': 'application/json',
-      },
-      body: JSON.stringify(payload),
-    });
+   * Activar/Desactivar un elemento
+   */
+  async setActive(type: ElementType, id: string, active: boolean): Promise<ApiResponse<StructureElement>> {
+    try {
+      const endpoint = ELEMENT_TYPE_TO_ENDPOINT[type];
+      const payload = { active };
+      
+      console.log('🔥 setActive REQUEST:', { endpoint, id, payload });
+      
+      const response = await axiosInstance.patch(`/estructura/${endpoint}/${id}/active`, payload);
+      const data = response.data;
 
-    console.log('🔥 setActive RESPONSE status:', response.status);
+      console.log('🔥 setActive RESPONSE status:', response.status);
+      console.log('🔥 setActive SUCCESS data:', data);
+      
+      if (data.data) {
+        const transformedElement = mapBackendToFrontend(data.data, type);
+        return {
+          ...data,
+          data: transformedElement
+        };
+      }
 
-    if (!response.ok) {
-      const errorData = await response.json();
-      console.log('🔥 setActive ERROR data:', errorData);
-      throw new Error(errorData.message || errorData.errorMessage || `HTTP error! status: ${response.status}`);
+      return data;
+    } catch (error: any) {
+      console.error(`Error cambiando estado de ${type} ${id}:`, error);
+      console.log('🔥 setActive ERROR data:', error.response?.data);
+      throw new Error(error.response?.data?.message || error.response?.data?.errorMessage || error.message || `Error al cambiar estado de ${type}`);
     }
-
-    const data = await response.json();
-    console.log('🔥 setActive SUCCESS data:', data);
-    
-    if (data.data) {
-      const transformedElement = mapBackendToFrontend(data.data, type);
-      return {
-        ...data,
-        data: transformedElement
-      };
-    }
-
-    return data;
-  } catch (error) {
-    console.error(`Error cambiando estado de ${type} ${id}:`, error);
-    throw error;
   }
-}
 }
 
 // Instancia singleton del servicio

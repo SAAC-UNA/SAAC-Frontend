@@ -1,3 +1,5 @@
+# No borrar hasta comprobar su implementación 06/02/2026
+
 # Implementación de Validación de Duplicados en Asignación de Evidencias
 
 ## 📋 Resumen

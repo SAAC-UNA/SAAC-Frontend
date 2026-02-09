@@ -9,13 +9,14 @@ import { formatFileSize, getFileCategory } from '@/Types/FileTypes';
 import { DeleteConfirmationModal } from '@/Components/Ui/DeleteConfirmationModal';
 import { LoadingSpinner } from '@/Components/Ui/Loading';
 import { SystemIcons } from '@/Components/Ui/Icons/SystemIcons';
+import { TableActionButton } from '@/Components/Ui/TableActionButton';
+import { useToast } from '@/Context/ToastContext';
+import { axiosInstance } from '@/Config/axios';
 
 interface FileListProps {
   files: FileModel[];
   loading?: boolean;
   onDelete?: (fileId: number) => Promise<void>;
-  onMakePublic?: (fileId: number) => Promise<void>;
-  onRevokePublic?: (fileId: number) => Promise<void>;
   showActions?: boolean;
   emptyMessage?: string;
 }
@@ -24,14 +25,62 @@ export const FileList: React.FC<FileListProps> = ({
   files,
   loading = false,
   onDelete,
-  onMakePublic,
-  onRevokePublic,
   showActions = true,
   emptyMessage = 'No hay archivos subidos aún.'
 }) => {
   const [selectedFileId, setSelectedFileId] = useState<number | null>(null);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [actionLoading, setActionLoading] = useState<number | null>(null);
+  const { showToast } = useToast();
+
+  const handleFileClick = async (file: FileModel) => {
+    if (file.tipo === 'enlace') {
+      // Copiar URL al portapapeles
+      try {
+        await navigator.clipboard.writeText(file.url || '');
+        showToast({
+          type: 'success',
+          title: 'URL copiada',
+          message: 'El enlace se copió al portapapeles',
+        });
+      } catch (error) {
+        showToast({
+          type: 'error',
+          title: 'Error',
+          message: 'No se pudo copiar el enlace',
+        });
+      }
+    } else {
+      // Descargar archivo
+      try {
+        const response = await axiosInstance.get(`/archivos/${file.archivo_id}/download`, {
+          responseType: 'blob',
+        });
+        
+        // Crear URL temporal del blob
+        const url = window.URL.createObjectURL(new Blob([response.data]));
+        const link = document.createElement('a');
+        link.href = url;
+        link.setAttribute('download', file.nombre_original);
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+        window.URL.revokeObjectURL(url);
+        
+        showToast({
+          type: 'success',
+          title: 'Descarga iniciada',
+          message: `Descargando ${file.nombre_original}`,
+        });
+      } catch (error: any) {
+        showToast({
+          type: 'error',
+          title: 'Error al descargar',
+          message: error.response?.data?.message || 'No se pudo descargar el archivo',
+        });
+      }
+    }
+  };
 
   const getFileIcon = (filename: string) => {
     const category = getFileCategory(filename);
@@ -84,13 +133,17 @@ export const FileList: React.FC<FileListProps> = ({
   };
 
   const formatDate = (dateString: string) => {
+    // Asegurar que la fecha se parsee correctamente desde el backend
+    // El backend envía fechas en zona horaria de Costa Rica
     const date = new Date(dateString);
     return new Intl.DateTimeFormat('es-CR', {
       day: '2-digit',
       month: 'short',
       year: 'numeric',
       hour: '2-digit',
-      minute: '2-digit'
+      minute: '2-digit',
+      hour12: true,
+      timeZone: 'America/Costa_Rica'
     }).format(date);
   };
 
@@ -112,25 +165,7 @@ export const FileList: React.FC<FileListProps> = ({
     }
   };
 
-  const handleMakePublic = async (fileId: number) => {
-    if (!onMakePublic) return;
-    try {
-      setActionLoading(fileId);
-      await onMakePublic(fileId);
-    } finally {
-      setActionLoading(null);
-    }
-  };
 
-  const handleRevokePublic = async (fileId: number) => {
-    if (!onRevokePublic) return;
-    try {
-      setActionLoading(fileId);
-      await onRevokePublic(fileId);
-    } finally {
-      setActionLoading(null);
-    }
-  };
 
   if (loading) {
     return (
@@ -171,79 +206,28 @@ export const FileList: React.FC<FileListProps> = ({
               <div className="flex-1 min-w-0">
                 <div className="flex items-start justify-between gap-2">
                   <div className="flex-1 min-w-0">
-                    <h4 className="text-sm font-medium text-gray-900 truncate">
+                    <h4 
+                      className="text-sm font-medium text-blue-600 hover:text-blue-800 truncate cursor-pointer"
+                      onClick={() => handleFileClick(file)}
+                      title={file.tipo === 'enlace' ? 'Clic para copiar URL' : 'Clic para descargar'}
+                    >
                       {file.nombre_original}
                     </h4>
                     <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-gray-500">
                       <span>{formatDate(file.fecha_subida)}</span>
-                      {file.usuario && (
-                        <>
-                          <span>•</span>
-                          <span>{file.usuario.nombre_completo}</span>
-                        </>
-                      )}
-                      {file.tamanio && (
-                        <>
-                          <span>•</span>
-                          <span>{formatFileSize(file.tamanio)}</span>
-                        </>
-                      )}
                     </div>
-                    
-                    {/* Badge de público/privado */}
-                    {file.is_publico && (
-                      <span className="inline-flex items-center mt-2 px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-green-800">
-                        <svg className="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
-                          <path d="M10 2a5 5 0 00-5 5v2a2 2 0 00-2 2v5a2 2 0 002 2h10a2 2 0 002-2v-5a2 2 0 00-2-2H7V7a3 3 0 015.905-.75 1 1 0 001.937-.5A5.002 5.002 0 0010 2z" />
-                        </svg>
-                        Público
-                      </span>
-                    )}
                   </div>
 
                   {/* Acciones */}
                   {showActions && (
                     <div className="flex items-center gap-1">
-                      {file.is_publico ? (
-                        onRevokePublic && (
-                          <button
-                            onClick={() => handleRevokePublic(file.archivo_id)}
-                            disabled={actionLoading === file.archivo_id}
-                            className="p-2 text-orange-600 hover:bg-orange-50 rounded disabled:opacity-50"
-                            title="Revocar acceso público"
-                          >
-                            <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                              <path fillRule="evenodd" d="M3.707 2.293a1 1 0 00-1.414 1.414l14 14a1 1 0 001.414-1.414l-1.473-1.473A10.014 10.014 0 0019.542 10C18.268 5.943 14.478 3 10 3a9.958 9.958 0 00-4.512 1.074l-1.78-1.781zm4.261 4.26l1.514 1.515a2.003 2.003 0 012.45 2.45l1.514 1.514a4 4 0 00-5.478-5.478z" clipRule="evenodd" />
-                              <path d="M12.454 16.697L9.75 13.992a4 4 0 01-3.742-3.741L2.335 6.578A9.98 9.98 0 00.458 10c1.274 4.057 5.065 7 9.542 7 .847 0 1.669-.105 2.454-.303z" />
-                            </svg>
-                          </button>
-                        )
-                      ) : (
-                        onMakePublic && (
-                          <button
-                            onClick={() => handleMakePublic(file.archivo_id)}
-                            disabled={actionLoading === file.archivo_id}
-                            className="p-2 text-green-600 hover:bg-green-50 rounded disabled:opacity-50"
-                            title="Hacer público"
-                          >
-                            <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                              <path d="M10 2a5 5 0 00-5 5v2a2 2 0 00-2 2v5a2 2 0 002 2h10a2 2 0 002-2v-5a2 2 0 00-2-2H7V7a3 3 0 015.905-.75 1 1 0 001.937-.5A5.002 5.002 0 0010 2z" />
-                            </svg>
-                          </button>
-                        )
-                      )}
-
                       {onDelete && (
-                        <button
+                        <TableActionButton
+                          action="delete"
+                          tooltip="Eliminar archivo"
                           onClick={() => handleDeleteClick(file.archivo_id)}
                           disabled={actionLoading === file.archivo_id}
-                          className="p-2 text-red-600 hover:bg-red-50 rounded disabled:opacity-50"
-                          title="Eliminar archivo"
-                        >
-                          <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                            <path fillRule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clipRule="evenodd" />
-                          </svg>
-                        </button>
+                        />
                       )}
                     </div>
                   )}

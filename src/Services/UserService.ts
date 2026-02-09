@@ -8,6 +8,8 @@
  * - Asignar roles (para el modal del lápiz)
  */
 
+import { axiosInstance } from '@/Config/axios';
+
 /**
  * Estructura de un permiso como lo devuelve el backend
  */
@@ -69,37 +71,14 @@ export interface ApiResponse<T = any> {
  * Servicio para gestión básica de usuarios
  */
 class UserService {
-  private baseURL = 'http://127.0.0.1:8000/api/admin/users';
-
-  /**
-   * Obtener headers con autenticación
-   */
-  private getAuthHeaders(): HeadersInit {
-    const token = localStorage.getItem('auth_token');
-    return {
-      'Accept': 'application/json',
-      'Content-Type': 'application/json',
-      ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
-    };
-  }
-
   /**
    * Listar todos los usuarios
    */
   async listUsers(): Promise<BackendUser[]> {
     try {
-      const response = await fetch(this.baseURL, {
-        method: 'GET',
-        headers: this.getAuthHeaders(),
-      });
-
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-
-      const result = await response.json();
+      const response = await axiosInstance.get('/admin/users');
       // El backend devuelve los usuarios directamente en un array (UserResource::collection)
-      return Array.isArray(result) ? result : result.data || [];
+      return Array.isArray(response.data) ? response.data : response.data.data || [];
     } catch (error) {
       console.error('Error obteniendo usuarios:', error);
       throw error;
@@ -111,16 +90,8 @@ class UserService {
    */
   async activateUser(userId: number): Promise<ApiResponse<User>> {
     try {
-      const response = await fetch(`${this.baseURL}/${userId}/activate`, {
-        method: 'PATCH',
-        headers: this.getAuthHeaders(),
-      });
-
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-
-      return await response.json();
+      const response = await axiosInstance.patch(`/admin/users/${userId}/activate`);
+      return response.data;
     } catch (error) {
       console.error('Error activando usuario:', error);
       throw error;
@@ -132,16 +103,8 @@ class UserService {
    */
   async deactivateUser(userId: number): Promise<ApiResponse<User>> {
     try {
-      const response = await fetch(`${this.baseURL}/${userId}/deactivate`, {
-        method: 'PATCH',
-        headers: this.getAuthHeaders(),
-      });
-
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-
-      return await response.json();
+      const response = await axiosInstance.patch(`/admin/users/${userId}/deactivate`);
+      return response.data;
     } catch (error) {
       console.error('Error desactivando usuario:', error);
       throw error;
@@ -153,17 +116,10 @@ class UserService {
    */
   async assignUserRole(userId: number, roleName: string): Promise<ApiResponse> {
     try {
-      const response = await fetch(`${this.baseURL}/${userId}/role`, {
-        method: 'PUT',
-        headers: this.getAuthHeaders(),
-        body: JSON.stringify({ role: roleName }),
+      const response = await axiosInstance.put(`/admin/users/${userId}/role`, { 
+        role: roleName 
       });
-
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-
-      return await response.json();
+      return response.data;
     } catch (error) {
       console.error('Error asignando rol:', error);
       throw error;

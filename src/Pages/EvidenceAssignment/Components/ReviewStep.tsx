@@ -33,12 +33,15 @@ export const ReviewStep: React.FC<ReviewStepProps> = ({
   const [users, setUsers] = useState<User[]>([]);
   const [roles, setRoles] = useState<Role[]>([]);
   const [duplicates, setDuplicates] = useState<DuplicateAssignment[]>([]);
-  const [excludedUsers, setExcludedUsers] = useState<Set<number>>(new Set());
+  
+  // Convertir excludedUsers de array a Set para operaciones más rápidas
+  const excludedUsersSet = useMemo(() => new Set(formData.excludedUsers || []), [formData.excludedUsers]);
   
   // Estados para secciones colapsables
   const [expandedEvidences, setExpandedEvidences] = useState(false);
   const [expandedDestinators, setExpandedDestinators] = useState(false);
-  const [expandedDuplicates, setExpandedDuplicates] = useState(true); // Expandido por defecto
+  const [expandedActiveDuplicates, setExpandedActiveDuplicates] = useState(true); // Tabla amarilla
+  const [expandedCompletedDuplicates, setExpandedCompletedDuplicates] = useState(true); // Tabla azul
 
   // Cargar datos necesarios para mostrar nombres
   useEffect(() => {
@@ -80,6 +83,7 @@ export const ReviewStep: React.FC<ReviewStepProps> = ({
       // Solo validar si hay proceso, evidencia y usuarios seleccionados
       if (!formData.proceso_id || formData.selectedEvidences.length === 0 || formData.selectedUsers.length === 0) {
         setDuplicates([]);
+        updateFormData({ excludedUsers: [] });
         return;
       }
 
@@ -101,11 +105,22 @@ export const ReviewStep: React.FC<ReviewStepProps> = ({
         }
 
         setDuplicates(allDuplicates);
+        
+        // Auto-excluir TODOS los duplicados (activos y completados) por defecto
+        // Los usuarios deberán marcar explícitamente si quieren reasignar completados
+        const allDuplicatesIds = allDuplicates.map(d => d.usuario_id);
+        
+        if (allDuplicatesIds.length > 0) {
+          updateFormData({ excludedUsers: allDuplicatesIds });
+        } else {
+          updateFormData({ excludedUsers: [] });
+        }
       } catch (error: any) {
         console.error('Error validating duplicates:', error);
         // No bloquear el flujo si el endpoint no está disponible
         // El backend rechazará duplicados al confirmar de todas formas
         setDuplicates([]);
+        updateFormData({ excludedUsers: [] });
       } finally {
         setValidatingDuplicates(false);
       }
@@ -123,10 +138,10 @@ export const ReviewStep: React.FC<ReviewStepProps> = ({
 
   const selectedUsersData = useMemo(() => {
     return formData.selectedUsers
-      .filter(id => !excludedUsers.has(id)) // Filtrar usuarios excluidos
+      .filter(id => !excludedUsersSet.has(id)) // Filtrar usuarios excluidos
       .map(id => users.find(user => user.id === id))
       .filter(Boolean);
-  }, [formData.selectedUsers, users, excludedUsers]);
+  }, [formData.selectedUsers, users, excludedUsersSet]);
 
   const selectedRolesData = useMemo(() => {
     return formData.selectedRoles.map(id => 
@@ -137,11 +152,14 @@ export const ReviewStep: React.FC<ReviewStepProps> = ({
   // Calcular totales y estadísticas
   const statistics = useMemo(() => {
     const totalEvidences = formData.selectedEvidences.length;
-    const totalUsers = formData.selectedUsers.length - excludedUsers.size; // Restar usuarios excluidos
+    const totalUsers = formData.selectedUsers.length - excludedUsersSet.size; // Restar usuarios excluidos
     const totalRoles = formData.selectedRoles.length;
     const hasDeadline = !!formData.fecha_limite;
     const hasComment = !!formData.comentario;
-    const totalDuplicates = duplicates.length;
+    
+    // Segregar duplicados por estado
+    const activeDuplicates = duplicates.filter(d => d.estado !== 'completado');
+    const completedDuplicates = duplicates.filter(d => d.estado === 'completado');
 
     return {
       totalEvidences,
@@ -150,9 +168,11 @@ export const ReviewStep: React.FC<ReviewStepProps> = ({
       hasDeadline,
       hasComment,
       totalDestinations: totalUsers + totalRoles,
-      totalDuplicates
+      totalDuplicates: duplicates.length,
+      activeDuplicates: activeDuplicates.length,
+      completedDuplicates: completedDuplicates.length
     };
-  }, [formData, excludedUsers, duplicates]);
+  }, [formData, excludedUsersSet, duplicates]);
 
   // Formatear fecha para mostrar sin conversión de zona horaria
   const formatDate = (dateString: string): string => {
@@ -198,17 +218,20 @@ export const ReviewStep: React.FC<ReviewStepProps> = ({
 
   // Manejar la exclusión/inclusión de usuarios con duplicados
   const handleToggleUser = (userId: number) => {
-    const newExcluded = new Set(excludedUsers);
-    if (newExcluded.has(userId)) {
-      newExcluded.delete(userId);
-    } else {
-      newExcluded.add(userId);
-    }
-    setExcludedUsers(newExcluded);
+    const currentExcluded = formData.excludedUsers || [];
+    const isCurrentlyExcluded = currentExcluded.includes(userId);
     
-    // Actualizar formData para excluir usuarios
-    const filteredUsers = formData.selectedUsers.filter(id => !newExcluded.has(id));
-    updateFormData({ selectedUsers: filteredUsers });
+    if (isCurrentlyExcluded) {
+      // Quitar de excluidos (incluir usuario)
+      updateFormData({ 
+        excludedUsers: currentExcluded.filter(id => id !== userId)
+      });
+    } else {
+      // Agregar a excluidos
+      updateFormData({ 
+        excludedUsers: [...currentExcluded, userId]
+      });
+    }
   };
 
   return (
@@ -230,7 +253,7 @@ export const ReviewStep: React.FC<ReviewStepProps> = ({
         <>
           {/* Estadísticas Resumen */}
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-            <div className="bg-blanco-una border border-blanco-una rounded-lg p-4 shadow-md">
+            <div className="bg-blanco-una border border-blanco-una rounded-corner p-4 shadow-md">
               <div className="flex items-center gap-3">
                 <div>
                   <p className="text-2xl font-bold text-rojo-una-2">{statistics.totalEvidences}</p>
@@ -239,7 +262,7 @@ export const ReviewStep: React.FC<ReviewStepProps> = ({
               </div>
             </div>
 
-            <div className="bg-blanco-una border border-blanco-una rounded-lg p-4 shadow-md">
+            <div className="bg-blanco-una border border-blanco-una rounded-corner p-4 shadow-md">
               <div className="flex items-center gap-3">
                 <div>
                   <p className="text-2xl font-bold text-rojo-una-2">{statistics.totalUsers}</p>
@@ -248,7 +271,7 @@ export const ReviewStep: React.FC<ReviewStepProps> = ({
               </div>
             </div>
 
-            <div className="bg-blanco-una border border-blanco-una rounded-lg p-4 shadow-md">
+            <div className="bg-blanco-una border border-blanco-una rounded-corner p-4 shadow-md">
               <div className="flex items-center gap-3">
                 <div>
                   <p className="text-2xl font-bold text-rojo-una-2">{statistics.totalRoles}</p>
@@ -257,7 +280,7 @@ export const ReviewStep: React.FC<ReviewStepProps> = ({
               </div>
             </div>
 
-            <div className="bg-blanco-una border border-blanco-una rounded-lg p-4 shadow-md">
+            <div className="bg-blanco-una border border-blanco-una rounded-corner p-4 shadow-md">
               <div className="flex items-center gap-3">
                 <div>
                   <p className="text-2xl font-bold text-rojo-una-2">{statistics.totalDestinations}</p>
@@ -269,7 +292,7 @@ export const ReviewStep: React.FC<ReviewStepProps> = ({
 
           {/* Alerta de duplicados si los hay */}
           {validatingDuplicates && (
-            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+            <div className="bg-blue-50 border border-blue-200 rounded-corner p-4">
               <div className="flex items-center gap-3">
                 <LoadingSpinner size="sm" />
                 <p className="text-sm text-blue-800">Validando asignaciones existentes...</p>
@@ -277,100 +300,191 @@ export const ReviewStep: React.FC<ReviewStepProps> = ({
             </div>
           )}
 
+          {/* Asignaciones duplicadas segregadas por estado */}
           {!validatingDuplicates && duplicates.length > 0 && (
-            <div className="relative overflow-hidden rounded-xl border-2 border-yellow-300 bg-gradient-to-br from-yellow-50 to-yellow-100">
-              <button
-                onClick={() => setExpandedDuplicates(!expandedDuplicates)}
-                className="w-full relative z-10 p-6 text-left hover:bg-yellow-100/50 transition-all"
-              >
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <div className="flex items-center justify-center w-10 h-10 rounded-full bg-yellow-600 text-white font-bold">
-                      {statistics.totalDuplicates}
+            <div className="space-y-4">
+              {/* Duplicados activos (bloqueados) - NO se pueden reasignar */}
+              {duplicates.filter(d => d.estado !== 'completado').length > 0 && (
+                <div className="relative overflow-hidden rounded-corner border-2 border-yellow-300 bg-gradient-to-br from-yellow-50 to-yellow-100">
+                  <button
+                    onClick={() => setExpandedActiveDuplicates(!expandedActiveDuplicates)}
+                    className="w-full relative z-10 p-6 text-left hover:bg-yellow-100/50 transition-all"
+                  >
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <div className="flex items-center justify-center w-10 h-10 rounded-full bg-yellow-600 text-white font-bold">
+                          {statistics.activeDuplicates}
+                        </div>
+                        <div>
+                          <h3 className="text-lg font-semibold text-yellow-900">
+                            Asignaciones Duplicadas
+                          </h3>
+                          <p className="text-sm text-yellow-800">
+                            Estos usuarios ya tienen asignaciones pendientes en progreso. No se pueden reasignar.
+                          </p>
+                        </div>
+                      </div>
+                      <SystemIcons.interface.chevronDown
+                        className={cn(
+                          'text-yellow-900 transition-transform duration-200',
+                          expandedActiveDuplicates && 'rotate-180'
+                        )}
+                        size="md"
+                      />
                     </div>
-                    <div>
-                      <h3 className="text-lg font-semibold text-yellow-900">
-                        Asignaciones Duplicadas Detectadas
-                      </h3>
-                      <p className="text-sm text-yellow-800">
-                        Algunos usuarios ya tienen estas evidencias asignadas. Puedes deseleccionarlos.
-                      </p>
-                    </div>
-                  </div>
-                  <SystemIcons.interface.chevronDown
-                    className={cn(
-                      'text-yellow-900 transition-transform duration-200',
-                      expandedDuplicates && 'rotate-180'
-                    )}
-                    size="md"
-                  />
-                </div>
-              </button>
+                  </button>
 
-              {expandedDuplicates && (
-                <div className="relative z-10 border-t border-yellow-300 p-6">
-                  <div className="overflow-x-auto">
-                    <table className="w-full text-sm">
-                      <thead>
-                        <tr className="border-b border-yellow-300">
-                          <th className="text-left py-3 px-4 font-semibold text-yellow-900">
-                            <input
-                              type="checkbox"
-                              checked={excludedUsers.size === 0}
-                              onChange={(e) => {
-                                if (e.target.checked) {
-                                  setExcludedUsers(new Set());
-                                  updateFormData({ selectedUsers: formData.selectedUsers });
-                                } else {
-                                  const allDuplicateUserIds = new Set(duplicates.map(d => d.usuario_id));
-                                  setExcludedUsers(allDuplicateUserIds);
-                                  updateFormData({ 
-                                    selectedUsers: formData.selectedUsers.filter(id => !allDuplicateUserIds.has(id))
-                                  });
-                                }
-                              }}
-                              className="w-4 h-4 rounded border-yellow-400 text-yellow-600 focus:ring-yellow-500"
-                            />
-                          </th>
-                          <th className="text-left py-3 px-4 font-semibold text-yellow-900">Usuario</th>
-                          <th className="text-left py-3 px-4 font-semibold text-yellow-900">Estado</th>
-                          <th className="text-left py-3 px-4 font-semibold text-yellow-900">Fecha Asignación</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {duplicates.map((duplicate, index) => (
-                          <tr key={`${duplicate.usuario_id}-${index}`} className="border-b border-yellow-200 hover:bg-yellow-50">
-                            <td className="py-3 px-4">
-                              <input
-                                type="checkbox"
-                                checked={!excludedUsers.has(duplicate.usuario_id)}
-                                onChange={() => handleToggleUser(duplicate.usuario_id)}
-                                className="w-4 h-4 rounded border-yellow-400 text-yellow-600 focus:ring-yellow-500"
-                              />
-                            </td>
-                            <td className="py-3 px-4 text-yellow-900">{duplicate.usuario_nombre}</td>
-                            <td className="py-3 px-4">
-                              <span className={cn(
-                                'inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium',
-                                getStatusColor(duplicate.estado)
-                              )}>
-                                {getStatusText(duplicate.estado)}
-                              </span>
-                            </td>
-                            <td className="py-3 px-4 text-yellow-900">
-                              {new Date(duplicate.fecha_asignacion).toLocaleDateString('es-ES')}
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                  <div className="mt-4 p-3 bg-yellow-50 rounded-lg border border-yellow-200">
-                    <p className="text-xs text-yellow-800">
-                      <strong>Nota:</strong> Los usuarios desmarcados no recibirán nuevas asignaciones. 
-                      Las asignaciones existentes se mantendrán sin cambios.
-                    </p>
-                  </div>
+                  {expandedActiveDuplicates && (
+                    <div className="relative z-10 border-t border-yellow-300 p-6">
+                      <div className="overflow-x-auto">
+                        <table className="w-full text-sm">
+                          <thead>
+                            <tr className="border-b border-yellow-300">
+                              <th className="text-left py-3 px-4 font-semibold text-yellow-900">Usuario</th>
+                              <th className="text-left py-3 px-4 font-semibold text-yellow-900">Estado</th>
+                              <th className="text-left py-3 px-4 font-semibold text-yellow-900">Fecha Asignación</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {duplicates
+                              .filter(d => d.estado !== 'completado')
+                              .map((duplicate, index) => (
+                                <tr key={`active-${duplicate.usuario_id}-${index}`} className="border-b border-yellow-200 bg-yellow-50/50">
+                                  <td className="py-3 px-4 text-yellow-900 font-medium">{duplicate.usuario_nombre}</td>
+                                  <td className="py-3 px-4">
+                                    <span className={cn(
+                                      'inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium',
+                                      getStatusColor(duplicate.estado)
+                                    )}>
+                                      {getStatusText(duplicate.estado)}
+                                    </span>
+                                  </td>
+                                  <td className="py-3 px-4 text-yellow-900">
+                                    {new Date(duplicate.fecha_asignacion).toLocaleDateString('es-ES')}
+                                  </td>
+                                </tr>
+                              ))}
+                          </tbody>
+                        </table>
+                      </div>
+                      <div className="mt-4 p-3 bg-yellow-50 rounded-corner border border-yellow-200">
+                        <p className="text-xs text-yellow-800">
+                          <strong>Bloqueado automáticamente:</strong> Estos usuarios fueron excluidos; ya tienen 
+                          esta evidencia asignada en estado activo. No se pueden crear asignaciones duplicadas mientras 
+                          no esté completada o cancelada.
+                        </p>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* Duplicados completados (informativos) - SÍ se pueden reasignar */}
+              {duplicates.filter(d => d.estado === 'completado').length > 0 && (
+                <div className="relative overflow-hidden rounded-corner border-2 border-blue-300 bg-gradient-to-br from-blue-50 to-blue-100">
+                  <button
+                    onClick={() => setExpandedCompletedDuplicates(!expandedCompletedDuplicates)}
+                    className="w-full relative z-10 p-6 text-left hover:bg-blue-100/50 transition-all"
+                  >
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <div className="flex items-center justify-center w-10 h-10 rounded-full bg-blue-600 text-white font-bold">
+                          {statistics.completedDuplicates}
+                        </div>
+                        <div>
+                          <h3 className="text-lg font-semibold text-blue-900">
+                            Evidencias Ya Completadas
+                          </h3>
+                          <p className="text-sm text-blue-800">
+                            Estos usuarios ya completaron estas evidencias. Puede reasignarlas si es necesario.
+                          </p>
+                        </div>
+                      </div>
+                      <SystemIcons.interface.chevronDown
+                        className={cn(
+                          'text-blue-900 transition-transform duration-200',
+                          expandedCompletedDuplicates && 'rotate-180'
+                        )}
+                        size="md"
+                      />
+                    </div>
+                  </button>
+
+{/**Podríamos crear un componente para esta tabla o dejarlo como HTML que es más sencillo,
+  * pero no sé si crear un componente que literal solo se va a usar aquí */}
+                  {expandedCompletedDuplicates && (
+                    <div className="relative z-10 border-t border-blue-300 p-6">
+                      <div className="overflow-x-auto">
+                        <table className="w-full text-sm">
+                          <thead>
+                            <tr className="border-b border-blue-300">
+                              <th className="text-left py-3 px-4 font-semibold text-blue-900">
+                                <input
+                                  type="checkbox"
+                                  checked={duplicates
+                                    .filter(d => d.estado === 'completado')
+                                    .every(d => !excludedUsersSet.has(d.usuario_id))
+                                  }
+                                  onChange={(e) => {
+                                    const completedUserIds = duplicates
+                                      .filter(d => d.estado === 'completado')
+                                      .map(d => d.usuario_id);
+                                    
+                                    const currentExcluded = formData.excludedUsers || [];
+                                    
+                                    if (e.target.checked) {
+                                      // Incluir todos los completados (quitarlos de excludedUsers)
+                                      updateFormData({ 
+                                        excludedUsers: currentExcluded.filter(id => !completedUserIds.includes(id))
+                                      });
+                                    } else {
+                                      // Excluir todos los completados
+                                      const newExcluded = [...currentExcluded];
+                                      completedUserIds.forEach(id => {
+                                        if (!newExcluded.includes(id)) {
+                                          newExcluded.push(id);
+                                        }
+                                      });
+                                      updateFormData({ excludedUsers: newExcluded });
+                                    }
+                                  }}
+                                  className="w-4 h-4 rounded border-blue-400 text-blue-600 focus:ring-blue-500"
+                                />
+                              </th>
+                              <th className="text-left py-3 px-4 font-semibold text-blue-900">Usuario</th>
+                              <th className="text-left py-3 px-4 font-semibold text-blue-900">Fecha Completado</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {duplicates
+                              .filter(d => d.estado === 'completado')
+                              .map((duplicate, index) => (
+                                <tr key={`completed-${duplicate.usuario_id}-${index}`} className="border-b border-blue-200 hover:bg-blue-50">
+                                  <td className="py-3 px-4">
+                                    <input
+                                      type="checkbox"
+                                      checked={!excludedUsersSet.has(duplicate.usuario_id)}
+                                      onChange={() => handleToggleUser(duplicate.usuario_id)}
+                                      className="w-4 h-4 rounded border-blue-400 text-blue-600 focus:ring-blue-500"
+                                    />
+                                  </td>
+                                  <td className="py-3 px-4 text-blue-900 font-medium">{duplicate.usuario_nombre}</td>
+                                  <td className="py-3 px-4 text-blue-900">
+                                    {new Date(duplicate.fecha_asignacion).toLocaleDateString('es-ES')}
+                                  </td>
+                                </tr>
+                              ))}
+                          </tbody>
+                        </table>
+                      </div>
+                      <div className="mt-4 p-3 bg-blue-50 rounded-corner border border-blue-200">
+                        <p className="text-xs text-blue-800">
+                          <strong>Reasignación permitida:</strong> Estos usuarios ya completaron estas evidencias. 
+                          Márquelos si desea reasignarlas para crear una nueva asignación.
+                        </p>
+                      </div>
+                    </div>
+                  )}
                 </div>
               )}
             </div>
@@ -379,7 +493,7 @@ export const ReviewStep: React.FC<ReviewStepProps> = ({
           {/* Detalles de la Asignación */}
           <div className="space-y-6">
             {/* Evidencias Seleccionadas - Colapsable */}
-            <div className="relative overflow-hidden rounded-xl border-2 border-gris-una/30 bg-gradient-to-br from-gris-una/5 to-gris-una/10">
+            <div className="relative overflow-hidden rounded-corner border-2 border-gris-una/30 bg-gradient-to-br from-gris-una/5 to-gris-una/10">
               {/*<div className="absolute top-0 right-0 w-32 h-32 bg-negro-una/20 rounded-full -mr-16 -mt-16 opacity-20"></div>*/}
               <button
                 onClick={() => setExpandedEvidences(!expandedEvidences)}
@@ -406,7 +520,7 @@ export const ReviewStep: React.FC<ReviewStepProps> = ({
                 <div className="relative z-10 border-t border-gris-una/20 p-6 max-h-64 overflow-y-auto custom-scrollbar">
                   <div className="space-y-2">
                     {selectedEvidencesData.map((evidence) => (
-                      <div key={evidence?.evidencia_id} className="flex items-start gap-3 bg-white/60 rounded-lg p-3">
+                      <div key={evidence?.evidencia_id} className="flex items-start gap-3 bg-white/60 rounded-corner p-3">
                         <div>
                           <p className="font-medium text-negro-una text-sm">
                             {evidence?.nomenclatura} - {evidence?.descripcion}
@@ -420,7 +534,7 @@ export const ReviewStep: React.FC<ReviewStepProps> = ({
             </div>
 
             {/* Destinatarios - Colapsable */}
-            <div className="relative overflow-hidden rounded-xl border-2 border-gris-una/30 bg-gradient-to-br from-gris-una/5 to-gris-una/10">
+            <div className="relative overflow-hidden rounded-corner border-2 border-gris-una/30 bg-gradient-to-br from-gris-una/5 to-gris-una/10">
               {/*<div className="absolute top-0 right-0 w-32 h-32 bg-azul-una/20 rounded-full -mr-16 -mt-16 opacity-20"></div>*/}
               <button
                 onClick={() => setExpandedDestinators(!expandedDestinators)}
@@ -453,7 +567,7 @@ export const ReviewStep: React.FC<ReviewStepProps> = ({
                         </p>
                         <div className="space-y-2">
                           {selectedUsersData.map(user => (
-                            <div key={user?.id} className="flex items-center gap-3 bg-white/60 rounded-lg p-2.5">
+                            <div key={user?.id} className="flex items-center gap-3 bg-white/60 rounded-corner p-2.5">
                               <div className="flex-1 min-w-0">
                                 <p className="text-sm text-negro-una font-medium truncate">{user?.name}</p>
                                 <p className="text-xs text-gris-una truncate">{user?.email}</p>
@@ -471,7 +585,7 @@ export const ReviewStep: React.FC<ReviewStepProps> = ({
                         </p>
                         <div className="space-y-2">
                           {selectedRolesData.map(role => (
-                            <div key={role?.id} className="flex items-center gap-3 bg-white/60 rounded-lg p-2.5">
+                            <div key={role?.id} className="flex items-center gap-3 bg-white/60 rounded-corner p-2.5">
                               <p className="text-sm text-negro-una font-medium">{role?.name}</p>
                             </div>
                           ))}
@@ -484,7 +598,7 @@ export const ReviewStep: React.FC<ReviewStepProps> = ({
             </div>
 
             {/* Configuración - Siempre visible */}
-            <div className="relative overflow-hidden rounded-xl border-2 border-gris-una/30 bg-gradient-to-br from-gris-una/5 to-gris-una/10">
+            <div className="relative overflow-hidden rounded-corner border-2 border-gris-una/30 bg-gradient-to-br from-gris-una/5 to-gris-una/10">
               <div className="relative z-10 p-6">
                 <div className="flex items-center gap-3 mb-6">
                   <div className="flex items-center justify-center w-10 h-10 rounded-full bg-gris-una text-white">
@@ -498,7 +612,7 @@ export const ReviewStep: React.FC<ReviewStepProps> = ({
                     <p className="text-xs font-semibold text-gris-una uppercase tracking-wide mb-2">
                       Fecha Límite de Entrega
                     </p>
-                    <p className="text-sm font-medium text-negro-una bg-white/60 rounded-lg p-3">
+                    <p className="text-sm font-medium text-negro-una bg-white/60 rounded-corner p-3">
                       {formData.fecha_limite ? formatDate(formData.fecha_limite) : '— No especificada'}
                     </p>
                     {formData.fecha_limite && (
@@ -513,7 +627,7 @@ export const ReviewStep: React.FC<ReviewStepProps> = ({
                       <p className="text-xs font-semibold text-gris-una uppercase tracking-wide mb-2">
                         Comentario
                       </p>
-                      <p className="text-sm text-negro-una bg-white/60 rounded-lg p-3 max-h-32 overflow-y-auto whitespace-pre-wrap break-all overflow-x-hidden">
+                      <p className="text-sm text-negro-una bg-white/60 rounded-corner p-3 max-h-32 overflow-y-auto whitespace-pre-wrap break-all overflow-x-hidden">
                         {formData.comentario}
                       </p>
                     </div>

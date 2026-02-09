@@ -5,7 +5,7 @@
 
 import { createContext, useContext, useState, useEffect } from 'react';
 import type { ReactNode } from 'react';
-import { authService, type User, type Role, type Career } from '@/Services/AuthService';
+import { authService, type User, type Career } from '@/Services/AuthService';
 
 interface LoginCredentials {
   cedula: string;
@@ -18,6 +18,7 @@ interface AuthContextType {
   isAuthenticated: boolean;
   isSuperUser: () => boolean;
   isAdmin: () => boolean;
+  canMakeFilesPublic: () => boolean;
   getUserCareer: () => Career | null;
   login: (credentials: LoginCredentials) => Promise<void>;
   logout: () => Promise<void>;
@@ -82,6 +83,21 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
     return user?.roles?.some(r => r.name === 'Administrador') || false;
   };
 
+  /**
+   * Verifica si el usuario puede hacer archivos públicos.
+   * Según FilePolicy del backend, solo pueden:
+   * - Superusuario
+   * - Vicerrectoría de Docencia
+   * - Administrador (Coordinador de Carrera)
+   */
+  const canMakeFilesPublic = (): boolean => {
+    return user?.roles?.some(r => 
+      r.name === 'Superusuario' || 
+      r.name === 'Vicerrectoría de Docencia' || 
+      r.name === 'Administrador'
+    ) || false;
+  };
+
   const getUserCareer = () => {
     return user?.careers?.[0] || null;
   };
@@ -93,6 +109,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
     isAuthenticated: !!user,
     isSuperUser,
     isAdmin,
+    canMakeFilesPublic,
     getUserCareer,
     login,
     logout

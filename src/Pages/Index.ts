@@ -22,15 +22,17 @@ export { default as StructureEditList } from './Structure/StructureEditList';
 // Progreso de Acreditación
 export { default as AccreditationProgress } from './Accreditation/AccreditationProgress';
 
-// Asignación de Evidencias (HU-029)
+// Asignación de Evidencias
 export { EvidenceAssignment } from './EvidenceAssignment';
-export { default as MyEvidenceAssignmentsPage } from './EvidenceAssignment/MyEvidenceAssignmentsPage';
+
+// Mis Evidencias
+export { MyEvidenceAssignmentsPage } from './MyEvidence';
 
 // Subida de Evidencias
-export { EvidenceUploadPage } from './Evidence';
+export { EvidenceUploadPage } from './EvidenceUpload';
 
-// Bitácora del Sistema (HU-005)
+// Bitácora del Sistema
 export { AuditLogPage } from './AuditLog';
 
-// Solicitudes de Ampliación (HU-016)
+// Solicitudes de Ampliación
 export { ManageExtensionRequestsPage, MyExtensionRequestsPage } from './ExtensionRequest';

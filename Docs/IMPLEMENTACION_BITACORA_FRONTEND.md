@@ -1,3 +1,5 @@
+# No borrar hasta revisar fallo de bitácora 06/02/2026
+
 # Implementación Frontend - Bitácora del Sistema (HU-005)
 
 **Fecha de Desarrollo:** 23 de noviembre de 2025  

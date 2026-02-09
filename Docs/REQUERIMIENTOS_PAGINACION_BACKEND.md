@@ -1,3 +1,5 @@
+# No borrar hasta comprobar su implementación en todo el backend 06/02/2026
+
 # 📋 Requerimientos de Paginación para el Backend
 
 ## 🎯 Objetivo

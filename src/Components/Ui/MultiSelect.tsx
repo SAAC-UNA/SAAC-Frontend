@@ -185,7 +185,7 @@ export const MultiSelect: React.FC<MultiSelectProps> = ({
             id={selectId}
             className={cn(
               // Base styles - Similar al Input actualizado
-              'relative w-full h-10 px-4 text-sm border rounded-lg text-left cursor-pointer transition-all duration-300',
+              'relative w-full h-10 px-4 text-sm border rounded-corner text-left cursor-pointer transition-all duration-300',
               'focus:outline-none focus:border-gris-una',
               'disabled:bg-gris-una/10 disabled:cursor-not-allowed',
               'peer', // Para usar peer selectors de Tailwind
@@ -275,7 +275,7 @@ export const MultiSelect: React.FC<MultiSelectProps> = ({
         {/* Dropdown */}
         {isOpen && !disabled && (
           <div 
-            className="absolute z-50 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg overflow-hidden"
+            className="absolute z-50 w-full mt-1 bg-white border border-gray-300 rounded-corner shadow-lg overflow-hidden"
           >
             {/* Campo de búsqueda (si está habilitado y hay suficientes items) */}
             {showSearch && (
@@ -412,7 +412,7 @@ export const MultiSelect: React.FC<MultiSelectProps> = ({
           type="button"
           className={cn(
             // Base styles actualizados para consistencia con Input
-            'relative w-full border rounded-lg text-left cursor-pointer transition-all duration-300 px-4 py-3 text-sm',
+            'relative w-full border rounded-corner text-left cursor-pointer transition-all duration-300 px-4 py-3 text-sm',
             'focus:outline-none focus:border-gris-una',
             'disabled:bg-gris-una/10 disabled:cursor-not-allowed',
             
@@ -458,7 +458,7 @@ export const MultiSelect: React.FC<MultiSelectProps> = ({
         {/* Dropdown */}
         {isOpen && !disabled && (
           <div 
-            className="absolute z-50 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg overflow-hidden"
+            className="absolute z-50 w-full mt-1 bg-white border border-gray-300 rounded-corner shadow-lg overflow-hidden"
           >
             {/* Campo de búsqueda (si está habilitado y hay suficientes items) */}
             {showSearch && (

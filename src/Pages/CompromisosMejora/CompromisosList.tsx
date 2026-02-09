@@ -7,7 +7,7 @@ import { useNavigate } from 'react-router-dom';
 import { ScreenContainer } from '@/Components/Ui/ScreenContainer';
 import { Button } from '@/Components/Ui/Index';
 import { SystemIcons } from '@/Components/Ui/Icons/SystemIcons';
-import { config } from '@/Config/app.config';
+import { axiosInstance } from '@/Config/axios';
 
 interface Compromiso {
   id: number;
@@ -39,38 +39,26 @@ export const CompromisosList: React.FC = () => {
     try {
       setLoading(true);
       setError(null);
-      console.log('Intentando cargar compromisos desde:', `${config.API_BASE_URL}/compromisos-de-mejora`);
       
-      const token = localStorage.getItem('auth_token');
-      const response = await fetch(`${config.API_BASE_URL}/compromisos-de-mejora`, {
-        headers: {
-          'Accept': 'application/json',
-          ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
+      const response = await axiosInstance.get('/compromisos-de-mejora');
+      
+      const data = response.data.data || response.data;
+      console.log('Compromisos cargados:', data);
+      setCompromisos(data);
+    } catch (error: any) {
+      console.error('Error al cargar compromisos:', error);
+      
+      if (error.response) {
+        if (error.response.status === 500) {
+          setError('Error en el servidor. Por favor, contacte al administrador.');
+        } else if (error.response.status === 403) {
+          setError('No tiene permisos para ver los compromisos de mejora.');
+        } else {
+          setError(`Error ${error.response.status}: No se pudieron cargar los compromisos`);
         }
-      });
-      
-      console.log('Response status:', response.status);
-      console.log('Response ok:', response.ok);
-      
-      if (response.ok) {
-        const result = await response.json();
-        console.log('Compromisos cargados (raw):', result);
-        const data = result.data || result;
-        console.log('Compromisos data:', data);
-        console.log('Cantidad de compromisos:', data.length);
-        setCompromisos(data);
-      } else if (response.status === 500) {
-        setError('Error en el servidor. Por favor, contacte al administrador.');
-        setCompromisos([]);
       } else {
-        const errorText = await response.text();
-        console.error('Error al cargar compromisos:', response.status, errorText);
-        setError(`Error ${response.status}: No se pudieron cargar los compromisos`);
-        setCompromisos([]);
+        setError('Error de conexión. Verifique que el servidor esté funcionando.');
       }
-    } catch (error) {
-      console.error('Error al cargar compromisos (catch):', error);
-      setError('Error de conexión. Verifique que el servidor esté funcionando.');
       setCompromisos([]);
     } finally {
       setLoading(false);

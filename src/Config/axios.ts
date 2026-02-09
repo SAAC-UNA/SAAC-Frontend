@@ -1,26 +1,18 @@
 import axios from 'axios';
 
 // Crear instancia con configuración personalizada
+// IMPORTANTE: Usar 'localhost' (no 127.0.0.1) para consistencia con cookies
 const axiosInstance = axios.create({
-    baseURL: 'http://127.0.0.1:8000/api',
+    baseURL: 'http://localhost:8000/api',
+    withCredentials: true, // Enviar cookies automáticamente
     headers: {
         'Accept': 'application/json',
-        'Content-Type': 'application/json'
+        'Content-Type': 'application/json',
+        'X-Requested-With': 'XMLHttpRequest' // Laravel detecta SPA
     }
 });
 
-// Interceptor para manejar el token de autenticación
-axiosInstance.interceptors.request.use(
-    config => {
-        const token = localStorage.getItem('auth_token');
-        if (token) {
-            config.headers['Authorization'] = `Bearer ${token}`;
-        }
-        return config;
-    },
-    error => {
-        return Promise.reject(error);
-    }
-);
+// Ya NO se necesita interceptor para agregar Bearer token
+// Las cookies httpOnly se envían automáticamente
 
 export { axiosInstance };

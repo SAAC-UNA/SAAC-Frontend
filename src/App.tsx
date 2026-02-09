@@ -20,9 +20,9 @@ const StructureEditForm = lazy(() => import('@/Pages/Structure/StructureEditForm
 const StructureEditList = lazy(() => import('./Pages/Structure/StructureEditList'));
 const AccreditationProgress = lazy(() => import('@/Pages/Accreditation/AccreditationProgress'));
 const EvidenceAssignment = lazy(() => import('./Pages/EvidenceAssignment').then(m => ({ default: m.EvidenceAssignment })));
-const EvidenceUploadPage = lazy(() => import('./Pages/Evidence').then(m => ({ default: m.EvidenceUploadPage })));
-const EvidenceSearchPage = lazy(() => import('./Pages/Evidence').then(m => ({ default: m.EvidenceSearchPage })));
-const MyEvidenceAssignmentsPage = lazy(() => import('./Pages/EvidenceAssignment/MyEvidenceAssignmentsPage'));
+const EvidenceUploadPage = lazy(() => import('./Pages/EvidenceUpload').then(m => ({ default: m.EvidenceUploadPage })));
+const EvidenceSearchPage = lazy(() => import('./Pages/EvidenceSearch').then(m => ({ default: m.EvidenceSearchPage })));
+const MyEvidenceAssignmentsPage = lazy(() => import('./Pages/MyEvidence').then(m => ({ default: m.MyEvidenceAssignmentsPage })));
 const AuditLogPage = lazy(() => import('@/Pages/AuditLog/AuditLogPage'));
 const CompromisosList = lazy(() => import('./Pages/CompromisosMejora/CompromisosList').then(m => ({ default: m.CompromisosList })));
 const CrearCompromiso = lazy(() => import('./Pages/CompromisosMejora/CrearCompromiso'));

@@ -43,7 +43,8 @@ const EvidenceAssignment: React.FC = () => {
     selectedUsers: [],
     selectedRoles: [],
     fecha_limite: '',
-    comentario: ''
+    comentario: '',
+    excludedUsers: []
   });
 
   const steps: WizardStep[] = [
@@ -159,10 +160,14 @@ const EvidenceAssignment: React.FC = () => {
     try {
       // Procesar cada evidencia seleccionada
       for (const evidenceId of formData.selectedEvidences) {
+        // Filtrar usuarios excluidos por duplicados
+        const excludedUsersSet = new Set(formData.excludedUsers || []);
+        const finalUsers = formData.selectedUsers.filter(id => !excludedUsersSet.has(id));
+        
         const assignmentData = {
           proceso_id: formData.proceso_id!,
           evidencia_id: evidenceId,
-          usuarios: formData.selectedUsers.length > 0 ? formData.selectedUsers : undefined,
+          usuarios: finalUsers.length > 0 ? finalUsers : undefined,
           roles: formData.selectedRoles.length > 0 ? formData.selectedRoles : undefined,
           fecha_limite: formData.fecha_limite || undefined,
           comentario: formData.comentario || undefined
@@ -184,7 +189,8 @@ const EvidenceAssignment: React.FC = () => {
         selectedUsers: [],
         selectedRoles: [],
         fecha_limite: '',
-        comentario: ''
+        comentario: '',
+        excludedUsers: []
       });
       setCurrentStep(1);
 

@@ -7,8 +7,11 @@ import { AssignmentStatusBadge } from './AssignmentStatusBadge';
 import type { EvidenceAssignment, AssignmentStatus } from '@/Types/EvidenceAssignmentTypes';
 import { formatDeadline, getDaysUntilDeadline, isNearDeadline } from '@/Types/EvidenceAssignmentTypes';
 import { evidenceAssignmentService } from '@/Services/EvidenceAssignmentService';
+import { fileService } from '@/Services/FileService';
 import { useToast } from '@/Context/ToastContext';
 import { LoadingSpinner } from '@/Components/Ui/Loading';
+import { FileList } from '@/Pages/EvidenceUpload/Components/FileList';
+import type { FileModel } from '@/Types/FileTypes';
 
 interface EvidenceAssignmentDetailProps {
   /** ID de la asignación a mostrar */
@@ -40,6 +43,8 @@ export const EvidenceAssignmentDetail: React.FC<EvidenceAssignmentDetailProps> =
   const [loading, setLoading] = useState(true);
   const [updatingStatus, setUpdatingStatus] = useState(false);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [uploadedFiles, setUploadedFiles] = useState<FileModel[]>([]);
+  const [loadingFiles, setLoadingFiles] = useState(false);
   const { showToast } = useToast();
 
   useEffect(() => {
@@ -51,12 +56,50 @@ export const EvidenceAssignmentDetail: React.FC<EvidenceAssignmentDetailProps> =
       setLoading(true);
       const data = await evidenceAssignmentService.getById(assignmentId);
       setAssignment(data);
+      // Cargar archivos de la evidencia
+      if (data.evidencia_id) {
+        loadFiles(data.evidencia_id);
+      }
     } catch (error) {
       console.error('Error al cargar detalle de asignación:', error);
       showToast({ type: 'error', title: 'Error', message: 'Error al cargar los detalles de la asignación' });
       onClose();
     } finally {
       setLoading(false);
+    }
+  };
+
+  const loadFiles = async (evidenciaId: number) => {
+    try {
+      setLoadingFiles(true);
+      const files = await fileService.listFiles({ evidencia_id: evidenciaId });
+      setUploadedFiles(files);
+    } catch (error) {
+      console.error('Error al cargar archivos:', error);
+      // No mostrar error, simplemente no mostrar archivos
+    } finally {
+      setLoadingFiles(false);
+    }
+  };
+
+  const handleDeleteFile = async (fileId: number) => {
+    try {
+      await fileService.deleteFile(fileId);
+      showToast({ 
+        type: 'success', 
+        title: 'Archivo eliminado', 
+        message: 'El archivo se eliminó correctamente' 
+      });
+      // Recargar archivos
+      if (assignment?.evidencia_id) {
+        loadFiles(assignment.evidencia_id);
+      }
+    } catch (error: any) {
+      showToast({ 
+        type: 'error', 
+        title: 'Error al eliminar', 
+        message: error.message || 'No se pudo eliminar el archivo' 
+      });
     }
   };
 
@@ -263,6 +306,34 @@ export const EvidenceAssignmentDetail: React.FC<EvidenceAssignmentDetailProps> =
     </div>
   );
 
+  const renderUploadedFiles = () => (
+    <div className="mb-6">
+      <div className="flex items-center space-x-2 mb-3">
+        <SystemIcons.modal.document className="w-5 h-5 text-gray-600" />
+        <h3 className="font-sm text-gray-800">Archivos Subidos</h3>
+      </div>
+      
+      <div className="bg-white border border-gray-200 rounded-lg p-4">
+        {loadingFiles ? (
+          <div className="flex justify-center py-4">
+            <LoadingSpinner size="sm" />
+          </div>
+        ) : uploadedFiles.length > 0 ? (
+          <FileList
+            files={uploadedFiles}
+            loading={loadingFiles}
+            onDelete={handleDeleteFile}
+            showActions={true}
+          />
+        ) : (
+          <p className="text-sm text-gray-500 text-center py-4">
+            No hay archivos subidos aún
+          </p>
+        )}
+      </div>
+    </div>
+  );
+
   const renderActions = () => (
     <div className="mb-6 border-t border-gray-200 pt-4">
       <h3 className="font-sm text-gray-800 mb-3">Acciones Disponibles</h3>
@@ -317,6 +388,7 @@ export const EvidenceAssignmentDetail: React.FC<EvidenceAssignmentDetailProps> =
       {renderCriterionInfo()}
       {renderComments()}
       {renderDates()}
+      {renderUploadedFiles()}
       {renderActions()}
       
       {/* Modal de éxito al completar */}

@@ -45,6 +45,7 @@ export const EvidenceUploadPage: React.FC<EvidenceUploadPageProps> = ({
   const [isUploading, setIsUploading] = useState(false);
   const [uploadedFiles, setUploadedFiles] = useState<FileModel[]>([]);
   const [loadingFiles, setLoadingFiles] = useState(false);
+  const [uploaderKey, setUploaderKey] = useState(0); // Key para forzar re-render de componentes
 
   // Cargar archivos existentes al montar el componente
   useEffect(() => {
@@ -227,6 +228,7 @@ export const EvidenceUploadPage: React.FC<EvidenceUploadPageProps> = ({
       if (failedCount === 0) {
         setSelectedFiles([]);
         setSelectedLinks([]);
+        setUploaderKey(prev => prev + 1); // Cambiar key para forzar re-render
         setTimeout(() => {
           setUploadProgress([]);
         }, 3000); // Mantener el progreso visible por 3 segundos
@@ -256,6 +258,7 @@ export const EvidenceUploadPage: React.FC<EvidenceUploadPageProps> = ({
     setSelectedFiles([]);
     setSelectedLinks([]);
     setUploadProgress([]);
+    setUploaderKey(prev => prev + 1); // Cambiar key para forzar re-render
   };
 
   const handleDeleteFile = async (fileId: number) => {
@@ -276,42 +279,6 @@ export const EvidenceUploadPage: React.FC<EvidenceUploadPageProps> = ({
     }
   };
 
-  const handleMakePublic = async (fileId: number) => {
-    try {
-      await fileService.makePublic(fileId);
-      showToast({
-        type: 'success',
-        title: 'Archivo público',
-        message: 'El archivo ahora es accesible públicamente'
-      });
-      await loadFiles();
-    } catch (error: any) {
-      showToast({
-        type: 'error',
-        title: 'Error',
-        message: error.message || 'No se pudo hacer público el archivo'
-      });
-    }
-  };
-
-  const handleRevokePublic = async (fileId: number) => {
-    try {
-      await fileService.revokePublic(fileId);
-      showToast({
-        type: 'success',
-        title: 'Acceso revocado',
-        message: 'El archivo ya no es público'
-      });
-      await loadFiles();
-    } catch (error: any) {
-      showToast({
-        type: 'error',
-        title: 'Error',
-        message: error.message || 'No se pudo revocar el acceso público'
-      });
-    }
-  };
-
   const moduleInfo = getModuleInfo('evidence_upload');
 
   const handleGoBack = () => {
@@ -321,7 +288,7 @@ export const EvidenceUploadPage: React.FC<EvidenceUploadPageProps> = ({
   return (
     <ScreenContainer
       title={moduleInfo.title}
-      description={`${moduleInfo.description} - Evidencia: ${evidenciaNombre}`}
+      description={`${moduleInfo.description}\nEvidencia: ${evidenciaNombre}`}
       variant="full-width"
     >
       <div className="max-w-7xl mx-auto space-y-6">
@@ -333,6 +300,7 @@ export const EvidenceUploadPage: React.FC<EvidenceUploadPageProps> = ({
             </h2>
             
             <FileUploader
+              key={`file-uploader-${uploaderKey}`}
               onFilesSelected={handleFilesSelected}
               disabled={isUploading}
             />
@@ -345,6 +313,7 @@ export const EvidenceUploadPage: React.FC<EvidenceUploadPageProps> = ({
             </h2>
             
             <LinkInput
+              key={`link-input-${uploaderKey}`}
               onLinksChange={setSelectedLinks}
               disabled={isUploading}
               className="w-full"
@@ -411,12 +380,9 @@ export const EvidenceUploadPage: React.FC<EvidenceUploadPageProps> = ({
           </div>
 
           <FileList
-          
             files={uploadedFiles}
             loading={loadingFiles}
             onDelete={handleDeleteFile}
-            onMakePublic={handleMakePublic}
-            onRevokePublic={handleRevokePublic}
           />
         </div>
 

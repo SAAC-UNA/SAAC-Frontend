@@ -1,9 +1,9 @@
 import { axiosInstance } from '@/Config/axios';
 
-// Endpoints de acreditación
+// Endpoints de acreditación (axiosInstance ya tiene /api como baseURL)
 const ACCREDITATION_ENDPOINTS = {
-    PROCESSES: '/api/estructura/procesos',
-    CYCLES: '/api/estructura/ciclos-acreditacion'
+    PROCESSES: '/estructura/procesos',
+    CYCLES: '/estructura/ciclos-acreditacion'
 };
 
 /**
