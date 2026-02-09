@@ -27,6 +27,7 @@ const AuditLogPage = lazy(() => import('@/Pages/AuditLog/AuditLogPage'));
 const CompromisosList = lazy(() => import('./Pages/CompromisosMejora/CompromisosList').then(m => ({ default: m.CompromisosList })));
 const CrearCompromiso = lazy(() => import('./Pages/CompromisosMejora/CrearCompromiso'));
 const AprobacionBloques = lazy(() => import('./Pages/AprobacionBloques/AprobacionBloquesSimple'));
+const InformesFinales = lazy(() => import('./Pages/GestionInformes').then(m => ({ default: m.InformesFinales })));
 
 // HU-016: Páginas de solicitudes de ampliación
 const ManageExtensionRequestsPage = lazy(() => import('./Pages/ExtensionRequest').then(m => ({ default: m.ManageExtensionRequestsPage })));
@@ -234,6 +235,16 @@ function App() {
                           element={
                             <ProtectedRoute>
                               <AprobacionBloques />
+                            </ProtectedRoute>
+                          }
+                        />
+
+                        {/* Gestión de Informes - Todos los autenticados */}
+                        <Route
+                          path="/gestion-informes"
+                          element={
+                            <ProtectedRoute>
+                              <InformesFinales />
                             </ProtectedRoute>
                           }
                         />

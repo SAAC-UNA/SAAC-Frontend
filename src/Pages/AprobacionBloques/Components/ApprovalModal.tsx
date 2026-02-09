@@ -18,7 +18,7 @@ interface Evidencia {
 interface ApprovalModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onConfirm: (comentario: string) => void;
+  onConfirm: (comentario: string, forzarAprobacion?: boolean) => void;
   action: 'aprobar' | 'rechazar';
   criterio: Criterio | null;
   evidencias: Evidencia[];
@@ -49,7 +49,7 @@ export const ApprovalModal: React.FC<ApprovalModalProps> = ({
   const handleSubmit = async () => {
     setIsSubmitting(true);
     try {
-      await onConfirm(comentario);
+      await onConfirm(comentario, acceptIncomplete);
     } finally {
       setIsSubmitting(false);
     }

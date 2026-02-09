@@ -150,6 +150,51 @@ export const SystemIcons = {
         <path d="M12 12V1.5" />
         <path d="M16.5 9.375h2.25a.75.75 0 0 1 .75.75V19.5a.75.75 0 0 1-.75.75H5.25a.75.75 0 0 1-.75-.75v-9.375a.75.75 0 0 1 .75-.75H7.5" />
       </svg>
+    ),
+
+    download: ({ className, size, color }: IconProps) => (
+      <svg
+        className={`${getSizeClasses(size)} ${className || ''}`}
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke={color || "currentColor"}
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth="2"
+      >
+        <path d="M12 3v12m0 0-4-4m4 4 4-4" />
+        <path d="M3.75 19.5h16.5" />
+      </svg>
+    ),
+
+    copy: ({ className, size, color }: IconProps) => (
+      <svg
+        className={`${getSizeClasses(size)} ${className || ''}`}
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke={color || "currentColor"}
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth="2"
+      >
+        <path d="M8 8V5.2A2.2 2.2 0 0 1 10.2 3h8.6A2.2 2.2 0 0 1 21 5.2v8.6A2.2 2.2 0 0 1 18.8 16H16" />
+        <path d="M5.2 8A2.2 2.2 0 0 0 3 10.2v8.6A2.2 2.2 0 0 0 5.2 21h8.6A2.2 2.2 0 0 0 16 18.8V16" />
+      </svg>
+    ),
+
+    linkIcon: ({ className, size, color }: IconProps) => (
+      <svg
+        className={`${getSizeClasses(size)} ${className || ''}`}
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke={color || "currentColor"}
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth="2"
+      >
+        <path d="m12.421 5.746.9-.91a4.134 4.134 0 0 1 5.841 5.841l-2.84 2.832a4.116 4.116 0 0 1-5.832 0" />
+        <path d="m11.578 18.255-.9.909a4.135 4.135 0 0 1-5.84-5.84l2.84-2.832a4.115 4.115 0 0 1 5.831 0" />
+      </svg>
     )
   },
 
@@ -917,9 +962,15 @@ export const getIconByName = (iconName: string, size: IconProps['size'] = 'md'):
     'check-circle': () => SystemIcons.interface.checkCircle({ size }),
     'key': () => SystemIcons.modal.key({ size }),
     'document': () => SystemIcons.modal.document({ size }),
+    'document-text': () => SystemIcons.modal.document({ size }),
 
     // Repository
-    'box-archive': () => SystemIcons.repository.boxArchive({ size })
+    'box-archive': () => SystemIcons.repository.boxArchive({ size }),
+    
+    // Work
+    'clipboard-list': () => SystemIcons.work.myEvidences({ size }),
+    'clipboard-check': () => SystemIcons.work.assignEvidence({ size }),
+    'magnifying-glass': () => SystemIcons.interface.search({ size })
   };
 
   return iconMap[iconName] ? iconMap[iconName]() : null;

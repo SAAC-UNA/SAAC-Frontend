@@ -86,27 +86,41 @@ const AprobacionBloquesSimple: React.FC = () => {
 
   useEffect(() => {
     fetchData();
-  }, []);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedProcesoId]); // Recargar cuando cambie el proceso seleccionado
 
   const fetchData = async () => {
     try {
-      // Cargar criterios, evidencias y procesos en paralelo
-      const [criteriosResponse, evidenciasResponse, procesosResponse] = await Promise.all([
+      // Cargar criterios, evidencias, procesos y aprobaciones en paralelo
+      const [criteriosResponse, evidenciasResponse, procesosResponse, aprobacionesResponse] = await Promise.all([
         axiosInstance.get('/estructura/criterios'),
         axiosInstance.get('/estructura/evidencias'),
-        axiosInstance.get('/estructura/procesos')
+        axiosInstance.get('/estructura/procesos'),
+        axiosInstance.get('/aprobaciones-criterios')
       ]);
       
       const criteriosArray = criteriosResponse.data.data || criteriosResponse.data;
       const evidenciasArray = evidenciasResponse.data.data || evidenciasResponse.data;
       const procesosArray = procesosResponse.data.data || procesosResponse.data;
+      const aprobacionesArray = aprobacionesResponse.data.data || aprobacionesResponse.data;
       
-      // Por ahora, asignar estado_aprobacion 'pendiente' y archivo_adjuntado false a todos
-      // TODO: Obtener estos valores desde el backend cuando estén disponibles
-      const criteriosConEstado = criteriosArray.map((c: any) => ({
-        ...c,
-        estado_aprobacion: (c.estado_aprobacion || 'pendiente') as EstadoAprobacion
-      }));
+      // Crear mapa de aprobaciones por criterio_id + proceso_id
+      const aprobacionesMap = new Map<string, EstadoAprobacion>();
+      aprobacionesArray.forEach((aprobacion: any) => {
+        const key = `${aprobacion.criterio_id}-${aprobacion.proceso_id}`;
+        aprobacionesMap.set(key, aprobacion.estado as EstadoAprobacion);
+      });
+      
+      // Asignar estado de aprobación según el proceso seleccionado
+      const criteriosConEstado = criteriosArray.map((c: any) => {
+        const key = selectedProcesoId ? `${c.id}-${selectedProcesoId}` : '';
+        const estadoAprobacion = aprobacionesMap.get(key) || 'pendiente';
+        
+        return {
+          ...c,
+          estado_aprobacion: estadoAprobacion as EstadoAprobacion
+        };
+      });
       
       const evidenciasConArchivos = evidenciasArray.map((e: any) => ({
         ...e,
@@ -175,29 +189,21 @@ const AprobacionBloquesSimple: React.FC = () => {
     setIsModalOpen(true);
   };
 
-  const handleConfirmAction = async (comentario: string) => {
+  const handleConfirmAction = async (comentario: string, forzarAprobacion?: boolean) => {
     if (!selectedCriterio || !selectedProcesoId) return;
 
     try {
-      // TODO: Reemplazar con llamadas reales al backend cuando estén disponibles
-      // Por ahora simulamos la aprobación/rechazo
-      console.log(`Simulando ${modalAction} del criterio ${selectedCriterio.id}`);
-      console.log('Proceso ID:', selectedProcesoId);
-      console.log('Comentario:', comentario);
-      
-      /* Descomentar cuando el backend esté listo:
       const endpoint = modalAction === 'aprobar' 
         ? `/criterios/${selectedCriterio.id}/aprobar`
         : `/criterios/${selectedCriterio.id}/rechazar`;
 
-      await axiosInstance.post(endpoint, {
+      const response = await axiosInstance.post(endpoint, {
         proceso_id: selectedProcesoId,
-        comentario: comentario || null
+        comentario: comentario || null,
+        forzar_aprobacion: forzarAprobacion || false
       });
-      */
-      
-      // Simular delay de red
-      await new Promise(resolve => setTimeout(resolve, 500));
+
+      console.log('Respuesta del backend:', response.data);
 
       // Cerrar modal de confirmación
       setIsModalOpen(false);
@@ -210,9 +216,18 @@ const AprobacionBloquesSimple: React.FC = () => {
       });
       
       // Recargar datos para actualizar el estado
-      // await fetchData(); // Descomentar cuando el backend actualice estados
-    } catch (error) {
-      console.error('Error:', error);
+      await fetchData();
+    } catch (error: any) {
+      console.error('Error completo:', error);
+      console.error('Respuesta del error:', error.response?.data);
+      
+      // Mostrar el mensaje de error del backend
+      const errorMessage = error.response?.data?.message || 'Error al procesar la solicitud';
+      alert(errorMessage);
+      
+      // Cerrar modal de confirmación
+      setIsModalOpen(false);
+      setSelectedCriterio(null);
     }
   };
 
