@@ -52,7 +52,7 @@ export const ScreenContainer: React.FC<ScreenContainerProps> = ({
               </h1>
               {description && (
                 <p className={cn(
-                  'text-gris-una',
+                  'text-gris-una whitespace-pre-line',
                   isMobile ? 'text-sm' : 'text-base'
                 )}>
                   {description}

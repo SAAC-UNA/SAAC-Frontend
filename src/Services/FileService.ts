@@ -91,6 +91,8 @@ export const fileService = {
   ): Promise<{ successful: FileModel[]; failed: Array<{ file: File; error: string }> }> => {
     const formData = new FormData();
     
+    formData.append('tipo', 'archivo');
+    
     // Agregar todos los archivos al FormData
     files.forEach(file => {
       formData.append('archivos[]', file);
@@ -187,6 +189,8 @@ export const fileService = {
   ): Promise<{ successful: FileModel[]; failed: Array<{ url: string; error: string }> }> => {
     const formData = new FormData();
     
+    formData.append('tipo', 'enlace');
+    
     // Agregar todos los enlaces al FormData
     urls.forEach(url => {
       formData.append('enlaces[]', url.trim());
@@ -264,8 +268,8 @@ export const fileService = {
   },
 
   /**
-   * Sube archivos y enlaces combinados en una sola solicitud
-   * POST /api/archivos con archivos[] y enlaces[]
+   * Sube archivos y enlaces combinados haciendo DOS solicitudes separadas
+   * (el backend no soporta tipo='archivo' y tipo='enlace' simultáneamente)
    */
   uploadFilesAndLinks: async (
     files: File[],
@@ -277,93 +281,59 @@ export const fileService = {
     successful: FileModel[]; 
     failed: Array<{ item: File | string; error: string; type: 'file' | 'link' }> 
   }> => {
-    const formData = new FormData();
+    const successful: FileModel[] = [];
+    const failed: Array<{ item: File | string; error: string; type: 'file' | 'link' }> = [];
     
-    // Agregar archivos si existen
+    // Primera solicitud: Subir archivos si existen
     if (files.length > 0) {
-      files.forEach(file => {
-        formData.append('archivos[]', file);
-      });
+      try {
+        const fileResult = await fileService.uploadMultipleFiles(
+          files,
+          evidenciaId,
+          procesoId,
+          onProgress
+        );
+        successful.push(...fileResult.successful);
+        failed.push(...fileResult.failed.map(f => ({
+          item: f.file,
+          error: f.error,
+          type: 'file' as const
+        })));
+      } catch (error: any) {
+        // Si falla completamente, marcar todos los archivos como fallidos
+        failed.push(...files.map(file => ({
+          item: file,
+          error: error.message || 'Error al subir archivo',
+          type: 'file' as const
+        })));
+      }
     }
     
-    // Agregar enlaces si existen
+    // Segunda solicitud: Guardar enlaces si existen
     if (urls.length > 0) {
-      urls.forEach(url => {
-        formData.append('enlaces[]', url.trim());
-      });
+      try {
+        const linkResult = await fileService.uploadMultipleLinks(
+          urls,
+          evidenciaId,
+          procesoId
+        );
+        successful.push(...linkResult.successful);
+        failed.push(...linkResult.failed.map(f => ({
+          item: f.url,
+          error: f.error,
+          type: 'link' as const
+        })));
+      } catch (error: any) {
+        // Si falla completamente, marcar todos los enlaces como fallidos
+        failed.push(...urls.map(url => ({
+          item: url,
+          error: error.message || 'Error al guardar enlace',
+          type: 'link' as const
+        })));
+      }
     }
     
-    formData.append('evidencia_id', evidenciaId.toString());
-    formData.append('proceso_id', procesoId.toString());
-
-    try {
-      const response = await axiosInstance.post<MultipleFileUploadResponse>(
-        BASE_URL,
-        formData,
-        {
-          headers: {
-            'Content-Type': 'multipart/form-data',
-          },
-          onUploadProgress: (progressEvent) => {
-            if (onProgress && progressEvent.total) {
-              const percentCompleted = Math.round(
-                (progressEvent.loaded * 100) / progressEvent.total
-              );
-              onProgress(percentCompleted);
-            }
-          },
-        }
-      );
-
-      const successful = response.data.data || [];
-      const failed: Array<{ item: File | string; error: string; type: 'file' | 'link' }> = [];
-
-      // Si hay errores en la respuesta
-      if (response.data.errores && response.data.errores.length > 0) {
-        response.data.errores.forEach(error => {
-          // Determinar si el error corresponde a un archivo o enlace
-          if (error.indice < files.length) {
-            failed.push({
-              item: files[error.indice],
-              error: error.error,
-              type: 'file'
-            });
-          } else {
-            const linkIndex = error.indice - files.length;
-            failed.push({
-              item: urls[linkIndex],
-              error: error.error,
-              type: 'link'
-            });
-          }
-        });
-      }
-
-      return { successful, failed };
-
-    } catch (error: any) {
-      const errorMessage = error.response?.data?.message || error.message || 'Error al guardar evidencias';
-      
-      // Errores de autenticación o permisos
-      if (error.response?.status === 401) {
-        throw new Error('Usuario no autenticado. Por favor, inicie sesión.');
-      }
-
-      if (error.response?.status === 403) {
-        throw new Error('No tiene permisos para agregar evidencias.');
-      }
-
-      // Error general - todos fallan
-      const allFailed: Array<{ item: File | string; error: string; type: 'file' | 'link' }> = [
-        ...files.map(file => ({ item: file, error: errorMessage, type: 'file' as const })),
-        ...urls.map(url => ({ item: url, error: errorMessage, type: 'link' as const }))
-      ];
-
-      return {
-        successful: [],
-        failed: allFailed
-      };
-    }
+    return { successful, failed };
   },
 
   /**

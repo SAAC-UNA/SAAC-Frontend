@@ -50,6 +50,8 @@ interface BackendEvidenceResult {
   fecha_publicacion: string;
   created_at: string;
   updated_at: string;
+  archivos_count?: number;
+  enlaces_count?: number;
 }
 
 interface PaginatedResponse {
@@ -240,8 +242,8 @@ export function mapBackendToFrontend(backendData: BackendEvidenceResult) {
     estado: (backendData.estado_evidencia?.estado_evidencia_id 
       ? ESTADO_ID_TO_FRONTEND[backendData.estado_evidencia.estado_evidencia_id] 
       : null) || 'pendiente',
-    archivos_count: 0, // Por ahora no viene del backend
-    enlaces_count: 0,  // Por ahora no viene del backend
+    archivos_count: backendData.archivos_count || 0,
+    enlaces_count: backendData.enlaces_count || 0,
     roles_acceso: [],  // Por ahora no viene del backend
     created_at: backendData.created_at,
     updated_at: backendData.updated_at
