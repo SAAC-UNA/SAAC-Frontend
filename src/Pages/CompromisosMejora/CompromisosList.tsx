@@ -186,8 +186,8 @@ export const CompromisosList: React.FC = () => {
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
-              {compromisos.map((compromiso) => (
-                <tr key={compromiso.id} className="hover:bg-gray-50">
+              {compromisos.map((compromiso, index) => (
+                <tr key={`compromiso-${compromiso.id || index}`} className="hover:bg-gray-50">
                   <td className="px-6 py-4">
                     <div className="text-sm font-medium text-gray-900">
                       {compromiso.descripcion}
