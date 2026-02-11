@@ -26,6 +26,7 @@ const MyEvidenceAssignmentsPage = lazy(() => import('./Pages/MyEvidence').then(m
 const AuditLogPage = lazy(() => import('@/Pages/AuditLog/AuditLogPage'));
 const CompromisosList = lazy(() => import('./Pages/CompromisosMejora/CompromisosList').then(m => ({ default: m.CompromisosList })));
 const CrearCompromiso = lazy(() => import('./Pages/CompromisosMejora/CrearCompromiso'));
+const CompromisoDetalle = lazy(() => import('./Pages/CompromisosMejora/CompromisoDetalle'));
 const AprobacionBloques = lazy(() => import('./Pages/AprobacionBloques/AprobacionBloquesSimple'));
 const InformesFinales = lazy(() => import('./Pages/GestionInformes').then(m => ({ default: m.InformesFinales })));
 
@@ -222,6 +223,22 @@ function App() {
                         />
                         <Route
                           path="/compromisos/crear"
+                          element={
+                            <ProtectedRoute>
+                              <CrearCompromiso />
+                            </ProtectedRoute>
+                          }
+                        />
+                        <Route
+                          path="/compromisos/ver/:id"
+                          element={
+                            <ProtectedRoute>
+                              <CompromisoDetalle />
+                            </ProtectedRoute>
+                          }
+                        />
+                        <Route
+                          path="/compromisos/editar/:id"
                           element={
                             <ProtectedRoute>
                               <CrearCompromiso />

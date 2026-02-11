@@ -1,33 +1,22 @@
 /**
  * CompromisosList - Página de listado de compromisos de mejora
+ * Muestra todos los compromisos con filtros y acciones
  */
 
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ScreenContainer } from '@/Components/Ui/ScreenContainer';
-import { Button } from '@/Components/Ui/Index';
+import { Button, LoadingSpinner } from '@/Components/Ui/Index';
 import { SystemIcons } from '@/Components/Ui/Icons/SystemIcons';
-import { axiosInstance } from '@/Config/axios';
-
-interface Compromiso {
-  id: number;
-  descripcion: string;
-  fecha_inicio: string;
-  fecha_fin: string;
-  estado: 'Pendiente' | 'En Progreso' | 'Completado';
-  proceso?: {
-    id: number;
-    nombre: string;
-  };
-  ciclo_acreditacion?: {
-    id: number;
-    nombre: string;
-  };
-}
+import { improvementCommitmentService } from '@/Services/ImprovementCommitmentService';
+import type { CompromisoMejora } from '@/Types/ImprovementCommitmentTypes';
+import { useToast } from '@/Context/ToastContext';
 
 export const CompromisosList: React.FC = () => {
   const navigate = useNavigate();
-  const [compromisos, setCompromisos] = useState<Compromiso[]>([]);
+  const { showToast } = useToast();
+  
+  const [compromisos, setCompromisos] = useState<CompromisoMejora[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -40,11 +29,11 @@ export const CompromisosList: React.FC = () => {
       setLoading(true);
       setError(null);
       
-      const response = await axiosInstance.get('/compromisos-de-mejora');
+      const response = await improvementCommitmentService.listarCompromisos({
+        per_page: 50
+      });
       
-      const data = response.data.data || response.data;
-      console.log('Compromisos cargados:', data);
-      setCompromisos(data);
+      setCompromisos(response.data || []);
     } catch (error: any) {
       console.error('Error al cargar compromisos:', error);
       
@@ -65,18 +54,18 @@ export const CompromisosList: React.FC = () => {
     }
   };
 
-  const getEstadoBadge = (estado: string) => {
-    const badges: Record<string, { bg: string; text: string }> = {
-      'Pendiente': { bg: 'bg-yellow-100', text: 'text-yellow-800' },
-      'En Progreso': { bg: 'bg-blue-100', text: 'text-blue-800' },
-      'Completado': { bg: 'bg-green-100', text: 'text-green-800' }
-    };
-    const badge = badges[estado] || badges['Pendiente'];
-    return (
-      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${badge.bg} ${badge.text}`}>
-        {estado}
-      </span>
-    );
+  const compromisosFiltrados = compromisos;
+
+  const formatearFecha = (fecha: string) => {
+    return new Date(fecha).toLocaleDateString('es-CR', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric'
+    });
+  };
+
+  const handleVerDetalle = (id: number) => {
+    navigate(`/compromisos/ver/${id}`);
   };
 
   return (
@@ -85,8 +74,8 @@ export const CompromisosList: React.FC = () => {
         {/* Header */}
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">Compromisos de Mejora</h1>
-            <p className="mt-1 text-sm text-gray-500">
+            <h1 className="text-2xl font-bold text-negro-una">Compromisos de Mejora</h1>
+            <p className="mt-1 text-sm text-gris-una">
               Gestione los compromisos de mejora vinculados a criterios y evidencias
             </p>
           </div>
@@ -95,7 +84,7 @@ export const CompromisosList: React.FC = () => {
             variant="secondary"
             className="gap-2"
           >
-            <SystemIcons.actions.add className="w-4 h-4" size="sm" />
+            <SystemIcons.actions.add size="sm" />
             Crear
           </Button>
         </div>
@@ -107,29 +96,17 @@ export const CompromisosList: React.FC = () => {
         {loading ? (
           <div className="flex justify-center items-center py-12">
             <div className="text-center">
-              <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-rojo-una mb-4"></div>
-              <p className="text-gray-600">Cargando compromisos...</p>
+              <LoadingSpinner size="lg" className="mx-auto mb-4" />
+              <p className="text-gris-una">Cargando compromisos...</p>
             </div>
           </div>
         ) : error ? (
           /* Error State */
           <div className="flex items-center justify-center py-24">
             <div className="text-center max-w-md">
-              <svg
-                className="mx-auto h-12 w-12 text-red-400"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
-                />
-              </svg>
-              <h3 className="text-base font-medium text-gray-900 mb-2 mt-4">{error}</h3>
-              <p className="text-sm text-gray-500 mb-4">
+              <SystemIcons.interface.alert size="xl" className="mx-auto text-red-400 mb-4" />
+              <h3 className="text-base font-medium text-negro-una mb-2 mt-4">{error}</h3>
+              <p className="text-sm text-gris-una mb-4">
                 El servidor puede no estar funcionando correctamente
               </p>
               <Button
@@ -140,91 +117,77 @@ export const CompromisosList: React.FC = () => {
               </Button>
             </div>
           </div>
-        ) : compromisos.length === 0 ? (
+          ) : compromisosFiltrados.length === 0 ? (
           /* Empty State */
           <div className="flex items-center justify-center py-24">
             <div className="text-center">
-              <svg
-                className="mx-auto h-12 w-12 text-gray-400"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"
-                />
-              </svg>
-              <h3 className="text-base font-medium text-gray-900 mb-2">No hay compromisos registrados</h3>
-              <p className="text-sm text-gray-500">
-                Utilice el botón "Crear" para registrar un nuevo compromiso de mejora
+              <SystemIcons.interface.document size="xl" className="mx-auto text-gray-400 mb-4" />
+              <h3 className="text-base font-medium text-negro-una mb-2">
+                {'No hay compromisos registrados'}
+              </h3>
+              <p className="text-sm text-gris-una">
+                {'Utilice el botón "Crear" para registrar un nuevo compromiso de mejora'}
               </p>
             </div>
           </div>
         ) : (
-          /* Table */
-          <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gray-50">
-              <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Descripción
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Proceso/Ciclo
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Fechas
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Estado
-                </th>
-                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Acciones
-                </th>
-              </tr>
-            </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
-              {compromisos.map((compromiso) => (
-                <tr key={compromiso.id} className="hover:bg-gray-50">
-                  <td className="px-6 py-4">
-                    <div className="text-sm font-medium text-gray-900">
-                      {compromiso.descripcion}
+          /* Cards de Compromisos */
+          <div className="grid gap-4">
+            {compromisosFiltrados.map((compromiso) => (
+              <div
+                key={compromiso.compromiso_mejora_id}
+                className="bg-white border border-gray-200 rounded-lg p-6 hover:shadow-md transition-shadow cursor-pointer"
+                onClick={() => handleVerDetalle(compromiso.compromiso_mejora_id)}
+              >
+                <div className="flex items-start justify-between">
+                  <div className="flex-1">
+                    <div className="flex items-center gap-3 mb-2">
+                      <h3 className="text-lg font-semibold text-negro-una">
+                        {compromiso.descripcion || 'Sin descripción'}
+                      </h3>
+                      {compromiso.is_overdue && (
+                        <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-red-50 border border-red-200 rounded text-xs text-red-800 font-medium">
+                          <SystemIcons.interface.alert size="xs" className="w-3 h-3" />
+                          Vencido
+                        </span>
+                      )}
                     </div>
-                  </td>
-                  <td className="px-6 py-4">
-                    <div className="text-sm text-gray-900">
-                      {compromiso.proceso?.nombre || compromiso.ciclo_acreditacion?.nombre || '-'}
+                    
+                    <div className="grid grid-cols-2 gap-4 mt-4">
+                      <div>
+                        <p className="text-xs font-medium text-gris-una mb-1">Fechas</p>
+                        <p className="text-sm text-negro-una">
+                          {formatearFecha(compromiso.fecha_inicio)} - {formatearFecha(compromiso.fecha_fin)}
+                        </p>
+                      </div>
+                      
+                      {compromiso.selecciones && compromiso.selecciones.length > 0 && (
+                        <div>
+                          <p className="text-xs font-medium text-gris-una mb-1">Criterios vinculados</p>
+                          <p className="text-sm text-negro-una">
+                            {compromiso.selecciones.length} {compromiso.selecciones.length === 1 ? 'criterio' : 'criterios'}
+                          </p>
+                        </div>
+                      )}
+                      
+                      {compromiso.assignedEvidences && compromiso.assignedEvidences.length > 0 && (
+                        <div>
+                          <p className="text-xs font-medium text-gris-una mb-1">Asignaciones</p>
+                          <p className="text-sm text-negro-una">
+                            {compromiso.assignedEvidences.length} {compromiso.assignedEvidences.length === 1 ? 'asignación' : 'asignaciones'}
+                          </p>
+                        </div>
+                      )}
                     </div>
-                  </td>
-                  <td className="px-6 py-4">
-                    <div className="text-sm text-gray-500">
-                      {new Date(compromiso.fecha_inicio).toLocaleDateString('es-CR')} -{' '}
-                      {new Date(compromiso.fecha_fin).toLocaleDateString('es-CR')}
-                    </div>
-                  </td>
-                  <td className="px-6 py-4">
-                    {getEstadoBadge(compromiso.estado)}
-                  </td>
-                  <td className="px-6 py-4 text-right text-sm font-medium">
-                    <button
-                      className="text-rojo-una hover:text-red-900 mr-4"
-                      onClick={() => navigate(`/compromisos/ver/${compromiso.id}`)}
-                    >
-                      Ver
-                    </button>
-                    <button
-                      className="text-blue-600 hover:text-blue-900"
-                      onClick={() => navigate(`/compromisos/editar/${compromiso.id}`)}
-                    >
-                      Editar
-                    </button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+                  </div>
+                  
+                  <div className="ml-4">
+                    <SystemIcons.interface.chevronRight size="md" className="text-gris-una" />
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
         )}
       </div>
     </ScreenContainer>
