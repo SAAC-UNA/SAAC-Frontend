@@ -84,6 +84,7 @@ const AprobacionBloquesSimple: React.FC = () => {
     { value: 'rechazado', label: 'Rechazados' }
   ];
 
+
   useEffect(() => {
     fetchData();
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -122,14 +123,8 @@ const AprobacionBloquesSimple: React.FC = () => {
         };
       });
       
-      const evidenciasConArchivos = evidenciasArray.map((e: any) => ({
-        ...e,
-        // TODO: Este valor debe venir del backend. Por ahora simulamos algunos archivos adjuntados
-        archivo_adjuntado: e.archivo_adjuntado !== undefined ? e.archivo_adjuntado : (Math.random() > 0.5)
-      }));
-      
-      setCriterios(criteriosConEstado);
-      setEvidencias(evidenciasConArchivos);
+          setCriterios(criteriosConEstado);
+          setEvidencias(evidenciasArray);
       setProcesos(procesosArray);
     } catch (error) {
       console.error('Error:', error);
@@ -189,7 +184,7 @@ const AprobacionBloquesSimple: React.FC = () => {
     setIsModalOpen(true);
   };
 
-  const handleConfirmAction = async (comentario: string, forzarAprobacion?: boolean) => {
+  const handleConfirmAction = async (comentario: string) => {
     if (!selectedCriterio || !selectedProcesoId) return;
 
     try {
@@ -199,8 +194,7 @@ const AprobacionBloquesSimple: React.FC = () => {
 
       const response = await axiosInstance.post(endpoint, {
         proceso_id: selectedProcesoId,
-        comentario: comentario || null,
-        forzar_aprobacion: forzarAprobacion || false
+        comentario: comentario || null
       });
 
       console.log('Respuesta del backend:', response.data);
@@ -319,7 +313,7 @@ const AprobacionBloquesSimple: React.FC = () => {
                                 {totalEvidencias > 0 ? (
                                   <button
                                     onClick={() => toggleEvidencias(criterio.id)}
-                                    className="inline-flex items-center gap-2 px-3 py-1.5 text-sm font-medium text-gray-700 bg-gray-50 hover:bg-gray-100 rounded-md transition-colors"
+                                    className="inline-flex items-center gap-2 px-2.5 py-1 text-xs font-medium text-gray-700 bg-gray-50 hover:bg-gray-100 rounded-md transition-colors whitespace-nowrap"
                                   >
                                     <span>{totalEvidencias} evidencia{totalEvidencias !== 1 ? 's' : ''}</span>
                                     <svg 
@@ -371,25 +365,23 @@ const AprobacionBloquesSimple: React.FC = () => {
                                     <h4 className="text-sm font-medium text-gray-700 mb-3">
                                       Evidencias del Criterio:
                                     </h4>
-                                    <div className="space-y-2">
+                                    <div className="border border-gray-200 rounded-md overflow-hidden bg-white">
                                       {evidenciasCriterio.map((evidencia) => (
                                         <div
                                           key={evidencia.id}
-                                          className="flex items-center justify-between px-4 py-3 bg-white rounded-lg border border-gray-200"
+                                          className="flex items-center justify-between px-3 py-2 border-b border-gray-100 last:border-b-0 hover:bg-gray-50"
                                         >
-                                          <div className="flex-1">
-                                            <div className="text-sm font-medium text-gray-900">
-                                              {evidencia.nomenclatura}
-                                            </div>
-                                            <div className="text-sm text-gray-500 mt-1">
-                                              {evidencia.descripcion}
+                                          <div className="flex-1 min-w-0">
+                                            <div className="text-xs text-gray-700 truncate">
+                                              <span className="font-medium text-gray-900">{evidencia.nomenclatura}</span>
+                                              <span className="text-gray-500"> - {evidencia.descripcion}</span>
                                             </div>
                                           </div>
                                           <Tooltip>
                                             <TooltipTrigger asChild>
                                               <button
                                                 onClick={() => handleViewFiles(evidencia)}
-                                                className="ml-4 p-2 text-gray-400 hover:text-rojo-una transition-colors rounded-md hover:bg-gray-100"
+                                                className="ml-3 p-1.5 text-gray-600 hover:text-gray-800 transition-colors rounded-md hover:bg-gray-100"
                                               >
                                                 <SystemIcons.actions.view className="w-5 h-5" />
                                               </button>
