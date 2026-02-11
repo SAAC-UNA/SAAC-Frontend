@@ -9,7 +9,7 @@
  * - Eliminar notificaciones
  */
 
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { Modal } from '@/Components/Ui/Modal';
 import { Button, LoadingSpinner } from '@/Components/Ui/Index';
 import { SystemIcons } from '@/Components/Ui/Icons/SystemIcons';
@@ -17,6 +17,8 @@ import { NotificationCard } from '@/Components/Notifications/NotificationCard';
 import { NotificationFiltersComponent } from '@/Components/Notifications/NotificationFilters';
 import { useNotifications } from '@/Hooks/useNotifications';
 import type { NotificationFilters } from '@/Types/NotificationTypes';
+import { format, isToday, isYesterday } from 'date-fns';
+import { es } from 'date-fns/locale';
 
 interface NotificationCenterModalProps {
   isOpen: boolean;
@@ -41,6 +43,26 @@ const NotificationCenter: React.FC<NotificationCenterModalProps> = ({ isOpen, on
 
   const [currentFilters, setCurrentFilters] = useState<NotificationFilters>({});
   const [isMarkingAll, setIsMarkingAll] = useState(false);
+
+  const groupedNotifications = useMemo(() => {
+    const groups = new Map<string, typeof notifications>();
+
+    const getLabel = (dateString: string) => {
+      const date = new Date(dateString);
+      if (isToday(date)) return 'Hoy';
+      if (isYesterday(date)) return 'Ayer';
+      return format(date, 'dd MMM yyyy', { locale: es });
+    };
+
+    notifications.forEach((notification) => {
+      const label = getLabel(notification.created_at);
+      const list = groups.get(label) || [];
+      list.push(notification);
+      groups.set(label, list);
+    });
+
+    return Array.from(groups.entries());
+  }, [notifications]);
 
   // Aplicar filtros
   const handleFilterChange = (filters: NotificationFilters) => {
@@ -87,6 +109,8 @@ const NotificationCenter: React.FC<NotificationCenterModalProps> = ({ isOpen, on
       onClose={onClose}
       title="Centro de Notificaciones"
       size="xl"
+      className="min-h-[72vh]"
+      contentClassName="max-h-[62vh]"
     >
       <div className="space-y-4">
         {/* Contador */}
@@ -145,7 +169,7 @@ const NotificationCenter: React.FC<NotificationCenterModalProps> = ({ isOpen, on
         </div>
 
         {/* Contenido con scroll */}
-        <div className="max-h-[750px] overflow-y-auto pr-2">
+        <div className="max-h-[750px] min-h-[480px] overflow-y-auto pr-2">
           {isLoading && notifications.length === 0 ? (
             <div className="flex justify-center items-center py-12">
               <LoadingSpinner size="lg" />
@@ -165,25 +189,36 @@ const NotificationCenter: React.FC<NotificationCenterModalProps> = ({ isOpen, on
               </Button>
             </div>
           ) : notifications.length === 0 ? (
-            <div className="bg-gray-50 rounded-lg p-8 text-center">
-              <SystemIcons.interface.informationCircle className="mx-auto h-12 w-12 text-gray-400" />
-              <h3 className="mt-2 text-sm font-medium text-gray-900">No hay notificaciones</h3>
-              <p className="mt-1 text-sm text-gray-500">
-                {Object.keys(currentFilters).length > 0
-                  ? 'No se encontraron notificaciones con los filtros aplicados.'
-                  : 'No tienes notificaciones en este momento.'}
-              </p>
+            <div className="bg-gray-50 rounded-lg p-8 h-full">
+              <div className="min-h-[340px] h-full flex flex-col items-center justify-center text-center pt-6">
+                <SystemIcons.interface.bell className="h-12 w-12 text-gray-300" />
+                <h3 className="mt-2 text-sm font-medium text-gray-900">No hay notificaciones</h3>
+                <p className="mt-1 text-sm text-gray-500">
+                  {Object.keys(currentFilters).length > 0
+                    ? 'No se encontraron notificaciones con los filtros aplicados.'
+                    : 'No tienes notificaciones en este momento.'}
+                </p>
+              </div>
             </div>
           ) : (
-            <div className="space-y-3">
-              {notifications.map((notification) => (
-                <NotificationCard
-                  key={notification.notificacion_id}
-                  notification={notification}
-                  onMarkAsRead={handleMarkAsRead}
-                  onDelete={handleDelete}
-                  compact={false}
-                />
+            <div className="space-y-6">
+              {groupedNotifications.map(([label, items]) => (
+                <div key={label} className="space-y-3">
+                  <div className="text-xs uppercase tracking-wide text-gris-una font-semibold">
+                    {label}
+                  </div>
+                  <div className="space-y-3">
+                    {items.map((notification) => (
+                      <NotificationCard
+                        key={notification.notificacion_id}
+                        notification={notification}
+                        onMarkAsRead={handleMarkAsRead}
+                        onDelete={handleDelete}
+                        compact={false}
+                      />
+                    ))}
+                  </div>
+                </div>
               ))}
             </div>
           )}

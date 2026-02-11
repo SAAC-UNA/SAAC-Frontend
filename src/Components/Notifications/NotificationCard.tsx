@@ -57,16 +57,42 @@ export const NotificationCard: React.FC<NotificationCardProps> = ({
     }
   };
 
-  // Clases de color según el tipo
-  const colorClasses = {
-    blue: 'bg-blue-50 border-blue-200 hover:bg-blue-100',
-    green: 'bg-green-50 border-green-200 hover:bg-green-100',
-    red: 'bg-red-50 border-red-200 hover:bg-red-100',
-    orange: 'bg-orange-50 border-orange-200 hover:bg-orange-100',
-    purple: 'bg-purple-50 border-purple-200 hover:bg-purple-100',
-    teal: 'bg-teal-50 border-teal-200 hover:bg-teal-100',
-    gray: 'bg-gray-50 border-gray-200 hover:bg-gray-100',
+  const getIconComponent = () => {
+    switch (notification.icono) {
+      case 'assignment':
+        return SystemIcons.modal.document;
+      case 'upload':
+        return SystemIcons.interface.upload;
+      case 'alarm':
+      case 'schedule':
+        return SystemIcons.interface.clock;
+      case 'undo':
+      case 'reply':
+        return SystemIcons.interface.refresh;
+      case 'check_circle':
+        return SystemIcons.interface.checkCircle;
+      case 'cancel':
+        return SystemIcons.interface.xCircle;
+      case 'comment':
+        return SystemIcons.interface.informationCircle;
+      case 'notifications':
+      default:
+        return SystemIcons.interface.bell;
+    }
   };
+
+  // Clases de color según el tipo (borde de color, fondo neutro)
+  const borderColorClasses = {
+    blue: 'border-blue-300 ring-blue-200/40',
+    green: 'border-green-300 ring-green-200/40',
+    red: 'border-red-300 ring-red-200/40',
+    orange: 'border-orange-300 ring-orange-200/40',
+    purple: 'border-purple-300 ring-purple-200/40',
+    teal: 'border-teal-300 ring-teal-200/40',
+    gray: 'border-gray-300 ring-gray-200/40',
+  };
+
+  const bgClass = 'bg-gray-50 hover:bg-gray-100';
 
   const iconColorClasses = {
     blue: 'text-blue-600',
@@ -78,7 +104,6 @@ export const NotificationCard: React.FC<NotificationCardProps> = ({
     gray: 'text-gray-600',
   };
 
-  const bgClass = colorClasses[notification.color as keyof typeof colorClasses] || colorClasses.gray;
   const iconColor = iconColorClasses[notification.color as keyof typeof iconColorClasses] || iconColorClasses.gray;
 
   // Timestamp relativo
@@ -87,14 +112,21 @@ export const NotificationCard: React.FC<NotificationCardProps> = ({
     locale: es,
   });
 
+  const IconComponent = getIconComponent();
+  const isCritical = notification.es_critica;
+  const borderClass = isCritical
+    ? 'border-red-400 ring-red-200/50'
+    : borderColorClasses[notification.color as keyof typeof borderColorClasses] || borderColorClasses.gray;
+
   return (
     <div
       className={`
-        border rounded-lg transition-all duration-200
+        border-2 rounded-lg transition-all duration-200 ring-1
         ${bgClass}
+        ${borderClass}
         ${notification.enlace ? 'cursor-pointer' : ''}
-        ${!notification.leida ? 'shadow-md border-l-4' : 'opacity-75'}
-        ${compact ? 'p-3' : 'p-4'}
+        ${!notification.leida ? 'shadow-md' : 'opacity-75'}
+        ${compact ? 'p-2.5' : 'p-3'}
       `}
       onClick={handleClick}
       role={notification.enlace ? 'button' : 'article'}
@@ -103,14 +135,14 @@ export const NotificationCard: React.FC<NotificationCardProps> = ({
       <div className="flex gap-3">
         {/* Icono */}
         <div className={`flex-shrink-0 ${iconColor}`}>
-          <SystemIcons.interface.informationCircle className={compact ? 'w-5 h-5' : 'w-6 h-6'} />
+          <IconComponent className={compact ? 'w-5 h-5' : 'w-6 h-6'} />
         </div>
 
         {/* Contenido */}
         <div className="flex-1 min-w-0">
           {/* Header: Título + Badge crítico */}
           <div className="flex items-start justify-between gap-2 mb-1">
-            <h4 className={`font-semibold text-gray-900 ${compact ? 'text-sm' : 'text-base'}`}>
+            <h4 className={`font-semibold text-gray-900 ${compact ? 'text-xs' : 'text-sm'}`}>
               {notification.titulo}
             </h4>
             {notification.es_critica && (
@@ -121,13 +153,19 @@ export const NotificationCard: React.FC<NotificationCardProps> = ({
           </div>
 
           {/* Mensaje */}
-          <p className={`text-gray-700 ${compact ? 'text-xs line-clamp-2' : 'text-sm'} mb-2`}>
+          <p className={`text-gray-700 ${compact ? 'text-[11px] line-clamp-2' : 'text-xs'} mb-1.5`}>
             {notification.mensaje}
           </p>
 
           {/* Footer: Tiempo + Acciones */}
           <div className="flex items-center justify-between gap-2">
             <span className="text-xs text-gray-500">{timeAgo}</span>
+
+            {notification.enlace && (
+              <span className="text-xs text-azul-una font-medium">
+                Ver detalle
+              </span>
+            )}
 
             {/* Botones de acción */}
             {!compact && (

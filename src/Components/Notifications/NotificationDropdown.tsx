@@ -79,8 +79,8 @@ export const NotificationDropdown: React.FC<NotificationDropdownProps> = ({
   return (
     <div className="absolute right-0 mt-2 w-96 bg-white rounded-lg shadow-xl border border-gray-200 z-50 max-h-[600px] flex flex-col">
       {/* Header */}
-      <div className="px-4 py-3 border-b border-gray-200 flex items-center justify-between">
-        <h3 className="text-sm font-semibold text-gray-900">
+      <div className="px-4 py-3 border-b border-gray-200 relative flex items-center justify-center">
+        <h3 className="text-sm font-semibold text-gray-900 text-center">
           Notificaciones
           {unreadCount > 0 && (
             <span className="ml-2 inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
@@ -91,7 +91,7 @@ export const NotificationDropdown: React.FC<NotificationDropdownProps> = ({
         {unreadCount > 0 && (
           <button
             onClick={handleMarkAllAsRead}
-            className="text-xs text-blue-600 hover:text-blue-800 font-medium"
+            className="absolute right-4 text-xs text-blue-600 hover:text-blue-800 font-medium"
           >
             Marcar todas
           </button>
@@ -123,12 +123,12 @@ export const NotificationDropdown: React.FC<NotificationDropdownProps> = ({
       </div>
 
       {/* Footer - Siempre visible */}
-      <div className="px-4 py-3 border-t border-gray-200">
+      <div className="px-4 py-3 border-t border-gray-200 flex justify-center">
         <Button
-          variant="transparent"
+          variant="ghost"
           size="sm"
           onClick={handleViewAll}
-          className="w-full justify-center"
+          className="w-auto px-4 text-xs text-gris-una hover:text-negro-una"
         >
           Ver todas las notificaciones
         </Button>

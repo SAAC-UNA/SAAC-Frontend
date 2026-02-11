@@ -26,6 +26,9 @@ interface UnifiedModalProps {
   
   /** Clases CSS adicionales para el contenedor */
   className?: string;
+
+  /** Clases CSS adicionales para el contenido */
+  contentClassName?: string;
   
   // ===== MODO BÁSICO (como Modal.tsx) =====
   /** Contenido personalizado del modal */
@@ -70,6 +73,7 @@ export const Modal: React.FC<UnifiedModalProps> = React.memo(({
   size = 'md',
   closable = true,
   className,
+  contentClassName,
   
   // Modo básico
   children,
@@ -237,7 +241,10 @@ export const Modal: React.FC<UnifiedModalProps> = React.memo(({
             </div>
 
             {/* Content */}
-            <div className="bg-white px-8 py-6 max-h-[60vh] overflow-y-auto">
+            <div className={cn(
+              'bg-white px-8 py-6 max-h-[60vh] overflow-y-auto',
+              contentClassName
+            )}>
               {isAdvancedMode && variant && (
                 <div className="sm:flex sm:items-start">
                   {/* Icono para modo avanzado */}
