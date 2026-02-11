@@ -118,15 +118,6 @@ export const getNavigationItems = (userRoles?: string | string[]): NavItem[] => 
     isActive: false,
   });
 
-  // Avance de Acreditación - Todos los autenticados (filtrado por carrera en el backend)
-  items.push({
-    id: 'avance-acreditacion',
-    label: 'Avance de Acreditación',
-    icon: processIcon,
-    href: '/acreditacion/avance',
-    isActive: false
-  });
-
   // Compromisos de Mejora - Todos los autenticados
   items.push({
     id: 'compromisos-mejora',

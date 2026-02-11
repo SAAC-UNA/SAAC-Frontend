@@ -18,7 +18,6 @@ const StructureList = lazy(() => import('@/Pages/Structure/StructureList'));
 const StructureCreation = lazy(() => import('@/Pages/Structure/StructureCreation'));
 const StructureEditForm = lazy(() => import('@/Pages/Structure/StructureEditForm'));
 const StructureEditList = lazy(() => import('./Pages/Structure/StructureEditList'));
-const AccreditationProgress = lazy(() => import('@/Pages/Accreditation/AccreditationProgress'));
 const EvidenceAssignment = lazy(() => import('./Pages/EvidenceAssignment').then(m => ({ default: m.EvidenceAssignment })));
 const EvidenceUploadPage = lazy(() => import('./Pages/EvidenceUpload').then(m => ({ default: m.EvidenceUploadPage })));
 const EvidenceSearchPage = lazy(() => import('./Pages/EvidenceSearch').then(m => ({ default: m.EvidenceSearchPage })));
@@ -202,16 +201,6 @@ function App() {
                           }
                         />
  
-                        {/* Avance de Acreditación - Todos los autenticados */}
-                        <Route
-                          path="/acreditacion/avance"
-                          element={
-                            <ProtectedRoute>
-                              <AccreditationProgress />
-                            </ProtectedRoute>
-                          }
-                        />
-
                         {/* Compromisos de Mejora - Todos los autenticados */}
                         <Route
                           path="/compromisos/listar"
