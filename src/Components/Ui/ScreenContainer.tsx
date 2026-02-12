@@ -87,7 +87,7 @@ export const ScreenContainer: React.FC<ScreenContainerProps> = ({
     return (
       <div className={getOuterContainer()}>
         <div className={cn(
-          'w-full bg-blanco-una-2 rounded-lg shadow-lg border border-gris-una/20 transition-all duration-300', 'min-h-app',
+          'w-full bg-blanco-una-2 rounded-corner shadow-lg border border-gris-una/20 transition-all duration-300', 'min-h-app',
           className
           )}
         >
@@ -104,7 +104,7 @@ export const ScreenContainer: React.FC<ScreenContainerProps> = ({
   return (
     <div className={getOuterContainer()}>
       <div className={cn(
-        'w-full bg-blanco-una-2 rounded-lg shadow-lg border border-gris-una/20 transition-all duration-300', 'min-h-app',
+        'w-full bg-blanco-una-2 rounded-corner shadow-lg border border-gris-una/20 transition-all duration-300', 'min-h-app',
         className
       )}>
         {/* Header */}

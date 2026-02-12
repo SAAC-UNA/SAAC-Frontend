@@ -162,7 +162,7 @@ export const LinkInput: React.FC<LinkInputProps> = ({
             {links.map((link, index) => (
               <li
                 key={index}
-                className="flex items-center justify-between p-3 bg-gray-50 border border-gray-200 rounded-md"
+                className="flex items-center justify-between p-3 bg-gray-50 border border-gray-200 rounded-corner"
               >
                 <div className="flex items-center gap-2 flex-1 min-w-0">
                   <SystemIcons.interface.link 
@@ -199,7 +199,7 @@ export const LinkInput: React.FC<LinkInputProps> = ({
 
       {/* Mensajes de error */}
       {Object.keys(errors).length > 0 && (
-        <div className="p-3 bg-red-50 border border-red-200 rounded-md">
+        <div className="p-3 bg-red-50 border border-red-200 rounded-corner">
           <p className="text-sm text-red-600">
             {Object.values(errors)[0]}
           </p>

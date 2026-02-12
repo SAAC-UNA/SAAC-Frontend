@@ -76,7 +76,7 @@ export const PermissionsModal: React.FC<PermissionsModalProps> = ({
                         <h3 className="font-medium text-gray-800">Descripción del rol</h3>
                     </div>
                     
-                    <div className="bg-white border border-gray-200 rounded-lg p-4">
+                    <div className="bg-white border border-gray-200 rounded-corner p-4">
                         <p className="text-sm text-gray-700 leading-relaxed">
                             {roleDescription}
                         </p>
@@ -93,7 +93,7 @@ export const PermissionsModal: React.FC<PermissionsModalProps> = ({
                 <h3 className="font-medium text-gray-800">Permisos asignados</h3>
             </div>
             
-            <div className="bg-white border border-gray-200 rounded-lg p-4 max-h-60 overflow-y-auto">
+            <div className="bg-white border border-gray-200 rounded-corner p-4 max-h-60 overflow-y-auto">
                 {permissions.length > 0 ? (
                     <div className="space-y-2">
                         {permissions.map((permission, index) => {

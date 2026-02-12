@@ -94,14 +94,14 @@ export const ReviewExtensionRequestModal: React.FC<ReviewExtensionRequestModalPr
       >
         <div className="space-y-4">
           {/* Información del solicitante */}
-          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+          <div className="bg-blue-50 border border-blue-200 rounded-corner p-4">
             <h4 className="text-sm font-semibold text-blue-900 mb-2">Información del Solicitante</h4>
             <div className="space-y-1 text-sm">
               <p><strong>Nombre:</strong> {solicitud.usuario?.nombre}</p>
               <p><strong>Email:</strong> {solicitud.usuario?.email}</p>
               <p>
                 <strong>Fecha de solicitud:</strong>{' '}
-                {new Date(solicitud.fecha_solicitud).toLocaleDateString('es-ES', {
+                {new Date(solicitud.created_at).toLocaleDateString('es-ES', {
                   day: '2-digit',
                   month: 'long',
                   year: 'numeric',
@@ -113,7 +113,7 @@ export const ReviewExtensionRequestModal: React.FC<ReviewExtensionRequestModalPr
           </div>
 
           {/* Detalles de la solicitud */}
-          <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
+          <div className="bg-gray-50 border border-gray-200 rounded-corner p-4">
             <h4 className="text-sm font-semibold text-gray-900 mb-2">Detalles de la Solicitud</h4>
             <div className="space-y-3 text-sm">
               <div>
@@ -148,7 +148,7 @@ export const ReviewExtensionRequestModal: React.FC<ReviewExtensionRequestModalPr
           </div>
 
           {/* Advertencia */}
-          <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3">
+          <div className="bg-yellow-50 border border-yellow-200 rounded-corner p-3">
             <p className="text-xs text-yellow-800">
               <strong>Importante:</strong> Una vez aprobada o rechazada, la decisión no podrá revertirse.
               {solicitud.evidencia_asignacion && ' Si aprueba, la fecha límite de la asignación se actualizará automáticamente.'}
@@ -188,7 +188,7 @@ export const ReviewExtensionRequestModal: React.FC<ReviewExtensionRequestModalPr
     >
       <div className="space-y-4">
         {/* Mensaje de confirmación */}
-        <div className={`border rounded-lg p-4 ${
+        <div className={`border rounded-corner p-4 ${
           action === 'approve' 
             ? 'bg-green-50 border-green-200' 
             : 'bg-red-50 border-red-200'

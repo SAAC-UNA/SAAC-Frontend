@@ -109,7 +109,7 @@ export function FilterButton<T = string>({
             onClick={() => !disabled && setIsOpen(!isOpen)}
             disabled={disabled}
             className={cn(
-              "p-2 rounded-lg border transition-colors",
+              "p-2 rounded-corner border transition-colors",
               "border-gris-una/5 bg-gris-una/10",
               "hover:bg-gris-una/20",
               disabled && "opacity-50 cursor-not-allowed",
@@ -150,7 +150,7 @@ export function FilterButton<T = string>({
       {isOpen && (
         <div 
           className={cn(
-            "absolute top-full mt-2 w-56 rounded-lg bg-white shadow-lg border border-gray-300 overflow-hidden z-50",
+            "absolute top-full mt-2 w-56 rounded-corner bg-white shadow-lg border border-gray-300 overflow-hidden z-50",
             dropdownPosition === 'left' ? 'left-0' : 'right-0'
           )}
         >

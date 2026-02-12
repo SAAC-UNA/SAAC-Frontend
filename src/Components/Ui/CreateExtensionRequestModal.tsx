@@ -132,7 +132,7 @@ export const CreateExtensionRequestModal: React.FC<CreateExtensionRequestModalPr
       <div className="space-y-4">
         {/* Información de la evidencia */}
         {nombreEvidencia && (
-          <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
+          <div className="bg-blue-50 border border-blue-200 rounded-corner p-3">
             <p className="text-sm font-medium text-blue-900">Evidencia:</p>
             <p className="text-sm text-blue-700">{nombreEvidencia}</p>
           </div>
@@ -140,7 +140,7 @@ export const CreateExtensionRequestModal: React.FC<CreateExtensionRequestModalPr
 
         {/* Fecha límite actual */}
         {fechaLimiteActual && (
-          <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3">
+          <div className="bg-yellow-50 border border-yellow-200 rounded-corner p-3">
             <p className="text-sm font-medium text-yellow-900">Fecha límite actual:</p>
             <p className="text-sm text-yellow-700">
               {new Date(fechaLimiteActual).toLocaleDateString('es-ES', {
@@ -196,7 +196,7 @@ export const CreateExtensionRequestModal: React.FC<CreateExtensionRequestModalPr
         </div>
 
         {/* Información adicional */}
-        <div className="bg-gray-50 border border-gray-200 rounded-lg p-3">
+        <div className="bg-gray-50 border border-gray-200 rounded-corner p-3">
           <p className="text-xs text-gray-600">
             <strong>Nota:</strong> La solicitud será revisada por el encargado de acreditación,
             quien decidirá si aprobar o rechazar la ampliación del plazo.

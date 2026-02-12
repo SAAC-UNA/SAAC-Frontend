@@ -10,8 +10,7 @@ export const COMPONENT_SIZES = {
     padding: {
       x: 'px-3',               // 12px horizontal
       y: 'py-2'                // 8px vertical  
-    },
-    borderRadius: 'rounded-[12px]'
+    }
   },
   md: {
     text: 'text-base',         // 16px
@@ -19,8 +18,7 @@ export const COMPONENT_SIZES = {
     padding: {
       x: 'px-4',               // 16px horizontal
       y: 'py-3'                // 12px vertical
-    },
-    borderRadius: 'rounded-[15px]'
+    }
   },
   lg: {
     text: 'text-lg',           // 18px
@@ -28,8 +26,7 @@ export const COMPONENT_SIZES = {
     padding: {
       x: 'px-4',               // 16px horizontal (mismo que md)
       y: 'py-4'                // 16px vertical
-    },
-    borderRadius: 'rounded-[18px]'
+    }
   }
 } as const;
 
@@ -43,10 +40,10 @@ export const getComponentSizeClasses = {
     return `${s.height} ${s.padding.x} ${s.text}`;
   },
 
-  // Para Button (con border-radius específico) 
+  // Para Button (sin border-radius - se usa rounded-corner estándar) 
   button: (size: keyof typeof COMPONENT_SIZES) => {
     const s = COMPONENT_SIZES[size];
-    return `${s.height} ${s.padding.x} ${s.text} ${s.borderRadius}`;
+    return `${s.height} ${s.padding.x} ${s.text}`;
   },
 
   // Para MultiSelect y otros contenedores
@@ -55,8 +52,7 @@ export const getComponentSizeClasses = {
     return {
       height: s.height,
       text: s.text,
-      padding: `${s.padding.x}`,
-      borderRadius: s.borderRadius
+      padding: `${s.padding.x}`
     };
   }
 };

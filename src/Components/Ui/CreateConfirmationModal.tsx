@@ -62,7 +62,7 @@ export const CreateConfirmationModal: React.FC<CreateConfirmationModalProps> = (
             showConfirm={true}
         >
             {description && (
-                <div className="mt-4 p-4 bg-gray-50 rounded-lg">
+                <div className="mt-4 p-4 bg-gray-50 rounded-corner">
                     <p className="text-sm text-gray-600">
                         <strong>Descripción:</strong> {description}
                     </p>

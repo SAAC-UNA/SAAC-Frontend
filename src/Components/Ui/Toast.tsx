@@ -10,7 +10,7 @@ const ToastItem: React.FC<ToastItemProps> = ({ toast }) => {
   const { hideToast } = useToast();
 
   const getToastStyles = () => {
-    const baseStyles = 'border-l-4 p-4 rounded-lg shadow-lg transition-all duration-300';
+    const baseStyles = 'border-l-4 p-4 rounded-corner shadow-lg transition-all duration-300';
     
     switch (toast.type) {
       case 'success':

@@ -140,7 +140,7 @@ export const Table = React.memo(<T extends Record<string, unknown>>({
 
   if (loading) {
     return (
-      <div className={cn("bg-white rounded-lg shadow-sm border", className)}>
+      <div className={cn("bg-white rounded-corner shadow-sm border", className)}>
         <div className="p-8 flex flex-col items-center justify-center gap-3">
           <LoadingSpinner size="lg" />
         </div>
@@ -149,7 +149,7 @@ export const Table = React.memo(<T extends Record<string, unknown>>({
   }
 
   return (
-    <div className={cn("bg-white rounded-lg shadow-sm border", className)}>
+    <div className={cn("bg-white rounded-corner shadow-sm border", className)}>
       {/* Header con búsqueda */}
       {searchable && (
         <div className="p-4 border-b">

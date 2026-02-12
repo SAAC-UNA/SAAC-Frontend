@@ -291,7 +291,7 @@ export const MultiSelect: React.FC<MultiSelectProps> = ({
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
                     placeholder={searchPlaceholder}
-                    className="w-full pl-9 pr-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:border-azul-una focus:ring-1 focus:ring-azul-una"
+                    className="w-full pl-9 pr-3 py-2 text-sm border border-gray-300 rounded-corner focus:outline-none focus:border-azul-una focus:ring-1 focus:ring-azul-una"
                     onClick={(e) => e.stopPropagation()} // Evitar que cierre el dropdown
                   />
                   {searchTerm && (
@@ -474,7 +474,7 @@ export const MultiSelect: React.FC<MultiSelectProps> = ({
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
                     placeholder={searchPlaceholder}
-                    className="w-full pl-9 pr-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:border-azul-una focus:ring-1 focus:ring-azul-una"
+                    className="w-full pl-9 pr-3 py-2 text-sm border border-gray-300 rounded-corner focus:outline-none focus:border-azul-una focus:ring-1 focus:ring-azul-una"
                     onClick={(e) => e.stopPropagation()} // Evitar que cierre el dropdown
                   />
                   {searchTerm && (

@@ -81,7 +81,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(({
             maxLength={maxLength}
             className={cn(
               // Base styles - Similar al login de tu compañera
-              'w-full h-10 px-4 text-sm border rounded-lg transition-all duration-300', // Cambiado de text-base a text-sm
+              'w-full h-10 px-4 text-sm border rounded-corner transition-all duration-300', // Cambiado de text-base a text-sm
               'focus:outline-none focus:border-gris-una',
               'disabled:bg-gris-una/10 disabled:cursor-not-allowed',
               'peer', // Para usar peer selectors de Tailwind
@@ -187,7 +187,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(({
         maxLength={maxLength}
         className={cn(
           // Base styles
-          'w-full h-10 border rounded-lg transition-all duration-200 px-3 py-2 text-sm',
+          'w-full h-10 border rounded-corner transition-all duration-200 px-3 py-2 text-sm',
           'focus:outline-none focus:ring-1 focus:ring-gris-una/20 focus:border-transparent',
           'placeholder-gris-una/60 disabled:bg-gris-una/10 disabled:cursor-not-allowed',
           

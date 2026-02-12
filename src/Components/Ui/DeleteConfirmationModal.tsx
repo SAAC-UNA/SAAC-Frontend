@@ -63,7 +63,7 @@ export const DeleteConfirmationModal: React.FC<DeleteConfirmationModalProps> = (
       showConfirm={true}
     >
       {description && (
-        <div className="mt-4 p-3 bg-[var(--bg-error)] border border-[var(--border-error)] rounded-lg">
+        <div className="mt-4 p-3 bg-[var(--bg-error)] border border-[var(--border-error)] rounded-corner">
           <p className="text-sm text-[var(--text-error)]">
             {description}
           </p>

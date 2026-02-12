@@ -210,7 +210,7 @@ export const Modal: React.FC<UnifiedModalProps> = React.memo(({
             ref={modalRef}
             transition
             className={cn(
-              'relative transform overflow-hidden rounded-2xl bg-white text-left shadow-2xl border border-gray-100 transition-all duration-300 ease-out sm:my-8 sm:w-full',
+              'relative transform overflow-hidden rounded-corner bg-white text-left shadow-2xl border border-gray-100 transition-all duration-300 ease-out sm:my-8 sm:w-full',
               'data-closed:translate-y-4 data-closed:opacity-0 data-closed:sm:scale-95',
               sizeClasses[size],
               className
@@ -258,7 +258,7 @@ export const Modal: React.FC<UnifiedModalProps> = React.memo(({
                     )}
                     
                     {variant === 'danger' && !hideDefaultDangerMessage && (
-                      <div className="mt-4 p-3 bg-[var(--bg-error)] border border-[var(--border-error)] rounded-lg">
+                      <div className="mt-4 p-3 bg-[var(--bg-error)] border border-[var(--border-error)] rounded-corner">
                         <p className="text-sm text-[var(--text-error)] font-medium">
                           Esta acción no se puede deshacer.
                         </p>

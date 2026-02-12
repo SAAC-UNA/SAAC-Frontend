@@ -146,7 +146,7 @@ export const BackendErrorAlert: React.FC<BackendErrorAlertProps> = ({
 
   return (
     <div className={`w-full p-6 ${className}`}>
-      <div className="p-4 bg-[var(--bg-error)] border border-[var(--border-error)] rounded-lg border-l-4 shadow-sm">
+      <div className="p-4 bg-[var(--bg-error)] border border-[var(--border-error)] rounded-corner border-l-4 shadow-sm">
         <div className="flex items-start">
           <div className="flex-shrink-0">
             {config.icon}

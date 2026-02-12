@@ -97,7 +97,7 @@ export const Alert: React.FC<AlertProps> = ({
 
   return (
     <div className={cn(
-      'border border-gray-200 rounded-lg shadow-sm',
+      'border border-gray-200 rounded-corner shadow-sm',
       config.bgColor,
       config.borderColor,
       'border-l-4 p-4',
@@ -152,7 +152,7 @@ export const Alert: React.FC<AlertProps> = ({
               type="button"
               onClick={onDismiss}
               className={cn(
-                'inline-flex rounded-md p-1.5 focus:outline-none focus:ring-2 focus:ring-offset-2',
+                'inline-flex rounded-corner p-1.5 focus:outline-none focus:ring-2 focus:ring-offset-2',
                 'hover:bg-gray-100 transition-colors',
                 config.iconColor,
                 'focus:ring-gray-300'

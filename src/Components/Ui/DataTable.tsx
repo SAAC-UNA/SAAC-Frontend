@@ -252,7 +252,7 @@ export const DataTable = React.memo(<T extends Record<string, unknown>>({
                           <button
                             key={actionIndex}
                             className={cn(
-                              "relative h-10 max-h-[40px] w-10 max-w-[40px] select-none rounded-lg text-center align-middle font-sans text-xs font-medium uppercase transition-all disabled:pointer-events-none disabled:opacity-50 disabled:shadow-none",
+                              "relative h-10 max-h-[40px] w-10 max-w-[40px] select-none rounded-corner text-center align-middle font-sans text-xs font-medium uppercase transition-all disabled:pointer-events-none disabled:opacity-50 disabled:shadow-none",
                               action.className
                             )}
                             type="button"

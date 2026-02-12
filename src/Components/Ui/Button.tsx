@@ -77,31 +77,31 @@ const VARIANT_CLASSES = {
   
   // Botones de la tabla (ojo, lapiz, basurero)
   tableView: [
-    'bg-transparent text-[var(--icon-view)] border-0 p-2 rounded-md',
+    'bg-transparent text-[var(--icon-view)] border-0 p-2 rounded-corner',
     'hover:bg-[var(--bg-info)] hover:text-[var(--icon-view)] transition-colors duration-200',
     'disabled:opacity-50 disabled:cursor-not-allowed'
   ].join(' '),
   
   tableEdit: [
-    'bg-transparent text-[var(--icon-edit)] border-0 p-2 rounded-md',
+    'bg-transparent text-[var(--icon-edit)] border-0 p-2 rounded-corner',
     'hover:bg-[var(--bg-warning)] hover:text-[var(--icon-edit)] transition-colors duration-200', 
     'disabled:opacity-50 disabled:cursor-not-allowed'
   ].join(' '),
   
   tableDelete: [
-    'bg-transparent text-[var(--icon-delete)] border-0 p-2 rounded-md',
+    'bg-transparent text-[var(--icon-delete)] border-0 p-2 rounded-corner',
     'hover:bg-[var(--bg-error)] hover:text-[var(--icon-delete)] transition-colors duration-200',
     'disabled:opacity-50 disabled:cursor-not-allowed'
   ].join(' '),
 
   tablePower: [
-    'bg-transparent text-[var(--icon-check)] border-0 p-2 rounded-md',
+    'bg-transparent text-[var(--icon-check)] border-0 p-2 rounded-corner',
     'hover:bg-[var(--bg-success)] hover:text-[var(--icon-check)] transition-colors duration-200',
     'disabled:opacity-50 disabled:cursor-not-allowed'
   ].join(' '),
 
   tablePowerInactive: [
-    'bg-transparent text-[var(--icon-inactive)] border-0 p-2 rounded-md',
+    'bg-transparent text-[var(--icon-inactive)] border-0 p-2 rounded-corner',
     'hover:bg-[var(--bg-inactive)] hover:text-[var(--icon-inactive)] transition-colors duration-200',
     'disabled:opacity-50 disabled:cursor-not-allowed'
   ].join(' '),
@@ -130,7 +130,8 @@ export const Button: React.FC<ButtonProps> = ({
   const baseClasses = [
     'font-poppins transition-colors duration-200',
     'focus:outline-none disabled:cursor-not-allowed',
-    'inline-flex items-center justify-center gap-2'
+    'inline-flex items-center justify-center gap-2',
+    'rounded-corner'
   ];
 
   // Lógica para manejo responsivo

@@ -62,7 +62,7 @@ export const EditConfirmationModal: React.FC<EditConfirmationModalProps> = ({
             showConfirm={true}
         >
             {description && (
-                <div className="mt-4 p-3 bg-[var(--bg-info)] border border-[var(--border-info)] rounded-lg">
+                <div className="mt-4 p-3 bg-[var(--bg-info)] border border-[var(--border-info)] rounded-corner">
                     <p className="text-sm text-[var(--text-info)] font-medium">
                         {description}
                     </p>

@@ -32,7 +32,7 @@ export const SearchInput: React.FC<SearchInputProps> = ({
         {/* Input */}
         <input
           className={cn(
-            "h-10 w-full rounded-lg border border-gris-una/5 bg-gris-una/10 px-3 py-2 !pr-9",
+            "h-10 w-full rounded-corner border border-gris-una/5 bg-gris-una/10 px-3 py-2 !pr-9",
             "text-sm font-normal text-negro-una outline-0 transition-all duration-200",
             "placeholder:text-gris-una/60",
             "focus:outline-none focus:ring-1 focus:ring-gris-una/20 focus:border-transparent",

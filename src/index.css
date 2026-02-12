@@ -448,7 +448,7 @@
 
   /* ===== Border radius personalizado para componentes ===== */
   .rounded-corner {
-    border-radius: 8px;
+    border-radius: 15px;
   }
   /*===== Mínima altura del Layout para el screenContainer =====*/
   .min-h-app {

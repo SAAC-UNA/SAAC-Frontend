@@ -85,7 +85,7 @@ export const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(({
             maxLength={maxLength}
             className={cn(
               // Base styles - Similar al Input actualizado
-              'w-full px-4 py-3 text-sm border rounded-lg transition-all duration-300',
+              'w-full px-4 py-3 text-sm border rounded-corner transition-all duration-300',
               'focus:outline-none focus:border-gris-una',
               'disabled:bg-gris-una/10 disabled:cursor-not-allowed',
               'peer', // Para usar peer selectors de Tailwind
@@ -194,7 +194,7 @@ export const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(({
         maxLength={maxLength}
         className={cn(
           // Base styles actualizados para consistencia con Input
-          'w-full border rounded-lg transition-all duration-300 px-4 py-3 text-sm',
+          'w-full border rounded-corner transition-all duration-300 px-4 py-3 text-sm',
           'focus:outline-none focus:border-gris-una',
           'placeholder-gris-una/60 disabled:bg-gris-una/10 disabled:cursor-not-allowed',
           
