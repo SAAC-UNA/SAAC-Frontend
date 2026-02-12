@@ -138,7 +138,7 @@ export const FileUploader: React.FC<FileUploaderProps> = ({
       {/* Zona de arrastre */}
       <div
         className={`
-          relative border-2 border-dashed rounded-lg p-8 text-center
+          relative border-2 border-dashed rounded-corner p-8 text-center
           transition-all duration-200 cursor-pointer
           ${isDragging 
             ? 'border-blue-500 bg-blue-50' 
@@ -199,7 +199,7 @@ export const FileUploader: React.FC<FileUploaderProps> = ({
             {selectedFiles.map((file, index) => (
               <div
                 key={`${file.name}-${index}`}
-                className="flex items-center justify-between p-3 bg-blanco-una rounded-md border border-blanco-una"
+                className="flex items-center justify-between p-3 bg-blanco-una rounded-corner border border-blanco-una"
               >
                 <div className="flex items-center gap-3 flex-1 min-w-0">
                   {/* Icono de archivo */}

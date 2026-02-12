@@ -176,7 +176,7 @@ export const ManageExtensionRequestsPage: React.FC = () => {
       }
     >
       {!isAuthenticated ? (
-        <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-6 text-center">
+        <div className="bg-yellow-50 border border-yellow-200 rounded-corner p-6 text-center">
           <SystemIcons.interface.xCircle size="3xl" className="text-yellow-600 mx-auto mb-3" />
           <h3 className="text-lg font-semibold text-yellow-900 mb-2">
             Autenticación Requerida
@@ -186,7 +186,7 @@ export const ManageExtensionRequestsPage: React.FC = () => {
           </p>
         </div>
       ) : !hasPermission ? (
-        <div className="bg-red-50 border border-red-200 rounded-lg p-6 text-center">
+        <div className="bg-red-50 border border-red-200 rounded-corner p-6 text-center">
           <SystemIcons.interface.xCircle size="3xl" className="text-red-600 mx-auto mb-3" />
           <h3 className="text-lg font-semibold text-red-900 mb-2">
             Acceso Denegado

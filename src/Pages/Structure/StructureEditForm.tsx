@@ -390,7 +390,7 @@ const validateForm = (): boolean => {
             </h3>
 
             {/* Información fija */}
-            <div className="bg-gray-50 rounded-lg p-4 mb-6">
+            <div className="bg-gray-50 rounded-corner p-4 mb-6">
               <h4 className="text-md font-medium text-gray-900 mb-3">Información Fija</h4>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
                 <div>

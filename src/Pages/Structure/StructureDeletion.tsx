@@ -473,7 +473,7 @@ const confirmAction = async () => {
                 return (
                   <div
                     key={element.id}
-                    className={`border rounded-lg p-4 transition-all duration-300 ${
+                    className={`border rounded-corner p-4 transition-all duration-300 ${
                       !element.isActive 
                         ? 'border-gray-300 bg-gray-50/50 opacity-75' 
                         : 'border-gray-200 bg-white hover:shadow-md'
@@ -581,7 +581,7 @@ const confirmAction = async () => {
       <>
         {/* Advertencia si existe */}
         {confirmInfo.warning && (
-          <div className="p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+          <div className="p-4 bg-yellow-50 border border-yellow-200 rounded-corner">
             <div className="flex items-start">
               <svg className="w-5 h-5 text-yellow-600 mr-2 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.728-.833-2.498 0L3.316 16.5c-.77.833.192 2.5 1.732 2.5z" />
@@ -615,7 +615,7 @@ const confirmAction = async () => {
         {pendingAction?.action === 'activate' && canProceed && (() => {
           const inactiveChildren = getInactiveChildren(pendingAction.element, elements);
           return inactiveChildren.length > 0 ? (
-            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+            <div className="bg-blue-50 border border-blue-200 rounded-corner p-4">
               <div className="flex items-start space-x-3">
                 <input
                   type="checkbox"
@@ -639,7 +639,7 @@ const confirmAction = async () => {
 
         {/* Advertencia de eliminación */}
         {pendingAction?.action === 'delete' && (
-          <div className="p-3 bg-red-50 border border-red-200 rounded-lg">
+          <div className="p-3 bg-red-50 border border-red-200 rounded-corner">
             <p className="text-red-800 text-sm font-medium">
               ⚠️ Esta acción es irreversible. El elemento se eliminará permanentemente.
             </p>

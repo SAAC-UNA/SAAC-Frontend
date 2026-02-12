@@ -38,7 +38,7 @@ export const DescripcionStep: React.FC<DescripcionStepProps> = ({
           placeholder="Ej: Sistema de seguimiento de egresados..."
           rows={4}
           maxLength={maxLength}
-          className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-rojo-una focus:border-transparent resize-none ${
+          className={`w-full px-4 py-3 border rounded-corner focus:outline-none focus:ring-2 focus:ring-rojo-una focus:border-transparent resize-none ${
             error ? 'border-red-500' : 'border-gray-300'
           }`}
         />

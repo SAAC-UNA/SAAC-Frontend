@@ -92,7 +92,7 @@ export const AuditLogDetailModal: React.FC<AuditLogDetailModalProps> = ({
         </div>
 
         {/* Información del Usuario */}
-        <div className="bg-gray-50 rounded-lg p-4">
+        <div className="bg-gray-50 rounded-corner p-4">
           <div className="flex items-center gap-2 mb-3">
             <SystemIcons.users.user className="w-5 h-5 text-primary-600" />
             <h4 className="text-sm font-semibold text-gray-900">Usuario</h4>
@@ -125,7 +125,7 @@ export const AuditLogDetailModal: React.FC<AuditLogDetailModalProps> = ({
         </div>
 
         {/* Información de la Acción */}
-        <div className="bg-blue-50 rounded-lg p-4">
+        <div className="bg-blue-50 rounded-corner p-4">
           <div className="flex items-center gap-2 mb-3">
             {icon}
             <h4 className="text-sm font-semibold text-gray-900">Acción Ejecutada</h4>
@@ -151,7 +151,7 @@ export const AuditLogDetailModal: React.FC<AuditLogDetailModalProps> = ({
         </div>
 
         {/* Detalle de la Acción */}
-        <div className="bg-gray-50 rounded-lg p-4">
+        <div className="bg-gray-50 rounded-corner p-4">
           <div className="flex items-center gap-2 mb-3">
             <SystemIcons.modal.document className="w-5 h-5 text-gray-600" />
             <h4 className="text-sm font-semibold text-gray-900">Detalle</h4>
@@ -168,7 +168,7 @@ export const AuditLogDetailModal: React.FC<AuditLogDetailModalProps> = ({
         </div>
 
         {/* Información de Tiempo */}
-        <div className="bg-green-50 rounded-lg p-4">
+        <div className="bg-green-50 rounded-corner p-4">
           <div className="flex items-center gap-2 mb-3">
             <SystemIcons.interface.calendar className="w-5 h-5 text-green-600" />
             <h4 className="text-sm font-semibold text-gray-900">Información de Tiempo</h4>
@@ -190,7 +190,7 @@ export const AuditLogDetailModal: React.FC<AuditLogDetailModalProps> = ({
         </div>
 
         {/* Nota de Inmutabilidad */}
-        <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3">
+        <div className="bg-yellow-50 border border-yellow-200 rounded-corner p-3">
           <div className="flex items-start gap-2">
             <SystemIcons.modal.key className="w-5 h-5 text-yellow-600 flex-shrink-0 mt-0.5" />
             <div>

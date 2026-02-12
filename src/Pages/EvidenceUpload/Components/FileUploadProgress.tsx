@@ -97,7 +97,7 @@ export const FileUploadProgress: React.FC<FileUploadProgressProps> = ({
   return (
     <div className="w-full">
       {/* Resumen general */}
-      <div className="mb-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+      <div className="mb-4 p-4 bg-blue-50 border border-blue-200 rounded-corner">
         <div className="flex items-center justify-between">
           <div>
             <h3 className="text-sm font-semibold text-blue-900">
@@ -130,7 +130,7 @@ export const FileUploadProgress: React.FC<FileUploadProgressProps> = ({
           <div
             key={`${item.file.name}-${index}`}
             className={`
-              p-3 rounded-lg border transition-all
+              p-3 rounded-corner border transition-all
               ${getStatusColor(item.status)}
             `}
           >

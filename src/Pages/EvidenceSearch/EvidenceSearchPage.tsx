@@ -216,7 +216,7 @@ export const EvidenceSearchPage: React.FC = () => {
               type="button"
               onClick={() => setShowFilters(!showFilters)}
               className={
-                `p-2 rounded-lg border transition-colors
+                `p-2 rounded-corner border transition-colors
                 border-gris-una/5 bg-gris-una/10
                 hover:bg-gris-una/20
                 ${showFilters ? 'bg-azul-una/10' : ''}`

@@ -113,7 +113,7 @@ export const EvidenceDetailsModal: React.FC<EvidenceDetailsModalProps> = ({
         <h3 className="font-semibold text-gray-800">Información General</h3>
       </div>
       
-      <div className="bg-white border border-gray-200 rounded-lg p-4 space-y-3">
+      <div className="bg-white border border-gray-200 rounded-corner p-4 space-y-3">
         <div>
           <span className="text-sm font-semibold text-gray-800">Criterio:</span>
           <p className="text-sm text-gray-700 mt-1">
@@ -130,7 +130,7 @@ export const EvidenceDetailsModal: React.FC<EvidenceDetailsModalProps> = ({
           <span className="text-sm font-semibold text-gray-800">Estado:</span>
           <div className="mt-1">
             <span className={cn(
-              'inline-flex px-2 py-1 text-xs font-bold uppercase rounded-md',
+              'inline-flex px-2 py-1 text-xs font-bold uppercase rounded-corner',
               EVIDENCE_STATUS_BADGE[evidence.estado]
             )}>
               {EVIDENCE_STATUS_LABELS[evidence.estado]}
@@ -160,7 +160,7 @@ export const EvidenceDetailsModal: React.FC<EvidenceDetailsModalProps> = ({
         <h3 className="font-semibold text-gray-800">Responsables</h3>
       </div>
       
-      <div className="bg-white border border-gray-200 rounded-lg p-4 max-h-60 overflow-y-auto">
+      <div className="bg-white border border-gray-200 rounded-corner p-4 max-h-60 overflow-y-auto">
         {evidence.responsables && evidence.responsables.length > 0 ? (
           <div className="space-y-3">
             {evidence.responsables.map((responsable, index) => (
@@ -195,7 +195,7 @@ export const EvidenceDetailsModal: React.FC<EvidenceDetailsModalProps> = ({
         <h3 className="font-semibold text-gray-800">Recursos</h3>
       </div>
       
-      <div className="bg-white border border-gray-200 rounded-lg p-4">
+      <div className="bg-white border border-gray-200 rounded-corner p-4">
         {/* Resumen de recursos */}
         <div className="grid grid-cols-2 gap-4 mb-4 pb-4 border-b border-gray-200">
           <div className="flex items-center space-x-2">
@@ -229,7 +229,7 @@ export const EvidenceDetailsModal: React.FC<EvidenceDetailsModalProps> = ({
               const linksCount = userGroup.archivos.filter(f => f.tipo === 'enlace').length;
               
               return (
-                <div key={userGroup.usuario_id} className="border border-gray-200 rounded-lg overflow-hidden">
+                <div key={userGroup.usuario_id} className="border border-gray-200 rounded-corner overflow-hidden">
                   {/* Header del acordeón */}
                   <button
                     onClick={() => toggleUser(userGroup.usuario_id)}
@@ -279,7 +279,7 @@ export const EvidenceDetailsModal: React.FC<EvidenceDetailsModalProps> = ({
       </div>
     </div>
   );
-
+/*TODO revisar esta sección, si realmente se usa */
   const renderRolesAcceso = () => {
     if (!evidence.roles_acceso || evidence.roles_acceso.length === 0) return null;
 
@@ -290,7 +290,7 @@ export const EvidenceDetailsModal: React.FC<EvidenceDetailsModalProps> = ({
           <h3 className="font-semibold text-gray-800">Roles con Acceso</h3>
         </div>
         
-        <div className="bg-white border border-gray-200 rounded-lg p-4">
+        <div className="bg-white border border-gray-200 rounded-corner p-4">
           <div className="flex flex-wrap gap-2">
             {evidence.roles_acceso.map((rol, index) => (
               <span

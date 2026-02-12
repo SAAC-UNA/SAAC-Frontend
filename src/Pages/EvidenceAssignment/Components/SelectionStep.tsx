@@ -210,21 +210,21 @@ export const SelectionStep: React.FC<SelectionStepProps> = ({
 
       {/* Error Messages */}
       {errors.proceso && (
-        <div className="p-4 bg-rojo-una-2/10 border border-rojo-una-2/20 rounded-lg flex items-center gap-3">
+        <div className="p-4 bg-rojo-una-2/10 border border-rojo-una-2/20 rounded-corner flex items-center gap-3">
           <SystemIcons.interface.alert size="md" className="text-rojo-una-2" />
           <span className="text-rojo-una-2">{errors.proceso}</span>
         </div>
       )}
 
       {errors.evidences && (
-        <div className="p-4 bg-rojo-una-2/10 border border-rojo-una-2/20 rounded-lg flex items-center gap-3">
+        <div className="p-4 bg-rojo-una-2/10 border border-rojo-una-2/20 rounded-corner flex items-center gap-3">
           <SystemIcons.interface.alert size="md" className="text-rojo-una-2" />
           <span className="text-rojo-una-2">{errors.evidences}</span>
         </div>
       )}
 
       {errors.destinatarios && (
-        <div className="p-4 bg-rojo-una-2/10 border border-rojo-una-2/20 rounded-lg flex items-center gap-3">
+        <div className="p-4 bg-rojo-una-2/10 border border-rojo-una-2/20 rounded-corner flex items-center gap-3">
           <SystemIcons.interface.alert size="md" className="text-rojo-una-2" />
           <span className="text-rojo-una-2">{errors.destinatarios}</span>
         </div>

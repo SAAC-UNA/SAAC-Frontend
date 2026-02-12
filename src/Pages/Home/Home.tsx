@@ -9,7 +9,7 @@ export const Home = () => {
         Bienvenido al Sistema de Acreditación y Autoevaluación de Carreras
       </h1>
 
-      <div className="bg-white rounded-lg shadow-md p-6">
+      <div className="bg-white rounded-corner shadow-md p-6">
         <div className="mb-6">
           <h2 className="text-xl font-semibold mb-2">Información del usuario</h2>
           <p><span className="font-medium">Nombre:</span> {user?.nombre}</p>

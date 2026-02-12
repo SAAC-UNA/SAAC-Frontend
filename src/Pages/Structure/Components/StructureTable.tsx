@@ -220,7 +220,7 @@ export const StructureTable: React.FC<StructureTableProps> = ({
             align: 'center',
             render: (_, element) => (
                 <div className="w-max mx-auto">
-                    <div className={`relative grid items-center px-2 py-1 font-sans text-xs font-bold uppercase rounded-md select-none whitespace-nowrap ${
+                    <div className={`relative grid items-center px-2 py-1 font-sans text-xs font-bold uppercase rounded-corner select-none whitespace-nowrap ${
                         element.active 
                             ? 'text-green-900 bg-green-500/20' 
                             : 'text-red-900 bg-red-500/20'
@@ -338,7 +338,7 @@ export const StructureTable: React.FC<StructureTableProps> = ({
                     <h3 className="font-medium text-gray-800">Información básica</h3>
                 </div>
                 
-                <div className="bg-white border border-gray-200 rounded-lg p-4 space-y-3">
+                <div className="bg-white border border-gray-200 rounded-corner p-4 space-y-3">
                     {/* Tipo */}
                     <div>
                         <label className="text-xs font-medium text-gray-500 uppercase">Tipo de Elemento</label>
@@ -369,7 +369,7 @@ export const StructureTable: React.FC<StructureTableProps> = ({
                     <div>
                         <label className="text-xs font-medium text-gray-500 uppercase">Estado</label>
                         <div className="mt-1">
-                            <div className={`inline-flex items-center px-2 py-1 font-sans text-xs font-bold uppercase rounded-md ${
+                            <div className={`inline-flex items-center px-2 py-1 font-sans text-xs font-bold uppercase rounded-corner ${
                                 modalState.element.active 
                                     ? 'text-green-900 bg-green-500/20' 
                                     : 'text-red-900 bg-red-500/20'
@@ -391,7 +391,7 @@ export const StructureTable: React.FC<StructureTableProps> = ({
                         <h3 className="font-medium text-gray-800">Descripción</h3>
                     </div>
                     
-                    <div className="bg-white border border-gray-200 rounded-lg p-4">
+                    <div className="bg-white border border-gray-200 rounded-corner p-4">
                         <p className="text-sm text-gray-700 leading-relaxed">
                             {modalState.element.description}
                         </p>
@@ -408,7 +408,7 @@ export const StructureTable: React.FC<StructureTableProps> = ({
                     <h3 className="font-medium text-gray-800">Ubicación en la jerarquía</h3>
                 </div>
                 
-                <div className="bg-white border border-gray-200 rounded-lg p-4 space-y-2">
+                <div className="bg-white border border-gray-200 rounded-corner p-4 space-y-2">
                     <div className="flex items-start space-x-2">
                         <div className="w-2 h-2 bg-purple-500 rounded-full mt-2 flex-shrink-0" />
                         <div>
@@ -430,7 +430,7 @@ export const StructureTable: React.FC<StructureTableProps> = ({
                     <h3 className="font-medium text-gray-800">Información adicional</h3>
                 </div>
                 
-                <div className="bg-white border border-gray-200 rounded-lg p-4">
+                <div className="bg-white border border-gray-200 rounded-corner p-4">
                     <div className="text-xs text-gray-500">
                         Creado el: {new Date(modalState.element.createdAt).toLocaleDateString('es-ES', {
                             year: 'numeric',

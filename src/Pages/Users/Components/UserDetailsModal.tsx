@@ -38,7 +38,7 @@ export const UserDetailsModal: React.FC<UserDetailsModalProps> = ({
     const renderUserInfo = () => (
         <div>
             {/* Información personal */}
-            <div className="bg-white border border-gray-200 rounded-lg p-4 max-h-60 overflow-y-auto mb-6">
+            <div className="bg-white border border-gray-200 rounded-corner p-4 max-h-60 overflow-y-auto mb-6">
                 <div className="flex items-center space-x-2 mb-3">
                     <SystemIcons.users.user className="w-5 h-5 text-gray-600" />
                     <h3 className="font-sm text-gray-700">Información Personal</h3>
@@ -74,7 +74,7 @@ export const UserDetailsModal: React.FC<UserDetailsModalProps> = ({
                         <h3 className="font-sm text-gray-800">Rol Asignado</h3>
                     </div>
                     
-                    <div className="bg-white border border-gray-200 rounded-lg p-4 max-h-60 overflow-y-auto">
+                    <div className="bg-white border border-gray-200 rounded-corner p-4 max-h-60 overflow-y-auto">
                         <span className="text-sm text-gray-700">
                             {user.role}
                         </span>
@@ -89,7 +89,7 @@ export const UserDetailsModal: React.FC<UserDetailsModalProps> = ({
                     <h3 className="font-sm text-gray-800">Información de Registro</h3>
                 </div>
                 
-                <div className="bg-white border border-gray-200 rounded-lg p-4 max-h-60 overflow-y-auto">
+                <div className="bg-white border border-gray-200 rounded-corner p-4 max-h-60 overflow-y-auto">
                     <div>
                         <span className="text-sm text-gray-700">Fecha de creación:</span>
                         <p className="text-sm text-gray-700">{formatDate(user.createdAt)}</p>
@@ -110,7 +110,7 @@ export const UserDetailsModal: React.FC<UserDetailsModalProps> = ({
                 <h3 className="font-sm text-gray-800">Permisos Directos</h3>
             </div>
             
-            <div className="bg-white border border-gray-200 rounded-lg p-4 max-h-60 overflow-y-auto">
+            <div className="bg-white border border-gray-200 rounded-corner p-4 max-h-60 overflow-y-auto">
                 {user.allPermissions && user.allPermissions.length > 0 ? (
                     <div className="space-y-2">
                         {user.allPermissions.map((permission, index) => (

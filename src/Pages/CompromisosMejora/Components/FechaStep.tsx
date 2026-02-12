@@ -81,7 +81,7 @@ export const FechaStep: React.FC<FechaStepProps> = ({
           value={fecha}
           onChange={(e) => onChange(e.target.value)}
           min={today}
-          className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-rojo-una focus:border-transparent ${
+          className={`w-full px-4 py-3 border rounded-corner focus:outline-none focus:ring-2 focus:ring-rojo-una focus:border-transparent ${
             error ? 'border-red-500' : 'border-gray-300'
           }`}
         />
@@ -106,7 +106,7 @@ export const FechaStep: React.FC<FechaStepProps> = ({
               key={item.label}
               type="button"
               onClick={() => onChange(item.value)}
-              className={`px-4 py-3 rounded-lg border-2 transition-all text-sm font-medium ${
+              className={`px-4 py-3 rounded-corner border-2 transition-all text-sm font-medium ${
                 fecha === item.value
                   ? 'border-rojo-una bg-rojo-una/5 text-rojo-una'
                   : 'border-gray-200 text-gray-700 hover:border-gray-300'
@@ -119,7 +119,7 @@ export const FechaStep: React.FC<FechaStepProps> = ({
       </div>
 
       {/* Info */}
-      <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+      <div className="bg-yellow-50 border border-yellow-200 rounded-corner p-4">
         <div className="flex gap-3">
           <div className="flex-shrink-0">
             <svg className="w-5 h-5 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">

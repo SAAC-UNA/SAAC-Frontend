@@ -111,7 +111,7 @@ export const UsersTable: React.FC<UsersTableProps> = ({
             align: 'center',
             render: (role) => (
                 <div className="w-max mx-auto">
-                    <div className="relative grid items-center px-2 py-1 font-sans text-xs font-bold text-gray-900 uppercase rounded-md select-none whitespace-nowrap" title={String(role || 'Sin rol')}>
+                    <div className="relative grid items-center px-2 py-1 font-sans text-xs font-bold text-gray-900 uppercase rounded-corner select-none whitespace-nowrap" title={String(role || 'Sin rol')}>
                         <span>{truncateText(String(role || 'Sin rol'), 20)}</span>
                     </div>
                 </div>
@@ -123,7 +123,7 @@ export const UsersTable: React.FC<UsersTableProps> = ({
             align: 'center',
             render: (_, user) => (
                 <div className="w-max mx-auto">
-                    <div className={`relative grid items-center px-2 py-1 font-sans text-xs font-bold uppercase rounded-md select-none whitespace-nowrap ${
+                    <div className={`relative grid items-center px-2 py-1 font-sans text-xs font-bold uppercase rounded-corner select-none whitespace-nowrap ${
                         user.status === 'active'
                             ? 'text-green-900 bg-green-500/20'
                             : 'text-red-900 bg-red-500/20'

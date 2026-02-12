@@ -179,7 +179,7 @@ export const FileList: React.FC<FileListProps> = ({
 
   if (files.length === 0) {
     return (
-      <div className="text-center py-12 bg-blanco-una-2 rounded-lg border-2 border-dashed border-gray-300">
+      <div className="text-center py-12 bg-blanco-una-2 rounded-corner border-2 border-dashed border-gray-300">
         <div className="mx-auto flex justify-center text-gris-una">
           {SystemIcons.modal.document({ size: '2xl' })}
         </div>
@@ -194,7 +194,7 @@ export const FileList: React.FC<FileListProps> = ({
         {files.map((file) => (
           <div
             key={file.archivo_id}
-            className="bg-white border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow"
+            className="bg-blanco-una-2 border border-gray-200 rounded-corner p-4 hover:shadow-md transition-shadow"
           >
             <div className="flex items-start gap-4">
               {/* Icono del archivo */}

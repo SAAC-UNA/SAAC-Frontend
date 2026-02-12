@@ -159,15 +159,15 @@ export const EvidenceUploader: React.FC<EvidenceUploaderProps> = ({
       setIsUploading(false);
     }
   };
-
+/** TODO revisar esta sección, si realmente se usa y si sí, cambiar button HTML al componente */
   return (
-    <div className="space-y-4 p-4 bg-white rounded-lg shadow">
+    <div className="space-y-4 p-4 bg-white rounded-corner shadow">
       {/* Selector de modo */}
       <div className="flex gap-2 border-b border-gray-200 pb-3">
         <button
           type="button"
           onClick={() => setMode('files')}
-          className={`px-4 py-2 rounded-md font-medium transition-colors ${
+          className={`px-4 py-2 rounded-corner font-medium transition-colors ${
             mode === 'files'
               ? 'bg-blue-600 text-white'
               : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
@@ -178,7 +178,7 @@ export const EvidenceUploader: React.FC<EvidenceUploaderProps> = ({
         <button
           type="button"
           onClick={() => setMode('links')}
-          className={`px-4 py-2 rounded-md font-medium transition-colors ${
+          className={`px-4 py-2 rounded-corner font-medium transition-colors ${
             mode === 'links'
               ? 'bg-blue-600 text-white'
               : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
@@ -189,7 +189,7 @@ export const EvidenceUploader: React.FC<EvidenceUploaderProps> = ({
         <button
           type="button"
           onClick={() => setMode('both')}
-          className={`px-4 py-2 rounded-md font-medium transition-colors ${
+          className={`px-4 py-2 rounded-corner font-medium transition-colors ${
             mode === 'both'
               ? 'bg-blue-600 text-white'
               : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
@@ -210,7 +210,7 @@ export const EvidenceUploader: React.FC<EvidenceUploaderProps> = ({
             onDragLeave={handleDrag}
             onDragOver={handleDrag}
             onDrop={handleDrop}
-            className={`border-2 border-dashed rounded-lg p-8 text-center transition-colors ${
+            className={`border-2 border-dashed rounded-corner p-8 text-center transition-colors ${
               dragActive
                 ? 'border-blue-500 bg-blue-50'
                 : 'border-gray-300 bg-gray-50'
@@ -231,7 +231,7 @@ export const EvidenceUploader: React.FC<EvidenceUploaderProps> = ({
                 />
               </svg>
               <div className="text-sm text-gray-600">
-                <label htmlFor="file-upload" className="relative cursor-pointer rounded-md font-medium text-blue-600 hover:text-blue-500">
+                <label htmlFor="file-upload" className="relative cursor-pointer rounded-corner font-medium text-blue-600 hover:text-blue-500">
                   <span>Seleccionar archivos</span>
                   <input
                     id="file-upload"
@@ -316,7 +316,7 @@ export const EvidenceUploader: React.FC<EvidenceUploaderProps> = ({
           (mode === 'links' && selectedLinks.length === 0) ||
           (mode === 'both' && selectedFiles.length === 0 && selectedLinks.length === 0)
         }
-        className="w-full px-4 py-3 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed font-medium transition-colors"
+        className="w-full px-4 py-3 bg-blue-600 text-white rounded-corner hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed font-medium transition-colors"
       >
         {isUploading ? 'Subiendo...' : 'Subir Evidencias'}
       </button>

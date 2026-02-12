@@ -127,7 +127,7 @@ export const RolesTable: React.FC<RolesTableProps> = ({
             align: 'center',
             render: (_: unknown, role: Role) => (
                 <div className="w-max mx-auto">
-                    <div className="relative grid items-center px-2 py-1 font-sans text-xs font-bold text-gray-900 uppercase rounded-md select-none whitespace-nowrap bg-gray-500/20">
+                    <div className="relative grid items-center px-2 py-1 font-sans text-xs font-bold text-gray-900 uppercase rounded-corner select-none whitespace-nowrap bg-gray-500/20">
                         <span>{Array.isArray(role.permissions) ? role.permissions.length : 0} permisos</span>
                     </div>
                 </div>
@@ -139,7 +139,7 @@ export const RolesTable: React.FC<RolesTableProps> = ({
             align: 'center',
             render: (_: unknown) => (
                 <div className="w-max mx-auto">
-                    <div className="relative grid items-center px-2 py-1 font-sans text-xs font-bold text-green-900 uppercase rounded-md select-none whitespace-nowrap bg-green-500/20">
+                    <div className="relative grid items-center px-2 py-1 font-sans text-xs font-bold text-green-900 uppercase rounded-corner select-none whitespace-nowrap bg-green-500/20">
                         <span>Activo</span>
                     </div>
                 </div>

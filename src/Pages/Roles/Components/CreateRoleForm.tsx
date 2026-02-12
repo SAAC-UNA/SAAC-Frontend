@@ -403,7 +403,7 @@ export const CreateRoleForm: React.FC<CreateRoleFormProps> = ({
                 />
                 {/* Mostrar error de la API si existe */}
                 {error && (
-                  <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg">
+                  <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-corner">
                     <p className="text-sm text-rojo-una">{error}</p>
                   </div>
                 )}
@@ -489,7 +489,7 @@ export const CreateRoleForm: React.FC<CreateRoleFormProps> = ({
 
           {/* Mostrar error de la API si existe */}
           {error && (
-            <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg">
+            <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-corner">
               <p className="text-sm text-red-600">{error}</p>
             </div>
           )}

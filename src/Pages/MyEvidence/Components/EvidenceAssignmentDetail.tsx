@@ -165,7 +165,7 @@ export const EvidenceAssignmentDetail: React.FC<EvidenceAssignmentDetailProps> =
     : '';
 
   const renderStatusAndDeadline = () => (
-    <div className="bg-white border border-gray-200 rounded-lg p-4 mb-6">
+    <div className="bg-white border border-gray-200 rounded-corner p-4 mb-6">
       <div className="flex items-center justify-between flex-wrap gap-3">
         <div className="flex items-center gap-3">
           <span className="text-sm font-semibold text-gray-800">Estado:</span>
@@ -190,7 +190,7 @@ export const EvidenceAssignmentDetail: React.FC<EvidenceAssignmentDetailProps> =
     if (!assignment.fecha_limite || (!isOverdue && !isNearDue)) return null;
 
     return (
-      <div className={`flex items-start gap-3 p-4 rounded-lg mb-6 ${
+      <div className={`flex items-start gap-3 p-4 rounded-corner mb-6 ${
         isOverdue ? 'bg-red-50 border border-red-200' : 'bg-orange-50 border border-orange-200'
       }`}>
         {isOverdue 
@@ -224,7 +224,7 @@ export const EvidenceAssignmentDetail: React.FC<EvidenceAssignmentDetailProps> =
           <h3 className="font-sm text-gray-800">Comentarios</h3>
         </div>
         
-        <div className="bg-white border border-gray-200 rounded-lg p-4 max-h-60 overflow-y-auto">
+        <div className="bg-white border border-gray-200 rounded-corner p-4 max-h-60 overflow-y-auto">
           <p className="text-sm text-gray-700 whitespace-pre-wrap">{assignment.comentario}</p>
         </div>
       </div>
@@ -241,7 +241,7 @@ export const EvidenceAssignmentDetail: React.FC<EvidenceAssignmentDetailProps> =
           <h3 className="font-sm text-gray-800">Criterio</h3>
         </div>
         
-        <div className="bg-white border border-gray-200 rounded-lg p-4 max-h-60 overflow-y-auto">
+        <div className="bg-white border border-gray-200 rounded-corner p-4 max-h-60 overflow-y-auto">
           <div className="space-y-2">
             <div>
               <span className="text-sm font-semibold text-gray-800">Nomenclatura:</span>
@@ -285,7 +285,7 @@ export const EvidenceAssignmentDetail: React.FC<EvidenceAssignmentDetailProps> =
         <h3 className="font-sm text-gray-800">Fechas Importantes</h3>
       </div>
       
-      <div className="bg-white border border-gray-200 rounded-lg p-4 max-h-60 overflow-y-auto">
+      <div className="bg-white border border-gray-200 rounded-corner p-4 max-h-60 overflow-y-auto">
         <div className="space-y-2">
           <div>
             <span className="text-sm font-semibold text-gray-800">Fecha de Asignación:</span>
@@ -313,7 +313,7 @@ export const EvidenceAssignmentDetail: React.FC<EvidenceAssignmentDetailProps> =
         <h3 className="font-sm text-gray-800">Archivos Subidos</h3>
       </div>
       
-      <div className="bg-white border border-gray-200 rounded-lg p-4">
+      <div className="bg-white border border-gray-200 rounded-corner p-4">
         {loadingFiles ? (
           <div className="flex justify-center py-4">
             <LoadingSpinner size="sm" />

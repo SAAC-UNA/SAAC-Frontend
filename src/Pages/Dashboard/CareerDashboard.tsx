@@ -13,7 +13,7 @@ const CareerDashboard: React.FC = () => {
     const isSuperUser = auth.isSuperUser();
 
     const renderCareerCard = (career: MockCareer) => (
-        <div key={career.carrera_id} className="bg-white shadow-sm rounded-lg border border-gray-200">
+        <div key={career.carrera_id} className="bg-white shadow-sm rounded-corner border border-gray-200">
             <div className="px-6 py-5 border-b border-gray-200">
                 <h2 className="text-xl font-semibold text-gray-900">
                     {career.nombre}
@@ -50,7 +50,7 @@ const CareerDashboard: React.FC = () => {
                 {isSuperUser ? (
                     // Vista para SuperUsuario - Todas las carreras
                     <>
-                        <div className="bg-white shadow-sm rounded-lg border border-gray-200">
+                        <div className="bg-white shadow-sm rounded-corner border border-gray-200">
                             <div className="px-6 py-5 border-b border-gray-200">
                                 <h2 className="text-xl font-semibold text-gray-900">
                                     Ingeniería en Sistemas
@@ -72,7 +72,7 @@ const CareerDashboard: React.FC = () => {
                                 </div>
                             </div>
                         </div>
-                        <div className="bg-white shadow-sm rounded-lg border border-gray-200">
+                        <div className="bg-white shadow-sm rounded-corner border border-gray-200">
                             <div className="px-6 py-5 border-b border-gray-200">
                                 <h2 className="text-xl font-semibold text-gray-900">
                                     Educación

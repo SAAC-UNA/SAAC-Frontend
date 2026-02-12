@@ -128,7 +128,7 @@ export const ProcesoStep: React.FC<ProcesoStepProps> = ({
             value={fechaInicio}
             onChange={(e) => onChangeFechaInicio(e.target.value)}
             min={today}
-            className={`w-full px-3 py-2 text-sm border rounded-lg focus:outline-none focus:ring-2 focus:ring-rojo-una focus:border-transparent ${
+            className={`w-full px-3 py-2 text-sm border rounded-corner focus:outline-none focus:ring-2 focus:ring-rojo-una focus:border-transparent ${
               errorInicio ? 'border-red-500' : 'border-gray-300'
             }`}
           />
@@ -147,7 +147,7 @@ export const ProcesoStep: React.FC<ProcesoStepProps> = ({
             value={fechaFin}
             onChange={(e) => onChangeFechaFin(e.target.value)}
             min={fechaInicio || today}
-            className={`w-full px-3 py-2 text-sm border rounded-lg focus:outline-none focus:ring-2 focus:ring-rojo-una focus:border-transparent ${
+            className={`w-full px-3 py-2 text-sm border rounded-corner focus:outline-none focus:ring-2 focus:ring-rojo-una focus:border-transparent ${
               errorFin ? 'border-red-500' : 'border-gray-300'
             }`}
           />
@@ -169,7 +169,7 @@ export const ProcesoStep: React.FC<ProcesoStepProps> = ({
           placeholder="Describa las acciones necesarias para cumplir con el compromiso de mejora"
           rows={3}
           maxLength={250}
-          className={`w-full px-3 py-2 text-sm border rounded-lg focus:outline-none focus:ring-2 focus:ring-rojo-una focus:border-transparent resize-none ${
+          className={`w-full px-3 py-2 text-sm border rounded-corner focus:outline-none focus:ring-2 focus:ring-rojo-una focus:border-transparent resize-none ${
             errorDescripcion ? 'border-red-500' : 'border-gray-300'
           }`}
         />

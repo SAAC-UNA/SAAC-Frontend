@@ -291,7 +291,7 @@ const StructureList: React.FC = () => {
           showCancel={true}
           showConfirm={true}
         >
-          <div className="mt-4 p-3 bg-[var(--bg-info)] border border-[var(--border-info)] rounded-lg">
+          <div className="mt-4 p-3 bg-[var(--bg-info)] border border-[var(--border-info)] rounded-corner">
             <p className="text-sm text-[var(--text-info)]">
               Al activar este elemento, volverá a estar disponible para su uso en el sistema.
             </p>
@@ -323,7 +323,7 @@ const StructureList: React.FC = () => {
           showCancel={true}
           showConfirm={true}
         >
-          <div className="mt-4 p-3 bg-[var(--bg-warning)] border border-[var(--border-warning)] rounded-lg">
+          <div className="mt-4 p-3 bg-[var(--bg-warning)] border border-[var(--border-warning)] rounded-corner">
             <p className="text-sm text-[var(--text-warning)]">
               Al inactivar este elemento, dejará de estar disponible en el sistema. Esta acción es reversible.
             </p>

@@ -58,14 +58,14 @@ export const ExtensionRequestDetailsModal: React.FC<ExtensionRequestDetailsModal
         {/* Motivo */}
         <div>
           <p className="text-sm font-medium text-gray-700 mb-2">Motivo:</p>
-          <p className="text-sm text-gray-900 bg-gray-50 rounded-lg p-3 border border-gray-200">
+          <p className="text-sm text-gray-900 bg-gray-50 rounded-corner p-3 border border-gray-200">
             {solicitud.motivo}
           </p>
         </div>
 
         {/* Fechas */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div className="bg-gray-50 rounded-lg p-4 border border-gray-200">
+          <div className="bg-gray-50 rounded-corner p-4 border border-gray-200">
             <div className="flex items-center gap-2 mb-2">
               <SystemIcons.interface.calendar size="sm" className="text-gray-600" />
               <p className="text-sm font-medium text-gray-700">Fecha de solicitud</p>
@@ -79,7 +79,7 @@ export const ExtensionRequestDetailsModal: React.FC<ExtensionRequestDetailsModal
             </p>
           </div>
           
-          <div className="bg-azul-una/5 rounded-lg p-4 border border-azul-una/20">
+          <div className="bg-azul-una/5 rounded-corner p-4 border border-azul-una/20">
             <div className="flex items-center gap-2 mb-2">
               <SystemIcons.interface.clock size="sm" className="text-azul-una" />
               <p className="text-sm font-medium text-azul-una">Fecha sugerida</p>
@@ -96,7 +96,7 @@ export const ExtensionRequestDetailsModal: React.FC<ExtensionRequestDetailsModal
 
         {/* Información de asignación */}
         {solicitud.evidencia_asignacion && (
-          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+          <div className="bg-blue-50 border border-blue-200 rounded-corner p-4">
             <div className="flex items-center gap-2 mb-2">
               <SystemIcons.interface.informationCircle size="sm" className="text-blue-700" />
               <p className="text-sm font-medium text-blue-900">Fecha límite actual</p>
@@ -113,7 +113,7 @@ export const ExtensionRequestDetailsModal: React.FC<ExtensionRequestDetailsModal
 
         {/* Resolución */}
         {solicitud.estado !== 'pendiente' && (
-          <div className={`border rounded-lg p-4 ${
+          <div className={`border rounded-corner p-4 ${
             solicitud.estado === 'aprobada' 
               ? 'bg-green-50 border-green-200' 
               : 'bg-red-50 border-red-200'

@@ -119,7 +119,7 @@ export const EvidenceSearchResultsTable: React.FC<EvidenceSearchResultsTableProp
         return (
           <div className="w-max mx-auto">
             <div className={cn(
-              'relative grid items-center px-2 py-1 font-sans text-xs font-bold uppercase rounded-md select-none whitespace-nowrap',
+              'relative grid items-center px-2 py-1 font-sans text-xs font-bold uppercase rounded-corner select-none whitespace-nowrap',
               badgeClass
             )}>
               <span>{EVIDENCE_STATUS_LABELS[item.estado]}</span>

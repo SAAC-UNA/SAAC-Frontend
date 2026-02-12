@@ -123,7 +123,7 @@ export const EvidenciasStep: React.FC<EvidenciasStepProps> = ({
             id="search"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-rojo-una focus:border-transparent"
+            className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-corner focus:outline-none focus:ring-2 focus:ring-rojo-una focus:border-transparent"
             placeholder="Buscar por nombre, código o usuario asignado..."
           />
         </div>
@@ -131,7 +131,7 @@ export const EvidenciasStep: React.FC<EvidenciasStepProps> = ({
 
       {/* Selected count */}
       {evidenciasAsignadas.length > 0 && (
-        <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
+        <div className="bg-blue-50 border border-blue-200 rounded-corner p-3">
           <p className="text-sm text-blue-800">
             📎 {evidenciasAsignadas.length} evidencia{evidenciasAsignadas.length !== 1 ? 's' : ''} seleccionada{evidenciasAsignadas.length !== 1 ? 's' : ''}
           </p>
@@ -139,7 +139,7 @@ export const EvidenciasStep: React.FC<EvidenciasStepProps> = ({
       )}
 
       {/* Evidencias list */}
-      <div className="border border-gray-200 rounded-lg divide-y divide-gray-200 max-h-96 overflow-y-auto">
+      <div className="border border-gray-200 rounded-corner divide-y divide-gray-200 max-h-96 overflow-y-auto">
         {filteredEvidencias.length === 0 ? (
           <div className="p-8 text-center">
             <p className="text-gray-500">
@@ -212,7 +212,7 @@ export const EvidenciasStep: React.FC<EvidenciasStepProps> = ({
       </div>
 
       {/* Info */}
-      <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
+      <div className="bg-gray-50 border border-gray-200 rounded-corner p-4">
         <div className="flex gap-3">
           <div className="flex-shrink-0">
             <svg className="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">

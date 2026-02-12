@@ -102,7 +102,7 @@ export const CriterioStep: React.FC<CriterioStepProps> = ({
           placeholder="Buscar por código, nombre o proceso..."
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
-          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-rojo-una focus:border-transparent"
+          className="w-full px-4 py-2 border border-gray-300 rounded-corner focus:outline-none focus:ring-2 focus:ring-rojo-una focus:border-transparent"
         />
       </div>
 
@@ -112,7 +112,7 @@ export const CriterioStep: React.FC<CriterioStepProps> = ({
           <button
             key={criterio.id}
             onClick={() => onSelect(criterio.id)}
-            className={`w-full text-left p-4 rounded-lg border-2 transition-all ${
+            className={`w-full text-left p-4 rounded-corner border-2 transition-all ${
               selectedCriterio === criterio.id
                 ? 'border-rojo-una bg-rojo-una/5'
                 : 'border-gray-200 hover:border-gray-300'

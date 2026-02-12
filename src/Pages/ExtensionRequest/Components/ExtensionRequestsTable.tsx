@@ -54,7 +54,7 @@ export const ExtensionRequestsTable: React.FC<ExtensionRequestsTableProps> = ({
 
     return (
       <div className="w-max mx-auto">
-        <div className={`relative grid items-center px-2 py-1 font-sans text-xs font-bold uppercase rounded-md select-none whitespace-nowrap ${badges[estado]}`}>
+        <div className={`relative grid items-center px-2 py-1 font-sans text-xs font-bold uppercase rounded-corner select-none whitespace-nowrap ${badges[estado]}`}>
           <span>{estado.charAt(0).toUpperCase() + estado.slice(1)}</span>
         </div>
       </div>
@@ -110,7 +110,7 @@ export const ExtensionRequestsTable: React.FC<ExtensionRequestsTableProps> = ({
       header: 'Motivo',
       render: (_: unknown, item: ExtensionRequest) => (
         <div className="flex flex-col">
-          <p className="relative grid items-center px-2 py-1 font-sans text-xs font-bold text-gray-900 uppercase rounded-md select-none whitespace-nowrap" title={item.motivo}>
+          <p className="relative grid items-center px-2 py-1 font-sans text-xs font-bold text-gray-900 uppercase rounded-corner select-none whitespace-nowrap" title={item.motivo}>
             {truncateText(item.motivo, 40)}
           </p>
         </div>
@@ -121,7 +121,7 @@ export const ExtensionRequestsTable: React.FC<ExtensionRequestsTableProps> = ({
       header: 'Fecha Solicitud',
       align: 'center',
       render: (_: unknown, item: ExtensionRequest) => (
-        <span className="relative grid items-center px-2 py-1 font-sans text-xs font-bold text-gray-900 uppercase rounded-md select-none whitespace-nowrap">
+        <span className="relative grid items-center px-2 py-1 font-sans text-xs font-bold text-gray-900 uppercase rounded-corner select-none whitespace-nowrap">
           {new Date(item.created_at).toLocaleDateString('es-ES')}
         </span>
       )
@@ -131,7 +131,7 @@ export const ExtensionRequestsTable: React.FC<ExtensionRequestsTableProps> = ({
       header: 'Fecha Sugerida',
       align: 'center',
       render: (_: unknown, item: ExtensionRequest) => (
-        <span className="relative grid items-center px-2 py-1 font-sans text-xs font-bold text-gray-900 uppercase rounded-md select-none whitespace-nowrap">
+        <span className="relative grid items-center px-2 py-1 font-sans text-xs font-bold text-gray-900 uppercase rounded-corner select-none whitespace-nowrap">
           {new Date(item.fecha_sugerida).toLocaleDateString('es-ES')}
         </span>
       )

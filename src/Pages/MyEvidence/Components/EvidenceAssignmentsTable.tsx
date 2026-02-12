@@ -94,7 +94,7 @@ export const EvidenceAssignmentsTable: React.FC<EvidenceAssignmentsTableProps> =
         return (
           <div className="w-max mx-auto">
             <div 
-              className="relative grid items-center px-2 py-1 font-sans text-xs font-bold uppercase rounded-md select-none whitespace-nowrap"
+              className="relative grid items-center px-2 py-1 font-sans text-xs font-bold uppercase rounded-corner select-none whitespace-nowrap"
               style={{ 
                 backgroundColor: finalInfo.bgColor,
                 color: finalInfo.color 

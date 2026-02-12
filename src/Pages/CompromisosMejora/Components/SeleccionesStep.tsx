@@ -182,7 +182,7 @@ export const SeleccionesStep: React.FC<SeleccionesStepProps> = ({
           const selectedCount = criterioEvidences.filter(e => selectedEvidenceIds.includes(e.evidencia_id)).length;
           
           return (
-            <div key={criterio.criterio_id} className="border border-gray-200 rounded-lg overflow-hidden">
+            <div key={criterio.criterio_id} className="border border-gray-200 rounded-corner overflow-hidden">
               {/* Criterio Button */}
               <button
                 type="button"
@@ -276,7 +276,7 @@ export const SeleccionesStep: React.FC<SeleccionesStepProps> = ({
 
       {/* Contador de selecciones */}
       {selectedEvidenceIds.length > 0 && (
-        <div className="flex items-center gap-2 text-xs text-gray-600 p-2 bg-blue-50 border border-blue-200 rounded-lg">
+        <div className="flex items-center gap-2 text-xs text-gray-600 p-2 bg-blue-50 border border-blue-200 rounded-corner">
           <svg className="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
           </svg>
