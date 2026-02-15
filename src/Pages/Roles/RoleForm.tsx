@@ -15,13 +15,13 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { CreateRoleForm } from './Components/CreateRoleForm';
-import { LoadingSpinner, Button, BackendErrorAlert } from '@/components/Ui/Index';
+import { LoadingSpinner, Button, BackendErrorAlert, ScreenContainer, PageHeader } from '@/components/Ui/Index';
 import { CreateConfirmationModal } from '@/Components/Ui/CreateConfirmationModal';
 import { EditConfirmationModal } from '@/Components/Ui/EditConfirmationModal';
 import { SuccessModal } from '@/Components/Ui/SuccessModal';
-import { ScreenContainer } from '@/Components/Ui/ScreenContainer';
 import { useRoles } from '@/hooks/UseRoles';
 import { getModuleInfoWithDynamicTitle } from '@/Constants/ModuleInfo';
+import { LAYOUT } from '@/Constants/Layout';
 import type { CreateRoleData, Role } from '@/Services/RoleService';
 
 /**
@@ -189,7 +189,7 @@ const RoleForm: React.FC = () => {
     // Estado de carga del rol (solo en modo edición)
     if (isLoadingRole) {
       return (
-        <ScreenContainer showHeader={false}>
+        <ScreenContainer>
           <div className="text-center py-12">
             <LoadingSpinner size="lg" className="mx-auto mb-4" />
           </div>
@@ -200,7 +200,7 @@ const RoleForm: React.FC = () => {
     // Estado de error al cargar rol (solo en modo edición)
     if (loadError) {
       return (
-        <ScreenContainer showHeader={false}>
+        <ScreenContainer>
           <BackendErrorAlert
             error={loadError}
             onRetry={() => window.location.reload()}
@@ -223,27 +223,30 @@ const RoleForm: React.FC = () => {
     const moduleInfo = getModuleInfo();
     
     return (
-      <ScreenContainer
-              title={moduleInfo.title}
-              description={moduleInfo.description}
-              variant="full-width"
-            >
+      <ScreenContainer>
+        <PageHeader
+          title={moduleInfo.title}
+          description={moduleInfo.description}
+        />
         
-        {/* Contenido del formulario */}
-        <div className="p-4 sm:p-5 lg:p-6">
-          <CreateRoleForm
-            initialData={isEditing && role ? role : undefined}
-            onSubmit={handleFormSubmit}
-            hideButtons={true}
-            onHasChangesChange={setHasChanges}
-          />
-        </div>
+        {/* Layout que empuja botones al fondo cuando hay poco contenido */}
+        <div className={LAYOUT.FORM_CONTAINER}>
+          <div className={LAYOUT.FLEX_GROW}>
+            {/* Contenido del formulario */}
+            <CreateRoleForm
+              initialData={isEditing && role ? role : undefined}
+              onSubmit={handleFormSubmit}
+              hideButtons={true}
+              onHasChangesChange={setHasChanges}
+            />
+          </div>  {/* Cierre de LAYOUT.FLEX_GROW */}
         
-        {/* Línea divisoria inferior */}
-        <hr className="border-0 border-t border-gris-una/20 mx-6" />
-        
-        {/* Botones de acción */}
-        <div className="p-4 sm:p-5 lg:p-6">
+          {/* Línea divisoria inferior */}
+          <hr className="border-0 border-t border-gris-una/20 mx-6 mt-6 mb-6" />
+          
+          {/* Botones de acción */}
+          <div className="px-4 sm:px-5 lg:px-6 pb-4 sm:pb-5 lg:pb-6">
+          
           <div className="flex justify-end gap-4">
             <Button
               type="button"
@@ -272,6 +275,7 @@ const RoleForm: React.FC = () => {
             </Button>
           </div>
         </div>
+        </div>  {/* Cierre de LAYOUT.FORM_CONTAINER */}
       </ScreenContainer>
     );
   };

@@ -14,12 +14,13 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { EditUserForm } from './Components/EditUserForm';
-import { LoadingSpinner, BackendErrorAlert, ScreenContainer } from '@/components/Ui/Index';
+import { LoadingSpinner, BackendErrorAlert, ScreenContainer, PageHeader } from '@/components/Ui/Index';
 import { EditConfirmationModal } from '@/Components/Ui/EditConfirmationModal';
 import { SuccessModal } from '@/Components/Ui/SuccessModal';
 import { userService } from '@/Services/UserService';
 import type { User } from '@/Services/UserService';
 import { getModuleInfoWithDynamicTitle } from '@/Constants/ModuleInfo';
+import { LAYOUT } from '@/Constants/Layout';
 
 const EditUserPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -166,7 +167,7 @@ const EditUserPage: React.FC = () => {
   // Estado de carga
   if (isLoadingUser) {
     return (
-      <ScreenContainer showHeader={false}>
+      <ScreenContainer>
         <div className="flex items-center justify-center min-h-screen">
           <div className="text-center">
             <LoadingSpinner size="lg" />
@@ -179,7 +180,7 @@ const EditUserPage: React.FC = () => {
   // Estado de error
   if (loadError || !user) {
     return (
-      <ScreenContainer showHeader={false}>
+      <ScreenContainer>
         <BackendErrorAlert
           error={loadError || 'Usuario no encontrado'}
           onRetry={handleRetry}
@@ -192,17 +193,23 @@ const EditUserPage: React.FC = () => {
   const moduleInfo = getModuleInfoWithDynamicTitle('users', 'edit', user.name);
 
   return (
-    <ScreenContainer
+    <ScreenContainer>
+      <PageHeader 
         title={moduleInfo.title}
         description={moduleInfo.description}
-        variant="full-width"
-      >
-        {/* Formulario de edición */}
-        <EditUserForm
-          user={user}
-          onSubmit={handleFormSubmit}
-          onCancel={handleCancel}
-        />
+      />
+      
+      {/* Layout que empuja botones al fondo cuando hay poco contenido */}
+      <div className={LAYOUT.FORM_CONTAINER}>
+        {/* Formulario de edición - crece para empujar botones */}
+        <div className={LAYOUT.FLEX_GROW}>
+          <EditUserForm
+            user={user}
+            onSubmit={handleFormSubmit}
+            onCancel={handleCancel}
+          />
+        </div>
+      </div>
 
       {/* Modal de confirmación de edición */}
       <EditConfirmationModal

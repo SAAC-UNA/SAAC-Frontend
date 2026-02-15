@@ -1,3 +1,4 @@
+{/** TODO revisar si esta página tiene real funcionalidad */}
 import { useAuth } from '@/Context/AuthContext';
 
 export const Home = () => {

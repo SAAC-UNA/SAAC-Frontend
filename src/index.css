@@ -86,6 +86,50 @@
 
   --font-poppins: 'Poppins', sans-serif;
 
+  /* Tamaños de tipografía estandarizados por tipo de elemento */
+  /* Fórmula: rem × 16 = px | Ejemplo: 0.875rem × 16 = 14px */
+  --text-header: 0.875rem;             /* 8px - Texto principal en headers */
+  --text-body: 0.875rem;            /* 14px - Texto general/contenido */
+  --text-page-title: 1.25rem;        /* 24px - Título principal de página */
+  --text-page-subtitle: 1rem;       /* 16px - Subtítulo/descripción de página */
+  --text-button: 1rem;          /* 14px - Todos los botones */
+  --text-sidebar: 0.875rem;         /* 14px - Items de navegación */
+  --text-form-input: 0.875rem;      /* 14px - Inputs, selects, textareas */
+  --text-form-label: 0.875rem;      /* 14px - Labels de formularios */
+  --text-form-helper: 0.75rem;      /* 12px - Textos de ayuda y validación */
+  --text-table-header: 0.75rem;     /* 12px - Headers de tabla */
+  --text-table-cell: 0.875rem;      /* 14px - Contenido de celdas */
+  --text-table-caption: 0.875rem;   /* 14px - Título de tabla */
+  --text-alert-title: 0.875rem;     /* 14px - Título de alertas */
+  --text-alert-message: 0.875rem;   /* 14px - Mensaje de alertas */
+  --text-empty-title: 1.125rem;     /* 18px - Título de estados vacíos */
+  --text-empty-desc: 0.875rem;      /* 14px - Descripción de estados vacíos */
+  --text-empty-title-compact: 1rem; /* 16px - Título compacto */
+  --text-empty-desc-compact: 0.75rem; /* 12px - Descripción compacta */
+  --text-modal-title: 1.25rem;      /* 20px - Título de modales */
+  --text-modal-subtitle: 0.875rem;  /* 14px - Subtítulo de modales */
+  --text-modal-body: 0.875rem;      /* 14px - Contenido de modales */
+  --text-badge: 0.75rem;            /* 12px - Badges, chips, pills */
+  --text-pagination: 0.875rem;      /* 14px - Paginación */
+
+  /* Tamaños para botones de acción en tablas */
+  --size-table-action-button: 2rem; /* 32px - Tamaño del botón (h-8 w-8) */
+  --size-table-action-icon: 0.875rem;   /* 16px - Tamaño del icono (w-4 h-4) */
+  --padding-table-action: 0.5rem;   /* 8px - Padding del botón (p-2) */
+  /* Tamaños para botones en headers */
+  --size-header-button: 2rem;     /* 32px - Tamaño del botón (h-10 w-10) */
+  --size-header-icon: 1.25rem;     /* 20px - Tamaño del icono (w-5 h-5) */
+  --padding-header-action: 0.5rem; /* 8px - Padding del botón (p-2) */
+
+  /* Alturas y paddings de componentes (inputs, buttons, selects, etc) */
+  --height-component: 2.5rem;       /* 40px - Altura estándar para todos los tamaños */
+  --padding-component-sm-x: 0.75rem;  /* 12px - Padding horizontal sm */
+  --padding-component-sm-y: 0.5rem;   /* 8px - Padding vertical sm */
+  --padding-component-md-x: 1rem;     /* 16px - Padding horizontal md */
+  --padding-component-md-y: 0.75rem;  /* 12px - Padding vertical md */
+  --padding-component-lg-x: 1rem;     /* 16px - Padding horizontal lg */
+  --padding-component-lg-y: 1rem;     /* 16px - Padding vertical lg */
+
   /* Colores para estados */
   --color-verde: #10b981;
   --color-warning: #f59e0b;
@@ -141,7 +185,7 @@
   --btn-secondary-hover: #a1151a;           /* Hover del botón secundario */
   --btn-danger: var(--color-error);         /* Botón de peligro */
   --btn-danger-hover: #dc2626;              /* Hover del botón de peligro */
-
+/*TODO Revisar estos ajustes del sidebar*/
   /* Ancho del sidebar */
   --spacing-sidebar: 16rem;
 }
@@ -154,65 +198,10 @@
     --sidebar-width: 16rem;
     --sidebar-width-mobile: 18rem;
     --sidebar-width-icon: 3rem;
-    
-    /* Colores del sidebar */
-    --sidebar: 195 43 48; /* rojo-una-2 */
-    --sidebar-foreground: 255 255 255; /* blanco-una */
-    --sidebar-primary: 195 43 48;
-    --sidebar-primary-foreground: 255 255 255;
-    --sidebar-accent: 220 60 65; /* versión más clara del rojo */
-    --sidebar-accent-foreground: 255 255 255;
-    --sidebar-border: 180 40 45; /* versión más oscura del rojo */
-    --sidebar-ring: 195 43 48;
   }
-
-  /* Utilidades adicionales para el sidebar */
-  .w-sidebar {
-    width: var(--sidebar-width);
-  }
-
-  .w-sidebar-mobile {
-    width: var(--sidebar-width-mobile);
-  }
-
-  .w-sidebar-icon {
-    width: var(--sidebar-width-icon);
-  }
-
-  /* Animaciones para el sidebar */
-  .animate-in {
-    animation-duration: 150ms;
-    animation-fill-mode: both;
-  }
-
-  .slide-in-from-left {
-    animation-name: slide-in-from-left;
-  }
-
-  .slide-in-from-right {
-    animation-name: slide-in-from-right;
-  }
-
-  @keyframes slide-in-from-left {
-    from {
-      transform: translateX(-100%);
-    }
-    to {
-      transform: translateX(0);
-    }
-  }
-
-  @keyframes slide-in-from-right {
-    from {
-      transform: translateX(100%);
-    }
-    to {
-      transform: translateX(0);
-    }
-  }
-
+/********************************/
   body {
-    @apply font-poppins bg-blanco-una-2 text-negro-una;
+    @apply font-poppins bg-blanco-una-2;
     /* Aplicar scrollbar personalizado globalmente */
     scrollbar-width: thin;
     scrollbar-color: rgba(167, 167, 169, 0.3) transparent;
@@ -234,18 +223,6 @@
   body::-webkit-scrollbar-thumb:hover {
     background: rgba(167, 167, 169, 0.5);
   }
-
-  h1 {
-    @apply font-poppins text-3xl font-bold text-rojo-una-2;
-  }
-
-  h2 {
-    @apply font-poppins text-xl font-semibold text-azul-una;
-  }
-
-  p {
-    @apply font-poppins text-base text-gris-una;
-  }
 }
 
 /* ===== COMPONENTES REUTILIZABLES ===== */
@@ -257,21 +234,6 @@
   /* Botón sandwich del menú - Para toggle del sidebar */
   .btn-menu {
     @apply bg-transparent text-current p-0 border-0 font-normal rounded-none;
-  }
-  
-  /* Gradiente del sidebar */
-  .sidebar-gradient {
-    background: linear-gradient(180deg, var(--color-rojo-sidebar) 0%, var(--color-rojo-sidebar-dark) 100%);
-  }
-  
-  /* Item activo del sidebar (el elemento blanco) */
-  .sidebar-item-active {
-    @apply bg-white text-rojo-una-2 font-semibold rounded-full;
-  }
-  
-  /* Hover states para sidebar */
-  .sidebar-item-hover {
-    @apply hover:bg-blanco-una transition-all duration-200;
   }
   
   /* Efectos de glassmorphism */
@@ -380,17 +342,109 @@
 
 /* ===== UTILIDADES ADICIONALES ===== */
 /* Transiciones, sombras, efectos especiales y scrollbars */
-
+/* TODO Revisar si hay contradicción entre esto y los tamaños definidos en Typography.ts */
 @layer utilities {
+  /* ===== TIPOGRAFÍA ESTANDARIZADA ===== 14-02-2026 */
+  /* Usamos prefijo 'size-' para evitar conflictos con clases de color 'text-*' de Tailwind */
+  .size-header { font-size: var(--text-header); }
+  .size-body { font-size: var(--text-body); }
+  .size-page-title { font-size: var(--text-page-title); }
+  .size-page-subtitle { font-size: var(--text-page-subtitle); }
+  .size-button { font-size: var(--text-button); }
+  .size-sidebar { font-size: var(--text-sidebar); }
+  .size-form-input { font-size: var(--text-form-input); }
+  .size-form-label { font-size: var(--text-form-label); }
+  .size-form-helper { font-size: var(--text-form-helper); }
+  .size-table-header { font-size: var(--text-table-header); }
+  .size-table-cell { font-size: var(--text-table-cell); }
+  .size-table-caption { font-size: var(--text-table-caption); }
+  .size-alert-title { font-size: var(--text-alert-title); }
+  .size-alert-message { font-size: var(--text-alert-message); }
+  .size-empty-title { font-size: var(--text-empty-title); }
+  .size-empty-desc { font-size: var(--text-empty-desc); }
+  .size-empty-title-compact { font-size: var(--text-empty-title-compact); }
+  .size-empty-desc-compact { font-size: var(--text-empty-desc-compact); }
+  .size-modal-title { font-size: var(--text-modal-title); }
+  .size-modal-subtitle { font-size: var(--text-modal-subtitle); }
+  .size-modal-body { font-size: var(--text-modal-body); }
+  .size-badge { font-size: var(--text-badge); }
+  .size-pagination { font-size: var(--text-pagination); }
+
+  /* ===== TAMAÑOS DE BOTONES DE TABLA ===== 14-02-2026 */
+  .size-table-action-button { 
+    height: var(--size-table-action-button) !important; 
+    width: var(--size-table-action-button) !important; 
+  }
+  .size-table-action-icon { 
+    height: var(--size-table-action-icon) !important; 
+    width: var(--size-table-action-icon) !important; 
+  }
+  .p-table-action { padding: var(--padding-table-action) !important; }
+
+  /* ==== TAMAÑO DE BOTONES DE HEADER ==== 15-02-2026 */
+  .size-header-button {
+    height: var(--size-header-button) !important;
+    width: var(--size-header-button) !important;
+  }
+
+  .size-header-icon {
+    height: var(--size-header-icon) !important;
+    width: var(--size-header-icon) !important;
+  }
+
+  .p-header-action {
+    padding: var(--padding-header-action) !important;
+  }
+
+  /* ===== COLORES DE TEXTO UNA ===== */
+  .text-rojo-una { color: var(--color-rojo-una); }
+  .text-rojo-una-2 { color: var(--color-rojo-una-2); }
+  .text-gris-una { color: var(--color-gris-una); }
+  .text-azul-una { color: var(--color-azul-una); }
+  .text-blanco-una { color: var(--color-blanco-una); }
+  .text-negro-una { color: var(--color-negro-una); }
+  .text-verde { color: var(--color-verde); }
+  .text-warning { color: var(--color-warning); }
+  .text-error { color: var(--color-error); }
+  .text-info { color: var(--color-info); }
+
+  /* ===== COLORES DE FONDO UNA ===== */
+  .bg-rojo-una { background-color: var(--color-rojo-una); }
+  .bg-rojo-una-2 { background-color: var(--color-rojo-una-2); }
+  .bg-gris-una { background-color: var(--color-gris-una); }
+  .bg-azul-una { background-color: var(--color-azul-una); }
+  .bg-blanco-una { background-color: var(--color-blanco-una); }
+  .bg-blanco-una-2 { background-color: var(--color-blanco-una-2); }
+  .bg-negro-una { background-color: var(--color-negro-una); }
+  .bg-verde { background-color: var(--bg-verde); }
+  .bg-warning { background-color: var(--bg-warning); }
+  .bg-error { background-color: var(--bg-error); }
+  .bg-info { background-color: var(--bg-info); }
+  .bg-inactive { background-color: var(--bg-inactive); }
+
+  /* ===== COLORES DE BORDE UNA ===== */
+  .border-rojo-una { border-color: var(--color-rojo-una); }
+  .border-rojo-una-2 { border-color: var(--color-rojo-una-2); }
+  .border-gris-una { border-color: var(--color-gris-una); }
+  .border-azul-una { border-color: var(--color-azul-una); }
+  .border-blanco-una { border-color: var(--color-blanco-una); }
+  .border-negro-una { border-color: var(--color-negro-una); }
+  .border-verde { border-color: var(--border-verde); }
+  .border-warning { border-color: var(--border-warning); }
+  .border-error { border-color: var(--border-error); }
+  .border-info { border-color: var(--border-info); }
+  .border-inactive { border-color: var(--border-inactive); }
+
+  /* ===== TAMAÑOS DE COMPONENTES ===== */
+  .h-component { height: var(--height-component); }
+  .px-component-sm { padding-left: var(--padding-component-sm-x); padding-right: var(--padding-component-sm-x); }
+  .py-component-sm { padding-top: var(--padding-component-sm-y); padding-bottom: var(--padding-component-sm-y); }
+  .px-component-md { padding-left: var(--padding-component-md-x); padding-right: var(--padding-component-md-x); }
+  .py-component-md { padding-top: var(--padding-component-md-y); padding-bottom: var(--padding-component-md-y); }
+  .px-component-lg { padding-left: var(--padding-component-lg-x); padding-right: var(--padding-component-lg-x); }
+  .py-component-lg { padding-top: var(--padding-component-lg-y); padding-bottom: var(--padding-component-lg-y); }
+
   /* Transiciones personalizadas */
-  .transition-sidebar {
-    transition: transform 0.3s ease-in-out, width 0.3s ease-in-out;
-  }
-  
-  /* Shadows personalizadas */
-  .shadow-sidebar {
-    box-shadow: 4px 0 15px -3px rgba(0, 0, 0, 0.1);
-  }
   
   .shadow-card-hover {
     box-shadow: 0 10px 25px -3px rgba(0, 0, 0, 0.1);
@@ -400,26 +454,28 @@
   .text-shadow-sm {
     text-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
   }
-  
-  /* Layout utilities */
-  .sidebar-width {
-    width: var(--spacing-sidebar);
-  }
-  
-  /* Sidebar items que se adaptan al ancho del sidebar */
-  /* Resta padding lateral */
-  .sidebar-item-width {
-    max-width: calc(var(--spacing-sidebar) - 2rem); 
-    width: 100%;
-  }
-  
-  /* Más margen para centrado */
-  .sidebar-item-centered {
-    max-width: calc(var(--spacing-sidebar) - 3rem); 
-    width: fit-content;
-    margin: 0 auto;
-  }
 
+  /* ===== CONTENT LAYOUT UTILITIES ===== 14/02/2026*/
+  /* Layout para formularios y páginas con botones al fondo */
+  /* Cuando hay poco contenido: empuja botones al fondo */
+  /* Cuando hay mucho contenido: mantiene espaciado razonable */
+  .content-layout-form {
+    display: flex;
+    flex-direction: column;
+    min-height: 60vh; /* Altura mínima para empujar botones */
+  }
+  
+  .content-layout-form-tall {
+    display: flex;
+    flex-direction: column;
+    min-height: 70vh; /* Para pantallas que necesitan más altura */
+  }
+  
+  /* El contenido que crece para empujar botones al fondo */
+  .content-flex-grow {
+    flex: 1;
+  }
+/***********************/
   /* ===== SCROLLBAR STYLING ===== */
   /* Scrollbar personalizado simple y consistente */
   .custom-scrollbar {

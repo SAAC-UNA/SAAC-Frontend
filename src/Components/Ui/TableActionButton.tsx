@@ -14,6 +14,7 @@
 import React from 'react';
 import { SystemIcons } from '@/Components/Ui/Icons/SystemIcons';
 import { ButtonWithTooltip } from './ButtonWithTooltip';
+import { TABLE_ACTION_BUTTON } from '@/Constants/Components';
 
 export type TableActionType = 'view' | 'edit' | 'delete' | 'power' | 'add' | 'upload' | 'uploadArrow' | 'search' | 'roles' | 'users' | 'clock' | 'custom';
 
@@ -67,47 +68,47 @@ const actionConfig: Record<TableActionType, {
   variant: string;
 }> = {
   view: {
-    icon: <SystemIcons.actions.view className="w-4 h-4" size="sm" />,
+    icon: <SystemIcons.actions.view className={TABLE_ACTION_BUTTON.icon} />,
     variant: 'tableView'
   },
   edit: {
-    icon: <SystemIcons.actions.edit className="w-4 h-4" size="sm" />,
+    icon: <SystemIcons.actions.edit className={TABLE_ACTION_BUTTON.icon} />,
     variant: 'tableEdit'
   },
   delete: {
-    icon: <SystemIcons.actions.delete className="w-4 h-4" size="sm" />,
+    icon: <SystemIcons.actions.delete className={TABLE_ACTION_BUTTON.icon} />,
     variant: 'tableDelete'
   },
   power: {
-    icon: <SystemIcons.actions.power className="w-4 h-4" size="sm" />,
+    icon: <SystemIcons.actions.power className={TABLE_ACTION_BUTTON.icon} />,
     variant: 'tablePower'
   },
   add: {
-    icon: <SystemIcons.actions.add className="w-4 h-4" size="sm" />,
+    icon: <SystemIcons.actions.add className={TABLE_ACTION_BUTTON.icon} />,
     variant: 'tableEdit'
   },
   upload: {
-    icon: <SystemIcons.interface.upload className="w-4 h-4" size="sm" />,
+    icon: <SystemIcons.interface.upload className={TABLE_ACTION_BUTTON.icon} />,
     variant: 'tableEdit'
   },
   uploadArrow: {
-    icon: <SystemIcons.interface.uploadArrow className="w-4 h-4" size="sm" />,
+    icon: <SystemIcons.interface.uploadArrow className={TABLE_ACTION_BUTTON.icon} />,
     variant: 'tableEdit'
   },
   search: {
-    icon: <SystemIcons.interface.search className="w-4 h-4" size="sm" />,
+    icon: <SystemIcons.interface.search className={TABLE_ACTION_BUTTON.icon} />,
     variant: 'tableView'
   },
   roles: {
-    icon: <SystemIcons.users.roles className="w-4 h-4" size="sm" />,
+    icon: <SystemIcons.users.roles className={TABLE_ACTION_BUTTON.icon} />,
     variant: 'tableView'
   },
   users: {
-    icon: <SystemIcons.users.user className="w-4 h-4" size="sm" />,
+    icon: <SystemIcons.users.user className={TABLE_ACTION_BUTTON.icon} />,
     variant: 'tableView'
   },
   clock: {
-    icon: <SystemIcons.interface.hourglass className="w-4 h-4" size="sm" />,
+    icon: <SystemIcons.interface.hourglass className={TABLE_ACTION_BUTTON.icon} />,
     variant: 'tablePower'
   },
   custom: {
@@ -123,7 +124,7 @@ export const TableActionButton = React.memo<TableActionButtonProps>(({
   isActive,
   customIcon,
   customVariant,
-  className = "h-8 w-8 p-2",
+  className = TABLE_ACTION_BUTTON.button,
   disabled = false,
   ...props
 }) => {

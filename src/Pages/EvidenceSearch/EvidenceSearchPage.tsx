@@ -10,7 +10,7 @@
  */
 
 import React, { useState, useEffect, useCallback } from 'react';
-import { ScreenContainer } from '@/Components/Ui/ScreenContainer';
+import { PageHeader, ScreenContainer } from '@/Components/Ui/Index';
 import { SearchInput } from '@/Components/Ui/SearchInput';
 import { DropdownButton } from '@/Components/Ui/DropdownButton';
 import { Tooltip, TooltipTrigger, TooltipContent } from '@/Components/Ui/Tooltip';
@@ -184,21 +184,21 @@ export const EvidenceSearchPage: React.FC = () => {
   ];
 
   return (
-    <ScreenContainer
-      title={moduleInfo.title}
-      description={moduleInfo.description}
-      variant="full-width"
-      headerExtra={
-        <div className="flex-1 max-w-md">
-          <SearchInput
-            placeholder="Buscar por descripción, criterio o responsable..."
-            value={searchTerm}
-            onChange={handleSearchChange}
-            disabled={loading}
-          />
-        </div>
-      }
-    >
+    <ScreenContainer>
+      <PageHeader
+        title={moduleInfo.title}
+        description={moduleInfo.description}
+        headerExtra={
+          <div className="flex-1 max-w-md">
+            <SearchInput
+              placeholder="Buscar por descripción, criterio o responsable..."
+              value={searchTerm}
+              onChange={handleSearchChange}
+              disabled={loading}
+            />
+          </div>
+        }
+      />
       {/* Header con botones de acción */}
       <div className="mb-6 flex justify-end items-center gap-3">
         <DropdownButton

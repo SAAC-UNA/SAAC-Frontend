@@ -1,31 +1,36 @@
 /**
  * Sistema global de tamaños para componentes UI
- * Define tamaños consistentes para texto, padding y border-radius
+ * Define tamaños consistentes usando variables CSS de index.css
+ * 
+ * Las variables base están definidas en @theme en index.css
+ * Las clases de utilidad están en @layer utilities en index.css
  */
+
+import { TYPOGRAPHY } from './Typography';
 
 export const COMPONENT_SIZES = {
   sm: {
-    text: 'text-sm',           // 14px
-    height: 'h-10',            // 40px - Altura estándar
+    text: TYPOGRAPHY.form.input,     // 14px - text-form-input
+    height: 'h-component',           // 40px - Altura estándar
     padding: {
-      x: 'px-3',               // 12px horizontal
-      y: 'py-2'                // 8px vertical  
+      x: 'px-component-sm',          // 12px horizontal
+      y: 'py-component-sm'           // 8px vertical  
     }
   },
   md: {
-    text: 'text-base',         // 16px
-    height: 'h-10',            // 40px - Altura estándar
+    text: TYPOGRAPHY.form.input,     // 14px - Mismo tamaño que sm (formularios son 14px)
+    height: 'h-component',           // 40px - Altura estándar
     padding: {
-      x: 'px-4',               // 16px horizontal
-      y: 'py-3'                // 12px vertical
+      x: 'px-component-md',          // 16px horizontal
+      y: 'py-component-md'           // 12px vertical
     }
   },
   lg: {
-    text: 'text-lg',           // 18px
-    height: 'h-10',            // 40px - Altura estándar
+    text: TYPOGRAPHY.form.input,     // 14px - Mismo tamaño que sm y md
+    height: 'h-component',           // 40px - Altura estándar
     padding: {
-      x: 'px-4',               // 16px horizontal (mismo que md)
-      y: 'py-4'                // 16px vertical
+      x: 'px-component-lg',          // 16px horizontal (mismo que md)
+      y: 'py-component-lg'           // 16px vertical
     }
   }
 } as const;

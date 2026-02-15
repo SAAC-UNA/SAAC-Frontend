@@ -2,8 +2,9 @@ import React from 'react';
 import { Button } from '@/Components/Ui/Button';
 import { SystemIcons } from '@/Components/Ui/Icons/SystemIcons';
 import { useSidebar } from '@/Context/SidebarContext';
-import { UserProfileHeader } from './UserProfileHeader';
+import { APP_HEADER_BUTTON } from '@/Constants/Components';
 import { cn } from '@/Utils/ClassNames';
+import { TYPOGRAPHY } from '@/Constants/Typography';
 
 /**
  * HEADER DE LA APLICACIÓN CON TRIGGER DEL SIDEBAR
@@ -49,11 +50,10 @@ export const AppHeader: React.FC<AppHeaderProps> = ({
       {/* Trigger del Sidebar (botón hamburguesa) */}
       <Button
         variant="ghost"
-        size="sm"
-        className="h-8 w-8 p-0 mr-2"
+        className={`${APP_HEADER_BUTTON.button} mr-2`}
         onClick={() => toggleSidebar()}
       >
-        <SystemIcons.navigation.menu className="h-5 w-5" size="sm" />
+        <SystemIcons.navigation.menu className={APP_HEADER_BUTTON.icon} />
         {/* Este texto salta cuando el usuario usa un lector de pantalla como NVDA o JAWS */}
         <span className="sr-only">Toggle Sidebar</span>
       </Button>
@@ -66,7 +66,7 @@ export const AppHeader: React.FC<AppHeaderProps> = ({
       />
 
       {/* Título */}
-      <h1 className="text-lg text-negro-una font-semibold">
+      <h1 className={`${TYPOGRAPHY.pageTitle} text-negro-una font-semibold`}>
         {title}
       </h1>
 

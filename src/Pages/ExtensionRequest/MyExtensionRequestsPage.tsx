@@ -4,7 +4,7 @@
  */
 
 import React, { useState, useEffect, useCallback } from 'react';
-import { ScreenContainer } from '@/Components/Ui/ScreenContainer';
+import { PageHeader, ScreenContainer } from '@/Components/Ui/Index';
 import { SearchInput } from '@/Components/Ui/SearchInput';
 import { FilterButton, type FilterOption } from '@/Components/Ui/FilterButton';
 import { extensionRequestService } from '@/Services/ExtensionRequestService';
@@ -80,30 +80,32 @@ export const MyExtensionRequestsPage: React.FC = () => {
   }, []);
 
   return (
-    <ScreenContainer
-      title={moduleInfo.title}
-      description={moduleInfo.description}
-      variant="full-width"
-      headerExtra={
-        <div className="flex flex-col sm:flex-row w-full gap-2 shrink-0 lg:w-auto">
-          <SearchInput
-            placeholder="Buscar solicitudes..."
-            value={searchQuery}
-            onChange={setSearchQuery}
-            className="w-full sm:w-72"
-          />
-          <FilterButton
-            tooltipText="Filtrar por estado"
-            options={estadoOptions}
-            value={filtroEstado}
-            onChange={(value) => {
-              setFiltroEstado(value);
-              setCurrentPage(1);
-            }}
-          />
-        </div>
-      }
-    >
+    <ScreenContainer>
+      <PageHeader
+        title={moduleInfo.title}
+        description={moduleInfo.description}
+        headerExtra={
+          <div className="flex flex-col sm:flex-row w-full gap-2 shrink-0 lg:w-auto">
+            <SearchInput
+              placeholder="Buscar solicitudes..."
+              value={searchQuery}
+              onChange={setSearchQuery}
+              className="w-full sm:w-72"
+            />
+            <FilterButton
+              tooltipText="Filtrar por estado"
+              options={estadoOptions}
+              value={filtroEstado}
+              onChange={(value) => {
+                setFiltroEstado(value);
+                setCurrentPage(1);
+              }}
+            />
+          </div>
+        }
+      >
+      </PageHeader>
+
       <ExtensionRequestsTable
         requests={solicitudes}
         isLoading={loading}

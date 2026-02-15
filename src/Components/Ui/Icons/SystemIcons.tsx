@@ -458,6 +458,23 @@ export const SystemIcons = {
       </svg>
     ),
 
+    /** Chevron up - Para dropdowns y ordenamiento ascendente */
+    chevronUp: ({ className, size, color }: IconProps) => (
+      <svg
+        className={`${getSizeClasses(size)} ${className || ''}`}
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke={color || "currentColor"}
+      >
+        <path
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          strokeWidth={2}
+          d="M5 15l7-7 7 7"
+        />
+      </svg>
+    ),
+
     /** Chevron left - Para navegación hacia atrás y paginación */
     chevronLeft: ({ className, size, color }: IconProps) => (
       <svg

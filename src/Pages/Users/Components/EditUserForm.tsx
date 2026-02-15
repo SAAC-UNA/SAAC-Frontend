@@ -303,26 +303,33 @@ export const EditUserForm: React.FC<EditUserFormProps> = ({
         </div>
       </div>
 
+      {/* Línea divisoria inferior */}
+      <hr className="border-0 border-t border-gris-una/20 mx-6 mt-6 mb-6" />
+
       {/* Botones de acción */}
-      <div className="flex justify-end space-x-4 pt-6 border-t border-gray-200">
-        <Button
-          type="button"
-          variant="secondary"
-          onClick={onCancel}
-          disabled={isSaving}
-          standardWidth={true}
-        >
-          Cancelar
-        </Button>
-        <Button
-          type="button"
-          variant="primary"
-          onClick={handleSubmit}
-          disabled={isSaving || !selectedRole || !hasChanges}
-          standardWidth={true}
-        >
-          {isSaving ? 'Guardando...' : 'Guardar'}
-        </Button>
+      <div className="px-4 sm:px-5 lg:px-6 pb-4 sm:pb-5 lg:pb-6">
+        <div className="flex justify-end gap-4">
+          <Button
+            type="button"
+            variant="secondary"
+            onClick={onCancel}
+            disabled={isSaving}
+            standardWidth={true}
+            size="sm"
+          >
+            Cancelar
+          </Button>
+          <Button
+            type="button"
+            variant="primary"
+            onClick={handleSubmit}
+            disabled={isSaving || !selectedRole || !hasChanges}
+            standardWidth={true}
+            size="sm"
+          >
+            {isSaving ? 'Guardando...' : 'Guardar'}
+          </Button>
+        </div>
       </div>
     </div>
   );

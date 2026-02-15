@@ -5,7 +5,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ScreenContainer } from '@/Components/Ui/ScreenContainer';
+import { PageHeader, ScreenContainer } from '@/Components/Ui/Index';
 import { BackendErrorAlert } from '@/Components/Ui/BackendErrorAlert';
 import { getModuleInfo } from '@/Constants/ModuleInfo';
 import { useToast } from '@/Context/ToastContext';
@@ -172,21 +172,23 @@ export const MyEvidenceAssignmentsPage: React.FC = () => {
   }, [filters]);
 
   return (
-    <ScreenContainer
-      title={moduleInfo.title}
-      description={moduleInfo.description}
-      variant="full-width"
-      headerExtra={
-        !error && assignments.length > 0 ? (
-          <EvidenceAssignmentFilters
-            filters={filters}
-            onFiltersChange={setFilters}
-            totalCount={assignments.length}
-            filteredCount={filteredAssignments.length}
-          />
-        ) : undefined
-      }
-    >
+    <ScreenContainer>
+      <PageHeader
+        title={moduleInfo.title}
+        description={moduleInfo.description}
+        headerExtra={
+          !error && assignments.length > 0 ? (
+            <EvidenceAssignmentFilters
+              filters={filters}
+              onFiltersChange={setFilters}
+              totalCount={assignments.length}
+              filteredCount={filteredAssignments.length}
+            />
+          ) : undefined
+        }
+      >
+      </PageHeader>
+
       <div className="max-w-7xl mx-auto space-y-6">
         {/* Error del backend */}
         {error && (

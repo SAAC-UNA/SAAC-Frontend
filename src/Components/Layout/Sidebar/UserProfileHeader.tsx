@@ -5,6 +5,8 @@ import { Button } from '@/Components/Ui/Button';
 import { useAuth } from '@/Context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import { cn } from '@/Utils/ClassNames';
+import { APP_HEADER_BUTTON } from '@/Constants/Components';
+import { TYPOGRAPHY } from '@/Constants/Typography';
 
 interface UserProfileHeaderProps {
   className?: string;
@@ -73,8 +75,9 @@ export const UserProfileHeader: React.FC<UserProfileHeaderProps> = ({ className 
           onMouseLeave={handleMouseLeave}
         >
           {/* Avatar circular con borde gris oscuro */}
+          {/** TODO Todo esto debería de ser un botón, no un div, así podemos manejar los colores por separado porque si se elimina h-5 w-5 por alguna razón el ícono se vuelve negro (quizá hay que revisar los estilos en index) */}
           <div className="w-10 h-10 rounded-full bg-gris-una/15 flex items-center justify-center border-2 border-gris-una/60 flex-shrink-0 cursor-pointer">
-            <SystemIcons.users.user className="h-5 w-5 text-gris-una/60" />
+            <SystemIcons.users.user className={`${APP_HEADER_BUTTON.icon} text-gris-una/60`} />
           </div>
 
           {/* Dropdown Content */}
@@ -82,21 +85,22 @@ export const UserProfileHeader: React.FC<UserProfileHeaderProps> = ({ className 
             <div className="absolute top-full left-1/2 -translate-x-1/2 mt-2 w-48 bg-blanco-una rounded-lg shadow-md border border-gris-una/15 z-50 py-1.5">
               {/* Información del Usuario */}
               <div className="px-3 py-2 border-b border-gris-una/25">
-                <p className="text-[11px] font-semibold text-negro-una leading-none">
+                <p className={`text-negro-una leading-none ${TYPOGRAPHY.header}`}>
                   {user.name}
                 </p>
-                <p className="text-[10px] font-normal text-negro-una/60 leading-none mt-1">
+                <p className={`text-negro-una/60 leading-none ${TYPOGRAPHY.header}`}>
                   {user.roles[0]?.name}
                 </p>
               </div>
               
               {/* Acciones */}
+              {/* TODO Cambiar según el estándar de Mari??? (Botón de inicio de sesión) */}
               <button
                 onClick={handleLogout}
-                className="w-full px-3 py-1.5 mx-0 text-left text-xs text-negro-una hover:bg-gris-una/8 flex items-center gap-2 transition-all duration-200 rounded-md"
+                className="w-full px-3 py-1.5 mx-0 text-left text-xs text-rojo-una hover:bg-rojo-una/8 flex items-center gap-2 transition-all duration-200 rounded"
               >
-                <SystemIcons.actions.logout className="h-3.5 w-3.5 scale-x-[-1] flex-shrink-0" />
-                <span className="font-medium">Cerrar sesión</span>
+                <SystemIcons.actions.logout className={`${APP_HEADER_BUTTON.icon}`} />
+                <span className={`${TYPOGRAPHY.header}`}>Cerrar sesión</span>
               </button>
             </div>
           )}
@@ -107,11 +111,10 @@ export const UserProfileHeader: React.FC<UserProfileHeaderProps> = ({ className 
           <TooltipTrigger asChild>
             <Button
               variant="ghost"
-              size="sm"
-              className="h-8 w-8 p-0 text-negro-una hover:bg-gris-una/10"
+              className={`${APP_HEADER_BUTTON.button} text-gris-una hover:bg-gris-una/10`}
               aria-label="Notificaciones"
             >
-              <SystemIcons.interface.bell className="h-5 w-5" />
+              <SystemIcons.interface.bell className={APP_HEADER_BUTTON.icon} />
             </Button>
           </TooltipTrigger>
           <TooltipContent side="bottom" align="center">

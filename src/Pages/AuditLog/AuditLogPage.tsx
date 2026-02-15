@@ -10,7 +10,7 @@
  */
 
 import React, { useState, useEffect, useCallback } from 'react';
-import { ScreenContainer } from '@/Components/Ui/ScreenContainer';
+import { PageHeader, ScreenContainer } from '@/Components/Ui/Index';
 import { BackendErrorAlert } from '@/Components/Ui/BackendErrorAlert';
 import { SystemIcons } from '@/Components/Ui/Icons/SystemIcons';
 import { SearchInput } from '@/Components/Ui/SearchInput';
@@ -232,27 +232,27 @@ const AuditLogPage: React.FC = () => {
   ];
 
   return (
-    <ScreenContainer
-      title={moduleInfo.title}
-      description={moduleInfo.description}
-      variant="full-width"
-      headerExtra={
-        <div className="flex-1 max-w-md">
-          <SearchInput
-            placeholder="Buscar por usuario, módulo, acción, detalle..."
-            value={searchTerm}
-            onChange={handleSearchChange}
-            disabled={isLoading}
-          />
-        </div>
-      }
-    >
-
-      {/* Componente de filtros */}
-      <AuditLogFilters
-        onApplyFilters={handleApplyFilters}
-        isLoading={isLoading}
-      />
+    <ScreenContainer>
+      <PageHeader
+        title={moduleInfo.title}
+        description={moduleInfo.description}
+        headerExtra={
+          <div className="flex-1 max-w-md">
+            <SearchInput
+              placeholder="Buscar por usuario, módulo, acción, detalle..."
+              value={searchTerm}
+              onChange={handleSearchChange}
+              disabled={isLoading}
+            />
+          </div>
+        }
+      >
+        {/* Componente de filtros como children del header */}
+        <AuditLogFilters
+          onApplyFilters={handleApplyFilters}
+          isLoading={isLoading}
+        />
+      </PageHeader>
 
       {/* Botón de exportación con menú desplegable */}
       <div className="flex justify-end mb-6">

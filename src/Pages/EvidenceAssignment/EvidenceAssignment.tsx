@@ -6,12 +6,12 @@
  */
 
 import React, { useState } from 'react';
-import { ScreenContainer } from '@/Components/Ui/ScreenContainer';
-import { Button, LoadingSpinner, WizardProgress } from '@/Components/Ui/Index';
+import { ScreenContainer, PageHeader, Button, LoadingSpinner, WizardProgress } from '@/Components/Ui/Index';
 import { SuccessModal } from '@/Components/Ui/SuccessModal';
 import { EditConfirmationModal } from '@/Components/Ui/EditConfirmationModal';
 import { useToast } from '@/Context/ToastContext';
 import { getContextualInfo } from '@/Constants/ModuleInfo';
+import { LAYOUT } from '@/Constants/Layout';
 import type { 
   EvidenceAssignmentFormData, 
   WizardStep, 
@@ -236,21 +236,23 @@ const EvidenceAssignment: React.FC = () => {
   };
 
   return (
-    <ScreenContainer
-      title={moduleInfo.title}
-      description={moduleInfo.description}
-      variant="full-width"
-      headerExtra={
-        <div className="hidden md:block">
-          <WizardProgress 
-            steps={steps} 
-            currentStep={currentStep} 
-            onStepClick={setCurrentStep}
-            variant="compact"
-          />
-        </div>
-      }
-    >
+    <ScreenContainer>
+      <PageHeader
+          title={moduleInfo.title}
+          description={moduleInfo.description}
+          forceLeftAlign={true}
+          headerExtra={
+            <div className="hidden md:block">
+              <WizardProgress 
+                steps={steps} 
+                currentStep={currentStep} 
+                onStepClick={setCurrentStep}
+                variant="compact"
+              />
+            </div>
+          }
+      />
+
       {/* Progress móvil - Solo se muestra en dispositivos pequeños */}
       <div className="block md:hidden mb-6">
         <WizardProgress 
@@ -260,8 +262,9 @@ const EvidenceAssignment: React.FC = () => {
         />
       </div>
 
-      <div className="space-y-6">{/* Form Content */}
-        <>
+      {/* Layout que empuja botones al fondo cuando hay poco contenido */}
+      <div className={LAYOUT.FORM_CONTAINER}>
+        <div className={LAYOUT.FLEX_GROW}>
           {isSubmitting ? (
             <div className="text-center py-12">
               <LoadingSpinner size="lg" className="mx-auto mb-4" />
@@ -269,15 +272,21 @@ const EvidenceAssignment: React.FC = () => {
           ) : (
             renderCurrentStep()
           )}
+        </div>
 
-          {/* Navigation Buttons */}
-          {!isSubmitting && (
-            <div className="flex justify-between items-center mt-8 pt-6 border-t border-gris-una/20">
+        {/* Línea divisoria inferior */}
+        <hr className="border-0 border-t border-gris-una/20 mx-6 mt-6 mb-6" />
+
+        {/* Navigation Buttons */}
+        {!isSubmitting && (
+          <div className="px-4 sm:px-5 lg:px-6 pb-4 sm:pb-5 lg:pb-6">
+            <div className="flex justify-between items-center">
               <Button
                 variant="secondary"
                 onClick={handlePreviousStep}
                 disabled={currentStep === 1}
                 standardWidth={true}
+                size="sm"
               >
                 Anterior
               </Button>
@@ -287,6 +296,7 @@ const EvidenceAssignment: React.FC = () => {
                   variant="primary"
                   onClick={handleNextStep}
                   standardWidth={true}
+                  size="sm"
                 >
                   Siguiente
                 </Button>
@@ -296,13 +306,14 @@ const EvidenceAssignment: React.FC = () => {
                   onClick={handleFormSubmit}
                   disabled={isSubmitting}
                   standardWidth={true}
+                  size="sm"
                 >
                   Confirmar
                 </Button>
               )}
             </div>
-          )}
-        </>
+          </div>
+        )}
       </div>
       
       {/* Modal de confirmación */}

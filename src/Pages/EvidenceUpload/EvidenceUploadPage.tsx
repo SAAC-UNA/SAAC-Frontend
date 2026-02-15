@@ -5,7 +5,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
-import { ScreenContainer } from '@/Components/Ui/ScreenContainer';
+import { PageHeader, ScreenContainer } from '@/Components/Ui/Index';
 import { Button } from '@/Components/Ui/Button';
 import { SystemIcons } from '@/Components/Ui/Icons/SystemIcons';
 import { Tooltip, TooltipTrigger, TooltipContent } from '@/Components/Ui/Tooltip';
@@ -286,11 +286,12 @@ export const EvidenceUploadPage: React.FC<EvidenceUploadPageProps> = ({
   };
 
   return (
-    <ScreenContainer
-      title={moduleInfo.title}
-      description={`${moduleInfo.description}\nEvidencia: ${evidenciaNombre}`}
-      variant="full-width"
-    >
+    <ScreenContainer>
+      <PageHeader
+        title={moduleInfo.title}
+        description={`${moduleInfo.description}\nEvidencia: ${evidenciaNombre}`}
+      />
+      
       <div className="max-w-7xl mx-auto space-y-6">
         {/* Sección de subida */}
         <div className="space-y-6">

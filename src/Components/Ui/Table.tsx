@@ -15,6 +15,8 @@ import { cn } from '@/Utils/ClassNames';
 import { Button } from './Button';
 import { Input } from './Input';
 import { LoadingSpinner } from './Loading';
+import { EmptyState } from './EmptyState';
+import { SystemIcons } from './Icons/SystemIcons';
 
 export interface TableColumn<T = unknown> {
   key: string;
@@ -107,33 +109,27 @@ export const Table = React.memo(<T extends Record<string, unknown>>({
     if (!onSort || !sortConfig) return null;
     
     const isActive = sortConfig.key === columnKey;
-    
+    {/* Ordenamiento de elementos de la tabla usando sortable: true */}
     return (
       <span className="ml-1 inline-flex flex-col">
-        <svg 
+        <SystemIcons.interface.chevronUp
+          size="xs"
           className={cn(
-            "w-3 h-3 transition-colors",
+            "transition-colors",
             isActive && sortConfig.direction === 'asc' 
               ? "text-azul-una" 
               : "text-gray-400"
-          )} 
-          viewBox="0 0 20 20" 
-          fill="currentColor"
-        >
-          <path fillRule="evenodd" d="M14.707 12.707a1 1 0 01-1.414 0L10 9.414l-3.293 3.293a1 1 0 01-1.414-1.414l4-4a1 1 0 011.414 0l4 4a1 1 0 010 1.414z" clipRule="evenodd" />
-        </svg>
-        <svg 
+          )}
+        />
+        <SystemIcons.interface.chevronDown
+          size="xs"
           className={cn(
-            "w-3 h-3 -mt-1 transition-colors",
+            "-mt-1 transition-colors",
             isActive && sortConfig.direction === 'desc' 
               ? "text-azul-una" 
               : "text-gray-400"
-          )} 
-          viewBox="0 0 20 20" 
-          fill="currentColor"
-        >
-          <path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd" />
-        </svg>
+          )}
+        />
       </span>
     );
   }, [sortConfig, onSort]);
@@ -200,15 +196,12 @@ export const Table = React.memo(<T extends Record<string, unknown>>({
               <tr>
                 <td 
                   colSpan={columns.length + (actions ? 1 : 0)} 
-                  className="px-4 py-12 text-center text-gray-500"
+                  className="px-4"
                 >
-                  <div className="flex flex-col items-center">
-                    <svg className="w-12 h-12 text-gray-300 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                    </svg>
-                    <p className="text-lg font-medium mb-1">No hay datos</p>
-                    <p className="text-sm">{emptyMessage}</p>
-                  </div>
+                  <EmptyState
+                    variant={searchQuery ? 'search' : 'document'}
+                    description={emptyMessage}
+                  />
                 </td>
               </tr>
             ) : (

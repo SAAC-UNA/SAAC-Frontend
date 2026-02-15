@@ -17,8 +17,8 @@ import { cn } from '@/Utils/ClassNames';
 import { Button } from './Button';
 import { SearchInput } from './SearchInput';
 import { LoadingSpinner } from './Loading';
-import { SystemIcons } from './Icons/SystemIcons';
 import { Pagination } from './Pagination';
+import { EmptyState } from './EmptyState';
 
 export interface DataTableColumn<T = unknown> {
   key: string;
@@ -128,74 +128,67 @@ export const DataTable = React.memo(<T extends Record<string, unknown>>({
       className
     )}>
       {/* Header */}
-      <div className={cn(
-        "relative text-gris-una bg-transparent rounded-none bg-clip-border",
-        !unstyled && "mx-4 mt-4"
-      )}>
-        <div className="flex flex-col justify-between gap-4 mb-4 lg:flex-row lg:items-center">
-          <div className="flex-1">
-            {title && (
-              <h5 className="block font-sans text-xl antialiased font-semibold leading-snug tracking-normal text-blue-gray-900">
-                {title}
-              </h5>
-            )}
-            {description && (
-              <p className="block mt-1 font-sans text-base antialiased font-normal leading-relaxed text-gray-700">
-                {description}
-              </p>
-            )}
-          </div>
-          <div className="flex flex-col sm:flex-row w-full gap-2 shrink-0 lg:w-auto">
+      {(title || description || searchable || customFilters || primaryAction) && (
+        <div className={cn(
+          "relative text-gris-una bg-transparent rounded-none bg-clip-border",
+          !unstyled && "mx-4 mt-4"
+        )}>
+          <div className="flex flex-col justify-between gap-4 mb-4 lg:flex-row lg:items-center">
+            <div className="flex-1">
+              {title && (
+                <h5 className="block font-sans text-xl antialiased font-semibold leading-snug tracking-normal text-blue-gray-900">
+                  {title}
+                </h5>
+              )}
+              {description && (
+                <p className="block mt-1 font-sans text-base antialiased font-normal leading-relaxed text-gray-700">
+                  {description}
+                </p>
+              )}
+            </div>
+            <div className="flex flex-col sm:flex-row w-full gap-2 shrink-0 lg:w-auto">
 
-            {customFilters && (
-              <div className="flex items-center gap-2 flex-1">
-                {customFilters}
-              </div>
-            )}
-            
-            {searchable && (
-              <SearchInput
-                placeholder={searchPlaceholder}
-                value={searchQuery}
-                onChange={handleSearch}
-                className="w-full sm:w-72"
-              />
-            )}
-            {primaryAction && (
-              <Button
-                variant="secondary"
-                size="sm"
-                onClick={primaryAction.onClick}
-                className="whitespace-nowrap"
-              >
-                {primaryAction.icon}
-                {primaryAction.label}
-              </Button>
-            )}
+              {customFilters && (
+                <div className="flex items-center gap-2 flex-1">
+                  {customFilters}
+                </div>
+              )}
+              
+              {searchable && (
+                <SearchInput
+                  placeholder={searchPlaceholder}
+                  value={searchQuery}
+                  onChange={handleSearch}
+                  className="w-full sm:w-72"
+                />
+              )}
+              {primaryAction && (
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  onClick={primaryAction.onClick}
+                  className="whitespace-nowrap"
+                >
+                  {primaryAction.icon}
+                  {primaryAction.label}
+                </Button>
+              )}
+            </div>
           </div>
         </div>
-      </div>
+      )}
 
       {/* Tabla */}
-      <div className="p-6 px-0 overflow-x-auto lg:overflow-x-visible custom-scrollbar">
+      <div className="pt-0 pb-6 px-0 overflow-x-auto lg:overflow-x-visible custom-scrollbar">
         {loading ? (
           <div className="flex flex-col items-center justify-center py-12 gap-3">
             <LoadingSpinner size="lg" />
           </div>
         ) : data.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-12 text-gray-500">
-            {searchQuery ? (
-              <SystemIcons.interface.search className="w-12 h-12 mb-4 text-gray-300" />
-            ) : (
-              <SystemIcons.modal.document className="w-12 h-12 mb-4 text-gray-300" />
-            )}
-            <p className="text-lg font-medium mb-1">No hay datos</p>
-            {typeof emptyMessage === 'string' ? (
-              <p className="text-sm">{emptyMessage}</p>
-            ) : (
-              emptyMessage
-            )}
-          </div>
+          <EmptyState
+            variant={searchQuery ? 'search' : 'document'}
+            description={typeof emptyMessage === 'string' ? emptyMessage : undefined}
+          />
         ) : (
           <table className="w-full text-left table-fixed min-w-[600px] lg:min-w-0">
             <thead>
@@ -204,18 +197,18 @@ export const DataTable = React.memo(<T extends Record<string, unknown>>({
                   <th 
                     key={index} 
                     className={cn(
-                      "py-4 border-y border-blue-gray-100 text-center",
+                      "py-4 border-b border-blue-gray-100 text-center",
                       index === 0 ? "pl-8 pr-4" : "px-4"
                     )}
                   >
-                    <p className="block font-sans text-sm antialiased font-normal leading-none text-blue-gray-900 opacity-70">
+                    <p className="block font-sans text-sm antialiased font-normal leading-none text-gris-una opacity-70">
                       {column.header}
                     </p>
                   </th>
                 ))}
                 {actions && actions.length > 0 && (
-                  <th className="pl-4 pr-8 py-4 border-y border-blue-gray-100 text-center">
-                    <p className="block font-sans text-sm antialiased font-normal leading-none text-blue-gray-900 opacity-70">
+                  <th className="pl-4 pr-8 py-4 border-b border-blue-gray-100 text-center">
+                    <p className="block font-sans text-sm antialiased font-normal leading-none text-gris-una opacity-70">
                       {/* Columna de acciones vacía */}
                     </p>
                   </th>

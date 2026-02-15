@@ -26,6 +26,7 @@ import type { DataTableColumn} from '@/Components/Ui/DataTable';
 import type { StructureElement, ElementType } from '@/Types/StructureTypes';
 import { SystemIcons } from '@/Components/Ui/Icons/SystemIcons';
 import { TableActionButton } from '@/Components/Ui/TableActionButton';
+import { TABLE_ACTION_BUTTON } from '@/Constants/Components';
 
 
 interface StructureTableProps {
@@ -247,9 +248,9 @@ export const StructureTable: React.FC<StructureTableProps> = ({
                         size="sm"
                         tooltip="Ver detalles"
                         onClick={() => setModalState({ isOpen: true, element })}
-                        className="h-8 w-8 p-2"
+                        className={TABLE_ACTION_BUTTON.button}
                     >
-                        <SystemIcons.actions.view className="w-4 h-4" />
+                        <SystemIcons.actions.view className={TABLE_ACTION_BUTTON.icon} />
                     </ButtonWithTooltip>
                     
                     {/* Botón Editar */}
@@ -258,9 +259,9 @@ export const StructureTable: React.FC<StructureTableProps> = ({
                         size="sm"
                         tooltip="Editar elemento"
                         onClick={() => onEdit?.(element)}
-                        className="h-8 w-8 p-2"
+                        className={TABLE_ACTION_BUTTON.button}
                     >
-                        <SystemIcons.actions.edit className="w-4 h-4" />
+                        <SystemIcons.actions.edit className={TABLE_ACTION_BUTTON.icon} />
                     </ButtonWithTooltip>
                     
                     {/* Botón Power - Activar/Desactivar */}
@@ -288,10 +289,10 @@ export const StructureTable: React.FC<StructureTableProps> = ({
                                 : "No se puede eliminar: tiene elementos dependientes"
                         }
                         onClick={() => onDelete?.(element)}
-                        className="h-8 w-8 p-2"
+                        className={TABLE_ACTION_BUTTON.button}
                         disabled={!canDelete}
                     >
-                        <SystemIcons.actions.delete className="w-4 h-4" />
+                        <SystemIcons.actions.delete className={TABLE_ACTION_BUTTON.icon} />
                     </ButtonWithTooltip>
                 </div>
             );

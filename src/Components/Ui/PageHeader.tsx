@@ -2,6 +2,7 @@ import React from 'react';
 import { cn } from '@/Utils/ClassNames';
 import { useSidebar } from '@/context/SidebarContext';
 import { useBreakpoint } from '@/hooks/UseBreakpoint';
+import { TYPOGRAPHY } from '@/Constants/Typography';
 
 interface PageHeaderProps {
   title: string;
@@ -9,6 +10,7 @@ interface PageHeaderProps {
   description?: string;
   className?: string;
   children?: React.ReactNode; // Para botones de acción, breadcrumbs, etc.
+  headerExtra?: React.ReactNode; // Para contenido adicional al lado del título
   forceLeftAlign?: boolean; // Para forzar alineación a la izquierda
 }
 
@@ -18,6 +20,7 @@ export const PageHeader: React.FC<PageHeaderProps> = ({
   description,
   className,
   children,
+  headerExtra,
   forceLeftAlign = false
 }) => {
   const { isCollapsed } = useSidebar();
@@ -32,34 +35,46 @@ export const PageHeader: React.FC<PageHeaderProps> = ({
       shouldCenterContent ? 'text-center w-full max-w-4xl' : 'text-left w-full',
       className
     )}>
-      {/* Título principal */}
-      <h1 className={cn(
-        'font-bold text-negro-una mb-2',
-        isMobile ? 'text-xl' : 'text-2xl'
-      )}>
-        {title}
-      </h1>
-      
-      {/* Subtítulo opcional */}
-      {subtitle && (
-        <h2 className={cn(
-          'font-medium text-azul-una mb-2',
-          isMobile ? 'text-base' : 'text-lg'
-        )}>
-          {subtitle}
-        </h2>
-      )}
+      {/* Contenedor flex para título y headerExtra */}
+      <div className="flex items-center justify-between">
+        <div className="flex-1">
+          {/* Título principal */}
+          <h1 className={cn(
+            'font-poppins font-bold text-negro-una mb-2',
+            TYPOGRAPHY.pageTitle
+          )}>
+            {title}
+          </h1>
+          
+          {/* Subtítulo opcional */}
+          {subtitle && (
+            <h2 className={cn(
+              'font-poppins font-medium text-azul-una mb-2',
+              TYPOGRAPHY.pageSubtitle
+            )}>
+              {subtitle}
+            </h2>
+          )}
 
-      {/* Descripción */}
-      {description && (
-        <p className={cn(
-          'text-gris-una',
-          isMobile ? 'text-sm' : 'text-base',
-          children ? 'mb-4' : '' // Si hay children, dar más espacio
-        )}>
-          {description}
-        </p>
-      )}
+          {/* Descripción */}
+          {description && (
+            <p className={cn(
+              'font-poppins text-gris-una',
+              TYPOGRAPHY.pageSubtitle,
+              children ? 'mb-4' : '' // Si hay children, dar más espacio
+            )}>
+              {description}
+            </p>
+          )}
+        </div>
+        
+        {/* Contenido adicional del header (lado derecho) */}
+        {headerExtra && (
+          <div className="ml-4 flex-shrink-0">
+            {headerExtra}
+          </div>
+        )}
+      </div>
 
       {/* Contenido adicional (botones, breadcrumbs, etc.) */}
       {children && (

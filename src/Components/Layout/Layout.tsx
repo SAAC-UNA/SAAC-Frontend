@@ -32,6 +32,7 @@ interface LayoutProps {
 
 export const Layout: React.FC<LayoutProps> = ({ children }) => {
   return (
+/** TODO agregar estos ajustes a index, ahí se deberían de manejar */
     <SidebarProvider>
       <div 
         className="flex min-h-screen w-full"

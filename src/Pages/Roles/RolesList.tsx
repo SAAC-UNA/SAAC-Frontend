@@ -8,7 +8,7 @@
 import React, { useState, useEffect, lazy, Suspense } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { RolesTable } from './Components/RolesTable';
-import { ScreenContainer } from '@/Components/Ui/ScreenContainer';
+import { PageHeader, ScreenContainer } from '@/Components/Ui/Index';
 import { SearchInput } from '@/Components/Ui/SearchInput';
 import { Button } from '@/Components/Ui/Button';
 import { SystemIcons } from '@/Components/Ui/Icons/SystemIcons';
@@ -124,29 +124,31 @@ const RolesRepository: React.FC = () => {
 
   return (
     <>
-      <ScreenContainer
-        title={moduleInfo.title}
-        description={moduleInfo.description}
-        variant="full-width"
-        headerExtra={
-          <div className="flex flex-col sm:flex-row w-full gap-2 shrink-0 lg:w-auto">
-            <SearchInput
-              placeholder="Buscar roles..."
-              value={searchQuery}
-              onChange={setSearchQuery}
-              className="w-full sm:w-72"
-            />
-            <Button
-              onClick={handleCreateRole}
-              variant="secondary"
-              className="gap-2"
-            >
-              <SystemIcons.actions.add className="w-4 h-4" size="sm" />
-              Crear
-            </Button>
-          </div>
-        }
-      >
+      <ScreenContainer>
+        <PageHeader
+          title={moduleInfo.title}
+          description={moduleInfo.description}
+          headerExtra={
+            <div className="flex flex-col sm:flex-row w-full gap-2 shrink-0 lg:w-auto">
+              <SearchInput
+                placeholder="Buscar roles..."
+                value={searchQuery}
+                onChange={setSearchQuery}
+                className="w-full sm:w-72"
+              />
+              <Button
+                onClick={handleCreateRole}
+                variant="secondary"
+                className="gap-2"
+              >
+                <SystemIcons.actions.add className="w-4 h-4" size="sm" />
+                Crear
+              </Button>
+            </div>
+          }
+        >
+        </PageHeader>
+
           <RolesTable
             onEdit={handleEditRole}
             onDelete={handleDeleteRole}

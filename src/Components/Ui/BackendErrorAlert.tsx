@@ -13,8 +13,7 @@
  */
 
 import React from 'react';
-import { Button } from './Button';
-import { SystemIcons } from './Icons/SystemIcons';
+import { Alert } from './Alert';
 
 interface BackendErrorAlertProps {
   error: string;
@@ -26,7 +25,6 @@ interface ErrorConfig {
   title: string;
   message: string;
   showRetryButton: boolean;
-  icon: React.ReactNode;
 }
 
 export const BackendErrorAlert: React.FC<BackendErrorAlertProps> = ({
@@ -62,8 +60,7 @@ export const BackendErrorAlert: React.FC<BackendErrorAlertProps> = ({
       return {
         title: 'Error del servidor',
         message: 'El servidor está experimentando problemas internos.',
-        showRetryButton: true,
-        icon: <SystemIcons.interface.alert className="h-5 w-5 text-[var(--icon-delete)]" />
+        showRetryButton: true
       };
     }
 
@@ -71,9 +68,8 @@ export const BackendErrorAlert: React.FC<BackendErrorAlertProps> = ({
     if (lowerError.includes('http error! status: 503') || lowerError.includes('service unavailable')) {
       return {
         title: 'Servidor no disponible',
-        message: 'El servidor está temporalmente fuera de servicio. Intenta nuevamente en unos minutos.',
-        showRetryButton: true,
-        icon: <SystemIcons.interface.alert className="h-5 w-5 text-[var(--icon-delete)]" />
+        message: 'El servidor está temporalmente fuera de servicio. Intente nuevamente en unos minutos.',
+        showRetryButton: true
       };
     }
 
@@ -83,9 +79,8 @@ export const BackendErrorAlert: React.FC<BackendErrorAlertProps> = ({
         lowerError.includes('database error')) {
       return {
         title: 'Error de base de datos',
-        message: 'No se pudo conectar con la base de datos. Verifica la conexión del servidor.',
-        showRetryButton: true,
-        icon: <SystemIcons.interface.alert className="h-5 w-5 text-[var(--icon-delete)]" />
+        message: 'No se pudo conectar con la base de datos. Verifique la conexión del servidor.',
+        showRetryButton: true
       };
     }
 
@@ -95,9 +90,8 @@ export const BackendErrorAlert: React.FC<BackendErrorAlertProps> = ({
         lowerError.includes('fetch')) {
       return {
         title: 'Error de conexión',
-        message: 'No se pudo conectar con el servidor. Verifica tu conexión a internet.',
-        showRetryButton: true,
-        icon: <SystemIcons.interface.alert className="h-5 w-5 text-[var(--icon-delete)]" />
+        message: 'No se pudo conectar con el servidor. Verifique su conexión a internet.',
+        showRetryButton: true
       };
     }
 
@@ -106,8 +100,7 @@ export const BackendErrorAlert: React.FC<BackendErrorAlertProps> = ({
       return {
         title: 'Recurso no encontrado',
         message: 'La API de roles no está disponible. Contacta al administrador del sistema.',
-        showRetryButton: true,
-        icon: <SystemIcons.interface.alert className="h-5 w-5 text-[var(--icon-delete)]" />
+        showRetryButton: true
       };
     }
 
@@ -115,9 +108,8 @@ export const BackendErrorAlert: React.FC<BackendErrorAlertProps> = ({
     if (lowerError.includes('http error! status: 401') || lowerError.includes('unauthorized')) {
       return {
         title: 'Acceso no autorizado',
-        message: 'Tu sesión ha expirado o no tienes permisos para ver los roles.',
-        showRetryButton: false, // No mostrar retry porque requiere nueva autenticación
-        icon: <SystemIcons.interface.alert className="h-5 w-5 text-[var(--icon-delete)]" />
+        message: 'Su sesión ha expirado o no tiene permisos para ver los roles.',
+        showRetryButton: false // No mostrar retry porque requiere nueva autenticación
       };
     }
 
@@ -127,53 +119,33 @@ export const BackendErrorAlert: React.FC<BackendErrorAlertProps> = ({
         lowerError.includes('timeout')) {
       return {
         title: 'Error del servidor',
-        message: 'El servidor está experimentando problemas de recursos. Intenta nuevamente.',
-        showRetryButton: true,
-        icon: <SystemIcons.interface.alert className="h-5 w-5 text-[var(--icon-delete)]" />
+        message: 'El servidor está experimentando problemas de recursos. Intente nuevamente.',
+        showRetryButton: true
       };
     }
 
     // 8. Fallback - Error genérico
     return {
       title: 'Error inesperado',
-      message: errorMessage || 'Ha ocurrido un error inesperado. Intenta nuevamente.',
-      showRetryButton: true,
-      icon: <SystemIcons.interface.alert className="h-5 w-5 text-[var(--icon-delete)]" />
+      message: errorMessage || 'Ha ocurrido un error inesperado. Intente nuevamente.',
+      showRetryButton: true
     };
   };
 
   const config = getErrorConfig(error);
 
   return (
-    <div className={`w-full p-6 ${className}`}>
-      <div className="p-4 bg-[var(--bg-error)] border border-[var(--border-error)] rounded-corner border-l-4 shadow-sm">
-        <div className="flex items-start">
-          <div className="flex-shrink-0">
-            {config.icon}
-          </div>
-          <div className="ml-3 flex-1">
-            <h3 className="text-sm font-medium text-[var(--text-error)]">
-              {config.title}
-            </h3>
-            <div className="mt-1 text-sm text-[var(--text-error)]">
-              {config.message}
-            </div>
-            {config.showRetryButton && onRetry && (
-              <div className="mt-3">
-                <Button
-                  variant="error"
-                  onClick={handleRetry}
-                  size="sm"
-                  standardWidth={true}
-                  disabled={isRetrying}
-                >
-                  {isRetrying ? 'Reintentando...' : 'Reintentar'}
-                </Button>
-              </div>
-            )}
-          </div>
-        </div>
-      </div>
+    <div className={className}>
+      <Alert
+        variant="error"
+        title={config.title}
+        message={config.message}
+        dismissible={false}
+        action={config.showRetryButton && onRetry ? {
+          label: isRetrying ? 'Reintentando...' : 'Reintentar',
+          onClick: handleRetry
+        } : undefined}
+      />
     </div>
   );
 };

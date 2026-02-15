@@ -8,7 +8,7 @@
 import React, { useState, useEffect, useCallback, lazy, Suspense } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { UsersTable } from './Components/UsersTable';
-import { ScreenContainer } from '@/Components/Ui/ScreenContainer';
+import { PageHeader, ScreenContainer } from '@/Components/Ui/Index';
 import { SearchInput } from '@/Components/Ui/SearchInput';
 
 // Lazy load de modales para mejor rendimiento
@@ -125,21 +125,23 @@ const UsersRepository: React.FC = () => {
 
   return (
 
-      <ScreenContainer
-        title={moduleInfo.title}
-        description={moduleInfo.description}
-        variant="full-width"
-        headerExtra={
-          <div className="flex flex-col sm:flex-row w-full gap-2 shrink-0 lg:w-auto">
-            <SearchInput
-              placeholder="Buscar usuarios..."
-              value={searchQuery}
-              onChange={setSearchQuery}
-              className="w-full sm:w-72"
-            />
-          </div>
-        }
-      >
+      <ScreenContainer>
+        <PageHeader
+          title={moduleInfo.title}
+          description={moduleInfo.description}
+          headerExtra={
+            <div className="flex flex-col sm:flex-row w-full gap-2 shrink-0 lg:w-auto">
+              <SearchInput
+                placeholder="Buscar usuarios..."
+                value={searchQuery}
+                onChange={setSearchQuery}
+                className="w-full sm:w-72"
+              />
+            </div>
+          }
+        >
+        </PageHeader>
+
           <UsersTable
             onViewUser={handleViewUser}
             onEdit={handleEditUser}

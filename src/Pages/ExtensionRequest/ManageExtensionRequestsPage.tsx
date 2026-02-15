@@ -4,7 +4,7 @@
  */
 
 import React, { useState, useEffect, useCallback } from 'react';
-import { ScreenContainer } from '@/Components/Ui/ScreenContainer';
+import { PageHeader, ScreenContainer } from '@/Components/Ui/Index';
 import { SearchInput } from '@/Components/Ui/SearchInput';
 import { FilterButton, type FilterOption } from '@/Components/Ui/FilterButton';
 import { extensionRequestService } from '@/Services/ExtensionRequestService';
@@ -149,32 +149,34 @@ export const ManageExtensionRequestsPage: React.FC = () => {
   );
 
   return (
-    <ScreenContainer
-      title={moduleInfo.title}
-      description={moduleInfo.description}
-      variant="full-width"
-      headerExtra={
-        isAuthenticated && hasPermission ? (
-          <div className="flex flex-col sm:flex-row w-full gap-2 shrink-0 lg:w-auto">
-            <SearchInput
-              placeholder="Buscar por solicitante, email o motivo..."
-              value={searchQuery}
-              onChange={setSearchQuery}
-              className="w-full sm:w-72"
-            />
-            <FilterButton
-              tooltipText="Filtrar por estado"
-              options={estadoOptions}
-              value={filtroEstado}
-              onChange={(value) => {
-                setFiltroEstado(value);
-                setCurrentPage(1);
-              }}
-            />
-          </div>
-        ) : undefined
-      }
-    >
+    <ScreenContainer>
+      <PageHeader
+        title={moduleInfo.title}
+        description={moduleInfo.description}
+        headerExtra={
+          isAuthenticated && hasPermission ? (
+            <div className="flex flex-col sm:flex-row w-full gap-2 shrink-0 lg:w-auto">
+              <SearchInput
+                placeholder="Buscar por solicitante, email o motivo..."
+                value={searchQuery}
+                onChange={setSearchQuery}
+                className="w-full sm:w-72"
+              />
+              <FilterButton
+                tooltipText="Filtrar por estado"
+                options={estadoOptions}
+                value={filtroEstado}
+                onChange={(value) => {
+                  setFiltroEstado(value);
+                  setCurrentPage(1);
+                }}
+              />
+            </div>
+          ) : undefined
+        }
+      >
+      </PageHeader>
+      
       {!isAuthenticated ? (
         <div className="bg-yellow-50 border border-yellow-200 rounded-corner p-6 text-center">
           <SystemIcons.interface.xCircle size="3xl" className="text-yellow-600 mx-auto mb-3" />
