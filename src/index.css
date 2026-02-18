@@ -117,7 +117,7 @@
   --size-table-action-icon: 0.875rem;   /* 16px - Tamaño del icono (w-4 h-4) */
   --padding-table-action: 0.5rem;   /* 8px - Padding del botón (p-2) */
   /* Tamaños para botones en headers */
-  --size-header-button: 2rem;     /* 32px - Tamaño del botón (h-10 w-10) */
+  --size-header-button: 2.25rem;     /* 32px - Tamaño del botón (h-10 w-10) */
   --size-header-icon: 1.25rem;     /* 20px - Tamaño del icono (w-5 h-5) */
   --padding-header-action: 0.5rem; /* 8px - Padding del botón (p-2) */
 

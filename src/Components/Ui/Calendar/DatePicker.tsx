@@ -242,7 +242,7 @@ export const DatePicker: React.FC<DatePickerProps> = ({
 
   // Clases base del input
   const inputClasses = cn(
-    'w-full h-10 rounded-lg border text-left cursor-pointer transition-all duration-200',
+    'w-full h-10 rounded-corner border text-left cursor-pointer transition-all duration-200',
     'focus:outline-none focus:ring-1 focus:ring-gris-una/20 focus:border-transparent',
     'flex items-center justify-between px-3 py-2 text-sm',
     'placeholder-gris-una/60',
@@ -319,7 +319,7 @@ export const DatePicker: React.FC<DatePickerProps> = ({
         {/* Calendar Dropdown */}
         {showPicker && (
           <div className={cn(
-            "absolute left-0 right-0 bg-white border border-gris-una/30 rounded-lg shadow-lg p-3 z-50 max-w-xs",
+            "absolute left-0 right-0 bg-white border border-gris-una/30 rounded-corner shadow-lg p-3 z-50 max-w-xs",
             placement === 'top' ? 'bottom-full mb-1' : 'top-full mt-1'
           )}>
             {/* Header with navigation and selectors */}

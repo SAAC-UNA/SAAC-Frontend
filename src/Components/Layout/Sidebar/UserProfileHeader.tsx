@@ -76,13 +76,13 @@ export const UserProfileHeader: React.FC<UserProfileHeaderProps> = ({ className 
         >
           {/* Avatar circular con borde gris oscuro */}
           {/** TODO Todo esto debería de ser un botón, no un div, así podemos manejar los colores por separado porque si se elimina h-5 w-5 por alguna razón el ícono se vuelve negro (quizá hay que revisar los estilos en index) */}
-          <div className="w-10 h-10 rounded-full bg-gris-una/15 flex items-center justify-center border-2 border-gris-una/60 flex-shrink-0 cursor-pointer">
+          <div className="w-9 h-9 rounded-full bg-gris-una/15 flex items-center justify-center border-2 border-gris-una/60 flex-shrink-0 cursor-pointer">
             <SystemIcons.users.user className={`${APP_HEADER_BUTTON.icon} text-gris-una/60`} />
           </div>
 
           {/* Dropdown Content */}
           {isOpen && (
-            <div className="absolute top-full left-1/2 -translate-x-1/2 mt-2 w-48 bg-blanco-una rounded-lg shadow-md border border-gris-una/15 z-50 py-1.5">
+            <div className="absolute top-full left-1/2 -translate-x-1/2 mt-2 w-48 bg-blanco-una rounded-corner shadow-md border border-gris-una/15 z-50 py-1.5">
               {/* Información del Usuario */}
               <div className="px-3 py-2 border-b border-gris-una/25">
                 <p className={`text-negro-una leading-none ${TYPOGRAPHY.header}`}>
