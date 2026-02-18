@@ -19,9 +19,6 @@ export { default as StructureCreation } from './Structure/StructureCreation';
 export { default as StructureEditForm } from './Structure/StructureEditForm';
 export { default as StructureEditList } from './Structure/StructureEditList';
 
-// Progreso de Acreditación
-export { default as AccreditationProgress } from './Accreditation/AccreditationProgress';
-
 // Asignación de Evidencias
 export { EvidenceAssignment } from './EvidenceAssignment';
 
