@@ -1,3 +1,8 @@
+/**
+* ? - Puro estilo css ¿? Se podría usar estilos Tailwind, sino, por ser algo tan específico se puede dejar así, pero hay que verlo
+* Como digo, ya tenemos estándares como el border-radius, colores, entre otros que no es necesario repetir y ya que son diseños de inputs, deberían ser parte del estándar que ya tenemos
+* ! - EL tema de la transparencia de los label de los imputs que se suben en pequeño cuando se selecciona, sería ideal agregarselo a los componentes de input, text area y todos esos que creé y que la verdad no me gusta como se ven, este que hizo usted está 10 de 10
+*/
 @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;900&display=swap');
 
 .login-page {

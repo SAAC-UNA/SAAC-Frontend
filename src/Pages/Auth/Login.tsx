@@ -1,6 +1,8 @@
 /**
  * Login - Página de inicio de sesión
  * Login con cédula y contraseña
+ * 
+ * TODO - hay que estandarizar los estilos del login con lo que ya tenemos en el index general. Si se necesitan nuevos estilos para este caso particular, se pueden añadir en index, pero el global
  */
 
 import { useState } from 'react';
@@ -58,6 +60,9 @@ export const Login = () => {
   //   }
   // };
 
+  /** 
+   * ? - qué Left section? ¿Es en caso de que se habilite el diseño del lado derecho? 
+   * ! - Eliminar lo que no tenga uso real como esto */
   return (
     <div className={styles['login-page']}>
       {/* Left Section - Branding Text */}
