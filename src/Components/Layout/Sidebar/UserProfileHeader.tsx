@@ -97,7 +97,7 @@ export const UserProfileHeader: React.FC<UserProfileHeaderProps> = ({ className 
               {/* TODO Cambiar según el estándar de Mari??? (Botón de inicio de sesión) */}
               <button
                 onClick={handleLogout}
-                className="w-full px-3 py-1.5 mx-0 text-left text-xs text-rojo-una hover:bg-rojo-una/8 flex items-center gap-2 transition-all duration-200 rounded"
+                className="w-full px-3 py-1.5 mx-0 text-left text-xs text-rojo-una-2 hover:bg-rojo-una/8 flex items-center gap-2 transition-all duration-200 rounded"
               >
                 <SystemIcons.actions.logout className={`${APP_HEADER_BUTTON.icon}`} />
                 <span className={`${TYPOGRAPHY.header}`}>Cerrar sesión</span>

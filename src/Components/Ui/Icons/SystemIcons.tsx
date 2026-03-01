@@ -155,7 +155,7 @@ export const SystemIcons = {
 
   // ===== INTERFAZ =====
   interface: {
-    search: ({ className, size, color = 'var(--icon-search)' }: IconProps) => (
+    search: ({ className, size, color = 'currentColor' }: IconProps) => (
       <svg
         className={`${getSizeClasses(size)} ${className || ''}`}
         viewBox="0 0 24 24"

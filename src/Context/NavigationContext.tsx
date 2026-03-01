@@ -33,60 +33,73 @@ export const NavigationProvider: React.FC<NavigationProviderProps> = ({ children
   // Obtener items filtrados por rol (pasar todos los roles)
   const navigationItems = getNavigationItems(user?.roles?.map(r => r.name));
 
-  // Función para encontrar el item activo basado en la ruta actual
-  const findActiveItemByPath = (path: string) => {
+  // Función para encontrar el item activo y su grupo padre basado en la ruta actual
+  const findActiveItemByPath = (path: string): { activeId: string; parentId: string | null } => {
     // Primero buscar coincidencias exactas
     for (const item of navigationItems) {
       if (item.href === path) {
-        return item.id;
+        return { activeId: item.id, parentId: null };
       }
       // Buscar en children si existen
       if (item.children) {
         for (const child of item.children) {
           if (child.href === path) {
-            return child.id;
+            return { activeId: child.id, parentId: item.id };
           }
         }
       }
     }
 
     // Si no hay coincidencia exacta, buscar por prefijo de módulo
-    // Esto maneja rutas como /roles/crear, /roles/editar/123, etc.
     if (path.startsWith('/roles')) {
-      return 'roles';
+      return { activeId: 'roles', parentId: 'administracion' };
     }
     if (path.startsWith('/estructura')) {
-      return 'estructura';
+      return { activeId: 'estructura', parentId: 'acreditacion' };
     }
     if (path.startsWith('/usuarios')) {
-      return 'usuarios';
+      return { activeId: 'usuarios', parentId: 'administracion' };
     }
     if (path.startsWith('/compromisos')) {
-      return 'compromisos-mejora';
+      return { activeId: 'compromisos-mejora', parentId: 'acreditacion' };
     }
     if (path.startsWith('/evidencias')) {
-      return 'evidenciasAsignar';
+      return { activeId: 'evidenciasAsignar', parentId: 'evidencias' };
+    }
+    if (path.startsWith('/mis-evidencias')) {
+      return { activeId: 'misEvidenciasAsignadas', parentId: 'evidencias' };
     }
     if (path.startsWith('/acreditacion')) {
-      return 'avance-acreditacion';
+      return { activeId: 'avance-acreditacion', parentId: 'acreditacion' };
     }
     if (path.startsWith('/bitacora')) {
-      return 'bitacora';
+      return { activeId: 'bitacora', parentId: 'administracion' };
+    }
+    if (path.startsWith('/solicitudes-ampliacion')) {
+      return { activeId: 'misSolicitudesAmpliacion', parentId: 'solicitudesAmpliacion' };
+    }
+    if (path.startsWith('/aprobacion-bloques')) {
+      return { activeId: 'aprobacion-bloques', parentId: 'acreditacion' };
     }
 
-    return 'inicio'; // Default
+    return { activeId: 'inicio', parentId: null }; // Default
   };
 
   // Inicializar con el estado correcto desde el principio
   const [activeItemId, setActiveItemId] = useState<string | null>(() => {
-    return findActiveItemByPath(location.pathname);
+    return findActiveItemByPath(location.pathname).activeId;
   });
-  const [expandedItemId, setExpandedItemId] = useState<string | null>(null);
+  const [expandedItemId, setExpandedItemId] = useState<string | null>(() => {
+    return findActiveItemByPath(location.pathname).parentId;
+  });
 
-  // Actualizar el item activo cuando cambie la ruta
+  // Actualizar el item activo y el grupo expandido cuando cambie la ruta
   useEffect(() => {
-    const activeId = findActiveItemByPath(location.pathname);
+    const { activeId, parentId } = findActiveItemByPath(location.pathname);
     setActiveItemId(activeId);
+    if (parentId) {
+      setExpandedItemId(parentId);
+    }
   }, [location.pathname]);
 
   const setActiveItem = (itemId: string) => {

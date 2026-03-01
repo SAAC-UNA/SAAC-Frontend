@@ -80,7 +80,7 @@
   --color-negro-una: #000000;
   --color-verde: #10b981;
 
-  /* Extensiones para el sidebar (usando colores UNA) */
+  /* TODO (creo que no se usan) 01-03-2026 Extensiones para el sidebar (usando colores UNA) */
   --color-rojo-sidebar: var(--color-rojo-una);
   --color-rojo-sidebar-dark: var(--color-rojo-una-2);
 

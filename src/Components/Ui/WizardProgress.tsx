@@ -56,7 +56,7 @@ export const WizardProgress: React.FC<WizardProgressProps> = ({
                 className={cn(
                   'w-6 h-6 rounded-full flex items-center justify-center font-semibold text-xs transition-all duration-200',
                   isCompleted && 'bg-green-600 text-white hover:bg-green-700',
-                  isActive && !isCompleted && 'bg-rojo-una-2 text-white',
+                  isActive && !isCompleted && 'bg-rojo-una text-white',
                   !isActive && !isCompleted && 'bg-gris-una/20 text-gris-una',
                   isClickable && 'cursor-pointer',
                   !isClickable && 'cursor-not-allowed'

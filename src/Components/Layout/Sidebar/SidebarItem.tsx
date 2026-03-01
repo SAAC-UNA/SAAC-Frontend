@@ -23,94 +23,65 @@ const ModernSidebarItemComponent: React.FC<ModernSidebarItemProps> = ({
   const isActive = isItemActive(item.id);
 
   const handleClick = useCallback(() => {
-    // Si el item tiene un onClick personalizado (como logout), ejecutarlo
     if (item.onClick) {
       item.onClick();
       return;
     }
-    
-    // Comportamiento normal de navegación
     handleItemClick(item.id, item.href, item.isExpandable);
   }, [item.onClick, item.id, item.href, item.isExpandable, handleItemClick]);
 
   const buttonContent = (
-    <div className={cn(
-      "relative",
-      // Margen izquierdo para items principales
-      !isSubItem && "ml-3"
-    )}>
+    // ml-3 para padres, ml-6 para hijos (indentación de jerarquía)
+    <div className={cn("relative", isSubItem ? "ml-6" : "ml-3")}>
       <button
         onClick={handleClick}
         className={cn(
           'flex items-center text-left transition-all duration-200 group w-full relative z-10',
-          // Padding ajustado para estado colapsado
-          // mb-1 es el espacio entre items principales
+          'rounded-l-[20px] text-sm font-medium cursor-pointer mb-1',
           isCollapsed ? 'p-2 justify-center' : 'px-4 py-4',
-          'text-sm font-medium cursor-pointer mb-1',
-          // Estilo con curvas para items principales
-          !isSubItem && 'rounded-l-[20px]',
-          // Estilos para subitems
-          isSubItem && 'ml-8 mr-2 rounded-lg',
-          // Estados activo/inactivo para items principales
-          !isSubItem && (
-            isActive 
-              ? 'bg-blanco-una-2 text-rojo-una-2 font-semibold' // Activo: fondo blanco + texto rojo
-              : 'text-blanco-una-2' // Inactivo: texto blanco
-          ),
-          // Estados activo/inactivo para subitems
-          isSubItem && (
-            isActive
-              ? 'bg-blanco-una-2 text-rojo-una-2 font-semibold shadow-md'
-              : 'text-blanco-una-2'
-          ),
-          // Hover effects solo para items inactivos
-          !isActive && 'hover:bg-rojo-una/20'
+          isActive
+            ? 'bg-blanco-una-2 text-rojo-una-2 font-semibold'
+            : 'text-blanco-una-2 hover:bg-rojo-una/20',
         )}
       >
-        {/* Fondo activo con curvas - solo para items principales */}
-        {isActive && !isSubItem && !isCollapsed && (
+        {/* Fondo activo con curvas */}
+        {isActive && !isCollapsed && (
           <div className="absolute inset-0 rounded-l-[20px] bg-blanco-una-2 pointer-events-none">
-            {/* Curva superior */}
-            <div 
+            <div
               className="absolute -top-5 right-0 w-5 h-5 rounded-full"
-              style={{
-                boxShadow: '10px 10px 0 #f8f9fa'
-              }}
+              style={{ boxShadow: '10px 10px 0 #f8f9fa' }}
             />
-            {/* Curva inferior */}
-            <div 
+            <div
               className="absolute -bottom-5 right-0 w-5 h-5 rounded-full"
-              style={{
-                boxShadow: '10px -10px 0 #f8f9fa'
-              }}
+              style={{ boxShadow: '10px -10px 0 #f8f9fa' }}
             />
           </div>
         )}
-        
-        {/* Icono */}
-        <span className={cn(
-          'flex-shrink-0 transition-transform duration-200 relative z-10',
-          'w-5 h-5 flex items-center justify-center',
-          'group-hover:scale-110',
-          !isCollapsed && 'mr-3'
-        )}>
-          {/* Renderizar icono del sistema */}
-          <div className={cn(
-            "w-5 h-5 transition-all duration-200",
-            isActive ? "text-rojo-una-2" : "text-blanco-una-2"
-          )}>
-            {getIconByName(item.icon.replace('system-icon:', ''), 'md')}
-          </div>
-        </span>
 
-        {/* Label - oculto cuando está colapsado */}
+        {/* Icono */}
+        {item.icon && (
+          <span className={cn(
+            'flex-shrink-0 transition-transform duration-200 relative z-10',
+            'w-5 h-5 flex items-center justify-center group-hover:scale-110',
+            !isCollapsed && 'mr-3'
+          )}>
+            <div className={cn(
+              "w-5 h-5 transition-all duration-200",
+              isActive ? "text-rojo-una-2" : "text-blanco-una-2"
+            )}>
+              {getIconByName(item.icon.replace('system-icon:', ''), 'md')}
+            </div>
+          </span>
+        )}
+
+        {/* Label */}
         {!isCollapsed && (
           <span className="flex-1 truncate relative z-10">
             {item.label}
           </span>
         )}
 
-        {/* Arrow para items expandibles - oculto cuando está colapsado */}
+        {/* Flecha - solo para items expandibles */}
         {item.isExpandable && !isCollapsed && (
           <span className={cn(
             'flex-shrink-0 ml-2 transition-transform duration-300 relative z-10',
@@ -153,8 +124,8 @@ const ModernSidebarItemComponent: React.FC<ModernSidebarItemProps> = ({
       {/* Submenu - oculto cuando está colapsado */}
       {item.isExpandable && item.children && !isCollapsed && (
         <div className={cn(
-          'overflow-hidden transition-all duration-300 ease-in-out',
-          isExpanded ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'
+          'transition-all duration-300 ease-in-out',
+          isExpanded ? 'max-h-96 opacity-100 overflow-visible' : 'max-h-0 opacity-0 overflow-hidden'
         )}>
           <div className="py-2 space-y-1">
             {item.children.map(child => (

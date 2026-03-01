@@ -26,13 +26,9 @@ export const useNavigationItems = () => {
     if (isExpandable) {
       // Para items expandibles: alternar expansión
       toggleExpanded(itemId);
-      console.log(`Sección expandible: ${itemId}`);
     } else {
-      // Para items NO expandibles: cerrar cualquier item expandido
-      setExpandedItem(null);
-      if (href) {
-        console.log(`Navegando a: ${href} (${itemId})`);
-        // Navegación con React Router
+      // Para items de hoja: navegar sin cerrar el grupo padre
+      if (href && href !== '#') {
         navigate(href);
       }
     }

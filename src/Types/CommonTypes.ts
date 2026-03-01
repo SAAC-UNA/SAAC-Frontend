@@ -1,7 +1,7 @@
 export interface NavItem {
   id: string;
   label: string;
-  icon: string;
+  icon?: string;
   href: string;
   isActive?: boolean;
   isExpandable?: boolean;
