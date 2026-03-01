@@ -78,7 +78,7 @@ export function mapBackendToFrontend(data: any, type: ElementType): StructureEle
 export function mapFrontendToBackend(
   data: Partial<StructureElement>, 
   type: ElementType,
-  allElements?: StructureElement[]
+  _allElements?: StructureElement[]
 ): any {
   const parentField = ELEMENT_TYPE_TO_PARENT_FIELD[type];
   const payload: any = {};

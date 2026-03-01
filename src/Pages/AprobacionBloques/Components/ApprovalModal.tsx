@@ -11,7 +11,7 @@ interface Evidencia {
   id: number;
   nomenclatura: string;
   descripcion: string;
-  criterio_id: number;
+  criterio_id?: number;
 }
 
 interface ApprovalModalProps {

@@ -128,7 +128,7 @@ const CrearCompromiso: React.FC = () => {
       setCurrentStep(prev => Math.min(prev + 1, steps.length));
       setErrors({});
     } else {
-      showToast('Por favor, complete todos los campos obligatorios', 'error');
+      showToast({ type: 'error', title: 'Por favor, complete todos los campos obligatorios' });
     }
   };
 
@@ -145,7 +145,7 @@ const CrearCompromiso: React.FC = () => {
    */
   const handleSubmit = async () => {
     if (!validateStep(currentStep - 1)) {
-      showToast('Hay errores en el formulario', 'error');
+      showToast({ type: 'error', title: 'Hay errores en el formulario' });
       return;
     }
 
@@ -193,10 +193,7 @@ const CrearCompromiso: React.FC = () => {
       setShowSuccessModal(true);
     } catch (error) {
       console.error('Error completo:', error);
-      showToast(
-        error instanceof Error ? error.message : 'Error al registrar el compromiso',
-        'error'
-      );
+      showToast({ type: 'error', title: error instanceof Error ? error.message : 'Error al registrar el compromiso' });
     } finally {
       setIsSubmitting(false);
     }

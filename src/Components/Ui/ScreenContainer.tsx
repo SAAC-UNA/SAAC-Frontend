@@ -5,6 +5,11 @@ interface ScreenContainerProps {
   children: React.ReactNode;
   className?: string;
   variant?: 'default' | 'full-width' | 'extra-wide';
+  title?: string;
+  description?: string;
+  showBackButton?: boolean;
+  onBack?: () => void | Promise<void>;
+  headerExtra?: React.ReactNode;
 }
 
 export const ScreenContainer: React.FC<ScreenContainerProps> = ({

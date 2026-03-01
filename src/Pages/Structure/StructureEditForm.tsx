@@ -276,7 +276,6 @@ const validateForm = (): boolean => {
     const labels = {
       'university': 'Universidad',
       'campus': 'Sede',
-      'faculty': 'Facultad',
       'career': 'Carrera',
       'dimension': 'Dimensión',
       'component': 'Componente',

@@ -189,32 +189,6 @@ class StructureService {
         payload: payload
       });
 
-      // **CASO ESPECIAL: Si es facultad y necesita fetch del campus**
-      if (elementData.type === 'faculty' && payload._needsCampusFetch) {
-        console.log('🔄 Haciendo fetch del campus para obtener universidad_id...');
-        try {
-          const campusResponse = await this.getById('campus', payload._campusId);
-          console.log('📥 Respuesta completa del campus:', campusResponse);
-          console.log('📥 Data del campus:', campusResponse.data);
-          console.log('📥 ParentElementId del campus:', campusResponse.data?.parentElementId);
-          
-          if (campusResponse.data && campusResponse.data.parentElementId) {
-            payload.universidad_id = Number(campusResponse.data.parentElementId);
-            console.log('✅ universidad_id obtenido del fetch:', payload.universidad_id);
-          } else {
-            console.error('❌ No se pudo obtener universidad_id del campus');
-            console.error('Campus data recibido:', campusResponse.data);
-            throw new Error('No se pudo determinar la universidad del campus seleccionado');
-          }
-        } catch (error) {
-          console.error('Error obteniendo información del campus:', error);
-          throw new Error('Error al obtener información del campus. Verifica que el campus exista.');
-        }
-        // Limpiar flags temporales
-        delete payload._needsCampusFetch;
-        delete payload._campusId;
-      }
-
       const requiresComment = ['dimension', 'component', 'criteria'].includes(elementData.type);
       
       if (requiresComment) {
@@ -263,7 +237,7 @@ class StructureService {
       const endpoint = ELEMENT_TYPE_TO_ENDPOINT[type];
       let payload: any;
       
-      const requiresSpecialHandling = ['faculty', 'campus', 'dimension', 'component', 'criteria', 'career', 'standard'].includes(type);
+      const requiresSpecialHandling = ['campus', 'dimension', 'component', 'criteria', 'career', 'standard'].includes(type);
 
       if (requiresSpecialHandling) {
         const currentResponse = await axiosInstance.get(`/estructura/${endpoint}/${id}`);
@@ -278,15 +252,12 @@ class StructureService {
           descripcion: elementData.description
         };
         
-        if (type === 'faculty') {
-          payload.sede_id = current.sede_id;
-          payload.universidad_id = current.universidad_id;
-        } else if (type === 'campus') {
+        if (type === 'campus') {
           payload.universidad_id = current.universidad_id;
         } else if (['dimension', 'component', 'criteria'].includes(type)) {
           payload.comentario_id = current.comentario_id;
         } else if (type === 'career') {
-          payload.facultad_id = current.facultad_id;
+          payload.sede_id = current.sede_id;
         } else if (type === 'standard') {
           payload.criterio_id = current.criterio_id;
         }

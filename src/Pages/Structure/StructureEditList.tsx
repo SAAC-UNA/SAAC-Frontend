@@ -64,7 +64,6 @@ const StructureEditList: React.FC = () => {
     const labels = {
       'university': 'Universidad',
       'campus': 'Sede', 
-      'faculty': 'Facultad',
       'career': 'Carrera',
       'dimension': 'Dimensión',
       'component': 'Componente',
@@ -117,7 +116,6 @@ const StructureEditList: React.FC = () => {
                   { value: 'all', label: 'Todos los tipos' },
                   { value: 'university', label: 'Universidad' },
                   { value: 'campus', label: 'Sede' },
-                  { value: 'faculty', label: 'Facultad' },
                   { value: 'career', label: 'Carrera' },
                   { value: 'dimension', label: 'Dimensión' },
                   { value: 'component', label: 'Componente' },

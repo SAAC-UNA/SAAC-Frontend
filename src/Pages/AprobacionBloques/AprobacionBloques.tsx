@@ -79,13 +79,13 @@ export const AprobacionBloques: React.FC = () => {
     } catch (error) {
       console.error('Error cargando procesos:', error);
       setError('Error al cargar los procesos. Verifique que el servidor esté funcionando.');
-      showToast('Error al cargar los procesos', 'error');
+      showToast({ type: 'error', title: 'Error al cargar los procesos' });
     } finally {
       setIsLoading(false);
     }
   };
 
-  const fetchCriterios = async (procesoId: number) => {
+  const fetchCriterios = async (_procesoId: number) => {
     setIsLoading(true);
     setError(null);
     try {
@@ -138,7 +138,7 @@ export const AprobacionBloques: React.FC = () => {
     } catch (error) {
       console.error('Error cargando criterios:', error);
       setError('Error al cargar los criterios');
-      showToast('Error al cargar los criterios', 'error');
+      showToast({ type: 'error', title: 'Error al cargar los criterios' });
     } finally {
       setIsLoading(false);
     }
@@ -186,19 +186,13 @@ export const AprobacionBloques: React.FC = () => {
         throw new Error(errorData.message || `Error al ${modalAction} el criterio`);
       }
 
-      showToast(
-        `Criterio ${modalAction === 'aprobar' ? 'aprobado' : 'rechazado'} exitosamente`,
-        'success'
-      );
+      showToast({ type: 'success', title: `Criterio ${modalAction === 'aprobar' ? 'aprobado' : 'rechazado'} exitosamente` });
 
       // Recargar criterios
       await fetchCriterios(selectedProcesoId);
       setModalOpen(false);
     } catch (error) {
-      showToast(
-        error instanceof Error ? error.message : `Error al ${modalAction} el criterio`,
-        'error'
-      );
+      showToast({ type: 'error', title: error instanceof Error ? error.message : `Error al ${modalAction} el criterio` });
     }
   };
 
@@ -236,7 +230,7 @@ export const AprobacionBloques: React.FC = () => {
       {error && (
         <div className="mb-6 bg-red-50 border-l-4 border-red-400 p-4">
           <div className="flex">
-            <SystemIcons name="warning" className="h-5 w-5 text-red-400" />
+            <SystemIcons.interface.alert className="h-5 w-5 text-red-400" />
             <div className="ml-3">
               <p className="text-sm text-red-700">{error}</p>
             </div>
@@ -299,10 +293,10 @@ export const AprobacionBloques: React.FC = () => {
                         onClick={() => toggleCriterio(criterio.id)}
                         className="text-gray-400 hover:text-gray-600"
                       >
-                        <SystemIcons
-                          name={expandedCriterios.has(criterio.id) ? 'chevron-down' : 'chevron-right'}
-                          className="w-5 h-5"
-                        />
+                        {expandedCriterios.has(criterio.id)
+                          ? <SystemIcons.interface.chevronDown className="w-5 h-5" />
+                          : <SystemIcons.interface.chevronRight className="w-5 h-5" />
+                        }
                       </button>
                     </td>
                     <td className="px-6 py-4">
@@ -329,7 +323,7 @@ export const AprobacionBloques: React.FC = () => {
                         onClick={() => handleOpenModal(criterio, 'aprobar')}
                         disabled={!criterio.puede_aprobar || criterio.estado_aprobacion === 'aprobado'}
                       >
-                        <SystemIcons name="check" className="w-4 h-4 mr-1" />
+                        <SystemIcons.interface.check className="w-4 h-4 mr-1" />
                         Aprobar
                       </Button>
                       <Button
@@ -338,7 +332,7 @@ export const AprobacionBloques: React.FC = () => {
                         onClick={() => handleOpenModal(criterio, 'rechazar')}
                         disabled={criterio.estado_aprobacion === 'rechazado'}
                       >
-                        <SystemIcons name="x" className="w-4 h-4 mr-1" />
+                        <SystemIcons.actions.cancel className="w-4 h-4 mr-1" />
                         Rechazar
                       </Button>
                     </td>
@@ -359,12 +353,10 @@ export const AprobacionBloques: React.FC = () => {
                                 className="flex items-center justify-between px-4 py-2 bg-white rounded border border-gray-200"
                               >
                                 <div className="flex items-center space-x-3">
-                                  <SystemIcons
-                                    name={evidencia.archivo_adjuntado ? 'check-circle' : 'circle'}
-                                    className={`w-5 h-5 ${
-                                      evidencia.archivo_adjuntado ? 'text-green-500' : 'text-gray-300'
-                                    }`}
-                                  />
+                                  {evidencia.archivo_adjuntado
+                                    ? <SystemIcons.interface.checkCircle className={`w-5 h-5 text-green-500`} />
+                                    : <SystemIcons.interface.xCircle className={`w-5 h-5 text-gray-300`} />
+                                  }
                                   <div>
                                     <div className="text-sm font-medium text-gray-900">
                                       {evidencia.nomenclatura}
@@ -394,7 +386,7 @@ export const AprobacionBloques: React.FC = () => {
           {/* Empty State */}
           {criterios.length === 0 && !isLoading && (
             <div className="text-center py-12">
-              <SystemIcons name="folder-open" className="mx-auto h-12 w-12 text-gray-400" />
+              <SystemIcons.interface.informationCircle className="mx-auto h-12 w-12 text-gray-400" />
               <h3 className="mt-2 text-sm font-medium text-gray-900">No hay criterios</h3>
               <p className="mt-1 text-sm text-gray-500">
                 No se encontraron criterios para el proceso seleccionado.
@@ -412,6 +404,7 @@ export const AprobacionBloques: React.FC = () => {
           onConfirm={handleConfirmAction}
           action={modalAction}
           criterio={selectedCriterio}
+          evidencias={selectedCriterio.evidencias}
         />
       )}
     </ScreenContainer>

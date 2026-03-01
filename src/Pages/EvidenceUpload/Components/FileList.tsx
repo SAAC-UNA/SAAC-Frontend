@@ -5,7 +5,7 @@
 
 import React, { useState } from 'react';
 import type { FileModel } from '@/Types/FileTypes';
-import { formatFileSize, getFileCategory } from '@/Types/FileTypes';
+import { getFileCategory } from '@/Types/FileTypes';
 import { DeleteConfirmationModal } from '@/Components/Ui/DeleteConfirmationModal';
 import { LoadingSpinner } from '@/Components/Ui/Loading';
 import { SystemIcons } from '@/Components/Ui/Icons/SystemIcons';

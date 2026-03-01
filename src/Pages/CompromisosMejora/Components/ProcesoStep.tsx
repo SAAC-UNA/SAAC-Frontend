@@ -43,7 +43,6 @@ interface ProcesoStepProps {
 
 export const ProcesoStep: React.FC<ProcesoStepProps> = ({
   procesoId,
-  cicloId,
   fechaInicio,
   fechaFin,
   descripcion,

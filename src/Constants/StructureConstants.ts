@@ -8,7 +8,6 @@ import { ElementType, type CreateElementForm } from '@/Types/StructureTypes';
 export const ELEMENT_TYPE_LABELS = {
   [ElementType.UNIVERSITY]: 'Universidad',
   [ElementType.CAMPUS]: 'Sede',
-  [ElementType.FACULTY]: 'Facultad',
   [ElementType.CAREER]: 'Carrera',
   [ElementType.DIMENSION]: 'Dimensión',
   [ElementType.COMPONENT]: 'Componente',
@@ -30,21 +29,15 @@ export const HIERARCHY_RULES = {
     description: 'Universidad'
   },
   [ElementType.CAMPUS]: { 
-    canHaveChildren: [ElementType.FACULTY], 
+    canHaveChildren: [ElementType.CAREER], 
     mustHaveParent: ElementType.UNIVERSITY,
     level: 2,
     description: 'Sede o campus universitario'
   },
-  [ElementType.FACULTY]: { 
-    canHaveChildren: [ElementType.CAREER], 
-    mustHaveParent: ElementType.CAMPUS,
-    level: 3,
-    description: 'Facultad o centro académico'
-  },
   [ElementType.CAREER]: { 
     canHaveChildren: [], 
-    mustHaveParent: ElementType.FACULTY,
-    level: 4,
+    mustHaveParent: ElementType.CAMPUS,
+    level: 3,
     description: 'Carrera académica'
   },
   [ElementType.DIMENSION]: { 
@@ -104,7 +97,6 @@ export const VALIDATION_RULES = {
   DESCRIPTION_MAX_LENGTH_BY_TYPE: {
     [ElementType.UNIVERSITY]: 250,
     [ElementType.CAMPUS]: 250,
-    [ElementType.FACULTY]: 250,
     [ElementType.CAREER]: 250,
     [ElementType.DIMENSION]: 250,
     [ElementType.COMPONENT]: 250,
@@ -212,11 +204,6 @@ export const FORM_CONFIG: Record<ElementType, FormConfig> = {
     showParentSelector: false
   },
   [ElementType.CAMPUS]: {
-    requiredFields: ['name', 'parentElementId'],
-    optionalFields: [],
-    showParentSelector: true
-  },
-  [ElementType.FACULTY]: {
     requiredFields: ['name', 'parentElementId'],
     optionalFields: [],
     showParentSelector: true

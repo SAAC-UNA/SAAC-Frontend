@@ -405,7 +405,6 @@ const confirmAction = async () => {
                 { value: 'all', label: 'Todos los tipos' },
                 { value: 'university', label: 'Universidad' },
                 { value: 'campus', label: 'Sede' },
-                { value: 'faculty', label: 'Facultad' },
                 { value: 'career', label: 'Carrera' },
                 { value: 'dimension', label: 'Dimensión' },
                 { value: 'component', label: 'Componente' },

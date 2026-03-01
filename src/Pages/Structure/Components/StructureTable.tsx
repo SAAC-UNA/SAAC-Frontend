@@ -154,8 +154,7 @@ export const StructureTable: React.FC<StructureTableProps> = ({
         const parentTypeMap: Record<ElementType, ElementType | null> = {
             'university': null,
             'campus': 'university',
-            'faculty': 'campus',
-            'career': 'faculty',
+            'career': 'campus',
             'dimension': null,
             'component': 'dimension',
             'criteria': 'component',

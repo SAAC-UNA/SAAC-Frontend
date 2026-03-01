@@ -6,7 +6,6 @@ import { cn } from '@/Utils/ClassNames';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from '@/Components/Ui/Sheet';
 import { TooltipProvider } from '@/Components/Ui/Tooltip';
 import { useAuth } from '@/Context/AuthContext';
-import { useNavigate } from 'react-router-dom';
 
 interface SidebarProps {
   side?: 'left' | 'right';
@@ -23,13 +22,7 @@ export const ModernSidebar: React.FC<SidebarProps> = ({
 }) => {
   const { isMobile, state, openMobile, setOpenMobile } = useSidebar();
 
-  const { user, logout } = useAuth();
-  const navigate = useNavigate();
-
-  const handleLogout = () => {
-    logout();
-    navigate('/login');
-  };
+  const { user } = useAuth();
 
   const sidebarContent = (
     <div className="flex flex-col h-full">

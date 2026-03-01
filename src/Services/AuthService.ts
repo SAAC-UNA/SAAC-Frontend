@@ -3,8 +3,6 @@
  * Conecta con el backend (LDAP) para autenticar usuarios
  */
 
-import { axiosInstance } from '@/Config/axios';
-import type { MockUser } from '@/Mocks/Users';
 import { config } from '@/Config/app.config';
 
 export interface Role {
