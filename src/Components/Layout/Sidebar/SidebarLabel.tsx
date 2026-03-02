@@ -16,7 +16,7 @@ interface SidebarLabelProps {
 export const SidebarLabel: React.FC<SidebarLabelProps> = ({ label, isCollapsed = false }) => {
   return (
     <span className={cn(
-      'truncate transition-[opacity,max-width] duration-150 ease-linear',
+      'truncate transition-[opacity,max-width] duration-300 ease-in-out',
       TYPOGRAPHY.sidebarItem,
       isCollapsed ? 'opacity-0 max-w-0 overflow-hidden' : 'opacity-100 max-w-full'
     )}>

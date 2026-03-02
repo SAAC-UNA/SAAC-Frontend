@@ -27,25 +27,23 @@ export const ModernSidebar: React.FC<SidebarProps> = ({
 
   const sidebarContent = (
     <div className="flex flex-col h-full">
-      {/* Logo Section — se oculta con fade en modo colapsado (solo íconos) */}
-      <div className={cn(
-        'flex-shrink-0 overflow-hidden transition-[max-height,opacity,padding] duration-150 ease-linear',
-        isCollapsed ? 'max-h-0 opacity-0 p-0' : 'max-h-20 opacity-100 p-6'
-      )}>
-        <div className="flex justify-center items-center">
-          <a 
-            href="https://www.una.ac.cr/"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="block"
-          >
-            <img 
-              src="/Images/UNAHorizontal-Blanco.png"
-              alt="Universidad Nacional de Costa Rica"
-              className="w-auto h-10 md:h-12 object-contain cursor-pointer"
-            />
-          </a>
-        </div>
+      {/* Logo Section — altura fija para que los ítems no se muevan al colapsar */}
+      <div className="flex-shrink-0 h-20 flex justify-center items-center overflow-hidden">
+        <a
+          href="https://www.una.ac.cr/"
+          target="_blank"
+          rel="noopener noreferrer"
+          className={cn(
+            'transition-opacity duration-300 ease-in-out',
+            isCollapsed ? 'opacity-0 pointer-events-none' : 'opacity-100'
+          )}
+        >
+          <img
+            src="/Images/UNAHorizontal-Blanco.png"
+            alt="Universidad Nacional de Costa Rica"
+            className="w-auto h-10 object-contain cursor-pointer"
+          />
+        </a>
       </div>
 
       {/* Navigation Menu */}
@@ -108,7 +106,7 @@ export const ModernSidebar: React.FC<SidebarProps> = ({
         {/* Gap del sidebar en desktop */}
         <div
           className={cn(
-            'relative bg-transparent transition-[width] duration-150 ease-linear',
+            'relative bg-transparent transition-[width] duration-300 ease-in-out',
             'w-[var(--sidebar-width)]',
             'group-data-[state=collapsed]:w-[var(--sidebar-width-icon)]',
             collapsible === 'offcanvas' && 'group-data-[state=collapsed]:w-0'
@@ -118,7 +116,7 @@ export const ModernSidebar: React.FC<SidebarProps> = ({
         {/* Container del sidebar */}
         <div
           className={cn(
-            'fixed inset-y-0 z-10 hidden h-screen transition-[left,right,width] duration-150 ease-linear md:flex',
+            'fixed inset-y-0 z-10 hidden h-screen transition-[left,right,width] duration-300 ease-in-out md:flex',
             'w-[var(--sidebar-width)]',
             side === 'left'
               ? 'left-0'

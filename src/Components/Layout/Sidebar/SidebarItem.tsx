@@ -1,4 +1,4 @@
-import React, { useCallback } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import type { NavItem } from '@/Types/CommonTypes';
 import { cn } from '@/Utils/ClassNames';
 import { useNavigationItems } from '@/Hooks/UseNavigation';
@@ -36,6 +36,26 @@ const SidebarItemComponent: React.FC<SidebarItemProps> = ({
   const isActive   = isItemActive(item.id);
   const isExpanded = isItemExpanded(item.id);
 
+  /**
+   * layoutCollapsed: versión retrasada de isCollapsed para el layout visual del botón.
+   * - Al colapsar: espera 300ms (duración de la animación del sidebar) antes de cambiar
+   *   el padding/gap/márgenes, así el contenido queda clippeado por overflow:hidden en vez
+   *   de encogerse antes que el contenedor.
+   * - Al expandir: aplica inmediatamente para que el botón se expanda junto con el sidebar.
+   */
+  const [layoutCollapsed, setLayoutCollapsed] = useState(isCollapsed);
+  useEffect(() => {
+    if (!isCollapsed) {
+      // Al expandir: layout inmediato para que el botón crezca junto al sidebar
+      setLayoutCollapsed(false);
+    } else {
+      // Al colapsar: esperar a que el sidebar termine su animación (300ms) + margen (20ms)
+      // para que el cambio de layout ocurra cuando el sidebar ya clippea el contenido
+      const timer = setTimeout(() => setLayoutCollapsed(true), 320);
+      return () => clearTimeout(timer);
+    }
+  }, [isCollapsed]);
+
   const handleClick = useCallback(() => {
     if (item.onClick) {
       item.onClick();
@@ -46,11 +66,11 @@ const SidebarItemComponent: React.FC<SidebarItemProps> = ({
 
   const buttonContent = (
     // ml-3 para padres, ml-6 para hijos; sin margen cuando colapsado (modo ícono)
-    <div className={cn('relative', !isCollapsed && (isSubItem ? 'ml-6' : 'ml-3'), isCollapsed && 'mx-1')}>
-      <SidebarButton isActive={isActive} isCollapsed={isCollapsed} onClick={handleClick}>
+    <div className={cn('relative', !layoutCollapsed && (isSubItem ? 'ml-6' : 'ml-3'), layoutCollapsed && 'mx-1')}>
+      <SidebarButton isActive={isActive} isCollapsed={layoutCollapsed} onClick={handleClick}>
 
         {/* Ícono + Label siempre juntos — gap se elimina cuando colapsado para no inflar el ancho */}
-        <span className={cn('flex items-center flex-1 min-w-0 h-full relative z-10', isCollapsed ? 'gap-1' : 'gap-3')}>
+        <span className={cn('flex items-center flex-1 min-w-0 h-full relative z-10', layoutCollapsed ? 'gap-1' : 'gap-3')}>
           {item.icon && (
             <SidebarIcon icon={item.icon} isActive={isActive} />
           )}

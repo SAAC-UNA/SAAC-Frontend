@@ -18,7 +18,7 @@ export const SidebarChevron: React.FC<SidebarChevronProps> = ({ isExpanded, isAc
     <span
       className={cn(
         'flex-shrink-0 ml-auto flex items-center justify-center overflow-visible',
-        'transition-[transform,opacity,width] duration-150 relative z-10',
+        'transition-[transform,opacity,width] duration-300 ease-in-out relative z-10',
         isExpanded ? 'rotate-90' : 'rotate-180',
         isCollapsed ? 'opacity-0 pointer-events-none w-0' : 'opacity-100 w-5 h-5',
       )}
