@@ -17,17 +17,21 @@ interface SidebarProps {
 export const ModernSidebar: React.FC<SidebarProps> = ({ 
   side = 'left',
   variant = 'sidebar',
-  collapsible = 'offcanvas',
+  collapsible = 'icon',
   className 
 }) => {
   const { isMobile, state, openMobile, setOpenMobile } = useSidebar();
+  const isCollapsed = state === 'collapsed' && !isMobile;
 
   const { user } = useAuth();
 
   const sidebarContent = (
     <div className="flex flex-col h-full">
-      {/* Logo Section */}
-      <div className="flex-shrink-0 p-6">
+      {/* Logo Section — se oculta con fade en modo colapsado (solo íconos) */}
+      <div className={cn(
+        'flex-shrink-0 overflow-hidden transition-[max-height,opacity,padding] duration-150 ease-linear',
+        isCollapsed ? 'max-h-0 opacity-0 p-0' : 'max-h-20 opacity-100 p-6'
+      )}>
         <div className="flex justify-center items-center">
           <a 
             href="https://www.una.ac.cr/"
@@ -38,12 +42,7 @@ export const ModernSidebar: React.FC<SidebarProps> = ({
             <img 
               src="/Images/UNAHorizontal-Blanco.png"
               alt="Universidad Nacional de Costa Rica"
-              className={cn(
-                "w-auto object-contain cursor-pointer transition-all duration-200",
-                state === 'collapsed' && !isMobile 
-                  ? "h-8" 
-                  : "h-10 md:h-12"
-              )}
+              className="w-auto h-10 md:h-12 object-contain cursor-pointer"
             />
           </a>
         </div>
@@ -56,7 +55,7 @@ export const ModernSidebar: React.FC<SidebarProps> = ({
             <ModernSidebarItem 
               key={item.id} 
               item={item}
-              isCollapsed={state === 'collapsed' && !isMobile}
+              isCollapsed={isCollapsed}
             />
           ))}
         </div>
@@ -86,9 +85,6 @@ export const ModernSidebar: React.FC<SidebarProps> = ({
         <SheetContent
           side={side}
           className="bg-rojo-una-2 text-blanco-una w-[var(--sidebar-width-mobile)] p-0"
-          style={{
-            '--sidebar-width-mobile': '18rem',
-          } as React.CSSProperties}
         >
           <SheetHeader className="sr-only">
             <SheetTitle>Sidebar</SheetTitle>
@@ -112,7 +108,7 @@ export const ModernSidebar: React.FC<SidebarProps> = ({
         {/* Gap del sidebar en desktop */}
         <div
           className={cn(
-            'relative bg-transparent transition-[width] duration-200 ease-linear',
+            'relative bg-transparent transition-[width] duration-150 ease-linear',
             'w-[var(--sidebar-width)]',
             'group-data-[state=collapsed]:w-[var(--sidebar-width-icon)]',
             collapsible === 'offcanvas' && 'group-data-[state=collapsed]:w-0'
@@ -122,7 +118,7 @@ export const ModernSidebar: React.FC<SidebarProps> = ({
         {/* Container del sidebar */}
         <div
           className={cn(
-            'fixed inset-y-0 z-10 hidden h-screen transition-[left,right,width] duration-200 ease-linear md:flex',
+            'fixed inset-y-0 z-10 hidden h-screen transition-[left,right,width] duration-150 ease-linear md:flex',
             'w-[var(--sidebar-width)]',
             side === 'left'
               ? 'left-0'

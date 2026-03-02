@@ -32,16 +32,8 @@ interface LayoutProps {
 
 export const Layout: React.FC<LayoutProps> = ({ children }) => {
   return (
-/** TODO agregar estos ajustes a index, ahí se deberían de manejar */
-    <SidebarProvider>
-      <div 
-        className="flex min-h-screen w-full"
-        style={{
-          '--sidebar-width': '16rem',
-          '--sidebar-width-mobile': '18rem',
-          '--sidebar-width-icon': '3rem',
-        } as React.CSSProperties}
-      >
+<SidebarProvider>
+      <div className="flex min-h-screen w-full">
         <ModernSidebar />
         <MainContent>
           <AppHeader rightContent={<UserProfileHeader />} />

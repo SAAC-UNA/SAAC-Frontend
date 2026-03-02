@@ -80,10 +80,6 @@
   --color-negro-una: #000000;
   --color-verde: #10b981;
 
-  /* TODO (creo que no se usan) 01-03-2026 Extensiones para el sidebar (usando colores UNA) */
-  --color-rojo-sidebar: var(--color-rojo-una);
-  --color-rojo-sidebar-dark: var(--color-rojo-una-2);
-
   --font-poppins: 'Poppins', sans-serif;
 
   /* Tamaños de tipografía estandarizados por tipo de elemento */
@@ -112,10 +108,20 @@
   --text-badge: 0.75rem;            /* 12px - Badges, chips, pills */
   --text-pagination: 0.875rem;      /* 14px - Paginación */
 
+   /* SIDEBAR */
+  --sidebar-width: 16rem;            /* 256px - Ancho expandido */
+  --sidebar-width-mobile: 18rem;     /* 288px - Ancho en móvil */
+  --sidebar-width-icon: 3.50rem;     /* 56px - Ancho colapsado (solo íconos) */
+  --height-sidebar-item: 3.25rem;    /* 52px - Altura fija del botón */
+  --padding-sidebar-x: 1rem;         /* 16px - Padding horizontal del botón */
+  --size-sidebar-icon: 2rem;         /* 32px - Tamaño del ícono */
+  --radius-sidebar-item: 1.25rem;    /* 20px - Radio de las esquinas del botón y curvas decorativas */
+  
   /* Tamaños para botones de acción en tablas */
   --size-table-action-button: 2rem; /* 32px - Tamaño del botón (h-8 w-8) */
   --size-table-action-icon: 0.875rem;   /* 16px - Tamaño del icono (w-4 h-4) */
   --padding-table-action: 0.5rem;   /* 8px - Padding del botón (p-2) */
+
   /* Tamaños para botones en headers */
   --size-header-button: 2.25rem;     /* 32px - Tamaño del botón (h-10 w-10) */
   --size-header-icon: 1.25rem;     /* 20px - Tamaño del icono (w-5 h-5) */
@@ -152,7 +158,6 @@
   --icon-search: var(--color-gris-una);   /* Buscar - gris UNA */
   --icon-refresh: var(--color-info);      /* Actualizar - azul info */
   --icon-expand: var(--color-rojo-una-2);   /* Expandir - gris UNA */
-  --icon-collapse: var(--color-gris-una); /* Colapsar - gris UNA */
   --icon-back: var(--color-rojo-una-2);     /* Regresar - gris UNA */
   --icon-close: var(--color-gris-una);    /* Cerrar - gris UNA */
   --icon-loading: var(--color-rojo-una-2);      /* Cargando - azul info */
@@ -185,21 +190,14 @@
   --btn-secondary-hover: #a1151a;           /* Hover del botón secundario */
   --btn-danger: var(--color-error);         /* Botón de peligro */
   --btn-danger-hover: #dc2626;              /* Hover del botón de peligro */
-/*TODO Revisar estos ajustes del sidebar*/
-  /* Ancho del sidebar */
-  --spacing-sidebar: 16rem;
+
 }
 
 /* ===== CONFIGURACIÓN BASE ===== */
 /* Variables CSS para el sidebar y configuración global */
 
   @layer base {
-  :root {
-    --sidebar-width: 16rem;
-    --sidebar-width-mobile: 18rem;
-    --sidebar-width-icon: 3rem;
-  }
-/********************************/
+
   body {
     @apply font-poppins bg-blanco-una-2;
     /* Aplicar scrollbar personalizado globalmente */
@@ -226,20 +224,9 @@
 }
 
 /* ===== COMPONENTES REUTILIZABLES ===== */
-/* Clases específicas para sidebar y elementos del sistema */
+/* Clases específicas para elementos del sistema */
 
 @layer components {
-  /* BOTONES ESPECIALES */
-  
-  /* Botón sandwich del menú - Para toggle del sidebar */
-  .btn-menu {
-    @apply bg-transparent text-current p-0 border-0 font-normal rounded-none;
-  }
-  
-  /* Efectos de glassmorphism */
-  .glass-effect {
-    @apply backdrop-blur-sm bg-gris-una border border-white/20;
-  }
 
   /* ===== TOAST STYLES ===== */
   /* Clases para toasts - variables de estado */
@@ -352,6 +339,13 @@
   .size-page-subtitle { font-size: var(--text-page-subtitle); }
   .size-button { font-size: var(--text-button); }
   .size-sidebar { font-size: var(--text-sidebar); }
+
+  /* ===== SIDEBAR ITEM DIMENSIONS ===== */
+  /* Altura y padding del botón son independientes del texto y del ícono */
+  .h-sidebar-item { height: var(--height-sidebar-item); }
+  .px-sidebar-item { padding-left: var(--padding-sidebar-x); padding-right: var(--padding-sidebar-x); }
+  .size-sidebar-icon { width: var(--size-sidebar-icon); height: var(--size-sidebar-icon); }
+  .rounded-l-sidebar-item { border-top-left-radius: var(--radius-sidebar-item); border-bottom-left-radius: var(--radius-sidebar-item); }
   .size-form-input { font-size: var(--text-form-input); }
   .size-form-label { font-size: var(--text-form-label); }
   .size-form-helper { font-size: var(--text-form-helper); }

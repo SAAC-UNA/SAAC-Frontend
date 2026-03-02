@@ -16,6 +16,22 @@ export const TABLE_ACTION_BUTTON = {
 } as const;
 
 /**
+ * Dimensiones del item de navegación del sidebar.
+ * Botón, ícono y texto son independientes entre sí.
+ * Cambiar el tamaño del texto (TYPOGRAPHY.sidebarItem) NO afecta la altura del botón.
+ */
+export const SIDEBAR_ITEM = {
+  /** Altura fija del botón + padding horizontal (no se ve afectado por font-size) */
+  button: 'h-sidebar-item px-sidebar-item',
+
+  /** Tamaño del ícono (cuadrado 20px) */
+  icon: 'size-sidebar-icon',
+
+  /** Tipografía del label — usar junto con TYPOGRAPHY.sidebarItem */
+  label: 'flex-1 truncate',
+} as const;
+
+/**
  * Tamaños estandarizados para botones del header de la aplicación
  * Botón cuadrado de 32px con icono de 20px (más grande que los de tabla)
  */
