@@ -7,6 +7,9 @@ import { useNavigate } from 'react-router-dom';
 import { cn } from '@/Utils/ClassNames';
 import { APP_HEADER_BUTTON } from '@/Constants/Components';
 import { TYPOGRAPHY } from '@/Constants/Typography';
+import { NotificationDropdown } from '@/Components/Notifications/NotificationDropdown';
+import NotificationCenter from '@/Pages/Notifications/NotificationCenter';
+import { useNotifications } from '@/Hooks/useNotifications';
 
 interface UserProfileHeaderProps {
   className?: string;
@@ -23,14 +26,37 @@ export const UserProfileHeader: React.FC<UserProfileHeaderProps> = ({ className 
   const { user, logout } = useAuth();
   const navigate = useNavigate();
   const [isOpen, setIsOpen] = useState(false);
+  const [isNotificationOpen, setIsNotificationOpen] = useState(false);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [prevCount, setPrevCount] = useState(0);
+  const [shouldShake, setShouldShake] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const notificationRef = useRef<HTMLDivElement>(null);
   const hoverTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const { unreadCount, refreshNotifications } = useNotifications();
 
   const handleLogout = () => {
     logout();
     navigate('/login');
     setIsOpen(false);
   };
+
+  const handleToggleNotifications = () => {
+    setIsNotificationOpen(!isNotificationOpen);
+    if (!isNotificationOpen) {
+      refreshNotifications();
+    }
+  };
+
+  // Detectar nuevas notificaciones para animar
+  useEffect(() => {
+    if (unreadCount > prevCount && prevCount > 0) {
+      setShouldShake(true);
+      setTimeout(() => setShouldShake(false), 500);
+    }
+    setPrevCount(unreadCount);
+  }, [unreadCount, prevCount]);
 
   const handleMouseEnter = () => {
     if (hoverTimeoutRef.current) {
@@ -50,6 +76,9 @@ export const UserProfileHeader: React.FC<UserProfileHeaderProps> = ({ className 
     const handleClickOutside = (event: MouseEvent) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
         setIsOpen(false);
+      }
+      if (notificationRef.current && !notificationRef.current.contains(event.target as Node)) {
+        setIsNotificationOpen(false);
       }
     };
 
@@ -106,21 +135,61 @@ export const UserProfileHeader: React.FC<UserProfileHeaderProps> = ({ className 
           )}
         </div>
 
-        {/* Botón Notificaciones con Tooltip */}
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <Button
-              variant="ghost"
-              className={`${APP_HEADER_BUTTON.button} text-gris-una hover:bg-gris-una/10`}
-              aria-label="Notificaciones"
-            >
-              <SystemIcons.interface.bell className={APP_HEADER_BUTTON.icon} />
-            </Button>
-          </TooltipTrigger>
-          <TooltipContent side="bottom" align="center">
-            Notificaciones
-          </TooltipContent>
-        </Tooltip>
+        {/* Botón Notificaciones con Tooltip y Dropdown */}
+        <div className="relative" ref={notificationRef}>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                variant="ghost"
+                size="sm"
+                className={cn(
+                  "h-8 w-8 p-0 text-negro-una hover:bg-gris-una/10 relative",
+                  shouldShake && "animate-shake"
+                )}
+                aria-label="Notificaciones"
+                onClick={handleToggleNotifications}
+              >
+                <SystemIcons.interface.bell className="h-5 w-5" />
+                {/* Punto rojo indicador */}
+                {unreadCount > 0 && (
+                  <span className="absolute top-0.5 right-0.5 inline-flex h-2 w-2 rounded-full bg-red-600"></span>
+                )}
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent side="bottom" align="center">
+              Notificaciones
+            </TooltipContent>
+          </Tooltip>
+
+          {/* Dropdown de notificaciones */}
+          {isNotificationOpen && (
+            <NotificationDropdown
+              onClose={() => setIsNotificationOpen(false)}
+              onViewAll={() => {
+                setIsNotificationOpen(false);
+                setIsModalOpen(true);
+              }}
+            />
+          )}
+        </div>
+
+        {/* Modal de Centro de Notificaciones */}
+        <NotificationCenter
+          isOpen={isModalOpen}
+          onClose={() => setIsModalOpen(false)}
+        />
+
+        {/* Estilos para animación */}
+        <style>{`
+          @keyframes shake {
+            0%, 100% { transform: rotate(0deg); }
+            10%, 30%, 50%, 70%, 90% { transform: rotate(-10deg); }
+            20%, 40%, 60%, 80% { transform: rotate(10deg); }
+          }
+          .animate-shake {
+            animation: shake 0.5s ease-in-out;
+          }
+        `}</style>
       </div>
     </TooltipProvider>
   );

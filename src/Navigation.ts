@@ -14,6 +14,7 @@ const commitmentIcon = 'system-icon:box-archive';
 const approvalIcon = 'system-icon:check-circle';
 const extensionRequestIcon = 'system-icon:clock';
 const calendarIcon = 'system-icon:calendar';
+const reportsIcon = 'system-icon:document-text';
 
 /**
  * Obtener items de navegación filtrados por rol
@@ -184,6 +185,15 @@ export const getNavigationItems = (userRoles?: string | string[]): NavItem[] => 
         isActive: false,
       },
     ],
+  });
+
+  // Gestión de Informes - Todos los autenticados
+  items.push({
+    id: 'gestion-informes',
+    label: 'Gestión de Informes',
+    icon: reportsIcon,
+    href: '/gestion-informes',
+    isActive: false
   });
 
   return items;

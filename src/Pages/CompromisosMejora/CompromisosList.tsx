@@ -1,33 +1,22 @@
 /**
  * CompromisosList - Página de listado de compromisos de mejora
+ * Muestra todos los compromisos con filtros y acciones
  */
 
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ScreenContainer } from '@/Components/Ui/ScreenContainer';
-import { Button } from '@/Components/Ui/Index';
+import { Button, LoadingSpinner } from '@/Components/Ui/Index';
 import { SystemIcons } from '@/Components/Ui/Icons/SystemIcons';
-import { axiosInstance } from '@/Config/axios';
-
-interface Compromiso {
-  id: number;
-  descripcion: string;
-  fecha_inicio: string;
-  fecha_fin: string;
-  estado: 'Pendiente' | 'En Progreso' | 'Completado';
-  proceso?: {
-    id: number;
-    nombre: string;
-  };
-  ciclo_acreditacion?: {
-    id: number;
-    nombre: string;
-  };
-}
+import { improvementCommitmentService } from '@/Services/ImprovementCommitmentService';
+import type { CompromisoMejora } from '@/Types/ImprovementCommitmentTypes';
+import { useToast } from '@/Context/ToastContext';
 
 export const CompromisosList: React.FC = () => {
   const navigate = useNavigate();
-  const [compromisos, setCompromisos] = useState<Compromiso[]>([]);
+  const { showToast } = useToast();
+  
+  const [compromisos, setCompromisos] = useState<CompromisoMejora[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -40,11 +29,11 @@ export const CompromisosList: React.FC = () => {
       setLoading(true);
       setError(null);
       
-      const response = await axiosInstance.get('/compromisos-de-mejora');
+      const response = await improvementCommitmentService.listarCompromisos({
+        per_page: 50
+      });
       
-      const data = response.data.data || response.data;
-      console.log('Compromisos cargados:', data);
-      setCompromisos(data);
+      setCompromisos(response.data || []);
     } catch (error: any) {
       console.error('Error al cargar compromisos:', error);
       
@@ -65,18 +54,34 @@ export const CompromisosList: React.FC = () => {
     }
   };
 
-  const getEstadoBadge = (estado: string) => {
-    const badges: Record<string, { bg: string; text: string }> = {
-      'Pendiente': { bg: 'bg-yellow-100', text: 'text-yellow-800' },
-      'En Progreso': { bg: 'bg-blue-100', text: 'text-blue-800' },
-      'Completado': { bg: 'bg-green-100', text: 'text-green-800' }
-    };
-    const badge = badges[estado] || badges['Pendiente'];
-    return (
-      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${badge.bg} ${badge.text}`}>
-        {estado}
-      </span>
-    );
+  const compromisosFiltrados = compromisos;
+  const nowTs = Date.now();
+  const sortedByEndDate = [...compromisosFiltrados].sort((a, b) => {
+    const aTs = new Date(a.fecha_fin).getTime();
+    const bTs = new Date(b.fecha_fin).getTime();
+    const aDiff = aTs - nowTs;
+    const bDiff = bTs - nowTs;
+
+    const aUpcoming = aDiff >= 0;
+    const bUpcoming = bDiff >= 0;
+
+    if (aUpcoming && bUpcoming) return aDiff - bDiff;
+    if (!aUpcoming && !bUpcoming) return bDiff - aDiff;
+    return aUpcoming ? -1 : 1;
+  });
+  const featuredCompromiso = sortedByEndDate[0];
+  const remainingCompromisos = sortedByEndDate.slice(1);
+
+  const formatearFecha = (fecha: string) => {
+    return new Date(fecha).toLocaleDateString('es-CR', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric'
+    });
+  };
+
+  const handleVerDetalle = (id: number) => {
+    navigate(`/compromisos/ver/${id}`);
   };
 
   return (
@@ -85,17 +90,27 @@ export const CompromisosList: React.FC = () => {
         {/* Header */}
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">Compromisos de Mejora</h1>
-            <p className="mt-1 text-sm text-gray-500">
+            <h1 className="text-2xl font-bold text-negro-una">Compromisos de Mejora</h1>
+            <p className="mt-1 text-sm text-gris-una">
               Gestione los compromisos de mejora vinculados a criterios y evidencias
             </p>
+            <div className="mt-2 inline-flex items-center gap-2 text-xs text-gray-500">
+              <span className="inline-flex items-center rounded-full border border-gray-200 bg-gray-50 px-2 py-0.5">
+                {compromisosFiltrados.length} total
+              </span>
+              <span className="text-gray-400">•</span>
+              <span className="inline-flex items-center gap-1">
+                <SystemIcons.interface.clock size="xs" className="text-gray-400" />
+                {compromisosFiltrados.filter((c) => c.is_overdue).length} vencidos
+              </span>
+            </div>
           </div>
           <Button
             onClick={() => navigate('/compromisos/crear')}
             variant="secondary"
             className="gap-2"
           >
-            <SystemIcons.actions.add className="w-4 h-4" size="sm" />
+            <SystemIcons.actions.add size="sm" />
             Crear
           </Button>
         </div>
@@ -107,29 +122,17 @@ export const CompromisosList: React.FC = () => {
         {loading ? (
           <div className="flex justify-center items-center py-12">
             <div className="text-center">
-              <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-rojo-una mb-4"></div>
-              <p className="text-gray-600">Cargando compromisos...</p>
+              <LoadingSpinner size="lg" className="mx-auto mb-4" />
+              <p className="text-gris-una">Cargando compromisos...</p>
             </div>
           </div>
         ) : error ? (
           /* Error State */
           <div className="flex items-center justify-center py-24">
             <div className="text-center max-w-md">
-              <svg
-                className="mx-auto h-12 w-12 text-red-400"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
-                />
-              </svg>
-              <h3 className="text-base font-medium text-gray-900 mb-2 mt-4">{error}</h3>
-              <p className="text-sm text-gray-500 mb-4">
+              <SystemIcons.interface.alert size="xl" className="mx-auto text-red-400 mb-4" />
+              <h3 className="text-base font-medium text-negro-una mb-2 mt-4">{error}</h3>
+              <p className="text-sm text-gris-una mb-4">
                 El servidor puede no estar funcionando correctamente
               </p>
               <Button
@@ -140,91 +143,119 @@ export const CompromisosList: React.FC = () => {
               </Button>
             </div>
           </div>
-        ) : compromisos.length === 0 ? (
+        ) : compromisosFiltrados.length === 0 ? (
           /* Empty State */
           <div className="flex items-center justify-center py-24">
             <div className="text-center">
-              <svg
-                className="mx-auto h-12 w-12 text-gray-400"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"
-                />
-              </svg>
-              <h3 className="text-base font-medium text-gray-900 mb-2">No hay compromisos registrados</h3>
-              <p className="text-sm text-gray-500">
-                Utilice el botón "Crear" para registrar un nuevo compromiso de mejora
+              <SystemIcons.modal.document size="xl" className="mx-auto text-gray-400 mb-4" />
+              <h3 className="text-base font-medium text-negro-una mb-2">
+                {'No hay compromisos registrados'}
+              </h3>
+              <p className="text-sm text-gris-una">
+                {'Utilice el botón "Crear" para registrar un nuevo compromiso de mejora'}
               </p>
             </div>
           </div>
         ) : (
-          /* Table */
-          <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gray-50">
-              <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Descripción
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Proceso/Ciclo
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Fechas
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Estado
-                </th>
-                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Acciones
-                </th>
-              </tr>
-            </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
-              {compromisos.map((compromiso, index) => (
-                <tr key={`compromiso-${compromiso.id || index}`} className="hover:bg-gray-50">
-                  <td className="px-6 py-4">
-                    <div className="text-sm font-medium text-gray-900">
-                      {compromiso.descripcion}
+          /* Cards de Compromisos */
+          <div className="space-y-5">
+            {featuredCompromiso && (
+              <div
+                className={`rounded-xl border p-5 transition-shadow cursor-pointer bg-gradient-to-br from-gray-50 via-white to-gray-50/60 hover:shadow-md ${
+                  featuredCompromiso.is_overdue ? 'border-red-200' : 'border-gray-200'
+                }`}
+                onClick={() => handleVerDetalle(featuredCompromiso.compromiso_mejora_id)}
+              >
+                <div className="flex items-start justify-between gap-4">
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs font-semibold tracking-wide text-gray-500">Destacado</span>
+                      {featuredCompromiso.is_overdue && (
+                        <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-red-50 border border-red-200 rounded text-xs text-red-800 font-medium">
+                          <SystemIcons.interface.alert size="xs" className="w-3 h-3" />
+                          Vencido
+                        </span>
+                      )}
                     </div>
-                  </td>
-                  <td className="px-6 py-4">
-                    <div className="text-sm text-gray-900">
-                      {compromiso.proceso?.nombre || compromiso.ciclo_acreditacion?.nombre || '-'}
+                    <h3 className="mt-2 text-lg font-semibold text-negro-una truncate">
+                      {featuredCompromiso.descripcion || 'Sin descripción'}
+                    </h3>
+
+                    <div className="mt-3 flex flex-wrap items-center gap-2 text-xs text-gray-600">
+                      <span className="inline-flex items-center rounded-full border border-gray-200 bg-white px-2 py-0.5">
+                        {formatearFecha(featuredCompromiso.fecha_inicio)} - {formatearFecha(featuredCompromiso.fecha_fin)}
+                      </span>
+                      {featuredCompromiso.selecciones && featuredCompromiso.selecciones.length > 0 && (
+                        <div className="inline-flex items-center gap-2">
+                          <span className="inline-flex items-center rounded-full border border-gray-200 bg-white px-2 py-0.5">
+                            {featuredCompromiso.selecciones.length} {featuredCompromiso.selecciones.length === 1 ? 'criterio' : 'criterios'}
+                          </span>
+                          <span className="inline-flex items-center rounded-full border border-amber-200 bg-amber-50 px-2 py-0.5 text-[10px] font-medium text-amber-700">
+                            Proximo a vencer
+                          </span>
+                        </div>
+                      )}
+                      {featuredCompromiso.assignedEvidences && featuredCompromiso.assignedEvidences.length > 0 && (
+                        <span className="inline-flex items-center rounded-full border border-gray-200 bg-white px-2 py-0.5">
+                          {featuredCompromiso.assignedEvidences.length} {featuredCompromiso.assignedEvidences.length === 1 ? 'asignación' : 'asignaciones'}
+                        </span>
+                      )}
                     </div>
-                  </td>
-                  <td className="px-6 py-4">
-                    <div className="text-sm text-gray-500">
-                      {new Date(compromiso.fecha_inicio).toLocaleDateString('es-CR')} -{' '}
-                      {new Date(compromiso.fecha_fin).toLocaleDateString('es-CR')}
+                  </div>
+
+                  <div className="flex items-center gap-2 text-xs text-gray-500">
+                    <span>Ver detalle</span>
+                    <SystemIcons.interface.chevronRight size="sm" className="text-gris-una" />
+                  </div>
+                </div>
+              </div>
+            )}
+
+            <div className="rounded-xl border border-gray-200 bg-white/90">
+              <div className="divide-y divide-gray-100">
+                {remainingCompromisos.map((compromiso) => (
+                  <div
+                    key={compromiso.compromiso_mejora_id}
+                    className={`flex items-center justify-between gap-3 px-4 py-3 transition-colors cursor-pointer hover:bg-gray-50 ${
+                      compromiso.is_overdue ? 'border-l-4 border-red-300' : 'border-l-4 border-transparent'
+                    }`}
+                    onClick={() => handleVerDetalle(compromiso.compromiso_mejora_id)}
+                  >
+                    <div className="min-w-0 flex-1">
+                      <div className="flex items-center gap-2">
+                        <h4 className="text-sm font-semibold text-negro-una truncate">
+                          {compromiso.descripcion || 'Sin descripción'}
+                        </h4>
+                        {compromiso.is_overdue && (
+                          <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-red-50 border border-red-200 rounded text-[11px] text-red-800 font-medium">
+                            <SystemIcons.interface.alert size="xs" className="w-3 h-3" />
+                            Vencido
+                          </span>
+                        )}
+                      </div>
+                      <div className="mt-1 flex flex-wrap items-center gap-2 text-[11px] text-gray-600">
+                        <span className="inline-flex items-center rounded-full border border-gray-200 bg-gray-50 px-2 py-0.5">
+                          {formatearFecha(compromiso.fecha_inicio)} - {formatearFecha(compromiso.fecha_fin)}
+                        </span>
+                        {compromiso.selecciones && compromiso.selecciones.length > 0 && (
+                          <span className="inline-flex items-center rounded-full border border-gray-200 bg-gray-50 px-2 py-0.5">
+                            {compromiso.selecciones.length} {compromiso.selecciones.length === 1 ? 'criterio' : 'criterios'}
+                          </span>
+                        )}
+                        {compromiso.assignedEvidences && compromiso.assignedEvidences.length > 0 && (
+                          <span className="inline-flex items-center rounded-full border border-gray-200 bg-gray-50 px-2 py-0.5">
+                            {compromiso.assignedEvidences.length} {compromiso.assignedEvidences.length === 1 ? 'asignación' : 'asignaciones'}
+                          </span>
+                        )}
+                      </div>
                     </div>
-                  </td>
-                  <td className="px-6 py-4">
-                    {getEstadoBadge(compromiso.estado)}
-                  </td>
-                  <td className="px-6 py-4 text-right text-sm font-medium">
-                    <button
-                      className="text-rojo-una hover:text-red-900 mr-4"
-                      onClick={() => navigate(`/compromisos/ver/${compromiso.id}`)}
-                    >
-                      Ver
-                    </button>
-                    <button
-                      className="text-blue-600 hover:text-blue-900"
-                      onClick={() => navigate(`/compromisos/editar/${compromiso.id}`)}
-                    >
-                      Editar
-                    </button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+
+                    <SystemIcons.interface.chevronRight size="sm" className="text-gris-una" />
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
         )}
       </div>
     </ScreenContainer>

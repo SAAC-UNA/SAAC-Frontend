@@ -18,7 +18,6 @@ const StructureList = lazy(() => import('@/Pages/Structure/StructureList'));
 const StructureCreation = lazy(() => import('@/Pages/Structure/StructureCreation'));
 const StructureEditForm = lazy(() => import('@/Pages/Structure/StructureEditForm'));
 const StructureEditList = lazy(() => import('./Pages/Structure/StructureEditList'));
-const AccreditationProgress = lazy(() => import('@/Pages/Accreditation/AccreditationProgress'));
 const EvidenceAssignment = lazy(() => import('./Pages/EvidenceAssignment').then(m => ({ default: m.EvidenceAssignment })));
 const EvidenceUploadPage = lazy(() => import('./Pages/EvidenceUpload').then(m => ({ default: m.EvidenceUploadPage })));
 const EvidenceSearchPage = lazy(() => import('./Pages/EvidenceSearch').then(m => ({ default: m.EvidenceSearchPage })));
@@ -26,7 +25,9 @@ const MyEvidenceAssignmentsPage = lazy(() => import('./Pages/MyEvidence').then(m
 const AuditLogPage = lazy(() => import('@/Pages/AuditLog/AuditLogPage'));
 const CompromisosList = lazy(() => import('./Pages/CompromisosMejora/CompromisosList').then(m => ({ default: m.CompromisosList })));
 const CrearCompromiso = lazy(() => import('./Pages/CompromisosMejora/CrearCompromiso'));
+const CompromisoDetalle = lazy(() => import('./Pages/CompromisosMejora/CompromisoDetalle'));
 const AprobacionBloques = lazy(() => import('./Pages/AprobacionBloques/AprobacionBloquesSimple'));
+const InformesFinales = lazy(() => import('./Pages/GestionInformes').then(m => ({ default: m.InformesFinales })));
 
 // HU-016: Páginas de solicitudes de ampliación
 const ManageExtensionRequestsPage = lazy(() => import('./Pages/ExtensionRequest').then(m => ({ default: m.ManageExtensionRequestsPage })));
@@ -200,16 +201,6 @@ function App() {
                           }
                         />
  
-                        {/* Avance de Acreditación - Todos los autenticados */}
-                        <Route
-                          path="/acreditacion/avance"
-                          element={
-                            <ProtectedRoute>
-                              <AccreditationProgress />
-                            </ProtectedRoute>
-                          }
-                        />
-
                         {/* Compromisos de Mejora - Todos los autenticados */}
                         <Route
                           path="/compromisos/listar"
@@ -227,6 +218,22 @@ function App() {
                             </ProtectedRoute>
                           }
                         />
+                        <Route
+                          path="/compromisos/ver/:id"
+                          element={
+                            <ProtectedRoute>
+                              <CompromisoDetalle />
+                            </ProtectedRoute>
+                          }
+                        />
+                        <Route
+                          path="/compromisos/editar/:id"
+                          element={
+                            <ProtectedRoute>
+                              <CrearCompromiso />
+                            </ProtectedRoute>
+                          }
+                        />
 
                         {/* Aprobación de Bloques - Todos los autenticados */}
                         <Route
@@ -234,6 +241,16 @@ function App() {
                           element={
                             <ProtectedRoute>
                               <AprobacionBloques />
+                            </ProtectedRoute>
+                          }
+                        />
+
+                        {/* Gestión de Informes - Todos los autenticados */}
+                        <Route
+                          path="/gestion-informes"
+                          element={
+                            <ProtectedRoute>
+                              <InformesFinales />
                             </ProtectedRoute>
                           }
                         />
