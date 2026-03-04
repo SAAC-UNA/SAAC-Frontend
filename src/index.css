@@ -74,10 +74,12 @@
   --color-rojo-una: #CD1719;
   --color-rojo-una-2: #C32B30;
   --color-gris-una: #A7A7A9;
+  --color-gris-una-2: #888887;
   --color-azul-una: #034991;
   --color-blanco-una: #FFFFFF;
   --color-blanco-una-2: #F8F9FA;
   --color-negro-una: #000000;
+  --color-negro-una-2: #232323;
   --color-verde: #10b981;
 
   --font-poppins: 'Poppins', sans-serif;
@@ -93,8 +95,8 @@
   --text-form-input: 0.875rem;      /* 14px - Inputs, selects, textareas */
   --text-form-label: 0.875rem;      /* 14px - Labels de formularios */
   --text-form-helper: 0.75rem;      /* 12px - Textos de ayuda y validación */
-  --text-table-header: 0.75rem;     /* 12px - Headers de tabla */
-  --text-table-cell: 0.875rem;      /* 14px - Contenido de celdas */
+  --text-table-header: 0.875rem;     /* 14px - Headers de tabla */
+  --text-table-cell: 0.75rem;      /* 12px - Contenido de celdas */
   --text-table-caption: 0.875rem;   /* 14px - Título de tabla */
   --text-alert-title: 0.875rem;     /* 14px - Título de alertas */
   --text-alert-message: 0.875rem;   /* 14px - Mensaje de alertas */
@@ -394,9 +396,12 @@
   .text-rojo-una { color: var(--color-rojo-una); }
   .text-rojo-una-2 { color: var(--color-rojo-una-2); }
   .text-gris-una { color: var(--color-gris-una); }
+  .text-gris-una-2 { color: var(--color-gris-una-2); }
   .text-azul-una { color: var(--color-azul-una); }
   .text-blanco-una { color: var(--color-blanco-una); }
   .text-negro-una { color: var(--color-negro-una); }
+  .text-negro-una-2 { color: var(--color-negro-una-2); }
+  .text-negro-una-2 { color: var(--color-negro-una-2); }
   .text-verde { color: var(--color-verde); }
   .text-warning { color: var(--color-warning); }
   .text-error { color: var(--color-error); }

@@ -10,6 +10,8 @@
 
 import React, { useMemo, useCallback } from 'react';
 import { DataTable, type DataTableColumn } from '@/Components/Ui/DataTable';
+import { TYPOGRAPHY } from '@/Constants/Typography';
+import { TABLE_TRUNCATE } from '@/Constants/TableTruncate';
 import { TableActionButton } from '@/Components/index';
 import type { EvidenceAssignment } from '@/Types/EvidenceAssignmentTypes';
 import { getStatusBadgeInfo, formatDate, isOverdue } from '@/Types/EvidenceAssignmentTypes';
@@ -67,16 +69,16 @@ export const EvidenceAssignmentsTable: React.FC<EvidenceAssignmentsTableProps> =
         return (
           <div className="flex flex-col pl-2 py-1">
             <p 
-              className="block font-sans text-sm antialiased font-bold leading-normal text-negro-una"
+              className={`block font-sans antialiased font-bold leading-normal text-negro-una-2 ${TYPOGRAPHY.table.cell}`}
               title={fullText}
             >
-              {truncateText(fullText, 40)}
+              {truncateText(fullText, TABLE_TRUNCATE.text)}
             </p>
             <p 
-              className="block font-sans text-sm antialiased font-normal leading-normal text-gris-una opacity-70"
+              className={`block font-sans antialiased font-normal leading-normal text-gris-una opacity-70 ${TYPOGRAPHY.table.cell}`}
               title={`Criterio: ${criterionText}`}
             >
-              {truncateText(criterionText, 40)}
+              {truncateText(criterionText, TABLE_TRUNCATE.text)}
             </p>
           </div>
         );
@@ -94,7 +96,7 @@ export const EvidenceAssignmentsTable: React.FC<EvidenceAssignmentsTableProps> =
         return (
           <div className="w-max mx-auto">
             <div 
-              className="relative grid items-center px-2 py-1 font-sans text-xs font-bold uppercase rounded-corner select-none whitespace-nowrap"
+              className={`relative grid items-center px-2 py-1 font-sans font-bold rounded-corner select-none whitespace-nowrap ${TYPOGRAPHY.badge}`}
               style={{ 
                 backgroundColor: finalInfo.bgColor,
                 color: finalInfo.color 
@@ -117,7 +119,7 @@ export const EvidenceAssignmentsTable: React.FC<EvidenceAssignmentsTableProps> =
           : 'Sin límite';
 
         return (
-          <div className="flex flex-col items-center text-sm">
+          <div className={`flex flex-col items-center ${TYPOGRAPHY.table.cell}`}>
             <div className="flex items-center gap-1 text-gris-una">
               <span>Asignada: {fechaAsignacion}</span>
             </div>

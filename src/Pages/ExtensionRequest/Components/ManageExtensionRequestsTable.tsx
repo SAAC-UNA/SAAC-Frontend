@@ -12,6 +12,8 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { DataTable, TableActionButton } from '@/components/index';
 import { BackendErrorAlert } from '@/Components/Ui/BackendErrorAlert';
+import { TYPOGRAPHY } from '@/Constants/Typography';
+import { TABLE_TRUNCATE } from '@/Constants/TableTruncate';
 import type { ExtensionRequest, ExtensionRequestStatus } from '@/Types/ExtensionRequestTypes';
 
 interface ManageExtensionRequestsTableProps {
@@ -55,7 +57,7 @@ export const ManageExtensionRequestsTable: React.FC<ManageExtensionRequestsTable
 
     return (
       <div className="w-max mx-auto">
-        <div className={`relative grid items-center px-2 py-1 font-sans text-xs font-bold uppercase rounded-corner select-none whitespace-nowrap ${badges[estado]}`}>
+        <div className={`relative grid items-center px-2 py-1 font-sans font-bold rounded-corner select-none whitespace-nowrap ${TYPOGRAPHY.badge} ${badges[estado]}`}>
           <span>{estado.charAt(0).toUpperCase() + estado.slice(1)}</span>
         </div>
       </div>
@@ -111,11 +113,11 @@ export const ManageExtensionRequestsTable: React.FC<ManageExtensionRequestsTable
       header: 'Solicitante',
       render: (_: unknown, item: ExtensionRequest) => (
         <div className="flex flex-col">
-          <p className="relative grid items-center px-2 py-1 font-sans text-xs font-bold text-gray-900 uppercase rounded-corner select-none whitespace-nowrap">
-            {item.usuario?.nombre || 'N/A'}
+          <p className={`relative grid items-center px-2 py-1 font-sans font-bold text-negro-una-2 rounded-corner select-none whitespace-nowrap ${TYPOGRAPHY.table.cell}`} title={item.usuario?.nombre || 'N/A'}>
+            {truncateText(item.usuario?.nombre || 'N/A', TABLE_TRUNCATE.name)}
           </p>
-          <p className="relative grid items-center px-2 py-1 font-sans text-xs text-gray-500 rounded-corner select-none whitespace-nowrap">
-            {item.usuario?.email || ''}
+          <p className={`relative grid items-center px-2 py-1 font-sans text-gris-una-2 rounded-corner select-none whitespace-nowrap ${TYPOGRAPHY.table.cell}`} title={item.usuario?.email || ''}>
+            {truncateText(item.usuario?.email || '', TABLE_TRUNCATE.email)}
           </p>
         </div>
       )
@@ -125,8 +127,8 @@ export const ManageExtensionRequestsTable: React.FC<ManageExtensionRequestsTable
       header: 'Motivo',
       render: (_: unknown, item: ExtensionRequest) => (
         <div className="flex flex-col">
-          <p className="relative grid items-center px-2 py-1 font-sans text-xs font-bold text-gray-900 uppercase rounded-corner select-none whitespace-nowrap" title={item.motivo}>
-            {truncateText(item.motivo, 40)}
+          <p className={`relative grid items-center px-2 py-1 font-sans font-bold text-negro-una-2 rounded-corner select-none whitespace-nowrap ${TYPOGRAPHY.table.cell}`} title={item.motivo}>
+            {truncateText(item.motivo, TABLE_TRUNCATE.text)}
           </p>
         </div>
       )
@@ -136,7 +138,7 @@ export const ManageExtensionRequestsTable: React.FC<ManageExtensionRequestsTable
       header: 'Fecha Solicitud',
       align: 'center',
       render: (_: unknown, item: ExtensionRequest) => (
-        <span className="relative grid items-center px-2 py-1 font-sans text-xs font-bold text-gray-900 uppercase rounded-corner select-none whitespace-nowrap">
+        <span className={`relative grid items-center px-2 py-1 font-sans font-bold text-negro-una-2 rounded-corner select-none whitespace-nowrap ${TYPOGRAPHY.table.cell}`}>
           {new Date(item.created_at).toLocaleDateString('es-ES')}
         </span>
       )
@@ -146,7 +148,7 @@ export const ManageExtensionRequestsTable: React.FC<ManageExtensionRequestsTable
       header: 'Fecha Sugerida',
       align: 'center',
       render: (_: unknown, item: ExtensionRequest) => (
-        <span className="relative grid items-center px-2 py-1 font-sans text-xs font-bold text-gray-900 uppercase rounded-corner select-none whitespace-nowrap">
+        <span className={`relative grid items-center px-2 py-1 font-sans font-bold text-negro-una-2 rounded-corner select-none whitespace-nowrap ${TYPOGRAPHY.table.cell}`}>
           {new Date(item.fecha_sugerida).toLocaleDateString('es-ES')}
         </span>
       )
@@ -170,7 +172,7 @@ export const ManageExtensionRequestsTable: React.FC<ManageExtensionRequestsTable
               onClick={() => onReviewRequest?.(item)}
             />
           ) : (
-            <span className="text-xs text-gray-500">
+            <span className={`text-gray-500 ${TYPOGRAPHY.table.cell}`}>
               {item.resolutor?.nombre || 'N/A'}
             </span>
           )}

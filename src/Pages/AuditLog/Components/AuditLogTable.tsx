@@ -10,9 +10,11 @@
  * - Botón para ver detalle completo
  */
 
-import React, { useMemo } from 'react';
+import React, { useMemo, useCallback } from 'react';
 import { DataTable } from '@/Components/Ui/DataTable';
 import { TableActionButton } from '@/Components/Ui/TableActionButton';
+import { TYPOGRAPHY } from '@/Constants/Typography';
+import { TABLE_TRUNCATE } from '@/Constants/TableTruncate';
 import { SystemIcons } from '@/Components/Ui/Icons/SystemIcons';
 import type { DataTableColumn } from '@/Components/Ui/DataTable';
 import type { AuditLog } from '@/Types/AuditLogTypes';
@@ -53,11 +55,11 @@ export const AuditLogTable: React.FC<AuditLogTableProps> = ({
   /**
    * Trunca texto largo
    */
-  const truncateText = (text: string | null, maxLength: number = 50): string => {
+  const truncateText = useCallback((text: string | null, maxLength: number = 50): string => {
     if (!text) return 'N/A';
     if (text.length <= maxLength) return text;
     return text.substring(0, maxLength) + '...';
-  };
+  }, []);
 
   /**
    * Obtiene el badge de color según el tipo de acción
@@ -93,12 +95,12 @@ export const AuditLogTable: React.FC<AuditLogTableProps> = ({
         accessor: (log) => log.usuario?.nombre || 'Sistema',
         render: (_, log) => (
           <div className="flex flex-col">
-            <p className="font-semibold text-gray-900 text-sm" title={log.usuario?.nombre || 'Sistema'}>
-              {truncateText(log.usuario?.nombre || 'Sistema', 25)}
+            <p className={`font-semibold text-negro-una-2 ${TYPOGRAPHY.table.cell}`} title={log.usuario?.nombre || 'Sistema'}>
+              {truncateText(log.usuario?.nombre || 'Sistema', TABLE_TRUNCATE.name)}
             </p>
             {log.usuario?.email && (
-              <p className="text-xs text-gray-500" title={log.usuario.email}>
-                {truncateText(log.usuario.email, 30)}
+              <p className={`text-gray-500 ${TYPOGRAPHY.badge}`} title={log.usuario.email}>
+                {truncateText(log.usuario.email, TABLE_TRUNCATE.email)}
               </p>
             )}
           </div>
@@ -112,7 +114,7 @@ export const AuditLogTable: React.FC<AuditLogTableProps> = ({
           const { color, icon } = getActionBadge(log.tipo_accion.descripcion);
           return (
             <span
-              className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium ${color}`}
+              className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full font-medium ${TYPOGRAPHY.badge} ${color}`}
             >
               {icon}
               {log.tipo_accion.descripcion}
@@ -125,7 +127,7 @@ export const AuditLogTable: React.FC<AuditLogTableProps> = ({
         header: 'Módulo',
         accessor: (log) => log.modulo || 'N/A',
         render: (_, log) => (
-          <span className="text-sm text-gray-700">
+          <span className={`text-negro-una-2 ${TYPOGRAPHY.table.cell}`}>
             {log.modulo || <span className="text-gray-400 italic">Sin módulo</span>}
           </span>
         ),
@@ -135,8 +137,8 @@ export const AuditLogTable: React.FC<AuditLogTableProps> = ({
         header: 'Detalle',
         accessor: (log) => log.detalle || 'N/A',
         render: (_, log) => (
-          <p className="text-sm text-gray-600" title={log.detalle || 'Sin detalle'}>
-            {truncateText(log.detalle, 40)}
+          <p className={`text-negro-una-2 ${TYPOGRAPHY.table.cell}`} title={log.detalle || 'Sin detalle'}>
+            {truncateText(log.detalle, TABLE_TRUNCATE.text)}
           </p>
         ),
       },
@@ -146,10 +148,10 @@ export const AuditLogTable: React.FC<AuditLogTableProps> = ({
         accessor: (log) => log.fecha_hora,
         render: (_, log) => (
           <div className="flex flex-col">
-            <p className="text-sm text-gray-900 font-medium">
+            <p className={`text-negro-una-2 font-medium ${TYPOGRAPHY.table.cell}`}>
               {formatDate(log.fecha_hora).split(', ')[0]}
             </p>
-            <p className="text-xs text-gray-500">{formatDate(log.fecha_hora).split(', ')[1]}</p>
+            <p className={`text-gray-500 ${TYPOGRAPHY.badge}`}>{formatDate(log.fecha_hora).split(', ')[1]}</p>
           </div>
         ),
       },
@@ -168,7 +170,7 @@ export const AuditLogTable: React.FC<AuditLogTableProps> = ({
         ),
       },
     ],
-    [onViewDetail]
+    [onViewDetail, truncateText]
   );
 
   return (
