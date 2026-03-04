@@ -20,7 +20,6 @@ import React, { useEffect, useState, useMemo, useCallback } from 'react';
 import { Modal } from '@/Components/Ui/Modal';
 import { DataTable, ButtonWithTooltip } from '@/components/index';
 import { TYPOGRAPHY } from '@/Constants/Typography';
-import { useStructure } from '@/Hooks/UseStructure';
 import { useDebounce } from '@/Hooks/UseDebounce';
 import { ELEMENT_TYPE_LABELS } from '@/Constants/StructureConstants';
 import { TABLE_TRUNCATE } from '@/Constants/TableTruncate';
@@ -32,6 +31,8 @@ import { TABLE_ACTION_BUTTON } from '@/Constants/Components';
 
 
 interface StructureTableProps {
+    treeData: StructureElement[];
+    isLoading: boolean;
     onEdit?: (element: StructureElement) => void;
     onDelete?: (element: StructureElement) => void;
     onToggleActive?: (element: StructureElement) => void;
@@ -41,6 +42,8 @@ interface StructureTableProps {
 }
 
 export const StructureTable: React.FC<StructureTableProps> = ({
+    treeData,
+    isLoading,
     onEdit,
     onDelete,
     onToggleActive,
@@ -48,7 +51,6 @@ export const StructureTable: React.FC<StructureTableProps> = ({
     itemsPerPage = 4,
     unstyled = false
 }) => {
-    const { treeData, isLoading, loadTree } = useStructure();
 
     const [currentPage, setCurrentPage] = useState(1);
     const [modalState, setModalState] = useState<{
@@ -72,11 +74,6 @@ export const StructureTable: React.FC<StructureTableProps> = ({
         };
         return flattenTree(treeData);
     }, [treeData]);
-
-    // Cargar elementos al montar el componente
-    useEffect(() => {
-        loadTree();
-    }, [loadTree]);
 
     // Filtrar elementos basado en la búsqueda y tipo - MEMOIZADO con debounced search
     const filteredElements = useMemo(() => {

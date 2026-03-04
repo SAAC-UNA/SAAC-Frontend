@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useRef } from 'react';
 import { structureService } from '@/Services/StructureService';
 import type { 
   StructureElement,
@@ -46,6 +46,8 @@ export const useStructure = (): UseStructureReturn => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [treeData, setTreeData] = useState<StructureElement[]>([]);
+  // Ref guard: prevents concurrent loadTree() calls within the same hook instance
+  const _loadingRef = useRef(false);
 
   /**
    * Limpiar errores
@@ -190,29 +192,33 @@ const deactivateElement = useCallback(async (elementType: ElementType, elementId
 }, []);
 
   /**
-   * Cargar estructura en forma de árbol
+   * Cargar estructura en forma de árbol.
+   * El ref guard evita ejecuciones concurrentes en la misma instancia del hook.
+   * La deduplicación en StructureService evita batches duplicados entre instancias.
    */
   const loadTree = useCallback(async () => {
-  setIsLoading(true);
-  setError(null);
-  
-  try {
-    const response = await structureService.getFullTree();
-    
-    if (response.data) {
-      setTreeData(response.data);
-    } else {
-      throw new Error('No se recibieron datos del servidor');
+    if (_loadingRef.current) return; // Ya está cargando — ignorar
+    _loadingRef.current = true;
+    setIsLoading(true);
+    setError(null);
+
+    try {
+      const response = await structureService.getFullTree();
+
+      if (response.data) {
+        setTreeData(response.data);
+      } else {
+        throw new Error('No se recibieron datos del servidor');
+      }
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'Error desconocido';
+      setError(`Error al cargar estructura: ${errorMessage}`);
+      console.error('Error loading structure tree:', err);
+    } finally {
+      setIsLoading(false);
+      _loadingRef.current = false;
     }
-    
-  } catch (err) {
-    const errorMessage = err instanceof Error ? err.message : 'Error desconocido';
-    setError(`Error al cargar estructura: ${errorMessage}`);
-    console.error('Error loading structure tree:', err);
-  } finally {
-    setIsLoading(false);
-  }
-}, []);
+  }, []);
 
 /**
  * Activar un elemento SIN recargar el árbol
