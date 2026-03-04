@@ -83,22 +83,7 @@ async function ensureEvidenceState(): Promise<number> {
   }
 }
 
-/**
- * Module-level tree cache — survives StrictMode unmount/remount.
- * TTL_MS: how long the cached result is considered fresh (30s).
- * This means even if loadTree() is called twice in rapid succession
- * (StrictMode, multiple mounted components, fast navigation), only
- * the first call hits the network; subsequent calls return instantly.
- */
-const TREE_CACHE_TTL_MS = 30_000;
-let _treeCache: ApiResponse<StructureElement[]> | null = null;
-let _treeCacheTime = 0;
-let _pendingTreeRequest: Promise<ApiResponse<StructureElement[]>> | null = null;
-
-function _invalidateTreeCache(): void {
-  _treeCache = null;
-  _treeCacheTime = 0;
-}
+// Tree-level cache and deduplication are now handled in UseStructure.ts.
 
 /**
  * Servicio para gestión de estructura
@@ -130,56 +115,32 @@ class StructureService {
   }
 
   /**
-  * Obtener todos los elementos (árbol completo).
-  * - Returns cached result instantly if fresher than 30s (survives StrictMode double-invoke).
-  * - Deduplicates concurrent in-flight calls to a single HTTP batch.
-  */
+   * Obtener todos los elementos (árbol completo).
+   * Caching and deduplication are handled by UseStructure.
+   */
   async getFullTree(): Promise<ApiResponse<StructureElement[]>> {
-    // 1. Return fresh cached result immediately
-    if (_treeCache && (Date.now() - _treeCacheTime) < TREE_CACHE_TTL_MS) {
-      return _treeCache;
-    }
+    const types: ElementType[] = [
+      'university', 'campus', 'career',
+      'dimension', 'component', 'criteria', 'standard', 'evidence'
+    ];
 
-    // 2. Deduplicate concurrent callers onto the same in-flight promise
-    if (_pendingTreeRequest) {
-      return _pendingTreeRequest;
-    }
+    const results = await Promise.allSettled(
+      types.map(async (type) => {
+        try {
+          const result = await this.listByType(type);
+          return result.data || [];
+        } catch (error) {
+          console.warn(`Error cargando ${type}, devolviendo array vacío:`, error);
+          return [];
+        }
+      })
+    );
 
-    _pendingTreeRequest = (async () => {
-      try {
-        const types: ElementType[] = [
-          'university', 'campus', 'career',
-          'dimension', 'component', 'criteria', 'standard', 'evidence'
-        ];
+    const allElements = results
+      .filter(r => r.status === 'fulfilled')
+      .flatMap(r => (r as PromiseFulfilledResult<StructureElement[]>).value);
 
-        const results = await Promise.allSettled(
-          types.map(async (type) => {
-            try {
-              const result = await this.listByType(type);
-              return result.data || [];
-            } catch (error) {
-              console.warn(`Error cargando ${type}, devolviendo array vacío:`, error);
-              return [];
-            }
-          })
-        );
-
-        const allElements = results
-          .filter((result) => result.status === 'fulfilled')
-          .flatMap((result) => (result as PromiseFulfilledResult<StructureElement[]>).value);
-
-        _treeCache = { message: 'Estructura cargada exitosamente', data: allElements };
-        _treeCacheTime = Date.now();
-        return _treeCache;
-      } catch (error) {
-        console.error('Error en getFullTree:', error);
-        throw error;
-      } finally {
-        _pendingTreeRequest = null;
-      }
-    })();
-
-    return _pendingTreeRequest;
+    return { message: 'Estructura cargada exitosamente', data: allElements };
   }
 
   /**
@@ -239,7 +200,6 @@ class StructureService {
 
       const response = await axiosInstance.post(`/estructura/${endpoint}`, payload);
       const data = response.data;
-      _invalidateTreeCache();
 
       console.log('🔍 Backend response data:', data);
 
@@ -309,7 +269,6 @@ class StructureService {
 
       const response = await axiosInstance.put(`/estructura/${endpoint}/${id}`, payload);
       const data = response.data;
-      _invalidateTreeCache();
       const responseData = data.data || data;
 
       // Verificar que tenemos un objeto de datos válido antes de transformar
@@ -336,7 +295,6 @@ class StructureService {
     try {
       const endpoint = ELEMENT_TYPE_TO_ENDPOINT[type];
       await axiosInstance.delete(`/estructura/${endpoint}/${id}`);
-      _invalidateTreeCache();
       return {
         message: 'Elemento eliminado exitosamente',
         data: null
@@ -359,7 +317,6 @@ class StructureService {
       
       const response = await axiosInstance.patch(`/estructura/${endpoint}/${id}/active`, payload);
       const data = response.data;
-      _invalidateTreeCache();
 
       console.log('🔥 setActive RESPONSE status:', response.status);
       console.log('🔥 setActive SUCCESS data:', data);
