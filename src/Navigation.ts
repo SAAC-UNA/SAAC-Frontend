@@ -184,16 +184,14 @@ export const getNavigationItems = (userRoles?: string | string[]): NavItem[] => 
         href: '/aprobacion-bloques',
         isActive: false,
       },
+      {
+        id: 'gestion-informes',
+        label: 'Gestión de Informes',
+        icon: reportsIcon,
+        href: '/gestion-informes',
+        isActive: false,
+      },
     ],
-  });
-
-  // Gestión de Informes - Todos los autenticados
-  items.push({
-    id: 'gestion-informes',
-    label: 'Gestión de Informes',
-    icon: reportsIcon,
-    href: '/gestion-informes',
-    isActive: false
   });
 
   return items;

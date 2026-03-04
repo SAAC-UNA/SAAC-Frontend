@@ -149,8 +149,7 @@ export const UserProfileHeader: React.FC<UserProfileHeaderProps> = ({ className 
                 aria-label="Notificaciones"
                 onClick={handleToggleNotifications}
               >
-                <SystemIcons.interface.bell className="h-5 w-5" />
-                {/* Punto rojo indicador */}
+                <SystemIcons.interface.bell className="h-6 w-6" />
                 {unreadCount > 0 && (
                   <span className="absolute top-0.5 right-0.5 inline-flex h-2 w-2 rounded-full bg-red-600"></span>
                 )}
