@@ -66,15 +66,15 @@ const SidebarItemComponent: React.FC<SidebarItemProps> = ({
 
   const buttonContent = (
     // ml-3 para padres, ml-6 para hijos; sin margen cuando colapsado (modo ícono)
-    <div className={cn('relative', !layoutCollapsed && (isSubItem ? 'ml-6' : 'ml-3'), layoutCollapsed && 'mx-1')}>
+    <div className={cn('relative', !layoutCollapsed && (isSubItem ? 'ml-3' : 'ml-1'), layoutCollapsed && 'mx-1')}>
       <SidebarButton isActive={isActive} isCollapsed={layoutCollapsed} onClick={handleClick}>
 
         {/* Ícono + Label siempre juntos — gap se elimina cuando colapsado para no inflar el ancho */}
-        <span className={cn('flex items-center flex-1 min-w-0 h-full relative z-10', layoutCollapsed ? 'gap-1' : 'gap-3')}>
+        <span className={cn('flex items-center flex-1 min-w-0 h-full relative z-10 transition-transform duration-300 ease-out', !layoutCollapsed && 'group-hover/btn:translate-x-1.5', layoutCollapsed ? 'gap-1' : 'gap-3')}>
           {item.icon && (
             <SidebarIcon icon={item.icon} isActive={isActive} />
           )}
-          <SidebarLabel label={item.label} isCollapsed={isCollapsed} />
+          <SidebarLabel label={item.label} isCollapsed={isCollapsed} isActive={isActive} />
         </span>
 
         {/* Flecha solo en expandibles: también en z-[1] para estar sobre el fondo */}

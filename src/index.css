@@ -109,7 +109,7 @@
   --text-pagination: 0.875rem;      /* 14px - Paginación */
 
    /* SIDEBAR */
-  --sidebar-width: 16rem;            /* 256px - Ancho expandido */
+  --sidebar-width: 14rem;            /* 256px - Ancho expandido */
   --sidebar-width-mobile: 18rem;     /* 288px - Ancho en móvil */
   --sidebar-width-icon: 3.50rem;     /* 56px - Ancho colapsado (solo íconos) */
   --height-sidebar-item: 3.25rem;    /* 52px - Altura fija del botón */
@@ -331,7 +331,7 @@
 /* Transiciones, sombras, efectos especiales y scrollbars */
 /* TODO Revisar si hay contradicción entre esto y los tamaños definidos en Typography.ts */
 @layer utilities {
-  /* ===== TIPOGRAFÍA ESTANDARIZADA ===== 14-02-2026 */
+  /*! ===== TIPOGRAFÍA ESTANDARIZADA ===== 14-02-2026 */
   /* Usamos prefijo 'size-' para evitar conflictos con clases de color 'text-*' de Tailwind */
   .size-header { font-size: var(--text-header); }
   .size-body { font-size: var(--text-body); }
@@ -364,7 +364,7 @@
   .size-badge { font-size: var(--text-badge); }
   .size-pagination { font-size: var(--text-pagination); }
 
-  /* ===== TAMAÑOS DE BOTONES DE TABLA ===== 14-02-2026 */
+  /*! ===== TAMAÑOS DE BOTONES DE TABLA ===== 14-02-2026 */
   .size-table-action-button { 
     height: var(--size-table-action-button) !important; 
     width: var(--size-table-action-button) !important; 
@@ -375,7 +375,7 @@
   }
   .p-table-action { padding: var(--padding-table-action) !important; }
 
-  /* ==== TAMAÑO DE BOTONES DE HEADER ==== 15-02-2026 */
+  /*! ==== TAMAÑO DE BOTONES DE HEADER ==== 15-02-2026 */
   .size-header-button {
     height: var(--size-header-button) !important;
     width: var(--size-header-button) !important;
@@ -449,7 +449,7 @@
     text-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
   }
 
-  /* ===== CONTENT LAYOUT UTILITIES ===== 14/02/2026*/
+  /*! ===== CONTENT LAYOUT UTILITIES ===== 14/02/2026*/
   /* Layout para formularios y páginas con botones al fondo */
   /* Cuando hay poco contenido: empuja botones al fondo */
   /* Cuando hay mucho contenido: mantiene espaciado razonable */
