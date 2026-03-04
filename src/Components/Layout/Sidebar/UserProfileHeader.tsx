@@ -143,13 +143,14 @@ export const UserProfileHeader: React.FC<UserProfileHeaderProps> = ({ className 
                 variant="ghost"
                 size="sm"
                 className={cn(
-                  "h-8 w-8 p-0 text-negro-una hover:bg-gris-una/10 relative",
+                  APP_HEADER_BUTTON.button,
+                  "text-gris-una hover:bg-gris-una/10 relative",
                   shouldShake && "animate-shake"
                 )}
                 aria-label="Notificaciones"
                 onClick={handleToggleNotifications}
               >
-                <SystemIcons.interface.bell className="h-6 w-6" />
+                <SystemIcons.interface.bell className={`${APP_HEADER_BUTTON.icon}`} />
                 {unreadCount > 0 && (
                   <span className="absolute top-0.5 right-0.5 inline-flex h-2 w-2 rounded-full bg-red-600"></span>
                 )}
@@ -172,7 +173,7 @@ export const UserProfileHeader: React.FC<UserProfileHeaderProps> = ({ className 
           )}
         </div>
 
-        {/* Modal de Centro de Notificaciones */}
+        {/* TODO Modal de Centro de Notificaciones */}
         <NotificationCenter
           isOpen={isModalOpen}
           onClose={() => setIsModalOpen(false)}
