@@ -291,12 +291,12 @@ const StructureList: React.FC = () => {
           showCancel={true}
           showConfirm={true}
         >
-          <div className="mt-4 p-3 bg-[var(--bg-info)] border border-[var(--border-info)] rounded-corner">
-            <p className="text-sm text-[var(--text-info)]">
+          <div className="mt-4 p-3 bg-[var(--color-info-light)] border border-[var(--color-info-ring)] rounded-corner">
+            <p className="text-sm text-info-dark">
               Al activar este elemento, volverá a estar disponible para su uso en el sistema.
             </p>
             {hasChildren(toggleActiveModalState.element) && (
-              <p className="text-xs text-[var(--text-info)] mt-2">
+              <p className="text-xs text-info-dark mt-2">
                 <strong>Cascada automática:</strong> Todos los elementos dependientes (hijos) se activarán automáticamente en cascada.
               </p>
             )}
@@ -323,12 +323,12 @@ const StructureList: React.FC = () => {
           showCancel={true}
           showConfirm={true}
         >
-          <div className="mt-4 p-3 bg-[var(--bg-warning)] border border-[var(--border-warning)] rounded-corner">
-            <p className="text-sm text-[var(--text-warning)]">
+          <div className="mt-4 p-3 bg-[var(--color-warning-light)] border border-[var(--color-warning-ring)] rounded-corner">
+            <p className="text-sm text-warning-dark">
               Al inactivar este elemento, dejará de estar disponible en el sistema. Esta acción es reversible.
             </p>
             {hasChildren(toggleActiveModalState.element) && (
-              <p className="text-xs text-[var(--text-warning)] mt-2">
+              <p className="text-xs text-warning-dark mt-2">
                 <strong>⚠️ Importante:</strong> Todos los elementos dependientes (hijos) se inactivarán automáticamente en cascada.
               </p>
             )}

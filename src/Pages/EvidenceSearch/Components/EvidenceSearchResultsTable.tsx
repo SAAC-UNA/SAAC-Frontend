@@ -14,6 +14,7 @@ import {
   EVIDENCE_STATUS_BADGE,
   type EvidenceSearchResult 
 } from '@/Types/EvidenceSearchTypes';
+import { ICON_SIZES } from '@/Constants/Components';
 
 export interface EvidenceSearchResultsTableProps {
   results: EvidenceSearchResult[];
@@ -104,8 +105,8 @@ export const EvidenceSearchResultsTable: React.FC<EvidenceSearchResultsTableProp
       header: 'Fecha Creación',
       align: 'center',
       render: (_, item) => (
-        <div className="flex flex-col items-center text-sm">
-          <span className="block font-sans text-sm antialiased font-normal leading-normal text-negro-una-2">
+        <div className={`flex flex-col items-center ${TYPOGRAPHY.table.cell}`}>
+          <span className={`block font-sans antialiased font-normal leading-normal text-negro-una-2 ${TYPOGRAPHY.table.cell}`}>
             {formatDate(item.fecha_publicacion)}
           </span>
         </div>
@@ -138,13 +139,13 @@ export const EvidenceSearchResultsTable: React.FC<EvidenceSearchResultsTableProp
         <div className={`flex items-center justify-center gap-3 text-gray-600 ${TYPOGRAPHY.table.cell}`}>
           {item.archivos_count > 0 && (
             <div className="flex items-center gap-1" title="Archivos adjuntos">
-              <SystemIcons.modal.document className="text-gray-400" size="sm" />
+              <SystemIcons.modal.document className={`text-gris-una ${ICON_SIZES.sm}`} />
               <span>{item.archivos_count}</span>
             </div>
           )}
           {item.enlaces_count > 0 && (
             <div className="flex items-center gap-1" title="Enlaces">
-              <SystemIcons.interface.link className="text-gray-400" size="sm" />
+              <SystemIcons.interface.link className={`text-gris-una ${ICON_SIZES.sm}`} />
               <span>{item.enlaces_count}</span>
             </div>
           )}

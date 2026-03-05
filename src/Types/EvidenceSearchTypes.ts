@@ -156,19 +156,19 @@ export const EVIDENCE_STATUS_LABELS: Record<EvidencePublicationStatus, string> =
 
 // Clases badge usando las variables CSS definidas en index.css
 export const EVIDENCE_STATUS_BADGE: Record<EvidencePublicationStatus, string> = {
-  pendiente: 'bg-[var(--bg-inactive)] text-[var(--text-inactive)]',
-  en_proceso: 'bg-[var(--border-warning)] text-[var(--text-warning)]',
-  aprobado: 'bg-[var(--border-verde)] text-[var(--text-verde)]',
-  rechazado: 'bg-[var(--border-error)] text-[var(--text-error)]',
-  completado: 'bg-[var(--border-info)] text-[var(--text-info)]',
-  vencido: 'bg-[var(--border-error)] text-[var(--text-error)]'
+  pendiente: 'bg-[var(--color-inactive-light)] text-gris-una',
+  en_proceso: 'bg-[var(--color-warning-ring)] text-warning-dark',
+  aprobado: 'bg-[var(--color-verde-ring)] text-verde-dark',
+  rechazado: 'bg-[var(--color-error-ring)] text-error-dark',
+  completado: 'bg-[var(--color-info-ring)] text-info-dark',
+  vencido: 'bg-[var(--color-error-ring)] text-error'
 };
 
 // Mantener compatibilidad con código existente (deprecated - usar EVIDENCE_STATUS_BADGE)
 export const EVIDENCE_STATUS_COLORS: Record<EvidencePublicationStatus, { bg: string; text: string }> = {
   pendiente: { bg: 'bg-gray-100', text: 'text-gray-800' },
   en_proceso: { bg: 'bg-yellow-100', text: 'text-yellow-800' },
-  aprobado: { bg: 'bg-verde', text: 'text-verde' },
+  aprobado: { bg: 'bg-verde-light', text: 'text-verde' },
   rechazado: { bg: 'bg-red-100', text: 'text-red-800' },
   completado: { bg: 'bg-blue-100', text: 'text-blue-800' },
   vencido: { bg: 'bg-red-100', text: 'text-red-800' }

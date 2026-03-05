@@ -1,6 +1,7 @@
 import React from 'react';
 import { cn } from '@/Utils/ClassNames';
 import { SystemIcons } from './Icons/SystemIcons';
+import { TYPOGRAPHY } from '@/Constants/Typography';
 
 export interface SearchInputProps {
   placeholder?: string;
@@ -33,7 +34,7 @@ export const SearchInput: React.FC<SearchInputProps> = ({
         <input
           className={cn(
             "h-10 w-full rounded-corner border border-gris-una/5 bg-gris-una/10 px-3 py-2 !pr-9",
-            "text-sm font-normal text-negro-una outline-0 transition-all duration-200",
+            `${TYPOGRAPHY.form.input} font-normal text-negro-una outline-0 transition-all duration-200`,
             "placeholder:text-gris-una/60",
             "focus:outline-none focus:ring-1 focus:ring-gris-una/20 focus:border-transparent",
             disabled && "bg-gris-una/5 text-gray-400 cursor-not-allowed"

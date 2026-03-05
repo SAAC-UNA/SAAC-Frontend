@@ -1,3 +1,5 @@
+{/** Este no debería de ser eliminado? */}
+
 import { ElementType, type CreateElementForm } from '@/Types/StructureTypes';
 
 /**

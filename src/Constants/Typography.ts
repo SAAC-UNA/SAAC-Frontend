@@ -19,6 +19,9 @@ export const TYPOGRAPHY = {
   
   // ===== BOTONES =====
   button: 'size-button',                     // 14px - Todos los botones del sistema
+
+  // ===== TOOLTIP =====
+  tooltip: 'size-tooltip',                   // 14px - Texto de tooltips
   
   // ===== SIDEBAR =====
   sidebarItem: 'size-sidebar',               // 14px - Items de navegación en sidebar

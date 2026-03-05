@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect, useId } from 'react';
 import { cn } from '@/Utils/ClassNames';
 import { SystemIcons } from './Icons/SystemIcons';
+import { TYPOGRAPHY } from '@/Constants/Typography';
 
 export interface MultiSelectOption {
   value: string;
@@ -185,7 +186,7 @@ export const MultiSelect: React.FC<MultiSelectProps> = ({
             id={selectId}
             className={cn(
               // Base styles - Similar al Input actualizado
-              'relative w-full h-10 px-4 text-sm border rounded-corner text-left cursor-pointer transition-all duration-300',
+              `relative w-full h-10 px-4 ${TYPOGRAPHY.form.input} border rounded-corner text-left cursor-pointer transition-all duration-300`,
               'focus:outline-none focus:border-gris-una',
               'disabled:bg-gris-una/10 disabled:cursor-not-allowed',
               'peer', // Para usar peer selectors de Tailwind
@@ -240,7 +241,7 @@ export const MultiSelect: React.FC<MultiSelectProps> = ({
                 'transform',
                 
                 // Tamaño del texto del label (más pequeño)
-                'text-sm', // Label más pequeño
+                TYPOGRAPHY.form.label,
                 
                 // Posicionamiento dinámico basado en focus o contenido
                 hasValue || isOpen
@@ -291,7 +292,7 @@ export const MultiSelect: React.FC<MultiSelectProps> = ({
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
                     placeholder={searchPlaceholder}
-                    className="w-full pl-9 pr-3 py-2 text-sm border border-gray-300 rounded-corner focus:outline-none focus:border-azul-una focus:ring-1 focus:ring-azul-una"
+                  className={`w-full pl-9 pr-3 py-2 ${TYPOGRAPHY.form.input} border border-gray-300 rounded-corner focus:outline-none focus:border-azul-una focus:ring-1 focus:ring-azul-una`}
                     onClick={(e) => e.stopPropagation()} // Evitar que cierre el dropdown
                   />
                   {searchTerm && (
@@ -315,7 +316,7 @@ export const MultiSelect: React.FC<MultiSelectProps> = ({
               className="overflow-auto custom-scrollbar"
               style={{ maxHeight: getMaxHeight() }}
             >
-              <div className="py-1 text-sm">
+              <div className={`py-1 ${TYPOGRAPHY.form.input}`}>
                 {/* Botón Seleccionar todo dentro del dropdown */}
                 {showSelectAll && filteredOptions.length > 1 && (
                   <button
@@ -323,7 +324,7 @@ export const MultiSelect: React.FC<MultiSelectProps> = ({
                     onClick={handleSelectAll}
                     className="w-full text-left px-4 py-2.5 text-azul-una hover:bg-blue-50 focus:bg-blue-50 focus:outline-none transition-colors duration-150 border-b border-gray-200 bg-gray-50/50"
                   >
-                    <span className="font-semibold text-sm">
+                    <span className={`font-semibold ${TYPOGRAPHY.form.input}`}>
                       {isAllSelected() ? deselectAllText : selectAllText}
                     </span>
                   </button>
@@ -333,9 +334,9 @@ export const MultiSelect: React.FC<MultiSelectProps> = ({
                 {filteredOptions.length === 0 && (
                   <div className="px-4 py-8 text-center text-gris-una">
                     <SystemIcons.interface.search className="w-8 h-8 mx-auto mb-2 opacity-50" size="md" />
-                    <p className="text-sm">No se encontraron resultados</p>
-                    {searchTerm && (
-                      <p className="text-xs mt-1">
+                  <p className={TYPOGRAPHY.form.input}>No se encontraron resultados</p>
+                  {searchTerm && (
+                    <p className={`${TYPOGRAPHY.form.helper} mt-1`}>
                         Intenta con otro término de búsqueda
                       </p>
                     )}
@@ -362,7 +363,7 @@ export const MultiSelect: React.FC<MultiSelectProps> = ({
                       <span className="flex-1 flex items-center gap-2">
                         <span>{option.label}</span>
                         {option.metadata && (
-                          <span className="text-xs text-gris-una font-normal bg-gris-una/10 px-2 py-0.5 rounded-full">
+                          <span className={`${TYPOGRAPHY.form.helper} text-gris-una font-normal bg-gris-una/10 px-2 py-0.5 rounded-full`}>
                             {option.metadata}
                           </span>
                         )}
@@ -384,7 +385,7 @@ export const MultiSelect: React.FC<MultiSelectProps> = ({
 
           {/* Error Message */}
           {error && (
-            <p className="text-rojo-una-2 text-sm flex items-center gap-2">
+            <p className={`text-rojo-una-2 ${TYPOGRAPHY.form.helper} flex items-center gap-2`}>
               <SystemIcons.interface.alert className="w-4 h-4 flex-shrink-0 text-rojo-una-2" size="sm" />
               {error}
             </p>
@@ -399,7 +400,7 @@ export const MultiSelect: React.FC<MultiSelectProps> = ({
         {/* Label */}
         {label && (
           <label className={cn(
-            'block font-medium text-sm mb-2', // Actualizado para consistencia
+            `block font-medium ${TYPOGRAPHY.form.label} mb-2`,
             disabled ? 'text-gray-400' : 'text-negro-una'
           )}>
             {label}
@@ -412,7 +413,7 @@ export const MultiSelect: React.FC<MultiSelectProps> = ({
           type="button"
           className={cn(
             // Base styles actualizados para consistencia con Input
-            'relative w-full border rounded-corner text-left cursor-pointer transition-all duration-300 px-4 py-3 text-sm',
+            `relative w-full border rounded-corner text-left cursor-pointer transition-all duration-300 px-4 py-3 ${TYPOGRAPHY.form.input}`,
             'focus:outline-none focus:border-gris-una',
             'disabled:bg-gris-una/10 disabled:cursor-not-allowed',
             
@@ -474,7 +475,7 @@ export const MultiSelect: React.FC<MultiSelectProps> = ({
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
                     placeholder={searchPlaceholder}
-                    className="w-full pl-9 pr-3 py-2 text-sm border border-gray-300 rounded-corner focus:outline-none focus:border-azul-una focus:ring-1 focus:ring-azul-una"
+                    className={`w-full pl-9 pr-3 py-2 ${TYPOGRAPHY.form.input} border border-gray-300 rounded-corner focus:outline-none focus:border-azul-una focus:ring-1 focus:ring-azul-una`}
                     onClick={(e) => e.stopPropagation()} // Evitar que cierre el dropdown
                   />
                   {searchTerm && (
@@ -498,7 +499,7 @@ export const MultiSelect: React.FC<MultiSelectProps> = ({
               className="overflow-auto custom-scrollbar"
               style={{ maxHeight: getMaxHeight() }}
             >
-              <div className="py-1 text-sm">
+              <div className={`py-1 ${TYPOGRAPHY.form.input}`}>
                 {/* Botón Seleccionar todo dentro del dropdown */}
                 {showSelectAll && filteredOptions.length > 1 && (
                   <button
@@ -506,7 +507,7 @@ export const MultiSelect: React.FC<MultiSelectProps> = ({
                     onClick={handleSelectAll}
                     className="w-full text-left px-4 py-2.5 text-azul-una hover:bg-blue-50 focus:bg-blue-50 focus:outline-none transition-colors duration-150 border-b border-gray-200 bg-gray-50/50"
                   >
-                    <span className="font-semibold text-sm">
+                    <span className={`font-semibold ${TYPOGRAPHY.form.input}`}>
                       {isAllSelected() ? deselectAllText : selectAllText}
                     </span>
                   </button>
@@ -516,9 +517,9 @@ export const MultiSelect: React.FC<MultiSelectProps> = ({
                 {filteredOptions.length === 0 && (
                   <div className="px-4 py-8 text-center text-gris-una">
                     <SystemIcons.interface.search className="w-8 h-8 mx-auto mb-2 opacity-50" size="md" />
-                    <p className="text-sm">No se encontraron resultados</p>
+                    <p className={TYPOGRAPHY.form.input}>No se encontraron resultados</p>
                     {searchTerm && (
-                      <p className="text-xs mt-1">
+                      <p className={`${TYPOGRAPHY.form.helper} mt-1`}>
                         Intenta con otro término de búsqueda
                       </p>
                     )}
@@ -545,7 +546,7 @@ export const MultiSelect: React.FC<MultiSelectProps> = ({
                       <span className="flex-1 flex items-center gap-2">
                         <span>{option.label}</span>
                         {option.metadata && (
-                          <span className="text-xs text-gris-una font-normal bg-gris-una/10 px-2 py-0.5 rounded-full">
+                          <span className={`${TYPOGRAPHY.form.helper} text-gris-una font-normal bg-gris-una/10 px-2 py-0.5 rounded-full`}>
                             {option.metadata}
                           </span>
                         )}
@@ -567,7 +568,7 @@ export const MultiSelect: React.FC<MultiSelectProps> = ({
 
           {/* Error Message */}
           {error && (
-            <p className="text-rojo-una-2 text-sm flex items-center gap-2">
+            <p className={`text-rojo-una-2 ${TYPOGRAPHY.form.helper} flex items-center gap-2`}>
               <SystemIcons.interface.alert className="w-4 h-4 flex-shrink-0 text-rojo-una-2" size="sm" />
               {error}
             </p>

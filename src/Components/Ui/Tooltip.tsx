@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { cn } from '@/Utils/ClassNames';
+import { TYPOGRAPHY } from '@/Constants/Typography';
 
 interface TooltipProviderProps {
   delayDuration?: number;
@@ -140,8 +141,8 @@ export function TooltipContent({
     <div
       data-tooltip-content
       className={cn(
-        'absolute z-50 px-3 py-2 text-xs font-medium text-white rounded-corner shadow-lg whitespace-nowrap',
-        'bg-gray-900/70 backdrop-blur-md border border-gray-700/30',
+        `absolute z-50 px-3 py-2 ${TYPOGRAPHY.tooltip} font-medium text-blanco-una rounded-corner shadow-lg whitespace-nowrap`,
+        'bg-gris-una-2 backdrop-blur-md border border-gray-700/30',
         'transition-opacity duration-300 ease-in-out',
         'font-poppins',
         sideClasses[side],

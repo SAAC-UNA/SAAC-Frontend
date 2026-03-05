@@ -15,6 +15,7 @@ import { SystemIcons } from '@/Components/Ui/Icons/SystemIcons';
 import { useRoles } from '@/Hooks/UseRoles';
 import { getContextualInfo } from '@/Constants/ModuleInfo';
 import type { Role } from '@/Services/RoleService';
+import { ICON_SIZES } from '@/Constants/Components';
 
 // Lazy load de modales
 const DeleteConfirmationModal = lazy(() => import('@/Components/Ui/DeleteConfirmationModal').then(m => ({ default: m.DeleteConfirmationModal })));
@@ -141,7 +142,7 @@ const RolesRepository: React.FC = () => {
                 variant="secondary"
                 className="gap-2"
               >
-                <SystemIcons.actions.add className="w-4 h-4" size="sm" />
+                <SystemIcons.actions.add className= {`${ICON_SIZES.button}`} />
                 Crear
               </Button>
             </div>

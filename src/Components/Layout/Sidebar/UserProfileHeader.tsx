@@ -111,7 +111,7 @@ export const UserProfileHeader: React.FC<UserProfileHeaderProps> = ({ className 
           <TooltipTrigger asChild>
             <Button
               variant="ghost"
-              className={`${APP_HEADER_BUTTON.button} text-gris-una hover:bg-gris-una/10`}
+              className={`${APP_HEADER_BUTTON.button}`}
               aria-label="Notificaciones"
             >
               <SystemIcons.interface.bell className={APP_HEADER_BUTTON.icon} />

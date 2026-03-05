@@ -15,6 +15,7 @@ import React, { useState, useRef, useEffect, useId } from 'react';
 import { cn } from '@/Utils/ClassNames';
 import { type ComponentSize } from '@/Constants/ComponentSizes';
 import { SystemIcons } from './Icons/SystemIcons';
+import { TYPOGRAPHY } from '@/Constants/Typography';
 
 export interface SelectOption {
   value: string;
@@ -118,11 +119,11 @@ export const CustomSelect: React.FC<CustomSelectProps> = ({
   const getDropdownSizeClasses = () => {
     switch (size) {
       case 'sm':
-        return 'py-1 text-sm';
+        return `py-1 ${TYPOGRAPHY.form.input}`;
       case 'lg':
-        return 'py-2 text-lg';
+        return `py-2 ${TYPOGRAPHY.form.input}`;
       default:
-        return 'py-1 text-base';
+        return `py-1 ${TYPOGRAPHY.form.input}`;
     }
   };
 
@@ -160,7 +161,7 @@ export const CustomSelect: React.FC<CustomSelectProps> = ({
             id={selectId}
             className={cn(
               // Base styles - Similar al Input actualizado
-              'relative w-full h-10 px-4 text-sm border rounded-corner text-left cursor-pointer transition-all duration-300',
+              `relative w-full h-10 px-4 ${TYPOGRAPHY.form.input} border rounded-corner text-left cursor-pointer transition-all duration-300`,
               'focus:outline-none focus:border-gris-una',
               'disabled:bg-gris-una/10 disabled:cursor-not-allowed',
               'peer', // Para usar peer selectors de Tailwind
@@ -218,7 +219,7 @@ export const CustomSelect: React.FC<CustomSelectProps> = ({
                 'transform',
                 
                 // Tamaño del texto del label (más pequeño)
-                'text-sm', // Label más pequeño
+                TYPOGRAPHY.form.label,
                 
                 // Posicionamiento dinámico basado en focus o contenido
                 hasValue || isOpen
@@ -270,7 +271,7 @@ export const CustomSelect: React.FC<CustomSelectProps> = ({
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
                     placeholder={searchPlaceholder}
-                    className="w-full pl-9 pr-3 py-2 text-sm border border-gray-300 rounded-corner focus:outline-none focus:border-azul-una focus:ring-1 focus:ring-azul-una"
+                    className={`w-full pl-9 pr-3 py-2 ${TYPOGRAPHY.form.input} border border-gray-300 rounded-corner focus:outline-none focus:border-azul-una focus:ring-1 focus:ring-azul-una`}
                     onClick={(e) => e.stopPropagation()} // Evitar que cierre el dropdown
                   />
                   {searchTerm && (
@@ -299,9 +300,9 @@ export const CustomSelect: React.FC<CustomSelectProps> = ({
                 {filteredOptions.length === 0 && (
                   <div className="px-4 py-8 text-center text-gris-una">
                     <SystemIcons.interface.search className="w-8 h-8 mx-auto mb-2 opacity-50" size="md" />
-                    <p className="text-sm">No se encontraron resultados</p>
+                    <p className={TYPOGRAPHY.form.input}>No se encontraron resultados</p>
                     {searchTerm && (
-                      <p className="text-xs mt-1">
+                      <p className={`${TYPOGRAPHY.form.helper} mt-1`}>
                         Intenta con otro término de búsqueda
                       </p>
                     )}
@@ -341,7 +342,7 @@ export const CustomSelect: React.FC<CustomSelectProps> = ({
 
         {/* Error Message */}
         {error && (
-          <p className="text-rojo-una-2 text-sm flex items-center gap-2">
+          <p className={`text-rojo-una-2 ${TYPOGRAPHY.form.helper} flex items-center gap-2`}>
             <SystemIcons.interface.alert className="w-4 h-4 flex-shrink-0 text-rojo-una-2" size="sm" />
             {error}
           </p>
@@ -356,7 +357,7 @@ export const CustomSelect: React.FC<CustomSelectProps> = ({
       {/* Label - Solo renderizar si hay label */}
       {label && (
         <label className={cn(
-          'block font-medium text-sm mb-2', // Actualizado para consistencia
+            `block font-medium ${TYPOGRAPHY.form.label} mb-2`,
           disabled ? 'text-gray-400' : 'text-negro-una'
         )}>
           {label}
@@ -369,7 +370,7 @@ export const CustomSelect: React.FC<CustomSelectProps> = ({
         type="button"
         className={cn(
           // Base styles actualizados para consistencia con Input
-          'relative w-full border rounded-corner text-left cursor-pointer transition-all duration-300 px-4 py-3 text-sm',
+          `relative w-full border rounded-corner text-left cursor-pointer transition-all duration-300 px-4 py-3 ${TYPOGRAPHY.form.input}`,
           'focus:outline-none focus:border-gris-una',
           'disabled:bg-gris-una/10 disabled:cursor-not-allowed',
           
@@ -437,7 +438,7 @@ export const CustomSelect: React.FC<CustomSelectProps> = ({
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                   placeholder={searchPlaceholder}
-                  className="w-full pl-9 pr-3 py-2 text-sm border border-gray-300 rounded-corner focus:outline-none focus:border-azul-una focus:ring-1 focus:ring-azul-una"
+                  className={`w-full pl-9 pr-3 py-2 ${TYPOGRAPHY.form.input} border border-gray-300 rounded-corner focus:outline-none focus:border-azul-una focus:ring-1 focus:ring-azul-una`}
                   onClick={(e) => e.stopPropagation()} // Evitar que cierre el dropdown
                 />
                 {searchTerm && (
@@ -466,9 +467,9 @@ export const CustomSelect: React.FC<CustomSelectProps> = ({
               {filteredOptions.length === 0 && (
                 <div className="px-4 py-8 text-center text-gris-una">
                   <SystemIcons.interface.search className="w-8 h-8 mx-auto mb-2 opacity-50" size="md" />
-                  <p className="text-sm">No se encontraron resultados</p>
+                  <p className={TYPOGRAPHY.form.input}>No se encontraron resultados</p>
                   {searchTerm && (
-                    <p className="text-xs mt-1">
+                    <p className={`${TYPOGRAPHY.form.helper} mt-1`}>
                       Intenta con otro término de búsqueda
                     </p>
                   )}
@@ -508,7 +509,7 @@ export const CustomSelect: React.FC<CustomSelectProps> = ({
 
       {/* Error Message */}
       {error && (
-        <p className="text-rojo-una-2 text-sm flex items-center gap-2">
+        <p className={`text-rojo-una-2 ${TYPOGRAPHY.form.helper} flex items-center gap-2`}>
           <SystemIcons.interface.alert className="w-4 h-4 flex-shrink-0 text-rojo-una-2" size="sm" />
           {error}
         </p>

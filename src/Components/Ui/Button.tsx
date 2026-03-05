@@ -78,41 +78,44 @@ const VARIANT_CLASSES = {
   // Botones de la tabla (ojo, lapiz, basurero)
   tableView: [
     'bg-transparent text-[var(--icon-view)] border-0 p-2',
-    'hover:bg-[var(--bg-info)] hover:text-[var(--icon-view)] transition-colors duration-200',
+    'hover:bg-[var(--color-info-light)] hover:text-[var(--icon-view)] transition-colors duration-200',
     'disabled:opacity-50 disabled:cursor-not-allowed'
   ].join(' '),
   
   tableEdit: [
     'bg-transparent text-[var(--icon-edit)] border-0 p-2',
-    'hover:bg-[var(--bg-warning)] hover:text-[var(--icon-edit)] transition-colors duration-200', 
+    'hover:bg-[var(--color-warning-light)] hover:text-[var(--icon-edit)] transition-colors duration-200',
     'disabled:opacity-50 disabled:cursor-not-allowed'
   ].join(' '),
   
   tableDelete: [
     'bg-transparent text-[var(--icon-delete)] border-0 p-2',
-    'hover:bg-[var(--bg-error)] hover:text-[var(--icon-delete)] transition-colors duration-200',
+    'hover:bg-[var(--color-error-light)] hover:text-[var(--icon-delete)] transition-colors duration-200',
     'disabled:opacity-50 disabled:cursor-not-allowed'
   ].join(' '),
 
   tablePower: [
     'bg-transparent text-[var(--icon-check)] border-0 p-2',
-    'hover:bg-[var(--bg-success)] hover:text-[var(--icon-check)] transition-colors duration-200',
+    'hover:bg-[var(--color-verde-light)] hover:text-[var(--icon-check)] transition-colors duration-200',
     'disabled:opacity-50 disabled:cursor-not-allowed'
   ].join(' '),
 
   tablePowerInactive: [
     'bg-transparent text-[var(--icon-inactive)] border-0 p-2',
-    'hover:bg-[var(--bg-inactive)] hover:text-[var(--icon-inactive)] transition-colors duration-200',
+    'hover:bg-[var(--color-inactive-light)] hover:text-[var(--icon-inactive)] transition-colors duration-200',
     'disabled:opacity-50 disabled:cursor-not-allowed'
   ].join(' '),
 
   // Botón para manejo de errores
   error: [
-    'bg-transparent text-[var(--text-error)] font-poppins font-semibold border-2 border-[var(--text-error)]',
-    'hover:bg-[var(--text-error)]/10 transition-colors duration-200',
+    'bg-transparent text-error-dark font-poppins font-semibold border-2 border-[var(--color-error-2)]',
+    'hover:bg-[var(--color-error-2)]/10 transition-colors duration-200',
     'disabled:opacity-50 disabled:cursor-not-allowed'
   ].join(' ')
 };
+
+// Variantes de tabla: no reciben ancho mínimo estándar
+const TABLE_VARIANTS: ButtonVariant[] = ['tableView', 'tableEdit', 'tableDelete', 'tablePower', 'tablePowerInactive', 'ghost'];
 
 export const Button: React.FC<ButtonProps> = ({
   variant = 'primary',
@@ -134,6 +137,8 @@ export const Button: React.FC<ButtonProps> = ({
     'rounded-corner'
   ];
 
+  const isTableVariant = TABLE_VARIANTS.includes(variant);
+
   // Lógica para manejo responsivo
   const getResponsiveClasses = () => {
     if (!responsive) return '';
@@ -149,7 +154,9 @@ export const Button: React.FC<ButtonProps> = ({
         baseClasses,
         getComponentSizeClasses.button(size),
         VARIANT_CLASSES[variant],
-        standardWidth && '!min-w-[128px] !max-w-[128px]',
+        // Ancho mínimo estándar automático para variantes no-tabla
+        !isTableVariant && !fullWidth && !flex && !responsive && !standardWidth && 'w-button-standard',
+        standardWidth && 'w-button-standard',
         fullWidth && !standardWidth && 'w-full',
         flex && !standardWidth && 'flex-1',
         responsive && !standardWidth && getResponsiveClasses(),
