@@ -5,7 +5,7 @@
  * entre las diferentes acciones (crear, editar, eliminar).
  */
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { StructureTable } from './Components/StructureTable';
 import { ScreenContainer } from '@/Components/Ui/ScreenContainer';
 import { Modal } from '@/Components/Ui/Modal';
@@ -43,6 +43,11 @@ const StructureList: React.FC = () => {
 } = useStructure();
   console.log('🗑️ Total elementos en treeData:', treeData.length);
 
+  // Cargar árbol al montar la página
+  useEffect(() => {
+    loadTree();
+  }, [loadTree]);
+
   // Estado para el modal de confirmación de eliminación
   const [deleteModalState, setDeleteModalState] = useState<{
     isOpen: boolean;
@@ -60,8 +65,6 @@ const StructureList: React.FC = () => {
     isOpen: false,
     element: null
   });
-
-  const [refreshKey, setRefreshKey] = useState(0);
 
   const [successModalState, setSuccessModalState] = useState<{
     isOpen: boolean;
@@ -151,8 +154,6 @@ const StructureList: React.FC = () => {
             elementName: elementName,
             action: 'delete'
           });
-          
-          setRefreshKey(prev => prev + 1);
         }
       } catch (error) {
         console.error('Error al eliminar elemento:', error);
@@ -202,11 +203,6 @@ const StructureList: React.FC = () => {
         action: action
       });
       
-      // Recargar después de mostrar el éxito
-      setTimeout(() => {
-        setRefreshKey(prev => prev + 1);
-      }, 1500);
-      
     } catch (error) {
       console.error('Error al cambiar estado del elemento:', error);
       setToggleActiveModalState({ isOpen: false, element: null });
@@ -252,7 +248,8 @@ const StructureList: React.FC = () => {
         }
       >
         <StructureTable
-          key={refreshKey}
+          treeData={treeData}
+          isLoading={isLoading}
           onEdit={handleEditElement}
           onDelete={handleDeleteElement}
           onToggleActive={handleToggleActive}
