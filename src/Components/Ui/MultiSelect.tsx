@@ -277,7 +277,7 @@ export const MultiSelect: React.FC<MultiSelectProps> = ({
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
                     placeholder={searchPlaceholder}
-                  className={`w-full pl-9 pr-3 py-2 ${TYPOGRAPHY.form.input} border border-gray-300 rounded-corner focus:outline-none focus:border-azul-una focus:ring-1 focus:ring-azul-una`}
+                  className={`w-full pl-9 pr-3 py-2 ${TYPOGRAPHY.form.input} border border-gray-300 rounded-corner focus:outline-none focus:ring-1 focus:ring-azul-una-2`}
                     onClick={(e) => e.stopPropagation()} // Evitar que cierre el dropdown
                   />
                   {searchTerm && (
@@ -340,7 +340,7 @@ export const MultiSelect: React.FC<MultiSelectProps> = ({
                         option.disabled
                           ? 'text-gray-400 cursor-not-allowed'
                           : 'text-gray-900 cursor-pointer',
-                        isSelected && 'bg-blue-50 text-blue-900 font-medium'
+                        isSelected && 'bg-blue-50 text-azul-una-2 font-medium'
                       )}
                       onClick={() => handleOptionToggle(option)}
                       disabled={option.disabled}
@@ -356,7 +356,7 @@ export const MultiSelect: React.FC<MultiSelectProps> = ({
                       
                       {/* Check icon for selected options */}
                       {isSelected && (
-                        <span className="flex-shrink-0 ml-2 text-blue-600">
+                        <span className="flex-shrink-0 ml-2 text-azul-una-2">
                           <SystemIcons.interface.check className={ICON_SIZES.sm} />
                         </span>
                       )}
@@ -386,7 +386,7 @@ export const MultiSelect: React.FC<MultiSelectProps> = ({
         {label && (
           <label className={cn(
             `block font-medium ${TYPOGRAPHY.form.label} mb-2`,
-            disabled ? 'text-gray-400' : 'text-negro-una'
+            disabled ? 'text-gris-una' : 'text-negro-una'
           )}>
             {label}
             {required && <span className="text-rojo-una-2 ml-1">*</span>}
@@ -400,22 +400,22 @@ export const MultiSelect: React.FC<MultiSelectProps> = ({
             // Base styles actualizados para consistencia con Input
             `relative w-full border rounded-corner text-left cursor-pointer transition-all duration-300 px-4 py-3 ${TYPOGRAPHY.form.input}`,
             'focus:outline-none focus:border-gris-una',
-            'disabled:bg-gris-una/10 disabled:cursor-not-allowed',
+            'disabled:bg-gris-una-3 disabled:cursor-not-allowed',
             
             // State variants - actualizados para consistencia con Input
             disabled
-              ? 'bg-gris-una/10 border-gris-una/5 text-gray-400'
+              ? 'bg-gris-una-3 border-gris-una-3 text-gris-una'
               : error
               ? 'border-rojo-una-2' 
-              : 'border-gris-una bg-blanco-una-2 hover:border-gris-una/50',
-            isOpen && !disabled && 'border-gris-una/20'
+              : 'border-gris-una bg-blanco-una-2 hover:border-gris-una-2',
+            isOpen && !disabled && 'border-gris-una-3'
           )}
           onClick={() => !disabled && setIsOpen(!isOpen)}
           disabled={disabled}
         >
           <span className={cn(
             'block truncate',
-            selectedOptions.length === 0 && 'text-gris-una/60'
+            selectedOptions.length === 0 && 'text-gris-una-2'
           )}>
             {getDisplayText()}
           </span>
@@ -431,11 +431,11 @@ export const MultiSelect: React.FC<MultiSelectProps> = ({
         {/* Dropdown */}
         {isOpen && !disabled && (
           <div 
-            className="absolute z-50 w-full mt-1 bg-white border border-gray-300 rounded-corner shadow-lg overflow-hidden"
+            className="absolute z-50 w-full mt-1 bg-blanco-una-2 border border-gris-una rounded-corner shadow-lg overflow-hidden"
           >
             {/* Campo de búsqueda (si está habilitado y hay suficientes items) */}
             {showSearch && (
-              <div className="p-2 border-b border-gray-200 bg-gray-50/50 sticky top-0 z-10">
+              <div className="p-2 border-b border-gris-una bg-gris-una-2 sticky top-0 z-10">
                 <div className="relative">
                   <SystemIcons.interface.search className={`absolute left-3 top-1/2 -translate-y-1/2 text-gris-una ${ICON_SIZES.sm}`} />
                   <input
@@ -444,7 +444,7 @@ export const MultiSelect: React.FC<MultiSelectProps> = ({
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
                     placeholder={searchPlaceholder}
-                    className={`w-full pl-9 pr-3 py-2 ${TYPOGRAPHY.form.input} border border-gray-300 rounded-corner focus:outline-none focus:border-azul-una focus:ring-1 focus:ring-azul-una`}
+                    className={`w-full pl-9 pr-3 py-2 ${TYPOGRAPHY.form.input} border border-gris-una rounded-corner focus:outline-none focus:border-azul-una focus:ring-1 focus:ring-azul-una`}
                     onClick={(e) => e.stopPropagation()} // Evitar que cierre el dropdown
                   />
                   {searchTerm && (
@@ -474,7 +474,7 @@ export const MultiSelect: React.FC<MultiSelectProps> = ({
                   <button
                     type="button"
                     onClick={handleSelectAll}
-                    className="w-full text-left px-4 py-2.5 text-azul-una hover:bg-blue-50 focus:bg-blue-50 focus:outline-none transition-colors duration-150 border-b border-gray-200 bg-gray-50/50"
+                    className="w-full text-left px-4 py-2.5 text-azul-una hover:bg-blue-50 focus:bg-blue-50 focus:outline-none transition-colors duration-150 border-b border-gris-una bg-gris-una-2"
                   >
                     <span className={`font-semibold ${TYPOGRAPHY.form.input}`}>
                       {isAllSelected() ? deselectAllText : selectAllText}
@@ -503,11 +503,11 @@ export const MultiSelect: React.FC<MultiSelectProps> = ({
                       key={option.value}
                       type="button"
                       className={cn(
-                        'relative w-full text-left px-4 py-2 hover:bg-gray-100 focus:bg-gray-100 focus:outline-none transition-colors duration-150 flex items-center justify-between',
+                        'relative w-full text-left px-4 py-2 hover:bg-blanco-una-2 focus:bg-gris-una focus:outline-none transition-colors duration-150 flex items-center justify-between',
                         option.disabled
-                          ? 'text-gray-400 cursor-not-allowed'
-                          : 'text-gray-900 cursor-pointer',
-                        isSelected && 'bg-blue-50 text-blue-900 font-medium'
+                          ? 'text-gris-una cursor-not-allowed'
+                          : 'text-negro-una-2 cursor-pointer',
+                        isSelected && 'bg-blanco-una-2 text-azul-una font-medium'
                       )}
                       onClick={() => handleOptionToggle(option)}
                       disabled={option.disabled}
@@ -523,7 +523,7 @@ export const MultiSelect: React.FC<MultiSelectProps> = ({
                       
                       {/* Check icon for selected options */}
                       {isSelected && (
-                        <span className="flex-shrink-0 ml-2 text-blue-600">
+                        <span className="flex-shrink-0 ml-2 text-azul-una-2">
                           <SystemIcons.interface.check className={ICON_SIZES.sm} />
                         </span>
                       )}
