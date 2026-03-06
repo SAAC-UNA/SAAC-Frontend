@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect, useId } from 'react';
 import { cn } from '@/Utils/ClassNames';
 import { SystemIcons } from './Icons/SystemIcons';
 import { TYPOGRAPHY } from '@/Constants/Typography';
+import { ICON_SIZES } from '@/Constants/Components';
 
 export interface MultiSelectOption {
   value: string;
@@ -212,22 +213,9 @@ export const MultiSelect: React.FC<MultiSelectProps> = ({
             
             {/* Arrow Icon */}
             <span className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
-              <svg
-                className={cn(
-                  'w-5 h-5 text-gris-una transition-transform duration-200',
-                  isOpen && 'rotate-180'
-                )}
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M19 9l-7 7-7-7"
-                />
-              </svg>
+              <SystemIcons.interface.chevronDown
+                className={cn(`${ICON_SIZES.sm} text-gris-una transition-transform duration-200`, isOpen && 'rotate-180')}
+              />
             </span>
           </button>
 
@@ -282,10 +270,7 @@ export const MultiSelect: React.FC<MultiSelectProps> = ({
             {showSearch && (
               <div className="p-2 border-b border-gray-200 bg-gray-50/50 sticky top-0 z-10">
                 <div className="relative">
-                  <SystemIcons.interface.search 
-                    className="absolute left-3 top-1/2 -translate-y-1/2 text-gris-una w-4 h-4" 
-                    size="sm" 
-                  />
+                  <SystemIcons.interface.search className={`absolute left-3 top-1/2 -translate-y-1/2 text-gris-una ${ICON_SIZES.sm}`} />
                   <input
                     ref={searchInputRef}
                     type="text"
@@ -305,7 +290,7 @@ export const MultiSelect: React.FC<MultiSelectProps> = ({
                       }}
                       className="absolute right-2 top-1/2 -translate-y-1/2 text-gris-una hover:text-negro-una p-1"
                     >
-                      <SystemIcons.interface.closeCircle className="w-4 h-4" size="sm" />
+                      <SystemIcons.interface.closeCircle className={ICON_SIZES.sm} />
                     </button>
                   )}
                 </div>
@@ -333,7 +318,7 @@ export const MultiSelect: React.FC<MultiSelectProps> = ({
                 {/* Mensaje cuando no hay resultados */}
                 {filteredOptions.length === 0 && (
                   <div className="px-4 py-8 text-center text-gris-una">
-                    <SystemIcons.interface.search className="w-8 h-8 mx-auto mb-2 opacity-50" size="md" />
+                    <SystemIcons.interface.search className={`${ICON_SIZES.lg} mx-auto mb-2 opacity-50`} />
                   <p className={TYPOGRAPHY.form.input}>No se encontraron resultados</p>
                   {searchTerm && (
                     <p className={`${TYPOGRAPHY.form.helper} mt-1`}>
@@ -372,7 +357,7 @@ export const MultiSelect: React.FC<MultiSelectProps> = ({
                       {/* Check icon for selected options */}
                       {isSelected && (
                         <span className="flex-shrink-0 ml-2 text-blue-600">
-                          <SystemIcons.interface.check size="sm" color="currentColor" />
+                          <SystemIcons.interface.check className={ICON_SIZES.sm} />
                         </span>
                       )}
                     </button>
@@ -386,7 +371,7 @@ export const MultiSelect: React.FC<MultiSelectProps> = ({
           {/* Error Message */}
           {error && (
             <p className={`text-rojo-una-2 ${TYPOGRAPHY.form.helper} flex items-center gap-2`}>
-              <SystemIcons.interface.alert className="w-4 h-4 flex-shrink-0 text-rojo-una-2" size="sm" />
+              <SystemIcons.interface.alert className={`${ICON_SIZES.sm} flex-shrink-0 text-rojo-una-2`} />
               {error}
             </p>
           )}
@@ -437,22 +422,9 @@ export const MultiSelect: React.FC<MultiSelectProps> = ({
           
           {/* Arrow Icon */}
           <span className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
-            <svg
-              className={cn(
-                'w-5 h-5 text-gris-una transition-transform duration-200',
-                isOpen && 'rotate-180'
-              )}
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M19 9l-7 7-7-7"
-              />
-            </svg>
+            <SystemIcons.interface.chevronDown
+              className={cn(`${ICON_SIZES.sm} text-gris-una transition-transform duration-200`, isOpen && 'rotate-180')}
+            />
           </span>
         </button>
 
@@ -465,10 +437,7 @@ export const MultiSelect: React.FC<MultiSelectProps> = ({
             {showSearch && (
               <div className="p-2 border-b border-gray-200 bg-gray-50/50 sticky top-0 z-10">
                 <div className="relative">
-                  <SystemIcons.interface.search 
-                    className="absolute left-3 top-1/2 -translate-y-1/2 text-gris-una w-4 h-4" 
-                    size="sm" 
-                  />
+                  <SystemIcons.interface.search className={`absolute left-3 top-1/2 -translate-y-1/2 text-gris-una ${ICON_SIZES.sm}`} />
                   <input
                     ref={searchInputRef}
                     type="text"
@@ -488,7 +457,7 @@ export const MultiSelect: React.FC<MultiSelectProps> = ({
                       }}
                       className="absolute right-2 top-1/2 -translate-y-1/2 text-gris-una hover:text-negro-una p-1"
                     >
-                      <SystemIcons.interface.closeCircle className="w-4 h-4" size="sm" />
+                      <SystemIcons.interface.closeCircle className={ICON_SIZES.sm} />
                     </button>
                   )}
                 </div>
@@ -516,7 +485,7 @@ export const MultiSelect: React.FC<MultiSelectProps> = ({
                 {/* Mensaje cuando no hay resultados */}
                 {filteredOptions.length === 0 && (
                   <div className="px-4 py-8 text-center text-gris-una">
-                    <SystemIcons.interface.search className="w-8 h-8 mx-auto mb-2 opacity-50" size="md" />
+                    <SystemIcons.interface.search className={`${ICON_SIZES.lg} mx-auto mb-2 opacity-50`} />
                     <p className={TYPOGRAPHY.form.input}>No se encontraron resultados</p>
                     {searchTerm && (
                       <p className={`${TYPOGRAPHY.form.helper} mt-1`}>
@@ -555,7 +524,7 @@ export const MultiSelect: React.FC<MultiSelectProps> = ({
                       {/* Check icon for selected options */}
                       {isSelected && (
                         <span className="flex-shrink-0 ml-2 text-blue-600">
-                          <SystemIcons.interface.check size="sm" color="currentColor" />
+                          <SystemIcons.interface.check className={ICON_SIZES.sm} />
                         </span>
                       )}
                     </button>
@@ -569,7 +538,7 @@ export const MultiSelect: React.FC<MultiSelectProps> = ({
           {/* Error Message */}
           {error && (
             <p className={`text-rojo-una-2 ${TYPOGRAPHY.form.helper} flex items-center gap-2`}>
-              <SystemIcons.interface.alert className="w-4 h-4 flex-shrink-0 text-rojo-una-2" size="sm" />
+              <SystemIcons.interface.alert className={`${ICON_SIZES.sm} flex-shrink-0 text-rojo-una-2`} />
               {error}
             </p>
           )}

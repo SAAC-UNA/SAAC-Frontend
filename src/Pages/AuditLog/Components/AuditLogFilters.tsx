@@ -8,6 +8,7 @@
  */
 
 import React, { useState, useEffect, useMemo } from 'react';
+import { TYPOGRAPHY } from '@/Constants/Typography';
 import { CustomSelect } from '@/Components/Ui/SingleSelect';
 import { DatePicker } from '@/Components/Ui/Calendar/DatePicker';
 import type { SelectOption } from '@/Components/Ui/SingleSelect';
@@ -193,6 +194,7 @@ export const AuditLogFilters: React.FC<AuditLogFiltersProps> = ({
         <div>
           <DatePicker
             id="fecha_desde"
+            label="Fecha inicio"
             value={filters.fecha_desde || ''}
             onChange={(date) => handleInputChange('fecha_desde', date)}
             disabled={isLoading}
@@ -205,6 +207,7 @@ export const AuditLogFilters: React.FC<AuditLogFiltersProps> = ({
         <div>
           <DatePicker
             id="fecha_hasta"
+            label="Fecha fin"
             value={filters.fecha_hasta || ''}
             onChange={(date) => handleInputChange('fecha_hasta', date)}
             disabled={isLoading}
@@ -221,7 +224,7 @@ export const AuditLogFilters: React.FC<AuditLogFiltersProps> = ({
             type="button"
             onClick={handleClearFilters}
             disabled={isLoading}
-            className="text-sm text-blue-600 hover:text-blue-800 font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            className={`${TYPOGRAPHY.button} text-blue-600 hover:text-blue-800 font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed`}
           >
             Limpiar filtros
           </button>
