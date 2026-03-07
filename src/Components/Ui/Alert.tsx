@@ -51,42 +51,42 @@ export const Alert: React.FC<AlertProps> = ({
       case 'error':
         return {
           icon: SystemIcons.interface.alert,
-          bgColor: 'bg-[var(--bg-error)]',
-          borderColor: 'border-[var(--border-error)]',
+          bgColor: 'bg-[var(--color-error-light)]',
+          borderColor: 'border-[var(--color-error-ring)]',
           iconColor: 'text-[var(--icon-delete)]',
-          titleColor: 'text-[var(--text-error)]',
-          messageColor: 'text-[var(--text-error)]',
+          titleColor: 'text-error-dark',
+          messageColor: 'text-error-dark',
           defaultTitle: 'Error'
         };
       case 'success':
         return {
           icon: SystemIcons.interface.checkCircle,
-          bgColor: 'bg-[var(--bg-verde)]',
-          borderColor: 'border-[var(--border-verde)]',
+          bgColor: 'bg-[var(--color-verde-light)]',
+          borderColor: 'border-[var(--color-verde-ring)]',
           iconColor: 'text-[var(--icon-check)]',
-          titleColor: 'text-[var(--text-verde)]',
-          messageColor: 'text-[var(--text-verde)]',
+          titleColor: 'text-verde-dark',
+          messageColor: 'text-verde-dark',
           defaultTitle: 'Éxito'
         };
       case 'warning':
         return {
           icon: SystemIcons.interface.alert,
-          bgColor: 'bg-[var(--bg-warning)]',
-          borderColor: 'border-[var(--border-warning)]',
+          bgColor: 'bg-[var(--color-warning-light)]',
+          borderColor: 'border-[var(--color-warning-ring)]',
           iconColor: 'text-[var(--icon-alert)]',
-          titleColor: 'text-[var(--text-warning)]',
-          messageColor: 'text-[var(--text-warning)]',
+          titleColor: 'text-warning-dark',
+          messageColor: 'text-warning-dark',
           defaultTitle: 'Advertencia'
         };
       case 'info':
       default:
         return {
           icon: SystemIcons.interface.alert,
-          bgColor: 'bg-[var(--bg-info)]',
-          borderColor: 'border-[var(--border-info)]',
+          bgColor: 'bg-[var(--color-info-light)]',
+          borderColor: 'border-[var(--color-info-ring)]',
           iconColor: 'text-[var(--icon-info)]',
-          titleColor: 'text-[var(--text-info)]',
-          messageColor: 'text-[var(--text-info)]',
+          titleColor: 'text-info-dark',
+          messageColor: 'text-info-dark',
           defaultTitle: 'Información'
         };
     }

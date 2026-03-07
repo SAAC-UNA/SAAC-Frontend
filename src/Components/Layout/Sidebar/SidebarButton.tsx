@@ -26,15 +26,15 @@ export const SidebarButton: React.FC<SidebarButtonProps> = ({
     <button
       onClick={onClick}
       className={cn(
-        'group flex items-center text-left w-full relative z-10',
-        'rounded-l-sidebar-item font-medium cursor-pointer mb-1',
+        'group/btn flex items-center text-left w-full relative z-10',
+        'rounded-l-sidebar-item font-medium cursor-pointer mb-2',
         // Sin transition-all: el cambio de padding ocurre cuando el sidebar ya terminó de cerrar
         // Las transiciones visuales (colores hover) las manejan los hijos
         'transition-colors duration-200',
         isCollapsed ? 'h-sidebar-item px-2 justify-center' : `${SIDEBAR_ITEM.button} justify-start`,
         isActive
           ? 'bg-blanco-una-2 text-rojo-una-2 font-semibold'
-          : 'text-blanco-una-2 hover:bg-rojo-una/20',
+          : 'text-blanco-una-2 hover:bg-rojo-una-2',
         className,
       )}
     >

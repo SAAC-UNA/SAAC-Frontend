@@ -42,3 +42,17 @@ export const APP_HEADER_BUTTON = {
   /** Clase para el tamaño del icono dentro del botón (20px × 20px) */
   icon: 'size-header-icon',
 } as const;
+
+/**
+ * Tamaños de íconos generales para toda la aplicación
+ */
+export const ICON_SIZES = {
+  /** Tamaño para íconos dentro de botones (20px × 20px) */
+  button: 'size-icon-button',
+  /** Tamaño pequeño para íconos decorativos o de estado (16px × 16px) */
+  sm: 'size-icon-sm',
+  /** Tamaño mediano para íconos principales (20px × 20px) */
+  md: 'size-icon-md',
+  /** Tamaño grande para íconos destacados (24px × 24px) */
+  lg: 'size-icon-lg',
+} as const;

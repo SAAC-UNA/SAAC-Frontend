@@ -2,6 +2,7 @@ import React, { forwardRef, useId } from 'react';
 import { cn } from '@/Utils/ClassNames';
 import { type ComponentSize } from '@/constants/ComponentSizes';
 import { SystemIcons } from './Icons/SystemIcons';
+import { TYPOGRAPHY } from '@/Constants/Typography';
 
 interface TextareaProps extends Omit<React.TextareaHTMLAttributes<HTMLTextAreaElement>, 'size'> {
   label?: string;
@@ -85,7 +86,7 @@ export const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(({
             maxLength={maxLength}
             className={cn(
               // Base styles - Similar al Input actualizado
-              'w-full px-4 py-3 text-sm border rounded-corner transition-all duration-300',
+              `w-full px-4 py-3 ${TYPOGRAPHY.form.input} border rounded-corner transition-all duration-300`,
               'focus:outline-none focus:border-gris-una',
               'disabled:bg-gris-una/10 disabled:cursor-not-allowed',
               'peer', // Para usar peer selectors de Tailwind
@@ -120,7 +121,7 @@ export const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(({
                 'transform',
                 
                 // Tamaño del texto del label (más pequeño)
-                'text-sm', // Label más pequeño
+                TYPOGRAPHY.form.label,
                 
                 // Posicionamiento dinámico basado en focus o contenido
                 hasValue 
@@ -156,7 +157,7 @@ export const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(({
 
         {/* Error message */}
         {error && (
-          <p className="text-rojo-una-2 text-sm flex items-center gap-2">
+          <p className={`text-rojo-una-2 ${TYPOGRAPHY.form.helper} flex items-center gap-2`}>
             <SystemIcons.interface.alert className="w-4 h-4 flex-shrink-0 text-rojo-una-2" size="sm" />
             {error}
           </p>
@@ -164,7 +165,7 @@ export const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(({
 
         {/* Helper text */}
         {getHelperText() && !error && (
-          <p className="text-gris-una text-sm">
+          <p className={`text-gris-una ${TYPOGRAPHY.form.helper}`}>
             {getHelperText()}
           </p>
         )}
@@ -179,7 +180,7 @@ export const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(({
       {label && (
         <label 
           htmlFor={textareaId}
-          className="block text-sm font-medium text-negro-una"
+          className={`block ${TYPOGRAPHY.form.label} font-medium text-negro-una`}
         >
           {label}
           {required && <span className="text-rojo-una-2 ml-1">*</span>}
@@ -194,7 +195,7 @@ export const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(({
         maxLength={maxLength}
         className={cn(
           // Base styles actualizados para consistencia con Input
-          'w-full border rounded-corner transition-all duration-300 px-4 py-3 text-sm',
+          `w-full border rounded-corner transition-all duration-300 px-4 py-3 ${TYPOGRAPHY.form.input}`,
           'focus:outline-none focus:border-gris-una',
           'placeholder-gris-una/60 disabled:bg-gris-una/10 disabled:cursor-not-allowed',
           
@@ -215,7 +216,7 @@ export const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(({
 
       {/* Error message */}
       {error && (
-        <p className="text-rojo-una-2 text-sm flex items-center gap-2">
+        <p className={`text-rojo-una-2 ${TYPOGRAPHY.form.helper} flex items-center gap-2`}>
           <SystemIcons.interface.alert className="w-4 h-4 flex-shrink-0 text-rojo-una-2" size="sm" />
           {error}
         </p>
@@ -223,7 +224,7 @@ export const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(({
 
       {/* Helper text */}
       {getHelperText() && !error && (
-        <p className="text-gris-una text-sm">
+        <p className={`text-gris-una ${TYPOGRAPHY.form.helper}`}>
           {getHelperText()}
         </p>
       )}

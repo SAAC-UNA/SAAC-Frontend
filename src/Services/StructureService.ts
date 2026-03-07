@@ -83,6 +83,8 @@ async function ensureEvidenceState(): Promise<number> {
   }
 }
 
+// Tree-level cache and deduplication are now handled in UseStructure.ts.
+
 /**
  * Servicio para gestión de estructura
  */
@@ -113,39 +115,32 @@ class StructureService {
   }
 
   /**
-  * Obtener todos los elementos (árbol completo)
-  */
+   * Obtener todos los elementos (árbol completo).
+   * Caching and deduplication are handled by UseStructure.
+   */
   async getFullTree(): Promise<ApiResponse<StructureElement[]>> {
-    try {
-      const types: ElementType[] = [
-        'university', 'campus', 'career',
-        'dimension', 'component', 'criteria', 'standard', 'evidence'
-      ];
+    const types: ElementType[] = [
+      'university', 'campus', 'career',
+      'dimension', 'component', 'criteria', 'standard', 'evidence'
+    ];
 
-      const results = await Promise.allSettled(
-        types.map(async (type) => {
-          try {
-            const result = await this.listByType(type);
-            return result.data || [];
-          } catch (error) {
-            console.warn(`Error cargando ${type}, devolviendo array vacío:`, error);
-            return [];
-          }
-        })
-      );
+    const results = await Promise.allSettled(
+      types.map(async (type) => {
+        try {
+          const result = await this.listByType(type);
+          return result.data || [];
+        } catch (error) {
+          console.warn(`Error cargando ${type}, devolviendo array vacío:`, error);
+          return [];
+        }
+      })
+    );
 
-      const allElements = results
-        .filter((result) => result.status === 'fulfilled')
-        .flatMap((result) => (result as PromiseFulfilledResult<StructureElement[]>).value);
+    const allElements = results
+      .filter(r => r.status === 'fulfilled')
+      .flatMap(r => (r as PromiseFulfilledResult<StructureElement[]>).value);
 
-      return {
-        message: 'Estructura cargada exitosamente',
-        data: allElements
-      };
-    } catch (error) {
-      console.error('Error en getFullTree:', error);
-      throw error;
-    }
+    return { message: 'Estructura cargada exitosamente', data: allElements };
   }
 
   /**
@@ -274,8 +269,6 @@ class StructureService {
 
       const response = await axiosInstance.put(`/estructura/${endpoint}/${id}`, payload);
       const data = response.data;
-
-      // Lógica mejorada: buscar el objeto de datos tanto en data.data como en data directamente.
       const responseData = data.data || data;
 
       // Verificar que tenemos un objeto de datos válido antes de transformar
@@ -302,8 +295,6 @@ class StructureService {
     try {
       const endpoint = ELEMENT_TYPE_TO_ENDPOINT[type];
       await axiosInstance.delete(`/estructura/${endpoint}/${id}`);
-
-      // 204 No Content no tiene body, así que devolvemos un objeto vacío
       return {
         message: 'Elemento eliminado exitosamente',
         data: null

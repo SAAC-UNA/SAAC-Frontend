@@ -103,40 +103,35 @@ export const ModernSidebar: React.FC<SidebarProps> = ({
         data-variant={variant}
         data-side={side}
       >
-        {/* Gap del sidebar en desktop */}
+        {/* Gap del sidebar en desktop — ancho del sidebar + margen izquierdo (left-3 = 0.75rem) */}
         <div
           className={cn(
             'relative bg-transparent transition-[width] duration-300 ease-in-out',
-            'w-[var(--sidebar-width)]',
-            'group-data-[state=collapsed]:w-[var(--sidebar-width-icon)]',
+            'w-[calc(var(--sidebar-width)+0.75rem)]',
+            'group-data-[state=collapsed]:w-[calc(var(--sidebar-width-icon)+0.75rem)]',
             collapsible === 'offcanvas' && 'group-data-[state=collapsed]:w-0'
           )}
         />
         
-        {/* Container del sidebar */}
+        {/* Container del sidebar — margen vertical para que el redondeo sea visible */}
         <div
           className={cn(
-            'fixed inset-y-0 z-10 hidden h-screen transition-[left,right,width] duration-300 ease-in-out md:flex',
+            'fixed inset-y-3 z-10 hidden transition-[left,right,width] duration-300 ease-in-out md:flex',
             'w-[var(--sidebar-width)]',
-            side === 'left'
-              ? 'left-0'
-              : 'right-0',
+            side === 'left' ? 'left-3' : 'right-3',
             state === 'collapsed' && collapsible === 'offcanvas' && (
-              side === 'left' 
+              side === 'left'
                 ? '-left-[var(--sidebar-width)]'
                 : '-right-[var(--sidebar-width)]'
             ),
             state === 'collapsed' && collapsible === 'icon' && 'w-[var(--sidebar-width-icon)]',
-            variant === 'floating' || variant === 'inset' 
-              ? 'p-2'
-              : '',
             className
           )}
         >
           <div
             className={cn(
               'bg-rojo-una-2 flex h-full w-full flex-col overflow-hidden',
-              variant === 'floating' && 'rounded-lg shadow-sm'
+              'rounded-corner shadow-2xl',
             )}
           >
             {sidebarContent}

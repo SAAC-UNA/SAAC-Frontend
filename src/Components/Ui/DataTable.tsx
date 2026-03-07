@@ -14,6 +14,7 @@
 
 import React, { useState, useCallback } from 'react';
 import { cn } from '@/Utils/ClassNames';
+import { TYPOGRAPHY } from '@/Constants/Typography';
 import { Button } from './Button';
 import { SearchInput } from './SearchInput';
 import { LoadingSpinner } from './Loading';
@@ -201,7 +202,7 @@ export const DataTable = React.memo(<T extends Record<string, unknown>>({
                       index === 0 ? "pl-8 pr-4" : "px-4"
                     )}
                   >
-                    <p className="block font-sans text-sm antialiased font-normal leading-none text-gris-una opacity-70">
+                    <p className={`block font-sans antialiased font-normal leading-none text-gris-una opacity-70 ${TYPOGRAPHY.table.header}`}>
                       {column.header}
                     </p>
                   </th>

@@ -402,7 +402,7 @@ const validateForm = (): boolean => {
                 </div>
                 <div>
                   <span className="font-medium text-gray-700">Estado:</span>
-                  <span className={`ml-2 ${currentElement.active ? 'text-[var(--text-success)]' : 'text-[var(--text-error)]'}`}>
+                  <span className={`ml-2 ${currentElement.active ? 'text-verde-dark' : 'text-error-dark'}`}>
                     {currentElement.active ? 'Activo' : 'Inactivo'}
                   </span>
               </div>

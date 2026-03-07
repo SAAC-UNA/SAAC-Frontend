@@ -2,6 +2,7 @@ import React, { forwardRef, useId } from 'react';
 import { cn } from '@/Utils/ClassNames';
 import { type ComponentSize } from '@/constants/ComponentSizes';
 import { SystemIcons } from './Icons/SystemIcons';
+import { TYPOGRAPHY } from '@/Constants/Typography';
 
 interface InputProps extends Omit<React.InputHTMLAttributes<HTMLInputElement>, 'size'> {
   label?: string;
@@ -81,7 +82,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(({
             maxLength={maxLength}
             className={cn(
               // Base styles - Similar al login de tu compañera
-              'w-full h-10 px-4 text-sm border rounded-corner transition-all duration-300', // Cambiado de text-base a text-sm
+              `w-full h-10 px-4 ${TYPOGRAPHY.form.input} border rounded-corner transition-all duration-300`,
               'focus:outline-none focus:border-gris-una',
               'disabled:bg-gris-una/10 disabled:cursor-not-allowed',
               'peer', // Para usar peer selectors de Tailwind
@@ -114,7 +115,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(({
                 'transform',
                 
                 // Tamaño del texto del label (más pequeño)
-                'text-sm', // Label más pequeño
+                TYPOGRAPHY.form.label,
                 
                 // Posicionamiento dinámico basado en focus o contenido
                 hasValue 
@@ -150,7 +151,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(({
 
         {/* Error message */}
         {error && (
-          <p className="text-rojo-una-2 text-sm flex items-center gap-2">
+          <p className={`text-rojo-una-2 ${TYPOGRAPHY.form.helper} flex items-center gap-2`}>
             <SystemIcons.interface.alert className="w-4 h-4 flex-shrink-0 text-rojo-una-2" size="sm" />
             {error}
           </p>
@@ -158,7 +159,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(({
 
         {/* Helper text */}
         {getHelperText() && !error && (
-          <p className="text-gris-una text-sm">
+          <p className={`text-gris-una ${TYPOGRAPHY.form.helper}`}>
             {getHelperText()}
           </p>
         )}
@@ -173,7 +174,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(({
       {label && (
         <label 
           htmlFor={inputId}
-          className="block text-sm font-medium text-negro-una"
+          className={`block ${TYPOGRAPHY.form.label} font-medium text-negro-una`}
         >
           {label}
           {required && <span className="text-rojo-una-2 ml-1">*</span>}
@@ -187,7 +188,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(({
         maxLength={maxLength}
         className={cn(
           // Base styles
-          'w-full h-10 border rounded-corner transition-all duration-200 px-3 py-2 text-sm',
+          `w-full h-10 border rounded-corner transition-all duration-200 px-3 py-2 ${TYPOGRAPHY.form.input}`,
           'focus:outline-none focus:ring-1 focus:ring-gris-una/20 focus:border-transparent',
           'placeholder-gris-una/60 disabled:bg-gris-una/10 disabled:cursor-not-allowed',
           
@@ -205,7 +206,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(({
 
       {/* Error message */}
       {error && (
-        <p className="text-rojo-una-2 text-sm flex items-center gap-2">
+        <p className={`text-rojo-una-2 ${TYPOGRAPHY.form.helper} flex items-center gap-2`}>
           <SystemIcons.interface.alert className="w-4 h-4 flex-shrink-0 text-rojo-una-2" size="sm" />
           {error}
         </p>
@@ -213,7 +214,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(({
 
       {/* Helper text */}
       {getHelperText() && !error && (
-        <p className="text-gris-una text-sm">
+        <p className={`text-gris-una ${TYPOGRAPHY.form.helper}`}>
           {getHelperText()}
         </p>
       )}

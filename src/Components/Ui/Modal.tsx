@@ -265,8 +265,8 @@ export const Modal: React.FC<UnifiedModalProps> = React.memo(({
                     )}
                     
                     {variant === 'danger' && !hideDefaultDangerMessage && (
-                      <div className="mt-4 p-3 bg-[var(--bg-error)] border border-[var(--border-error)] rounded-corner">
-                        <p className="text-sm text-[var(--text-error)] font-medium">
+                      <div className="mt-4 p-3 bg-[var(--color-error-light)] border border-[var(--color-error-ring)] rounded-corner">
+                        <p className="text-sm text-state-error font-medium">
                           Esta acción no se puede deshacer.
                         </p>
                       </div>

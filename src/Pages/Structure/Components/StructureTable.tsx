@@ -19,9 +19,10 @@
 import React, { useEffect, useState, useMemo, useCallback } from 'react';
 import { Modal } from '@/Components/Ui/Modal';
 import { DataTable, ButtonWithTooltip } from '@/components/index';
-import { useStructure } from '@/Hooks/UseStructure';
+import { TYPOGRAPHY } from '@/Constants/Typography';
 import { useDebounce } from '@/Hooks/UseDebounce';
 import { ELEMENT_TYPE_LABELS } from '@/Constants/StructureConstants';
+import { TABLE_TRUNCATE } from '@/Constants/TableTruncate';
 import type { DataTableColumn} from '@/Components/Ui/DataTable';
 import type { StructureElement, ElementType } from '@/Types/StructureTypes';
 import { SystemIcons } from '@/Components/Ui/Icons/SystemIcons';
@@ -30,6 +31,8 @@ import { TABLE_ACTION_BUTTON } from '@/Constants/Components';
 
 
 interface StructureTableProps {
+    treeData: StructureElement[];
+    isLoading: boolean;
     onEdit?: (element: StructureElement) => void;
     onDelete?: (element: StructureElement) => void;
     onToggleActive?: (element: StructureElement) => void;
@@ -39,6 +42,8 @@ interface StructureTableProps {
 }
 
 export const StructureTable: React.FC<StructureTableProps> = ({
+    treeData,
+    isLoading,
     onEdit,
     onDelete,
     onToggleActive,
@@ -46,7 +51,6 @@ export const StructureTable: React.FC<StructureTableProps> = ({
     itemsPerPage = 4,
     unstyled = false
 }) => {
-    const { treeData, isLoading, loadTree } = useStructure();
 
     const [currentPage, setCurrentPage] = useState(1);
     const [modalState, setModalState] = useState<{
@@ -70,11 +74,6 @@ export const StructureTable: React.FC<StructureTableProps> = ({
         };
         return flattenTree(treeData);
     }, [treeData]);
-
-    // Cargar elementos al montar el componente
-    useEffect(() => {
-        loadTree();
-    }, [loadTree]);
 
     // Filtrar elementos basado en la búsqueda y tipo - MEMOIZADO con debounced search
     const filteredElements = useMemo(() => {
@@ -126,7 +125,7 @@ export const StructureTable: React.FC<StructureTableProps> = ({
     }, [filteredElements, currentPage, itemsPerPage]);
 
     // Función para truncar descripción - MEMOIZADA
-    const truncateDescription = useCallback((text: string | undefined, maxLength: number = 20): string => {
+    const truncateDescription = useCallback((text: string | undefined, maxLength: number = TABLE_TRUNCATE.name): string => {
         if (!text) return '-';
         if (text.length <= maxLength) return text;
         return text.substring(0, maxLength) + '...';
@@ -171,7 +170,7 @@ export const StructureTable: React.FC<StructureTableProps> = ({
             header: 'Tipo',
             align: 'left',
             render: (_, element) => (
-                <p className="block font-sans text-sm antialiased font-bold leading-normal text-negro-una">
+                <p className={`block font-sans antialiased font-bold leading-normal text-negro-una-2 ${TYPOGRAPHY.table.cell}`}>
                     {ELEMENT_TYPE_LABELS[element.type]}
                 </p>
             )
@@ -181,7 +180,7 @@ export const StructureTable: React.FC<StructureTableProps> = ({
             header: 'Nomenclatura',
             align: 'center',
             render: (_, element) => (
-                <p className="block font-sans text-sm antialiased font-normal leading-normal text-gris-una">
+                <p className={`block font-sans antialiased font-normal leading-normal text-gris-una ${TYPOGRAPHY.table.cell}`}>
                     {element.nomenclature || '-'}
                 </p>
             )
@@ -192,7 +191,7 @@ export const StructureTable: React.FC<StructureTableProps> = ({
             align: 'left',
             render: (_, element) => (
                 <p 
-                    className={`block font-sans text-sm antialiased font-normal leading-normal text-gris-una max-w-xs truncate ${
+                    className={`block font-sans antialiased font-normal leading-normal text-gris-una max-w-xs truncate ${TYPOGRAPHY.table.cell} ${
                         !element.name ? 'text-center' : 'text-left'
                     }`}
                     title={element.name || '-'}
@@ -207,7 +206,7 @@ export const StructureTable: React.FC<StructureTableProps> = ({
 
             align: 'left',
             render: (_, element) => (
-                <p className={`block font-sans text-sm antialiased font-normal leading-normal text-gris-una ${
+                <p className={`block font-sans antialiased font-normal leading-normal text-gris-una ${TYPOGRAPHY.table.cell} ${
                     !element.description ? 'text-center' : 'text-left'
                 }`}>
                     {truncateDescription(element.description) || '-'}
@@ -220,7 +219,7 @@ export const StructureTable: React.FC<StructureTableProps> = ({
             align: 'center',
             render: (_, element) => (
                 <div className="w-max mx-auto">
-                    <div className={`relative grid items-center px-2 py-1 font-sans text-xs font-bold uppercase rounded-corner select-none whitespace-nowrap ${
+                    <div className={`relative grid items-center px-2 py-1 font-sans font-bold rounded-corner select-none whitespace-nowrap ${TYPOGRAPHY.badge} ${
                         element.active 
                             ? 'text-green-900 bg-green-500/20' 
                             : 'text-red-900 bg-red-500/20'
@@ -341,8 +340,8 @@ export const StructureTable: React.FC<StructureTableProps> = ({
                 <div className="bg-white border border-gray-200 rounded-corner p-4 space-y-3">
                     {/* Tipo */}
                     <div>
-                        <label className="text-xs font-medium text-gray-500 uppercase">Tipo de Elemento</label>
-                        <p className="text-sm text-gray-900 mt-1">
+                        <label className={`font-medium text-gray-500 ${TYPOGRAPHY.badge}`}>Tipo de Elemento</label>
+                        <p className={`text-negro-una-2 mt-1 ${TYPOGRAPHY.table.cell}`}>
                             {ELEMENT_TYPE_LABELS[modalState.element.type]}
                         </p>
                     </div>
@@ -350,8 +349,8 @@ export const StructureTable: React.FC<StructureTableProps> = ({
                     {/* Nomenclatura */}
                     {modalState.element.nomenclature && (
                         <div>
-                            <label className="text-xs font-medium text-gray-500 uppercase">Nomenclatura</label>
-                            <p className="text-sm text-gray-900 mt-1">
+                            <label className={`font-medium text-gray-500 ${TYPOGRAPHY.badge}`}>Nomenclatura</label>
+                            <p className={`text-negro-una-2 mt-1 ${TYPOGRAPHY.table.cell}`}>
                                 {modalState.element.nomenclature}
                             </p>
                         </div>
@@ -359,17 +358,17 @@ export const StructureTable: React.FC<StructureTableProps> = ({
 
                     {/* Nombre */}
                     <div>
-                        <label className="text-xs font-medium text-gray-500 uppercase">Nombre</label>
-                        <p className="text-sm text-gray-900 mt-1">
+                        <label className={`font-medium text-gray-500 ${TYPOGRAPHY.badge}`}>Nombre</label>
+                        <p className={`text-negro-una-2 mt-1 ${TYPOGRAPHY.table.cell}`}>
                             {modalState.element.name || '-'}
                         </p>
                     </div>
 
                     {/* Estado */}
                     <div>
-                        <label className="text-xs font-medium text-gray-500 uppercase">Estado</label>
+                        <label className={`font-medium text-gray-500 ${TYPOGRAPHY.badge}`}>Estado</label>
                         <div className="mt-1">
-                            <div className={`inline-flex items-center px-2 py-1 font-sans text-xs font-bold uppercase rounded-corner ${
+                            <div className={`inline-flex items-center px-2 py-1 font-sans font-bold rounded-corner ${TYPOGRAPHY.badge} ${
                                 modalState.element.active 
                                     ? 'text-green-900 bg-green-500/20' 
                                     : 'text-red-900 bg-red-500/20'
@@ -392,7 +391,7 @@ export const StructureTable: React.FC<StructureTableProps> = ({
                     </div>
                     
                     <div className="bg-white border border-gray-200 rounded-corner p-4">
-                        <p className="text-sm text-gray-700 leading-relaxed">
+                        <p className={`text-gray-700 leading-relaxed ${TYPOGRAPHY.table.cell}`}>
                             {modalState.element.description}
                         </p>
                     </div>
@@ -412,8 +411,8 @@ export const StructureTable: React.FC<StructureTableProps> = ({
                     <div className="flex items-start space-x-2">
                         <div className="w-2 h-2 bg-purple-500 rounded-full mt-2 flex-shrink-0" />
                         <div>
-                            <span className="text-xs font-medium text-gray-500">Elemento padre:</span>
-                            <p className="text-sm text-gray-700">
+                            <span className={`font-medium text-gray-500 ${TYPOGRAPHY.badge}`}>Elemento padre:</span>
+                            <p className={`text-gray-700 ${TYPOGRAPHY.table.cell}`}>
                                 {getParentName(modalState.element)}
                             </p>
                         </div>
@@ -431,7 +430,7 @@ export const StructureTable: React.FC<StructureTableProps> = ({
                 </div>
                 
                 <div className="bg-white border border-gray-200 rounded-corner p-4">
-                    <div className="text-xs text-gray-500">
+                    <div className={`text-gray-500 ${TYPOGRAPHY.badge}`}>
                         Creado el: {new Date(modalState.element.createdAt).toLocaleDateString('es-ES', {
                             year: 'numeric',
                             month: 'long',

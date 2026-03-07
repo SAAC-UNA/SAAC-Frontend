@@ -1,6 +1,8 @@
 import React, { useEffect, useState, useMemo, useCallback } from 'react';
 import { DataTable, TableActionButton } from '@/components/index';
 import { BackendErrorAlert } from '@/Components/Ui/BackendErrorAlert';
+import { TYPOGRAPHY } from '@/Constants/Typography';
+import { TABLE_TRUNCATE } from '@/Constants/TableTruncate';
 import { useUsers } from '@/Hooks/UseUsers';
 import { useDebounce } from '@/Hooks/UseDebounce';
 import type { DataTableColumn } from '@/components/Ui/DataTable';
@@ -95,11 +97,11 @@ export const UsersTable: React.FC<UsersTableProps> = ({
             accessor: 'name',
             render: (value, user) => (
                 <div className="flex flex-col pl-2">
-                    <p className="block font-sans text-sm antialiased font-bold leading-normal text-negro-una" title={String(value)}>
-                        {truncateText(String(value), 20)}
+                    <p className={`block font-sans antialiased font-bold leading-normal text-negro-una-2 ${TYPOGRAPHY.table.cell}`} title={String(value)}>
+                        {truncateText(String(value), TABLE_TRUNCATE.name)}
                     </p>
-                    <p className="block font-sans text-sm antialiased font-normal leading-normal text-gris-una opacity-70" title={user.email}>
-                        {truncateText(user.email, 25)}
+                    <p className={`block font-sans antialiased font-normal leading-normal text-gris-una opacity-70 ${TYPOGRAPHY.table.cell}`} title={user.email}>
+                        {truncateText(user.email, TABLE_TRUNCATE.email)}
                     </p>
                 </div>
             )
@@ -111,8 +113,8 @@ export const UsersTable: React.FC<UsersTableProps> = ({
             align: 'center',
             render: (role) => (
                 <div className="w-max mx-auto">
-                    <div className="relative grid items-center px-2 py-1 font-sans text-xs font-bold text-gray-900 uppercase rounded-corner select-none whitespace-nowrap" title={String(role || 'Sin rol')}>
-                        <span>{truncateText(String(role || 'Sin rol'), 20)}</span>
+                    <div className={`relative grid items-center px-2 py-1 font-sans font-bold text-negro-una-2 rounded-corner select-none whitespace-nowrap ${TYPOGRAPHY.badge}`} title={String(role || 'Sin rol').toLowerCase().replace(/\b\w/g, c => c.toUpperCase())}>
+                        <span>{truncateText(String(role || 'Sin rol').toLowerCase().replace(/\b\w/g, c => c.toUpperCase()), TABLE_TRUNCATE.name)}</span>
                     </div>
                 </div>
             )
@@ -123,7 +125,7 @@ export const UsersTable: React.FC<UsersTableProps> = ({
             align: 'center',
             render: (_, user) => (
                 <div className="w-max mx-auto">
-                    <div className={`relative grid items-center px-2 py-1 font-sans text-xs font-bold uppercase rounded-corner select-none whitespace-nowrap ${
+                    <div className={`relative grid items-center px-2 py-1 font-sans font-bold rounded-corner select-none whitespace-nowrap ${TYPOGRAPHY.badge} ${
                         user.status === 'active'
                             ? 'text-green-900 bg-green-500/20'
                             : 'text-red-900 bg-red-500/20'

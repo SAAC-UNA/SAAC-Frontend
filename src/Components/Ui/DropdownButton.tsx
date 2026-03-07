@@ -22,6 +22,8 @@ import type { ReactNode } from 'react';
 import { Button } from './Button';
 import { SystemIcons } from './Icons/SystemIcons';
 import { cn } from '@/Utils/ClassNames';
+import { TYPOGRAPHY } from '@/Constants/Typography';
+import { ICON_SIZES } from '@/Constants/Components';
 
 export interface DropdownOption {
   /** Identificador único de la opción */
@@ -148,7 +150,7 @@ export const DropdownButton: React.FC<DropdownButtonProps> = ({
           <span>{label}</span>
           <SystemIcons.interface.chevronDown 
             className={cn(
-              "w-4 h-4 transition-transform duration-200",
+              ICON_SIZES.button, "transition-transform duration-200",
               isOpen && "rotate-180"
             )}
           />
@@ -172,7 +174,7 @@ export const DropdownButton: React.FC<DropdownButtonProps> = ({
                 onClick={() => handleOptionClick(option)}
                 disabled={option.disabled}
                 className={cn(
-                  "relative w-full text-left px-4 py-2.5 text-sm",
+                  `relative w-full text-left px-4 py-2.5 ${TYPOGRAPHY.button}`,
                   "hover:bg-gray-100 focus:bg-gray-100 focus:outline-none",
                   "transition-colors duration-150",
                   "flex items-center gap-3",

@@ -18,6 +18,8 @@
 import React, { useEffect, useState, useMemo, useCallback } from 'react';
 import { DataTable, TableActionButton } from '@/components/index';
 import { BackendErrorAlert } from '@/Components/Ui/BackendErrorAlert';
+import { TYPOGRAPHY } from '@/Constants/Typography';
+import { TABLE_TRUNCATE } from '@/Constants/TableTruncate';
 import { useRoles } from '@/hooks/UseRoles';
 import type { Role } from '@/Services/RoleService';
 
@@ -111,11 +113,11 @@ export const RolesTable: React.FC<RolesTableProps> = ({
             accessor: 'name',
             render: (value: unknown, item: Role) => (
                 <div className="flex flex-col pl-2">
-                    <p className="block font-sans text-sm antialiased font-bold leading-normal text-negro-una" title={String(value)}>
-                        {truncateText(String(value), 20)}
+                    <p className={`block font-sans antialiased font-bold leading-normal text-negro-una-2 ${TYPOGRAPHY.table.cell}`} title={String(value)}>
+                        {truncateText(String(value), TABLE_TRUNCATE.name)}
                     </p>
-                    <p className="block font-sans text-sm antialiased font-normal leading-normal text-gris-una opacity-70" title={item.description || 'Sin descripción'}>
-                        {truncateText(item.description || 'Sin descripción', 20)}
+                    <p className={`block font-sans antialiased font-normal leading-normal text-gris-una-2 ${TYPOGRAPHY.table.cell}`} title={item.description || 'Sin descripción'}>
+                        {truncateText(item.description || 'Sin descripción', TABLE_TRUNCATE.name)}
                     </p>
                 </div>
             )
@@ -127,7 +129,7 @@ export const RolesTable: React.FC<RolesTableProps> = ({
             align: 'center',
             render: (_: unknown, role: Role) => (
                 <div className="w-max mx-auto">
-                    <div className="relative grid items-center px-2 py-1 font-sans text-xs font-bold text-gray-900 uppercase rounded-corner select-none whitespace-nowrap bg-gray-500/20">
+                    <div className={`relative grid items-center px-2 py-1 font-sans font-bold text-negro-una-2 rounded-corner select-none whitespace-nowrap bg-gray-500/20 ${TYPOGRAPHY.badge}`}>
                         <span>{Array.isArray(role.permissions) ? role.permissions.length : 0} permisos</span>
                     </div>
                 </div>
@@ -139,7 +141,7 @@ export const RolesTable: React.FC<RolesTableProps> = ({
             align: 'center',
             render: (_: unknown) => (
                 <div className="w-max mx-auto">
-                    <div className="relative grid items-center px-2 py-1 font-sans text-xs font-bold text-green-900 uppercase rounded-corner select-none whitespace-nowrap bg-green-500/20">
+                    <div className={`relative grid items-center px-2 py-1 font-sans font-bold text-green-900 rounded-corner select-none whitespace-nowrap bg-green-500/20 ${TYPOGRAPHY.badge}`}>
                         <span>Activo</span>
                     </div>
                 </div>

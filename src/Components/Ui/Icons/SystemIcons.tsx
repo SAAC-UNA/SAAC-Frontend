@@ -25,16 +25,22 @@ export interface IconProps {
 
 /**
  * Obtiene las clases de tamaño según el size prop
+ *
+ * TODO: Una vez todos los íconos hayan migrado al nuevo estándar CSS (index.css),
+ * eliminar esta función y el prop `size` de IconProps. Los tamaños se controlarán
+ * únicamente mediante `className` con las clases CSS: size-icon-sm, size-icon-md,
+ * size-icon-lg, size-icon-button (definidas en @layer utilities de index.css).
+ * También eliminar los tamaños sin variable CSS: 'xs', 'xl', '2xl', '3xl'.
  */
 const getSizeClasses = (size: IconProps['size'] = 'md'): string => {
   const sizes = {
-    xs: 'w-3 h-3',
-    sm: 'w-4 h-4',
-    md: 'w-5 h-5',
-    lg: 'w-6 h-6',
-    xl: 'w-8 h-8',
-    '2xl': 'w-12 h-12',
-    '3xl': 'w-16 h-16'
+    xs: 'w-3 h-3',       // TODO: eliminar, sin variable CSS equivalente
+    sm: 'w-4 h-4',       // TODO: reemplazar por size-icon-sm
+    md: 'w-5 h-5',       // TODO: reemplazar por size-icon-md
+    lg: 'w-6 h-6',       // TODO: reemplazar por size-icon-lg
+    xl: 'w-8 h-8',       // TODO: eliminar, sin variable CSS equivalente
+    '2xl': 'w-12 h-12',  // TODO: eliminar, sin variable CSS equivalente
+    '3xl': 'w-16 h-16'   // TODO: eliminar, sin variable CSS equivalente
   };
   return sizes[size];
 };

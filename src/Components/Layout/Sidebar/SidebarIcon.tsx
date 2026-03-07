@@ -22,7 +22,7 @@ export const SidebarIcon: React.FC<SidebarIconProps> = ({ icon, isActive }) => {
       className={cn(
         'flex-shrink-0 relative flex items-center justify-center',
         SIDEBAR_ITEM.icon,
-        'transition-transform duration-200 group-hover:scale-110',
+        'transition-[filter] duration-300 ease-out group-hover/btn:brightness-125',
         isActive ? 'text-rojo-una-2' : 'text-blanco-una-2',
       )}
     >

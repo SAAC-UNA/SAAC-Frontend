@@ -74,11 +74,37 @@
   --color-rojo-una: #CD1719;
   --color-rojo-una-2: #C32B30;
   --color-gris-una: #A7A7A9;
+  --color-gris-una-2: #888887;
+  --color-gris-una-3: #444852;
   --color-azul-una: #034991;
+  --color-azul-una-2: #2b57da;
   --color-blanco-una: #FFFFFF;
   --color-blanco-una-2: #F8F9FA;
   --color-negro-una: #000000;
+  --color-negro-una-2: #232323;
+
+    /* Colores para estados */
   --color-verde: #10b981;
+  --color-warning: #f59e0b;
+  --color-error: #ef4444;
+  --color-info: #3b82f6;
+  --color-error-screen: #aba9af;
+
+  --color-verde-dark: #166534;   /* Texto verde oscuro para éxito */
+  --color-warning-dark: #92400e;   /* Texto amarillo oscuro para advertencias */
+  --color-error-dark: #ee4343;      /* Texto rojo oscuro para errores */
+  --color-info-dark: #1e40af;      /* Texto azul oscuro para información */
+
+  --color-verde-light: #f0fdf4;     /* Fondo verde claro para éxito */
+  --color-warning-light: #fffbeb;     /* Fondo amarillo claro para advertencias */
+  --color-error-light: #fef2f2;       /* Fondo rojo claro para errores */
+  --color-info-light: #eff6ff;        /* Fondo azul claro para información */
+  --color-inactive-light: #e7e8ea;   /* Fondo gris claro para inactivo */
+
+  --color-verde-ring: #bbf7d0; /* Borde verde para éxito */
+  --color-warning-ring: #fde68a; /* Borde amarillo para advertencias */
+  --color-error-ring: #fecaca;   /* Borde rojo para errores */
+  --color-info-ring: #bfdbfe;    /* Borde azul para información */
 
   --font-poppins: 'Poppins', sans-serif;
 
@@ -88,14 +114,15 @@
   --text-body: 0.875rem;            /* 14px - Texto general/contenido */
   --text-page-title: 1.25rem;        /* 24px - Título principal de página */
   --text-page-subtitle: 1rem;       /* 16px - Subtítulo/descripción de página */
-  --text-button: 1rem;          /* 14px - Todos los botones */
+  --text-button: 0.875rem;          /* 12px - Todos los botones */
   --text-sidebar: 0.875rem;         /* 14px - Items de navegación */
   --text-form-input: 0.875rem;      /* 14px - Inputs, selects, textareas */
   --text-form-label: 0.875rem;      /* 14px - Labels de formularios */
   --text-form-helper: 0.75rem;      /* 12px - Textos de ayuda y validación */
-  --text-table-header: 0.75rem;     /* 12px - Headers de tabla */
-  --text-table-cell: 0.875rem;      /* 14px - Contenido de celdas */
+  --text-table-header: 0.875rem;     /* 14px - Headers de tabla */
+  --text-table-cell: 0.875rem;      /* 12px - Contenido de celdas */
   --text-table-caption: 0.875rem;   /* 14px - Título de tabla */
+  --text-badge: 0.875rem;            /* 12px - Badges, chips, pills de acción (en tablas) */
   --text-alert-title: 0.875rem;     /* 14px - Título de alertas */
   --text-alert-message: 0.875rem;   /* 14px - Mensaje de alertas */
   --text-empty-title: 1.125rem;     /* 18px - Título de estados vacíos */
@@ -105,18 +132,27 @@
   --text-modal-title: 1.25rem;      /* 20px - Título de modales */
   --text-modal-subtitle: 0.875rem;  /* 14px - Subtítulo de modales */
   --text-modal-body: 0.875rem;      /* 14px - Contenido de modales */
-  --text-badge: 0.75rem;            /* 12px - Badges, chips, pills */
   --text-pagination: 0.875rem;      /* 14px - Paginación */
+  --text-tooltip: 0.875rem;         /* 12px - Texto de tooltips */
 
    /* SIDEBAR */
-  --sidebar-width: 16rem;            /* 256px - Ancho expandido */
+  --sidebar-width: 14rem;            /* 256px - Ancho expandido */
   --sidebar-width-mobile: 18rem;     /* 288px - Ancho en móvil */
   --sidebar-width-icon: 3.50rem;     /* 56px - Ancho colapsado (solo íconos) */
   --height-sidebar-item: 3.25rem;    /* 52px - Altura fija del botón */
   --padding-sidebar-x: 1rem;         /* 16px - Padding horizontal del botón */
   --size-sidebar-icon: 2rem;         /* 32px - Tamaño del ícono */
   --radius-sidebar-item: 1.25rem;    /* 20px - Radio de las esquinas del botón y curvas decorativas */
+
+  /* Tamaño de button */
+  --width-button: 8rem; /* 128px - Ancho mínimo estándar para botones de contenido */
   
+  /* Tamaños de íconos generales */
+  --size-icon-button: 1rem;          /* 20px - Ícono en botones */
+  --size-icon-sm: 1rem;              /* 16px - Ícono pequeño */
+  --size-icon-md: 1.25rem;           /* 20px - Ícono mediano */
+  --size-icon-lg: 1.5rem;            /* 24px - Ícono grande */
+
   /* Tamaños para botones de acción en tablas */
   --size-table-action-button: 2rem; /* 32px - Tamaño del botón (h-8 w-8) */
   --size-table-action-icon: 0.875rem;   /* 16px - Tamaño del icono (w-4 h-4) */
@@ -127,7 +163,7 @@
   --size-header-icon: 1.25rem;     /* 20px - Tamaño del icono (w-5 h-5) */
   --padding-header-action: 0.5rem; /* 8px - Padding del botón (p-2) */
 
-  /* Alturas y paddings de componentes (inputs, buttons, selects, etc) */
+  /*? Alturas y paddings de componentes (inputs, buttons, selects, etc) */
   --height-component: 2.5rem;       /* 40px - Altura estándar para todos los tamaños */
   --padding-component-sm-x: 0.75rem;  /* 12px - Padding horizontal sm */
   --padding-component-sm-y: 0.5rem;   /* 8px - Padding vertical sm */
@@ -135,13 +171,6 @@
   --padding-component-md-y: 0.75rem;  /* 12px - Padding vertical md */
   --padding-component-lg-x: 1rem;     /* 16px - Padding horizontal lg */
   --padding-component-lg-y: 1rem;     /* 16px - Padding vertical lg */
-
-  /* Colores para estados */
-  --color-verde: #10b981;
-  --color-warning: #f59e0b;
-  --color-error: #ef4444;
-  --color-info: #3b82f6;
-  --color-error-screen: #aba9af;
 
   /* Colores estándar para iconos de acciones (NO aplicar a iconos del sidebar) */
   --icon-view: var(--color-info);         /* Ver/Visualizar - azul info */
@@ -162,26 +191,6 @@
   --icon-close: var(--color-gris-una);    /* Cerrar - gris UNA */
   --icon-loading: var(--color-rojo-una-2);      /* Cargando - azul info */
   --icon-error-screen: var(--color-error-screen); /* Error de pantalla - gris/error */
-
-  /* Colores para fondos y estados de mensajes */
-  --bg-verde: #f0fdf4;     /* Fondo verde claro para éxito */
-  --bg-warning: #fffbeb;     /* Fondo amarillo claro para advertencias */
-  --bg-error: #fef2f2;       /* Fondo rojo claro para errores */
-  --bg-info: #eff6ff;        /* Fondo azul claro para información */
-  --bg-inactive: #e7e8ea;   /* Fondo gris claro para inactivo */
-  
-  --border-verde: #bbf7d0; /* Borde verde para éxito */
-  --border-warning: #fde68a; /* Borde amarillo para advertencias */
-  --border-error: #fecaca;   /* Borde rojo para errores */
-  --border-info: #bfdbfe;    /* Borde azul para información */
-  --border-inactive: var(--color-gris-una); /* Borde gris para inactivo */
-
-  --text-verde: #166534;   /* Texto verde oscuro para éxito */
-  --text-warning: #92400e;   /* Texto amarillo oscuro para advertencias */
-  --text-error: var(--color-error);      /* Texto rojo oscuro para errores */
-  --text-info: #1e40af;      /* Texto azul oscuro para información */
-  --text-inactive: var(--color-gris-una); /* Texto gris para inactivo */
-  --text-error-screen: #aba9af;
 
   /* Colores para botones principales */
   --btn-primary: var(--color-azul-una);     /* Botón principal - azul UNA */
@@ -331,7 +340,13 @@
 /* Transiciones, sombras, efectos especiales y scrollbars */
 /* TODO Revisar si hay contradicción entre esto y los tamaños definidos en Typography.ts */
 @layer utilities {
-  /* ===== TIPOGRAFÍA ESTANDARIZADA ===== 14-02-2026 */
+
+  /*! ===== Border radius del sistema ===== 05-03-2026 */
+  .rounded-corner {
+    border-radius: 15px;
+  }
+
+  /*! ===== TIPOGRAFÍA ESTANDARIZADA ===== 14-02-2026 */
   /* Usamos prefijo 'size-' para evitar conflictos con clases de color 'text-*' de Tailwind */
   .size-header { font-size: var(--text-header); }
   .size-body { font-size: var(--text-body); }
@@ -363,8 +378,21 @@
   .size-modal-body { font-size: var(--text-modal-body); }
   .size-badge { font-size: var(--text-badge); }
   .size-pagination { font-size: var(--text-pagination); }
+  .size-tooltip { font-size: var(--text-tooltip); }
 
-  /* ===== TAMAÑOS DE BOTONES DE TABLA ===== 14-02-2026 */
+  /*! ==== TAMAÑO DE BOTONES PRINCIPALES ===== 04-03-2026 */
+  .w-button-standard {
+    min-width: var(--width-button);
+    max-width: var(--width-button);
+  }
+
+  /*! ===== TAMAÑOS DE ICONOS ===== 04-03-2026 */
+  .size-icon-button { width: var(--size-icon-button); height: var(--size-icon-button); }
+  .size-icon-sm     { width: var(--size-icon-sm);     height: var(--size-icon-sm); }
+  .size-icon-md     { width: var(--size-icon-md);     height: var(--size-icon-md); }
+  .size-icon-lg     { width: var(--size-icon-lg);     height: var(--size-icon-lg); }
+
+  /*! ===== TAMAÑOS DE BOTONES DE TABLA ===== 14-02-2026 */
   .size-table-action-button { 
     height: var(--size-table-action-button) !important; 
     width: var(--size-table-action-button) !important; 
@@ -375,7 +403,7 @@
   }
   .p-table-action { padding: var(--padding-table-action) !important; }
 
-  /* ==== TAMAÑO DE BOTONES DE HEADER ==== 15-02-2026 */
+  /*! ==== TAMAÑO DE BOTONES DE HEADER ==== 15-02-2026 */
   .size-header-button {
     height: var(--size-header-button) !important;
     width: var(--size-header-button) !important;
@@ -389,45 +417,6 @@
   .p-header-action {
     padding: var(--padding-header-action) !important;
   }
-
-  /* ===== COLORES DE TEXTO UNA ===== */
-  .text-rojo-una { color: var(--color-rojo-una); }
-  .text-rojo-una-2 { color: var(--color-rojo-una-2); }
-  .text-gris-una { color: var(--color-gris-una); }
-  .text-azul-una { color: var(--color-azul-una); }
-  .text-blanco-una { color: var(--color-blanco-una); }
-  .text-negro-una { color: var(--color-negro-una); }
-  .text-verde { color: var(--color-verde); }
-  .text-warning { color: var(--color-warning); }
-  .text-error { color: var(--color-error); }
-  .text-info { color: var(--color-info); }
-
-  /* ===== COLORES DE FONDO UNA ===== */
-  .bg-rojo-una { background-color: var(--color-rojo-una); }
-  .bg-rojo-una-2 { background-color: var(--color-rojo-una-2); }
-  .bg-gris-una { background-color: var(--color-gris-una); }
-  .bg-azul-una { background-color: var(--color-azul-una); }
-  .bg-blanco-una { background-color: var(--color-blanco-una); }
-  .bg-blanco-una-2 { background-color: var(--color-blanco-una-2); }
-  .bg-negro-una { background-color: var(--color-negro-una); }
-  .bg-verde { background-color: var(--bg-verde); }
-  .bg-warning { background-color: var(--bg-warning); }
-  .bg-error { background-color: var(--bg-error); }
-  .bg-info { background-color: var(--bg-info); }
-  .bg-inactive { background-color: var(--bg-inactive); }
-
-  /* ===== COLORES DE BORDE UNA ===== */
-  .border-rojo-una { border-color: var(--color-rojo-una); }
-  .border-rojo-una-2 { border-color: var(--color-rojo-una-2); }
-  .border-gris-una { border-color: var(--color-gris-una); }
-  .border-azul-una { border-color: var(--color-azul-una); }
-  .border-blanco-una { border-color: var(--color-blanco-una); }
-  .border-negro-una { border-color: var(--color-negro-una); }
-  .border-verde { border-color: var(--border-verde); }
-  .border-warning { border-color: var(--border-warning); }
-  .border-error { border-color: var(--border-error); }
-  .border-info { border-color: var(--border-info); }
-  .border-inactive { border-color: var(--border-inactive); }
 
   /* ===== TAMAÑOS DE COMPONENTES ===== */
   .h-component { height: var(--height-component); }
@@ -449,7 +438,7 @@
     text-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
   }
 
-  /* ===== CONTENT LAYOUT UTILITIES ===== 14/02/2026*/
+  /*! ===== CONTENT LAYOUT UTILITIES ===== 14/02/2026*/
   /* Layout para formularios y páginas con botones al fondo */
   /* Cuando hay poco contenido: empuja botones al fondo */
   /* Cuando hay mucho contenido: mantiene espaciado razonable */
@@ -469,7 +458,7 @@
   .content-flex-grow {
     flex: 1;
   }
-/***********************/
+
   /* ===== SCROLLBAR STYLING ===== */
   /* Scrollbar personalizado simple y consistente */
   .custom-scrollbar {
@@ -496,10 +485,6 @@
     background: rgba(167, 167, 169, 0.6);
   }
 
-  /* ===== Border radius personalizado para componentes ===== */
-  .rounded-corner {
-    border-radius: 15px;
-  }
   /*===== Mínima altura del Layout para el screenContainer =====*/
   .min-h-app {
     /* py-8 = 4rem (2 + 2) */

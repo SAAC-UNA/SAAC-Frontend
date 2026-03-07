@@ -10,7 +10,7 @@ import { TYPOGRAPHY } from './Typography';
 
 export const COMPONENT_SIZES = {
   sm: {
-    text: TYPOGRAPHY.form.input,     // 14px - text-form-input
+    text: TYPOGRAPHY.button,         // 12px - size-button (botones)
     height: 'h-component',           // 40px - Altura estándar
     padding: {
       x: 'px-component-sm',          // 12px horizontal
@@ -18,7 +18,7 @@ export const COMPONENT_SIZES = {
     }
   },
   md: {
-    text: TYPOGRAPHY.form.input,     // 14px - Mismo tamaño que sm (formularios son 14px)
+    text: TYPOGRAPHY.button,         // 12px - size-button (botones)
     height: 'h-component',           // 40px - Altura estándar
     padding: {
       x: 'px-component-md',          // 16px horizontal
@@ -26,7 +26,7 @@ export const COMPONENT_SIZES = {
     }
   },
   lg: {
-    text: TYPOGRAPHY.form.input,     // 14px - Mismo tamaño que sm y md
+    text: TYPOGRAPHY.button,         // 12px - size-button (botones)
     height: 'h-component',           // 40px - Altura estándar
     padding: {
       x: 'px-component-lg',          // 16px horizontal (mismo que md)

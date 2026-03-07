@@ -13,6 +13,8 @@
 import React, { useState, useRef, useEffect, useId } from 'react';
 import { cn } from '@/Utils/ClassNames';
 import { SystemIcons } from '@/Components/Ui/Icons/SystemIcons';
+import { TYPOGRAPHY } from '@/Constants/Typography';
+import { ICON_SIZES } from '@/Constants/Components';
 
 export interface DatePickerProps {
   label?: string;
@@ -241,33 +243,25 @@ export const DatePicker: React.FC<DatePickerProps> = ({
   };
 
   // Clases base del input
+  const hasValue = Boolean(selectedDate);
+
   const inputClasses = cn(
     'w-full h-10 rounded-corner border text-left cursor-pointer transition-all duration-200',
     'focus:outline-none focus:ring-1 focus:ring-gris-una/20 focus:border-transparent',
-    'flex items-center justify-between px-3 py-2 text-sm',
+    `flex items-center justify-between px-3 py-2 ${TYPOGRAPHY.form.input}`,
     'placeholder-gris-una/60',
     // Estados
     disabled
       ? 'bg-gris-una/10 border-gris-una/5 text-gray-400 cursor-not-allowed'
       : error
-      ? 'border-rojo-una-2/5 bg-rojo-una-2/2'
-      : 'border-gris-una/5 bg-gris-una/10 hover:border-gris-una/10',
-    showPicker && !disabled && 'border-gris-una/20',
+      ? 'border-rojo-una-2 bg-blanco-una-2'
+      : 'border-gris-una bg-blanco-una-2 hover:border-gris-una/50',
+    showPicker && !disabled && 'border-gris-una',
     className
   );
 
   return (
     <div className="space-y-2" ref={containerRef}>
-      {/* Label */}
-      {label && (
-        <label 
-          htmlFor={inputId}
-          className="block text-sm font-medium text-negro-una"
-        >
-          {label}
-          {required && <span className="text-rojo-una-2 ml-1">*</span>}
-        </label>
-      )}
 
       {/* Input Container */}
       <div className="relative">
@@ -283,7 +277,8 @@ export const DatePicker: React.FC<DatePickerProps> = ({
         >
           <span className={cn(
             'text-left flex-1',
-            !selectedDate && 'text-gris-una/60'
+            !selectedDate && label && 'text-transparent', // Ocultar solo si hay label flotante
+            !selectedDate && !label && 'text-gris-una/60'  // Mostrar placeholder normal si no hay label
           )}>
             {formatDate(selectedDate)}
           </span>
@@ -308,13 +303,42 @@ export const DatePicker: React.FC<DatePickerProps> = ({
                 className="p-0.5 hover:bg-gris-una/20 rounded transition-colors cursor-pointer"
                 aria-label="Limpiar fecha"
               >
-                <SystemIcons.actions.cancel size="sm" className="text-gris-una" />
+                <SystemIcons.actions.cancel className={`${ICON_SIZES.sm} text-gris-una`} />
               </div>
             )}
             
-            <SystemIcons.interface.calendar size="sm" className="text-gris-una" />
+            <SystemIcons.interface.calendar className={`${ICON_SIZES.sm} text-gris-una`} />
           </div>
         </button>
+
+        {/* Floating Label */}
+        {label && (
+          <label
+            htmlFor={inputId}
+            className={cn(
+              'absolute left-4 transition-all duration-300 pointer-events-none',
+              'transform',
+              TYPOGRAPHY.form.label,
+              // Posición según contenido o estado abierto
+              hasValue || showPicker
+                ? 'top-0 scale-75 -translate-y-1/2'
+                : 'top-1/2 scale-100 -translate-y-1/2',
+              // Fondo para cortar la línea del borde
+              hasValue || showPicker
+                ? 'bg-blanco-una-2 px-2'
+                : 'bg-transparent px-1',
+              // Colores
+              error
+                ? 'text-rojo-una-2'
+                : hasValue || showPicker
+                  ? 'text-gris-una font-semibold'
+                  : 'text-gris-una',
+            )}
+          >
+            {label}
+            {required && <span className="text-rojo-una-2 ml-1">*</span>}
+          </label>
+        )}
 
         {/* Calendar Dropdown */}
         {showPicker && (
@@ -330,7 +354,7 @@ export const DatePicker: React.FC<DatePickerProps> = ({
                 className="p-1 hover:bg-gris-una/10 rounded transition-colors flex-shrink-0"
                 aria-label="Mes anterior"
               >
-                <SystemIcons.navigation.arrow.left size="sm" className="text-gris-una" />
+                <SystemIcons.navigation.arrow.left className={`${ICON_SIZES.sm} text-gris-una`} />
               </button>
               
               <div className="flex items-center gap-2 flex-1 justify-center">
@@ -338,7 +362,7 @@ export const DatePicker: React.FC<DatePickerProps> = ({
                 <select
                   value={currentDate.getMonth()}
                   onChange={(e) => handleMonthChange(parseInt(e.target.value))}
-                  className="text-sm font-semibold text-negro-una bg-transparent border border-gris-una/20 rounded px-2 py-1 hover:border-gris-una/40 focus:outline-none focus:ring-1 focus:ring-azul-una/30 cursor-pointer"
+                  className={`${TYPOGRAPHY.form.input} font-semibold text-negro-una bg-transparent border border-gris-una/20 rounded px-2 py-1 hover:border-gris-una/40 focus:outline-none focus:ring-1 focus:ring-azul-una/30 cursor-pointer`}
                   aria-label="Seleccionar mes"
                 >
                   {monthNames.map((month, index) => (
@@ -352,7 +376,7 @@ export const DatePicker: React.FC<DatePickerProps> = ({
                 <select
                   value={currentDate.getFullYear()}
                   onChange={(e) => handleYearChange(parseInt(e.target.value))}
-                  className="text-sm font-semibold text-negro-una bg-transparent border border-gris-una/20 rounded px-2 py-1 hover:border-gris-una/40 focus:outline-none focus:ring-1 focus:ring-azul-una/30 cursor-pointer"
+                  className={`${TYPOGRAPHY.form.input} font-semibold text-negro-una bg-transparent border border-gris-una/20 rounded px-2 py-1 hover:border-gris-una/40 focus:outline-none focus:ring-1 focus:ring-azul-una/30 cursor-pointer`}
                   aria-label="Seleccionar año"
                 >
                   {yearRange.map((year) => (
@@ -369,14 +393,14 @@ export const DatePicker: React.FC<DatePickerProps> = ({
                 className="p-1 hover:bg-gris-una/10 rounded transition-colors flex-shrink-0"
                 aria-label="Mes siguiente"
               >
-                <SystemIcons.navigation.arrow.right size="sm" className="text-gris-una" />
+                <SystemIcons.navigation.arrow.right className={`${ICON_SIZES.sm} text-gris-una`} />
               </button>
             </div>
 
             {/* Day names header */}
             <div className="grid grid-cols-7 gap-1 mb-2">
               {dayNames.map((day) => (
-                <div key={day} className="text-center text-xs font-medium text-gris-una py-1">
+                <div key={day} className={`text-center ${TYPOGRAPHY.form.helper} font-medium text-gris-una py-1`}>
                   {day}
                 </div>
               ))}
@@ -391,7 +415,7 @@ export const DatePicker: React.FC<DatePickerProps> = ({
                   onClick={() => day && !isDateDisabled(day) && handleSelectDate(day)}
                   disabled={!day || isDateDisabled(day)}
                   className={cn(
-                    'p-1.5 text-xs rounded font-medium transition-all min-h-[1.75rem] flex items-center justify-center',
+                    `p-1.5 ${TYPOGRAPHY.form.helper} rounded font-medium transition-all min-h-[1.75rem] flex items-center justify-center`,
                     !day && 'opacity-0 cursor-default',
                     day && isDateDisabled(day) && 'opacity-30 cursor-not-allowed text-gris-una',
                     day && !isDateDisabled(day) && 'cursor-pointer',
@@ -409,7 +433,7 @@ export const DatePicker: React.FC<DatePickerProps> = ({
             <button
               type="button"
               onClick={() => setShowPicker(false)}
-              className="w-full px-3 py-1.5 bg-gris-una/10 text-negro-una rounded text-sm font-medium hover:bg-gris-una/20 transition-colors"
+              className={`w-full px-3 py-1.5 bg-gris-una/10 text-negro-una rounded ${TYPOGRAPHY.button} font-medium hover:bg-gris-una/20 transition-colors`}
             >
               Cerrar
             </button>
@@ -419,15 +443,15 @@ export const DatePicker: React.FC<DatePickerProps> = ({
 
       {/* Error Message */}
       {error && (
-        <div className="flex items-center gap-2 text-sm text-rojo-una-2">
-          <SystemIcons.interface.alert size="sm" />
+        <div className={`flex items-center gap-2 ${TYPOGRAPHY.form.helper} text-rojo-una-2`}>
+          <SystemIcons.interface.alert className={ICON_SIZES.sm} />
           {error}
         </div>
       )}
 
       {/* Helper Text */}
       {helperText && !error && (
-        <p className="text-sm text-gris-una">
+        <p className={`${TYPOGRAPHY.form.helper} text-gris-una`}>
           {helperText}
         </p>
       )}

@@ -7,12 +7,14 @@ import React, { useState, useMemo, useCallback } from 'react';
 import { cn } from '@/Utils/ClassNames';
 import { SystemIcons } from '@/Components/Ui/Icons/SystemIcons';
 import { DataTable, type DataTableColumn } from '@/Components/Ui/DataTable';
+import { TYPOGRAPHY } from '@/Constants/Typography';
 import { TableActionButton } from '@/Components/index';
 import { 
   EVIDENCE_STATUS_LABELS, 
   EVIDENCE_STATUS_BADGE,
   type EvidenceSearchResult 
 } from '@/Types/EvidenceSearchTypes';
+import { ICON_SIZES } from '@/Constants/Components';
 
 export interface EvidenceSearchResultsTableProps {
   results: EvidenceSearchResult[];
@@ -61,10 +63,10 @@ export const EvidenceSearchResultsTable: React.FC<EvidenceSearchResultsTableProp
       header: 'Criterio',
       render: (_, item) => (
         <div className="flex flex-col pl-2 py-1">
-          <p className="block font-sans text-sm antialiased font-bold leading-normal text-negro-una">
+          <p className={`block font-sans antialiased font-bold leading-normal text-negro-una-2 ${TYPOGRAPHY.table.cell}`}>
             {item.criterio_nomenclatura}
           </p>
-          <p className="block font-sans text-sm antialiased font-normal leading-normal text-gris-una opacity-70 max-w-xs truncate">
+          <p className={`block font-sans antialiased font-normal leading-normal text-gris-una opacity-70 max-w-xs truncate ${TYPOGRAPHY.table.cell}`}>
             {item.criterio_descripcion}
           </p>
         </div>
@@ -75,7 +77,7 @@ export const EvidenceSearchResultsTable: React.FC<EvidenceSearchResultsTableProp
       header: 'Descripción',
       render: (_, item) => (
         <div className="flex flex-col pl-2 py-1">
-          <p className="block font-sans text-sm antialiased font-normal leading-normal text-negro-una max-w-md">
+          <p className={`block font-sans antialiased font-normal leading-normal text-negro-una-2 max-w-md ${TYPOGRAPHY.table.cell}`}>
             {item.descripcion}
           </p>
         </div>
@@ -88,8 +90,8 @@ export const EvidenceSearchResultsTable: React.FC<EvidenceSearchResultsTableProp
       render: (_, item) => {
         const count = item.responsables.length;
         return (
-          <div className="flex flex-col items-center text-sm">
-            <span className="block font-sans text-sm antialiased font-semibold leading-normal text-negro-una">
+          <div className={`flex flex-col items-center ${TYPOGRAPHY.table.cell}`}>
+            <span className={`block font-sans antialiased font-semibold leading-normal text-negro-una-2 ${TYPOGRAPHY.table.cell}`}>
               {count === 0 && 'Sin asignar'}
               {count === 1 && '1 responsable'}
               {count > 1 && `${count} responsables`}
@@ -103,8 +105,8 @@ export const EvidenceSearchResultsTable: React.FC<EvidenceSearchResultsTableProp
       header: 'Fecha Creación',
       align: 'center',
       render: (_, item) => (
-        <div className="flex flex-col items-center text-sm">
-          <span className="block font-sans text-sm antialiased font-normal leading-normal text-negro-una">
+        <div className={`flex flex-col items-center ${TYPOGRAPHY.table.cell}`}>
+          <span className={`block font-sans antialiased font-normal leading-normal text-negro-una-2 ${TYPOGRAPHY.table.cell}`}>
             {formatDate(item.fecha_publicacion)}
           </span>
         </div>
@@ -119,7 +121,8 @@ export const EvidenceSearchResultsTable: React.FC<EvidenceSearchResultsTableProp
         return (
           <div className="w-max mx-auto">
             <div className={cn(
-              'relative grid items-center px-2 py-1 font-sans text-xs font-bold uppercase rounded-corner select-none whitespace-nowrap',
+              'relative grid items-center px-2 py-1 font-sans font-bold rounded-corner select-none whitespace-nowrap',
+              TYPOGRAPHY.badge,
               badgeClass
             )}>
               <span>{EVIDENCE_STATUS_LABELS[item.estado]}</span>
@@ -133,21 +136,21 @@ export const EvidenceSearchResultsTable: React.FC<EvidenceSearchResultsTableProp
       header: 'Recursos',
       align: 'center',
       render: (_, item) => (
-        <div className="flex items-center justify-center gap-3 text-sm text-gray-600">
+        <div className={`flex items-center justify-center gap-3 text-gray-600 ${TYPOGRAPHY.table.cell}`}>
           {item.archivos_count > 0 && (
             <div className="flex items-center gap-1" title="Archivos adjuntos">
-              <SystemIcons.modal.document className="text-gray-400" size="sm" />
+              <SystemIcons.modal.document className={`text-gris-una ${ICON_SIZES.sm}`} />
               <span>{item.archivos_count}</span>
             </div>
           )}
           {item.enlaces_count > 0 && (
             <div className="flex items-center gap-1" title="Enlaces">
-              <SystemIcons.interface.link className="text-gray-400" size="sm" />
+              <SystemIcons.interface.link className={`text-gris-una ${ICON_SIZES.sm}`} />
               <span>{item.enlaces_count}</span>
             </div>
           )}
           {item.archivos_count === 0 && item.enlaces_count === 0 && (
-            <span className="text-gray-400">Sin recursos</span>
+            <span className={`text-gray-400 ${TYPOGRAPHY.table.cell}`}>Sin recursos</span>
           )}
         </div>
       )

@@ -25,6 +25,7 @@ import type {
   EvidenceSearchResult,
   ExportFormat
 } from '@/Types/EvidenceSearchTypes';
+import { ICON_SIZES } from '@/Constants/Components';
 
 export const EvidenceSearchPage: React.FC = () => {
   const { showToast } = useToast();
@@ -170,14 +171,14 @@ export const EvidenceSearchPage: React.FC = () => {
     {
       id: 'pdf',
       label: 'Exportar a PDF',
-      icon: <SystemIcons.modal.pdf className="w-4 h-4" />,
+      icon: <SystemIcons.modal.pdf className={`text-negro-una-2 ${ICON_SIZES.md}`} />,
       onClick: () => handleExport('pdf'),
       disabled: displayedResults.length === 0
     },
     {
       id: 'excel',
       label: 'Exportar a Excel',
-      icon: <SystemIcons.modal.excel className="w-4 h-4" />,
+      icon: <SystemIcons.modal.excel className={`text-negro-una-2 ${ICON_SIZES.md}`} />,
       onClick: () => handleExport('excel'),
       disabled: displayedResults.length === 0
     }
@@ -201,15 +202,23 @@ export const EvidenceSearchPage: React.FC = () => {
       />
       {/* Header con botones de acción */}
       <div className="mb-6 flex justify-end items-center gap-3">
-        <DropdownButton
-          label="Exportar"
-          icon={<SystemIcons.actions.export className="w-4 h-4" />}
-          variant="outline"
-          options={exportOptions}
-          disabled={loading || displayedResults.length === 0}
-          tooltip="Exportar resultados de búsqueda"
-        />
-        
+        <Tooltip>
+          <TooltipTrigger>
+            <DropdownButton
+              label="Exportar"
+              icon={<SystemIcons.actions.export className={`text-negro-una-2 ${ICON_SIZES.button}`} />}
+              variant="outline"
+              options={exportOptions}
+              disabled={loading || displayedResults.length === 0}
+            />
+          </TooltipTrigger>
+          <TooltipContent side="top">
+            <p>Exportar resultados</p>
+          </TooltipContent>
+        </Tooltip>
+      {/** TODO hacer un componente para este botón desplegable. Ya existe filterbutton pero es un dropdown, este hace aparecer multiples opciones singleselect 
+       * Revisar si evidenceSearchFilter es el que lo maneja (no recuerdo) y si sí, hacerlo componente
+      */}
         <Tooltip>
           <TooltipTrigger>
             <button
