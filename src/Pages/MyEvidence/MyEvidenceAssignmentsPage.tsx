@@ -103,7 +103,7 @@ export const MyEvidenceAssignmentsPage: React.FC = () => {
     // Navegar a la página de subida con los parámetros necesarios
     const params = new URLSearchParams({
       evidenciaId: assignment.evidencia.evidencia_id.toString(),
-      procesoId: assignment.proceso?.proceso_id?.toString() || '',
+      procesoId: (assignment.proceso?.proceso_id ?? assignment.proceso_id).toString(),
       nombre: `${assignment.evidencia.nomenclatura} - ${assignment.evidencia.descripcion}`
     });
     

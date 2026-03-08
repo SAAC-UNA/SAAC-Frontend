@@ -196,7 +196,7 @@ export const EditUserForm: React.FC<EditUserFormProps> = ({
                     label={`Permisos que tendrá el usuario (${previewPermissions.length} permisos)`}
                     options={previewPermissions.map((permission, index) => ({
                       value: index.toString(),
-                      label: typeof permission === 'string' ? permission : permission.label || permission.name
+                      label: typeof permission === 'string' ? permission : permission.label,
                     }))}
                     value="" // Sin valor seleccionado
                     readonly={true}

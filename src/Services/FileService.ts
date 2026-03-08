@@ -146,6 +146,7 @@ export const fileService = {
       // Manejar errores de validación (422)
       if (error.response?.status === 422) {
         const validationErrors = error.response.data.errors;
+        console.error('[FileService] 422 Validation errors:', validationErrors, '\nFull response:', error.response.data);
         const firstError = Object.values(validationErrors || {})[0];
         const message = Array.isArray(firstError) ? firstError[0] : errorMessage;
         
