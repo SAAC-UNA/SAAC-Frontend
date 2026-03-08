@@ -182,9 +182,7 @@ export const DataTable = React.memo(<T extends Record<string, unknown>>({
       {/* Tabla */}
       <div className="pt-0 pb-6 px-0 overflow-x-auto lg:overflow-x-visible custom-scrollbar">
         {loading ? (
-          <div className="flex flex-col items-center justify-center py-12 gap-3">
-            <LoadingSpinner size="lg" />
-          </div>
+          <LoadingSpinner variant="paging" />
         ) : data.length === 0 ? (
           <EmptyState
             variant={searchQuery ? 'search' : 'document'}
