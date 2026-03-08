@@ -15,6 +15,7 @@ const approvalIcon = 'system-icon:check-circle';
 const extensionRequestIcon = 'system-icon:clock';
 const calendarIcon = 'system-icon:calendar';
 const reportsIcon = 'system-icon:document-text';
+const lightIcon = 'system-icon:lightbulb';
 
 /**
  * Obtener items de navegación filtrados por rol
@@ -73,7 +74,7 @@ export const getNavigationItems = (userRoles?: string | string[]): NavItem[] => 
     items.push({
       id: 'administracion',
       label: 'Administración',
-      icon: 'system-icon:shield',
+      icon: lightIcon,
       href: '#',
       isActive: false,
       isExpandable: true,

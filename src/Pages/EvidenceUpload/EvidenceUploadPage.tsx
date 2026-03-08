@@ -17,6 +17,7 @@ import { fileService } from '@/Services/FileService';
 import { useToast } from '@/Context/ToastContext';
 import { getModuleInfo } from '@/Constants/ModuleInfo';
 import type { FileModel } from '@/Types/FileTypes';
+import { TYPOGRAPHY } from '@/constants/Typography';
 
 interface EvidenceUploadPageProps {
   evidenciaId?: number;
@@ -296,7 +297,7 @@ export const EvidenceUploadPage: React.FC<EvidenceUploadPageProps> = ({
         {/* Sección de subida */}
         <div className="space-y-6">
           <div>
-            <h2 className="text-lg font-semibold text-negro-una mb-4">
+            <h2 className={` ${TYPOGRAPHY.pageSubtitle} font-semibold text-negro-una-2`}>
               Seleccione archivos
             </h2>
             
@@ -309,7 +310,7 @@ export const EvidenceUploadPage: React.FC<EvidenceUploadPageProps> = ({
 
           {/* Sección de enlaces */}
           <div>
-            <h2 className="text-lg font-semibold text-negro-una mb-4">
+            <h2 className={` ${TYPOGRAPHY.pageSubtitle} font-semibold text-negro-una-2`}>
               Enlaces externos
             </h2>
             
@@ -356,16 +357,16 @@ export const EvidenceUploadPage: React.FC<EvidenceUploadPageProps> = ({
         {/* Lista de archivos subidos */}
         <div>
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-lg font-semibold text-negro-una">
+            <h2 className={` ${TYPOGRAPHY.pageSubtitle} font-semibold text-negro-una-2`}>
               Archivos subidos
             </h2>
             <Tooltip>
               <TooltipTrigger asChild>
                 <Button
-                  type="button"
+                  type='button'
                   onClick={loadFiles}
                   disabled={loadingFiles}
-                  variant="transparent"
+                  variant="ghost"
                   size="sm"
                 >
                   {SystemIcons.interface.refresh({ 

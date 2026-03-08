@@ -4,10 +4,10 @@
  */
 
 import React, { useState } from 'react';
-import { Textarea } from '@/Components/Ui/Textarea';
+import { Textarea } from '@/Components/Ui/Forms/Textarea';
 import { DatePicker } from '@/Components/Ui/Calendar/DatePicker';
 import { SystemIcons } from '@/Components/Ui/Icons/SystemIcons';
-import { Modal } from '@/Components/Ui/Modal';
+import { Modal } from '@/Components/Ui/Modals/Modal';
 import type { CompromisoFormData, CriterioSeleccionado, ValidationErrors } from '@/Types/ImprovementCommitmentTypes';
 
 interface RevisionStepProps {

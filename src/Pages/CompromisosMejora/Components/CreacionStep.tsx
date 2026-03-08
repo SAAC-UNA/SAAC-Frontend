@@ -5,8 +5,8 @@
 
 import React, { useState, useEffect, useMemo } from 'react';
 import { LoadingSpinner } from '@/Components/Ui/Index';
-import { CustomSelect } from '@/Components/Ui/SingleSelect';
-import { SearchInput } from '@/Components/Ui/SearchInput';
+import { CustomSelect } from '@/Components/Ui/Forms/SingleSelect';
+import { SearchInput } from '@/Components/Ui/Forms/SearchInput';
 import { SystemIcons } from '@/Components/Ui/Icons/SystemIcons';
 import { improvementCommitmentService } from '@/Services/ImprovementCommitmentService';
 import type {
@@ -17,7 +17,7 @@ import type {
   ValidationErrors
 } from '@/Types/ImprovementCommitmentTypes';
 import { CriterioModal } from '@/Pages/CompromisosMejora/Components/CriterioModal';
-import { DeleteConfirmationModal } from '@/Components/Ui/DeleteConfirmationModal';
+import { DeleteConfirmationModal } from '@/Components/Ui/Modals/DeleteConfirmationModal';
 
 interface CreacionStepProps {
   formData: CompromisoFormData;

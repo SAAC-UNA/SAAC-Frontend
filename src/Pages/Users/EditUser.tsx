@@ -197,6 +197,36 @@ const EditUserPage: React.FC = () => {
       <PageHeader 
         title={moduleInfo.title}
         description={moduleInfo.description}
+        headerExtra={
+          <div className="flex gap-4">
+            <div className="text-right">
+              <label className="block text-sm font-medium text-negro-una mb-2">Estado</label>
+              <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${
+                user.status === 'active'
+                  ? 'bg-green-100 text-green-800'
+                  : 'bg-red-100 text-red-800'
+              }`}>
+                {user.status === 'active' ? 'Activo' : 'Inactivo'}
+              </span>
+            </div>
+            <div className="text-right">
+              <label className="block text-sm font-medium text-negro-una mb-2">
+                {user.role ? 'Rol Actual' : 'Roles Actuales'}
+              </label>
+              <div className="flex flex-wrap gap-2 justify-end">
+                {user.role ? (
+                  <div className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800">
+                    {user.role}
+                  </div>
+                ) : (
+                  <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-gray-100 text-gray-600">
+                    Sin rol asignado
+                  </span>
+                )}
+              </div>
+            </div>
+          </div>
+        }
       />
       
       {/* Layout que empuja botones al fondo cuando hay poco contenido */}

@@ -19,6 +19,7 @@ import { roleService } from '@/Services/RoleService';
 import type { User } from '@/Services/UserService';
 import type { Role, BackendPermission } from '@/Services/RoleService';
 import type { SelectOption } from '@/Components/Ui/Forms/SingleSelect';
+import { TYPOGRAPHY } from '@/Constants/Typography';
 
 interface EditUserFormProps {
   user: User;
@@ -137,68 +138,10 @@ export const EditUserForm: React.FC<EditUserFormProps> = ({
     label: role.description ? `${role.name}` : role.name
   }));
 
-  /**
-   * Obtener lista de roles para mostrar (soporta uno o múltiples)
-   */
-  const getUserRoles = (): string[] => {
-    // Si en el futuro user.roles es un array, usarlo
-    // Por ahora, convertir user.role (string) a array
-    if (user.role) {
-      return [user.role];
-    }
-    return [];
-  };
-
-  const userRoles = getUserRoles();
-
   return (
     <div className="w-full">
       {/* Header con información del usuario */}
       <div className="mb-8">
-        {/* Título principal con Estado y Rol Actual alineados */}
-        <div className="flex justify-between items-start mb-6">
-          <h2 className="text-2xl font-bold text-negro-una">
-            Información del Usuario
-          </h2>
-          
-          {/* Estado y Rol Actual - alineados con el título */}
-          <div className="flex gap-6">
-            <div className="text-right">
-              <label className="block text-sm font-medium text-negro-una mb-2">
-                Estado
-              </label>
-              <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${
-                user.status === 'active' 
-                  ? 'bg-green-100 text-green-800' 
-                  : 'bg-red-100 text-red-800'
-              }`}>
-                {user.status === 'active' ? 'Activo' : 'Inactivo'}
-              </span>
-            </div>
-            <div className="text-right">
-              <label className="block text-sm font-medium text-negro-una mb-2">
-                Rol{userRoles.length !== 1 ? 'es' : ''} Actual{userRoles.length !== 1 ? 'es' : ''}
-              </label>
-              <div className="flex flex-wrap gap-2 justify-end">
-                {userRoles.length > 0 ? (
-                  userRoles.map((roleName, index) => (
-                    <div 
-                      key={index}
-                      className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800 max-w-[200px] break-all"
-                    >
-                      {roleName}
-                    </div>
-                  ))
-                ) : (
-                  <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-gray-100 text-gray-600">
-                    Sin rol asignado
-                  </span>
-                )}
-              </div>
-            </div>
-          </div>
-        </div>
-
         {/* Error Alert */}
         {error && (
           <div className="mb-6">
@@ -217,7 +160,7 @@ export const EditUserForm: React.FC<EditUserFormProps> = ({
           {/* Columna izquierda: Gestión de Roles y Permisos */}
           <div>
             {/* Título de sección - alineado con subtítulo derecho */}
-            <h3 className="text-xl font-semibold text-gray-900 mb-6">
+            <h3 className={`${TYPOGRAPHY.pageSubtitle} font-semibold text-negro-una-2 mb-6`}>
               Gestión de Roles
             </h3>
 
@@ -225,7 +168,7 @@ export const EditUserForm: React.FC<EditUserFormProps> = ({
               {/* Selector de Rol - alineado con Nombre */}
               <div>
                 <div className="mb-3">
-                  <span className="text-xs text-gray-500">
+                  <span className={`${TYPOGRAPHY.form.helper} text-gris-una-2`}>
                     (Solo se permite un rol por usuario)
                   </span>
                 </div>
@@ -267,7 +210,7 @@ export const EditUserForm: React.FC<EditUserFormProps> = ({
           {/* Columna derecha: Estado/Rol y Datos del usuario */}
           <div>
             {/* Título de sección - alineado con subtítulo izquierdo */}
-            <h3 className="text-xl font-semibold text-gray-900 mb-6">
+            <h3 className={`${TYPOGRAPHY.pageSubtitle} font-semibold text-negro-una-2 mb-6`}>
               Información Personal
             </h3>
 
@@ -276,7 +219,7 @@ export const EditUserForm: React.FC<EditUserFormProps> = ({
               <div>
                 {/* Espaciado equivalente al texto de ayuda del rol */}
                 <div className="mb-3">
-                  <span className="text-xs text-gray-500">
+                  <span className={`${TYPOGRAPHY.body} text-gris-una-2`}>
                     &nbsp; {/* Espaciado invisible para alineación */}
                   </span>
                 </div>
@@ -304,7 +247,7 @@ export const EditUserForm: React.FC<EditUserFormProps> = ({
       </div>
 
       {/* Línea divisoria inferior */}
-      <hr className="border-0 border-t border-gris-una/20 mx-6 mt-6 mb-6" />
+      <hr className="border-0 border-t border-gris-light mx-6 mt-6 mb-6" />
 
       {/* Botones de acción */}
       <div className="px-4 sm:px-5 lg:px-6 pb-4 sm:pb-5 lg:pb-6">

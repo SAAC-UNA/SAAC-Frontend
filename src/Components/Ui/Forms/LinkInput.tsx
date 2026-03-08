@@ -9,6 +9,7 @@ import { Button } from '@/Components/Ui/Buttons/Button';
 import { validateUrl } from '@/Hooks/useUrlValidation';
 import { MAX_LINKS_PER_UPLOAD } from '@/Types/FileTypes';
 import { SystemIcons } from '@/Components/Ui/Icons/SystemIcons';
+import { TYPOGRAPHY } from '@/Constants/Typography';
 
 interface LinkInputProps {
   onLinksChange: (links: string[]) => void;
@@ -148,7 +149,7 @@ export const LinkInput: React.FC<LinkInputProps> = ({
       </div>
 
       {/* Mensaje informativo */}
-      <p className="text-sm text-gray-500 mt-3">
+      <p className={`${TYPOGRAPHY.form.helper} text-gray-500 mt-3`}>
         {links.length === 0 
           ? 'Puede pegar enlaces de Google Drive, YouTube, sitios web, etc.'
           : `${links.length} de ${maxLinks} enlaces agregados`}
@@ -157,7 +158,7 @@ export const LinkInput: React.FC<LinkInputProps> = ({
       {/* Lista de enlaces agregados */}
       {links.length > 0 && (
         <div className="space-y-2">
-          <h4 className="text-sm font-medium text-gray-700">Enlaces a subir:</h4>
+          <h4 className={`${TYPOGRAPHY.form.label} font-medium text-gray-700`}>Enlaces a subir:</h4>
           <ul className="space-y-2">
             {links.map((link, index) => (
               <li
@@ -173,7 +174,7 @@ export const LinkInput: React.FC<LinkInputProps> = ({
                     href={link}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="text-sm text-azul-una hover:underline truncate"
+                    className={`${TYPOGRAPHY.body} text-azul-una hover:underline truncate`}
                     title={link}
                   >
                     {link}
@@ -200,7 +201,7 @@ export const LinkInput: React.FC<LinkInputProps> = ({
       {/* Mensajes de error */}
       {Object.keys(errors).length > 0 && (
         <div className="p-3 bg-red-50 border border-red-200 rounded-corner">
-          <p className="text-sm text-red-600">
+          <p className={`${TYPOGRAPHY.form.helper} text-red-600`}>
             {Object.values(errors)[0]}
           </p>
         </div>

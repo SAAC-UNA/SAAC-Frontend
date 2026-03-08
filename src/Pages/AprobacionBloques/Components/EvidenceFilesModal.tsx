@@ -4,7 +4,7 @@
  */
 
 import React from 'react';
-import { Modal } from '@/Components/Ui/Modal';
+import { Modal } from '@/Components/Ui/Modals/Modal';
 import { SystemIcons } from '@/Components/Ui/Icons/SystemIcons';
 
 interface Evidencia {

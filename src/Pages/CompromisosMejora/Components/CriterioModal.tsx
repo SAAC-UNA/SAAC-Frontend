@@ -4,15 +4,15 @@
  */
 
 import React, { useState, useEffect, useMemo } from 'react';
-import { Modal } from '@/Components/Ui/Modal';
+import { Modal } from '@/Components/Ui/Modals/Modal';
 import { Button, LoadingSpinner, MultiSelect } from '@/Components/Ui/Index';
 import { DatePicker } from '@/Components/Ui/Calendar/DatePicker';
-import { Textarea } from '@/Components/Ui/Textarea';
+import { Textarea } from '@/Components/Ui/Forms/Textarea';
 import { SystemIcons } from '@/Components/Ui/Icons/SystemIcons';
 import { improvementCommitmentService } from '@/Services/ImprovementCommitmentService';
 import { userService, type User } from '@/Services/UserService';
 import type { Criterio, Evidencia, CriterioSeleccionado } from '@/Types/ImprovementCommitmentTypes';
-import type { MultiSelectOption } from '@/Components/Ui/MultiSelect';
+import type { MultiSelectOption } from '@/Components/Ui/Forms/MultiSelect';
 
 interface CriterioModalProps {
   isOpen: boolean;

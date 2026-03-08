@@ -1,10 +1,10 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { ScreenContainer } from '@/Components/Ui/ScreenContainer';
+import { ScreenContainer } from '@/Components/Ui/Layout/ScreenContainer';
 import { Button } from '@/Components/Ui/Index';
-import { LoadingSpinner } from '@/Components/Ui/Loading';
+import { LoadingSpinner } from '@/Components/Ui/Feedback/Loading';
 import { SystemIcons } from '@/Components/Ui/Icons/SystemIcons';
-import { Modal } from '@/Components/Ui/Modal';
+import { Modal } from '@/Components/Ui/Modals/Modal';
 import { improvementCommitmentService } from '@/Services/ImprovementCommitmentService';
 import type { CompromisoMejora, CompromisoEstado } from '@/Types/ImprovementCommitmentTypes';
 

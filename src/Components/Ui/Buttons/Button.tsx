@@ -108,8 +108,8 @@ const VARIANT_CLASSES = {
 
   // Botón para manejo de errores
   error: [
-    'bg-transparent text-error-dark font-poppins font-semibold border-2 border-[var(--color-error-2)]',
-    'hover:bg-[var(--color-error-2)]/10 transition-colors duration-200',
+    'bg-transparent text-error-dark font-poppins font-semibold border-2 border-error',
+    'hover:bg-error/10 transition-colors duration-200',
     'disabled:opacity-50 disabled:cursor-not-allowed'
   ].join(' ')
 };

@@ -8,7 +8,7 @@
  */
 
 import React, { useState } from 'react';
-import { CustomSelect } from '@/Components/Ui/SingleSelect';
+import { CustomSelect } from '@/Components/Ui/Forms/SingleSelect';
 import { TIPO_EVENTO_LABELS } from '@/Types/NotificationTypes';
 import type { NotificationFilters, TipoEvento } from '@/Types/NotificationTypes';
 

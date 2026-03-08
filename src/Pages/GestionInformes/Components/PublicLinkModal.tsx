@@ -4,7 +4,7 @@
  */
 
 import React, { useState, useEffect } from 'react';
-import { Modal } from '@/Components/Ui/Modal';
+import { Modal } from '@/Components/Ui/Modals/Modal';
 import { Button } from '@/Components/Ui/Index';
 import { SystemIcons } from '@/Components/Ui/Icons/SystemIcons';
 import { axiosInstance } from '@/Config/axios';

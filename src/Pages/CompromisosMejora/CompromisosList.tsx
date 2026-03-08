@@ -5,21 +5,14 @@
 
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-<<<<<<< Updated upstream
-import { ScreenContainer } from '@/Components/Ui/ScreenContainer';
-import { Button, LoadingSpinner } from '@/Components/Ui/Index';
-=======
 import { ScreenContainer } from '@/Components/Ui/Layout/ScreenContainer';
-import { Button } from '@/Components/Ui/Index';
->>>>>>> Stashed changes
+import { Button, LoadingSpinner } from '@/Components/Ui/Index';
 import { SystemIcons } from '@/Components/Ui/Icons/SystemIcons';
 import { improvementCommitmentService } from '@/Services/ImprovementCommitmentService';
 import type { CompromisoMejora } from '@/Types/ImprovementCommitmentTypes';
-import { useToast } from '@/Context/ToastContext';
 
 export const CompromisosList: React.FC = () => {
   const navigate = useNavigate();
-  const { showToast } = useToast();
   
   const [compromisos, setCompromisos] = useState<CompromisoMejora[]>([]);
   const [loading, setLoading] = useState(true);

@@ -10,7 +10,7 @@
  */
 
 import React, { useMemo, useState } from 'react';
-import { Modal } from '@/Components/Ui/Modal';
+import { Modal } from '@/Components/Ui/Modals/Modal';
 import { Button, LoadingSpinner } from '@/Components/Ui/Index';
 import { SystemIcons } from '@/Components/Ui/Icons/SystemIcons';
 import { NotificationCard } from '@/Components/Notifications/NotificationCard';

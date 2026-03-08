@@ -644,6 +644,16 @@ export const SystemIcons = {
       </svg>
     ),
 
+    light: ({ className, size, color }: IconProps) => (
+      <svg
+        className={`${getSizeClasses(size)} ${className || ''}`}
+        viewBox="0 0 24 24"
+        fill={color || "currentColor"}
+      >
+        <path d="M16.5 21.749a.75.75 0 0 1-.75.75h-7.5a.75.75 0 1 1 0-1.5h7.5a.75.75 0 0 1 .75.75Zm3.75-12a8.222 8.222 0 0 1-3.15 6.487 1.51 1.51 0 0 0-.6 1.2V18a1.5 1.5 0 0 1-1.5 1.5H9A1.5 1.5 0 0 1 7.5 18v-.563a1.52 1.52 0 0 0-.581-1.19 8.232 8.232 0 0 1-3.17-6.45C3.722 5.325 7.341 1.603 11.803 1.5a8.241 8.241 0 0 1 8.447 8.25Zm-3.075-.882a5.23 5.23 0 0 0-4.294-4.284.75.75 0 0 0-.244 1.481 3.721 3.721 0 0 1 3.057 3.057.75.75 0 0 0 .74.618h.131a.74.74 0 0 0 .61-.872Z" />
+      </svg>
+    ),
+
     home: ({ className, size, color }: IconProps) => (
       <svg
         className={`${getSizeClasses(size)} ${className || ''}`}
@@ -938,6 +948,7 @@ export const getIconByName = (iconName: string, size: IconProps['size'] = 'md'):
   const iconMap: Record<string, () => React.ReactElement> = {
     // Navigation
     'home': () => SystemIcons.navigation.home({ size }),
+    'lightbulb': () => SystemIcons.navigation.light({ size }),
     'caret-left': () => SystemIcons.navigation.arrow.left({ size }),
     'auditLog': () => SystemIcons.navigation.auditLog({ size }),
 

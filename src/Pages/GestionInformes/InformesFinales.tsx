@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { ScreenContainer } from '@/Components/Ui/ScreenContainer';
+import { ScreenContainer } from '@/Components/Ui/Layout/ScreenContainer';
 import { Button, LoadingSpinner } from '@/Components/Ui/Index';
 import { SystemIcons } from '@/Components/Ui/Icons/SystemIcons';
 import { axiosInstance } from '@/Config/axios';
-import { CustomSelect } from '@/Components/Ui/SingleSelect';
+import { CustomSelect } from '@/Components/Ui/Forms/SingleSelect';
 import { PublicLinkModal } from './Components/PublicLinkModal';
-import { DropdownButton } from '@/Components/Ui/DropdownButton';
-import type { DropdownOption } from '@/Components/Ui/DropdownButton';
+import { DropdownButton } from '@/Components/Ui/Buttons/DropdownButton';
+import type { DropdownOption } from '@/Components/Ui/Buttons/DropdownButton';
 
 type EstadoAprobacion = 'pendiente' | 'aprobado' | 'rechazado';
 
@@ -367,64 +367,6 @@ const InformesFinales: React.FC = () => {
     } else {
       exportToPdf(rows);
     }
-  };
-
-  const handleExportarInforme = () => {
-    if (!selectedProcesoId) {
-      alert('Seleccione un proceso primero');
-      return;
-    }
-
-    // Generar contenido del informe
-    const procesoSeleccionado = procesos.find(p => p.proceso_id === selectedProcesoId);
-    if (!procesoSeleccionado) return;
-
-    let contenido = `INFORME DE CRITERIOS APROBADOS\n\n`;
-    contenido += `Proceso: ${procesoSeleccionado.accreditation_cycle.career_campus.career.nombre} - `;
-    contenido += `${procesoSeleccionado.accreditation_cycle.career_campus.campus.nombre}\n`;
-    contenido += `Tipo: ${procesoSeleccionado.tipo_proceso}\n`;
-    contenido += `Ciclo: ${procesoSeleccionado.accreditation_cycle.nombre}\n\n`;
-    contenido += `Fecha de generación: ${new Date().toLocaleString()}\n\n`;
-    contenido += `=${'='.repeat(80)}\n\n`;
-
-    criterios.forEach((criterio, index) => {
-      contenido += `${index + 1}. ${criterio.nomenclatura}\n`;
-      contenido += `   ${criterio.descripcion}\n\n`;
-      
-      const evidenciasCriterio = getEvidenciasPorCriterio(criterio.id);
-      evidenciasCriterio.forEach((evidencia, evIndex) => {
-        contenido += `   ${index + 1}.${evIndex + 1}. ${evidencia.nomenclatura} - ${evidencia.descripcion}\n`;
-        
-        if (evidencia.archivos && evidencia.archivos.length > 0) {
-          evidencia.archivos.forEach(archivo => {
-            contenido += `        - ${archivo.nombre_original}\n`;
-            if (archivo.is_publico && archivo.token_publico) {
-              contenido += `          Enlace público: ${window.location.origin}/api/p/${archivo.token_publico}\n`;
-              if (archivo.link_expira_en) {
-                contenido += `          Expira: ${new Date(archivo.link_expira_en).toLocaleString()}\n`;
-              }
-            } else {
-              contenido += `          (Sin enlace público)\n`;
-            }
-          });
-        } else {
-          contenido += `        (Sin archivos adjuntos)\n`;
-        }
-        contenido += `\n`;
-      });
-      contenido += `\n`;
-    });
-
-    // Descargar como archivo de texto
-    const blob = new Blob([contenido], { type: 'text/plain;charset=utf-8' });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = `informe_criterios_aprobados_${selectedProcesoId}_${Date.now()}.txt`;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    URL.revokeObjectURL(url);
   };
 
   return (
