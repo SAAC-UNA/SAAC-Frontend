@@ -56,3 +56,12 @@ export const ICON_SIZES = {
   /** Tamaño grande para íconos destacados (24px × 24px) */
   lg: 'size-icon-lg',
 } as const;
+
+/**
+ * Tamaños estandarizados para botones de paginación
+ * Mismo tamaño que los botones de tabla (32px × 32px)
+ */
+export const PAGINATION_BUTTON = {
+  /** Clase para el tamaño del botón (32px × 32px) con padding */
+  button: 'size-table-action-button p-table-action',
+} as const;

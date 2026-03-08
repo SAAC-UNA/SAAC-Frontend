@@ -10,7 +10,10 @@
 
 import React from 'react';
 import { SystemIcons } from '../Icons/SystemIcons';
+import { Button } from '@/Components/Ui/Buttons/Button';
 import { cn } from '@/Utils/ClassNames';
+import { TYPOGRAPHY } from '@/Constants/Typography';
+import { ICON_SIZES, PAGINATION_BUTTON } from '@/Constants/Components';
 
 interface PaginationProps {
   currentPage: number;
@@ -79,19 +82,16 @@ export const Pagination: React.FC<PaginationProps> = ({
   return (
     <div className={cn('flex items-center justify-center gap-2', className)}>
       {/* Botón anterior */}
-      <button
+      <Button
         onClick={handlePrevious}
         disabled={currentPage === 1}
-        className={cn(
-          'flex items-center justify-center w-8 h-8 rounded-full border transition-colors',
-          currentPage === 1
-            ? 'border-gris-una/20 text-gris-una/40 cursor-not-allowed'
-            : 'border-gris-una/30 text-gris-una hover:border-azul-una hover:text-azul-una'
-        )}
+        variant="ghost"
+        size="sm"
+        className={`!${PAGINATION_BUTTON.button}`}
         aria-label="Página anterior"
       >
-        <SystemIcons.navigation.arrow.left className="w-4 h-4" />
-      </button>
+        <SystemIcons.navigation.arrow.left className={ICON_SIZES.sm} />
+      </Button>
 
       {/* Números de página */}
       <div className="flex items-center gap-1">
@@ -100,7 +100,7 @@ export const Pagination: React.FC<PaginationProps> = ({
             return (
               <span
                 key={`dots-${index}`}
-                className="flex items-center justify-center w-8 h-8 text-gris-una text-sm"
+                className={`flex items-center justify-center w-8 h-8 text-gris-una ${TYPOGRAPHY.pagination}`}
               >
                 ···
               </span>
@@ -109,38 +109,35 @@ export const Pagination: React.FC<PaginationProps> = ({
 
           const isActive = page === currentPage;
           return (
-            <button
+            <Button
               key={page}
               onClick={() => onPageChange(page as number)}
+              variant="ghost"
+              size="sm"
               className={cn(
-                'flex items-center justify-center w-8 h-8 text-sm font-medium transition-all',
-                isActive
-                  ? 'rounded-full bg-azul-una/20 text-azul-una'
-                  : 'text-gris-una hover:text-azul-una'
+                `!${ICON_SIZES.button} ${TYPOGRAPHY.pagination} !font-medium`,
+                isActive && ' !bg-gris-light !text-gris-una'
               )}
               aria-label={`Ir a página ${page}`}
               aria-current={isActive ? 'page' : undefined}
             >
               {page}
-            </button>
+            </Button>
           );
         })}
       </div>
 
       {/* Botón siguiente */}
-      <button
+      <Button
         onClick={handleNext}
         disabled={currentPage === totalPages}
-        className={cn(
-          'flex items-center justify-center w-8 h-8 rounded-full border transition-colors',
-          currentPage === totalPages
-            ? 'border-gris-una/20 text-gris-una/40 cursor-not-allowed'
-            : 'border-gris-una/30 text-gris-una hover:border-azul-una hover:text-azul-una'
-        )}
+        variant="ghost"
+        size="sm"
+        className={`!${PAGINATION_BUTTON.button}`}
         aria-label="Página siguiente"
       >
-        <SystemIcons.navigation.arrow.left className="w-4 h-4 rotate-180" />
-      </button>
+        <SystemIcons.navigation.arrow.left className={`${ICON_SIZES.sm} rotate-180`} />
+      </Button>
     </div>
   );
 };
