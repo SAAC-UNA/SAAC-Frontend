@@ -6,7 +6,7 @@
  */
 
 import React from 'react';
-import { DetailsModal } from '@/Components/Ui/DetailsModal';
+import { DetailsModal } from '@/Components/Ui/Modals/DetailsModal';
 import { SystemIcons } from '@/Components/Ui/Icons/SystemIcons';
 import type { User } from '@/Services/UserService';
 

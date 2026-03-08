@@ -9,12 +9,12 @@ import React, { useState, useEffect, useCallback, lazy, Suspense } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { UsersTable } from './Components/UsersTable';
 import { PageHeader, ScreenContainer } from '@/Components/Ui/Index';
-import { SearchInput } from '@/Components/Ui/SearchInput';
+import { SearchInput } from '@/Components/Ui/Forms/SearchInput';
 
 // Lazy load de modales para mejor rendimiento
 const UserDetailsModal = lazy(() => import('./Components/UserDetailsModal').then(m => ({ default: m.UserDetailsModal })));
-const DeleteConfirmationModal = lazy(() => import('@/Components/Ui/DeleteConfirmationModal').then(m => ({ default: m.DeleteConfirmationModal })));
-const SuccessModal = lazy(() => import('@/Components/Ui/SuccessModal').then(m => ({ default: m.SuccessModal })));
+const DeleteConfirmationModal = lazy(() => import('@/Components/Ui/Modals/DeleteConfirmationModal').then(m => ({ default: m.DeleteConfirmationModal })));
+const SuccessModal = lazy(() => import('@/Components/Ui/Modals/SuccessModal').then(m => ({ default: m.SuccessModal })));
 import { getContextualInfo } from '@/Constants/ModuleInfo';
 import { useUsers } from '@/Hooks/UseUsers';
 import type { User } from '@/Services/UserService';

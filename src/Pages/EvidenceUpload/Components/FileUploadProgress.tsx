@@ -6,7 +6,7 @@
 import React from 'react';
 import { formatFileSize } from '@/Types/FileTypes';
 import { SystemIcons } from '@/Components/Ui/Icons/SystemIcons';
-import { LoadingSpinner } from '@/Components/Ui/Loading';
+import { LoadingSpinner } from '@/Components/Ui/Feedback/Loading';
 
 export interface FileUploadProgressItem {
   file: File;

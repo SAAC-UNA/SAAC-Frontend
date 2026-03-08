@@ -7,11 +7,17 @@
  */
 
 import React, { useState } from 'react';
+<<<<<<< Updated upstream
 import { useNavigate } from 'react-router-dom';
 import { ScreenContainer } from '@/Components/Ui/ScreenContainer';
 import { Button, WizardProgress } from '@/Components/Ui/Index';
 import { SystemIcons } from '@/Components/Ui/Icons/SystemIcons';
 import { SuccessModal } from '@/Components/Ui/SuccessModal';
+=======
+import { ScreenContainer } from '@/Components/Ui/Layout/ScreenContainer';
+import { Button, LoadingSpinner, WizardProgress } from '@/Components/Ui/Index';
+import { SuccessModal } from '@/Components/Ui/Modals/SuccessModal';
+>>>>>>> Stashed changes
 import { useToast } from '@/Context/ToastContext';
 import { improvementCommitmentService } from '@/Services/ImprovementCommitmentService';
 import type {

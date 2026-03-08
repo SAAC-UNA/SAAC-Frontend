@@ -12,8 +12,8 @@
 
 import React from 'react';
 import { cn } from '@/Utils/ClassNames';
-import { SystemIcons } from './Icons/SystemIcons';
-import { Button } from './Button';
+import { SystemIcons } from '../Icons/SystemIcons';
+import { Button } from '../Buttons/Button';
 
 export interface AlertProps {
   // Contenido
@@ -53,7 +53,7 @@ export const Alert: React.FC<AlertProps> = ({
           icon: SystemIcons.interface.alert,
           bgColor: 'bg-[var(--color-error-light)]',
           borderColor: 'border-[var(--color-error-ring)]',
-          iconColor: 'text-[var(--icon-delete)]',
+          iconColor: 'text-error',
           titleColor: 'text-error-dark',
           messageColor: 'text-error-dark',
           defaultTitle: 'Error'
@@ -63,7 +63,7 @@ export const Alert: React.FC<AlertProps> = ({
           icon: SystemIcons.interface.checkCircle,
           bgColor: 'bg-[var(--color-verde-light)]',
           borderColor: 'border-[var(--color-verde-ring)]',
-          iconColor: 'text-[var(--icon-check)]',
+          iconColor: 'text-verde',
           titleColor: 'text-verde-dark',
           messageColor: 'text-verde-dark',
           defaultTitle: 'Éxito'
@@ -73,7 +73,7 @@ export const Alert: React.FC<AlertProps> = ({
           icon: SystemIcons.interface.alert,
           bgColor: 'bg-[var(--color-warning-light)]',
           borderColor: 'border-[var(--color-warning-ring)]',
-          iconColor: 'text-[var(--icon-alert)]',
+          iconColor: 'text-warning',
           titleColor: 'text-warning-dark',
           messageColor: 'text-warning-dark',
           defaultTitle: 'Advertencia'
@@ -84,7 +84,7 @@ export const Alert: React.FC<AlertProps> = ({
           icon: SystemIcons.interface.alert,
           bgColor: 'bg-[var(--color-info-light)]',
           borderColor: 'border-[var(--color-info-ring)]',
-          iconColor: 'text-[var(--icon-info)]',
+          iconColor: 'text-info',
           titleColor: 'text-info-dark',
           messageColor: 'text-info-dark',
           defaultTitle: 'Información'

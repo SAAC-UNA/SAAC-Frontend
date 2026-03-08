@@ -17,7 +17,7 @@
 
 import React, { useEffect, useState, useMemo, useCallback } from 'react';
 import { DataTable, TableActionButton } from '@/components/index';
-import { BackendErrorAlert } from '@/Components/Ui/BackendErrorAlert';
+import { BackendErrorAlert } from '@/Components/Ui/Feedback/BackendErrorAlert';
 import { TYPOGRAPHY } from '@/Constants/Typography';
 import { TABLE_TRUNCATE } from '@/Constants/TableTruncate';
 import { useRoles } from '@/hooks/UseRoles';

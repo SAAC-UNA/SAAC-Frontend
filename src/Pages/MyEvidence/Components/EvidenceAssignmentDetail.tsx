@@ -1,15 +1,15 @@
 import React, { useEffect, useState } from 'react';
 import { SystemIcons } from '@/Components/Ui/Icons/SystemIcons';
-import { Button } from '@/Components/Ui/Button';
-import { DetailsModal } from '@/Components/Ui/DetailsModal';
-import { SuccessModal } from '@/Components/Ui/SuccessModal';
+import { Button } from '@/Components/Ui/Buttons/Button';
+import { DetailsModal } from '@/Components/Ui/Modals/DetailsModal';
+import { SuccessModal } from '@/Components/Ui/Modals/SuccessModal';
 import { AssignmentStatusBadge } from './AssignmentStatusBadge';
 import type { EvidenceAssignment, AssignmentStatus } from '@/Types/EvidenceAssignmentTypes';
 import { formatDeadline, getDaysUntilDeadline, isNearDeadline } from '@/Types/EvidenceAssignmentTypes';
 import { evidenceAssignmentService } from '@/Services/EvidenceAssignmentService';
 import { fileService } from '@/Services/FileService';
 import { useToast } from '@/Context/ToastContext';
-import { LoadingSpinner } from '@/Components/Ui/Loading';
+import { LoadingSpinner } from '@/Components/Ui/Feedback/Loading';
 import { FileList } from '@/Pages/EvidenceUpload/Components/FileList';
 import type { FileModel } from '@/Types/FileTypes';
 

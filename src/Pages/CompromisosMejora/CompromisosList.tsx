@@ -5,8 +5,13 @@
 
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+<<<<<<< Updated upstream
 import { ScreenContainer } from '@/Components/Ui/ScreenContainer';
 import { Button, LoadingSpinner } from '@/Components/Ui/Index';
+=======
+import { ScreenContainer } from '@/Components/Ui/Layout/ScreenContainer';
+import { Button } from '@/Components/Ui/Index';
+>>>>>>> Stashed changes
 import { SystemIcons } from '@/Components/Ui/Icons/SystemIcons';
 import { improvementCommitmentService } from '@/Services/ImprovementCommitmentService';
 import type { CompromisoMejora } from '@/Types/ImprovementCommitmentTypes';

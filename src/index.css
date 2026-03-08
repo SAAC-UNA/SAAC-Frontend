@@ -67,7 +67,7 @@
   }
 }
 
-/* ===== VARIABLES DE DISEÑO UNA ===== */
+/* ! ===== VARIABLES DE DISEÑO UNA ===== 07-03-2026*/
 /* Colores oficiales, tipografías y espaciado */
 
 @theme {
@@ -99,7 +99,7 @@
   --color-warning-light: #fffbeb;     /* Fondo amarillo claro para advertencias */
   --color-error-light: #fef2f2;       /* Fondo rojo claro para errores */
   --color-info-light: #eff6ff;        /* Fondo azul claro para información */
-  --color-inactive-light: #e7e8ea;   /* Fondo gris claro para inactivo */
+  --color-gris-light: #e7e8ea;   /* Fondo gris claro para inactivo */
 
   --color-verde-ring: #bbf7d0; /* Borde verde para éxito */
   --color-warning-ring: #fde68a; /* Borde amarillo para advertencias */
@@ -172,38 +172,10 @@
   --padding-component-lg-x: 1rem;     /* 16px - Padding horizontal lg */
   --padding-component-lg-y: 1rem;     /* 16px - Padding vertical lg */
 
-  /* Colores estándar para iconos de acciones (NO aplicar a iconos del sidebar) */
-  --icon-view: var(--color-info);         /* Ver/Visualizar - azul info */
-  --icon-edit: var(--color-warning);      /* Editar - amarillo/warning */
-  --icon-delete: var(--color-error);      /* Eliminar - rojo/error */
-  --icon-add: var(--color-rojo-una-2);       /* Agregar - verde/success */
-  --icon-info: var(--color-info);        /* Información - azul info */
-  --icon-active: var(--color-error);       /* Estado - activo */
-  --icon-inactive: var(--color-gris-una);     /* Estado - inactivo */
-  --icon-cancel: var(--color-gris-una);   /* Cancelar - gris UNA */
-  --icon-save: var(--color-verde);      /* Guardar - verde/success */
-  --icon-check: var(--color-verde);     /* Confirmar/Éxito - verde/success */
-  --icon-alert: var(--color-warning);     /* Alerta/Advertencia - amarillo/warning */
-  --icon-search: var(--color-gris-una);   /* Buscar - gris UNA */
-  --icon-refresh: var(--color-info);      /* Actualizar - azul info */
-  --icon-expand: var(--color-rojo-una-2);   /* Expandir - gris UNA */
-  --icon-back: var(--color-rojo-una-2);     /* Regresar - gris UNA */
-  --icon-close: var(--color-gris-una);    /* Cerrar - gris UNA */
-  --icon-loading: var(--color-rojo-una-2);      /* Cargando - azul info */
-  --icon-error-screen: var(--color-error-screen); /* Error de pantalla - gris/error */
-
-  /* Colores para botones principales */
-  --btn-primary: var(--color-azul-una);     /* Botón principal - azul UNA */
-  --btn-primary-hover: #02366b;             /* Hover del botón principal */
-  --btn-secondary: var(--color-rojo-una);   /* Botón secundario - rojo UNA */  
-  --btn-secondary-hover: #a1151a;           /* Hover del botón secundario */
-  --btn-danger: var(--color-error);         /* Botón de peligro */
-  --btn-danger-hover: #dc2626;              /* Hover del botón de peligro */
-
 }
 
 /* ===== CONFIGURACIÓN BASE ===== */
-/* Variables CSS para el sidebar y configuración global */
+/* ? Variables CSS para el sidebar y configuración global */
 
   @layer base {
 
@@ -233,7 +205,7 @@
 }
 
 /* ===== COMPONENTES REUTILIZABLES ===== */
-/* Clases específicas para elementos del sistema */
+/* ? Clases específicas para elementos del sistema */
 
 @layer components {
 
@@ -418,7 +390,7 @@
     padding: var(--padding-header-action) !important;
   }
 
-  /* ===== TAMAÑOS DE COMPONENTES ===== */
+  /*? ===== TAMAÑOS DE COMPONENTES ===== */
   .h-component { height: var(--height-component); }
   .px-component-sm { padding-left: var(--padding-component-sm-x); padding-right: var(--padding-component-sm-x); }
   .py-component-sm { padding-top: var(--padding-component-sm-y); padding-bottom: var(--padding-component-sm-y); }

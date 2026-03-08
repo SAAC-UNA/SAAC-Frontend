@@ -5,7 +5,7 @@
 
 import React, { useState, useEffect, useMemo } from 'react';
 import { SystemIcons } from '@/Components/Ui/Icons/SystemIcons';
-import { LoadingSpinner } from '@/Components/Ui/Loading';
+import { LoadingSpinner } from '@/Components/Ui/Feedback/Loading';
 import { cn } from '@/Utils/ClassNames';
 import { userService, type User } from '@/Services/UserService';
 import { roleService, type Role } from '@/Services/RoleService';

@@ -4,10 +4,10 @@
  */
 
 import React, { useState, useEffect, useMemo } from 'react';
-import { CustomSelect } from '@/Components/Ui/SingleSelect';
+import { CustomSelect } from '@/Components/Ui/Forms/SingleSelect';
 import { LoadingSpinner, MultiSelect } from '@/Components/Ui/Index';
 import { SystemIcons } from '@/Components/Ui/Icons/SystemIcons';
-import { BackendErrorAlert } from '@/Components/Ui/BackendErrorAlert';
+import { BackendErrorAlert } from '@/Components/Ui/Feedback/BackendErrorAlert';
 import type { 
   EvidenceAssignmentFormData, 
   ValidationErrors, 
@@ -17,7 +17,7 @@ import type {
 import evidenceAssignmentService from '@/Services/EvidenceAssignmentService';
 import { userService, type User } from '@/Services/UserService';
 import { roleService, type Role } from '@/Services/RoleService';
-import type { MultiSelectOption } from '@/Components/Ui/MultiSelect';
+import type { MultiSelectOption } from '@/Components/Ui/Forms/MultiSelect';
 
 interface SelectionStepProps {
   formData: EvidenceAssignmentFormData;

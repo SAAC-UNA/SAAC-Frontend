@@ -1,5 +1,5 @@
 import React from 'react';
-import { Button } from '@/Components/Ui/Button';
+import { Button } from '@/Components/Ui/Buttons/Button';
 import { SystemIcons } from '@/Components/Ui/Icons/SystemIcons';
 import { useSidebar } from '@/Context/SidebarContext';
 import { APP_HEADER_BUTTON } from '@/Constants/Components';

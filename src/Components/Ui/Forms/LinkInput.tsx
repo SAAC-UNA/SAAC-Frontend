@@ -4,8 +4,8 @@
  */
 
 import React, { useState } from 'react';
-import { Input } from '@/Components/Ui/Input';
-import { Button } from '@/Components/Ui/Button';
+import { Input } from '@/Components/Ui/Forms/Input';
+import { Button } from '@/Components/Ui/Buttons/Button';
 import { validateUrl } from '@/Hooks/useUrlValidation';
 import { MAX_LINKS_PER_UPLOAD } from '@/Types/FileTypes';
 import { SystemIcons } from '@/Components/Ui/Icons/SystemIcons';

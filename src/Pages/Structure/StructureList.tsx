@@ -7,15 +7,15 @@
 
 import React, { useState, useEffect } from 'react';
 import { StructureTable } from './Components/StructureTable';
-import { ScreenContainer } from '@/Components/Ui/ScreenContainer';
-import { Modal } from '@/Components/Ui/Modal';
+import { ScreenContainer } from '@/Components/Ui/Layout/ScreenContainer';
+import { Modal } from '@/Components/Ui/Modals/Modal';
 import { MODULE_INFO } from '@/Constants/ModuleInfo';
 import type { StructureElement } from '@/Types/StructureTypes';
 import { useStructure } from '@/Hooks/UseStructure';
-import { DeleteConfirmationModal } from '@/Components/Ui/DeleteConfirmationModal';
-import { SuccessModal } from '@/Components/Ui/SuccessModal';
-import { SearchInput } from '@/Components/Ui/SearchInput';
-import { Button } from '@/Components/Ui/Button';
+import { DeleteConfirmationModal } from '@/Components/Ui/Modals/DeleteConfirmationModal';
+import { SuccessModal } from '@/Components/Ui/Modals/SuccessModal';
+import { SearchInput } from '@/Components/Ui/Forms/SearchInput';
+import { Button } from '@/Components/Ui/Buttons/Button';
 import { SystemIcons } from '@/Components/Ui/Icons/SystemIcons';
 
 /**

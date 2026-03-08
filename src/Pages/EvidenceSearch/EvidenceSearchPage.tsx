@@ -11,10 +11,10 @@
 
 import React, { useState, useEffect, useCallback } from 'react';
 import { PageHeader, ScreenContainer } from '@/Components/Ui/Index';
-import { SearchInput } from '@/Components/Ui/SearchInput';
-import { DropdownButton } from '@/Components/Ui/DropdownButton';
-import { Tooltip, TooltipTrigger, TooltipContent } from '@/Components/Ui/Tooltip';
-import type { DropdownOption } from '@/Components/Ui/DropdownButton';
+import { SearchInput } from '@/Components/Ui/Forms/SearchInput';
+import { DropdownButton } from '@/Components/Ui/Buttons/DropdownButton';
+import { Tooltip, TooltipTrigger, TooltipContent } from '@/Components/Ui/Feedback/Tooltip';
+import type { DropdownOption } from '@/Components/Ui/Buttons/DropdownButton';
 import { SystemIcons } from '@/Components/Ui/Icons/SystemIcons';
 import { EvidenceSearchResultsTable, EvidenceSearchFilters, EvidenceDetailsModal } from './Components';
 import { useToast } from '@/Context/ToastContext';

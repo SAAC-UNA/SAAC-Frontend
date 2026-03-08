@@ -3,8 +3,8 @@ import { useSidebar } from '@/Context/SidebarContext';
 import { ModernSidebarItem } from './SidebarItem';
 import { getNavigationItems } from '@/Navigation';
 import { cn } from '@/Utils/ClassNames';
-import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from '@/Components/Ui/Sheet';
-import { TooltipProvider } from '@/Components/Ui/Tooltip';
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from '@/Components/Ui/Layout/Sheet';
+import { TooltipProvider } from '@/Components/Ui/Feedback/Tooltip';
 import { useAuth } from '@/Context/AuthContext';
 
 interface SidebarProps {

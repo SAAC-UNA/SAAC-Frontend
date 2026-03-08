@@ -5,7 +5,7 @@ import { NavigationProvider } from '@/Context/NavigationContext';
 import { ToastProvider } from './Context/ToastContext';
 import { ProtectedRoute } from '@/Components/Ui/ProtectedRoute';
 import { Layout } from './Components/Layout/Index';
-import { LoadingSpinner } from '@/Components/Ui/Loading';
+import { LoadingSpinner } from '@/Components/Ui/Feedback/Loading';
 
 // Lazy load de páginas para code splitting y mejor rendimiento
 import { Login } from '@/Pages/Auth/Login';

@@ -9,8 +9,8 @@ import React, { useState, useEffect, lazy, Suspense } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { RolesTable } from './Components/RolesTable';
 import { PageHeader, ScreenContainer } from '@/Components/Ui/Index';
-import { SearchInput } from '@/Components/Ui/SearchInput';
-import { Button } from '@/Components/Ui/Button';
+import { SearchInput } from '@/Components/Ui/Forms/SearchInput';
+import { Button } from '@/Components/Ui/Buttons/Button';
 import { SystemIcons } from '@/Components/Ui/Icons/SystemIcons';
 import { useRoles } from '@/Hooks/UseRoles';
 import { getContextualInfo } from '@/Constants/ModuleInfo';
@@ -18,9 +18,9 @@ import type { Role } from '@/Services/RoleService';
 import { ICON_SIZES } from '@/Constants/Components';
 
 // Lazy load de modales
-const DeleteConfirmationModal = lazy(() => import('@/Components/Ui/DeleteConfirmationModal').then(m => ({ default: m.DeleteConfirmationModal })));
-const PermissionsModal = lazy(() => import('@/Components/Ui/PermissionsRoleModal').then(m => ({ default: m.PermissionsModal })));
-const SuccessModal = lazy(() => import('@/Components/Ui/SuccessModal').then(m => ({ default: m.SuccessModal })));
+const DeleteConfirmationModal = lazy(() => import('@/Components/Ui/Modals/DeleteConfirmationModal').then(m => ({ default: m.DeleteConfirmationModal })));
+const PermissionsModal = lazy(() => import('@/Components/Ui/Modals/PermissionsRoleModal').then(m => ({ default: m.PermissionsModal })));
+const SuccessModal = lazy(() => import('@/Components/Ui/Modals/SuccessModal').then(m => ({ default: m.SuccessModal })));
 
 const RolesRepository: React.FC = () => {
   const { deleteRole, roles, loadRoles, isLoading, error } = useRoles();

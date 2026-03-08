@@ -9,7 +9,7 @@
  */
 
 import React, { useState, useEffect } from 'react';
-import { DetailsModal } from '@/Components/Ui/DetailsModal';
+import { DetailsModal } from '@/Components/Ui/Modals/DetailsModal';
 import { SystemIcons } from '@/Components/Ui/Icons/SystemIcons';
 import { FileList } from '@/Pages/EvidenceUpload/Components/FileList';
 import { fileService } from '@/Services/FileService';

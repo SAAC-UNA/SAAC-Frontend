@@ -6,7 +6,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { PageHeader, ScreenContainer } from '@/Components/Ui/Index';
-import { BackendErrorAlert } from '@/Components/Ui/BackendErrorAlert';
+import { BackendErrorAlert } from '@/Components/Ui/Feedback/BackendErrorAlert';
 import { getModuleInfo } from '@/Constants/ModuleInfo';
 import { useToast } from '@/Context/ToastContext';
 import { useAuth } from '@/Context/AuthContext';
@@ -19,7 +19,7 @@ import {
   EvidenceAssignmentDetail,
   EvidenceAssignmentsTable
 } from './Components';
-import { CreateExtensionRequestModal } from '@/Components/Ui/CreateExtensionRequestModal';
+import { CreateExtensionRequestModal } from '@/Components/Ui/Modals/CreateExtensionRequestModal';
 
 export const MyEvidenceAssignmentsPage: React.FC = () => {
   const { showToast } = useToast();

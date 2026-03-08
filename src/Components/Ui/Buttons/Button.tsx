@@ -77,32 +77,32 @@ const VARIANT_CLASSES = {
   
   // Botones de la tabla (ojo, lapiz, basurero)
   tableView: [
-    'bg-transparent text-[var(--icon-view)] border-0 p-2',
-    'hover:bg-[var(--color-info-light)] hover:text-[var(--icon-view)] transition-colors duration-200',
+    'bg-transparent text-info border-0 p-2',
+    'hover:bg-[var(--color-info-light)] hover:text-info transition-colors duration-200',
     'disabled:opacity-50 disabled:cursor-not-allowed'
   ].join(' '),
   
   tableEdit: [
-    'bg-transparent text-[var(--icon-edit)] border-0 p-2',
-    'hover:bg-[var(--color-warning-light)] hover:text-[var(--icon-edit)] transition-colors duration-200',
+    'bg-transparent text-warning border-0 p-2',
+    'hover:bg-[var(--color-warning-light)] hover:text-warning transition-colors duration-200',
     'disabled:opacity-50 disabled:cursor-not-allowed'
   ].join(' '),
   
   tableDelete: [
-    'bg-transparent text-[var(--icon-delete)] border-0 p-2',
-    'hover:bg-[var(--color-error-light)] hover:text-[var(--icon-delete)] transition-colors duration-200',
+    'bg-transparent text-error border-0 p-2',
+    'hover:bg-[var(--color-error-light)] hover:text-error transition-colors duration-200',
     'disabled:opacity-50 disabled:cursor-not-allowed'
   ].join(' '),
 
   tablePower: [
-    'bg-transparent text-[var(--icon-check)] border-0 p-2',
-    'hover:bg-[var(--color-verde-light)] hover:text-[var(--icon-check)] transition-colors duration-200',
+    'bg-transparent text-verde border-0 p-2',
+    'hover:bg-[var(--color-verde-light)] hover:text-verde transition-colors duration-200',
     'disabled:opacity-50 disabled:cursor-not-allowed'
   ].join(' '),
 
   tablePowerInactive: [
-    'bg-transparent text-[var(--icon-inactive)] border-0 p-2',
-    'hover:bg-[var(--color-inactive-light)] hover:text-[var(--icon-inactive)] transition-colors duration-200',
+    'bg-transparent text-gris-una border-0 p-2',
+    'hover:bg-[var(--color-gris-light)] hover:text-gris-una transition-colors duration-200',
     'disabled:opacity-50 disabled:cursor-not-allowed'
   ].join(' '),
 

@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { SystemIcons } from '@/Components/Ui/Icons/SystemIcons';
-import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from '@/Components/Ui/Tooltip';
-import { Button } from '@/Components/Ui/Button';
+import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from '@/Components/Ui/Feedback/Tooltip';
+import { Button } from '@/Components/Ui/Buttons/Button';
 import { useAuth } from '@/Context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import { cn } from '@/Utils/ClassNames';

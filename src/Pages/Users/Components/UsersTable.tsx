@@ -1,11 +1,11 @@
 import React, { useEffect, useState, useMemo, useCallback } from 'react';
 import { DataTable, TableActionButton } from '@/components/index';
-import { BackendErrorAlert } from '@/Components/Ui/BackendErrorAlert';
+import { BackendErrorAlert } from '@/Components/Ui/Feedback/BackendErrorAlert';
 import { TYPOGRAPHY } from '@/Constants/Typography';
 import { TABLE_TRUNCATE } from '@/Constants/TableTruncate';
 import { useUsers } from '@/Hooks/UseUsers';
 import { useDebounce } from '@/Hooks/UseDebounce';
-import type { DataTableColumn } from '@/components/Ui/DataTable';
+import type { DataTableColumn } from '@/Components/Ui/Table/DataTable';
 import type { User } from '@/Services/UserService';
 
 interface UsersTableProps {

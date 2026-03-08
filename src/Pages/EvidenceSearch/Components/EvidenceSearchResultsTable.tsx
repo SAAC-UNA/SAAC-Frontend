@@ -6,7 +6,7 @@
 import React, { useState, useMemo, useCallback } from 'react';
 import { cn } from '@/Utils/ClassNames';
 import { SystemIcons } from '@/Components/Ui/Icons/SystemIcons';
-import { DataTable, type DataTableColumn } from '@/Components/Ui/DataTable';
+import { DataTable, type DataTableColumn } from '@/Components/Ui/Table/DataTable';
 import { TYPOGRAPHY } from '@/Constants/Typography';
 import { TableActionButton } from '@/Components/index';
 import { 

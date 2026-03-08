@@ -20,7 +20,7 @@
 import { useState, useRef, useEffect } from 'react';
 import type { ReactNode } from 'react';
 import { Button } from './Button';
-import { SystemIcons } from './Icons/SystemIcons';
+import { SystemIcons } from '../Icons/SystemIcons';
 import { cn } from '@/Utils/ClassNames';
 import { TYPOGRAPHY } from '@/Constants/Typography';
 import { ICON_SIZES } from '@/Constants/Components';

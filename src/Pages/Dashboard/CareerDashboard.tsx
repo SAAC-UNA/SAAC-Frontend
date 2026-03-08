@@ -1,7 +1,7 @@
 import React from 'react';
 import { useContext } from 'react';
 import { AuthContext } from '@/Context/AuthContext';
-import { ScreenContainer } from '@/Components/Ui/ScreenContainer';
+import { ScreenContainer } from '@/Components/Ui/Layout/ScreenContainer';
 
 import type { MockCareer } from '@/Mocks/Users';
 

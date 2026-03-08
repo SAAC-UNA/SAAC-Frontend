@@ -5,14 +5,14 @@
 
 import React, { useState, useEffect, useCallback } from 'react';
 import { PageHeader, ScreenContainer } from '@/Components/Ui/Index';
-import { SearchInput } from '@/Components/Ui/SearchInput';
-import { FilterButton, type FilterOption } from '@/Components/Ui/FilterButton';
+import { SearchInput } from '@/Components/Ui/Forms/SearchInput';
+import { FilterButton, type FilterOption } from '@/Components/Ui/Buttons/FilterButton';
 import { extensionRequestService } from '@/Services/ExtensionRequestService';
 import { useToast } from '@/Context/ToastContext';
 import { useAuth } from '@/Context/AuthContext';
 import { getContextualInfo } from '@/Constants/ModuleInfo';
 import { ManageExtensionRequestsTable } from './Components/ManageExtensionRequestsTable';
-import { ReviewExtensionRequestModal } from '@/Components/Ui/ReviewExtensionRequestModal';
+import { ReviewExtensionRequestModal } from '@/Components/Ui/Modals/ReviewExtensionRequestModal';
 import type { 
   ExtensionRequest, 
   ExtensionRequestStatus,

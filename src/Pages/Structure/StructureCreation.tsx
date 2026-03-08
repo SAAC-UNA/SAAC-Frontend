@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Button } from '@/Components/Ui/Button';
-import { Input } from '@/Components/Ui/Input';
-import { ScreenContainer } from '@/Components/Ui/ScreenContainer';
-import { CustomSelect } from '@/Components/Ui/SingleSelect';
+import { Button } from '@/Components/Ui/Buttons/Button';
+import { Input } from '@/Components/Ui/Forms/Input';
+import { ScreenContainer } from '@/Components/Ui/Layout/ScreenContainer';
+import { CustomSelect } from '@/Components/Ui/Forms/SingleSelect';
 import { useStructure } from '@/Hooks/UseStructure';
-import { SuccessModal } from '@/Components/Ui/SuccessModal';
-import { Textarea } from '@/Components/Ui/Textarea';
+import { SuccessModal } from '@/Components/Ui/Modals/SuccessModal';
+import { Textarea } from '@/Components/Ui/Forms/Textarea';
 import type { 
   StructureElement, 
   CreateElementForm, 

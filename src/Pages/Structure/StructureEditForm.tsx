@@ -1,15 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
-import { Input } from '@/Components/Ui/Input';
-import { Button } from '@/Components/Ui/Button';
-import { Modal, useModal } from '@/Components/Ui/Modal';
-import { ScreenContainer } from '@/Components/Ui/ScreenContainer';
-import { LoadingSpinner } from '@/Components/Ui/Loading';
+import { Input } from '@/Components/Ui/Forms/Input';
+import { Button } from '@/Components/Ui/Buttons/Button';
+import { Modal, useModal } from '@/Components/Ui/Modals/Modal';
+import { ScreenContainer } from '@/Components/Ui/Layout/ScreenContainer';
+import { LoadingSpinner } from '@/Components/Ui/Feedback/Loading';
 import { useStructure } from '@/Hooks/UseStructure';
 import type { StructureElement, ElementType } from '@/Types/StructureTypes';
 import { FORM_CONFIG, VALIDATION_RULES, getDescriptionMaxLength} from '@/Constants/StructureConstants';
-import { SuccessModal } from '@/Components/Ui/SuccessModal';
-import { Textarea } from '@/Components/Ui/Textarea';
+import { SuccessModal } from '@/Components/Ui/Modals/SuccessModal';
+import { Textarea } from '@/Components/Ui/Forms/Textarea';
 
 /**
  * Función auxiliar para truncar texto largo

@@ -12,11 +12,11 @@
 
 import React, { useCallback } from 'react';
 import { cn } from '@/Utils/ClassNames';
-import { Button } from './Button';
-import { Input } from './Input';
-import { LoadingSpinner } from './Loading';
-import { EmptyState } from './EmptyState';
-import { SystemIcons } from './Icons/SystemIcons';
+import { Button } from '../Buttons/Button';
+import { Input } from '../Forms/Input';
+import { LoadingSpinner } from '../Feedback/Loading';
+import { EmptyState } from '../Feedback/EmptyState';
+import { SystemIcons } from '../Icons/SystemIcons';
 
 export interface TableColumn<T = unknown> {
   key: string;
@@ -136,7 +136,7 @@ export const Table = React.memo(<T extends Record<string, unknown>>({
 
   if (loading) {
     return (
-      <div className={cn("bg-white rounded-corner shadow-sm border", className)}>
+      <div className={cn("bg-blanco-una rounded-corner shadow-sm border", className)}>
         <div className="p-8 flex flex-col items-center justify-center gap-3">
           <LoadingSpinner size="lg" />
         </div>
@@ -145,7 +145,7 @@ export const Table = React.memo(<T extends Record<string, unknown>>({
   }
 
   return (
-    <div className={cn("bg-white rounded-corner shadow-sm border", className)}>
+    <div className={cn("bg-blanco-una rounded-corner shadow-sm border", className)}>
       {/* Header con búsqueda */}
       {searchable && (
         <div className="p-4 border-b">
@@ -164,14 +164,14 @@ export const Table = React.memo(<T extends Record<string, unknown>>({
       {/* Tabla */}
       <div className="overflow-x-auto">
         <table className="w-full">
-          <thead className="bg-gray-50">
+          <thead className="bg-gris-light">
             <tr>
               {columns.map((column, index) => (
                 <th
                   key={index}
                   className={cn(
-                    "px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider",
-                    column.sortable && onSort && "cursor-pointer hover:bg-gray-100",
+                    "px-4 py-3 text-left text-xs font-medium text-gris-una-2 uppercase tracking-wider",
+                    column.sortable && onSort && "cursor-pointer hover:bg-gris-light",
                     column.align === 'center' && "text-center",
                     column.align === 'right' && "text-right"
                   )}
@@ -185,13 +185,13 @@ export const Table = React.memo(<T extends Record<string, unknown>>({
                 </th>
               ))}
               {actions && actions.length > 0 && (
-                <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-4 py-3 text-right text-xs font-medium text-gris-una-2 uppercase tracking-wider">
                   Acciones
                 </th>
               )}
             </tr>
           </thead>
-          <tbody className="bg-white divide-y divide-gray-200">
+          <tbody className="bg-blanco-una divide-y divide-gris-light">
             {data.length === 0 ? (
               <tr>
                 <td 
@@ -208,7 +208,7 @@ export const Table = React.memo(<T extends Record<string, unknown>>({
               data.map((item, index) => (
                 <tr 
                   key={index} 
-                  className="hover:bg-gray-50 transition-colors"
+                  className="hover:bg-gris-light transition-colors"
                 >
                   {columns.map((column, colIndex) => (
                     <td
@@ -249,8 +249,8 @@ export const Table = React.memo(<T extends Record<string, unknown>>({
 
       {/* Paginación */}
       {pagination && pagination.totalPages > 1 && (
-        <div className="px-4 py-3 border-t bg-gray-50 flex items-center justify-between">
-          <div className="text-sm text-gray-700">
+        <div className="px-4 py-3 border-t bg-gris-light flex items-center justify-between">
+          <div className="text-sm text-gris-una-3">
             Página {pagination.currentPage} de {pagination.totalPages}
           </div>
           <div className="flex space-x-2">

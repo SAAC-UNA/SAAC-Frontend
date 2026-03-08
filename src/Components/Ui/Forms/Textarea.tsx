@@ -1,7 +1,7 @@
 import React, { forwardRef, useId } from 'react';
 import { cn } from '@/Utils/ClassNames';
 import { type ComponentSize } from '@/constants/ComponentSizes';
-import { SystemIcons } from './Icons/SystemIcons';
+import { SystemIcons } from '../Icons/SystemIcons';
 import { TYPOGRAPHY } from '@/Constants/Typography';
 
 interface TextareaProps extends Omit<React.TextareaHTMLAttributes<HTMLTextAreaElement>, 'size'> {

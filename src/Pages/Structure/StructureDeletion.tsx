@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { CustomSelect } from '@/Components/Ui/SingleSelect';
-import { SearchInput } from '@/Components/Ui/SearchInput';
-import { Button } from '@/Components/Ui/Button';
-import { Modal, useModal } from '@/Components/Ui/Modal';
-import { ScreenContainer } from '@/Components/Ui/ScreenContainer';
-import { LoadingSpinner } from '@/Components/Ui/Loading';
+import { CustomSelect } from '@/Components/Ui/Forms/SingleSelect';
+import { SearchInput } from '@/Components/Ui/Forms/SearchInput';
+import { Button } from '@/Components/Ui/Buttons/Button';
+import { Modal, useModal } from '@/Components/Ui/Modals/Modal';
+import { ScreenContainer } from '@/Components/Ui/Layout/ScreenContainer';
+import { LoadingSpinner } from '@/Components/Ui/Feedback/Loading';
 import { useStructure } from '@/Hooks/UseStructure';
 import type { StructureElement, ElementType } from '@/Types/StructureTypes';
 

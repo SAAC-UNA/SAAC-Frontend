@@ -21,8 +21,8 @@
  */
 
 import { useState, useRef, useEffect } from 'react';
-import { SystemIcons } from './Icons/SystemIcons';
-import { Tooltip, TooltipTrigger, TooltipContent } from './Tooltip';
+import { SystemIcons } from '../Icons/SystemIcons';
+import { Tooltip, TooltipTrigger, TooltipContent } from '../Feedback/Tooltip';
 import { cn } from '@/Utils/ClassNames';
 
 export interface FilterOption<T = string> {

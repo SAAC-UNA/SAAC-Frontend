@@ -1,6 +1,6 @@
 import React from 'react';
 import { cn } from '@/Utils/ClassNames';
-import { SystemIcons } from './Icons/SystemIcons';
+import { SystemIcons } from '../Icons/SystemIcons';
 import { TYPOGRAPHY } from '@/Constants/Typography';
 import { ICON_SIZES } from '@/Constants/Components';
 

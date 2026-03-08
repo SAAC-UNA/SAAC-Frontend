@@ -6,13 +6,13 @@
 import React, { useState, useEffect } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { PageHeader, ScreenContainer } from '@/Components/Ui/Index';
-import { Button } from '@/Components/Ui/Button';
+import { Button } from '@/Components/Ui/Buttons/Button';
 import { SystemIcons } from '@/Components/Ui/Icons/SystemIcons';
-import { Tooltip, TooltipTrigger, TooltipContent } from '@/Components/Ui/Tooltip';
+import { Tooltip, TooltipTrigger, TooltipContent } from '@/Components/Ui/Feedback/Tooltip';
 import { FileUploader } from './Components/FileUploader';
 import { FileUploadProgress, type FileUploadProgressItem } from './Components/FileUploadProgress';
 import { FileList } from './Components/FileList';
-import LinkInput from '@/Components/Ui/LinkInput';
+import LinkInput from '@/Components/Ui/Forms/LinkInput';
 import { fileService } from '@/Services/FileService';
 import { useToast } from '@/Context/ToastContext';
 import { getModuleInfo } from '@/Constants/ModuleInfo';

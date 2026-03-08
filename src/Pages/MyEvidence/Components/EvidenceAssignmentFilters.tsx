@@ -6,8 +6,8 @@
 import React from 'react';
 import type { AssignmentFilters, AssignmentStatus } from '@/Types/EvidenceAssignmentTypes';
 import { STATUS_LABELS } from '@/Types/EvidenceAssignmentTypes';
-import { SearchInput } from '@/Components/Ui/SearchInput';
-import { FilterButton, type FilterOption } from '@/Components/Ui/FilterButton';
+import { SearchInput } from '@/Components/Ui/Forms/SearchInput';
+import { FilterButton, type FilterOption } from '@/Components/Ui/Buttons/FilterButton';
 
 interface EvidenceAssignmentFiltersProps {
   filters: AssignmentFilters;

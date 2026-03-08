@@ -6,7 +6,7 @@
  */
 
 import React, { useState, useEffect } from 'react';
-import { ScreenContainer } from '@/Components/Ui/ScreenContainer';
+import { ScreenContainer } from '@/Components/Ui/Layout/ScreenContainer';
 import { Button, LoadingSpinner } from '@/Components/Ui/Index';
 import { SystemIcons } from '@/Components/Ui/Icons/SystemIcons';
 import { config } from '@/Config/app.config';

@@ -17,16 +17,17 @@
  */
 
 import React, { useEffect, useState, useMemo, useCallback } from 'react';
-import { Modal } from '@/Components/Ui/Modal';
-import { DataTable, ButtonWithTooltip } from '@/components/index';
+import { Modal } from '@/Components/Ui/Modals/Modal';
+import { ButtonWithTooltip } from '@/Components/Ui/Buttons/ButtonWithTooltip';
+import { DataTable } from '@/components/index';
 import { TYPOGRAPHY } from '@/Constants/Typography';
 import { useDebounce } from '@/Hooks/UseDebounce';
 import { ELEMENT_TYPE_LABELS } from '@/Constants/StructureConstants';
 import { TABLE_TRUNCATE } from '@/Constants/TableTruncate';
-import type { DataTableColumn} from '@/Components/Ui/DataTable';
+import type { DataTableColumn} from '@/Components/Ui/Table/DataTable';
 import type { StructureElement, ElementType } from '@/Types/StructureTypes';
 import { SystemIcons } from '@/Components/Ui/Icons/SystemIcons';
-import { TableActionButton } from '@/Components/Ui/TableActionButton';
+import { TableActionButton } from '@/Components/Ui/Buttons/TableActionButton';
 import { TABLE_ACTION_BUTTON } from '@/Constants/Components';
 
 

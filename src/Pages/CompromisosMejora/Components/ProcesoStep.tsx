@@ -5,7 +5,7 @@
 
 import React, { useEffect, useState } from 'react';
 import { LoadingSpinner } from '@/Components/Ui/Index';
-import { CustomSelect } from '@/Components/Ui/SingleSelect';
+import { CustomSelect } from '@/Components/Ui/Forms/SingleSelect';
 import { config } from '@/Config/app.config';
 
 interface Proceso {

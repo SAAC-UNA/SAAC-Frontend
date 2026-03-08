@@ -9,9 +9,9 @@
 
 import React, { useState, useEffect, useMemo } from 'react';
 import { TYPOGRAPHY } from '@/Constants/Typography';
-import { CustomSelect } from '@/Components/Ui/SingleSelect';
+import { CustomSelect } from '@/Components/Ui/Forms/SingleSelect';
 import { DatePicker } from '@/Components/Ui/Calendar/DatePicker';
-import type { SelectOption } from '@/Components/Ui/SingleSelect';
+import type { SelectOption } from '@/Components/Ui/Forms/SingleSelect';
 import type { AuditLogFilters as Filters, ActionType } from '@/Types/AuditLogTypes';
 import AuditLogService from '@/Services/AuditLogService';
 import { userService } from '@/Services/UserService';

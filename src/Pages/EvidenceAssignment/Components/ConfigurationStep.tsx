@@ -5,7 +5,7 @@
 
 import React, { useState } from 'react';
 import { DatePicker } from '@/Components/Ui/Calendar/DatePicker';
-import { Textarea } from '@/Components/Ui/Textarea';
+import { Textarea } from '@/Components/Ui/Forms/Textarea';
 import { validationRules } from '@/utils/Validation';
 import type { 
   EvidenceAssignmentFormData, 

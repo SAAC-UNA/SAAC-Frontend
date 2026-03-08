@@ -18,7 +18,7 @@ import { Input, CustomSelect, Button, LoadingSpinner, BackendErrorAlert } from '
 import { roleService } from '@/Services/RoleService';
 import type { User } from '@/Services/UserService';
 import type { Role, BackendPermission } from '@/Services/RoleService';
-import type { SelectOption } from '@/components/Ui/SingleSelect';
+import type { SelectOption } from '@/Components/Ui/Forms/SingleSelect';
 
 interface EditUserFormProps {
   user: User;

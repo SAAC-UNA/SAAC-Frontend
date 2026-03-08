@@ -11,11 +11,11 @@
 
 import React, { useState, useEffect, useCallback } from 'react';
 import { PageHeader, ScreenContainer } from '@/Components/Ui/Index';
-import { BackendErrorAlert } from '@/Components/Ui/BackendErrorAlert';
+import { BackendErrorAlert } from '@/Components/Ui/Feedback/BackendErrorAlert';
 import { SystemIcons } from '@/Components/Ui/Icons/SystemIcons';
-import { SearchInput } from '@/Components/Ui/SearchInput';
-import { DropdownButton } from '@/Components/Ui/DropdownButton';
-import type { DropdownOption } from '@/Components/Ui/DropdownButton';
+import { SearchInput } from '@/Components/Ui/Forms/SearchInput';
+import { DropdownButton } from '@/Components/Ui/Buttons/DropdownButton';
+import type { DropdownOption } from '@/Components/Ui/Buttons/DropdownButton';
 import { getModuleInfo } from '@/Constants/ModuleInfo';
 import { AuditLogFilters } from './Components/AuditLogFilters';
 import { AuditLogTable } from './Components/AuditLogTable';

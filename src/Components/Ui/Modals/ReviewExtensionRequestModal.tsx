@@ -4,9 +4,9 @@
  */
 
 import React, { useState } from 'react';
-import { Modal } from '@/Components/Ui/Modal';
-import { Button } from '@/Components/Ui/Button';
-import { Textarea } from '@/Components/Ui/Textarea';
+import { Modal } from '@/Components/Ui/Modals/Modal';
+import { Button } from '@/Components/Ui/Buttons/Button';
+import { Textarea } from '@/Components/Ui/Forms/Textarea';
 import type { ReviewFormData, ExtensionRequest } from '@/Types/ExtensionRequestTypes';
 
 interface ReviewExtensionRequestModalProps {

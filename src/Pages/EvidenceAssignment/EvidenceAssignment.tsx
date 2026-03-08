@@ -7,8 +7,8 @@
 
 import React, { useState } from 'react';
 import { ScreenContainer, PageHeader, Button, LoadingSpinner, WizardProgress } from '@/Components/Ui/Index';
-import { SuccessModal } from '@/Components/Ui/SuccessModal';
-import { EditConfirmationModal } from '@/Components/Ui/EditConfirmationModal';
+import { SuccessModal } from '@/Components/Ui/Modals/SuccessModal.tsx';
+import { EditConfirmationModal } from '@/Components/Ui/Modals/EditConfirmationModal.tsx';
 import { useToast } from '@/Context/ToastContext';
 import { getContextualInfo } from '@/Constants/ModuleInfo';
 import { LAYOUT } from '@/Constants/Layout';

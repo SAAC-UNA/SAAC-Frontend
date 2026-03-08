@@ -2,7 +2,7 @@ import React, { useEffect, useRef } from 'react';
 import { Dialog, DialogBackdrop, DialogPanel, DialogTitle } from '@headlessui/react';
 import { SystemIcons } from '@/Components/Ui/Icons/SystemIcons';
 import { cn } from '@/Utils/ClassNames';
-import { Button } from './Button';
+import { Button } from '../Buttons/Button';
 
 /**
  * Props para el componente Modal Unificado

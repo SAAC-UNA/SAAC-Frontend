@@ -5,7 +5,7 @@
 
 import React, { useState, useCallback } from 'react';
 import { fileService } from '@/Services/FileService';
-import LinkInput from '@/Components/Ui/LinkInput';
+import LinkInput from '@/Components/Ui/Forms/LinkInput';
 import type { FileModel } from '@/Types/FileTypes';
 import { MAX_FILES_PER_UPLOAD, MAX_LINKS_PER_UPLOAD } from '@/Types/FileTypes';
 

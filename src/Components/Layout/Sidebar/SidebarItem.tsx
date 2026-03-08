@@ -2,7 +2,7 @@ import React, { useCallback, useEffect, useState } from 'react';
 import type { NavItem } from '@/Types/CommonTypes';
 import { cn } from '@/Utils/ClassNames';
 import { useNavigationItems } from '@/Hooks/UseNavigation';
-import { Tooltip, TooltipContent, TooltipTrigger } from '@/Components/Ui/Tooltip';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/Components/Ui/Feedback/Tooltip';
 import { SidebarButton } from './SidebarButton';
 import { SidebarIcon } from './SidebarIcon';
 import { SidebarLabel } from './SidebarLabel';

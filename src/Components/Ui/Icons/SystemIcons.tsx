@@ -53,33 +53,33 @@ export const SystemIcons = {
   // ===== ACCIONES GENERALES =====
   // NOTA: Estos iconos tienen colores por defecto para uso en tablas/listas
   actions: {
-    view: ({ className, size, color = 'var(--icon-view)' }: IconProps) => (
+    view: ({ className, size }: IconProps) => (
       <svg
         className={`${getSizeClasses(size)} ${className || ''}`}
         viewBox="0 0 22 22"
-        fill={color}
+        fill="currentColor"
       >
         <path d="M12 9.75a2.25 2.25 0 1 0 0 4.5 2.25 2.25 0 0 0 0-4.5Z" />
         <path fillRule="evenodd" d="M12 5.5c-2.618 0-4.972 1.051-6.668 2.353-.85.652-1.547 1.376-2.036 2.08-.48.692-.796 1.418-.796 2.067 0 .649.317 1.375.796 2.066.49.705 1.186 1.429 2.036 2.08C7.028 17.45 9.382 18.5 12 18.5c2.618 0 4.972-1.051 6.668-2.353.85-.652 1.547-1.376 2.035-2.08.48-.692.797-1.418.797-2.067 0-.649-.317-1.375-.797-2.066-.488-.705-1.185-1.429-2.035-2.08C16.972 6.55 14.618 5.5 12 5.5ZM8.25 12a3.75 3.75 0 1 1 7.5 0 3.75 3.75 0 0 1-7.5 0Z" clipRule="evenodd" />
       </svg>
     ),
 
-    edit: ({ className, size, color = 'var(--icon-edit)' }: IconProps) => (
+    edit: ({ className, size }: IconProps) => (
       <svg
         className={`${getSizeClasses(size)} ${className || ''}`}
         viewBox="0 0 22 22"
-        fill={color}
+        fill="currentColor"
       >
         <path d="M14.607 3.5a.5.5 0 0 1 .353.146l2.829 2.829a.5.5 0 0 1 0 .707l-9.193 9.192a.5.5 0 0 1-.227.13l-3.828 1a.5.5 0 0 1-.61-.61l1-3.828a.5.5 0 0 1 .13-.227l9.192-9.193a.5.5 0 0 1 .354-.146Z" />
         <path d="M4 19.25a.75.75 0 0 0 0 1.5h15a.75.75 0 0 0 0-1.5H4Z" />
       </svg>
     ),
 
-    delete: ({ className, size, color = 'var(--icon-delete)' }: IconProps) => (
+    delete: ({ className, size }: IconProps) => (
       <svg
         className={`${getSizeClasses(size)} ${className || ''}`}
         viewBox="0 0 22 22"
-        fill={color}
+        fill="currentColor"
       >
         <path d="M9.25 3a.75.75 0 0 1 .75-.75h4a.75.75 0 0 1 .75.75v.75H19a.75.75 0 0 1 0 1.5H5a.75.75 0 0 1 0-1.5h4.25V3Z" />
         <path fillRule="evenodd" d="M6.24 7.945a.5.5 0 0 1 .497-.445h10.526a.5.5 0 0 1 .497.445l.2 1.801a44.213 44.213 0 0 1 0 9.771l-.02.177a2.603 2.603 0 0 1-2.226 2.29 26.788 26.788 0 0 1-7.428 0 2.603 2.603 0 0 1-2.227-2.29l-.02-.177a44.239 44.239 0 0 1 0-9.77l.2-1.802Zm4.51 3.455a.75.75 0 0 0-1.5 0v7a.75.75 0 0 0 1.5 0v-7Zm4 0a.75.75 0 0 0-1.5 0v7a.75.75 0 0 0 1.5 0v-7Z" clipRule="evenodd" />
@@ -101,17 +101,17 @@ export const SystemIcons = {
 
     ),
 
-    add: ({ className, size, color = 'var(--icon-add)' }: IconProps) => (
+    add: ({ className, size }: IconProps) => (
       <svg
         className={`${getSizeClasses(size)} ${className || ''}`}
         viewBox="0 0 24 24"
-        fill={color}
+        fill="currentColor"
       >
         <path fillRule="evenodd" d="M7.345 4.017a42.253 42.253 0 0 1 9.31 0c1.713.192 3.095 1.541 3.296 3.26a40.66 40.66 0 0 1 0 9.445 3.734 3.734 0 0 1-3.296 3.26 42.123 42.123 0 0 1-9.31 0 3.734 3.734 0 0 1-3.296-3.26 40.652 40.652 0 0 1 0-9.444 3.734 3.734 0 0 1 3.295-3.26ZM12 7.007a.75.75 0 0 1 .75.75v3.493h3.493a.75.75 0 1 1 0 1.5H12.75v3.493a.75.75 0 0 1-1.5 0V12.75H7.757a.75.75 0 0 1 0-1.5h3.493V7.757a.75.75 0 0 1 .75-.75Z" clipRule="evenodd" />
       </svg>
     ),
 
-    save: ({ className, size, color = 'var(--icon-save)' }: IconProps) => (
+    save: ({ className, size, color = 'var(--color-verde)' }: IconProps) => (
       <svg
         className={`${getSizeClasses(size)} ${className || ''}`}
         viewBox="0 0 24 24"
@@ -217,7 +217,7 @@ export const SystemIcons = {
       </svg>
     ),
 
-    loading: ({ className, size, color = 'var(--icon-loading)' }: IconProps) => (
+    loading: ({ className, size, color = 'var(--color-rojo-una-2)' }: IconProps) => (
       <svg
         className={`${getSizeClasses(size)} ${className || ''} animate-spin`}
         viewBox="0 0 24 24"
@@ -261,7 +261,7 @@ export const SystemIcons = {
         <path d="M14.857 17.082a23.848 23.848 0 0 0 5.454-1.31A8.967 8.967 0 0 1 18 9.75V9A6 6 0 0 0 6 9v.75a8.967 8.967 0 0 1-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 0 1-5.714 0m5.714 0a3 3 0 1 1-5.714 0M3.124 7.5A8.969 8.969 0 0 1 5.292 3m13.416 0a8.969 8.969 0 0 1 2.168 4.5" />
       </svg>
     ),
-
+// ! Ver si eliminar, este está repetido pero con relleno
     eye: ({ className, size }: IconProps) => (
       <svg
         className={`${getSizeClasses(size)} ${className || ''}`}
@@ -274,7 +274,7 @@ export const SystemIcons = {
         <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
       </svg>
     ),
-
+// ! Ver si eliminar, este está repetido pero con relleno
     eyeSlash: ({ className, size }: IconProps) => (
       <svg
         className={`${getSizeClasses(size)} ${className || ''}`}
@@ -323,7 +323,7 @@ export const SystemIcons = {
       </svg>
     ),
     
-    back: ({ className, size, color = 'var(--icon-back)' }: IconProps) => (
+    back: ({ className, size, color = 'var(--color-rojo-una-2)' }: IconProps) => (
       <svg
         className={`${getSizeClasses(size)} ${className || ''}`}
         viewBox="0 0 24 24"
@@ -343,11 +343,11 @@ export const SystemIcons = {
       </svg>
     ),
 
-    expand: ({ className, size, color = 'var(--icon-expand)' }: IconProps) => (
+    expand: ({ className, size, color }: IconProps) => (
       <svg
         className={`${getSizeClasses(size)} ${className || ''}`}
         viewBox="0 0 24 24"
-        fill={color}
+        fill={color || "currentColor"}
       >
         <path
         fillRule="evenodd"
@@ -387,11 +387,11 @@ export const SystemIcons = {
       </svg>
     ),
 
-    collapse: ({ className, size, color = 'var(--icon-collapse)' }: IconProps) => (
+    collapse: ({ className, size, color }: IconProps) => (
       <svg
         className={`${getSizeClasses(size)} ${className || ''}`}
         viewBox="0 0 24 24"
-        fill={color}
+        fill={color || "currentColor"}
       >
         <path
           fillRule="evenodd"
@@ -574,7 +574,7 @@ export const SystemIcons = {
     // ===== ICONOS ESPECÍFICOS PARA MODALES =====
     
     /** Círculo de información - Para mensajes informativos */
-    informationCircle: ({ className, size, color = 'var(--icon-info)' }: IconProps) => (
+    informationCircle: ({ className, size, color = 'var(--color-info)' }: IconProps) => (
       <svg
         className={`${getSizeClasses(size)} ${className || ''}`}
         viewBox="0 0 24 24"

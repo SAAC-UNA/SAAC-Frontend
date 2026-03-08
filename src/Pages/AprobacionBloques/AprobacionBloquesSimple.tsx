@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { ScreenContainer } from '@/Components/Ui/ScreenContainer';
+import { ScreenContainer } from '@/Components/Ui/Layout/ScreenContainer';
 import { Button, LoadingSpinner } from '@/Components/Ui/Index';
 import { SystemIcons } from '@/Components/Ui/Icons/SystemIcons';
 import { axiosInstance } from '@/Config/axios';
 import { ApprovalModal } from './Components/ApprovalModal';
+<<<<<<< Updated upstream
 import { EvidenceFilesModal } from './Components/EvidenceFilesModal';
 import { SuccessModal } from '@/Components/Ui/SuccessModal';
 import { CustomSelect } from '@/Components/Ui/SingleSelect';
@@ -12,6 +13,11 @@ import { FilterButton, type FilterOption } from '@/Components/Ui/FilterButton';
 import { Tooltip, TooltipTrigger, TooltipContent } from '@/Components/Ui/Tooltip';
 
 type EstadoAprobacion = 'pendiente' | 'aprobado' | 'rechazado';
+=======
+import { SuccessModal } from '@/Components/Ui/Modals/SuccessModal';
+import { CustomSelect } from '@/Components/Ui/Forms/SingleSelect';
+import { Pagination } from '@/Components/Ui/Table/Pagination';
+>>>>>>> Stashed changes
 
 interface Evidencia {
   id: number;

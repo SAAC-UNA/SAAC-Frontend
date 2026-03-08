@@ -13,7 +13,7 @@ import {
 } from '@/Types/FileTypes';
 import { SystemIcons } from '@/Components/Ui/Icons/SystemIcons';
 import { useToast } from '@/Context/ToastContext';
-import { Tooltip, TooltipContent, TooltipTrigger } from '@/Components/Ui/Tooltip';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/Components/Ui/Feedback/Tooltip';
 
 interface FileUploaderProps {
   onFilesSelected: (files: File[]) => void;

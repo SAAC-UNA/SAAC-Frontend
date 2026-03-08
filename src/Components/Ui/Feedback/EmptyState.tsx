@@ -12,8 +12,8 @@
 
 import React from 'react';
 import { cn } from '@/Utils/ClassNames';
-import { SystemIcons } from './Icons/SystemIcons';
-import { Button } from './Button';
+import { SystemIcons } from '../Icons/SystemIcons';
+import { Button } from '../Buttons/Button';
 
 export interface EmptyStateProps {
   // Contenido

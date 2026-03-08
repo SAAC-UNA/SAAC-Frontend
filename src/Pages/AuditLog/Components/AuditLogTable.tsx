@@ -11,12 +11,12 @@
  */
 
 import React, { useMemo, useCallback } from 'react';
-import { DataTable } from '@/Components/Ui/DataTable';
-import { TableActionButton } from '@/Components/Ui/TableActionButton';
+import { DataTable } from '@/Components/Ui/Table/DataTable';
+import { TableActionButton } from '@/Components/Ui/Buttons/TableActionButton';
 import { TYPOGRAPHY } from '@/Constants/Typography';
 import { TABLE_TRUNCATE } from '@/Constants/TableTruncate';
 import { SystemIcons } from '@/Components/Ui/Icons/SystemIcons';
-import type { DataTableColumn } from '@/Components/Ui/DataTable';
+import type { DataTableColumn } from '@/Components/Ui/Table/DataTable';
 import type { AuditLog } from '@/Types/AuditLogTypes';
 
 interface AuditLogTableProps {

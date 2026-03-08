@@ -9,7 +9,7 @@
  */
 
 import React, { useMemo, useCallback } from 'react';
-import { DataTable, type DataTableColumn } from '@/Components/Ui/DataTable';
+import { DataTable, type DataTableColumn } from '@/Components/Ui/Table/DataTable';
 import { TYPOGRAPHY } from '@/Constants/Typography';
 import { TABLE_TRUNCATE } from '@/Constants/TableTruncate';
 import { TableActionButton } from '@/Components/index';

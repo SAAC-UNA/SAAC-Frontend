@@ -4,9 +4,9 @@
  */
 
 import React, { useState, useEffect } from 'react';
-import { Modal } from '@/Components/Ui/Modal';
-import { Button } from '@/Components/Ui/Button';
-import { Textarea } from '@/Components/Ui/Textarea';
+import { Modal } from '@/Components/Ui/Modals/Modal';
+import { Button } from '@/Components/Ui/Buttons/Button';
+import { Textarea } from '@/Components/Ui/Forms/Textarea';
 import { DatePicker } from '@/Components/Ui/Calendar/DatePicker';
 import type { ExtensionRequestFormData } from '@/Types/ExtensionRequestTypes';
 

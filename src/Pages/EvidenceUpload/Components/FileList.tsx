@@ -6,10 +6,10 @@
 import React, { useState } from 'react';
 import type { FileModel } from '@/Types/FileTypes';
 import { getFileCategory } from '@/Types/FileTypes';
-import { DeleteConfirmationModal } from '@/Components/Ui/DeleteConfirmationModal';
-import { LoadingSpinner } from '@/Components/Ui/Loading';
+import { DeleteConfirmationModal } from '@/Components/Ui/Modals/DeleteConfirmationModal';
+import { LoadingSpinner } from '@/Components/Ui/Feedback/Loading';
 import { SystemIcons } from '@/Components/Ui/Icons/SystemIcons';
-import { TableActionButton } from '@/Components/Ui/TableActionButton';
+import { TableActionButton } from '@/Components/Ui/Buttons/TableActionButton';
 import { useToast } from '@/Context/ToastContext';
 import { axiosInstance } from '@/Config/axios';
 

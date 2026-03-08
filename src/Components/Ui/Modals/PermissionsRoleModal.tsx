@@ -7,7 +7,7 @@
 
 import React from 'react';
 import { Modal } from './Modal';
-import { SystemIcons } from './Icons/SystemIcons';
+import { SystemIcons } from '../Icons/SystemIcons';
 
 interface BackendPermission {
     id: number;

@@ -4,8 +4,8 @@
  */
 
 import React from 'react';
-import { Modal } from '@/Components/Ui/Modal';
-import { Button } from '@/Components/Ui/Button';
+import { Modal } from '@/Components/Ui/Modals/Modal';
+import { Button } from '@/Components/Ui/Buttons/Button';
 import { SystemIcons } from '@/Components/Ui/Icons/SystemIcons';
 import type { ExtensionRequest, ExtensionRequestStatus } from '@/Types/ExtensionRequestTypes';
 

@@ -9,7 +9,7 @@
  */
 
 import React from 'react';
-import { SystemIcons } from './Icons/SystemIcons';
+import { SystemIcons } from '../Icons/SystemIcons';
 import { cn } from '@/Utils/ClassNames';
 
 interface PaginationProps {

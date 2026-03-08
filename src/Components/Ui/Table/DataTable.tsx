@@ -15,11 +15,11 @@
 import React, { useState, useCallback } from 'react';
 import { cn } from '@/Utils/ClassNames';
 import { TYPOGRAPHY } from '@/Constants/Typography';
-import { Button } from './Button';
-import { SearchInput } from './SearchInput';
-import { LoadingSpinner } from './Loading';
+import { Button } from '../Buttons/Button';
+import { SearchInput } from '../Forms/SearchInput';
+import { LoadingSpinner } from '../Feedback/Loading';
 import { Pagination } from './Pagination';
-import { EmptyState } from './EmptyState';
+import { EmptyState } from '../Feedback/EmptyState';
 
 export interface DataTableColumn<T = unknown> {
   key: string;
@@ -124,7 +124,7 @@ export const DataTable = React.memo(<T extends Record<string, unknown>>({
 
   return (
     <div className={cn(
-      "relative flex flex-col w-full h-full text-gris-una/20",
+      "relative flex flex-col w-full h-full text-gris-light",
       !unstyled && "bg-transparent", // Fondo transparente de la tabla
       className
     )}>
@@ -142,7 +142,7 @@ export const DataTable = React.memo(<T extends Record<string, unknown>>({
                 </h5>
               )}
               {description && (
-                <p className="block mt-1 font-sans text-base antialiased font-normal leading-relaxed text-gray-700">
+                <p className="block mt-1 font-sans text-base antialiased font-normal leading-relaxed text-gris-una-2">
                   {description}
                 </p>
               )}
