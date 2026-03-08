@@ -11,7 +11,7 @@
 import React, { useState, useEffect } from 'react';
 import { DetailsModal } from '@/Components/Ui/Modals/DetailsModal';
 import { SystemIcons } from '@/Components/Ui/Icons/SystemIcons';
-import { FileList } from '@/Pages/EvidenceUpload/Components/FileList';
+import { FileList } from '@/Components/Ui/Upload';
 import { fileService } from '@/Services/FileService';
 import type { FileModel } from '@/Types/FileTypes';
 import { 

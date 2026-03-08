@@ -3,6 +3,6 @@
  * Componentes específicos para la funcionalidad de subida de evidencias
  */
 
-export { FileUploader } from './FileUploader';
-export { FileList } from './FileList';
-export { FileUploadProgress, type FileUploadProgressItem } from './FileUploadProgress';
+// Re-exportados desde el sistema de diseño compartido
+export { DropZone, FileTypeIcon, FileUploader, FileList, FileUploadProgress } from '@/Components/Ui/Upload';
+export type { FileUploadProgressItem } from '@/Components/Ui/Upload';

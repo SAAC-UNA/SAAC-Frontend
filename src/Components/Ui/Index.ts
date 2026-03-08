@@ -34,3 +34,7 @@ export type { WizardStep, WizardProgressProps } from './Layout/WizardProgress';
 // HU-016: Modales de solicitudes de ampliación
 export { CreateExtensionRequestModal } from './Modals/CreateExtensionRequestModal';
 export { ReviewExtensionRequestModal } from './Modals/ReviewExtensionRequestModal';
+
+// HU-008: Componentes de subida de archivos
+export { DropZone, FileTypeIcon, FileUploader, FileList, FileUploadProgress } from './Upload';
+export type { FileUploadProgressItem } from './Upload';

@@ -10,7 +10,7 @@ import { evidenceAssignmentService } from '@/Services/EvidenceAssignmentService'
 import { fileService } from '@/Services/FileService';
 import { useToast } from '@/Context/ToastContext';
 import { LoadingSpinner } from '@/Components/Ui/Feedback/Loading';
-import { FileList } from '@/Pages/EvidenceUpload/Components/FileList';
+import { FileList } from '@/Components/Ui/Upload';
 import type { FileModel } from '@/Types/FileTypes';
 
 interface EvidenceAssignmentDetailProps {
