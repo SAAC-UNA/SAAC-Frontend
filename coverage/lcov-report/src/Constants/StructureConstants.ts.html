@@ -340,18 +340,9 @@
 <a name='L275'></a><a href='#L275'>275</a>
 <a name='L276'></a><a href='#L276'>276</a>
 <a name='L277'></a><a href='#L277'>277</a>
-<a name='L278'></a><a href='#L278'>278</a>
-<a name='L279'></a><a href='#L279'>279</a>
-<a name='L280'></a><a href='#L280'>280</a>
-<a name='L281'></a><a href='#L281'>281</a>
-<a name='L282'></a><a href='#L282'>282</a>
-<a name='L283'></a><a href='#L283'>283</a>
-<a name='L284'></a><a href='#L284'>284</a>
-<a name='L285'></a><a href='#L285'>285</a>
-<a name='L286'></a><a href='#L286'>286</a>
-<a name='L287'></a><a href='#L287'>287</a>
-<a name='L288'></a><a href='#L288'>288</a>
-<a name='L289'></a><a href='#L289'>289</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
+<a name='L278'></a><a href='#L278'>278</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -359,7 +350,6 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -376,12 +366,6 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -443,7 +427,6 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -607,11 +590,6 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
@@ -639,7 +617,9 @@
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js">import { ElementType, type CreateElementForm } from '@/Types/StructureTypes';
+<span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js">{/** Este no debería de ser eliminado? */}
+&nbsp;
+import { ElementType, type CreateElementForm } from '@/Types/StructureTypes';
 &nbsp;
 /**
    Labels para tipos de elementos (se muestran en la interfaz de usuario)
@@ -649,7 +629,6 @@
 export const ELEMENT_TYPE_LABELS = <span class="cstat-no" title="statement not covered" >{</span>
   [ElementType.UNIVERSITY]: 'Universidad',
   [ElementType.CAMPUS]: 'Sede',
-  [ElementType.FACULTY]: 'Facultad',
   [ElementType.CAREER]: 'Carrera',
   [ElementType.DIMENSION]: 'Dimensión',
   [ElementType.COMPONENT]: 'Componente',
@@ -671,21 +650,15 @@ export const HIERARCHY_RULES = <span class="cstat-no" title="statement not cover
     description: 'Universidad'
   },
   [ElementType.CAMPUS]: { 
-    canHaveChildren: [ElementType.FACULTY], 
+    canHaveChildren: [ElementType.CAREER], 
     mustHaveParent: ElementType.UNIVERSITY,
     level: 2,
     description: 'Sede o campus universitario'
   },
-  [ElementType.FACULTY]: { 
-    canHaveChildren: [ElementType.CAREER], 
-    mustHaveParent: ElementType.CAMPUS,
-    level: 3,
-    description: 'Facultad o centro académico'
-  },
   [ElementType.CAREER]: { 
     canHaveChildren: [], 
-    mustHaveParent: ElementType.FACULTY,
-    level: 4,
+    mustHaveParent: ElementType.CAMPUS,
+    level: 3,
     description: 'Carrera académica'
   },
   [ElementType.DIMENSION]: { 
@@ -745,7 +718,6 @@ export const VALIDATION_RULES = <span class="cstat-no" title="statement not cove
   DESCRIPTION_MAX_LENGTH_BY_TYPE: {
     [ElementType.UNIVERSITY]: 250,
     [ElementType.CAMPUS]: 250,
-    [ElementType.FACULTY]: 250,
     [ElementType.CAREER]: 250,
     [ElementType.DIMENSION]: 250,
     [ElementType.COMPONENT]: 250,
@@ -857,11 +829,6 @@ export const FORM_CONFIG: Record&lt;ElementType, FormConfig&gt; = <span class="c
     optionalFields: [],
     showParentSelector: true
   },
-  [ElementType.FACULTY]: {
-    requiredFields: ['name', 'parentElementId'],
-    optionalFields: [],
-    showParentSelector: true
-  },
   [ElementType.CAREER]: {
     requiredFields: ['name', 'parentElementId'],
     optionalFields: [],
@@ -934,7 +901,7 @@ export const isValidParentChildRelation = <span class="cstat-no" title="statemen
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2025-10-19T18:33:03.308Z
+                at 2026-03-08T22:36:17.162Z
             </div>
         <script src="../../prettify.js"></script>
         <script>

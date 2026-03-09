@@ -6,7 +6,7 @@ interface LoadingSpinnerProps {
   color?: 'primary' | 'secondary' | 'white' | 'gray' | 'current' | 'loading';
   className?: string;
   thickness?: 'thin' | 'normal' | 'thick';
-  variant?: 'spinner' | 'bounce' | 'uploading';
+  variant?: 'spinner' | 'bounce' | 'uploading' | 'paging';
 }
 
 export const LoadingSpinner: React.FC<LoadingSpinnerProps> = ({
@@ -30,7 +30,7 @@ export const LoadingSpinner: React.FC<LoadingSpinnerProps> = ({
     white: 'border-white',
     gray: 'border-gray-900',
     current: 'border-current',
-    loading: 'border-[var(--icon-loading)]'
+    loading: 'border-gris-una'
   };
 
   const thicknessClasses = {
@@ -39,9 +39,15 @@ export const LoadingSpinner: React.FC<LoadingSpinnerProps> = ({
     thick: 'border-4'
   };
 
-/* 
-  *Nuevo loader, este me gustó más para mantenerlo
-*/
+  // Paging loader - Animación de libro/documento girando (estilos en index.css)
+  // Se posiciona como overlay fijo centrado en pantalla, independientemente del contenedor padre
+  if (variant === 'paging') {
+    return (
+      <div className={cn('absolute inset-0 z-40 flex items-center justify-center', className)} role="status" aria-label="Cargando...">
+        <div className="saac-loader-paging" />
+      </div>
+    );
+  }
 
   // Uploading loader - Animación de carga de archivos
   if (variant === 'uploading') {
@@ -128,7 +134,7 @@ export const LoadingSpinner: React.FC<LoadingSpinnerProps> = ({
       white: 'bg-white',
       gray: 'bg-gray-900',
       current: 'bg-current',
-      loading: 'bg-[var(--icon-loading)]' // Usa la variable CSS del sistema de iconos
+      loading: 'bg-gris-una' // Usa la variable CSS del sistema de iconos
     };
 
     return (

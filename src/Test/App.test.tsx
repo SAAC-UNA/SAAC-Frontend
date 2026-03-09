@@ -1,10 +1,10 @@
-import { render, screen } from "@testing-library/react";
+import { render } from "@testing-library/react";
 import '@testing-library/jest-dom';
-// Nota: Se usará la ruta relativa aquí porque VS Code tiene problemas con @/App, pero Jest sí reconoce el alias
 import App from "../App";
 
-
-test("muestra el título SAAC-UNA", () => {
-  render(<App />);
-  expect(screen.getByText(/SAAC-UNA/i)).toBeInTheDocument();
+// La app arranca en la ruta de login cuando no hay sesion activa
+test("muestra el formulario de inicio de sesion", () => {
+  const { container } = render(<App />);
+  // El login siempre renderiza un campo de tipo password
+  expect(container.querySelector('input[type="password"]')).toBeInTheDocument();
 });

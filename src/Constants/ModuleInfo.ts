@@ -115,10 +115,10 @@ export const MODULE_INFO: Record<string, ModuleInfo> = {
 
   // Búsqueda Avanzada de Evidencias
   evidence_search: {
-    title: 'Búsqueda Avanzada de Evidencias',
-    subtitle: 'Repositorio de Evidencias',
-    description: 'Encuentre evidencias usando filtros por criterio, responsable, fecha, estado y rol',
-    shortDescription: 'Buscar evidencias en el sistema'
+    title: 'Explorador de Criterios',
+    subtitle: 'Criterios y Evidencias',
+    description: 'Explore los criterios de acreditación, sus evidencias y recursos asociados',
+    shortDescription: 'Explorar criterios y evidencias'
   },
 
   // Solicitudes de Ampliación

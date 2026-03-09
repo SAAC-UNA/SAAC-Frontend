@@ -24,7 +24,10 @@ export interface IconProps {
 }
 
 /**
- * Obtiene las clases de tamaño según el size prop
+/**
+ * Obtiene las clases de tamaño según el size prop.
+ * Retorna string vacío si size no fue pasado explícitamente,
+ * para que className (con ICON_SIZES) sea el único que controla el tamaño.
  *
  * TODO: Una vez todos los íconos hayan migrado al nuevo estándar CSS (index.css),
  * eliminar esta función y el prop `size` de IconProps. Los tamaños se controlarán
@@ -32,15 +35,16 @@ export interface IconProps {
  * size-icon-lg, size-icon-button (definidas en @layer utilities de index.css).
  * También eliminar los tamaños sin variable CSS: 'xs', 'xl', '2xl', '3xl'.
  */
-const getSizeClasses = (size: IconProps['size'] = 'md'): string => {
-  const sizes = {
-    xs: 'w-3 h-3',       // TODO: eliminar, sin variable CSS equivalente
-    sm: 'w-4 h-4',       // TODO: reemplazar por size-icon-sm
-    md: 'w-5 h-5',       // TODO: reemplazar por size-icon-md
-    lg: 'w-6 h-6',       // TODO: reemplazar por size-icon-lg
-    xl: 'w-8 h-8',       // TODO: eliminar, sin variable CSS equivalente
-    '2xl': 'w-12 h-12',  // TODO: eliminar, sin variable CSS equivalente
-    '3xl': 'w-16 h-16'   // TODO: eliminar, sin variable CSS equivalente
+const getSizeClasses = (size?: IconProps['size']): string => {
+  if (!size) return 'flex-shrink-0';
+  const sizes: Record<NonNullable<IconProps['size']>, string> = {
+    xs: 'w-3 h-3 flex-shrink-0',
+    sm: 'w-4 h-4 flex-shrink-0',
+    md: 'w-5 h-5 flex-shrink-0',
+    lg: 'w-6 h-6 flex-shrink-0',
+    xl: 'w-8 h-8 flex-shrink-0',
+    '2xl': 'w-12 h-12 flex-shrink-0',
+    '3xl': 'w-16 h-16 flex-shrink-0'
   };
   return sizes[size];
 };
@@ -938,6 +942,51 @@ export const SystemIcons = {
           d="M12.68 2.806a1.4 1.4 0 0 0-1.36 0l-7.2 4A1.4 1.4 0 0 0 3.4 8.03v7.94c0 .509.276.977.72 1.224l7.2 4a1.4 1.4 0 0 0 1.36 0l7.2-4a1.4 1.4 0 0 0 .72-1.223V8.03a1.4 1.4 0 0 0-.72-1.224l-7.2-4ZM7.25 12a4.75 4.75 0 1 1 9.5 0 4.75 4.75 0 0 1-9.5 0Z"
           clipRule="evenodd"
         />
+      </svg>
+    ),
+  },
+
+  // ===== TIPOS DE ARCHIVO =====
+  fileTypes: {
+    document: ({ className, size }: IconProps) => (
+      <svg className={`${getSizeClasses(size)} text-red-500 ${className || ''}`} fill="currentColor" viewBox="0 0 20 20">
+        <path fillRule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4zm2 6a1 1 0 011-1h6a1 1 0 110 2H7a1 1 0 01-1-1zm1 3a1 1 0 100 2h6a1 1 0 100-2H7z" clipRule="evenodd" />
+      </svg>
+    ),
+    spreadsheet: ({ className, size }: IconProps) => (
+      <svg className={`${getSizeClasses(size)} text-green-600 ${className || ''}`} fill="currentColor" viewBox="0 0 20 20">
+        <path fillRule="evenodd" d="M4 4a2 2 0 012-2h8a2 2 0 012 2v12a2 2 0 01-2 2H6a2 2 0 01-2-2V4zm2 0h8v4H6V4zm0 6h3v6H6v-6zm5 0h3v6h-3v-6z" clipRule="evenodd" />
+      </svg>
+    ),
+    presentation: ({ className, size }: IconProps) => (
+      <svg className={`${getSizeClasses(size)} text-orange-500 ${className || ''}`} fill="currentColor" viewBox="0 0 20 20">
+        <path fillRule="evenodd" d="M3 5a2 2 0 012-2h10a2 2 0 012 2v8a2 2 0 01-2 2h-2.22l.123.489.804.804A1 1 0 0113 18H7a1 1 0 01-.707-1.707l.804-.804L7.22 15H5a2 2 0 01-2-2V5zm5.771 7H5V5h10v7H8.771z" clipRule="evenodd" />
+      </svg>
+    ),
+    image: ({ className, size }: IconProps) => (
+      <svg className={`${getSizeClasses(size)} text-purple-500 ${className || ''}`} fill="currentColor" viewBox="0 0 20 20">
+        <path fillRule="evenodd" d="M4 3a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V5a2 2 0 00-2-2H4zm12 12H4l4-8 3 6 2-4 3 6z" clipRule="evenodd" />
+      </svg>
+    ),
+    video: ({ className, size }: IconProps) => (
+      <svg className={`${getSizeClasses(size)} text-pink-500 ${className || ''}`} fill="currentColor" viewBox="0 0 20 20">
+        <path d="M2 6a2 2 0 012-2h6a2 2 0 012 2v8a2 2 0 01-2 2H4a2 2 0 01-2-2V6zM14.553 7.106A1 1 0 0014 8v4a1 1 0 00.553.894l2 1A1 1 0 0018 13V7a1 1 0 00-1.447-.894l-2 1z" />
+      </svg>
+    ),
+    archive: ({ className, size }: IconProps) => (
+      <svg className={`${getSizeClasses(size)} text-yellow-500 ${className || ''}`} fill="currentColor" viewBox="0 0 20 20">
+        <path d="M4 3a2 2 0 100 4h12a2 2 0 100-4H4z" />
+        <path fillRule="evenodd" d="M3 8h14v7a2 2 0 01-2 2H5a2 2 0 01-2-2V8zm5 3a1 1 0 011-1h2a1 1 0 110 2H9a1 1 0 01-1-1z" clipRule="evenodd" />
+      </svg>
+    ),
+    link: ({ className, size }: IconProps) => (
+      <svg className={`${getSizeClasses(size)} text-azul-una ${className || ''}`} fill="none" stroke="currentColor" viewBox="0 0 20 20">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M11.536 8.464a4 4 0 00-5.657 0l-3 3a4 4 0 005.657 5.657l1.5-1.5m-.586-4.242a4 4 0 005.657 0l3-3a4 4 0 00-5.657-5.657l-1.5 1.5" />
+      </svg>
+    ),
+    other: ({ className, size }: IconProps) => (
+      <svg className={`${getSizeClasses(size)} text-gris-una ${className || ''}`} fill="currentColor" viewBox="0 0 20 20">
+        <path fillRule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4z" clipRule="evenodd" />
       </svg>
     ),
   },

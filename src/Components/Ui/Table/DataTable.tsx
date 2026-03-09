@@ -137,12 +137,12 @@ export const DataTable = React.memo(<T extends Record<string, unknown>>({
           <div className="flex flex-col justify-between gap-4 mb-4 lg:flex-row lg:items-center">
             <div className="flex-1">
               {title && (
-                <h5 className="block font-sans text-xl antialiased font-semibold leading-snug tracking-normal text-blue-gray-900">
+                <h5 className={`block font-sans antialiased font-semibold leading-snug tracking-normal text-negro-una-2 ${TYPOGRAPHY.table.caption}`}>
                   {title}
                 </h5>
               )}
               {description && (
-                <p className="block mt-1 font-sans text-base antialiased font-normal leading-relaxed text-gris-una-2">
+                <p className={`block mt-1 font-sans antialiased font-normal leading-relaxed text-gris-una-2 ${TYPOGRAPHY.modal.body}`}>
                   {description}
                 </p>
               )}
@@ -182,9 +182,7 @@ export const DataTable = React.memo(<T extends Record<string, unknown>>({
       {/* Tabla */}
       <div className="pt-0 pb-6 px-0 overflow-x-auto lg:overflow-x-visible custom-scrollbar">
         {loading ? (
-          <div className="flex flex-col items-center justify-center py-12 gap-3">
-            <LoadingSpinner size="lg" />
-          </div>
+          <LoadingSpinner variant="paging" />
         ) : data.length === 0 ? (
           <EmptyState
             variant={searchQuery ? 'search' : 'document'}

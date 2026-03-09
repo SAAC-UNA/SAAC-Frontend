@@ -36,5 +36,5 @@ export { CreateExtensionRequestModal } from './Modals/CreateExtensionRequestModa
 export { ReviewExtensionRequestModal } from './Modals/ReviewExtensionRequestModal';
 
 // HU-008: Componentes de subida de archivos
-export { DropZone, FileTypeIcon, FileUploader, FileList, FileUploadProgress } from './Upload';
-export type { FileUploadProgressItem } from './Upload';
+export { DropZone, FileTypeIcon, FileUploader, FileList, FileUploadProgress, useFileUpload } from './Upload';
+export type { FileUploadProgressItem, UseFileUploadReturn } from './Upload';

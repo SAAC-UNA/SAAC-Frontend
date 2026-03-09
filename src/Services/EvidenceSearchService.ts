@@ -35,15 +35,17 @@ interface BackendResponsable {
 
 interface BackendEvidenceResult {
   evidencia_id: number;
+  criterio_id?: number;
   nomenclatura: string;
   descripcion: string;
+  // El backend devuelve estado_evidencia_id como campo de primer nivel (EvidenceResource)
+  estado_evidencia_id?: number;
   criterion?: {  // Backend usa 'criterion' no 'criterio'
     id: number;
     nomenclatura: string;
     descripcion: string;
   };
   estado_evidencia?: {
-    estado_evidencia_id?: number;
     nombre?: string;
   };
   responsables?: BackendResponsable[];
@@ -234,14 +236,15 @@ export const evidenceSearchService = {
 export function mapBackendToFrontend(backendData: BackendEvidenceResult) {
   return {
     evidencia_id: backendData.evidencia_id,
+    criterio_id: backendData.criterio_id ?? 0,
+    nomenclatura: backendData.nomenclatura || '',
     criterio_nomenclatura: backendData.criterion?.nomenclatura || 'N/A',
     criterio_descripcion: backendData.criterion?.descripcion || 'Sin descripción',
     descripcion: backendData.descripcion,
     responsables: backendData.responsables || [], // Array completo de responsables
     fecha_publicacion: backendData.created_at || backendData.fecha_publicacion,
-    estado: (backendData.estado_evidencia?.estado_evidencia_id 
-      ? ESTADO_ID_TO_FRONTEND[backendData.estado_evidencia.estado_evidencia_id] 
-      : null) || 'pendiente',
+    // estado_evidencia_id viene como campo de primer nivel en EvidenceResource
+    estado: ESTADO_ID_TO_FRONTEND[backendData.estado_evidencia_id ?? 0] || 'pendiente',
     archivos_count: backendData.archivos_count || 0,
     enlaces_count: backendData.enlaces_count || 0,
     roles_acceso: [],  // Por ahora no viene del backend

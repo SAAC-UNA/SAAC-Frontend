@@ -5,7 +5,6 @@
 
 import React, { useRef, useState, useCallback } from 'react';
 import { SystemIcons } from '@/Components/Ui/Icons/SystemIcons';
-import { TYPOGRAPHY } from '@/constants/Typography';
 import { formatFileSize, MAX_FILE_SIZE, MAX_FILES_PER_UPLOAD } from '@/Types/FileTypes';
 
 interface DropZoneProps {
@@ -66,13 +65,12 @@ export const DropZone: React.FC<DropZoneProps> = ({
 
   return (
     <div
-      onClick={() => !disabled && fileInputRef.current?.click()}
       onDragEnter={handleDragEnter}
       onDragLeave={handleDragLeave}
       onDragOver={handleDragOver}
       onDrop={handleDrop}
       className={[
-        'flex flex-col items-center gap-4 p-8',
+        'relative flex items-center gap-4 px-4 py-3',
         'border-2 border-dashed rounded-corner',
         'transition-colors duration-200 select-none',
         isDragging
@@ -87,27 +85,21 @@ export const DropZone: React.FC<DropZoneProps> = ({
         multiple
         accept={accept}
         disabled={disabled}
-        className="hidden"
+        data-testid="file-input"
+        className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
         onChange={handleInputChange}
       />
 
-      {/* Ícono con contenedor estilo Untitled UI */}
-      <div className="p-3 rounded-corner border border-gris-una/20 bg-blanco-una shadow-sm">
-        {SystemIcons.interface.upload({ size: 'lg', className: 'text-gris-una' })}
+      {/* Ícono + texto */}
+      <div className="flex-shrink-0 p-2 rounded-corner border border-gris-una/20 bg-blanco-una shadow-sm">
+        {SystemIcons.modal.document({ size: 'md', className: 'text-gris-una' })}
       </div>
-
-      {/* Texto */}
-      <div className="text-center space-y-1">
-        <p className={TYPOGRAPHY.body}>
-          <span className="font-semibold text-gris-una">Haga clic para subir</span>
-          {' '}
-          <span className="text-gris-una">o arrastre aquí</span>
+      <div>
+        <p className="text-sm font-semibold text-negro-una-2">
+          Arrastre archivos aquí para subirlos
         </p>
-        <p className={`${TYPOGRAPHY.form.helper} text-gris-una`}>
-          {hint ?? `PDF, Word, Excel, PowerPoint, imágenes, videos (máx. ${formatFileSize(MAX_FILE_SIZE)})`}
-        </p>
-        <p className={`${TYPOGRAPHY.form.helper} text-gris-una`}>
-          Hasta {maxFiles} archivos a la vez
+        <p className="text-xs text-gris-una mt-0.5">
+          {hint ?? `Hasta ${maxFiles} archivos · máx. ${formatFileSize(MAX_FILE_SIZE)} por archivo`}
         </p>
       </div>
     </div>

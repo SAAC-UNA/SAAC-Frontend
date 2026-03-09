@@ -4,9 +4,8 @@
  * HU008 - Subida de Evidencias al Sistema
  */
 
-import React, { useState, useCallback } from 'react';
+import React from 'react';
 import {
-  validateFile,
   formatFileSize,
   ALLOWED_FILE_EXTENSIONS,
   ALLOWED_MIME_TYPES,
@@ -14,10 +13,14 @@ import {
 } from '@/Types/FileTypes';
 import { SystemIcons } from '@/Components/Ui/Icons/SystemIcons';
 import { Button } from '@/Components/Ui/Buttons/Button';
-import { useToast } from '@/Context/ToastContext';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/Components/Ui/Feedback/Tooltip';
 import { TYPOGRAPHY } from '@/constants/Typography';
+import { DataTable, type DataTableColumn } from '@/Components/Ui/Table/DataTable';
 import { DropZone } from './DropZone';
+import { FileTypeIcon } from './FileTypeIcon';
+import { useFileUpload } from './useFileUpload';
+
+type SelectedRow = Record<string, unknown> & { _file: File; _index: number };
 
 interface FileUploaderProps {
   onFilesSelected: (files: File[]) => void;
@@ -37,86 +40,13 @@ export const FileUploader: React.FC<FileUploaderProps> = ({
   ].join(','),
   className = '',
 }) => {
-  const { showToast } = useToast();
-  const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
-  const [validationErrors, setValidationErrors] = useState<Record<string, string>>({});
-
-  const handleNewFiles = useCallback(
-    (rawFiles: File[]) => {
-      if (rawFiles.length === 0) return;
-
-      const newErrors: Record<string, string> = {};
-      const validFiles: File[] = [];
-
-      rawFiles.forEach((file) => {
-        const validation = validateFile(file);
-        if (!validation.isValid) {
-          newErrors[file.name] = validation.error ?? 'Error de validación';
-        } else {
-          validFiles.push(file);
-        }
-      });
-
-      // Mostrar toast por cada archivo rechazado
-      const rejectedNames = Object.keys(newErrors);
-      if (rejectedNames.length > 0) {
-        showToast({
-          type: 'error',
-          title: rejectedNames.length === 1
-            ? 'Archivo no permitido'
-            : `${rejectedNames.length} archivos no permitidos`,
-          message: rejectedNames.length === 1
-            ? newErrors[rejectedNames[0]]
-            : `Formatos no permitidos: ${rejectedNames.join(', ')}`,
-        });
-      }
-
-      if (selectedFiles.length + validFiles.length > maxFiles) {
-        showToast({
-          type: 'error',
-          title: 'Límite de archivos excedido',
-          message: `No puede seleccionar más de ${maxFiles} archivos a la vez.`,
-        });
-        return;
-      }
-
-      setValidationErrors(newErrors);
-
-      if (validFiles.length > 0) {
-        const updated = [...selectedFiles, ...validFiles];
-        setSelectedFiles(updated);
-        onFilesSelected(updated);
-      }
-    },
-    [selectedFiles, maxFiles, onFilesSelected, showToast],
-  );
-
-  const removeFile = useCallback(
-    (index: number) => {
-      const updated = selectedFiles.filter((_, i) => i !== index);
-      setSelectedFiles(updated);
-      onFilesSelected(updated);
-      const fileName = selectedFiles[index].name;
-      setValidationErrors((prev) => {
-        const next = { ...prev };
-        delete next[fileName];
-        return next;
-      });
-    },
-    [selectedFiles, onFilesSelected],
-  );
-
-  const clearAll = useCallback(() => {
-    setSelectedFiles([]);
-    setValidationErrors({});
-    onFilesSelected([]);
-  }, [onFilesSelected]);
+  const { files: selectedFiles, errors: validationErrors, addFiles, removeFile, clearAll } = useFileUpload(onFilesSelected, maxFiles);
 
   return (
     <div className={`w-full space-y-4 ${className}`}>
       {/* Zona de arrastre y diseño Untitled UI */}
       <DropZone
-        onFilesSelected={handleNewFiles}
+        onFilesSelected={addFiles}
         disabled={disabled}
         accept={accept}
         maxFiles={maxFiles}
@@ -139,47 +69,76 @@ export const FileUploader: React.FC<FileUploaderProps> = ({
             </Button>
           </div>
 
-          <div className="space-y-2">
-            {selectedFiles.map((file, index) => (
-              <div
-                key={`${file.name}-${index}`}
-                className="flex items-center gap-3 p-3 bg-blanco-una rounded-corner border border-gris-una/20"
-              >
-                {/* ícono */}
-                {SystemIcons.modal.document({ size: 'lg', className: 'text-azul-una flex-shrink-0' })}
+          {(() => {
+            const fileRows: SelectedRow[] = selectedFiles.map((file, index) => ({
+              _file: file,
+              _index: index,
+              name: file.name,
+              size: file.size,
+            }));
 
-                {/* Info */}
-                <div className="flex-1 min-w-0">
-                  <p className={`${TYPOGRAPHY.body} font-medium text-negro-una-2 truncate`}>
-                    {file.name}
-                  </p>
-                  <p className={`${TYPOGRAPHY.form.helper} text-gris-una`}>
-                    {formatFileSize(file.size)}
-                  </p>
-                  {validationErrors[file.name] && (
-                    <p className={`${TYPOGRAPHY.form.helper} text-rojo-una mt-0.5`}>
-                      {validationErrors[file.name]}
-                    </p>
-                  )}
-                </div>
+            const columns: DataTableColumn<SelectedRow>[] = [
+              {
+                key: 'name',
+                header: 'Nombre',
+                render: (_, item) => {
+                  const { _file: file } = item;
+                  return (
+                    <div className="flex items-center gap-2 min-w-0">
+                      <FileTypeIcon filename={file.name} />
+                      <div className="min-w-0">
+                        <p className={`${TYPOGRAPHY.body} font-medium text-negro-una-2 truncate`}>
+                          {file.name}
+                        </p>
+                        {validationErrors[file.name] && (
+                          <p className={`${TYPOGRAPHY.form.helper} text-rojo-una`}>
+                            {validationErrors[file.name]}
+                          </p>
+                        )}
+                      </div>
+                    </div>
+                  );
+                },
+              },
+              {
+                key: 'size',
+                header: 'Tamaño',
+                align: 'center',
+                render: (_, item) => (
+                  <span className="text-gris-una">{formatFileSize(item._file.size)}</span>
+                ),
+              },
+              {
+                key: 'remove',
+                header: '',
+                align: 'right',
+                render: (_, item) => (
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        onClick={(e) => { e.stopPropagation(); removeFile(item._index); }}
+                      >
+                        {SystemIcons.actions.cancel({ size: 'md', className: 'text-rojo-una' })}
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent side="left">Eliminar archivo</TooltipContent>
+                  </Tooltip>
+                ),
+              },
+            ];
 
-                {/* Eliminar */}
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="sm"
-                      onClick={(e) => { e.stopPropagation(); removeFile(index); }}
-                    >
-                      {SystemIcons.actions.cancel({ size: 'md', className: 'text-rojo-una' })}
-                    </Button>
-                  </TooltipTrigger>
-                  <TooltipContent side="left">Eliminar archivo</TooltipContent>
-                </Tooltip>
-              </div>
-            ))}
-          </div>
+            return (
+              <DataTable<SelectedRow>
+                data={fileRows}
+                columns={columns as any}
+                title=""
+                searchable={false}
+              />
+            );
+          })()}
         </div>
       )}
     </div>

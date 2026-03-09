@@ -4,3 +4,7 @@ export { FileUploader } from './FileUploader';
 export { FileList } from './FileList';
 export { FileUploadProgress } from './FileUploadProgress';
 export type { FileUploadProgressItem } from './FileUploadProgress';
+export { useFileUpload } from './useFileUpload';
+export type { UseFileUploadReturn } from './useFileUpload';
+export { Accordion } from './Accordion';
+export type { ResponsableGroup, EvidenciaEntry } from './Accordion';

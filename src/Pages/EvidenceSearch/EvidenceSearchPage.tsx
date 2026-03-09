@@ -46,7 +46,7 @@ export const EvidenceSearchPage: React.FC = () => {
 
   // Modal de detalles
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [selectedEvidence, setSelectedEvidence] = useState<EvidenceSearchResult | null>(null);
+  const [selectedCriterioId, setSelectedCriterioId] = useState<number | null>(null);
 
   // Cargar datos iniciales
   useEffect(() => {
@@ -100,26 +100,27 @@ export const EvidenceSearchPage: React.FC = () => {
 
       setLoading(false);
 
-      // Mostrar mensaje con cantidad de resultados
-      if (mappedResults.length === 0) {
-        showToast({
-          type: 'info',
-          title: 'No se encontraron evidencias con los filtros aplicados'
-        });
-      } else {
-        showToast({
-          type: 'success',
-          title: `Se encontraron ${response.meta.total} evidencia(s)`
-        });
-      }
+      // TODO: Implementar componente de toast y descomentar
+      // if (mappedResults.length === 0) {
+      //   showToast({
+      //     type: 'info',
+      //     title: 'No se encontraron evidencias con los filtros aplicados'
+      //   });
+      // } else {
+      //   showToast({
+      //     type: 'success',
+      //     title: `Se encontraron ${response.meta.total} evidencia(s)`
+      //   });
+      // }
     } catch (error) {
       setLoading(false);
       setFilteredResults([]);
       setDisplayedResults([]);
-      showToast({
-        type: 'error',
-        title: 'Error al buscar evidencias. Intente nuevamente.'
-      });
+      // TODO: Implementar componente de toast y descomentar
+      // showToast({
+      //   type: 'error',
+      //   title: 'Error al buscar evidencias. Intente nuevamente.'
+      // });
       console.error('Error en búsqueda:', error);
     }
   }, [showToast, currentPage, itemsPerPage]);
@@ -136,16 +137,18 @@ export const EvidenceSearchPage: React.FC = () => {
       }
 
       setLoading(false);
-      showToast({
-        type: 'success',
-        title: 'Archivo descargado exitosamente'
-      });
+      // TODO: Implementar componente de toast y descomentar
+      // showToast({
+      //   type: 'success',
+      //   title: 'Archivo descargado exitosamente'
+      // });
     } catch (error) {
       setLoading(false);
-      showToast({
-        type: 'error',
-        title: 'Error al exportar. Intente nuevamente.'
-      });
+      // TODO: Implementar componente de toast y descomentar
+      // showToast({
+      //   type: 'error',
+      //   title: 'Error al exportar. Intente nuevamente.'
+      // });
       console.error('Error en exportación:', error);
     }
   };
@@ -154,14 +157,14 @@ export const EvidenceSearchPage: React.FC = () => {
   const handleViewDetails = (evidenceId: number) => {
     const evidence = displayedResults.find(e => e.evidencia_id === evidenceId);
     if (evidence) {
-      setSelectedEvidence(evidence);
+      setSelectedCriterioId(evidence.criterio_id);
       setIsModalOpen(true);
     }
   };
 
   const handleCloseModal = () => {
     setIsModalOpen(false);
-    setSelectedEvidence(null);
+    setSelectedCriterioId(null);
   };
 
   const moduleInfo = getModuleInfo('evidence_search');
@@ -265,7 +268,7 @@ export const EvidenceSearchPage: React.FC = () => {
       <EvidenceDetailsModal
         isOpen={isModalOpen}
         onClose={handleCloseModal}
-        evidence={selectedEvidence}
+        criterioId={selectedCriterioId}
       />
     </ScreenContainer>
   );

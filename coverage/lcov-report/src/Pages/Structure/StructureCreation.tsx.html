@@ -25,28 +25,28 @@
             <div class='fl pad1y space-right2'>
                 <span class="strong">0% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>0/127</span>
+                <span class='fraction'>0/131</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
                 <span class="strong">0% </span>
                 <span class="quiet">Branches</span>
-                <span class='fraction'>0/100</span>
+                <span class='fraction'>0/105</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
                 <span class="strong">0% </span>
                 <span class="quiet">Functions</span>
-                <span class='fraction'>0/32</span>
+                <span class='fraction'>0/33</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
                 <span class="strong">0% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>0/118</span>
+                <span class='fraction'>0/122</span>
             </div>
         
             
@@ -495,7 +495,15 @@
 <a name='L430'></a><a href='#L430'>430</a>
 <a name='L431'></a><a href='#L431'>431</a>
 <a name='L432'></a><a href='#L432'>432</a>
-<a name='L433'></a><a href='#L433'>433</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
+<a name='L433'></a><a href='#L433'>433</a>
+<a name='L434'></a><a href='#L434'>434</a>
+<a name='L435'></a><a href='#L435'>435</a>
+<a name='L436'></a><a href='#L436'>436</a>
+<a name='L437'></a><a href='#L437'>437</a>
+<a name='L438'></a><a href='#L438'>438</a>
+<a name='L439'></a><a href='#L439'>439</a>
+<a name='L440'></a><a href='#L440'>440</a>
+<a name='L441'></a><a href='#L441'>441</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -521,6 +529,12 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -533,6 +547,10 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -896,8 +914,6 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -929,13 +945,13 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js">import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Button } from '@/Components/Ui/Button';
-import { Input } from '@/Components/Ui/Input';
-import { ScreenContainer } from '@/Components/Ui/ScreenContainer';
-import { CustomSelect } from '@/Components/Ui/SingleSelect';
+import { Button } from '@/Components/Ui/Buttons/Button';
+import { Input } from '@/Components/Ui/Forms/Input';
+import { ScreenContainer } from '@/Components/Ui/Layout/ScreenContainer';
+import { CustomSelect } from '@/Components/Ui/Forms/SingleSelect';
 import { useStructure } from '@/Hooks/UseStructure';
-import { SuccessModal } from '@/Components/Ui/SuccessModal';
-import { Textarea } from '@/Components/Ui/Textarea';
+import { SuccessModal } from '@/Components/Ui/Modals/SuccessModal';
+import { Textarea } from '@/Components/Ui/Forms/Textarea';
 import type { 
   StructureElement, 
   CreateElementForm, 
@@ -949,6 +965,16 @@ import {
   getRequiredParentType,
   getDescriptionMaxLength
 } from '@/Constants/StructureConstants';
+&nbsp;
+/**
+ * Función auxiliar para truncar texto largo
+ */
+const truncateText = <span class="cstat-no" title="statement not covered" ><span class="fstat-no" title="function not covered" >(t</span>ext: string, maxLength: number = <span class="branch-0 cbranch-no" title="branch not covered" >25)</span>: string =&gt; {</span>
+<span class="cstat-no" title="statement not covered" >  if (!text || text.length &lt;= maxLength) {</span>
+<span class="cstat-no" title="statement not covered" >    return text;</span>
+  }
+<span class="cstat-no" title="statement not covered" >  return text.substring(0, maxLength).trim() + '...';</span>
+};
 &nbsp;
 /**
  * Interface para errores de validación del formulario
@@ -1349,11 +1375,9 @@ const handleSubmit = <span class="cstat-no" title="statement not covered" ><span
       {/* Modal de éxito */}
       &lt;SuccessModal
         isOpen={successModalState.isOpen}
-        title="¡Elemento creado exitosamente!"
-        message={`El elemento "${successModalState.elementName}" ha sido agregado correctamente`}
-        onClose={handleSuccessModalClose}
+        title="Elemento creado"
+        message={`El elemento "${truncateText(successModalState.elementName)}" ha sido agregado correctamente`}        onClose={handleSuccessModalClose}
         autoClose={true}
-        autoCloseDelay={3000}
       /&gt;
     &lt;/&gt;
   );
@@ -1366,7 +1390,7 @@ export default StructureCreation;</pre></td></tr></table></pre>
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2025-10-19T18:33:03.308Z
+                at 2026-03-08T22:36:17.162Z
             </div>
         <script src="../../../prettify.js"></script>
         <script>

@@ -188,13 +188,7 @@ const RoleForm: React.FC = () => {
   const renderContent = () => {
     // Estado de carga del rol (solo en modo edición)
     if (isLoadingRole) {
-      return (
-        <ScreenContainer>
-          <div className="text-center py-12">
-            <LoadingSpinner size="lg" className="mx-auto mb-4" />
-          </div>
-        </ScreenContainer>
-      );
+      return <LoadingSpinner variant='paging' />;
     }
 
     // Estado de error al cargar rol (solo en modo edición)

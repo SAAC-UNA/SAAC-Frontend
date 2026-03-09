@@ -57,6 +57,9 @@ export interface PaginationParams {
 // Resultado de búsqueda de evidencia individual
 export interface EvidenceSearchResult {
   evidencia_id: number;
+  criterio_id: number;
+  // Nomenclatura propia de la evidencia (ej. "E-001")
+  nomenclatura: string;
   criterio_nomenclatura: string;
   criterio_descripcion: string;
   descripcion: string;
@@ -156,7 +159,7 @@ export const EVIDENCE_STATUS_LABELS: Record<EvidencePublicationStatus, string> =
 
 // Clases badge usando las variables CSS definidas en index.css
 export const EVIDENCE_STATUS_BADGE: Record<EvidencePublicationStatus, string> = {
-  pendiente: 'bg-[var(--color-inactive-light)] text-gris-una',
+  pendiente: 'bg-[var(--color-gris-light)] text-gris-una',
   en_proceso: 'bg-[var(--color-warning-ring)] text-warning-dark',
   aprobado: 'bg-[var(--color-verde-ring)] text-verde-dark',
   rechazado: 'bg-[var(--color-error-ring)] text-error-dark',

@@ -8,7 +8,6 @@
 import React from 'react';
 import { formatFileSize } from '@/Types/FileTypes';
 import { SystemIcons } from '@/Components/Ui/Icons/SystemIcons';
-import { LoadingSpinner } from '@/Components/Ui/Feedback/Loading';
 import { Button } from '@/Components/Ui/Buttons/Button';
 import { FileTypeIcon } from './FileTypeIcon';
 import { TYPOGRAPHY } from '@/constants/Typography';
@@ -90,7 +89,6 @@ const FileProgressItem: React.FC<FileProgressItemProps> = ({ item, index, onCanc
               <span className={`${TYPOGRAPHY.form.helper} font-medium text-azul-una tabular-nums`}>
                 {item.progress}%
               </span>
-              <LoadingSpinner size="sm" variant="uploading" color="primary" />
             </>
           )}
 

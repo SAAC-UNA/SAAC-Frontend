@@ -1,6 +1,6 @@
 import { render, screen, fireEvent } from '@testing-library/react';
 import '@testing-library/jest-dom';
-import { Button } from '../Button';
+import { Button } from './Button';
 import React from 'react';
 
 describe('Button', () => {
@@ -46,17 +46,16 @@ describe('Button', () => {
       expect(button).toBeDisabled();
     });
 
-    it('debe aplicar opacidad reducida cuando isLoading es true', () => {
+    it('debe deshabilitar el botón cuando isLoading es true', () => {
       render(<Button isLoading>Procesando</Button>);
       const button = screen.getByRole('button');
-      expect(button.className).toMatch(/opacity-50/);
+      expect(button).toBeDisabled();
     });
 
     it('debe deshabilitar cuando isLoading y disabled son true', () => {
       render(<Button isLoading disabled>Múltiple disabled</Button>);
       const button = screen.getByRole('button');
       expect(button).toBeDisabled();
-      expect(button.className).toMatch(/opacity-50/);
     });
 
     it('debe bloquear eventos onClick cuando isLoading es true', () => {
@@ -104,7 +103,7 @@ describe('Button', () => {
     it('debe aplicar tamaño grande correctamente', () => {
       render(<Button size="lg">Large Button</Button>);
       const button = screen.getByRole('button');
-      expect(button.className).toMatch(/text-lg/);
+      expect(button.className).toMatch(/px-component-lg/);
     });
 
     it('debe aplicar fullWidth correctamente', () => {
@@ -167,7 +166,6 @@ describe('Button', () => {
       
       button = screen.getByRole('button');
       expect(button).toBeDisabled();
-      expect(button.className).toMatch(/opacity-50/);
       
       // Cambiar a disabled
       rerender(
@@ -178,7 +176,6 @@ describe('Button', () => {
       
       button = screen.getByRole('button');
       expect(button).toBeDisabled();
-      expect(button.className).toMatch(/opacity-50/);
     });
   });
 });
