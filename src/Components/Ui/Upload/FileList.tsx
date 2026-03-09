@@ -6,6 +6,7 @@
 import React, { useState } from 'react';
 import type { FileModel } from '@/Types/FileTypes';
 import { formatFileSize } from '@/Types/FileTypes';
+import { TYPOGRAPHY } from '@/Constants/Typography';
 import { DeleteConfirmationModal } from '@/Components/Ui/Modals/DeleteConfirmationModal';
 import { SystemIcons } from '@/Components/Ui/Icons/SystemIcons';
 import { TableActionButton } from '@/Components/Ui/Buttons/TableActionButton';
@@ -119,8 +120,8 @@ export const FileList: React.FC<FileListProps> = ({
         const file = item as unknown as FileModel;
         return (
           <div className="flex items-center gap-2">
-            <FileTypeIcon filename={file.nombre_original} isLink={file.tipo === 'enlace'} />
-            <span className="font-medium text-negro-una-2 truncate max-w-xs" title={file.nombre_original}>
+            <FileTypeIcon filename={file.nombre_original} isLink={file.tipo === 'enlace'} size="sm" />
+            <span className={`font-medium text-negro-una-2 truncate max-w-xs ${TYPOGRAPHY.table.cell}`} title={file.nombre_original}>
               {file.nombre_original}
             </span>
           </div>
@@ -132,7 +133,7 @@ export const FileList: React.FC<FileListProps> = ({
       header: 'Tipo',
       align: 'center',
       render: (_, item) => (
-        <span className="text-gris-una">{getFileTypeLabel(item as unknown as FileModel)}</span>
+        <span className={`text-gris-una ${TYPOGRAPHY.table.cell}`}>{getFileTypeLabel(item as unknown as FileModel)}</span>
       ),
     },
     {
@@ -141,7 +142,7 @@ export const FileList: React.FC<FileListProps> = ({
       align: 'center',
       render: (_, item) => {
         const file = item as unknown as FileModel;
-        return <span className="text-gris-una">{file.tamanio ? formatFileSize(file.tamanio) : '—'}</span>;
+        return <span className={`text-gris-una ${TYPOGRAPHY.table.cell}`}>{file.tamanio ? formatFileSize(file.tamanio) : '—'}</span>;
       },
     },
     ...(showActions ? [{

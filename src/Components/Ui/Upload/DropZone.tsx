@@ -65,13 +65,12 @@ export const DropZone: React.FC<DropZoneProps> = ({
 
   return (
     <div
-      onClick={() => !disabled && fileInputRef.current?.click()}
       onDragEnter={handleDragEnter}
       onDragLeave={handleDragLeave}
       onDragOver={handleDragOver}
       onDrop={handleDrop}
       className={[
-        'flex items-center gap-4 px-4 py-3',
+        'relative flex items-center gap-4 px-4 py-3',
         'border-2 border-dashed rounded-corner',
         'transition-colors duration-200 select-none',
         isDragging
@@ -86,7 +85,8 @@ export const DropZone: React.FC<DropZoneProps> = ({
         multiple
         accept={accept}
         disabled={disabled}
-        className="hidden"
+        data-testid="file-input"
+        className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
         onChange={handleInputChange}
       />
 

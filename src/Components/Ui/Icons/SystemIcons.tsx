@@ -24,7 +24,10 @@ export interface IconProps {
 }
 
 /**
- * Obtiene las clases de tamaño según el size prop
+/**
+ * Obtiene las clases de tamaño según el size prop.
+ * Retorna string vacío si size no fue pasado explícitamente,
+ * para que className (con ICON_SIZES) sea el único que controla el tamaño.
  *
  * TODO: Una vez todos los íconos hayan migrado al nuevo estándar CSS (index.css),
  * eliminar esta función y el prop `size` de IconProps. Los tamaños se controlarán
@@ -32,15 +35,16 @@ export interface IconProps {
  * size-icon-lg, size-icon-button (definidas en @layer utilities de index.css).
  * También eliminar los tamaños sin variable CSS: 'xs', 'xl', '2xl', '3xl'.
  */
-const getSizeClasses = (size: IconProps['size'] = 'md'): string => {
-  const sizes = {
-    xs: 'w-3 h-3',       // TODO: eliminar, sin variable CSS equivalente
-    sm: 'w-4 h-4',       // TODO: reemplazar por size-icon-sm
-    md: 'w-5 h-5',       // TODO: reemplazar por size-icon-md
-    lg: 'w-6 h-6',       // TODO: reemplazar por size-icon-lg
-    xl: 'w-8 h-8',       // TODO: eliminar, sin variable CSS equivalente
-    '2xl': 'w-12 h-12',  // TODO: eliminar, sin variable CSS equivalente
-    '3xl': 'w-16 h-16'   // TODO: eliminar, sin variable CSS equivalente
+const getSizeClasses = (size?: IconProps['size']): string => {
+  if (!size) return 'flex-shrink-0';
+  const sizes: Record<NonNullable<IconProps['size']>, string> = {
+    xs: 'w-3 h-3 flex-shrink-0',
+    sm: 'w-4 h-4 flex-shrink-0',
+    md: 'w-5 h-5 flex-shrink-0',
+    lg: 'w-6 h-6 flex-shrink-0',
+    xl: 'w-8 h-8 flex-shrink-0',
+    '2xl': 'w-12 h-12 flex-shrink-0',
+    '3xl': 'w-16 h-16 flex-shrink-0'
   };
   return sizes[size];
 };
@@ -976,8 +980,8 @@ export const SystemIcons = {
       </svg>
     ),
     link: ({ className, size }: IconProps) => (
-      <svg className={`${getSizeClasses(size)} text-azul-una ${className || ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
+      <svg className={`${getSizeClasses(size)} text-azul-una ${className || ''}`} fill="none" stroke="currentColor" viewBox="0 0 20 20">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M11.536 8.464a4 4 0 00-5.657 0l-3 3a4 4 0 005.657 5.657l1.5-1.5m-.586-4.242a4 4 0 005.657 0l3-3a4 4 0 00-5.657-5.657l-1.5 1.5" />
       </svg>
     ),
     other: ({ className, size }: IconProps) => (
