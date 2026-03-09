@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { ScreenContainer, PageHeader } from '@/Components/Ui/Index';
-import { Button, LoadingSpinner } from '@/Components/Ui/Index';
+import { LoadingSpinner } from '@/Components/Ui/Index';
+import { ButtonWithTooltip } from '@/Components/Ui/Buttons/ButtonWithTooltip';
 import { getModuleInfo } from '@/Constants/ModuleInfo';
 import { SystemIcons } from '@/Components/Ui/Icons/SystemIcons';
 import { axiosInstance } from '@/Config/axios';
@@ -369,40 +370,39 @@ const FinalReports: React.FC = () => {
       ) : (
         <>
           {/* Selector de proceso y acciones */}
-          <div className="mb-6 space-y-4">
-            <div className="flex gap-4 items-end">
-              <div className="flex-1">
-                <CustomSelect
-                  label="Seleccionar Proceso"
-                  value={selectedProcesoId?.toString() || ''}
-                  placeholder="Seleccione un proceso"
-                  size="sm"
-                  onChange={(value) => setSelectedProcesoId(value ? Number(value) : null)}
-                  options={processes
-                    .filter((proceso: Proceso) => 
-                      proceso.accreditation_cycle?.career_campus?.career?.nombre && 
-                      proceso.accreditation_cycle?.career_campus?.campus?.nombre
-                    )
-                    .map((proceso: Proceso) => ({
-                      value: proceso.proceso_id.toString(),
-                      label: `${proceso.accreditation_cycle.career_campus.career.nombre} - ${proceso.accreditation_cycle.career_campus.campus.nombre} (${proceso.tipo_proceso})`
-                    }))}
-                  maxVisibleItems={5}
-                />
-              </div>
+          <div className="mb-6 flex gap-4 items-end">
+            <div className="flex-1">
+              <CustomSelect
+                label="Seleccionar Proceso"
+                value={selectedProcesoId?.toString() || ''}
+                placeholder="Seleccione un proceso"
+                size="sm"
+                onChange={(value) => setSelectedProcesoId(value ? Number(value) : null)}
+                options={processes
+                  .filter((proceso: Proceso) => 
+                    proceso.accreditation_cycle?.career_campus?.career?.nombre && 
+                    proceso.accreditation_cycle?.career_campus?.campus?.nombre
+                  )
+                  .map((proceso: Proceso) => ({
+                    value: proceso.proceso_id.toString(),
+                    label: `${proceso.accreditation_cycle.career_campus.career.nombre} - ${proceso.accreditation_cycle.career_campus.campus.nombre} (${proceso.tipo_proceso})`
+                  }))}
+                maxVisibleItems={5}
+              />
             </div>
             
             {/* Botones de acción */}
             {selectedProcesoId && criteria.length > 0 && (
-              <div className="flex gap-3">
-                <Button
+              <>
+                <ButtonWithTooltip
                   variant="primary"
                   size="sm"
+                  tooltip="Generar enlaces"
                   onClick={handleGenerateAllLinks}
+                  className="h-9 w-9 max-h-[36px] max-w-[36px]"
                 >
                   <SystemIcons.actions.linkIcon className="w-4 h-4" />
-                  Generar enlaces
-                </Button>
+                </ButtonWithTooltip>
                 <DropdownButton
                   label="Exportar"
                   variant="outline"
@@ -425,7 +425,7 @@ const FinalReports: React.FC = () => {
                     ] as DropdownOption[]
                   )}
                 />
-              </div>
+              </>
             )}
           </div>
 
@@ -433,12 +433,12 @@ const FinalReports: React.FC = () => {
           {selectedProcesoId && (
             <>
               {criteria.length === 0 ? (
-                <div className="bg-white shadow sm:rounded-lg p-8 text-center">
-                  <SystemIcons.interface.informationCircle className="mx-auto h-12 w-12 text-gray-400" />
-                  <h3 className="mt-2 text-sm font-medium text-gray-900">No hay criterios aprobados</h3>
-                  <p className="mt-1 text-sm text-gray-500">
-                    No se encontraron criterios aprobados para este proceso.
-                  </p>
+                <div className="flex flex-col items-center justify-center py-16">
+                  <div className="flex flex-col items-center">
+                    <SystemIcons.modal.document className="h-24 w-24 text-gris-una mb-4" />
+                    <p className="text-sm font-medium text-negro-una mb-1">No hay datos disponibles</p>
+                    <p className="text-sm text-gris-una">Seleccione un proceso para continuar</p>
+                  </div>
                 </div>
               ) : (
                 <div className="bg-white shadow overflow-hidden sm:rounded-lg">

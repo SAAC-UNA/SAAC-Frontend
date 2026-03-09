@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { ScreenContainer, PageHeader } from '@/Components/Ui/Index';
-import { Button, LoadingSpinner } from '@/Components/Ui/Index';
+import { LoadingSpinner } from '@/Components/Ui/Index';
 import { getModuleInfo } from '@/Constants/ModuleInfo';
 import { SystemIcons } from '@/Components/Ui/Icons/SystemIcons';
 import { axiosInstance } from '@/Config/axios';
@@ -10,7 +10,8 @@ import { SuccessModal } from '@/Components/Ui/Modals/SuccessModal';
 import { CustomSelect } from '@/Components/Ui/Forms/SingleSelect';
 import { Pagination } from '@/Components/Ui/Table/Pagination';
 import { FilterButton, type FilterOption } from '@/Components/Ui/Buttons/FilterButton';
-import { Tooltip, TooltipTrigger, TooltipContent } from '@/Components/Ui/Feedback/Tooltip';
+import { ButtonWithTooltip } from '@/Components/Ui/Buttons/ButtonWithTooltip';
+import { TYPOGRAPHY } from '@/Constants/Typography';
 
 type ApprovalStatus = 'pendiente' | 'aprobado' | 'rechazado';
 
@@ -141,10 +142,9 @@ const BlockApproval: React.FC = () => {
   
   const toggleEvidences = (criterionId: number) => {
     setExpandedCriteria(prev => {
-      const newSet = new Set(prev);
-      if (newSet.has(criterionId)) {
-        newSet.delete(criterionId);
-      } else {
+      const newSet = new Set<number>();
+      // Si el criterio ya está expandido, ciérralo. Si no, ábrelo y cierra los demás
+      if (!prev.has(criterionId)) {
         newSet.add(criterionId);
       }
       return newSet;
@@ -265,7 +265,7 @@ const BlockApproval: React.FC = () => {
             </div>
             
             <FilterButton
-              tooltipText="Filtrar por estado de aprobación"
+              tooltipText="Filtrar por estado"
               options={filtroOptions}
               value={approvalFilter}
               onChange={setApprovalFilter}
@@ -273,31 +273,46 @@ const BlockApproval: React.FC = () => {
           </div>
 
           {/* Tabla de criterios */}
-          {selectedProcesoId && (
+          {!selectedProcesoId ? (
+            <div className="bg-white rounded-lg border border-gray-200 py-16">
+              <div className="text-center">
+                <SystemIcons.modal.document size="lg" className="mx-auto text-gray-400 mb-3" />
+                <p className="text-sm font-medium text-negro-una mb-1">No hay datos disponibles</p>
+                <p className="text-sm text-gris-una">Seleccione un proceso para continuar</p>
+              </div>
+            </div>
+          ) : (
             <>
-              <div className="bg-white shadow overflow-hidden sm:rounded-lg">
-                <table className="min-w-full divide-y divide-gray-200">
-                  <thead className="bg-gray-50">
-                    <tr>
-                      <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">
-                        Criterio
+              <table className="min-w-full bg-white shadow-md rounded-lg overflow-hidden">
+                <thead>
+                  <tr>
+                    <th className="py-4 border-b border-gray-100 text-left pl-8 pr-4">
+                        <p className={`block font-sans antialiased font-normal leading-none text-gris-una opacity-70 ${TYPOGRAPHY.table.header}`}>
+                          Criterio
+                        </p>
                       </th>
-                      <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">
-                        Descripción
+                      <th className="px-4 py-4 border-b border-gray-100 text-center">
+                        <p className={`block font-sans antialiased font-normal leading-none text-gris-una opacity-70 ${TYPOGRAPHY.table.header}`}>
+                          Descripción
+                        </p>
                       </th>
-                      <th className="px-4 py-2 text-center text-xs font-medium text-gray-500 uppercase">
-                        Evidencias
+                      <th className="px-4 py-4 border-b border-gray-100 text-center">
+                        <p className={`block font-sans antialiased font-normal leading-none text-gris-una opacity-70 ${TYPOGRAPHY.table.header}`}>
+                          Evidencias
+                        </p>
                       </th>
-                      <th className="px-4 py-2 text-center text-xs font-medium text-gray-500 uppercase">
-                        Acciones
+                      <th className="pl-4 pr-8 py-4 border-b border-gray-100 text-center">
+                        <p className={`block font-sans antialiased font-normal leading-none text-gris-una opacity-70 ${TYPOGRAPHY.table.header}`}>
+                          Acciones
+                        </p>
                       </th>
                     </tr>
                   </thead>
-                  <tbody className="bg-white divide-y divide-gray-200">
+                  <tbody>
                     {paginatedCriteria.length === 0 ? (
                       <tr>
-                        <td colSpan={4} className="px-4 py-8 text-center text-sm text-gray-500">
-                          No hay criterios disponibles para el filtro seleccionado
+                        <td colSpan={4} className="px-4 py-8 text-center">
+                          <p className="text-sm text-gris-una">No hay criterios disponibles para el filtro seleccionado</p>
                         </td>
                       </tr>
                     ) : (
@@ -308,18 +323,22 @@ const BlockApproval: React.FC = () => {
                         
                         return (
                           <React.Fragment key={criterio.id}>
-                            <tr>
-                              <td className="px-4 py-3 whitespace-nowrap text-sm font-medium text-gray-900">
-                                {criterio.nomenclatura}
+                            <tr className={isExpanded ? '' : 'border-b border-gray-100'}>
+                              <td className="pl-8 pr-4 py-4">
+                                <p className={`block font-sans antialiased font-bold leading-normal text-negro-una-2 ${TYPOGRAPHY.table.cell}`}>
+                                  {criterio.nomenclatura}
+                                </p>
                               </td>
-                              <td className="px-4 py-3 text-sm text-gray-500">
-                                {criterio.descripcion}
+                              <td className="px-4 py-4">
+                                <p className={`block font-sans antialiased font-normal leading-normal text-gris-una ${TYPOGRAPHY.table.cell}`}>
+                                  {criterio.descripcion}
+                                </p>
                               </td>
-                              <td className="px-4 py-3 text-center">
+                              <td className="px-4 py-4 text-center">
                                 {totalEvidencias > 0 ? (
                                   <button
                                     onClick={() => toggleEvidences(criterio.id)}
-                                    className="inline-flex items-center gap-2 px-2.5 py-1 text-xs font-medium text-gray-700 bg-gray-50 hover:bg-gray-100 rounded-md transition-colors whitespace-nowrap"
+                                    className="inline-flex items-center gap-2 px-3 py-1.5 text-xs font-medium text-gray-700 bg-gray-50 hover:bg-gray-100 rounded-md transition-colors"
                                   >
                                     <span>{totalEvidencias} evidencia{totalEvidencias !== 1 ? 's' : ''}</span>
                                     <svg 
@@ -332,70 +351,71 @@ const BlockApproval: React.FC = () => {
                                     </svg>
                                   </button>
                                 ) : (
-                                  <span className="text-sm text-gray-400">Sin evidencias</span>
+                                  <p className={`block font-sans antialiased font-normal leading-normal text-gris-una ${TYPOGRAPHY.table.cell}`}>-</p>
                                 )}
                               </td>
-                              <td className="px-4 py-3 text-center">
+                              <td className="pl-4 pr-8 py-4">
                                 {approvalFilter === 'pendiente' ? (
-                                  <div className="flex gap-2 justify-center">
-                                    <Button
+                                  <div className="flex gap-1.5 justify-center items-center">
+                                    <ButtonWithTooltip
                                       variant="primary"
                                       size="sm"
+                                      tooltip="Aprobar criterio"
                                       onClick={() => handleAprobar(criterio)}
-                                      className="w-24"
+                                      className="relative h-8 w-8 max-h-[32px] max-w-[32px] rounded-lg"
                                     >
-                                      Aprobar
-                                    </Button>
-                                    <Button
+                                      <SystemIcons.interface.checkCircle className="h-4 w-4" />
+                                    </ButtonWithTooltip>
+                                    <ButtonWithTooltip
                                       variant="secondary"
                                       size="sm"
+                                      tooltip="Rechazar criterio"
                                       onClick={() => handleRechazar(criterio)}
-                                      className="w-24"
+                                      className="relative h-8 w-8 max-h-[32px] max-w-[32px] rounded-lg"
                                     >
-                                      Rechazar
-                                    </Button>
+                                      <SystemIcons.interface.xCircle className="h-4 w-4" />
+                                    </ButtonWithTooltip>
                                   </div>
                                 ) : (
-                                  <span className="text-sm text-gray-500">
-                                    {approvalFilter === 'aprobado' ? 'Aprobado' : 'Rechazado'}
-                                  </span>
+                                  <div className="flex justify-center">
+                                    <p className={`block font-sans antialiased font-normal leading-normal text-gris-una ${TYPOGRAPHY.table.cell}`}>
+                                      {approvalFilter === 'aprobado' ? 'Aprobado' : 'Rechazado'}
+                                    </p>
+                                  </div>
                                 )}
                               </td>
                             </tr>
                             
                             {/* Fila expandida con evidencias */}
                             {isExpanded && totalEvidencias > 0 && (
-                              <tr>
-                                <td colSpan={4} className="px-4 py-4 bg-gray-50">
+                              <tr className="border-b border-gray-100">
+                                <td colSpan={4} className="px-8 py-3 bg-gray-50">
                                   <div className="space-y-2">
-                                    <h4 className="text-sm font-medium text-gray-700 mb-3">
+                                    <h4 className={`font-medium text-gray-700 mb-2 ${TYPOGRAPHY.table.cell}`}>
                                       Evidencias del Criterio:
                                     </h4>
                                     <div className="border border-gray-200 rounded-md overflow-hidden bg-white">
                                       {criterionEvidences.map((evidencia: Evidencia) => (
                                         <div
                                           key={evidencia.id}
-                                          className="flex items-center justify-between px-3 py-2 border-b border-gray-100 last:border-b-0 hover:bg-gray-50"
+                                          className="flex items-center justify-between px-4 py-2 border-b border-gray-100 last:border-b-0 hover:bg-gray-50"
                                         >
                                           <div className="flex-1 min-w-0">
-                                            <div className="text-xs text-gray-700 truncate">
+                                            <p className={`text-gray-700 truncate ${TYPOGRAPHY.table.cell}`}>
                                               <span className="font-medium text-gray-900">{evidencia.nomenclatura}</span>
                                               <span className="text-gray-500"> - {evidencia.descripcion}</span>
-                                            </div>
+                                            </p>
                                           </div>
-                                          <Tooltip>
-                                            <TooltipTrigger asChild>
-                                              <button
-                                                onClick={() => handleViewFiles(evidencia)}
-                                                className="ml-3 p-1.5 text-gray-600 hover:text-gray-800 transition-colors rounded-md hover:bg-gray-100"
-                                              >
-                                                <SystemIcons.actions.view className="w-5 h-5" />
-                                              </button>
-                                            </TooltipTrigger>
-                                            <TooltipContent side="left">
-                                              Ver archivos asociados
-                                            </TooltipContent>
-                                          </Tooltip>
+                                          <ButtonWithTooltip
+                                            variant="tableView"
+                                            size="sm"
+                                            tooltip="Ver archivos asociados"
+                                            tooltipPosition="left"
+                                            onClick={() => handleViewFiles(evidencia)}
+                                            className="ml-3 relative h-9 w-9 max-h-[36px] max-w-[36px]"
+                                          >
+                                            <SystemIcons.actions.view className="h-5 w-5" />
+                                          </ButtonWithTooltip>
                                         </div>
                                       ))}
                                     </div>
@@ -408,8 +428,7 @@ const BlockApproval: React.FC = () => {
                       })
                     )}
                   </tbody>
-                </table>
-              </div>
+              </table>
 
               {/* Paginación */}
               {totalPages > 1 && (
