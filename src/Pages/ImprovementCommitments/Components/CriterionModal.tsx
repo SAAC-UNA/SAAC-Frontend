@@ -166,8 +166,8 @@ export const CriterionModal: React.FC<CriterionModalProps> = ({
       size="lg"
     >
       {loading ? (
-        <div className="flex justify-center items-center py-12">
-          <LoadingSpinner size="lg" />
+        <div className="relative py-12 min-h-[300px]">
+          <LoadingSpinner variant="paging" />
         </div>
       ) : (
         <div className="space-y-6">

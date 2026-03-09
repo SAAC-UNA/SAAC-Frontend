@@ -370,11 +370,8 @@ const validateForm = (): boolean => {
 
   if (isLoading || !currentElement) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="text-center">
-          <LoadingSpinner size="lg" color="gray" className="mx-auto mb-4" />
-          <p className="text-gris-una">Cargando...</p>
-        </div>
+      <div className="relative min-h-screen">
+        <LoadingSpinner variant="paging" />
       </div>
     );
   }

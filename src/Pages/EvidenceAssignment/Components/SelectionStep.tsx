@@ -198,9 +198,8 @@ export const SelectionStep: React.FC<SelectionStepProps> = ({
 
   if (criteriaLoading || usersLoading) {
     return (
-      <div className="text-center py-12">
-        <LoadingSpinner size="lg" className="mx-auto mb-4" />
-        <p className="text-gris-una">Cargando información...</p>
+      <div className="relative py-12 min-h-[400px]">
+        <LoadingSpinner variant="paging" />
       </div>
     );
   }

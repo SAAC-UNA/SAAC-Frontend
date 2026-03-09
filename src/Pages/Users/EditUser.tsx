@@ -168,10 +168,8 @@ const EditUserPage: React.FC = () => {
   if (isLoadingUser) {
     return (
       <ScreenContainer>
-        <div className="flex items-center justify-center min-h-screen">
-          <div className="text-center">
-            <LoadingSpinner size="lg" />
-          </div>
+        <div className="relative min-h-screen">
+          <LoadingSpinner variant="paging" />
         </div>
       </ScreenContainer>
     );

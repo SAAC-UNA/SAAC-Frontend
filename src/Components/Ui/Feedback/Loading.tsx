@@ -43,7 +43,7 @@ export const LoadingSpinner: React.FC<LoadingSpinnerProps> = ({
   // Se posiciona como overlay fijo centrado en pantalla, independientemente del contenedor padre
   if (variant === 'paging') {
     return (
-      <div className={cn('absolute inset-0 z-40 flex items-center justify-center', className)} role="status" aria-label="Cargando...">
+      <div className={cn('absolute inset-0 z-40 flex items-center justify-center pt-32', className)} role="status" aria-label="Cargando...">
         <div className="saac-loader-paging" />
       </div>
     );

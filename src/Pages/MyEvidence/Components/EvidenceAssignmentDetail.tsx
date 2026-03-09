@@ -145,8 +145,8 @@ export const EvidenceAssignmentDetail: React.FC<EvidenceAssignmentDetailProps> =
         cancelLabel="Cerrar"
         size="xl"
       >
-        <div className="flex justify-center py-8">
-          <LoadingSpinner size="lg" />
+        <div className="relative py-8 min-h-[300px]">
+          <LoadingSpinner variant="paging" />
         </div>
       </DetailsModal>
     );

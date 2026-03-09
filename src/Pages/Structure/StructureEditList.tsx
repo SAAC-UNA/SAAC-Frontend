@@ -148,11 +148,8 @@ const StructureEditList: React.FC = () => {
           {/* Contenido de la lista */}
           <div>
             {isLoading ? (
-              <div className="flex items-center justify-center py-12">
-                <div className="text-center">
-                  <LoadingSpinner size="lg" color="gray" className="mx-auto mb-4" />
-                  <p className="text-gris-una">Cargando...</p>
-                </div>
+              <div className="relative py-12 min-h-[400px]">
+                <LoadingSpinner variant="paging" />
               </div>
             ) : filteredElements.length === 0 ? (
               <div className="text-center py-12">

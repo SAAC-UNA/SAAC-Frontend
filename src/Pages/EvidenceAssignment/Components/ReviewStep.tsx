@@ -246,8 +246,8 @@ export const ReviewStep: React.FC<ReviewStepProps> = ({
       </div>
 
       {loading ? (
-        <div className="flex flex-col items-center justify-center py-12">
-          <LoadingSpinner size="lg" className="mb-4" />
+        <div className="relative py-12 min-h-[400px]">
+          <LoadingSpinner variant="paging" />
         </div>
       ) : (
         <>

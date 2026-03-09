@@ -362,7 +362,7 @@ export const DatePicker: React.FC<DatePickerProps> = ({
                 <select
                   value={currentDate.getMonth()}
                   onChange={(e) => handleMonthChange(parseInt(e.target.value))}
-                  className={`${TYPOGRAPHY.form.input} font-semibold text-negro-una bg-transparent border border-gris-una/20 rounded px-2 py-1 hover:border-gris-una/40 focus:outline-none focus:ring-1 focus:ring-azul-una/30 cursor-pointer`}
+                  className={`${TYPOGRAPHY.form.input} font-semibold text-negro-una bg-white border border-gris-una/20 rounded px-2 py-1 hover:border-gris-una/40 focus:outline-none focus:ring-1 focus:ring-azul-una/30 cursor-pointer`}
                   aria-label="Seleccionar mes"
                 >
                   {monthNames.map((month, index) => (
@@ -376,7 +376,7 @@ export const DatePicker: React.FC<DatePickerProps> = ({
                 <select
                   value={currentDate.getFullYear()}
                   onChange={(e) => handleYearChange(parseInt(e.target.value))}
-                  className={`${TYPOGRAPHY.form.input} font-semibold text-negro-una bg-transparent border border-gris-una/20 rounded px-2 py-1 hover:border-gris-una/40 focus:outline-none focus:ring-1 focus:ring-azul-una/30 cursor-pointer`}
+                  className={`${TYPOGRAPHY.form.input} font-semibold text-negro-una bg-white border border-gris-una/20 rounded px-2 py-1 hover:border-gris-una/40 focus:outline-none focus:ring-1 focus:ring-azul-una/30 cursor-pointer`}
                   aria-label="Seleccionar año"
                 >
                   {yearRange.map((year) => (

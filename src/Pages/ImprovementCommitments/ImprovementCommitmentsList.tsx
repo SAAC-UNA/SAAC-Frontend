@@ -223,11 +223,8 @@ export const ImprovementCommitmentsList: React.FC = () => {
 
         {/* Loading */}
         {loading ? (
-          <div className="flex justify-center items-center py-12">
-            <div className="text-center">
-              <LoadingSpinner size="lg" color="gray" className="mx-auto mb-4" />
-              <p className="text-gris-una">Cargando compromisos...</p>
-            </div>
+          <div className="relative py-12 min-h-[400px]">
+            <LoadingSpinner variant="paging" />
           </div>
         ) : error ? (
           /* Error State */

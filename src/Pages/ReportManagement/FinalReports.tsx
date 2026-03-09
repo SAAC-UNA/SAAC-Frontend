@@ -361,11 +361,8 @@ const FinalReports: React.FC = () => {
         description={moduleInfo.description}
       />
       {isLoading ? (
-        <div className="flex justify-center items-center py-12">
-          <div className="text-center">
-            <LoadingSpinner size="lg" color="gray" className="mx-auto mb-4" />
-            <p className="text-gris-una">Cargando información...</p>
-          </div>
+        <div className="relative py-12 min-h-[400px]">
+          <LoadingSpinner variant="paging" />
         </div>
       ) : (
         <>

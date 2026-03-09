@@ -266,8 +266,8 @@ const EvidenceAssignment: React.FC = () => {
       <div className={LAYOUT.FORM_CONTAINER}>
         <div className={LAYOUT.FLEX_GROW}>
           {isSubmitting ? (
-            <div className="text-center py-12">
-              <LoadingSpinner size="lg" className="mx-auto mb-4" />
+            <div className="relative py-12 min-h-[400px]">
+              <LoadingSpinner variant="paging" />
             </div>
           ) : (
             renderCurrentStep()

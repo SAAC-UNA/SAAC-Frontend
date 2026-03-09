@@ -174,8 +174,8 @@ export const EditUserForm: React.FC<EditUserFormProps> = ({
                 </div>
                 
                 {isLoadingRoles ? (
-                  <div className="flex items-center justify-center py-8">
-                    <LoadingSpinner size="sm" />
+                  <div className="relative py-8 min-h-[200px]">
+                    <LoadingSpinner variant="paging" />
                   </div>
                 ) : (
                   <CustomSelect
