@@ -23,30 +23,30 @@
         <div class='clearfix'>
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">0% </span>
+                <span class="strong">33.33% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>0/10</span>
+                <span class='fraction'>4/12</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">0% </span>
+                <span class="strong">12.5% </span>
                 <span class="quiet">Branches</span>
-                <span class='fraction'>0/6</span>
+                <span class='fraction'>1/8</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">0% </span>
+                <span class="strong">33.33% </span>
                 <span class="quiet">Functions</span>
-                <span class='fraction'>0/2</span>
+                <span class='fraction'>1/3</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">0% </span>
+                <span class="strong">40% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>0/9</span>
+                <span class='fraction'>4/10</span>
             </div>
         
             
@@ -105,7 +105,10 @@
 <a name='L40'></a><a href='#L40'>40</a>
 <a name='L41'></a><a href='#L41'>41</a>
 <a name='L42'></a><a href='#L42'>42</a>
-<a name='L43'></a><a href='#L43'>43</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
+<a name='L43'></a><a href='#L43'>43</a>
+<a name='L44'></a><a href='#L44'>44</a>
+<a name='L45'></a><a href='#L45'>45</a>
+<a name='L46'></a><a href='#L46'>46</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -117,20 +120,23 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -159,21 +165,24 @@ import type { ReactNode } from 'react';
 &nbsp;
 interface ProtectedRouteProps {
   children: ReactNode;
-  requireRole?: 'SuperUsuario' | 'Administrador';
+  requireRole?: 'Superusuario' | 'Administrador' | 'Encargado de Acreditación';
 }
 &nbsp;
-export const ProtectedRoute = <span class="cstat-no" title="statement not covered" ><span class="fstat-no" title="function not covered" >({</span> children, requireRole }: ProtectedRouteProps) =&gt; {</span>
-  const { isAuthenticated, user } = <span class="cstat-no" title="statement not covered" >useAuth();</span>
+export const ProtectedRoute = ({ children, requireRole }: ProtectedRouteProps) =&gt; {
+  const { isAuthenticated, user } = useAuth();
 &nbsp;
   // Si no está autenticado, redirigir a login
-<span class="cstat-no" title="statement not covered" >  if (!isAuthenticated) {</span>
-<span class="cstat-no" title="statement not covered" >    return &lt;Navigate to="/login" replace /&gt;;</span>
+  <span class="missing-if-branch" title="else path not taken" >E</span>if (!isAuthenticated) {
+    return &lt;Navigate to="/login" replace /&gt;;
   }
-&nbsp;
+// TODO cambiar o eliminar este diseño
   // Si requiere un rol específico, validar
 <span class="cstat-no" title="statement not covered" >  if (requireRole) {</span>
+    // Superusuario tiene acceso a todo
+    const isSuperUser = <span class="cstat-no" title="statement not covered" >user?.roles?.some(<span class="fstat-no" title="function not covered" >r </span>=&gt; <span class="cstat-no" title="statement not covered" >r.name === 'Superusuario')</span>;</span>
     const hasRole = <span class="cstat-no" title="statement not covered" >user?.roles?.some(<span class="fstat-no" title="function not covered" >r </span>=&gt; <span class="cstat-no" title="statement not covered" >r.name === requireRole)</span>;</span>
-<span class="cstat-no" title="statement not covered" >    if (!hasRole) {</span>
+    
+<span class="cstat-no" title="statement not covered" >    if (!isSuperUser &amp;&amp; !hasRole) {</span>
 <span class="cstat-no" title="statement not covered" >      return (</span>
         &lt;div style={{ 
           padding: '40px', 
@@ -182,7 +191,7 @@ export const ProtectedRoute = <span class="cstat-no" title="statement not covere
           margin: '100px auto'
         }}&gt;
           &lt;h2&gt;Acceso Denegado&lt;/h2&gt;
-          &lt;p&gt;No tienes permisos para acceder a esta sección.&lt;/p&gt;
+          &lt;p&gt;No tiene permisos para acceder a esta sección.&lt;/p&gt;
         &lt;/div&gt;
       );
     }
@@ -196,7 +205,7 @@ export const ProtectedRoute = <span class="cstat-no" title="statement not covere
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2025-10-19T18:33:03.308Z
+                at 2026-03-08T22:36:17.162Z
             </div>
         <script src="../../../prettify.js"></script>
         <script>

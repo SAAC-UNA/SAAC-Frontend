@@ -8,6 +8,7 @@ import { cn } from '@/Utils/ClassNames';
 import { SystemIcons } from '@/Components/Ui/Icons/SystemIcons';
 import { DataTable, type DataTableColumn } from '@/Components/Ui/Table/DataTable';
 import { TYPOGRAPHY } from '@/Constants/Typography';
+import { TABLE_TRUNCATE } from '@/Constants/TableTruncate';
 import { TableActionButton } from '@/Components/index';
 import { 
   EVIDENCE_STATUS_LABELS, 
@@ -31,6 +32,12 @@ export const EvidenceSearchResultsTable: React.FC<EvidenceSearchResultsTableProp
 }) => {
   const [currentPage, setCurrentPage] = useState(1);
   
+  // Función para truncar texto
+  const truncateText = useCallback((text: string, maxLength: number = 20): string => {
+    if (text.length <= maxLength) return text;
+    return text.substring(0, maxLength) + '...';
+  }, []);
+
   // Función para formatear fecha
   const formatDate = (isoDate: string): string => {
     const date = new Date(isoDate);
@@ -63,11 +70,11 @@ export const EvidenceSearchResultsTable: React.FC<EvidenceSearchResultsTableProp
       header: 'Criterio',
       render: (_, item) => (
         <div className="flex flex-col pl-2 py-1">
-          <p className={`block font-sans antialiased font-bold leading-normal text-negro-una-2 ${TYPOGRAPHY.table.cell}`}>
-            {item.criterio_nomenclatura}
+          <p className={`block font-sans antialiased font-bold leading-normal text-negro-una-2 ${TYPOGRAPHY.table.cell}`} title={item.criterio_nomenclatura}>
+            {truncateText(item.criterio_nomenclatura, TABLE_TRUNCATE.name)}
           </p>
-          <p className={`block font-sans antialiased font-normal leading-normal text-gris-una opacity-70 max-w-xs truncate ${TYPOGRAPHY.table.cell}`}>
-            {item.criterio_descripcion}
+          <p className={`block font-sans antialiased font-normal leading-normal text-gris-una-2 ${TYPOGRAPHY.table.cell}`} title={item.criterio_descripcion}>
+            {truncateText(item.criterio_descripcion, TABLE_TRUNCATE.text)}
           </p>
         </div>
       )
@@ -77,8 +84,8 @@ export const EvidenceSearchResultsTable: React.FC<EvidenceSearchResultsTableProp
       header: 'Descripción',
       render: (_, item) => (
         <div className="flex flex-col pl-2 py-1">
-          <p className={`block font-sans antialiased font-normal leading-normal text-negro-una-2 max-w-md ${TYPOGRAPHY.table.cell}`}>
-            {item.descripcion}
+          <p className={`block font-sans antialiased font-normal leading-normal text-negro-una-2 ${TYPOGRAPHY.table.cell}`} title={item.descripcion}>
+            {truncateText(item.descripcion, TABLE_TRUNCATE.text)}
           </p>
         </div>
       )

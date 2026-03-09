@@ -122,17 +122,12 @@
 <a name='L57'></a><a href='#L57'>57</a>
 <a name='L58'></a><a href='#L58'>58</a>
 <a name='L59'></a><a href='#L59'>59</a>
-<a name='L60'></a><a href='#L60'>60</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">3x</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
+<a name='L60'></a><a href='#L60'>60</a>
+<a name='L61'></a><a href='#L61'>61</a>
+<a name='L62'></a><a href='#L62'>62</a>
+<a name='L63'></a><a href='#L63'>63</a>
+<a name='L64'></a><a href='#L64'>64</a>
+<a name='L65'></a><a href='#L65'>65</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -142,7 +137,7 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">4x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -157,7 +152,22 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">3x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">4x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
@@ -183,33 +193,38 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js">/**
  * Sistema global de tamaños para componentes UI
- * Define tamaños consistentes para texto, padding y border-radius
+ * Define tamaños consistentes usando variables CSS de index.css
+ * 
+ * Las variables base están definidas en @theme en index.css
+ * Las clases de utilidad están en @layer utilities en index.css
  */
+&nbsp;
+import { TYPOGRAPHY } from './Typography';
 &nbsp;
 export const COMPONENT_SIZES = {
   sm: {
-    text: 'text-sm',           // 14px
+    text: TYPOGRAPHY.button,         // 12px - size-button (botones)
+    height: 'h-component',           // 40px - Altura estándar
     padding: {
-      x: 'px-3',               // 12px horizontal
-      y: 'py-2'                // 8px vertical  
-    },
-    borderRadius: 'rounded-[12px]'
+      x: 'px-component-sm',          // 12px horizontal
+      y: 'py-component-sm'           // 8px vertical  
+    }
   },
   md: {
-    text: 'text-base',         // 16px
+    text: TYPOGRAPHY.button,         // 12px - size-button (botones)
+    height: 'h-component',           // 40px - Altura estándar
     padding: {
-      x: 'px-4',               // 16px horizontal
-      y: 'py-3'                // 12px vertical
-    },
-    borderRadius: 'rounded-[15px]'
+      x: 'px-component-md',          // 16px horizontal
+      y: 'py-component-md'           // 12px vertical
+    }
   },
   lg: {
-    text: 'text-lg',           // 18px
+    text: TYPOGRAPHY.button,         // 12px - size-button (botones)
+    height: 'h-component',           // 40px - Altura estándar
     padding: {
-      x: 'px-4',               // 16px horizontal (mismo que md)
-      y: 'py-4'                // 16px vertical
-    },
-    borderRadius: 'rounded-[18px]'
+      x: 'px-component-lg',          // 16px horizontal (mismo que md)
+      y: 'py-component-lg'           // 16px vertical
+    }
   }
 } as const;
 &nbsp;
@@ -220,22 +235,22 @@ export const getComponentSizeClasses = {
   // Para Input y Textarea (sin border-radius específico)
   input: <span class="fstat-no" title="function not covered" >(s</span>ize: keyof typeof COMPONENT_SIZES) =&gt; {
     const s = <span class="cstat-no" title="statement not covered" >COMPONENT_SIZES[size];</span>
-<span class="cstat-no" title="statement not covered" >    return `${s.padding.x} ${s.padding.y} ${s.text}`;</span>
+<span class="cstat-no" title="statement not covered" >    return `${s.height} ${s.padding.x} ${s.text}`;</span>
   },
 &nbsp;
-  // Para Button (con border-radius específico) 
+  // Para Button (sin border-radius - se usa rounded-corner estándar) 
   button: (size: keyof typeof COMPONENT_SIZES) =&gt; {
     const s = COMPONENT_SIZES[size];
-    return `${s.padding.x} ${s.padding.y} ${s.text} ${s.borderRadius}`;
+    return `${s.height} ${s.padding.x} ${s.text}`;
   },
 &nbsp;
   // Para MultiSelect y otros contenedores
   container: <span class="fstat-no" title="function not covered" >(s</span>ize: keyof typeof COMPONENT_SIZES) =&gt; {
     const s = <span class="cstat-no" title="statement not covered" >COMPONENT_SIZES[size];</span>
 <span class="cstat-no" title="statement not covered" >    return {</span>
+      height: s.height,
       text: s.text,
-      padding: `${s.padding.x} ${s.padding.y}`,
-      borderRadius: s.borderRadius
+      padding: `${s.padding.x}`
     };
   }
 };
@@ -247,7 +262,7 @@ export type ComponentSize = keyof typeof COMPONENT_SIZES;</pre></td></tr></table
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2025-10-19T18:33:03.308Z
+                at 2026-03-08T22:36:17.162Z
             </div>
         <script src="../../prettify.js"></script>
         <script>

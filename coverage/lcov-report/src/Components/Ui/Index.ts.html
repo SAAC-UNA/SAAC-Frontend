@@ -94,7 +94,15 @@
 <a name='L29'></a><a href='#L29'>29</a>
 <a name='L30'></a><a href='#L30'>30</a>
 <a name='L31'></a><a href='#L31'>31</a>
-<a name='L32'></a><a href='#L32'>32</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
+<a name='L32'></a><a href='#L32'>32</a>
+<a name='L33'></a><a href='#L33'>33</a>
+<a name='L34'></a><a href='#L34'>34</a>
+<a name='L35'></a><a href='#L35'>35</a>
+<a name='L36'></a><a href='#L36'>36</a>
+<a name='L37'></a><a href='#L37'>37</a>
+<a name='L38'></a><a href='#L38'>38</a>
+<a name='L39'></a><a href='#L39'>39</a>
+<a name='L40'></a><a href='#L40'>40</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -125,45 +133,61 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js">export { Input } from './Input';
-export { Textarea } from './Textarea'; 
-export { MultiSelect } from './MultiSelect';
-export type { MultiSelectOption, MultiSelectProps } from './MultiSelect';
-export { Button } from './Button';
-export { ButtonWithTooltip } from './ButtonWithTooltip';
-export { TableActionButton } from './TableActionButton';
-export type { TableActionType } from './TableActionButton';
-export { LoadingSpinner, Skeleton, LoadingOverlay } from './Loading';
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js">export { Input } from './Forms/Input';
+export { Textarea } from './Forms/Textarea'; 
+export { MultiSelect } from './Forms/MultiSelect';
+export type { MultiSelectOption, MultiSelectProps } from './Forms/MultiSelect';
+export { Button } from './Buttons/Button';
+export { ButtonWithTooltip } from './Buttons/ButtonWithTooltip';
+export { TableActionButton } from './Buttons/TableActionButton';
+export type { TableActionType } from './Buttons/TableActionButton';
+export { LoadingSpinner, Skeleton, LoadingOverlay } from './Feedback/Loading';
 export { ToastContainer } from './Toast';
-export { PageHeader } from './PageHeader';
-export { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from './Sheet';
-export { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from './Tooltip';
-export { Table } from './Table';
-export type { TableColumn, TableAction, TableProps } from './Table';
-export { DataTable } from './DataTable';
-export type { DataTableColumn, DataTableAction, DataTableProps } from './DataTable';
-export { PermissionsModal } from './PermissionsRoleModal';
-export { Modal, useModal } from './Modal';
-export { BackendErrorAlert } from './BackendErrorAlert';
-export { PageErrorState } from './PageErrorState';
-export { DetailsModal } from './DetailsModal';
-export { CustomSelect } from './SingleSelect';
-export type { SelectOption, CustomSelectProps } from './SingleSelect';
-export { SearchInput } from './SearchInput';
-export type { SearchInputProps } from './SearchInput';
-export { ScreenContainer } from './ScreenContainer';
-export { ResponsiveLayout } from './ResponsiveLayout';
+export { PageHeader } from './Layout/PageHeader';
+export { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from './Layout/Sheet';
+export { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from './Feedback/Tooltip';
+export { Table } from './Table/Table';
+export type { TableColumn, TableAction, TableProps } from './Table/Table';
+export { DataTable } from './Table/DataTable';
+export type { DataTableColumn, DataTableAction, DataTableProps } from './Table/DataTable';
+export { Pagination } from './Table/Pagination';
+export { PermissionsModal } from './Modals/PermissionsRoleModal';
+export { Modal, useModal } from './Modals/Modal';
+export { BackendErrorAlert } from './Feedback/BackendErrorAlert';
+export { DetailsModal } from './Modals/DetailsModal';
+export { CustomSelect } from './Forms/SingleSelect';
+export type { SelectOption, CustomSelectProps } from './Forms/SingleSelect';
+export { SearchInput } from './Forms/SearchInput';
+export type { SearchInputProps } from './Forms/SearchInput';
+export { ScreenContainer } from './Layout/ScreenContainer';
+export { ResponsiveLayout } from './Layout/ResponsiveLayout';
 export { DatePicker } from './Calendar';
 export type { DatePickerProps } from './Calendar';
-export { WizardProgress } from './WizardProgress';
-export type { WizardStep, WizardProgressProps } from './WizardProgress';</pre></td></tr></table></pre>
+export { WizardProgress } from './Layout/WizardProgress';
+export type { WizardStep, WizardProgressProps } from './Layout/WizardProgress';
+&nbsp;
+// HU-016: Modales de solicitudes de ampliación
+export { CreateExtensionRequestModal } from './Modals/CreateExtensionRequestModal';
+export { ReviewExtensionRequestModal } from './Modals/ReviewExtensionRequestModal';
+&nbsp;
+// HU-008: Componentes de subida de archivos
+export { DropZone, FileTypeIcon, FileUploader, FileList, FileUploadProgress, useFileUpload } from './Upload';
+export type { FileUploadProgressItem, UseFileUploadReturn } from './Upload';</pre></td></tr></table></pre>
 
                 <div class='push'></div><!-- for sticky footer -->
             </div><!-- /wrapper -->
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2025-10-19T18:33:03.308Z
+                at 2026-03-08T22:36:17.162Z
             </div>
         <script src="../../../prettify.js"></script>
         <script>
