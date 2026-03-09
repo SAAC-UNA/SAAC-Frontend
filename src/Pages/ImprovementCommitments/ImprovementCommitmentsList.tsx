@@ -11,10 +11,10 @@ import { SystemIcons } from '@/Components/Ui/Icons/SystemIcons';
 import { improvementCommitmentService } from '@/Services/ImprovementCommitmentService';
 import type { CompromisoMejora } from '@/Types/ImprovementCommitmentTypes';
 
-export const CompromisosList: React.FC = () => {
+export const ImprovementCommitmentsList: React.FC = () => {
   const navigate = useNavigate();
   
-  const [compromisos, setCompromisos] = useState<CompromisoMejora[]>([]);
+  const [commitments, setCommitments] = useState<CompromisoMejora[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -31,7 +31,7 @@ export const CompromisosList: React.FC = () => {
         per_page: 50
       });
       
-      setCompromisos(response.data || []);
+      setCommitments(response.data || []);
     } catch (error: any) {
       console.error('Error al cargar compromisos:', error);
       
@@ -46,15 +46,15 @@ export const CompromisosList: React.FC = () => {
       } else {
         setError('Error de conexión. Verifique que el servidor esté funcionando.');
       }
-      setCompromisos([]);
+      setCommitments([]);
     } finally {
       setLoading(false);
     }
   };
 
-  const compromisosFiltrados = compromisos;
+  const filteredCommitments = commitments;
   const nowTs = Date.now();
-  const sortedByEndDate = [...compromisosFiltrados].sort((a, b) => {
+  const sortedByEndDate = [...filteredCommitments].sort((a, b) => {
     const aTs = new Date(a.fecha_fin).getTime();
     const bTs = new Date(b.fecha_fin).getTime();
     const aDiff = aTs - nowTs;
@@ -70,7 +70,7 @@ export const CompromisosList: React.FC = () => {
   const featuredCompromiso = sortedByEndDate[0];
   const remainingCompromisos = sortedByEndDate.slice(1);
 
-  const formatearFecha = (fecha: string) => {
+  const formatDate = (fecha: string) => {
     return new Date(fecha).toLocaleDateString('es-CR', {
       year: 'numeric',
       month: 'short',
@@ -78,7 +78,7 @@ export const CompromisosList: React.FC = () => {
     });
   };
 
-  const handleVerDetalle = (id: number) => {
+  const handleViewDetail = (id: number) => {
     navigate(`/compromisos/ver/${id}`);
   };
 
@@ -94,12 +94,12 @@ export const CompromisosList: React.FC = () => {
             </p>
             <div className="mt-2 inline-flex items-center gap-2 text-xs text-gray-500">
               <span className="inline-flex items-center rounded-full border border-gray-200 bg-gray-50 px-2 py-0.5">
-                {compromisosFiltrados.length} total
+                {filteredCommitments.length} total
               </span>
               <span className="text-gray-400">•</span>
               <span className="inline-flex items-center gap-1">
                 <SystemIcons.interface.clock size="xs" className="text-gray-400" />
-                {compromisosFiltrados.filter((c) => c.is_overdue).length} vencidos
+                {filteredCommitments.filter((c) => c.is_overdue).length} vencidos
               </span>
             </div>
           </div>
@@ -141,7 +141,7 @@ export const CompromisosList: React.FC = () => {
               </Button>
             </div>
           </div>
-        ) : compromisosFiltrados.length === 0 ? (
+        ) : filteredCommitments.length === 0 ? (
           /* Empty State */
           <div className="flex items-center justify-center py-24">
             <div className="text-center">
@@ -162,7 +162,7 @@ export const CompromisosList: React.FC = () => {
                 className={`rounded-xl border p-5 transition-shadow cursor-pointer bg-gradient-to-br from-gray-50 via-white to-gray-50/60 hover:shadow-md ${
                   featuredCompromiso.is_overdue ? 'border-red-200' : 'border-gray-200'
                 }`}
-                onClick={() => handleVerDetalle(featuredCompromiso.compromiso_mejora_id)}
+                onClick={() => handleViewDetail(featuredCompromiso.compromiso_mejora_id)}
               >
                 <div className="flex items-start justify-between gap-4">
                   <div className="flex-1 min-w-0">
@@ -181,7 +181,7 @@ export const CompromisosList: React.FC = () => {
 
                     <div className="mt-3 flex flex-wrap items-center gap-2 text-xs text-gray-600">
                       <span className="inline-flex items-center rounded-full border border-gray-200 bg-white px-2 py-0.5">
-                        {formatearFecha(featuredCompromiso.fecha_inicio)} - {formatearFecha(featuredCompromiso.fecha_fin)}
+                        {formatDate(featuredCompromiso.fecha_inicio)} - {formatDate(featuredCompromiso.fecha_fin)}
                       </span>
                       {featuredCompromiso.selecciones && featuredCompromiso.selecciones.length > 0 && (
                         <div className="inline-flex items-center gap-2">
@@ -217,7 +217,7 @@ export const CompromisosList: React.FC = () => {
                     className={`flex items-center justify-between gap-3 px-4 py-3 transition-colors cursor-pointer hover:bg-gray-50 ${
                       compromiso.is_overdue ? 'border-l-4 border-red-300' : 'border-l-4 border-transparent'
                     }`}
-                    onClick={() => handleVerDetalle(compromiso.compromiso_mejora_id)}
+                    onClick={() => handleViewDetail(compromiso.compromiso_mejora_id)}
                   >
                     <div className="min-w-0 flex-1">
                       <div className="flex items-center gap-2">
@@ -233,7 +233,7 @@ export const CompromisosList: React.FC = () => {
                       </div>
                       <div className="mt-1 flex flex-wrap items-center gap-2 text-[11px] text-gray-600">
                         <span className="inline-flex items-center rounded-full border border-gray-200 bg-gray-50 px-2 py-0.5">
-                          {formatearFecha(compromiso.fecha_inicio)} - {formatearFecha(compromiso.fecha_fin)}
+                          {formatDate(compromiso.fecha_inicio)} - {formatDate(compromiso.fecha_fin)}
                         </span>
                         {compromiso.selecciones && compromiso.selecciones.length > 0 && (
                           <span className="inline-flex items-center rounded-full border border-gray-200 bg-gray-50 px-2 py-0.5">

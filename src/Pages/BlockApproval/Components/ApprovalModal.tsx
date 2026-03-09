@@ -32,12 +32,12 @@ export const ApprovalModal: React.FC<ApprovalModalProps> = ({
   criterio,
   evidencias
 }) => {
-  const [comentario, setComentario] = useState('');
+  const [comment, setComment] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
     if (!isOpen) {
-      setComentario('');
+      setComment('');
       setIsSubmitting(false);
     }
   }, [isOpen]);
@@ -47,7 +47,7 @@ export const ApprovalModal: React.FC<ApprovalModalProps> = ({
   const handleSubmit = async () => {
     setIsSubmitting(true);
     try {
-      await onConfirm(comentario);
+      await onConfirm(comment);
     } finally {
       setIsSubmitting(false);
     }
@@ -98,8 +98,8 @@ export const ApprovalModal: React.FC<ApprovalModalProps> = ({
           </label>
           <textarea
             id="comentario"
-            value={comentario}
-            onChange={(e) => setComentario(e.target.value)}
+            value={comment}
+            onChange={(e) => setComment(e.target.value)}
             className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
             rows={3}
             maxLength={100}
@@ -110,7 +110,7 @@ export const ApprovalModal: React.FC<ApprovalModalProps> = ({
             }
           />
           <p className="mt-1 text-xs text-gray-500">
-            {comentario.length} / 100 caracteres
+            {comment.length} / 100 caracteres
           </p>
         </div>
       </div>

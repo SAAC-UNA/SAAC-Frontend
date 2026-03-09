@@ -69,9 +69,6 @@ export const NavigationProvider: React.FC<NavigationProviderProps> = ({ children
     if (path.startsWith('/mis-evidencias')) {
       return { activeId: 'misEvidenciasAsignadas', parentId: 'evidencias' };
     }
-    if (path.startsWith('/acreditacion')) {
-      return { activeId: 'avance-acreditacion', parentId: 'acreditacion' };
-    }
     if (path.startsWith('/bitacora')) {
       return { activeId: 'bitacora', parentId: 'administracion' };
     }

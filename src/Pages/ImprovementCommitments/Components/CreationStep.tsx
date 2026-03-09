@@ -1,5 +1,5 @@
 /**
- * CreacionStep - Paso 1 del wizard de creación de compromisos
+ * CreationStep - Paso 1 del wizard de creación de compromisos
  * Permite seleccionar ciclo y criterios con sus evidencias
  */
 
@@ -16,10 +16,10 @@ import type {
   CriterioSeleccionado,
   ValidationErrors
 } from '@/Types/ImprovementCommitmentTypes';
-import { CriterioModal } from '@/Pages/CompromisosMejora/Components/CriterioModal';
+import { CriterionModal } from '@/Pages/ImprovementCommitments/Components/CriterionModal';
 import { DeleteConfirmationModal } from '@/Components/Ui/Modals/DeleteConfirmationModal';
 
-interface CreacionStepProps {
+interface CreationStepProps {
   formData: CompromisoFormData;
   updateFormData: (updates: Partial<CompromisoFormData>) => void;
   agregarCriterio: (criterio: CriterioSeleccionado) => void;
@@ -28,33 +28,33 @@ interface CreacionStepProps {
   errors: ValidationErrors;
 }
 
-type FiltroEstado = 'todos' | 'seleccionados' | 'pendientes';
+type StatusFilter = 'todos' | 'seleccionados' | 'pendientes';
 
-export const CreacionStep: React.FC<CreacionStepProps> = ({
+export const CreationStep: React.FC<CreationStepProps> = ({
   formData,
   updateFormData,
-  agregarCriterio,
-  eliminarCriterio,
-  actualizarCriterio,
+  agregarCriterio: addCriterion,
+  eliminarCriterio: deleteCriterion,
+  actualizarCriterio: updateCriterion,
   errors
 }) => {
   const [ciclos, setCiclos] = useState<CicloAcreditacion[]>([]);
   const [criterios, setCriterios] = useState<Criterio[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
-  const [filtroEstado, setFiltroEstado] = useState<FiltroEstado>('todos');
+  const [statusFilter, setStatusFilter] = useState<StatusFilter>('todos');
   
   // Modal state
   const [showModal, setShowModal] = useState(false);
-  const [criterioSeleccionado, setCriterioSeleccionado] = useState<Criterio | null>(null);
-  const [modoEdicion, setModoEdicion] = useState(false);
-  const [criterioAEliminar, setCriterioAEliminar] = useState<{ id: number; nombre: string } | null>(null);
+  const [selectedCriterion, setSelectedCriterion] = useState<Criterio | null>(null);
+  const [editMode, setEditMode] = useState(false);
+  const [criterionToDelete, setCriterionToDelete] = useState<{ id: number; nombre: string } | null>(null);
 
   useEffect(() => {
-    cargarDatos();
+    loadData();
   }, []);
 
-  const cargarDatos = async () => {
+  const loadData = async () => {
     try {
       setLoading(true);
       const [ciclosData, criteriosData] = await Promise.all([
@@ -93,16 +93,16 @@ export const CreacionStep: React.FC<CreacionStepProps> = ({
     }
 
     // Filtro por estado
-    if (filtroEstado === 'seleccionados') {
+    if (statusFilter === 'seleccionados') {
       const idsSeleccionados = formData.criterios_seleccionados.map(c => c.criterio_id);
       filtered = filtered.filter(c => idsSeleccionados.includes(c.criterio_id));
-    } else if (filtroEstado === 'pendientes') {
+    } else if (statusFilter === 'pendientes') {
       const idsSeleccionados = formData.criterios_seleccionados.map(c => c.criterio_id);
       filtered = filtered.filter(c => !idsSeleccionados.includes(c.criterio_id));
     }
 
     return filtered;
-  }, [criterios, searchTerm, filtroEstado, formData.criterios_seleccionados]);
+  }, [criterios, searchTerm, statusFilter, formData.criterios_seleccionados]);
 
   const handleCicloChange = (value: string) => {
     updateFormData({ ciclo_acreditacion_id: parseInt(value) });
@@ -114,37 +114,37 @@ export const CreacionStep: React.FC<CreacionStepProps> = ({
       c => c.criterio_id === criterio.criterio_id
     );
 
-    setCriterioSeleccionado(criterio);
-    setModoEdicion(!!yaSeleccionado);
+    setSelectedCriterion(criterio);
+    setEditMode(!!yaSeleccionado);
     setShowModal(true);
   };
 
-  const handleGuardarCriterio = (criterioConfig: CriterioSeleccionado) => {
+  const handleSaveCriterion = (criterioConfig: CriterioSeleccionado) => {
     console.log('Guardando criterio:', criterioConfig);
-    console.log('Modo edición:', modoEdicion);
+    console.log('Modo edición:', editMode);
     
-    if (modoEdicion) {
-      actualizarCriterio(criterioConfig);
+    if (editMode) {
+      updateCriterion(criterioConfig);
     } else {
-      agregarCriterio(criterioConfig);
+      addCriterion(criterioConfig);
     }
     setShowModal(false);
-    setCriterioSeleccionado(null);
-    setModoEdicion(false);
+    setSelectedCriterion(null);
+    setEditMode(false);
   };
 
-  const handleEliminarCriterio = (criterioId: number, criterioNombre: string) => {
-    setCriterioAEliminar({ id: criterioId, nombre: criterioNombre });
+  const handleDeleteCriterion = (criterioId: number, criterioNombre: string) => {
+    setCriterionToDelete({ id: criterioId, nombre: criterioNombre });
   };
 
-  const confirmarEliminarCriterio = () => {
-    if (criterioAEliminar) {
-      eliminarCriterio(criterioAEliminar.id);
-      setCriterioAEliminar(null);
+  const confirmDeleteCriterion = () => {
+    if (criterionToDelete) {
+      deleteCriterion(criterionToDelete.id);
+      setCriterionToDelete(null);
     }
   };
 
-  const criterioEstaSeleccionado = (criterioId: number) => {
+  const isCriterionSelected = (criterioId: number) => {
     const seleccionado = formData.criterios_seleccionados.some(c => c.criterio_id === criterioId);
     return seleccionado;
   };
@@ -212,9 +212,9 @@ export const CreacionStep: React.FC<CreacionStepProps> = ({
               {(['todos', 'seleccionados', 'pendientes'] as const).map((estado) => (
                 <button
                   key={estado}
-                  onClick={() => setFiltroEstado(estado)}
+                  onClick={() => setStatusFilter(estado)}
                   className={`px-3 py-2 rounded-lg text-xs font-medium transition-colors ${
-                    filtroEstado === estado
+                    statusFilter === estado
                       ? 'bg-rojo-una-2 text-white'
                       : 'bg-gray-100 text-gris-una hover:bg-gray-200'
                   }`}
@@ -241,7 +241,7 @@ export const CreacionStep: React.FC<CreacionStepProps> = ({
                   return null; // No renderizar criterios inválidos
                 }
                 
-                const seleccionado = criterioEstaSeleccionado(criterio.criterio_id);
+                const seleccionado = isCriterionSelected(criterio.criterio_id);
                 const config = formData.criterios_seleccionados.find(
                   c => c.criterio_id === criterio.criterio_id
                 );
@@ -302,7 +302,7 @@ export const CreacionStep: React.FC<CreacionStepProps> = ({
                           <button
                             onClick={(e) => {
                               e.stopPropagation();
-                              handleEliminarCriterio(criterio.criterio_id, criterio.nomenclatura);
+                              handleDeleteCriterion(criterio.criterio_id, criterio.nomenclatura);
                             }}
                             className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
                             title="Eliminar criterio"
@@ -322,32 +322,32 @@ export const CreacionStep: React.FC<CreacionStepProps> = ({
       </div>
 
       {/* Modal de Configuración de Criterio */}
-      {showModal && criterioSeleccionado && (
-        <CriterioModal
+      {showModal && selectedCriterion && (
+        <CriterionModal
           isOpen={showModal}
           onClose={() => {
             setShowModal(false);
-            setCriterioSeleccionado(null);
-            setModoEdicion(false);
+            setSelectedCriterion(null);
+            setEditMode(false);
           }}
-          criterio={criterioSeleccionado}
+          criterio={selectedCriterion}
           configuracionExistente={
-            modoEdicion
-              ? formData.criterios_seleccionados.find(c => c.criterio_id === criterioSeleccionado.criterio_id)
+            editMode
+              ? formData.criterios_seleccionados.find(c => c.criterio_id === selectedCriterion.criterio_id)
               : undefined
           }
-          onGuardar={handleGuardarCriterio}
-          modoEdicion={modoEdicion}
+          onGuardar={handleSaveCriterion}
+          modoEdicion={editMode}
         />
       )}
 
       {/* Modal de Confirmación para Eliminar */}
       <DeleteConfirmationModal
-        isOpen={!!criterioAEliminar}
-        onClose={() => setCriterioAEliminar(null)}
-        onConfirm={confirmarEliminarCriterio}
+        isOpen={!!criterionToDelete}
+        onClose={() => setCriterionToDelete(null)}
+        onConfirm={confirmDeleteCriterion}
         title="Eliminar criterio"
-        itemName={criterioAEliminar?.nombre}
+        itemName={criterionToDelete?.nombre}
         message="¿Está seguro de que desea eliminar este criterio del compromiso?"
       />
     </>

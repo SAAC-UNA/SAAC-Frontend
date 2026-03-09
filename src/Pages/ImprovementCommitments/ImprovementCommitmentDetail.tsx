@@ -17,15 +17,15 @@ const formatDate = (date?: string) => {
   });
 };
 
-export const CompromisoDetalle: React.FC = () => {
+export const ImprovementCommitmentDetail: React.FC = () => {
   const { id } = useParams();
   const navigate = useNavigate();
 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [compromiso, setCompromiso] = useState<CompromisoMejora | null>(null);
-  const [criterioDetalle, setCriterioDetalle] = useState<any | null>(null);
-  const [showCriterioModal, setShowCriterioModal] = useState(false);
+  const [criterionDetail, setCriterionDetail] = useState<any | null>(null);
+  const [showCriterionModal, setShowCriterionModal] = useState(false);
   const [evidenceDetails, setEvidenceDetails] = useState<Record<number, any>>({});
 
   useEffect(() => {
@@ -86,20 +86,20 @@ export const CompromisoDetalle: React.FC = () => {
     loadEvidenceDetails();
   }, [assignedEvidences]);
 
-  const criteriosSeleccionados = useMemo(() => {
+  const selectedCriteria = useMemo(() => {
     return (compromiso?.selecciones || []).filter((s: any) => s.criterio);
   }, [compromiso]);
 
-  const getAsignacionesByCriterio = (criterioId?: number) => {
-    if (!criterioId) return [];
+  const getAssignmentsByCriterion = (criterionId?: number) => {
+    if (!criterionId) return [];
     return assignedEvidences.filter((assignment: any) => {
       const evidence = evidenceDetails[assignment.evidencia_id] || assignment.evidence;
-      return evidence?.criterio_id === criterioId;
+      return evidence?.criterio_id === criterionId;
     });
   };
 
-  const getCriterioEstado = (criterioId?: number) => {
-    const asignaciones = getAsignacionesByCriterio(criterioId);
+  const getCriterionStatus = (criterionId?: number) => {
+    const asignaciones = getAssignmentsByCriterion(criterionId);
     if (asignaciones.length === 0) return 'Pendiente';
 
     const estados = asignaciones.map((a: any) => a.estado);
@@ -109,14 +109,14 @@ export const CompromisoDetalle: React.FC = () => {
     return 'Pendiente';
   };
 
-  const handleOpenCriterio = (item: any) => {
-    setCriterioDetalle(item);
-    setShowCriterioModal(true);
+  const handleOpenCriterion = (item: any) => {
+    setCriterionDetail(item);
+    setShowCriterionModal(true);
   };
 
-  const criterioId = criterioDetalle?.criterio?.criterio_id;
-  const criterioAsignaciones = criterioId ? getAsignacionesByCriterio(criterioId) : [];
-  const criterioEstado = criterioId ? getCriterioEstado(criterioId) : 'Pendiente';
+  const criterionId = criterionDetail?.criterio?.criterio_id;
+  const criterionAssignments = criterionId ? getAssignmentsByCriterion(criterionId) : [];
+  const criterionStatus = criterionId ? getCriterionStatus(criterionId) : 'Pendiente';
 
   const estadoBadge = (estado?: CompromisoEstado) => {
     if (!estado) return null;
@@ -220,18 +220,18 @@ export const CompromisoDetalle: React.FC = () => {
               <div className="flex items-center justify-between mb-4">
                 <h2 className="text-base font-semibold text-negro-una">Criterios incluidos</h2>
                 <span className="text-sm text-gris-una">
-                  {criteriosSeleccionados.length} {criteriosSeleccionados.length === 1 ? 'criterio' : 'criterios'}
+                  {selectedCriteria.length} {selectedCriteria.length === 1 ? 'criterio' : 'criterios'}
                 </span>
               </div>
-              {criteriosSeleccionados.length === 0 ? (
+              {selectedCriteria.length === 0 ? (
                 <p className="text-sm text-gris-una">No hay criterios vinculados.</p>
               ) : (
                 <div className="grid gap-3">
-                  {criteriosSeleccionados.map((item: any, index: number) => (
+                  {selectedCriteria.map((item: any, index: number) => (
                     <button
                       key={`${item.criterio?.criterio_id || index}`}
                       className="border border-gray-200 rounded-lg p-4 text-left hover:border-gray-300 hover:bg-gray-50 transition-colors"
-                      onClick={() => handleOpenCriterio(item)}
+                      onClick={() => handleOpenCriterion(item)}
                       type="button"
                     >
                       <div className="flex items-start justify-between">
@@ -244,7 +244,7 @@ export const CompromisoDetalle: React.FC = () => {
                           </p>
                         </div>
                         <div className="ml-4 flex items-center gap-2">
-                          {estadoBadge(getCriterioEstado(item.criterio?.criterio_id) as CompromisoEstado)}
+                          {estadoBadge(getCriterionStatus(item.criterio?.criterio_id) as CompromisoEstado)}
                           <SystemIcons.interface.chevronRight size="md" className="text-gris-una" />
                         </div>
                       </div>
@@ -259,14 +259,14 @@ export const CompromisoDetalle: React.FC = () => {
       </div>
 
       {/* Modal detalle de criterio (solo lectura) */}
-      {showCriterioModal && criterioDetalle && (
+      {showCriterionModal && criterionDetail && (
         <Modal
-          isOpen={showCriterioModal}
+          isOpen={showCriterionModal}
           onClose={() => {
-            setShowCriterioModal(false);
-            setCriterioDetalle(null);
+            setShowCriterionModal(false);
+            setCriterionDetail(null);
           }}
-          title={`Detalle: ${criterioDetalle?.criterio?.nomenclatura || 'Criterio'}`}
+          title={`Detalle: ${criterionDetail?.criterio?.nomenclatura || 'Criterio'}`}
           size="lg"
         >
           <div className="grid grid-cols-1 lg:grid-cols-[1.1fr,1.4fr] gap-6">
@@ -274,13 +274,13 @@ export const CompromisoDetalle: React.FC = () => {
               <div>
                 <p className="text-xs font-medium text-gris-una mb-1">Descripcion</p>
                 <p className="text-sm text-negro-una">
-                  {criterioDetalle?.criterio?.descripcion || 'Sin descripcion'}
+                  {criterionDetail?.criterio?.descripcion || 'Sin descripcion'}
                 </p>
               </div>
 
               <div>
                 <p className="text-xs font-medium text-gris-una mb-1">Estado</p>
-                {estadoBadge(criterioEstado as CompromisoEstado)}
+                {estadoBadge(criterionStatus as CompromisoEstado)}
               </div>
 
               <div>
@@ -289,7 +289,7 @@ export const CompromisoDetalle: React.FC = () => {
                   {(() => {
                     const fechas = Array.from(
                       new Set(
-                        criterioAsignaciones
+                        criterionAssignments
                           .map((a: any) => a.fecha_limite)
                           .filter((date: unknown): date is string => typeof date === 'string')
                       )
@@ -304,7 +304,7 @@ export const CompromisoDetalle: React.FC = () => {
               {(() => {
                 const comentarios = Array.from(
                   new Set(
-                    criterioAsignaciones
+                    criterionAssignments
                       .map((a: any) => a.comentario)
                       .filter((comment: unknown): comment is string => typeof comment === 'string')
                   )
@@ -324,15 +324,15 @@ export const CompromisoDetalle: React.FC = () => {
             <div>
               <div className="flex items-center justify-between mb-3">
                 <p className="text-xs font-medium text-gris-una">
-                  Evidencias asignadas ({criterioAsignaciones.length})
+                  Evidencias asignadas ({criterionAssignments.length})
                 </p>
               </div>
 
-              {criterioAsignaciones.length === 0 ? (
+              {criterionAssignments.length === 0 ? (
                 <p className="text-sm text-gris-una">No hay asignaciones para este criterio.</p>
               ) : (
                 <div className="grid gap-3">
-                  {criterioAsignaciones.map((assignment: any) => (
+                  {criterionAssignments.map((assignment: any) => (
                     <div key={assignment.evidencia_asignacion_id || assignment.evidencia_id} className="border border-gray-200 rounded-lg p-3">
                       <div className="flex items-start justify-between">
                         <div className="space-y-1">
@@ -370,4 +370,4 @@ export const CompromisoDetalle: React.FC = () => {
   );
 };
 
-export default CompromisoDetalle;
+export default ImprovementCommitmentDetail;

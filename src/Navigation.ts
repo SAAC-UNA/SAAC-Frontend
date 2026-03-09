@@ -165,13 +165,6 @@ export const getNavigationItems = (userRoles?: string | string[]): NavItem[] => 
         isActive: false,
       },
       {
-        id: 'avance-acreditacion',
-        label: 'Avance de Acreditación',
-        icon: processIcon,
-        href: '/acreditacion/avance',
-        isActive: false,
-      },
-      {
         id: 'compromisos-mejora',
         label: 'Compromisos de Mejora',
         icon: commitmentIcon,

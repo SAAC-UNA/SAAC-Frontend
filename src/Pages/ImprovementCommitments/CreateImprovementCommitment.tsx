@@ -22,15 +22,15 @@ import type {
 } from '@/Types/ImprovementCommitmentTypes';
 
 // Importar componentes de los pasos
-import { CreacionStep } from './Components/CreacionStep';
-import { RevisionStep } from './Components/RevisionStep';
+import { CreationStep } from './Components/CreationStep';
+import { ReviewStep } from './Components/ReviewStep';
 
 interface WizardStep {
   id: number;
   title: string;
 }
 
-const CrearCompromiso: React.FC = () => {
+const CreateImprovementCommitment: React.FC = () => {
   const { showToast } = useToast();
   const navigate = useNavigate();
   
@@ -65,7 +65,7 @@ const CrearCompromiso: React.FC = () => {
   /**
    * Agregar un criterio seleccionado
    */
-  const agregarCriterio = (criterio: CriterioSeleccionado) => {
+  const addCriterion = (criterio: CriterioSeleccionado) => {
     setFormData(prev => ({
       ...prev,
       criterios_seleccionados: [...prev.criterios_seleccionados, criterio]
@@ -75,7 +75,7 @@ const CrearCompromiso: React.FC = () => {
   /**
    * Eliminar un criterio seleccionado
    */
-  const eliminarCriterio = (criterioId: number) => {
+  const deleteCriterion = (criterioId: number) => {
     setFormData(prev => ({
       ...prev,
       criterios_seleccionados: prev.criterios_seleccionados.filter(
@@ -87,7 +87,7 @@ const CrearCompromiso: React.FC = () => {
   /**
    * Actualizar un criterio existente
    */
-  const actualizarCriterio = (criterioActualizado: CriterioSeleccionado) => {
+  const updateCriterion = (criterioActualizado: CriterioSeleccionado) => {
     setFormData(prev => ({
       ...prev,
       criterios_seleccionados: prev.criterios_seleccionados.map(c =>
@@ -245,18 +245,18 @@ const CrearCompromiso: React.FC = () => {
     switch (currentStep) {
       case 1:
         return (
-          <CreacionStep
+          <CreationStep
             formData={formData}
             updateFormData={updateFormData}
-            agregarCriterio={agregarCriterio}
-            eliminarCriterio={eliminarCriterio}
-            actualizarCriterio={actualizarCriterio}
+            agregarCriterio={addCriterion}
+            eliminarCriterio={deleteCriterion}
+            actualizarCriterio={updateCriterion}
             errors={errors}
           />
         );
       case 2:
         return (
-          <RevisionStep
+          <ReviewStep
             formData={formData}
             updateFormData={updateFormData}
             onSubmit={handleSubmit}
@@ -389,4 +389,4 @@ const CrearCompromiso: React.FC = () => {
   );
 };
 
-export default CrearCompromiso;
+export default CreateImprovementCommitment;

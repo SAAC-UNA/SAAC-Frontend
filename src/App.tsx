@@ -23,11 +23,11 @@ const EvidenceUploadPage = lazy(() => import('./Pages/EvidenceUpload').then(m =>
 const EvidenceSearchPage = lazy(() => import('./Pages/EvidenceSearch').then(m => ({ default: m.EvidenceSearchPage })));
 const MyEvidenceAssignmentsPage = lazy(() => import('./Pages/MyEvidence').then(m => ({ default: m.MyEvidenceAssignmentsPage })));
 const AuditLogPage = lazy(() => import('@/Pages/AuditLog/AuditLogPage'));
-const CompromisosList = lazy(() => import('./Pages/CompromisosMejora/CompromisosList').then(m => ({ default: m.CompromisosList })));
-const CrearCompromiso = lazy(() => import('./Pages/CompromisosMejora/CrearCompromiso'));
-const CompromisoDetalle = lazy(() => import('./Pages/CompromisosMejora/CompromisoDetalle'));
-const AprobacionBloques = lazy(() => import('./Pages/AprobacionBloques/AprobacionBloquesSimple'));
-const InformesFinales = lazy(() => import('./Pages/GestionInformes').then(m => ({ default: m.InformesFinales })));
+const ImprovementCommitmentsList = lazy(() => import('./Pages/ImprovementCommitments/ImprovementCommitmentsList').then(m => ({ default: m.ImprovementCommitmentsList })));
+const CreateImprovementCommitment = lazy(() => import('./Pages/ImprovementCommitments/CreateImprovementCommitment'));
+const ImprovementCommitmentDetail = lazy(() => import('./Pages/ImprovementCommitments/ImprovementCommitmentDetail'));
+const BlockApproval = lazy(() => import('./Pages/BlockApproval/BlockApproval'));
+const FinalReports = lazy(() => import('./Pages/ReportManagement').then(m => ({ default: m.FinalReports })));
 
 // HU-016: Páginas de solicitudes de ampliación
 const ManageExtensionRequestsPage = lazy(() => import('./Pages/ExtensionRequest').then(m => ({ default: m.ManageExtensionRequestsPage })));
@@ -206,7 +206,7 @@ function App() {
                           path="/compromisos/listar"
                           element={
                             <ProtectedRoute>
-                              <CompromisosList />
+                              <ImprovementCommitmentsList />
                             </ProtectedRoute>
                           }
                         />
@@ -214,7 +214,7 @@ function App() {
                           path="/compromisos/crear"
                           element={
                             <ProtectedRoute>
-                              <CrearCompromiso />
+                              <CreateImprovementCommitment />
                             </ProtectedRoute>
                           }
                         />
@@ -222,7 +222,7 @@ function App() {
                           path="/compromisos/ver/:id"
                           element={
                             <ProtectedRoute>
-                              <CompromisoDetalle />
+                              <ImprovementCommitmentDetail />
                             </ProtectedRoute>
                           }
                         />
@@ -230,7 +230,7 @@ function App() {
                           path="/compromisos/editar/:id"
                           element={
                             <ProtectedRoute>
-                              <CrearCompromiso />
+                              <CreateImprovementCommitment />
                             </ProtectedRoute>
                           }
                         />
@@ -240,7 +240,7 @@ function App() {
                           path="/aprobacion-bloques"
                           element={
                             <ProtectedRoute>
-                              <AprobacionBloques />
+                              <BlockApproval />
                             </ProtectedRoute>
                           }
                         />
@@ -250,7 +250,7 @@ function App() {
                           path="/gestion-informes"
                           element={
                             <ProtectedRoute>
-                              <InformesFinales />
+                              <FinalReports />
                             </ProtectedRoute>
                           }
                         />

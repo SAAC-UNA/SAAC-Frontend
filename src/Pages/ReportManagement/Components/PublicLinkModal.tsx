@@ -55,7 +55,7 @@ export const PublicLinkModal: React.FC<PublicLinkModalProps> = ({
     ? `${window.location.origin}/api/p/${archivo.token_publico}`
     : '';
 
-  const handleGenerarEnlace = async () => {
+  const handleGenerateLink = async () => {
     setIsGenerating(true);
     try {
       await axiosInstance.post(`/archivos/${archivo.archivo_id}/make-public`);
@@ -68,7 +68,7 @@ export const PublicLinkModal: React.FC<PublicLinkModalProps> = ({
     }
   };
 
-  const handleRevocarEnlace = async () => {
+  const handleRevokeLink = async () => {
     const confirmacion = confirm('¿Está seguro que desea revocar el enlace público? El enlace actual dejará de funcionar.');
     if (!confirmacion) return;
 
@@ -84,7 +84,7 @@ export const PublicLinkModal: React.FC<PublicLinkModalProps> = ({
     }
   };
 
-  const handleCopiarEnlace = async () => {
+  const handleCopyLink = async () => {
     try {
       await navigator.clipboard.writeText(publicUrl);
       setCopiedToClipboard(true);
@@ -156,7 +156,7 @@ export const PublicLinkModal: React.FC<PublicLinkModalProps> = ({
                 <Button
                   variant="primary"
                   size="sm"
-                  onClick={handleCopiarEnlace}
+                  onClick={handleCopyLink}
                   className="flex-1"
                 >
                   {copiedToClipboard ? (
@@ -174,7 +174,7 @@ export const PublicLinkModal: React.FC<PublicLinkModalProps> = ({
                 <Button
                   variant="error"
                   size="sm"
-                  onClick={handleRevocarEnlace}
+                  onClick={handleRevokeLink}
                   disabled={isRevoking}
                   className="flex-1"
                 >
@@ -212,7 +212,7 @@ export const PublicLinkModal: React.FC<PublicLinkModalProps> = ({
               <Button
                 variant="primary"
                 size="sm"
-                onClick={handleGenerarEnlace}
+                onClick={handleGenerateLink}
                 disabled={isGenerating}
               >
                 <SystemIcons.actions.linkIcon className="w-4 h-4" />

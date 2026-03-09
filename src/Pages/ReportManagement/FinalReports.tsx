@@ -7,8 +7,9 @@ import { CustomSelect } from '@/Components/Ui/Forms/SingleSelect';
 import { PublicLinkModal } from './Components/PublicLinkModal';
 import { DropdownButton } from '@/Components/Ui/Buttons/DropdownButton';
 import type { DropdownOption } from '@/Components/Ui/Buttons/DropdownButton';
+import { usePdfExport } from '@/Hooks/usePdfExport';
 
-type EstadoAprobacion = 'pendiente' | 'aprobado' | 'rechazado';
+type ApprovalStatus = 'pendiente' | 'aprobado' | 'rechazado';
 
 interface Archivo {
   archivo_id: number;
@@ -31,7 +32,7 @@ interface Criterio {
   id: number;
   nomenclatura: string;
   descripcion: string;
-  estado_aprobacion?: EstadoAprobacion;
+  estado_aprobacion?: ApprovalStatus;
 }
 
 interface Proceso {
@@ -53,14 +54,16 @@ interface Proceso {
 
 type ExportFormat = 'pdf' | 'excel';
 
-const InformesFinales: React.FC = () => {
+const FinalReports: React.FC = () => {
+  const { exportToPdf: generatePdfReport } = usePdfExport();
+  
   const [isLoading, setIsLoading] = useState(true);
-  const [criterios, setCriterios] = useState<Criterio[]>([]);
-  const [evidencias, setEvidencias] = useState<Evidencia[]>([]);
-  const [procesos, setProcesos] = useState<Proceso[]>([]);
+  const [criteria, setCriteria] = useState<Criterio[]>([]);
+  const [evidences, setEvidences] = useState<Evidencia[]>([]);
+  const [processes, setProcesses] = useState<Proceso[]>([]);
   const [selectedProcesoId, setSelectedProcesoId] = useState<number | null>(null);
-  const [expandedCriterios, setExpandedCriterios] = useState<Set<number>>(new Set());
-  const [loadingArchivos, setLoadingArchivos] = useState<Set<number>>(new Set());
+  const [expandedCriteria, setExpandedCriteria] = useState<Set<number>>(new Set());
+  const [loadingFiles, setLoadingFiles] = useState<Set<number>>(new Set());
   
   // Modal de enlaces públicos
   const [publicLinkModalOpen, setPublicLinkModalOpen] = useState(false);
@@ -73,44 +76,44 @@ const InformesFinales: React.FC = () => {
 
   const fetchData = async () => {
     try {
-      const [criteriosResponse, evidenciasResponse, procesosResponse, aprobacionesResponse] = await Promise.all([
+      const [criteriaResponse, evidencesResponse, processesResponse, approvalsResponse] = await Promise.all([
         axiosInstance.get('/estructura/criterios'),
         axiosInstance.get('/estructura/evidencias'),
         axiosInstance.get('/estructura/procesos'),
         axiosInstance.get('/aprobaciones-criterios')
       ]);
       
-      const criteriosArray = criteriosResponse.data.data || criteriosResponse.data;
-      const evidenciasArray = evidenciasResponse.data.data || evidenciasResponse.data;
-      const procesosArray = procesosResponse.data.data || procesosResponse.data;
-      const aprobacionesArray = aprobacionesResponse.data.data || aprobacionesResponse.data;
+      const criteriaArray = criteriaResponse.data.data || criteriaResponse.data;
+      const evidencesArray = evidencesResponse.data.data || evidencesResponse.data;
+      const processesArray = processesResponse.data.data || processesResponse.data;
+      const approvalsArray = approvalsResponse.data.data || approvalsResponse.data;
       
-      // Crear mapa de aprobaciones por criterio_id + proceso_id
-      const aprobacionesMap = new Map<string, EstadoAprobacion>();
-      aprobacionesArray.forEach((aprobacion: any) => {
+      // Create approvals map by criterio_id + proceso_id
+      const approvalsMap = new Map<string, ApprovalStatus>();
+      approvalsArray.forEach((aprobacion: any) => {
         const key = `${aprobacion.criterio_id}-${aprobacion.proceso_id}`;
-        aprobacionesMap.set(key, aprobacion.estado as EstadoAprobacion);
+        approvalsMap.set(key, aprobacion.estado as ApprovalStatus);
       });
       
-      // Asignar estado de aprobación según el proceso seleccionado
-      const criteriosConEstado = criteriosArray.map((c: any) => {
+      // Assign approval status according to selected process
+      const criteriaWithStatus = criteriaArray.map((c: any) => {
         const key = selectedProcesoId ? `${c.id}-${selectedProcesoId}` : '';
-        const estadoAprobacion = aprobacionesMap.get(key) || 'pendiente';
+        const approvalStatus = approvalsMap.get(key) || 'pendiente';
         
         return {
           ...c,
-          estado_aprobacion: estadoAprobacion as EstadoAprobacion
+          estado_aprobacion: approvalStatus as ApprovalStatus
         };
       });
       
-      // Filtrar solo criterios aprobados
-      const criteriosAprobados = criteriosConEstado.filter(
+      // Filter only approved criteria
+      const approvedCriteria = criteriaWithStatus.filter(
         (c: Criterio) => c.estado_aprobacion === 'aprobado'
       );
       
-      setCriterios(criteriosAprobados);
-      setEvidencias(evidenciasArray);
-      setProcesos(procesosArray);
+      setCriteria(approvedCriteria);
+      setEvidences(evidencesArray);
+      setProcesses(processesArray);
     } catch (error) {
       console.error('Error:', error);
     } finally {
@@ -119,13 +122,13 @@ const InformesFinales: React.FC = () => {
   };
 
   const getEvidenciasPorCriterio = (criterioId: number) => {
-    return evidencias.filter(ev => ev.criterio_id === criterioId);
+    return evidences.filter(ev => ev.criterio_id === criterioId);
   };
   
   const toggleEvidencias = async (criterioId: number) => {
-    const isExpanding = !expandedCriterios.has(criterioId);
+    const isExpanding = !expandedCriteria.has(criterioId);
     
-    setExpandedCriterios(prev => {
+    setExpandedCriteria(prev => {
       const newSet = new Set(prev);
       if (newSet.has(criterioId)) {
         newSet.delete(criterioId);
@@ -139,28 +142,28 @@ const InformesFinales: React.FC = () => {
     if (isExpanding) {
       const evidenciasCriterio = getEvidenciasPorCriterio(criterioId);
       await Promise.all(
-        evidenciasCriterio.map(evidencia => loadArchivosEvidencia(evidencia.id))
+        evidenciasCriterio.map(evidencia => loadEvidenceFiles(evidencia.id))
       );
     }
   };
 
-  const loadArchivosEvidencia = async (evidenciaId: number) => {
-    if (loadingArchivos.has(evidenciaId)) return;
+  const loadEvidenceFiles = async (evidenciaId: number) => {
+    if (loadingFiles.has(evidenciaId)) return;
     
-    setLoadingArchivos(prev => new Set(prev).add(evidenciaId));
+    setLoadingFiles(prev => new Set(prev).add(evidenciaId));
     
     try {
       const response = await axiosInstance.get(`/archivos?evidencia_id=${evidenciaId}`);
       const archivos = response.data.data || response.data;
       
-      // Actualizar evidencias con archivos cargados
-      setEvidencias(prev => prev.map(ev => 
+      // Update evidences with loaded files
+      setEvidences(prev => prev.map(ev => 
         ev.id === evidenciaId ? { ...ev, archivos } : ev
       ));
     } catch (error) {
       console.error('Error cargando archivos:', error);
     } finally {
-      setLoadingArchivos(prev => {
+      setLoadingFiles(prev => {
         const newSet = new Set(prev);
         newSet.delete(evidenciaId);
         return newSet;
@@ -186,7 +189,7 @@ const InformesFinales: React.FC = () => {
       : '';
   };
 
-  const handleGenerarEnlace = (archivo: Archivo, evidencia: Evidencia) => {
+  const handleGenerateLink = (archivo: Archivo, evidencia: Evidencia) => {
     setSelectedArchivo(archivo);
     setSelectedEvidencia(evidencia);
     setPublicLinkModalOpen(true);
@@ -199,20 +202,20 @@ const InformesFinales: React.FC = () => {
       return;
     }
 
-    handleGenerarEnlace(archivo, evidencia);
+    handleGenerateLink(archivo, evidencia);
   };
 
   const handleEnlaceGenerado = async () => {
     // Recargar los archivos de la evidencia seleccionada
     if (selectedEvidencia) {
-      await loadArchivosEvidencia(selectedEvidencia.id);
+      await loadEvidenceFiles(selectedEvidencia.id);
     }
     setPublicLinkModalOpen(false);
     setSelectedArchivo(null);
     setSelectedEvidencia(null);
   };
 
-  const handleGenerarTodosLosEnlaces = async () => {
+  const handleGenerateAllLinks = async () => {
     if (!selectedProcesoId) {
       alert('Seleccione un proceso primero');
       return;
@@ -225,10 +228,10 @@ const InformesFinales: React.FC = () => {
     if (!confirmacion) return;
 
     try {
-      // Recopilar todos los archivos de todas las evidencias
+      // Collect all files from all evidences
       const todosLosArchivos: number[] = [];
       
-      for (const criterio of criterios) {
+      for (const criterio of criteria) {
         const evidenciasCriterio = getEvidenciasPorCriterio(criterio.id);
         for (const evidencia of evidenciasCriterio) {
           if (evidencia.archivos) {
@@ -252,11 +255,11 @@ const InformesFinales: React.FC = () => {
 
       alert(`Se generaron ${todosLosArchivos.length} enlaces públicos exitosamente`);
       
-      // Recargar todas las evidencias expandidas
-      for (const criterioId of Array.from(expandedCriterios)) {
+      // Reload all expanded evidences
+      for (const criterioId of Array.from(expandedCriteria)) {
         const evidenciasCriterio = getEvidenciasPorCriterio(criterioId);
         await Promise.all(
-          evidenciasCriterio.map(ev => loadArchivosEvidencia(ev.id))
+          evidenciasCriterio.map(ev => loadEvidenceFiles(ev.id))
         );
       }
     } catch (error: any) {
@@ -266,7 +269,7 @@ const InformesFinales: React.FC = () => {
   };
 
   const buildReportRows = () => {
-    return criterios.flatMap((criterio) => {
+    return criteria.flatMap((criterio) => {
       const evidenciasCriterio = getEvidenciasPorCriterio(criterio.id);
       return evidenciasCriterio.map((evidencia) => ({
         criterio: `${criterio.nomenclatura} - ${criterio.descripcion}`,
@@ -293,61 +296,23 @@ const InformesFinales: React.FC = () => {
   };
 
   const exportToPdf = (rows: Array<{ criterio: string; evidencia: string; link: string }>) => {
-    const procesoSeleccionado = procesos.find(p => p.proceso_id === selectedProcesoId);
+    const procesoSeleccionado = processes.find(p => p.proceso_id === selectedProcesoId);
     if (!procesoSeleccionado) return;
 
-    const html = `
-      <!DOCTYPE html>
-      <html lang="es">
-      <head>
-        <meta charset="utf-8" />
-        <title>Informe de Evidencias</title>
-        <style>
-          body { font-family: Arial, sans-serif; color: #111; padding: 24px; }
-          h1 { font-size: 18px; margin: 0 0 8px; }
-          .meta { font-size: 12px; color: #555; margin-bottom: 16px; }
-          table { width: 100%; border-collapse: collapse; font-size: 12px; }
-          th, td { border: 1px solid #ddd; padding: 8px; vertical-align: top; }
-          th { background: #f5f5f5; text-align: left; }
-          .link { color: #0b5fff; word-break: break-all; }
-        </style>
-      </head>
-      <body>
-        <h1>Informe de Evidencias con Enlaces</h1>
-        <div class="meta">
-          Proceso: ${procesoSeleccionado.accreditation_cycle.career_campus.career.nombre} - ${procesoSeleccionado.accreditation_cycle.career_campus.campus.nombre}<br />
-          Tipo: ${procesoSeleccionado.tipo_proceso} | Ciclo: ${procesoSeleccionado.accreditation_cycle.nombre}<br />
-          Generado: ${new Date().toLocaleString()}
-        </div>
-        <table>
-          <thead>
-            <tr>
-              <th>Criterio</th>
-              <th>Evidencia</th>
-              <th>Enlace</th>
-            </tr>
-          </thead>
-          <tbody>
-            ${rows.map((row) => `
-              <tr>
-                <td>${row.criterio}</td>
-                <td>${row.evidencia}</td>
-                <td class="link">${row.link}</td>
-              </tr>
-            `).join('')}
-          </tbody>
-        </table>
-      </body>
-      </html>
-    `;
-
-    const printWindow = window.open('', '_blank', 'width=900,height=700');
-    if (!printWindow) return;
-    printWindow.document.open();
-    printWindow.document.write(html);
-    printWindow.document.close();
-    printWindow.focus();
-    printWindow.print();
+    generatePdfReport({
+      title: 'Informe de Evidencias con Enlaces',
+      metadata: {
+        'Proceso': `${procesoSeleccionado.accreditation_cycle.career_campus.career.nombre} - ${procesoSeleccionado.accreditation_cycle.career_campus.campus.nombre}`,
+        'Tipo': `${procesoSeleccionado.tipo_proceso} | Ciclo: ${procesoSeleccionado.accreditation_cycle.nombre}`,
+        'Generado': new Date().toLocaleString()
+      },
+      columns: [
+        { header: 'Criterio', key: 'criterio' },
+        { header: 'Evidencia', key: 'evidencia' },
+        { header: 'Enlace', key: 'link' }
+      ],
+      data: rows
+    });
   };
 
   const handleExportInforme = (format: ExportFormat) => {
@@ -390,12 +355,12 @@ const InformesFinales: React.FC = () => {
                   placeholder="Seleccione un proceso"
                   size="sm"
                   onChange={(value) => setSelectedProcesoId(value ? Number(value) : null)}
-                  options={procesos
-                    .filter(proceso => 
+                  options={processes
+                    .filter((proceso: Proceso) => 
                       proceso.accreditation_cycle?.career_campus?.career?.nombre && 
                       proceso.accreditation_cycle?.career_campus?.campus?.nombre
                     )
-                    .map((proceso) => ({
+                    .map((proceso: Proceso) => ({
                       value: proceso.proceso_id.toString(),
                       label: `${proceso.accreditation_cycle.career_campus.career.nombre} - ${proceso.accreditation_cycle.career_campus.campus.nombre} (${proceso.tipo_proceso})`
                     }))}
@@ -405,12 +370,12 @@ const InformesFinales: React.FC = () => {
             </div>
             
             {/* Botones de acción */}
-            {selectedProcesoId && criterios.length > 0 && (
+            {selectedProcesoId && criteria.length > 0 && (
               <div className="flex gap-3">
                 <Button
                   variant="primary"
                   size="sm"
-                  onClick={handleGenerarTodosLosEnlaces}
+                  onClick={handleGenerateAllLinks}
                 >
                   <SystemIcons.actions.linkIcon className="w-4 h-4" />
                   Generar todos los enlaces
@@ -444,7 +409,7 @@ const InformesFinales: React.FC = () => {
           {/* Lista de criterios aprobados */}
           {selectedProcesoId && (
             <>
-              {criterios.length === 0 ? (
+              {criteria.length === 0 ? (
                 <div className="bg-white shadow sm:rounded-lg p-8 text-center">
                   <SystemIcons.interface.informationCircle className="mx-auto h-12 w-12 text-gray-400" />
                   <h3 className="mt-2 text-sm font-medium text-gray-900">No hay criterios aprobados</h3>
@@ -469,10 +434,10 @@ const InformesFinales: React.FC = () => {
                       </tr>
                     </thead>
                     <tbody className="bg-white divide-y divide-gray-200">
-                      {criterios.map((criterio) => {
+                      {criteria.map((criterio: Criterio) => {
                         const evidenciasCriterio = getEvidenciasPorCriterio(criterio.id);
                         const totalEvidencias = evidenciasCriterio.length;
-                        const isExpanded = expandedCriterios.has(criterio.id);
+                        const isExpanded = expandedCriteria.has(criterio.id);
                         
                         return (
                           <React.Fragment key={criterio.id}>
@@ -519,7 +484,7 @@ const InformesFinales: React.FC = () => {
                                         const tieneEnlace = (evidencia.archivos || []).some(
                                           (archivo) => archivo.is_publico && archivo.token_publico
                                         );
-                                        const isLoading = loadingArchivos.has(evidencia.id);
+                                        const isLoading = loadingFiles.has(evidencia.id);
 
                                         return (
                                           <div
@@ -613,4 +578,4 @@ const InformesFinales: React.FC = () => {
   );
 };
 
-export default InformesFinales;
+export default FinalReports;

@@ -1,5 +1,5 @@
 /**
- * CriterioModal - Modal para configurar un criterio del compromiso
+ * CriterionModal - Modal para configurar un criterio del compromiso
  * Permite seleccionar evidencias, encargados, fecha límite y comentario
  */
 
@@ -14,7 +14,7 @@ import { userService, type User } from '@/Services/UserService';
 import type { Criterio, Evidencia, CriterioSeleccionado } from '@/Types/ImprovementCommitmentTypes';
 import type { MultiSelectOption } from '@/Components/Ui/Forms/MultiSelect';
 
-interface CriterioModalProps {
+interface CriterionModalProps {
   isOpen: boolean;
   onClose: () => void;
   criterio: Criterio;
@@ -23,7 +23,7 @@ interface CriterioModalProps {
   modoEdicion: boolean;
 }
 
-export const CriterioModal: React.FC<CriterioModalProps> = ({
+export const CriterionModal: React.FC<CriterionModalProps> = ({
   isOpen,
   onClose,
   criterio,
@@ -36,10 +36,10 @@ export const CriterioModal: React.FC<CriterioModalProps> = ({
   const [usuarios, setUsuarios] = useState<User[]>([]);
   
   // Form state
-  const [evidenciasSeleccionadas, setEvidenciasSeleccionadas] = useState<number[]>(
+  const [selectedEvidences, setSelectedEvidences] = useState<number[]>(
     configuracionExistente?.evidencias_seleccionadas || []
   );
-  const [encargadosUsuarios, setEncargadosUsuarios] = useState<number[]>(
+  const [assignedUsers, setAssignedUsers] = useState<number[]>(
     configuracionExistente?.encargados_usuarios || []
   );
   const [fechaLimite, setFechaLimite] = useState(
@@ -53,11 +53,11 @@ export const CriterioModal: React.FC<CriterioModalProps> = ({
 
   useEffect(() => {
     if (isOpen) {
-      cargarDatos();
+      loadData();
     }
   }, [isOpen, criterio.criterio_id]);
 
-  const cargarDatos = async () => {
+  const loadData = async () => {
     try {
       setLoading(true);
 
@@ -109,22 +109,22 @@ export const CriterioModal: React.FC<CriterioModalProps> = ({
       }));
   }, [usuarios]);
 
-  const handleSeleccionarTodasEvidencias = () => {
-    if (evidenciasSeleccionadas.length === evidencias.length) {
-      setEvidenciasSeleccionadas([]);
+  const handleSelectAllEvidences = () => {
+    if (selectedEvidences.length === evidencias.length) {
+      setSelectedEvidences([]);
     } else {
-      setEvidenciasSeleccionadas(evidencias.map(e => e.evidencia_id));
+      setSelectedEvidences(evidencias.map(e => e.evidencia_id));
     }
   };
 
   const validate = (): boolean => {
     const newErrors: Record<string, string> = {};
 
-    if (evidenciasSeleccionadas.length === 0) {
+    if (selectedEvidences.length === 0) {
       newErrors.evidencias = 'Debe seleccionar al menos una evidencia';
     }
 
-    if (encargadosUsuarios.length === 0) {
+    if (assignedUsers.length === 0) {
       newErrors.encargados = 'Debe seleccionar al menos un usuario';
     }
 
@@ -144,8 +144,8 @@ export const CriterioModal: React.FC<CriterioModalProps> = ({
     const config: CriterioSeleccionado = {
       criterio_id: criterio.criterio_id,
       criterio: criterio,
-      evidencias_seleccionadas: evidenciasSeleccionadas,
-      encargados_usuarios: encargadosUsuarios,
+      evidencias_seleccionadas: selectedEvidences,
+      encargados_usuarios: assignedUsers,
       encargados_roles: [],
       fecha_limite: fechaLimite || undefined,
       comentario: comentario || undefined
@@ -156,7 +156,7 @@ export const CriterioModal: React.FC<CriterioModalProps> = ({
     onGuardar(config);
   };
 
-  const todasSeleccionadas = evidenciasSeleccionadas.length === evidencias.length && evidencias.length > 0;
+  const allSelected = selectedEvidences.length === evidencias.length && evidencias.length > 0;
 
   return (
     <Modal
@@ -184,19 +184,19 @@ export const CriterioModal: React.FC<CriterioModalProps> = ({
               </label>
               <button
                 type="button"
-                onClick={handleSeleccionarTodasEvidencias}
+                onClick={handleSelectAllEvidences}
                 className="text-xs text-rojo-una-2 hover:underline flex items-center gap-1"
               >
                 <SystemIcons.interface.checkCircle size="xs" />
-                {todasSeleccionadas ? 'Deseleccionar todas' : 'Seleccionar todas'}
+                {allSelected ? 'Deseleccionar todas' : 'Seleccionar todas'}
               </button>
             </div>
             
             <MultiSelect
               label=""
               options={evidenciaOptions}
-              value={evidenciasSeleccionadas.map(id => id.toString())}
-              onChange={(values) => setEvidenciasSeleccionadas(values.map(v => parseInt(v)))}
+              value={selectedEvidences.map(id => id.toString())}
+              onChange={(values) => setSelectedEvidences(values.map(v => parseInt(v)))}
               placeholder="Seleccione evidencias..."
               required
               showSelectAll={false}
@@ -207,7 +207,7 @@ export const CriterioModal: React.FC<CriterioModalProps> = ({
             )}
             
             <p className="mt-1 text-xs text-gris-una">
-              {evidenciasSeleccionadas.length} de {evidencias.length} evidencias seleccionadas
+              {selectedEvidences.length} de {evidencias.length} evidencias seleccionadas
             </p>
           </div>
 
@@ -219,8 +219,8 @@ export const CriterioModal: React.FC<CriterioModalProps> = ({
             <MultiSelect
               label=""
               options={usuarioOptions}
-              value={encargadosUsuarios.map(id => id.toString())}
-              onChange={(values) => setEncargadosUsuarios(values.map(v => Number(v)))}
+              value={assignedUsers.map(id => id.toString())}
+              onChange={(values) => setAssignedUsers(values.map(v => Number(v)))}
               placeholder="Seleccione usuarios..."
               selectAllText="Seleccionar todos"
               deselectAllText="Deseleccionar todos"
@@ -233,7 +233,7 @@ export const CriterioModal: React.FC<CriterioModalProps> = ({
             )}
             
             <p className="mt-1 text-xs text-gris-una">
-              {encargadosUsuarios.length} usuario(s) seleccionado(s)
+              {assignedUsers.length} usuario(s) seleccionado(s)
             </p>
           </div>
 

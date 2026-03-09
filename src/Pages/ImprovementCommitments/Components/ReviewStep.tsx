@@ -1,5 +1,5 @@
 /**
- * RevisionStep - Paso 2 del wizard de creación de compromisos
+ * ReviewStep - Paso 2 del wizard de creación de compromisos
  * Permite revisar criterios seleccionados e ingresar descripción y fechas
  */
 
@@ -10,7 +10,7 @@ import { SystemIcons } from '@/Components/Ui/Icons/SystemIcons';
 import { Modal } from '@/Components/Ui/Modals/Modal';
 import type { CompromisoFormData, CriterioSeleccionado, ValidationErrors } from '@/Types/ImprovementCommitmentTypes';
 
-interface RevisionStepProps {
+interface ReviewStepProps {
   formData: CompromisoFormData;
   updateFormData: (updates: Partial<CompromisoFormData>) => void;
   onSubmit: () => void;
@@ -18,17 +18,17 @@ interface RevisionStepProps {
   errors: ValidationErrors;
 }
 
-export const RevisionStep: React.FC<RevisionStepProps> = ({
+export const ReviewStep: React.FC<ReviewStepProps> = ({
   formData,
   updateFormData,
   errors
 }) => {
-  const [showDetalleModal, setShowDetalleModal] = useState(false);
-  const [criterioDetalle, setCriterioDetalle] = useState<CriterioSeleccionado | null>(null);
+  const [showDetailModal, setShowDetailModal] = useState(false);
+  const [criterionDetail, setCriterionDetail] = useState<CriterioSeleccionado | null>(null);
 
-  const handleVerDetalle = (criterio: CriterioSeleccionado) => {
-    setCriterioDetalle(criterio);
-    setShowDetalleModal(true);
+  const handleViewDetail = (criterio: CriterioSeleccionado) => {
+    setCriterionDetail(criterio);
+    setShowDetailModal(true);
   };
 
   return (
@@ -107,7 +107,7 @@ export const RevisionStep: React.FC<RevisionStepProps> = ({
                 <div
                   key={criterio.criterio_id}
                   className="border border-gray-200 rounded-lg p-4 hover:border-gray-300 transition-colors cursor-pointer"
-                  onClick={() => handleVerDetalle(criterio)}
+                  onClick={() => handleViewDetail(criterio)}
                 >
                   <div className="flex items-start justify-between">
                     <div className="flex-1">
@@ -203,43 +203,43 @@ export const RevisionStep: React.FC<RevisionStepProps> = ({
       </div>
 
       {/* Modal de Detalle de Criterio */}
-      {showDetalleModal && criterioDetalle && (
+      {showDetailModal && criterionDetail && (
         <Modal
-          isOpen={showDetalleModal}
+          isOpen={showDetailModal}
           onClose={() => {
-            setShowDetalleModal(false);
-            setCriterioDetalle(null);
+            setShowDetailModal(false);
+            setCriterionDetail(null);
           }}
-          title={`Detalle: ${criterioDetalle.criterio.nomenclatura}`}
+          title={`Detalle: ${criterionDetail.criterio.nomenclatura}`}
           size="md"
         >
           <div className="space-y-4">
             <div>
               <p className="text-xs font-medium text-gris-una mb-1">Descripción</p>
-              <p className="text-sm text-negro-una">{criterioDetalle.criterio.descripcion}</p>
+              <p className="text-sm text-negro-una">{criterionDetail.criterio.descripcion}</p>
             </div>
 
             <div className="border-t border-gray-200 pt-4">
               <p className="text-xs font-medium text-gris-una mb-2">
-                Evidencias seleccionadas ({criterioDetalle.evidencias_seleccionadas.length})
+                Evidencias seleccionadas ({criterionDetail.evidencias_seleccionadas.length})
               </p>
-              <p className="text-sm text-negro-una">
-                {criterioDetalle.evidencias_seleccionadas.length} evidencias serán asignadas
+              <p className="text-sm text-gris-una">
+                {criterionDetail.evidencias_seleccionadas.length} evidencias serán asignadas
               </p>
             </div>
 
             <div className="border-t border-gray-200 pt-4">
               <p className="text-xs font-medium text-gris-una mb-2">Encargados</p>
               <p className="text-sm text-negro-una">
-                {criterioDetalle.encargados_usuarios.length} usuario(s) asignado(s)
+                {criterionDetail.encargados_usuarios.length} usuario(s) asignado(s)
               </p>
             </div>
 
-            {criterioDetalle.fecha_limite && (
+            {criterionDetail.fecha_limite && (
               <div className="border-t border-gray-200 pt-4">
                 <p className="text-xs font-medium text-gris-una mb-1">Fecha límite</p>
                 <p className="text-sm text-negro-una">
-                  {new Date(criterioDetalle.fecha_limite).toLocaleDateString('es-CR', {
+                  {new Date(criterionDetail.fecha_limite).toLocaleDateString('es-CR', {
                     weekday: 'long',
                     year: 'numeric',
                     month: 'long',
@@ -249,11 +249,11 @@ export const RevisionStep: React.FC<RevisionStepProps> = ({
               </div>
             )}
 
-            {criterioDetalle.comentario && (
+            {criterionDetail.comentario && (
               <div className="border-t border-gray-200 pt-4">
                 <p className="text-xs font-medium text-gris-una mb-1">Comentario</p>
                 <p className="text-sm text-negro-una whitespace-pre-wrap">
-                  {criterioDetalle.comentario}
+                  {criterionDetail.comentario}
                 </p>
               </div>
             )}

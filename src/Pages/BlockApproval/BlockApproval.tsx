@@ -11,7 +11,7 @@ import { Pagination } from '@/Components/Ui/Table/Pagination';
 import { FilterButton, type FilterOption } from '@/Components/Ui/Buttons/FilterButton';
 import { Tooltip, TooltipTrigger, TooltipContent } from '@/Components/Ui/Feedback/Tooltip';
 
-type EstadoAprobacion = 'pendiente' | 'aprobado' | 'rechazado';
+type ApprovalStatus = 'pendiente' | 'aprobado' | 'rechazado';
 
 interface Evidencia {
   id: number;
@@ -25,7 +25,7 @@ interface Criterio {
   id: number;
   nomenclatura: string;
   descripcion: string;
-  estado_aprobacion?: EstadoAprobacion;
+  estado_aprobacion?: ApprovalStatus;
 }
 
 interface Proceso {
@@ -45,24 +45,24 @@ interface Proceso {
   };
 }
 
-const AprobacionBloquesSimple: React.FC = () => {
+const BlockApproval: React.FC = () => {
   const [isLoading, setIsLoading] = useState(true);
-  const [criterios, setCriterios] = useState<Criterio[]>([]);
-  const [evidencias, setEvidencias] = useState<Evidencia[]>([]);
-  const [procesos, setProcesos] = useState<Proceso[]>([]);
+  const [criteria, setCriteria] = useState<Criterio[]>([]);
+  const [evidences, setEvidences] = useState<Evidencia[]>([]);
+  const [processes, setProcesses] = useState<Proceso[]>([]);
   const [selectedProcesoId, setSelectedProcesoId] = useState<number | null>(null);
   
   // Estado para el modal de aprobación
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [modalAction, setModalAction] = useState<'aprobar' | 'rechazar'>('aprobar');
-  const [selectedCriterio, setSelectedCriterio] = useState<Criterio | null>(null);
+  const [selectedCriterion, setSelectedCriterion] = useState<Criterio | null>(null);
   
   // Estado para paginación
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 6;
   
   // Estado para evidencias expandidas
-  const [expandedCriterios, setExpandedCriterios] = useState<Set<number>>(new Set());
+  const [expandedCriteria, setExpandedCriteria] = useState<Set<number>>(new Set());
   
   // Estado para modal de éxito
   const [successModalState, setSuccessModalState] = useState<{
@@ -71,14 +71,14 @@ const AprobacionBloquesSimple: React.FC = () => {
   }>({ isOpen: false, action: 'aprobar' });
 
   // Estado para filtro de aprobación
-  const [filtroAprobacion, setFiltroAprobacion] = useState<EstadoAprobacion | 'todos'>('pendiente');
+  const [approvalFilter, setApprovalFilter] = useState<ApprovalStatus | 'todos'>('pendiente');
 
   // Estado para modal de archivos
   const [filesModalOpen, setFilesModalOpen] = useState(false);
   const [selectedEvidencia, setSelectedEvidencia] = useState<Evidencia | null>(null);
 
   // Opciones para el filtro de aprobación
-  const filtroOptions: FilterOption<EstadoAprobacion | 'todos'>[] = [
+  const filtroOptions: FilterOption<ApprovalStatus | 'todos'>[] = [
     { value: 'pendiente', label: 'Pendientes' },
     { value: 'aprobado', label: 'Aprobados' },
     { value: 'rechazado', label: 'Rechazados' }
@@ -92,40 +92,40 @@ const AprobacionBloquesSimple: React.FC = () => {
 
   const fetchData = async () => {
     try {
-      // Cargar criterios, evidencias, procesos y aprobaciones en paralelo
-      const [criteriosResponse, evidenciasResponse, procesosResponse, aprobacionesResponse] = await Promise.all([
+      // Load criteria, evidences, processes and approvals in parallel
+      const [criteriaResponse, evidencesResponse, processesResponse, approvalsResponse] = await Promise.all([
         axiosInstance.get('/estructura/criterios'),
         axiosInstance.get('/estructura/evidencias'),
         axiosInstance.get('/estructura/procesos'),
         axiosInstance.get('/aprobaciones-criterios')
       ]);
       
-      const criteriosArray = criteriosResponse.data.data || criteriosResponse.data;
-      const evidenciasArray = evidenciasResponse.data.data || evidenciasResponse.data;
-      const procesosArray = procesosResponse.data.data || procesosResponse.data;
-      const aprobacionesArray = aprobacionesResponse.data.data || aprobacionesResponse.data;
+      const criteriaArray = criteriaResponse.data.data || criteriaResponse.data;
+      const evidencesArray = evidencesResponse.data.data || evidencesResponse.data;
+      const processesArray = processesResponse.data.data || processesResponse.data;
+      const approvalsArray = approvalsResponse.data.data || approvalsResponse.data;
       
-      // Crear mapa de aprobaciones por criterio_id + proceso_id
-      const aprobacionesMap = new Map<string, EstadoAprobacion>();
-      aprobacionesArray.forEach((aprobacion: any) => {
+      // Create approvals map by criterio_id + proceso_id
+      const approvalsMap = new Map<string, ApprovalStatus>();
+      approvalsArray.forEach((aprobacion: any) => {
         const key = `${aprobacion.criterio_id}-${aprobacion.proceso_id}`;
-        aprobacionesMap.set(key, aprobacion.estado as EstadoAprobacion);
+        approvalsMap.set(key, aprobacion.estado as ApprovalStatus);
       });
       
-      // Asignar estado de aprobación según el proceso seleccionado
-      const criteriosConEstado = criteriosArray.map((c: any) => {
+      // Assign approval status according to selected process
+      const criteriaWithStatus = criteriaArray.map((c: any) => {
         const key = selectedProcesoId ? `${c.id}-${selectedProcesoId}` : '';
-        const estadoAprobacion = aprobacionesMap.get(key) || 'pendiente';
+        const approvalStatus = approvalsMap.get(key) || 'pendiente';
         
         return {
           ...c,
-          estado_aprobacion: estadoAprobacion as EstadoAprobacion
+          estado_aprobacion: approvalStatus as ApprovalStatus
         };
       });
       
-          setCriterios(criteriosConEstado);
-          setEvidencias(evidenciasArray);
-      setProcesos(procesosArray);
+          setCriteria(criteriaWithStatus);
+          setEvidences(evidencesArray);
+      setProcesses(processesArray);
     } catch (error) {
       console.error('Error:', error);
     } finally {
@@ -133,17 +133,17 @@ const AprobacionBloquesSimple: React.FC = () => {
     }
   };
 
-  const getEvidenciasPorCriterio = (criterioId: number) => {
-    return evidencias.filter(ev => ev.criterio_id === criterioId);
+  const getEvidencesByCriterion = (criterionId: number) => {
+    return evidences.filter(ev => ev.criterio_id === criterionId);
   };
   
-  const toggleEvidencias = (criterioId: number) => {
-    setExpandedCriterios(prev => {
+  const toggleEvidences = (criterionId: number) => {
+    setExpandedCriteria(prev => {
       const newSet = new Set(prev);
-      if (newSet.has(criterioId)) {
-        newSet.delete(criterioId);
+      if (newSet.has(criterionId)) {
+        newSet.delete(criterionId);
       } else {
-        newSet.add(criterioId);
+        newSet.add(criterionId);
       }
       return newSet;
     });
@@ -154,43 +154,43 @@ const AprobacionBloquesSimple: React.FC = () => {
     setFilesModalOpen(true);
   };
 
-  // Filtrar criterios según estado de aprobación
-  const criteriosFiltrados = criterios.filter(criterio => {
-    if (filtroAprobacion === 'todos') return true;
-    return criterio.estado_aprobacion === filtroAprobacion;
+  // Filter criteria by approval status
+  const filteredCriteria = criteria.filter(criterio => {
+    if (approvalFilter === 'todos') return true;
+    return criterio.estado_aprobacion === approvalFilter;
   });
 
-  // Calcular datos paginados
-  const totalPages = Math.ceil(criteriosFiltrados.length / itemsPerPage);
-  const paginatedCriterios = criteriosFiltrados.slice(
+  // Calculate paginated data
+  const totalPages = Math.ceil(filteredCriteria.length / itemsPerPage);
+  const paginatedCriteria = filteredCriteria.slice(
     (currentPage - 1) * itemsPerPage,
     currentPage * itemsPerPage
   );
 
-  // Resetear página cuando cambian los criterios filtrados
+  // Reset page when filtered criteria changes
   useEffect(() => {
     setCurrentPage(1);
-  }, [criteriosFiltrados.length]);
+  }, [filteredCriteria.length]);
 
   const handleAprobar = (criterio: Criterio) => {
-    setSelectedCriterio(criterio);
+    setSelectedCriterion(criterio);
     setModalAction('aprobar');
     setIsModalOpen(true);
   };
 
   const handleRechazar = (criterio: Criterio) => {
-    setSelectedCriterio(criterio);
+    setSelectedCriterion(criterio);
     setModalAction('rechazar');
     setIsModalOpen(true);
   };
 
   const handleConfirmAction = async (comentario: string) => {
-    if (!selectedCriterio || !selectedProcesoId) return;
+    if (!selectedCriterion || !selectedProcesoId) return;
 
     try {
       const endpoint = modalAction === 'aprobar' 
-        ? `/criterios/${selectedCriterio.id}/aprobar`
-        : `/criterios/${selectedCriterio.id}/rechazar`;
+        ? `/criterios/${selectedCriterion.id}/aprobar`
+        : `/criterios/${selectedCriterion.id}/rechazar`;
 
       const response = await axiosInstance.post(endpoint, {
         proceso_id: selectedProcesoId,
@@ -201,7 +201,7 @@ const AprobacionBloquesSimple: React.FC = () => {
 
       // Cerrar modal de confirmación
       setIsModalOpen(false);
-      setSelectedCriterio(null);
+      setSelectedCriterion(null);
       
       // Mostrar modal de éxito
       setSuccessModalState({
@@ -221,7 +221,7 @@ const AprobacionBloquesSimple: React.FC = () => {
       
       // Cerrar modal de confirmación
       setIsModalOpen(false);
-      setSelectedCriterio(null);
+      setSelectedCriterion(null);
     }
   };
 
@@ -245,7 +245,7 @@ const AprobacionBloquesSimple: React.FC = () => {
                 placeholder="Seleccione un proceso"
                 size="sm"
                 onChange={(value) => setSelectedProcesoId(value ? Number(value) : null)}
-                options={procesos
+                options={processes
                   .filter(proceso => 
                     proceso.accreditation_cycle?.career_campus?.career?.nombre && 
                     proceso.accreditation_cycle?.career_campus?.campus?.nombre
@@ -261,8 +261,8 @@ const AprobacionBloquesSimple: React.FC = () => {
             <FilterButton
               tooltipText="Filtrar por estado de aprobación"
               options={filtroOptions}
-              value={filtroAprobacion}
-              onChange={setFiltroAprobacion}
+              value={approvalFilter}
+              onChange={setApprovalFilter}
             />
           </div>
 
@@ -288,17 +288,17 @@ const AprobacionBloquesSimple: React.FC = () => {
                     </tr>
                   </thead>
                   <tbody className="bg-white divide-y divide-gray-200">
-                    {paginatedCriterios.length === 0 ? (
+                    {paginatedCriteria.length === 0 ? (
                       <tr>
                         <td colSpan={4} className="px-4 py-8 text-center text-sm text-gray-500">
                           No hay criterios disponibles para el filtro seleccionado
                         </td>
                       </tr>
                     ) : (
-                      paginatedCriterios.map((criterio) => {
-                        const evidenciasCriterio = getEvidenciasPorCriterio(criterio.id);
-                        const totalEvidencias = evidenciasCriterio.length;
-                        const isExpanded = expandedCriterios.has(criterio.id);
+                      paginatedCriteria.map((criterio) => {
+                        const criterionEvidences = getEvidencesByCriterion(criterio.id);
+                        const totalEvidencias = criterionEvidences.length;
+                        const isExpanded = expandedCriteria.has(criterio.id);
                         
                         return (
                           <React.Fragment key={criterio.id}>
@@ -312,7 +312,7 @@ const AprobacionBloquesSimple: React.FC = () => {
                               <td className="px-4 py-3 text-center">
                                 {totalEvidencias > 0 ? (
                                   <button
-                                    onClick={() => toggleEvidencias(criterio.id)}
+                                    onClick={() => toggleEvidences(criterio.id)}
                                     className="inline-flex items-center gap-2 px-2.5 py-1 text-xs font-medium text-gray-700 bg-gray-50 hover:bg-gray-100 rounded-md transition-colors whitespace-nowrap"
                                   >
                                     <span>{totalEvidencias} evidencia{totalEvidencias !== 1 ? 's' : ''}</span>
@@ -330,7 +330,7 @@ const AprobacionBloquesSimple: React.FC = () => {
                                 )}
                               </td>
                               <td className="px-4 py-3 text-center">
-                                {filtroAprobacion === 'pendiente' ? (
+                                {approvalFilter === 'pendiente' ? (
                                   <div className="flex gap-2 justify-center">
                                     <Button
                                       variant="primary"
@@ -351,7 +351,7 @@ const AprobacionBloquesSimple: React.FC = () => {
                                   </div>
                                 ) : (
                                   <span className="text-sm text-gray-500">
-                                    {filtroAprobacion === 'aprobado' ? 'Aprobado' : 'Rechazado'}
+                                    {approvalFilter === 'aprobado' ? 'Aprobado' : 'Rechazado'}
                                   </span>
                                 )}
                               </td>
@@ -366,7 +366,7 @@ const AprobacionBloquesSimple: React.FC = () => {
                                       Evidencias del Criterio:
                                     </h4>
                                     <div className="border border-gray-200 rounded-md overflow-hidden bg-white">
-                                      {evidenciasCriterio.map((evidencia) => (
+                                      {criterionEvidences.map((evidencia: Evidencia) => (
                                         <div
                                           key={evidencia.id}
                                           className="flex items-center justify-between px-3 py-2 border-b border-gray-100 last:border-b-0 hover:bg-gray-50"
@@ -421,17 +421,17 @@ const AprobacionBloquesSimple: React.FC = () => {
       )}
       
       {/* Modal de confirmación */}
-      {selectedCriterio && (
+      {selectedCriterion && (
         <ApprovalModal
           isOpen={isModalOpen}
           onClose={() => {
             setIsModalOpen(false);
-            setSelectedCriterio(null);
+            setSelectedCriterion(null);
           }}
           onConfirm={handleConfirmAction}
           action={modalAction}
-          criterio={selectedCriterio}
-          evidencias={getEvidenciasPorCriterio(selectedCriterio.id)}
+          criterio={selectedCriterion}
+          evidencias={getEvidencesByCriterion(selectedCriterion.id)}
         />
       )}
       
@@ -456,4 +456,4 @@ const AprobacionBloquesSimple: React.FC = () => {
   );
 };
 
-export default AprobacionBloquesSimple;
+export default BlockApproval;
