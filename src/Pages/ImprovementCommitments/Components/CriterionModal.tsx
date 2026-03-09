@@ -267,18 +267,16 @@ export const CriterionModal: React.FC<CriterionModalProps> = ({
           {/* Botones */}
           <div className="flex justify-end gap-3 pt-4 border-t border-gray-200">
             <Button
-              variant="outline"
+              variant="error"
               onClick={onClose}
             >
               Cancelar
             </Button>
             <Button
-              variant="secondary"
+              variant="primary"
               onClick={handleGuardar}
-              className="gap-2"
             >
-              <SystemIcons.interface.checkCircle size="sm" />
-              {modoEdicion ? 'Actualizar' : 'Agregar Criterio'}
+              {modoEdicion ? 'Actualizar' : 'Agregar'}
             </Button>
           </div>
         </div>

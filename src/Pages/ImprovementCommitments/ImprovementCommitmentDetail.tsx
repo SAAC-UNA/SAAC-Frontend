@@ -1,12 +1,18 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { ScreenContainer } from '@/Components/Ui/Layout/ScreenContainer';
-import { Button } from '@/Components/Ui/Index';
+import { Button, PageHeader, Tooltip, TooltipContent, TooltipTrigger } from '@/Components/Ui/Index';
+import { getModuleInfo } from '@/Constants/ModuleInfo';
 import { LoadingSpinner } from '@/Components/Ui/Feedback/Loading';
 import { SystemIcons } from '@/Components/Ui/Icons/SystemIcons';
 import { Modal } from '@/Components/Ui/Modals/Modal';
 import { improvementCommitmentService } from '@/Services/ImprovementCommitmentService';
 import type { CompromisoMejora, CompromisoEstado } from '@/Types/ImprovementCommitmentTypes';
+import { DataTable } from '@/components/index';
+import type { DataTableColumn } from '@/Components/Ui/Table/DataTable';
+import { ButtonWithTooltip } from '@/Components/Ui/Buttons/ButtonWithTooltip';
+import { TYPOGRAPHY } from '@/Constants/Typography';
+import { TABLE_ACTION_BUTTON } from '@/Constants/Components';
 
 const formatDate = (date?: string) => {
   if (!date) return 'Sin fecha';
@@ -18,6 +24,7 @@ const formatDate = (date?: string) => {
 };
 
 export const ImprovementCommitmentDetail: React.FC = () => {
+  const moduleInfo = getModuleInfo('improvement_commitments');
   const { id } = useParams();
   const navigate = useNavigate();
 
@@ -27,6 +34,7 @@ export const ImprovementCommitmentDetail: React.FC = () => {
   const [criterionDetail, setCriterionDetail] = useState<any | null>(null);
   const [showCriterionModal, setShowCriterionModal] = useState(false);
   const [evidenceDetails, setEvidenceDetails] = useState<Record<number, any>>({});
+  const [currentPage, setCurrentPage] = useState(1);
 
   useEffect(() => {
     const fetchDetalle = async () => {
@@ -154,30 +162,131 @@ export const ImprovementCommitmentDetail: React.FC = () => {
     );
   };
 
+  // Paginación para criterios
+  const itemsPerPage = 5;
+  const totalPages = Math.ceil(selectedCriteria.length / itemsPerPage);
+  const paginatedCriteria = React.useMemo(() => {
+    const start = (currentPage - 1) * itemsPerPage;
+    const end = start + itemsPerPage;
+    return selectedCriteria.slice(start, end);
+  }, [selectedCriteria, currentPage]);
+
+  // Columnas del DataTable de criterios
+  const criteriaColumns: DataTableColumn<any>[] = [
+    {
+      key: 'nomenclatura',
+      header: 'Nomenclatura',
+      align: 'center',
+      width: '150px',
+      render: (_, item) => (
+        <p className={`block font-sans antialiased font-medium leading-normal text-negro-una ${TYPOGRAPHY.table.cell}`}>
+          {item.criterio?.nomenclatura || 'Criterio'}
+        </p>
+      )
+    },
+    {
+      key: 'descripcion',
+      header: 'Descripción',
+      align: 'left',
+      render: (_, item) => (
+        <p 
+          className={`block font-sans antialiased font-normal leading-normal text-gris-una max-w-2xl truncate ${TYPOGRAPHY.table.cell}`}
+          title={item.criterio?.descripcion || 'Sin descripción'}
+        >
+          {item.criterio?.descripcion || 'Sin descripción'}
+        </p>
+      )
+    },
+    {
+      key: 'estado',
+      header: 'Estado',
+      align: 'center',
+      width: '150px',
+      render: (_, item) => (
+        <div className="w-max mx-auto">
+          {estadoBadge(getCriterionStatus(item.criterio?.criterio_id) as CompromisoEstado)}
+        </div>
+      )
+    },
+    {
+      key: 'actions',
+      header: 'Acciones',
+      align: 'center',
+      width: '100px',
+      render: (_, item) => (
+        <div className="flex items-center justify-center">
+          <ButtonWithTooltip
+            variant="tableView"
+            size="sm"
+            tooltip="Ver detalles"
+            onClick={() => handleOpenCriterion(item)}
+            className={TABLE_ACTION_BUTTON.button}
+          >
+            <SystemIcons.actions.view className={TABLE_ACTION_BUTTON.icon} />
+          </ButtonWithTooltip>
+        </div>
+      )
+    }
+  ];
+
   return (
     <ScreenContainer>
-      <div className="space-y-6">
-        {/* Header */}
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <button
-              onClick={() => navigate('/compromisos/listar')}
-              className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
-            >
-              <SystemIcons.navigation.arrow.left size="md" className="text-gris-una" />
-            </button>
-            <div>
-              <h1 className="text-2xl font-bold text-negro-una">Detalle del Compromiso</h1>
-              <p className="text-sm text-gris-una">Visualice criterios, encargados y fechas</p>
+      <div className="space-y-4">
+        {/* Header con botón volver integrado */}
+        <div className="flex items-center gap-3">
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <button
+                onClick={() => navigate('/compromisos/listar')}
+                className="p-2 hover:bg-gray-100 rounded-lg transition-colors flex-shrink-0 -mt-1"
+              >
+                <SystemIcons.navigation.arrow.left size="md" className="text-gris-una" />
+              </button>
+            </TooltipTrigger>
+            <TooltipContent side="bottom">Volver a la lista</TooltipContent>
+          </Tooltip>
+          <div className="flex-1">
+            <div className="flex items-start justify-between gap-4">
+              <div>
+                <PageHeader
+                  title={`Detalle del ${moduleInfo.title.replace('Compromisos de Mejora', 'Compromiso')}`}
+                  description="Visualice criterios, encargados y fechas"
+                />
+              </div>
+              <div className="flex items-center gap-4 pt-1">
+                {/* Info general compacta en el header */}
+                {compromiso && (
+                  <div className="flex items-center gap-4 text-xs text-gris-una bg-gray-50 border border-gray-200 rounded-lg px-3 py-2">
+                    <div className="flex items-center gap-1.5">
+                      <SystemIcons.interface.calendar size="xs" className="w-3.5 h-3.5" />
+                      <span className="whitespace-nowrap">
+                        {formatDate(compromiso.fecha_inicio)} - {formatDate(compromiso.fecha_fin)}
+                      </span>
+                    </div>
+                    <div className="w-px h-4 bg-gray-300"></div>
+                    <div className="flex items-center gap-1.5">
+                      <SystemIcons.modal.document size="xs" className="w-3.5 h-3.5" />
+                      <span className="whitespace-nowrap">
+                        {compromiso.process?.accreditationCycle?.nombre ||
+                          (compromiso.process as any)?.accreditation_cycle?.nombre ||
+                          'Sin ciclo'}
+                      </span>
+                    </div>
+                  </div>
+                )}
+                {compromiso?.estado && estadoBadge(compromiso.estado)}
+              </div>
             </div>
           </div>
-          {compromiso?.estado && estadoBadge(compromiso.estado)}
         </div>
 
         {/* Content */}
         {loading ? (
           <div className="flex justify-center items-center py-12">
-            <LoadingSpinner size="lg" />
+            <div className="text-center">
+              <LoadingSpinner size="lg" color="gray" className="mx-auto mb-4" />
+              <p className="text-gris-una">Cargando...</p>
+            </div>
           </div>
         ) : error ? (
           <div className="bg-white border border-gray-200 rounded-lg p-6">
@@ -189,68 +298,40 @@ export const ImprovementCommitmentDetail: React.FC = () => {
             </div>
           </div>
         ) : compromiso ? (
-          <div className="space-y-6">
-            {/* Informacion General */}
-            <div className="bg-white border border-gray-200 rounded-lg p-6">
-              <h2 className="text-base font-semibold text-negro-una mb-4">Informacion general</h2>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div>
-                  <p className="text-xs font-medium text-gris-una mb-1">Descripcion</p>
-                  <p className="text-sm text-negro-una">{compromiso.descripcion || 'Sin descripcion'}</p>
-                </div>
-                <div>
-                  <p className="text-xs font-medium text-gris-una mb-1">Fechas</p>
-                  <p className="text-sm text-negro-una">
-                    {formatDate(compromiso.fecha_inicio)} - {formatDate(compromiso.fecha_fin)}
-                  </p>
-                </div>
-                <div>
-                  <p className="text-xs font-medium text-gris-una mb-1">Ciclo</p>
-                  <p className="text-sm text-negro-una">
-                    {compromiso.process?.accreditationCycle?.nombre ||
-                      (compromiso.process as any)?.accreditation_cycle?.nombre ||
-                      'Sin ciclo'}
-                  </p>
-                </div>
+          <div className="space-y-4">
+            {/* Descripción del compromiso - sin card */}
+            {compromiso.descripcion && (
+              <div className="px-1">
+                <p className="text-sm text-gris-una mb-1 font-medium">Descripción</p>
+                <p className="text-sm text-negro-una">{compromiso.descripcion}</p>
               </div>
-            </div>
+            )}
 
-            {/* Criterios */}
-            <div className="bg-white border border-gray-200 rounded-lg p-6">
-              <div className="flex items-center justify-between mb-4">
-                <h2 className="text-base font-semibold text-negro-una">Criterios incluidos</h2>
-                <span className="text-sm text-gris-una">
+            {/* Criterios - tabla directa sin card */}
+            <div>
+              <div className="flex items-center justify-between mb-3 px-1">
+                <h2 className="text-sm font-semibold text-negro-una">Criterios incluidos</h2>
+                <span className="text-xs text-gris-una">
                   {selectedCriteria.length} {selectedCriteria.length === 1 ? 'criterio' : 'criterios'}
                 </span>
               </div>
               {selectedCriteria.length === 0 ? (
-                <p className="text-sm text-gris-una">No hay criterios vinculados.</p>
+                <p className="text-sm text-gris-una px-1">No hay criterios vinculados.</p>
               ) : (
-                <div className="grid gap-3">
-                  {selectedCriteria.map((item: any, index: number) => (
-                    <button
-                      key={`${item.criterio?.criterio_id || index}`}
-                      className="border border-gray-200 rounded-lg p-4 text-left hover:border-gray-300 hover:bg-gray-50 transition-colors"
-                      onClick={() => handleOpenCriterion(item)}
-                      type="button"
-                    >
-                      <div className="flex items-start justify-between">
-                        <div>
-                          <p className="text-sm font-semibold text-negro-una">
-                            {item.criterio?.nomenclatura || 'Criterio'}
-                          </p>
-                          <p className="text-sm text-gris-una">
-                            {item.criterio?.descripcion || 'Sin descripcion'}
-                          </p>
-                        </div>
-                        <div className="ml-4 flex items-center gap-2">
-                          {estadoBadge(getCriterionStatus(item.criterio?.criterio_id) as CompromisoEstado)}
-                          <SystemIcons.interface.chevronRight size="md" className="text-gris-una" />
-                        </div>
-                      </div>
-                    </button>
-                  ))}
-                </div>
+                <DataTable
+                  data={paginatedCriteria as any}
+                  columns={criteriaColumns as any}
+                  title=""
+                  searchable={false}
+                  pagination={totalPages > 1 ? {
+                    currentPage,
+                    totalPages,
+                    onPageChange: setCurrentPage
+                  } : undefined}
+                  loading={false}
+                  emptyMessage="No hay criterios vinculados."
+                  unstyled={true}
+                />
               )}
             </div>
 

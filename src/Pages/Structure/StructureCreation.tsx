@@ -3,6 +3,8 @@ import { useNavigate } from 'react-router-dom';
 import { Button } from '@/Components/Ui/Buttons/Button';
 import { Input } from '@/Components/Ui/Forms/Input';
 import { ScreenContainer } from '@/Components/Ui/Layout/ScreenContainer';
+import { PageHeader } from '@/Components/Ui/Index';
+import { getModuleInfo } from '@/Constants/ModuleInfo';
 import { CustomSelect } from '@/Components/Ui/Forms/SingleSelect';
 import { useStructure } from '@/Hooks/UseStructure';
 import { SuccessModal } from '@/Components/Ui/Modals/SuccessModal';
@@ -47,6 +49,7 @@ interface FormErrors {
  * Permite crear cualquier tipo de elemento respetando la jerarquía
  */
 export const StructureCreation: React.FC = () => {
+   const moduleInfo = getModuleInfo('structure_creation');
    const navigate = useNavigate();
   // Hook de estructura para obtener elementos existentes
   const { 
@@ -331,10 +334,11 @@ const handleSubmit = async (e: React.FormEvent) => {
   return (
     <>
       {/* Formulario */}
-      <ScreenContainer
-        title="Crear Elemento de Estructura"
-        description="Agrega un nuevo elemento a la jerarquía del Sistema SAAC-UNA respetando las reglas de estructura."
-      >
+      <ScreenContainer>
+        <PageHeader 
+          title={moduleInfo.title} 
+          description={moduleInfo.description} 
+        />
         <form onSubmit={handleSubmit} className="space-y-6">
           {/* Tipo de Elemento */}
           <CustomSelect
@@ -408,7 +412,7 @@ const handleSubmit = async (e: React.FormEvent) => {
             <Button
               type="button"
               variant="secondary"
-              onClick={() => window.history.back()}
+              onClick={() => navigate('/estructura/listar')}
               standardWidth={true}
               size="sm"
             >

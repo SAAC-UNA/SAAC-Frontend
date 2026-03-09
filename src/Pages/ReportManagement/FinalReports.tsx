@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { ScreenContainer } from '@/Components/Ui/Layout/ScreenContainer';
+import { ScreenContainer, PageHeader } from '@/Components/Ui/Index';
 import { Button, LoadingSpinner } from '@/Components/Ui/Index';
+import { getModuleInfo } from '@/Constants/ModuleInfo';
 import { SystemIcons } from '@/Components/Ui/Icons/SystemIcons';
 import { axiosInstance } from '@/Config/axios';
 import { CustomSelect } from '@/Components/Ui/Forms/SingleSelect';
@@ -8,6 +9,8 @@ import { PublicLinkModal } from './Components/PublicLinkModal';
 import { DropdownButton } from '@/Components/Ui/Buttons/DropdownButton';
 import type { DropdownOption } from '@/Components/Ui/Buttons/DropdownButton';
 import { usePdfExport } from '@/Hooks/usePdfExport';
+import { Modal } from '@/Components/Ui/Modals/Modal';
+import { useToast } from '@/Context/ToastContext';
 
 type ApprovalStatus = 'pendiente' | 'aprobado' | 'rechazado';
 
@@ -55,7 +58,9 @@ interface Proceso {
 type ExportFormat = 'pdf' | 'excel';
 
 const FinalReports: React.FC = () => {
+  const moduleInfo = getModuleInfo('final_reports');
   const { exportToPdf: generatePdfReport } = usePdfExport();
+  const { showToast } = useToast();
   
   const [isLoading, setIsLoading] = useState(true);
   const [criteria, setCriteria] = useState<Criterio[]>([]);
@@ -69,6 +74,10 @@ const FinalReports: React.FC = () => {
   const [publicLinkModalOpen, setPublicLinkModalOpen] = useState(false);
   const [selectedArchivo, setSelectedArchivo] = useState<Archivo | null>(null);
   const [selectedEvidencia, setSelectedEvidencia] = useState<Evidencia | null>(null);
+  
+  // Modal de confirmación para generar todos los enlaces
+  const [showConfirmModal, setShowConfirmModal] = useState(false);
+  const [isGeneratingLinks, setIsGeneratingLinks] = useState(false);
 
   useEffect(() => {
     fetchData();
@@ -76,6 +85,7 @@ const FinalReports: React.FC = () => {
 
   const fetchData = async () => {
     try {
+      setIsLoading(true);
       const [criteriaResponse, evidencesResponse, processesResponse, approvalsResponse] = await Promise.all([
         axiosInstance.get('/estructura/criterios'),
         axiosInstance.get('/estructura/evidencias'),
@@ -198,7 +208,7 @@ const FinalReports: React.FC = () => {
   const handleAbrirEnlaceEvidencia = (evidencia: Evidencia) => {
     const archivo = getArchivoParaEnlace(evidencia);
     if (!archivo) {
-      alert('No hay archivos adjuntos para esta evidencia');
+      showToast({ type: 'warning', title: 'No hay archivos adjuntos para esta evidencia' });
       return;
     }
 
@@ -217,15 +227,16 @@ const FinalReports: React.FC = () => {
 
   const handleGenerateAllLinks = async () => {
     if (!selectedProcesoId) {
-      alert('Seleccione un proceso primero');
+      showToast({ type: 'error', title: 'Seleccione un proceso primero' });
       return;
     }
-
-    const confirmacion = confirm(
-      '¿Está seguro que desea generar enlaces públicos para TODAS las evidencias de los criterios aprobados? Esta acción puede tardar un momento.'
-    );
     
-    if (!confirmacion) return;
+    setShowConfirmModal(true);
+  };
+  
+  const confirmGenerateAllLinks = async () => {
+    setShowConfirmModal(false);
+    setIsGeneratingLinks(true);
 
     try {
       // Collect all files from all evidences
@@ -245,7 +256,7 @@ const FinalReports: React.FC = () => {
       }
 
       if (todosLosArchivos.length === 0) {
-        alert('No hay archivos sin enlace público');
+        showToast({ type: 'info', title: 'No hay archivos sin enlace público' });
         return;
       }
 
@@ -253,7 +264,10 @@ const FinalReports: React.FC = () => {
         archivo_ids: todosLosArchivos
       });
 
-      alert(`Se generaron ${todosLosArchivos.length} enlaces públicos exitosamente`);
+      showToast({ 
+        type: 'success', 
+        title: `Se generaron ${todosLosArchivos.length} enlaces públicos exitosamente` 
+      });
       
       // Reload all expanded evidences
       for (const criterioId of Array.from(expandedCriteria)) {
@@ -264,7 +278,12 @@ const FinalReports: React.FC = () => {
       }
     } catch (error: any) {
       console.error('Error generando enlaces masivos:', error);
-      alert(error.response?.data?.message || 'Error al generar enlaces públicos');
+      showToast({ 
+        type: 'error', 
+        title: error.response?.data?.message || 'Error al generar enlaces públicos' 
+      });
+    } finally {
+      setIsGeneratingLinks(false);
     }
   };
 
@@ -317,13 +336,13 @@ const FinalReports: React.FC = () => {
 
   const handleExportInforme = (format: ExportFormat) => {
     if (!selectedProcesoId) {
-      alert('Seleccione un proceso primero');
+      showToast({ type: 'error', title: 'Seleccione un proceso primero' });
       return;
     }
 
     const rows = buildReportRows();
     if (rows.length === 0) {
-      alert('No hay evidencias para exportar');
+      showToast({ type: 'warning', title: 'No hay evidencias para exportar' });
       return;
     }
 
@@ -335,13 +354,17 @@ const FinalReports: React.FC = () => {
   };
 
   return (
-    <ScreenContainer
-      title="Gestión de Informes Finales"
-      description="Genere enlaces públicos para las evidencias de criterios aprobados y exporte informes"
-    >
+    <ScreenContainer>
+      <PageHeader
+        title={moduleInfo.title}
+        description={moduleInfo.description}
+      />
       {isLoading ? (
         <div className="flex justify-center items-center py-12">
-          <LoadingSpinner size="lg" />
+          <div className="text-center">
+            <LoadingSpinner size="lg" color="gray" className="mx-auto mb-4" />
+            <p className="text-gris-una">Cargando información...</p>
+          </div>
         </div>
       ) : (
         <>
@@ -378,13 +401,13 @@ const FinalReports: React.FC = () => {
                   onClick={handleGenerateAllLinks}
                 >
                   <SystemIcons.actions.linkIcon className="w-4 h-4" />
-                  Generar todos los enlaces
+                  Generar enlaces
                 </Button>
                 <DropdownButton
                   label="Exportar"
-                  variant="secondary"
+                  variant="outline"
                   size="sm"
-                  icon={<SystemIcons.actions.download className="w-4 h-4" />}
+                  icon={<SystemIcons.actions.export className="w-4 h-4" />}
                   options={(
                     [
                       {
@@ -561,6 +584,22 @@ const FinalReports: React.FC = () => {
           )}
         </>
       )}
+      
+      {/* Modal de confirmación para generar todos los enlaces */}
+      <Modal
+        isOpen={showConfirmModal}
+        onClose={() => setShowConfirmModal(false)}
+        title="Generar Enlaces Públicos"
+        size="md"
+        variant="warning"
+        message="¿Está seguro que desea generar enlaces públicos para TODAS las evidencias de los criterios aprobados? Esta acción puede tardar un momento."
+        showConfirm={true}
+        confirmLabel="Generar"
+        onConfirm={confirmGenerateAllLinks}
+        confirmLoading={isGeneratingLinks}
+        showCancel={true}
+        cancelLabel="Cancelar"
+      />
       
       {/* Modal para gestionar enlaces públicos */}
       <PublicLinkModal

@@ -6,12 +6,19 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ScreenContainer } from '@/Components/Ui/Layout/ScreenContainer';
-import { Button, LoadingSpinner } from '@/Components/Ui/Index';
+import { Button, LoadingSpinner, PageHeader, Tooltip, TooltipContent, TooltipTrigger } from '@/Components/Ui/Index';
+import { getModuleInfo } from '@/Constants/ModuleInfo';
 import { SystemIcons } from '@/Components/Ui/Icons/SystemIcons';
 import { improvementCommitmentService } from '@/Services/ImprovementCommitmentService';
 import type { CompromisoMejora } from '@/Types/ImprovementCommitmentTypes';
+import { DataTable } from '@/components/index';
+import type { DataTableColumn } from '@/Components/Ui/Table/DataTable';
+import { ButtonWithTooltip } from '@/Components/Ui/Buttons/ButtonWithTooltip';
+import { TABLE_ACTION_BUTTON } from '@/Constants/Components';
+import { TYPOGRAPHY } from '@/Constants/Typography';
 
 export const ImprovementCommitmentsList: React.FC = () => {
+  const moduleInfo = getModuleInfo('improvement_commitments');
   const navigate = useNavigate();
   
   const [commitments, setCommitments] = useState<CompromisoMejora[]>([]);
@@ -53,23 +60,17 @@ export const ImprovementCommitmentsList: React.FC = () => {
   };
 
   const filteredCommitments = commitments;
-  const nowTs = Date.now();
-  const sortedByEndDate = [...filteredCommitments].sort((a, b) => {
-    const aTs = new Date(a.fecha_fin).getTime();
-    const bTs = new Date(b.fecha_fin).getTime();
-    const aDiff = aTs - nowTs;
-    const bDiff = bTs - nowTs;
-
-    const aUpcoming = aDiff >= 0;
-    const bUpcoming = bDiff >= 0;
-
-    if (aUpcoming && bUpcoming) return aDiff - bDiff;
-    if (!aUpcoming && !bUpcoming) return bDiff - aDiff;
-    return aUpcoming ? -1 : 1;
-  });
-  const featuredCompromiso = sortedByEndDate[0];
-  const remainingCompromisos = sortedByEndDate.slice(1);
-
+  
+  // Paginación
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 5;
+  const totalPages = Math.ceil(filteredCommitments.length / itemsPerPage);
+  const paginatedData = React.useMemo(() => {
+    const start = (currentPage - 1) * itemsPerPage;
+    const end = start + itemsPerPage;
+    return filteredCommitments.slice(start, end);
+  }, [filteredCommitments, currentPage]);
+  
   const formatDate = (fecha: string) => {
     return new Date(fecha).toLocaleDateString('es-CR', {
       year: 'numeric',
@@ -81,46 +82,150 @@ export const ImprovementCommitmentsList: React.FC = () => {
   const handleViewDetail = (id: number) => {
     navigate(`/compromisos/ver/${id}`);
   };
+  
+  // Configuración de columnas de la tabla
+  const columns: DataTableColumn<CompromisoMejora>[] = [
+    {
+      key: 'descripcion',
+      header: 'Descripción',
+      align: 'left',
+      render: (_, compromiso) => (
+        <p 
+          className={`block font-sans antialiased font-normal leading-normal text-gris-una max-w-md truncate ${TYPOGRAPHY.table.cell}`}
+          title={compromiso.descripcion || 'Sin descripción'}
+        >
+          {compromiso.descripcion || 'Sin descripción'}
+        </p>
+      )
+    },
+    {
+      key: 'fecha_inicio',
+      header: 'Fecha Inicio',
+      align: 'center',
+      render: (_, compromiso) => (
+        <p className={`block font-sans antialiased font-normal leading-normal text-gris-una ${TYPOGRAPHY.table.cell}`}>
+          {formatDate(compromiso.fecha_inicio)}
+        </p>
+      )
+    },
+    {
+      key: 'fecha_fin',
+      header: 'Fecha Fin',
+      align: 'center',
+      render: (_, compromiso) => (
+        <p className={`block font-sans antialiased font-normal leading-normal text-gris-una ${TYPOGRAPHY.table.cell}`}>
+          {formatDate(compromiso.fecha_fin)}
+        </p>
+      )
+    },
+    {
+      key: 'criterios',
+      header: 'Criterios',
+      align: 'center',
+      render: (_, compromiso) => (
+        <p className={`block font-sans antialiased font-normal leading-normal text-gris-una ${TYPOGRAPHY.table.cell}`}>
+          {compromiso.selecciones?.length || 0}
+        </p>
+      )
+    },
+    {
+      key: 'asignaciones',
+      header: 'Asignaciones',
+      align: 'center',
+      render: (_, compromiso) => (
+        <p className={`block font-sans antialiased font-normal leading-normal text-gris-una ${TYPOGRAPHY.table.cell}`}>
+          {compromiso.assignedEvidences?.length || 0}
+        </p>
+      )
+    },
+    {
+      key: 'status',
+      header: 'Estado',
+      align: 'center',
+      render: (_, compromiso) => (
+        <div className="w-max mx-auto">
+          <div className={`relative grid items-center px-2 py-1 font-sans font-bold rounded-corner select-none whitespace-nowrap ${TYPOGRAPHY.badge} ${
+            compromiso.is_overdue 
+              ? 'text-red-900 bg-red-500/20' 
+              : 'text-green-900 bg-green-500/20'
+          }`}>
+            <span>{compromiso.is_overdue ? 'Vencido' : 'Activo'}</span>
+          </div>
+        </div>
+      )
+    },
+    {
+      key: 'actions',
+      header: 'Acciones',
+      align: 'center',
+      render: (_, compromiso) => (
+        <div className="flex items-center justify-center gap-2 pr-2">
+          <ButtonWithTooltip
+            variant="tableView"
+            size="sm"
+            tooltip="Ver detalles"
+            onClick={() => handleViewDetail(compromiso.compromiso_mejora_id)}
+            className={TABLE_ACTION_BUTTON.button}
+          >
+            <SystemIcons.actions.view className={TABLE_ACTION_BUTTON.icon} />
+          </ButtonWithTooltip>
+        </div>
+      )
+    }
+  ];
 
   return (
     <ScreenContainer>
-      <div className="space-y-6">
-        {/* Header */}
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-2xl font-bold text-negro-una">Compromisos de Mejora</h1>
-            <p className="mt-1 text-sm text-gris-una">
-              Gestione los compromisos de mejora vinculados a criterios y evidencias
-            </p>
-            <div className="mt-2 inline-flex items-center gap-2 text-xs text-gray-500">
-              <span className="inline-flex items-center rounded-full border border-gray-200 bg-gray-50 px-2 py-0.5">
-                {filteredCommitments.length} total
-              </span>
-              <span className="text-gray-400">•</span>
-              <span className="inline-flex items-center gap-1">
-                <SystemIcons.interface.clock size="xs" className="text-gray-400" />
-                {filteredCommitments.filter((c) => c.is_overdue).length} vencidos
-              </span>
-            </div>
+      <PageHeader 
+        title={moduleInfo.title} 
+        description={moduleInfo.description}
+        headerExtra={
+          <div className="flex items-center gap-3">
+            {/* Stats compactas */}
+            {!loading && filteredCommitments.length > 0 && (
+              <div className="inline-flex items-center gap-2 text-xs">
+                <span className="inline-flex items-center gap-1 px-2 py-1 rounded-md bg-gray-50 border border-gray-200 text-gray-700">
+                  <SystemIcons.modal.document size="xs" className="w-3 h-3" />
+                  {filteredCommitments.length}
+                </span>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <span className={`inline-flex items-center gap-1 px-2 py-1 rounded-md border cursor-default ${
+                      filteredCommitments.filter((c) => c.is_overdue).length > 0
+                        ? 'bg-red-50 border-red-200 text-red-700'
+                        : 'bg-green-50 border-green-200 text-green-700'
+                    }`}>
+                      <SystemIcons.interface.clock size="xs" className="w-3 h-3" />
+                      {filteredCommitments.filter((c) => c.is_overdue).length} vencidos
+                    </span>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    {filteredCommitments.filter((c) => c.is_overdue).length === 0
+                      ? 'No hay compromisos vencidos'
+                      : `${filteredCommitments.filter((c) => c.is_overdue).length} compromiso${filteredCommitments.filter((c) => c.is_overdue).length > 1 ? 's' : ''} ha${filteredCommitments.filter((c) => c.is_overdue).length > 1 ? 'n' : ''} superado su fecha límite`}
+                  </TooltipContent>
+                </Tooltip>
+              </div>
+            )}
+            <Button
+              onClick={() => navigate('/compromisos/crear')}
+              variant="secondary"
+              className="gap-2"
+            >
+              <SystemIcons.actions.add size="sm" />
+              Crear
+            </Button>
           </div>
-          <Button
-            onClick={() => navigate('/compromisos/crear')}
-            variant="secondary"
-            className="gap-2"
-          >
-            <SystemIcons.actions.add size="sm" />
-            Crear
-          </Button>
-        </div>
-
-        {/* Divider */}
-        <div className="border-t border-gray-200"></div>
+        }
+      />
+      <div className="space-y-6">
+        {/* Stats eliminadas de aquí */}
 
         {/* Loading */}
         {loading ? (
           <div className="flex justify-center items-center py-12">
             <div className="text-center">
-              <LoadingSpinner size="lg" className="mx-auto mb-4" />
+              <LoadingSpinner size="lg" color="gray" className="mx-auto mb-4" />
               <p className="text-gris-una">Cargando compromisos...</p>
             </div>
           </div>
@@ -155,105 +260,21 @@ export const ImprovementCommitmentsList: React.FC = () => {
             </div>
           </div>
         ) : (
-          /* Cards de Compromisos */
-          <div className="space-y-5">
-            {featuredCompromiso && (
-              <div
-                className={`rounded-xl border p-5 transition-shadow cursor-pointer bg-gradient-to-br from-gray-50 via-white to-gray-50/60 hover:shadow-md ${
-                  featuredCompromiso.is_overdue ? 'border-red-200' : 'border-gray-200'
-                }`}
-                onClick={() => handleViewDetail(featuredCompromiso.compromiso_mejora_id)}
-              >
-                <div className="flex items-start justify-between gap-4">
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2">
-                      <span className="text-xs font-semibold tracking-wide text-gray-500">Destacado</span>
-                      {featuredCompromiso.is_overdue && (
-                        <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-red-50 border border-red-200 rounded text-xs text-red-800 font-medium">
-                          <SystemIcons.interface.alert size="xs" className="w-3 h-3" />
-                          Vencido
-                        </span>
-                      )}
-                    </div>
-                    <h3 className="mt-2 text-lg font-semibold text-negro-una truncate">
-                      {featuredCompromiso.descripcion || 'Sin descripción'}
-                    </h3>
-
-                    <div className="mt-3 flex flex-wrap items-center gap-2 text-xs text-gray-600">
-                      <span className="inline-flex items-center rounded-full border border-gray-200 bg-white px-2 py-0.5">
-                        {formatDate(featuredCompromiso.fecha_inicio)} - {formatDate(featuredCompromiso.fecha_fin)}
-                      </span>
-                      {featuredCompromiso.selecciones && featuredCompromiso.selecciones.length > 0 && (
-                        <div className="inline-flex items-center gap-2">
-                          <span className="inline-flex items-center rounded-full border border-gray-200 bg-white px-2 py-0.5">
-                            {featuredCompromiso.selecciones.length} {featuredCompromiso.selecciones.length === 1 ? 'criterio' : 'criterios'}
-                          </span>
-                          <span className="inline-flex items-center rounded-full border border-amber-200 bg-amber-50 px-2 py-0.5 text-[10px] font-medium text-amber-700">
-                            Proximo a vencer
-                          </span>
-                        </div>
-                      )}
-                      {featuredCompromiso.assignedEvidences && featuredCompromiso.assignedEvidences.length > 0 && (
-                        <span className="inline-flex items-center rounded-full border border-gray-200 bg-white px-2 py-0.5">
-                          {featuredCompromiso.assignedEvidences.length} {featuredCompromiso.assignedEvidences.length === 1 ? 'asignación' : 'asignaciones'}
-                        </span>
-                      )}
-                    </div>
-                  </div>
-
-                  <div className="flex items-center gap-2 text-xs text-gray-500">
-                    <span>Ver detalle</span>
-                    <SystemIcons.interface.chevronRight size="sm" className="text-gris-una" />
-                  </div>
-                </div>
-              </div>
-            )}
-
-            <div className="rounded-xl border border-gray-200 bg-white/90">
-              <div className="divide-y divide-gray-100">
-                {remainingCompromisos.map((compromiso) => (
-                  <div
-                    key={compromiso.compromiso_mejora_id}
-                    className={`flex items-center justify-between gap-3 px-4 py-3 transition-colors cursor-pointer hover:bg-gray-50 ${
-                      compromiso.is_overdue ? 'border-l-4 border-red-300' : 'border-l-4 border-transparent'
-                    }`}
-                    onClick={() => handleViewDetail(compromiso.compromiso_mejora_id)}
-                  >
-                    <div className="min-w-0 flex-1">
-                      <div className="flex items-center gap-2">
-                        <h4 className="text-sm font-semibold text-negro-una truncate">
-                          {compromiso.descripcion || 'Sin descripción'}
-                        </h4>
-                        {compromiso.is_overdue && (
-                          <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-red-50 border border-red-200 rounded text-[11px] text-red-800 font-medium">
-                            <SystemIcons.interface.alert size="xs" className="w-3 h-3" />
-                            Vencido
-                          </span>
-                        )}
-                      </div>
-                      <div className="mt-1 flex flex-wrap items-center gap-2 text-[11px] text-gray-600">
-                        <span className="inline-flex items-center rounded-full border border-gray-200 bg-gray-50 px-2 py-0.5">
-                          {formatDate(compromiso.fecha_inicio)} - {formatDate(compromiso.fecha_fin)}
-                        </span>
-                        {compromiso.selecciones && compromiso.selecciones.length > 0 && (
-                          <span className="inline-flex items-center rounded-full border border-gray-200 bg-gray-50 px-2 py-0.5">
-                            {compromiso.selecciones.length} {compromiso.selecciones.length === 1 ? 'criterio' : 'criterios'}
-                          </span>
-                        )}
-                        {compromiso.assignedEvidences && compromiso.assignedEvidences.length > 0 && (
-                          <span className="inline-flex items-center rounded-full border border-gray-200 bg-gray-50 px-2 py-0.5">
-                            {compromiso.assignedEvidences.length} {compromiso.assignedEvidences.length === 1 ? 'asignación' : 'asignaciones'}
-                          </span>
-                        )}
-                      </div>
-                    </div>
-
-                    <SystemIcons.interface.chevronRight size="sm" className="text-gris-una" />
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
+          /* Tabla de Compromisos */
+          <DataTable<CompromisoMejora>
+            columns={columns}
+            data={paginatedData}
+            title=""
+            searchable={false}
+            pagination={totalPages > 1 ? {
+              currentPage,
+              totalPages,
+              onPageChange: setCurrentPage
+            } : undefined}
+            loading={loading}
+            emptyMessage="No hay compromisos registrados. Utilice el botón 'Crear' para registrar un nuevo compromiso de mejora"
+            unstyled={true}
+          />
         )}
       </div>
     </ScreenContainer>

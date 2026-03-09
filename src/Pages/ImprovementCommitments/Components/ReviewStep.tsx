@@ -8,6 +8,10 @@ import { Textarea } from '@/Components/Ui/Forms/Textarea';
 import { DatePicker } from '@/Components/Ui/Calendar/DatePicker';
 import { SystemIcons } from '@/Components/Ui/Icons/SystemIcons';
 import { Modal } from '@/Components/Ui/Modals/Modal';
+import { DataTable } from '@/Components/Ui/Table/DataTable';
+import type { DataTableColumn } from '@/Components/Ui/Table/DataTable';
+import { ButtonWithTooltip } from '@/Components/Ui/Buttons/ButtonWithTooltip';
+import { TYPOGRAPHY } from '@/Constants/Typography';
 import type { CompromisoFormData, CriterioSeleccionado, ValidationErrors } from '@/Types/ImprovementCommitmentTypes';
 
 interface ReviewStepProps {
@@ -31,24 +35,94 @@ export const ReviewStep: React.FC<ReviewStepProps> = ({
     setShowDetailModal(true);
   };
 
+  // Columnas para la tabla de criterios
+  const columns: DataTableColumn<CriterioSeleccionado>[] = [
+    {
+      key: 'nomenclatura',
+      header: 'Nomenclatura',
+      align: 'center',
+      render: (_, item) => (
+        <p className={`block font-sans antialiased font-bold leading-normal text-negro-una-2 ${TYPOGRAPHY.table.cell}`}>
+          {item.criterio.nomenclatura}
+        </p>
+      )
+    },
+    {
+      key: 'descripcion',
+      header: 'Descripción',
+      align: 'left',
+      render: (_, item) => (
+        <p className={`block font-sans antialiased font-normal leading-normal text-gris-una max-w-md truncate ${TYPOGRAPHY.table.cell}`} title={item.criterio.descripcion}>
+          {item.criterio.descripcion}
+        </p>
+      )
+    },
+    {
+      key: 'encargados',
+      header: 'Encargados',
+      align: 'center',
+      render: (_, item) => (
+        <p className={`block font-sans antialiased font-normal leading-normal text-negro-una ${TYPOGRAPHY.table.cell}`}>
+          {item.encargados_usuarios.length}
+        </p>
+      )
+    },
+    {
+      key: 'fecha_limite',
+      header: 'Fecha Límite',
+      align: 'center',
+      render: (_, item) => (
+        item.fecha_limite ? (
+          <p className={`block font-sans antialiased font-normal leading-normal text-negro-una ${TYPOGRAPHY.table.cell}`}>
+            {new Date(item.fecha_limite).toLocaleDateString('es-CR', {
+              day: '2-digit',
+              month: 'short',
+              year: 'numeric'
+            })}
+          </p>
+        ) : (
+          <p className={`block font-sans antialiased font-normal leading-normal text-gris-una ${TYPOGRAPHY.table.cell}`}>-</p>
+        )
+      )
+    },
+    {
+      key: 'actions',
+      header: 'Acciones',
+      align: 'center',
+      render: (_, item) => (
+        <div className="flex items-center justify-center">
+          <ButtonWithTooltip
+            variant="tableView"
+            size="sm"
+            tooltip="Ver detalles"
+            onClick={() => handleViewDetail(item)}
+            className="relative h-10 max-h-[40px] w-10 max-w-[40px]"
+          >
+            <SystemIcons.actions.view className="h-5 w-5" />
+          </ButtonWithTooltip>
+        </div>
+      )
+    }
+  ];
+
   return (
     <>
-      <div className="space-y-6">
-        {/* Información del Compromiso */}
-        <div className="bg-white border border-gray-200 rounded-lg p-6">
-          <h3 className="text-base font-semibold text-negro-una mb-4">
+      <div className="space-y-4">
+        {/* Información General del Compromiso */}
+        <div>
+          <h3 className="text-sm font-medium text-negro-una mb-3">
             Información General del Compromiso
           </h3>
 
-          <div className="space-y-4">
+          <div className="flex gap-4">
             {/* Descripción */}
-            <div>
+            <div className="flex-1">
               <Textarea
                 label="Descripción del Compromiso"
                 value={formData.descripcion}
                 onChange={(e) => updateFormData({ descripcion: e.target.value })}
                 placeholder="Descripción general del compromiso de mejora (opcional)..."
-                rows={3}
+                rows={5}
                 maxLength={100}
                 characterCount={true}
                 error={errors.descripcion}
@@ -57,7 +131,7 @@ export const ReviewStep: React.FC<ReviewStepProps> = ({
             </div>
 
             {/* Fechas */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="w-80 space-y-4">
               <DatePicker
                 label="Fecha de Inicio"
                 value={formData.fecha_inicio}
@@ -83,10 +157,10 @@ export const ReviewStep: React.FC<ReviewStepProps> = ({
           </div>
         </div>
 
-        {/* Resumen de Criterios Seleccionados */}
-        <div className="bg-white border border-gray-200 rounded-lg p-6">
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="text-base font-semibold text-negro-una">
+        {/* Criterios Incluidos */}
+        <div className="mt-6">
+          <div className="flex items-center justify-between mb-3">
+            <h3 className="text-sm font-medium text-negro-una">
               Criterios Incluidos
             </h3>
             <span className="text-sm text-gris-una">
@@ -94,110 +168,24 @@ export const ReviewStep: React.FC<ReviewStepProps> = ({
             </span>
           </div>
 
-          {formData.criterios_seleccionados.length === 0 ? (
-            <div className="text-center py-8">
-              <SystemIcons.interface.alert size="lg" className="mx-auto text-yellow-400 mb-2" />
-              <p className="text-sm text-gris-una">
-                No hay criterios seleccionados. Regrese al paso anterior para agregar criterios.
-              </p>
-            </div>
-          ) : (
-            <div className="space-y-3">
-              {formData.criterios_seleccionados.map((criterio, index) => (
-                <div
-                  key={criterio.criterio_id}
-                  className="border border-gray-200 rounded-lg p-4 hover:border-gray-300 transition-colors cursor-pointer"
-                  onClick={() => handleViewDetail(criterio)}
-                >
-                  <div className="flex items-start justify-between">
-                    <div className="flex-1">
-                      <div className="flex items-center gap-2 mb-2">
-                        <span className="text-xs font-medium text-gris-una">
-                          #{index + 1}
-                        </span>
-                        <span className="font-semibold text-sm text-negro-una">
-                          {criterio.criterio.nomenclatura}
-                        </span>
-                      </div>
-                      <p className="text-sm text-gris-una mb-3">
-                        {criterio.criterio.descripcion}
-                      </p>
-
-                      {/* Metadata del criterio */}
-                      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                        <div className="flex items-center gap-2">
-                          <SystemIcons.modal.document size="sm" className="text-gris-una" />
-                          <div>
-                            <p className="text-xs text-gris-una">Evidencias</p>
-                            <p className="text-sm font-medium text-negro-una">
-                              {criterio.evidencias_seleccionadas.length}
-                            </p>
-                          </div>
-                        </div>
-
-                        <div className="flex items-center gap-2">
-                          <SystemIcons.interface.user size="sm" className="text-gris-una" />
-                          <div>
-                            <p className="text-xs text-gris-una">Encargados</p>
-                            <p className="text-sm font-medium text-negro-una">
-                              {criterio.encargados_usuarios.length}
-                            </p>
-                          </div>
-                        </div>
-
-                        {criterio.fecha_limite && (
-                          <div className="flex items-center gap-2">
-                            <SystemIcons.interface.calendar size="sm" className="text-gris-una" />
-                            <div>
-                              <p className="text-xs text-gris-una">Fecha límite</p>
-                              <p className="text-sm font-medium text-negro-una">
-                                {new Date(criterio.fecha_limite).toLocaleDateString('es-CR', {
-                                  day: '2-digit',
-                                  month: 'short'
-                                })}
-                              </p>
-                            </div>
-                          </div>
-                        )}
-
-                        {criterio.comentario && (
-                          <div className="flex items-center gap-2">
-                            <SystemIcons.interface.informationCircle size="sm" className="text-gris-una" />
-                            <div>
-                              <p className="text-xs text-gris-una">Comentario</p>
-                              <p className="text-sm font-medium text-negro-una truncate">
-                                Sí
-                              </p>
-                            </div>
-                          </div>
-                        )}
-                      </div>
-                    </div>
-
-                    <div className="ml-4">
-                      <SystemIcons.interface.chevronRight size="md" className="text-gris-una" />
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
+          <DataTable<CriterioSeleccionado>
+            title=""
+            data={formData.criterios_seleccionados}
+            columns={columns}
+            emptyMessage="No hay criterios seleccionados. Regrese al paso anterior para agregar criterios."
+            searchable={false}
+            pagination={false}
+          />
         </div>
 
         {/* Nota informativa */}
-        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-          <div className="flex items-start gap-3">
-            <SystemIcons.interface.informationCircle size="md" className="text-blue-600 mt-0.5 flex-shrink-0" />
-            <div>
-              <p className="text-sm font-medium text-blue-900 mb-1">
-                Información importante
-              </p>
-              <p className="text-sm text-blue-800">
-                Una vez creado el compromiso, se asignarán automáticamente todas las evidencias
-                seleccionadas a los usuarios y roles indicados. Las notificaciones serán enviadas
-                a los encargados correspondientes.
-              </p>
-            </div>
+        <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
+          <div className="flex items-start gap-2">
+            <SystemIcons.interface.informationCircle size="sm" className="text-blue-500 mt-0.5 flex-shrink-0" />
+            <p className="text-xs text-blue-800">
+              Una vez creado el compromiso, se asignarán automáticamente todas las evidencias
+              seleccionadas a los usuarios indicados.
+            </p>
           </div>
         </div>
       </div>

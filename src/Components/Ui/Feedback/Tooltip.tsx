@@ -141,7 +141,7 @@ export function TooltipContent({
     <div
       data-tooltip-content
       className={cn(
-        `absolute z-50 px-3 py-2 ${TYPOGRAPHY.tooltip} font-medium text-blanco-una rounded-corner shadow-lg whitespace-nowrap`,
+        `absolute z-50 px-1.5 py-1 ${TYPOGRAPHY.tooltip} font-medium text-blanco-una rounded-corner shadow-lg whitespace-nowrap`,
         'bg-gris-una-2 backdrop-blur-md border border-gray-700/30',
         'transition-opacity duration-300 ease-in-out',
         'font-poppins',

@@ -208,13 +208,18 @@ const validateForm = (): boolean => {
     const elementId = searchParams.get('id');
     const elementType = searchParams.get('type') as ElementType | null;
     
-    if (elementId && elementType && allElements.length > 0) {
-      loadElementForEditing(elementId, elementType);
-    } else if (!elementId || !elementType) {
-      // Si no hay ID o tipo, redirigir a la lista
+    // Verificar si los parámetros existen
+    if (!elementId || !elementType) {
       navigate('/estructura/listar');
+      return;
     }
-  }, [searchParams, navigate, allElements]);
+    
+    // Solo intentar cargar si tenemos elementos
+    if (allElements.length > 0) {
+      loadElementForEditing(elementId, elementType);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchParams, allElements.length]);
 
   // Cargar elemento para edición
   const loadElementForEditing = async (elementId: string, elementType: ElementType) => {
@@ -367,7 +372,8 @@ const validateForm = (): boolean => {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <div className="text-center">
-          <LoadingSpinner size="lg" className="mx-auto mb-4" />
+          <LoadingSpinner size="lg" color="gray" className="mx-auto mb-4" />
+          <p className="text-gris-una">Cargando...</p>
         </div>
       </div>
     );

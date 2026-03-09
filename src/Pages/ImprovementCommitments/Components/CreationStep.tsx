@@ -8,6 +8,11 @@ import { LoadingSpinner } from '@/Components/Ui/Index';
 import { CustomSelect } from '@/Components/Ui/Forms/SingleSelect';
 import { SearchInput } from '@/Components/Ui/Forms/SearchInput';
 import { SystemIcons } from '@/Components/Ui/Icons/SystemIcons';
+import { FilterButton } from '@/Components/Ui/Buttons/FilterButton';
+import type { FilterOption } from '@/Components/Ui/Buttons/FilterButton';
+import { ButtonWithTooltip } from '@/Components/Ui/Buttons/ButtonWithTooltip';
+import { DataTable } from '@/components/index';
+import type { DataTableColumn } from '@/Components/Ui/Table/DataTable';
 import { improvementCommitmentService } from '@/Services/ImprovementCommitmentService';
 import type {
   CompromisoFormData,
@@ -18,6 +23,8 @@ import type {
 } from '@/Types/ImprovementCommitmentTypes';
 import { CriterionModal } from '@/Pages/ImprovementCommitments/Components/CriterionModal';
 import { DeleteConfirmationModal } from '@/Components/Ui/Modals/DeleteConfirmationModal';
+import { TABLE_ACTION_BUTTON } from '@/Constants/Components';
+import { TYPOGRAPHY } from '@/Constants/Typography';
 
 interface CreationStepProps {
   formData: CompromisoFormData;
@@ -43,6 +50,8 @@ export const CreationStep: React.FC<CreationStepProps> = ({
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<StatusFilter>('todos');
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 5;
   
   // Modal state
   const [showModal, setShowModal] = useState(false);
@@ -104,6 +113,18 @@ export const CreationStep: React.FC<CreationStepProps> = ({
     return filtered;
   }, [criterios, searchTerm, statusFilter, formData.criterios_seleccionados]);
 
+  // Paginación
+  const totalPages = Math.ceil(criteriosFiltrados.length / itemsPerPage);
+  const paginatedCriterios = useMemo(() => {
+    const startIndex = (currentPage - 1) * itemsPerPage;
+    return criteriosFiltrados.slice(startIndex, startIndex + itemsPerPage);
+  }, [criteriosFiltrados, currentPage, itemsPerPage]);
+
+  // Reset page when filters change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchTerm, statusFilter]);
+
   const handleCicloChange = (value: string) => {
     updateFormData({ ciclo_acreditacion_id: parseInt(value) });
   };
@@ -149,6 +170,13 @@ export const CreationStep: React.FC<CreationStepProps> = ({
     return seleccionado;
   };
 
+  // Opciones para el filtro de estado
+  const filterOptions: FilterOption<StatusFilter>[] = [
+    { value: 'todos', label: 'Todos' },
+    { value: 'seleccionados', label: 'Seleccionados' },
+    { value: 'pendientes', label: 'Pendientes' }
+  ];
+
   if (loading) {
     return (
       <div className="flex justify-center items-center py-12">
@@ -160,165 +188,177 @@ export const CreationStep: React.FC<CreationStepProps> = ({
     );
   }
 
+  // Configuración de columnas de la tabla
+  const columns: DataTableColumn<Criterio>[] = [
+    {
+      key: 'nomenclatura',
+      header: 'Nomenclatura',
+      align: 'center',
+      render: (_, criterio) => (
+        <p className={`block font-sans antialiased font-semibold leading-normal text-negro-una ${TYPOGRAPHY.table.cell}`}>
+          {criterio.nomenclatura}
+        </p>
+      )
+    },
+    {
+      key: 'descripcion',
+      header: 'Descripción',
+      align: 'left',
+      render: (_, criterio) => (
+        <p 
+          className={`block font-sans antialiased font-normal leading-normal text-gris-una max-w-md truncate ${TYPOGRAPHY.table.cell}`}
+          title={criterio.descripcion}
+        >
+          {criterio.descripcion}
+        </p>
+      )
+    },
+    {
+      key: 'estado',
+      header: 'Estado',
+      align: 'center',
+      render: (_, criterio) => {
+        const seleccionado = isCriterionSelected(criterio.criterio_id);
+        return (
+          <div className="w-max mx-auto">
+            <div className={`relative grid items-center px-2 py-0.5 font-sans font-bold rounded-corner select-none whitespace-nowrap text-xs ${
+              seleccionado
+                ? 'text-green-900 bg-green-500/20' 
+                : 'text-yellow-800 bg-yellow-400/20'
+            }`}>
+              <span>{seleccionado ? 'Seleccionado' : 'Pendiente'}</span>
+            </div>
+          </div>
+        );
+      }
+    },
+    {
+      key: 'actions',
+      header: 'Acciones',
+      align: 'center',
+      render: (_, criterio) => {
+        const seleccionado = isCriterionSelected(criterio.criterio_id);
+        return (
+          <div className="flex items-center justify-center gap-2 pr-2">
+            {/* Tuerca - Activa cuando NO está seleccionado */}
+            <ButtonWithTooltip
+              variant="tableView"
+              size="sm"
+              tooltip={seleccionado ? "Ya configurado" : "Configurar criterio"}
+              tooltipPosition="right"
+              onClick={() => !seleccionado && handleCriterioClick(criterio)}
+              disabled={seleccionado}
+              className={TABLE_ACTION_BUTTON.button}
+            >
+              <SystemIcons.structure.nut size="md" />
+            </ButtonWithTooltip>
+
+            {/* Lápiz (Editar) - Activo cuando SÍ está seleccionado */}
+            <ButtonWithTooltip
+              variant="tableEdit"
+              size="sm"
+              tooltip={seleccionado ? "Editar configuración" : "Debe configurar primero"}
+              tooltipPosition="top"
+              onClick={() => seleccionado && handleCriterioClick(criterio)}
+              disabled={!seleccionado}
+              className={TABLE_ACTION_BUTTON.button}
+            >
+              <SystemIcons.actions.edit className={TABLE_ACTION_BUTTON.icon} />
+            </ButtonWithTooltip>
+
+            {/* Basurero - Activo cuando SÍ está seleccionado */}
+            <ButtonWithTooltip
+              variant="tableDelete"
+              size="sm"
+              tooltip={seleccionado ? "Eliminar criterio" : "No hay nada que eliminar"}
+              tooltipPosition="top"
+              onClick={(e) => {
+                if (seleccionado) {
+                  e.stopPropagation();
+                  handleDeleteCriterion(criterio.criterio_id, criterio.nomenclatura);
+                }
+              }}
+              disabled={!seleccionado}
+              className={TABLE_ACTION_BUTTON.button}
+            >
+              <SystemIcons.actions.delete className={TABLE_ACTION_BUTTON.icon} />
+            </ButtonWithTooltip>
+          </div>
+        );
+      }
+    }
+  ];
+
   return (
     <>
-      <div className="space-y-6">
-        {/* Selector de Ciclo */}
-        <div className="bg-white border border-gray-200 rounded-lg p-6">
-          <h3 className="text-base font-semibold text-negro-una mb-4">
-            Seleccionar Ciclo de Acreditación
-          </h3>
-          <CustomSelect
-            label="Ciclo de Acreditación"
-            value={formData.ciclo_acreditacion_id?.toString() || ''}
-            options={cicloOptions}
-            placeholder="Seleccione un ciclo..."
-            onChange={handleCicloChange}
-            required
-            error={errors.ciclo_acreditacion_id}
+      <div className="space-y-2">
+        {/* Fila de controles: Ciclo + Búsqueda + Filtro */}
+        <div className="flex gap-3 items-end">
+          {/* Select de Ciclo */}
+          <div className="w-80">
+            <CustomSelect
+              label="Ciclo de Acreditación"
+              value={formData.ciclo_acreditacion_id?.toString() || ''}
+              options={cicloOptions}
+              placeholder="Seleccione un ciclo..."
+              onChange={handleCicloChange}
+              required
+              error={errors.ciclo_acreditacion_id}
+              size="sm"
+            />
+          </div>
+
+          {/* Búsqueda */}
+          <div className="flex-1">
+            <SearchInput
+              value={searchTerm}
+              onChange={setSearchTerm}
+              placeholder="Buscar por nomenclatura o descripción..."
+            />
+          </div>
+
+          {/* Filtro por estado - Solo ícono */}
+          <div className="flex-shrink-0">
+            <FilterButton
+              tooltipText="Filtrar por estado"
+              options={filterOptions}
+              value={statusFilter}
+              onChange={setStatusFilter}
+            />
+          </div>
+        </div>
+
+        {/* Error de validación */}
+        {errors.criterios && (
+          <div className="p-2.5 bg-red-50 border border-red-200 rounded-lg flex items-center gap-2">
+            <SystemIcons.interface.alert size="sm" className="text-red-600" />
+            <span className="text-sm text-red-800">{errors.criterios}</span>
+          </div>
+        )}
+
+        {/* Tabla de Criterios o Mensaje de Sin Ciclo */}
+        {!formData.ciclo_acreditacion_id ? (
+          <div className="bg-white rounded-lg border border-gray-200 py-16">
+            <div className="text-center">
+              <SystemIcons.modal.document size="lg" className="mx-auto text-gray-400 mb-3" />
+              <p className="text-sm font-medium text-negro-una mb-1">No hay datos disponibles</p>
+              <p className="text-sm text-gris-una">Seleccione un ciclo de acreditación</p>
+            </div>
+          </div>
+        ) : (
+          <DataTable
+            title=""
+            data={paginatedCriterios as unknown as Record<string, unknown>[]}
+            columns={columns as unknown as DataTableColumn<Record<string, unknown>>[]}
+            emptyMessage={searchTerm ? 'No se encontraron criterios' : 'No hay criterios disponibles'}
+            searchable={false}
+            pagination={{
+              currentPage,
+              totalPages,
+              onPageChange: setCurrentPage
+            }}
           />
-        </div>
-
-        {/* Selección de Criterios */}
-        <div className="bg-white border border-gray-200 rounded-lg p-6">
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="text-base font-semibold text-negro-una">
-              Criterios del Compromiso
-              {formData.criterios_seleccionados.length > 0 && (
-                <span className="ml-2 text-sm font-normal text-gris-una">
-                  ({formData.criterios_seleccionados.length} {formData.criterios_seleccionados.length === 1 ? 'seleccionado' : 'seleccionados'})
-                </span>
-              )}
-            </h3>
-          </div>
-
-          {errors.criterios && (
-            <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg flex items-center gap-2">
-              <SystemIcons.interface.alert size="sm" className="text-red-600" />
-              <span className="text-sm text-red-800">{errors.criterios}</span>
-            </div>
-          )}
-
-          {/* Filtros y Búsqueda */}
-          <div className="flex flex-col sm:flex-row gap-3 mb-4">
-            <div className="flex-1">
-              <SearchInput
-                value={searchTerm}
-                onChange={setSearchTerm}
-                placeholder="Buscar por nomenclatura o descripción..."
-              />
-            </div>
-            <div className="flex gap-2">
-              {(['todos', 'seleccionados', 'pendientes'] as const).map((estado) => (
-                <button
-                  key={estado}
-                  onClick={() => setStatusFilter(estado)}
-                  className={`px-3 py-2 rounded-lg text-xs font-medium transition-colors ${
-                    statusFilter === estado
-                      ? 'bg-rojo-una-2 text-white'
-                      : 'bg-gray-100 text-gris-una hover:bg-gray-200'
-                  }`}
-                >
-                  {estado === 'todos' ? 'Todos' : estado === 'seleccionados' ? 'Seleccionados' : 'Pendientes'}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          {/* Lista de Criterios */}
-          <div className="space-y-2 max-h-96 overflow-y-auto">
-            {criteriosFiltrados.length === 0 ? (
-              <div className="text-center py-8">
-                <SystemIcons.modal.document size="lg" className="mx-auto text-gray-400 mb-2" />
-                <p className="text-sm text-gris-una">
-                  {searchTerm ? 'No se encontraron criterios' : 'No hay criterios disponibles'}
-                </p>
-              </div>
-            ) : (
-              criteriosFiltrados.map((criterio) => {
-                // Validación crucial: verificar que criterio_id existe
-                if (!criterio || !criterio.criterio_id) {
-                  return null; // No renderizar criterios inválidos
-                }
-                
-                const seleccionado = isCriterionSelected(criterio.criterio_id);
-                const config = formData.criterios_seleccionados.find(
-                  c => c.criterio_id === criterio.criterio_id
-                );
-
-                return (
-                  <div
-                    key={criterio.criterio_id}
-                    className={`border rounded-lg p-4 transition-all cursor-pointer ${
-                      seleccionado
-                        ? 'bg-green-50 border-green-200 hover:border-green-300'
-                        : 'bg-white border-gray-200 hover:border-gray-300'
-                    }`}
-                    onClick={() => handleCriterioClick(criterio)}
-                  >
-                    <div className="flex items-start justify-between">
-                      <div className="flex-1">
-                        <div className="flex items-center gap-2 mb-1">
-                          <span className="font-semibold text-sm text-negro-una">
-                            {criterio.nomenclatura}
-                          </span>
-                          {seleccionado && (
-                            <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-green-100 border border-green-200 rounded text-xs text-green-800 font-medium">
-                              <SystemIcons.interface.checkCircle size="xs" className="w-3 h-3" />
-                              Incluido
-                            </span>
-                          )}
-                        </div>
-                        <p className="text-sm text-gris-una mb-2">{criterio.descripcion}</p>
-                        
-                        {seleccionado && config && (
-                          <div className="mt-2 pt-2 border-t border-green-200">
-                            <div className="flex flex-wrap gap-3 text-xs">
-                              {config.evidencias_seleccionadas.length > 0 && (
-                                <div className="flex items-center gap-1 text-gris-una">
-                                  <SystemIcons.modal.document size="xs" />
-                                  <span>{config.evidencias_seleccionadas.length} evidencias</span>
-                                </div>
-                              )}
-                              {config.encargados_usuarios.length > 0 && (
-                                <div className="flex items-center gap-1 text-gris-una">
-                                  <SystemIcons.interface.user size="xs" />
-                                  <span>{config.encargados_usuarios.length} encargado(s)</span>
-                                </div>
-                              )}
-                              {config.fecha_limite && (
-                                <div className="flex items-center gap-1 text-gris-una">
-                                  <SystemIcons.interface.calendar size="xs" />
-                                  <span>{new Date(config.fecha_limite).toLocaleDateString()}</span>
-                                </div>
-                              )}
-                            </div>
-                          </div>
-                        )}
-                      </div>
-                      
-                      <div className="flex items-center gap-2 ml-4">
-                        {seleccionado && (
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleDeleteCriterion(criterio.criterio_id, criterio.nomenclatura);
-                            }}
-                            className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-                            title="Eliminar criterio"
-                          >
-                            <SystemIcons.actions.delete size="sm" />
-                          </button>
-                        )}
-                        <SystemIcons.interface.chevronRight size="md" className="text-gris-una" />
-                      </div>
-                    </div>
-                  </div>
-                );
-              }).filter(Boolean) // Filtrar nulls
-            )}
-          </div>
-        </div>
+        )}
       </div>
 
       {/* Modal de Configuración de Criterio */}

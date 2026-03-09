@@ -37,7 +37,7 @@ export const useNotifications = (
 ): UseNotificationsReturn => {
   const {
     enablePolling = true,
-    pollingInterval = 30000, // 30 segundos por defecto
+    pollingInterval = 60000, // 60 segundos por defecto
     autoFetch = true,
   } = options;
 

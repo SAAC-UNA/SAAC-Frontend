@@ -136,6 +136,7 @@ export interface CompromisoMejora {
     ciclo_acreditacion_id: number;
     accreditationCycle?: CicloAcreditacion;
   };
+  [key: string]: unknown;
 }
 
 // ============================================

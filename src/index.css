@@ -133,7 +133,7 @@
   --text-modal-subtitle: 0.875rem;  /* 14px - Subtítulo de modales */
   --text-modal-body: 0.875rem;      /* 14px - Contenido de modales */
   --text-pagination: 0.875rem;      /* 14px - Paginación */
-  --text-tooltip: 0.875rem;         /* 12px - Texto de tooltips */
+  --text-tooltip: 0.625rem;         /* 10px - Texto de tooltips */
 
    /* SIDEBAR */
   --sidebar-width: 14rem;            /* 256px - Ancho expandido */

@@ -8,8 +8,9 @@
 import React, { useState, useEffect } from 'react';
 import { StructureTable } from './Components/StructureTable';
 import { ScreenContainer } from '@/Components/Ui/Layout/ScreenContainer';
+import { PageHeader } from '@/Components/Ui/Index';
 import { Modal } from '@/Components/Ui/Modals/Modal';
-import { MODULE_INFO } from '@/Constants/ModuleInfo';
+import { getModuleInfo } from '@/Constants/ModuleInfo';
 import type { StructureElement } from '@/Types/StructureTypes';
 import { useStructure } from '@/Hooks/UseStructure';
 import { DeleteConfirmationModal } from '@/Components/Ui/Modals/DeleteConfirmationModal';
@@ -31,7 +32,7 @@ const truncateText = (text: string, maxLength: number = 25): string => {
 const StructureList: React.FC = () => {
   
   // Obtener información del módulo desde ModuleInfo
-  const moduleInfo = MODULE_INFO.structure;
+  const moduleInfo = getModuleInfo('structure_list');
   
   const { 
   isLoading, 
@@ -225,28 +226,29 @@ const StructureList: React.FC = () => {
 
  return (
     <>
-      <ScreenContainer
-        title={moduleInfo.title}
-        description={moduleInfo.description}
-        headerExtra={
-          <div className="flex flex-col sm:flex-row w-full gap-2 shrink-0 lg:w-auto">
-            <SearchInput
-              placeholder="Buscar elementos..."
-              value={searchQuery}
-              onChange={setSearchQuery}
-              className="w-full sm:w-72"
-            />
-            <Button
-              onClick={handleCreateElement}
-              variant="secondary"
-              className="gap-2"
-            >
-              <SystemIcons.actions.add className="w-4 h-4" size="sm" />
-              Crear
-            </Button>
-          </div>
-        }
-      >
+      <ScreenContainer>
+        <PageHeader
+          title={moduleInfo.title}
+          description={moduleInfo.description}
+          headerExtra={
+            <div className="flex flex-col sm:flex-row w-full gap-2 shrink-0 lg:w-auto">
+              <SearchInput
+                placeholder="Buscar elementos..."
+                value={searchQuery}
+                onChange={setSearchQuery}
+                className="w-full sm:w-72"
+              />
+              <Button
+                onClick={handleCreateElement}
+                variant="secondary"
+                className="gap-2"
+              >
+                <SystemIcons.actions.add className="w-4 h-4" size="sm" />
+                Crear
+              </Button>
+            </div>
+          }
+        />
         <StructureTable
           treeData={treeData}
           isLoading={isLoading}

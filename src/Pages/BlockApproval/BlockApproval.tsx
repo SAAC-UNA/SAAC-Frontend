@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { ScreenContainer } from '@/Components/Ui/Layout/ScreenContainer';
+import { ScreenContainer, PageHeader } from '@/Components/Ui/Index';
 import { Button, LoadingSpinner } from '@/Components/Ui/Index';
+import { getModuleInfo } from '@/Constants/ModuleInfo';
 import { SystemIcons } from '@/Components/Ui/Icons/SystemIcons';
 import { axiosInstance } from '@/Config/axios';
 import { ApprovalModal } from './Components/ApprovalModal';
@@ -46,6 +47,7 @@ interface Proceso {
 }
 
 const BlockApproval: React.FC = () => {
+  const moduleInfo = getModuleInfo('block_approval');
   const [isLoading, setIsLoading] = useState(true);
   const [criteria, setCriteria] = useState<Criterio[]>([]);
   const [evidences, setEvidences] = useState<Evidencia[]>([]);
@@ -59,7 +61,7 @@ const BlockApproval: React.FC = () => {
   
   // Estado para paginación
   const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 6;
+  const itemsPerPage = 5;
   
   // Estado para evidencias expandidas
   const [expandedCriteria, setExpandedCriteria] = useState<Set<number>>(new Set());
@@ -226,13 +228,17 @@ const BlockApproval: React.FC = () => {
   };
 
   return (
-    <ScreenContainer
-      title="Aprobación de Bloques"
-      description="Seleccione un proceso para ver y aprobar los criterios correspondientes validando que todas las evidencias estén adjuntadas"
-    >
+    <ScreenContainer>
+      <PageHeader
+        title={moduleInfo.title}
+        description={moduleInfo.description}
+      />
       {isLoading ? (
         <div className="flex justify-center items-center py-12">
-          <LoadingSpinner size="lg" />
+          <div className="text-center">
+            <LoadingSpinner size="lg" color="gray" className="mx-auto mb-4" />
+            <p className="text-gris-una">Cargando información...</p>
+          </div>
         </div>
       ) : (
         <>

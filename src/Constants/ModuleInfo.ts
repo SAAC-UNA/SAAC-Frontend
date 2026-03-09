@@ -189,11 +189,41 @@ export const MODULE_INFO: Record<string, ModuleInfo> = {
     shortDescription: 'Administrar elementos de la estructura'
   },
 
+  // Aprobación de Bloques
+  block_approval: {
+    title: 'Aprobación de Bloques',
+    subtitle: 'Validación de Criterios',
+    description: 'Seleccione un proceso para ver y aprobar los criterios correspondientes validando que todas las evidencias estén adjuntadas',
+    shortDescription: 'Aprobar criterios por bloques'
+  },
+
+  // Gestión de Informes Finales
+  final_reports: {
+    title: 'Gestión de Informes Finales',
+    subtitle: 'Enlaces Públicos y Exportación',
+    description: 'Genere enlaces públicos para las evidencias de criterios aprobados y exporte informes',
+    shortDescription: 'Gestionar informes finales'
+  },
+
   structure_list: {
-    title: 'Lista de Elementos',
+    title: 'Gestión de Estructura',
     subtitle: 'Elementos de la Estructura',
     description: 'Visualiza y administra todos los elementos existentes en la estructura del repositorio',
     shortDescription: 'Ver todos los elementos'
+  },
+
+  structure_creation: {
+    title: 'Crear Elemento de Estructura',
+    subtitle: 'Nueva Estructura',
+    description: 'Agrega un nuevo elemento a la jerarquía del Sistema SAAC-UNA respetando las reglas de estructura.',
+    shortDescription: 'Crear elemento de estructura'
+  },
+
+  improvement_commitments: {
+    title: 'Compromisos de Mejora',
+    subtitle: 'Gestión de Compromisos',
+    description: 'Gestione los compromisos de mejora vinculados a criterios y evidencias',
+    shortDescription: 'Gestionar compromisos de mejora'
   },
 
 };

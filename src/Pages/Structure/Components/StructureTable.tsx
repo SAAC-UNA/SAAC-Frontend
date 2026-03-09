@@ -49,7 +49,7 @@ export const StructureTable: React.FC<StructureTableProps> = ({
     onDelete,
     onToggleActive,
     searchQuery = '',
-    itemsPerPage = 4,
+    itemsPerPage = 5,
     unstyled = false
 }) => {
 

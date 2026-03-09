@@ -9,9 +9,10 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ScreenContainer } from '@/Components/Ui/Layout/ScreenContainer';
-import { Button, WizardProgress } from '@/Components/Ui/Index';
-import { SystemIcons } from '@/Components/Ui/Icons/SystemIcons';
+import { Button, WizardProgress, PageHeader } from '@/Components/Ui/Index';
+import { getModuleInfo } from '@/Constants/ModuleInfo';
 import { SuccessModal } from '@/Components/Ui/Modals/SuccessModal';
+import { CreateConfirmationModal } from '@/Components/Ui/Modals/CreateConfirmationModal';
 import { useToast } from '@/Context/ToastContext';
 import { improvementCommitmentService } from '@/Services/ImprovementCommitmentService';
 import type {
@@ -31,12 +32,14 @@ interface WizardStep {
 }
 
 const CreateImprovementCommitment: React.FC = () => {
+  const moduleInfo = getModuleInfo('improvement_commitments');
   const { showToast } = useToast();
   const navigate = useNavigate();
   
   const [currentStep, setCurrentStep] = useState(1);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [showConfirmModal, setShowConfirmModal] = useState(false);
   const [errors, setErrors] = useState<ValidationErrors>({});
 
   const [formData, setFormData] = useState<CompromisoFormData>({
@@ -143,14 +146,6 @@ const CreateImprovementCommitment: React.FC = () => {
   };
 
   /**
-   * Retroceder al paso anterior
-   */
-  const handleBack = () => {
-    setCurrentStep(prev => Math.max(prev - 1, 1));
-    setErrors({});
-  };
-
-  /**
    * Enviar el formulario al backend
    */
   const handleSubmit = async () => {
@@ -187,6 +182,7 @@ const CreateImprovementCommitment: React.FC = () => {
       // Crear compromiso
       await improvementCommitmentService.crearCompromiso(payload);
       
+      setShowConfirmModal(false);
       setShowSuccessModal(true);
     } catch (error: any) {
       console.error('Error completo:', error);
@@ -224,9 +220,21 @@ const CreateImprovementCommitment: React.FC = () => {
         type: 'error',
         title: error.response?.data?.message || error.message || 'Error al crear el compromiso'
       });
+      setShowConfirmModal(false);
     } finally {
       setIsSubmitting(false);
     }
+  };
+
+  /**
+   * Mostrar modal de confirmación
+   */
+  const handleConfirmCreate = () => {
+    if (!validateStep(2)) {
+      showToast({ type: 'error', title: 'Hay errores en el formulario' });
+      return;
+    }
+    setShowConfirmModal(true);
   };
 
 
@@ -272,24 +280,14 @@ const CreateImprovementCommitment: React.FC = () => {
   return (
     <>
       <ScreenContainer>
-        <div className="space-y-6">
+        <div className="space-y-4">
           {/* Header */}
-          <div className="flex items-center justify-between">
+          <div className="flex items-center gap-4">
             <div className="flex-1">
-              <div className="flex items-center gap-4">
-                <button
-                  onClick={() => navigate('/compromisos/listar')}
-                  className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
-                >
-                  <SystemIcons.navigation.arrow.left size="md" className="text-gris-una" />
-                </button>
-                <div>
-                  <h1 className="text-2xl font-bold text-negro-una">Crear Compromiso de Mejora</h1>
-                  <p className="mt-1 text-sm text-gris-una">
-                    Seleccione criterios y configure las asignaciones
-                  </p>
-                </div>
-              </div>
+              <PageHeader
+                title={`Crear ${moduleInfo.title.replace('Compromisos de Mejora', 'Compromiso de Mejora')}`}
+                description="Seleccione criterios y configure las asignaciones"
+              />
             </div>
             
             {/* Wizard Progress (desktop) */}
@@ -310,73 +308,60 @@ const CreateImprovementCommitment: React.FC = () => {
             />
           </div>
 
-          {/* Divider */}
-          <div className="border-t border-gray-200"></div>
-
           {/* Step Content */}
           <div className="min-h-[400px]">
             {renderStepContent()}
           </div>
 
           {/* Navigation */}
-          <div className="flex justify-between items-center pt-6 border-t border-gray-200">
-            <div>
-              {currentStep > 1 && (
-                <Button
-                  variant="outline"
-                  onClick={handleBack}
-                  disabled={isSubmitting}
-                  className="gap-2"
-                >
-                  <SystemIcons.navigation.arrow.left size="sm" />
-                  Anterior
-                </Button>
-              )}
-            </div>
+          <div className="flex justify-between items-center mt-2">
+            <Button
+              variant="error"
+              onClick={() => {
+                if (currentStep === 2) {
+                  setCurrentStep(1);
+                  setErrors({});
+                } else {
+                  navigate('/compromisos/listar');
+                }
+              }}
+              disabled={isSubmitting}
+            >
+              {currentStep === 2 ? 'Volver' : 'Cancelar'}
+            </Button>
 
-            <div className="flex gap-3">
+            {currentStep < steps.length ? (
               <Button
-                variant="outline"
-                onClick={() => navigate('/compromisos/listar')}
+                onClick={handleNext}
                 disabled={isSubmitting}
+                variant="primary"
               >
-                Cancelar
+                Siguiente
               </Button>
-
-              {currentStep < steps.length ? (
-                <Button
-                  onClick={handleNext}
-                  disabled={isSubmitting}
-                  variant="secondary"
-                  className="gap-2"
-                >
-                  Siguiente
-                  <SystemIcons.navigation.arrow.right size="sm" />
-                </Button>
-              ) : (
-                <Button
-                  onClick={handleSubmit}
-                  disabled={isSubmitting}
-                  variant="secondary"
-                  className="gap-2"
-                >
-                  {isSubmitting ? (
-                    <>
-                      <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                      Creando...
-                    </>
-                  ) : (
-                    <>
-                      <SystemIcons.interface.checkCircle size="sm" />
-                      Crear Compromiso
-                    </>
-                  )}
-                </Button>
-              )}
-            </div>
+            ) : (
+              <Button
+                onClick={handleConfirmCreate}
+                disabled={isSubmitting}
+                variant="primary"
+              >
+                Crear
+              </Button>
+            )}
           </div>
         </div>
       </ScreenContainer>
+
+      {/* Modal de Confirmación */}
+      <CreateConfirmationModal
+        isOpen={showConfirmModal}
+        onClose={() => setShowConfirmModal(false)}
+        onConfirm={handleSubmit}
+        title="Confirmar creación de compromiso"
+        message="¿Está seguro de que desea crear este compromiso de mejora? Se asignarán todas las evidencias y notificaciones a los encargados."
+        itemType="compromiso de mejora"
+        confirmLabel="Crear"
+        isLoading={isSubmitting}
+      />
 
       {/* Modal de Éxito */}
       <SuccessModal
