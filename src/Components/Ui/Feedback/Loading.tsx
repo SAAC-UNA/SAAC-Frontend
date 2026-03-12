@@ -6,7 +6,7 @@ interface LoadingSpinnerProps {
   color?: 'primary' | 'secondary' | 'white' | 'gray' | 'current' | 'loading';
   className?: string;
   thickness?: 'thin' | 'normal' | 'thick';
-  variant?: 'spinner' | 'bounce' | 'uploading' | 'paging';
+  variant?: 'spinner' | 'bounce' | 'uploading' | 'paging' | 'pencil' | 'circle';
 }
 
 export const LoadingSpinner: React.FC<LoadingSpinnerProps> = ({
@@ -39,12 +39,13 @@ export const LoadingSpinner: React.FC<LoadingSpinnerProps> = ({
     thick: 'border-4'
   };
 
-  // Paging loader - Animación de libro/documento girando (estilos en index.css)
-  // Se posiciona como overlay fijo centrado en pantalla, independientemente del contenedor padre
-  if (variant === 'paging') {
+   if (variant === 'circle') {
     return (
       <div className={cn('absolute inset-0 z-40 flex items-center justify-center pt-32', className)} role="status" aria-label="Cargando...">
-        <div className="saac-loader-paging" />
+        <div className="superballs">
+            <div className="superballs__dot"></div>
+            <div className="superballs__dot"></div>
+        </div>
       </div>
     );
   }

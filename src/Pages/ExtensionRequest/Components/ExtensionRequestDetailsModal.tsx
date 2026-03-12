@@ -8,6 +8,7 @@ import { Modal } from '@/Components/Ui/Modals/Modal';
 import { Button } from '@/Components/Ui/Buttons/Button';
 import { SystemIcons } from '@/Components/Ui/Icons/SystemIcons';
 import type { ExtensionRequest, ExtensionRequestStatus } from '@/Types/ExtensionRequestTypes';
+import { TYPOGRAPHY } from '@/constants/Typography';
 
 interface ExtensionRequestDetailsModalProps {
   isOpen: boolean;
@@ -51,14 +52,14 @@ export const ExtensionRequestDetailsModal: React.FC<ExtensionRequestDetailsModal
       <div className="space-y-6">
         {/* Estado */}
         <div>
-          <p className="text-sm font-medium text-gray-700 mb-2">Estado:</p>
+          <p className={` ${TYPOGRAPHY.modal.body} text-negro-una-2 mb-2`}>Estado:</p>
           {getEstadoBadge(solicitud.estado)}
         </div>
 
         {/* Motivo */}
         <div>
-          <p className="text-sm font-medium text-gray-700 mb-2">Motivo:</p>
-          <p className="text-sm text-gray-900 bg-gray-50 rounded-corner p-3 border border-gray-200">
+          <p className={` ${TYPOGRAPHY.modal.body} text-negro-una-2 mb-2`}>Motivo:</p>
+          <p className={` ${TYPOGRAPHY.modal.body} text-gray-900 bg-gray-50 rounded-corner p-3 border border-gray-200 break-words whitespace-pre-wrap`}>
             {solicitud.motivo}
           </p>
         </div>
@@ -68,7 +69,7 @@ export const ExtensionRequestDetailsModal: React.FC<ExtensionRequestDetailsModal
           <div className="bg-gray-50 rounded-corner p-4 border border-gray-200">
             <div className="flex items-center gap-2 mb-2">
               <SystemIcons.interface.calendar size="sm" className="text-gray-600" />
-              <p className="text-sm font-medium text-gray-700">Fecha de solicitud</p>
+              <p className={` ${TYPOGRAPHY.modal.body} text-negro-una-2`}>Fecha de solicitud</p>
             </div>
             <p className="text-base font-semibold text-gray-900">
               {new Date(solicitud.created_at).toLocaleDateString('es-ES', {
@@ -82,7 +83,7 @@ export const ExtensionRequestDetailsModal: React.FC<ExtensionRequestDetailsModal
           <div className="bg-azul-una/5 rounded-corner p-4 border border-azul-una/20">
             <div className="flex items-center gap-2 mb-2">
               <SystemIcons.interface.clock size="sm" className="text-azul-una" />
-              <p className="text-sm font-medium text-azul-una">Fecha sugerida</p>
+              <p className={` ${TYPOGRAPHY.modal.body} text-azul-una`}>Fecha sugerida</p>
             </div>
             <p className="text-base font-semibold text-azul-una">
               {new Date(solicitud.fecha_sugerida).toLocaleDateString('es-ES', {
@@ -99,7 +100,7 @@ export const ExtensionRequestDetailsModal: React.FC<ExtensionRequestDetailsModal
           <div className="bg-blue-50 border border-blue-200 rounded-corner p-4">
             <div className="flex items-center gap-2 mb-2">
               <SystemIcons.interface.informationCircle size="sm" className="text-blue-700" />
-              <p className="text-sm font-medium text-blue-900">Fecha límite actual</p>
+              <p className={` ${TYPOGRAPHY.modal.body} text-blue-900`}>Fecha límite actual</p>
             </div>
             <p className="text-sm text-blue-700">
               {new Date(solicitud.evidencia_asignacion.fecha_limite).toLocaleDateString('es-ES', {
