@@ -6,7 +6,7 @@ interface LoadingSpinnerProps {
   color?: 'primary' | 'secondary' | 'white' | 'gray' | 'current' | 'loading';
   className?: string;
   thickness?: 'thin' | 'normal' | 'thick';
-  variant?: 'spinner' | 'bounce' | 'uploading' | 'paging' | 'pencil' | 'circle';
+  variant?: 'spinner' | 'bounce' | 'uploading' | 'pencil' | 'circle'| 'document';
 }
 
 export const LoadingSpinner: React.FC<LoadingSpinnerProps> = ({
@@ -39,7 +39,7 @@ export const LoadingSpinner: React.FC<LoadingSpinnerProps> = ({
     thick: 'border-4'
   };
 
-   if (variant === 'circle') {
+  if (variant === 'circle') {
     return (
       <div className={cn('absolute inset-0 z-40 flex items-center justify-center pt-32', className)} role="status" aria-label="Cargando...">
         <div className="superballs">
@@ -50,6 +50,19 @@ export const LoadingSpinner: React.FC<LoadingSpinnerProps> = ({
     );
   }
 
+  if (variant === 'document') {
+    return (
+      <div className={cn('absolute inset-0 z-40 flex items-center justify-center pt-32', className)} role="status" aria-label="Cargando...">
+        <div className="loader-con">
+          {[0, 1, 2, 3, 4, 5].map((i) => (
+            <div key={i} className="pfile" style={{ '--i': i } as React.CSSProperties} />
+          ))}
+        </div>
+      </div>
+    );
+  }
+
+  // ! Llamenme loco, pero creo que no existe implementación
   // Uploading loader - Animación de carga de archivos
   if (variant === 'uploading') {
     const uploadingSizeMap = {

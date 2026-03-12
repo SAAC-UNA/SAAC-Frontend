@@ -183,7 +183,7 @@ export const DataTable = React.memo(<T extends Record<string, unknown>>({
       <div className="pt-0 pb-6 px-0 overflow-x-auto lg:overflow-x-visible custom-scrollbar">
         {loading ? (
           <div className="relative min-h-[200px]">
-            <LoadingSpinner variant="circle" />
+            <LoadingSpinner variant="document" />
           </div>
         ) : data.length === 0 ? (
           <EmptyState
