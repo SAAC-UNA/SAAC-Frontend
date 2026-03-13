@@ -6,7 +6,7 @@ interface LoadingSpinnerProps {
   color?: 'primary' | 'secondary' | 'white' | 'gray' | 'current' | 'loading';
   className?: string;
   thickness?: 'thin' | 'normal' | 'thick';
-  variant?: 'spinner' | 'bounce' | 'uploading' | 'pencil' | 'circle'| 'document';
+  variant?: 'spinner' | 'bounce' | 'uploading' | 'pencil' | 'circle'| 'loader';
 }
 
 export const LoadingSpinner: React.FC<LoadingSpinnerProps> = ({
@@ -49,8 +49,8 @@ export const LoadingSpinner: React.FC<LoadingSpinnerProps> = ({
       </div>
     );
   }
-
-  if (variant === 'document') {
+// Loader de documentos
+  if (variant === 'loader') {
     return (
       <div className={cn('absolute inset-0 z-40 flex items-center justify-center pt-32', className)} role="status" aria-label="Cargando...">
         <div className="loader-con">

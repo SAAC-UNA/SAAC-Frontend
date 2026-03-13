@@ -183,7 +183,7 @@ export const DataTable = React.memo(<T extends Record<string, unknown>>({
       <div className="pt-0 pb-6 px-0 overflow-x-auto lg:overflow-x-visible custom-scrollbar">
         {loading ? (
           <div className="relative min-h-[200px]">
-            <LoadingSpinner variant="document" />
+            <LoadingSpinner variant="loader" />
           </div>
         ) : data.length === 0 ? (
           <EmptyState
@@ -202,14 +202,14 @@ export const DataTable = React.memo(<T extends Record<string, unknown>>({
                       index === 0 ? "pl-8 pr-4" : "px-4"
                     )}
                   >
-                    <p className={`block font-sans antialiased font-normal leading-none text-gris-una opacity-70 ${TYPOGRAPHY.table.header}`}>
+                    <p className={`block font-sans antialiased font-semibold leading-none text-gris-una-2 opacity-70 ${TYPOGRAPHY.table.header}`}>
                       {column.header}
                     </p>
                   </th>
                 ))}
                 {actions && actions.length > 0 && (
                   <th className="pl-4 pr-8 py-4 border-b border-blue-gray-100 text-center">
-                    <p className="block font-sans text-sm antialiased font-normal leading-none text-gris-una opacity-70">
+                    <p className="block font-sans text-sm antialiased font-normal leading-none text-gris-una-2 opacity-70">
                       {/* Columna de acciones vacía */}
                     </p>
                   </th>

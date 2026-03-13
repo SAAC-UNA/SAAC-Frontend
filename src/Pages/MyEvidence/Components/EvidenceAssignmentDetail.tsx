@@ -146,7 +146,7 @@ export const EvidenceAssignmentDetail: React.FC<EvidenceAssignmentDetailProps> =
         size="xl"
       >
         <div className="relative py-8 min-h-[300px]">
-          <LoadingSpinner variant="paging" />
+          <LoadingSpinner variant="loader" />
         </div>
       </DetailsModal>
     );

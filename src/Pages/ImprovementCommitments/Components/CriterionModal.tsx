@@ -167,7 +167,7 @@ export const CriterionModal: React.FC<CriterionModalProps> = ({
     >
       {loading ? (
         <div className="relative py-12 min-h-[300px]">
-          <LoadingSpinner variant="paging" />
+          <LoadingSpinner variant="loader" />
         </div>
       ) : (
         <div className="space-y-6">

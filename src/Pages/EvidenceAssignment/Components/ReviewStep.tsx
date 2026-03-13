@@ -247,7 +247,7 @@ export const ReviewStep: React.FC<ReviewStepProps> = ({
 
       {loading ? (
         <div className="relative py-12 min-h-[400px]">
-          <LoadingSpinner variant="paging" />
+          <LoadingSpinner variant="loader" />
         </div>
       ) : (
         <>
@@ -295,7 +295,7 @@ export const ReviewStep: React.FC<ReviewStepProps> = ({
             <div className="bg-blue-50 border border-blue-200 rounded-corner p-4">
               <div className="flex items-center gap-3">
                 <LoadingSpinner size="sm" />
-                <p className="text-sm text-blue-800">Validando asignaciones existentes...</p>
+                <p className="text-sm text-info">Validando asignaciones existentes...</p>
               </div>
             </div>
           )}

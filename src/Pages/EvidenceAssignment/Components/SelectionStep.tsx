@@ -199,7 +199,7 @@ export const SelectionStep: React.FC<SelectionStepProps> = ({
   if (criteriaLoading || usersLoading) {
     return (
       <div className="relative py-12 min-h-[400px]">
-        <LoadingSpinner variant="paging" />
+        <LoadingSpinner variant="loader" />
       </div>
     );
   }

@@ -80,17 +80,6 @@ export const EvidenceSearchResultsTable: React.FC<EvidenceSearchResultsTableProp
       )
     },
     {
-      key: 'descripcion',
-      header: 'Descripción',
-      render: (_, item) => (
-        <div className="flex flex-col pl-2 py-1">
-          <p className={`block font-sans antialiased font-normal leading-normal text-negro-una-2 ${TYPOGRAPHY.table.cell}`} title={item.descripcion}>
-            {truncateText(item.descripcion, TABLE_TRUNCATE.text)}
-          </p>
-        </div>
-      )
-    },
-    {
       key: 'responsables',
       header: 'Responsables',
       align: 'center',

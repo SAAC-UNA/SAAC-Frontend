@@ -362,7 +362,7 @@ const FinalReports: React.FC = () => {
       />
       {isLoading ? (
         <div className="relative py-12 min-h-[400px]">
-          <LoadingSpinner variant="paging" />
+          <LoadingSpinner variant="loader" />
         </div>
       ) : (
         <>

@@ -149,7 +149,7 @@ const StructureEditList: React.FC = () => {
           <div>
             {isLoading ? (
               <div className="relative py-12 min-h-[400px]">
-                <LoadingSpinner variant="paging" />
+                <LoadingSpinner variant="loader" />
               </div>
             ) : filteredElements.length === 0 ? (
               <div className="text-center py-12">

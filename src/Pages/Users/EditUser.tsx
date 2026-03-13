@@ -169,7 +169,7 @@ const EditUserPage: React.FC = () => {
     return (
       <ScreenContainer>
         <div className="relative min-h-screen">
-          <LoadingSpinner variant="paging" />
+          <LoadingSpinner variant="loader" />
         </div>
       </ScreenContainer>
     );

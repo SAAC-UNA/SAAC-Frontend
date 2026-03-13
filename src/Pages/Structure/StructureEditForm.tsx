@@ -371,7 +371,7 @@ const validateForm = (): boolean => {
   if (isLoading || !currentElement) {
     return (
       <div className="relative min-h-screen">
-        <LoadingSpinner variant="paging" />
+        <LoadingSpinner variant="loader" />
       </div>
     );
   }
