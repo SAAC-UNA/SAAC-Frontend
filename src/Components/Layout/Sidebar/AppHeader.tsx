@@ -4,7 +4,7 @@ import { SystemIcons } from '@/Components/Ui/Icons/SystemIcons';
 import { useSidebar } from '@/Context/SidebarContext';
 import { APP_HEADER_BUTTON } from '@/Constants/Components';
 import { cn } from '@/Utils/ClassNames';
-import { TYPOGRAPHY } from '@/Constants/Typography';
+//import { TYPOGRAPHY } from '@/Constants/Typography';
 
 /**
  * HEADER DE LA APLICACIÓN CON TRIGGER DEL SIDEBAR
@@ -34,10 +34,10 @@ interface AppHeaderProps {
 
 export const AppHeader: React.FC<AppHeaderProps> = ({
   className,
-  title = "SAAC",
-  logo = "/Images/SAAC.png",
+//  title = "SAAC",
+//  logo = "/Images/SAAC.png",
   //logo = "/Images/book.svg",
-  logoAlt = "SAAC Logo",
+//  logoAlt = "SAAC Logo",
   rightContent
 }) => {
   const { toggleSidebar } = useSidebar();

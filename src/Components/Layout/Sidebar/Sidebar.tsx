@@ -42,7 +42,6 @@ export const ModernSidebar: React.FC<SidebarProps> = ({
             isCollapsed ? 'opacity-0 pointer-events-none' : 'opacity-100'
           )}
         >
-
           <h1 className={`${TYPOGRAPHY.pageTitle} text-blanco-una font-semibold`}>
               {title}
           </h1>
@@ -141,7 +140,8 @@ export const ModernSidebar: React.FC<SidebarProps> = ({
           <div
             className={cn(
               'bg-rojo-una-2 flex h-full w-full flex-col overflow-hidden',
-              'rounded-corner shadow-2xl',
+              'rounded-corner',
+              {/** shadow-2xl */}
             )}
           >
             {sidebarContent}
