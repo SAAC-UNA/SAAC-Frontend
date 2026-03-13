@@ -171,7 +171,7 @@ const NotificationCenter: React.FC<NotificationCenterModalProps> = ({ isOpen, on
         {/* Contenido con scroll */}
         <div className="max-h-[750px] min-h-[480px] overflow-y-auto pr-2">
           {isLoading && notifications.length === 0 ? (
-            <div className="relative py-12 min-h-[300px]">
+            <div className="relative py-12 min-h-[400px]">
               <LoadingSpinner variant="loader" />
             </div>
           ) : error ? (

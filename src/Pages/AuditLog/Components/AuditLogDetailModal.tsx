@@ -14,6 +14,8 @@ import React from 'react';
 import { Modal } from '@/Components/Ui/Modals/Modal';
 import { SystemIcons } from '@/Components/Ui/Icons/SystemIcons';
 import type { AuditLog } from '@/Types/AuditLogTypes';
+import { TYPOGRAPHY } from '@/constants/Typography';
+import { ICON_SIZES } from '@/Constants/Components';
 
 interface AuditLogDetailModalProps {
   isOpen: boolean;
@@ -85,38 +87,38 @@ export const AuditLogDetailModal: React.FC<AuditLogDetailModalProps> = ({
         {/* ID del Registro */}
         <div className="flex items-center justify-between pb-4 border-b border-gray-200">
           <div className="flex items-center gap-2">
-            <SystemIcons.interface.informationCircle className="w-5 h-5 text-gray-400" />
-            <span className="text-sm text-gray-600">ID del Registro:</span>
-            <span className="text-sm font-semibold text-gray-900">#{log.bitacora_id}</span>
+            <SystemIcons.interface.informationCircle className={`${ICON_SIZES.sm} text-gray-400`} />
+            <span className={` ${TYPOGRAPHY.body} text-gray-600`}>ID del Registro:</span>
+            <span className={` ${TYPOGRAPHY.body} font-semibold text-gray-900`}>#{log.bitacora_id}</span>
           </div>
         </div>
 
         {/* Información del Usuario */}
         <div className="bg-gray-50 rounded-corner p-4">
           <div className="flex items-center gap-2 mb-3">
-            <SystemIcons.users.user className="w-5 h-5 text-primary-600" />
-            <h4 className="text-sm font-semibold text-gray-900">Usuario</h4>
+            <SystemIcons.users.user className={` ${ICON_SIZES.sm} text-primary-600`} />
+            <h4 className={` ${TYPOGRAPHY.body} font-semibold text-gray-900`}>Usuario</h4>
           </div>
           <div className="space-y-2 ml-7">
             {log.usuario ? (
               <>
                 <div className="flex items-start gap-2">
-                  <span className="text-sm text-gray-600 w-20">Nombre:</span>
-                  <span className="text-sm font-medium text-gray-900">{log.usuario.nombre}</span>
+                  <span className={` ${TYPOGRAPHY.body} text-gray-600 w-20`}>Nombre:</span>
+                  <span className={` ${TYPOGRAPHY.body} font-medium text-gray-900`}>{log.usuario.nombre}</span>
                 </div>
                 <div className="flex items-start gap-2">
-                  <span className="text-sm text-gray-600 w-20">Email:</span>
-                  <span className="text-sm text-gray-700">{log.usuario.email}</span>
+                  <span className={` ${TYPOGRAPHY.body} text-gray-600 w-20`}>Email:</span>
+                  <span className={` ${TYPOGRAPHY.body} text-gray-700`}>{log.usuario.email}</span>
                 </div>
                 <div className="flex items-start gap-2">
-                  <span className="text-sm text-gray-600 w-20">ID:</span>
-                  <span className="text-sm text-gray-700">#{log.usuario.usuario_id}</span>
+                  <span className={` ${TYPOGRAPHY.body} text-gray-600 w-20`}>ID:</span>
+                  <span className={` ${TYPOGRAPHY.body} text-gray-700`}>#{log.usuario.usuario_id}</span>
                 </div>
               </>
             ) : (
               <div className="flex items-center gap-2">
-                <SystemIcons.auth.AlertCircle className="w-4 h-4 text-orange-500" />
-                <span className="text-sm text-gray-600 italic">
+                <SystemIcons.auth.AlertCircle className={`${ICON_SIZES.sm} text-orange-500`} />
+                <span className={` ${TYPOGRAPHY.body} text-gray-600 italic`}>
                   Usuario desconocido
                 </span>
               </div>
@@ -128,24 +130,24 @@ export const AuditLogDetailModal: React.FC<AuditLogDetailModalProps> = ({
         <div className="bg-blue-50 rounded-corner p-4">
           <div className="flex items-center gap-2 mb-3">
             {icon}
-            <h4 className="text-sm font-semibold text-gray-900">Acción Ejecutada</h4>
+            <h4 className={` ${TYPOGRAPHY.body} font-semibold text-gray-900`}>Acción Ejecutada</h4>
           </div>
           <div className="space-y-2 ml-7">
             <div className="flex items-start gap-2">
-              <span className="text-sm text-gray-600 w-24">Tipo:</span>
-              <span className={`text-sm font-semibold ${color} uppercase`}>
+              <span className={` ${TYPOGRAPHY.body} text-gray-600 w-24`}>Tipo:</span>
+              <span className={` ${TYPOGRAPHY.body} font-semibold ${color} uppercase`}>
                 {log.tipo_accion.descripcion}
               </span>
             </div>
             <div className="flex items-start gap-2">
-              <span className="text-sm text-gray-600 w-24">Módulo:</span>
-              <span className="text-sm text-gray-900">
-                {log.modulo || <span className="text-gray-400 italic">Sin módulo especificado</span>}
+              <span className={` ${TYPOGRAPHY.body} text-gray-600 w-24`}>Módulo:</span>
+              <span className={` ${TYPOGRAPHY.body} text-gray-900`}>
+                {log.modulo || <span className={` ${TYPOGRAPHY.body} text-gray-400 italic`}>Sin módulo especificado</span>}
               </span>
             </div>
             <div className="flex items-start gap-2">
-              <span className="text-sm text-gray-600 w-24">ID Acción:</span>
-              <span className="text-sm text-gray-700">#{log.tipo_accion.tipo_accion_id}</span>
+              <span className={` ${TYPOGRAPHY.body} text-gray-600 w-24`}>ID Acción:</span>
+              <span className={` ${TYPOGRAPHY.body} text-gray-700`}>#{log.tipo_accion.tipo_accion_id}</span>
             </div>
           </div>
         </div>
@@ -153,16 +155,16 @@ export const AuditLogDetailModal: React.FC<AuditLogDetailModalProps> = ({
         {/* Detalle de la Acción */}
         <div className="bg-gray-50 rounded-corner p-4">
           <div className="flex items-center gap-2 mb-3">
-            <SystemIcons.modal.document className="w-5 h-5 text-gray-600" />
-            <h4 className="text-sm font-semibold text-gray-900">Detalle</h4>
+            <SystemIcons.modal.document className={` ${ICON_SIZES.sm} text-gray-600`} />
+            <h4 className={` ${TYPOGRAPHY.body} font-semibold text-gray-900`}>Detalle</h4>
           </div>
           <div className="ml-7">
             {log.detalle ? (
-              <p className="text-sm text-gray-700 leading-relaxed whitespace-pre-wrap">
+              <p className={` ${TYPOGRAPHY.body} text-gray-700 leading-relaxed whitespace-pre-wrap`}>
                 {log.detalle}
               </p>
             ) : (
-              <p className="text-sm text-gray-400 italic">Sin detalle adicional</p>
+              <p className={` ${TYPOGRAPHY.body} text-gray-400 italic`}>Sin detalle adicional</p>
             )}
           </div>
         </div>
@@ -170,19 +172,19 @@ export const AuditLogDetailModal: React.FC<AuditLogDetailModalProps> = ({
         {/* Información de Tiempo */}
         <div className="bg-green-50 rounded-corner p-4">
           <div className="flex items-center gap-2 mb-3">
-            <SystemIcons.interface.calendar className="w-5 h-5 text-green-600" />
-            <h4 className="text-sm font-semibold text-gray-900">Información de Tiempo</h4>
+            <SystemIcons.interface.calendar className={` ${ICON_SIZES.sm} text-green-600`} />
+            <h4 className={` ${TYPOGRAPHY.body}font-semibold text-gray-900`}>Información de Tiempo</h4>
           </div>
           <div className="space-y-2 ml-7">
             <div className="flex items-start gap-2">
-              <span className="text-sm text-gray-600 w-40">Fecha y Hora:</span>
-              <span className="text-sm font-medium text-gray-900 capitalize">
+              <span className={` ${TYPOGRAPHY.body} text-gray-600 w-40`}>Fecha y Hora:</span>
+              <span className={` ${TYPOGRAPHY.body} font-medium text-gray-900 capitalize`}>
                 {formatDateFull(log.fecha_hora)}
               </span>
             </div>
             <div className="flex items-start gap-2">
-              <span className="text-sm text-gray-600 w-40">Registrado el:</span>
-              <span className="text-sm text-gray-700 capitalize">
+              <span className={` ${TYPOGRAPHY.body} text-gray-600 w-40`}>Registrado el:</span>
+              <span className={` ${TYPOGRAPHY.body} text-gray-700 capitalize`}>
                 {formatDateFull(log.created_at)}
               </span>
             </div>
@@ -192,10 +194,10 @@ export const AuditLogDetailModal: React.FC<AuditLogDetailModalProps> = ({
         {/* Nota de Inmutabilidad */}
         <div className="bg-yellow-50 border border-yellow-200 rounded-corner p-3">
           <div className="flex items-start gap-2">
-            <SystemIcons.modal.key className="w-5 h-5 text-yellow-600 flex-shrink-0 mt-0.5" />
+            <SystemIcons.modal.key className={` ${ICON_SIZES.sm} text-yellow-600 flex-shrink-0 mt-0.5`} />
             <div>
-              <p className="text-sm font-medium text-yellow-800">Registro Inmutable</p>
-              <p className="text-xs text-yellow-700 mt-1">
+              <p className={` ${TYPOGRAPHY.body} font-medium text-yellow-800`}>Registro Inmutable</p>
+              <p className={` ${TYPOGRAPHY.body} text-yellow-700 mt-1`}>
                 Este registro no puede ser modificado ni eliminado para garantizar la trazabilidad
                 y seguridad del sistema.
               </p>

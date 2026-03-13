@@ -145,7 +145,7 @@ export const EvidenceAssignmentDetail: React.FC<EvidenceAssignmentDetailProps> =
         cancelLabel="Cerrar"
         size="xl"
       >
-        <div className="relative py-8 min-h-[300px]">
+        <div className="relative py-12 min-h-[400px]">
           <LoadingSpinner variant="loader" />
         </div>
       </DetailsModal>
@@ -315,8 +315,8 @@ export const EvidenceAssignmentDetail: React.FC<EvidenceAssignmentDetailProps> =
       
       <div className="bg-white border border-gray-200 rounded-corner p-4">
         {loadingFiles ? (
-          <div className="flex justify-center py-4">
-            <LoadingSpinner size="sm" />
+          <div className="relative min-h-[100px]">
+            <LoadingSpinner />
           </div>
         ) : uploadedFiles.length > 0 ? (
           <FileList

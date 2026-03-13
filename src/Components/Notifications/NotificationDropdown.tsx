@@ -101,8 +101,8 @@ export const NotificationDropdown: React.FC<NotificationDropdownProps> = ({
       {/* Lista de notificaciones */}
       <div className="overflow-y-auto flex-1">
         {isLoading ? (
-          <div className="relative py-8 min-h-[200px]">
-            <LoadingSpinner variant="paging" />
+          <div className="relative py-4 min-h-[200px]">
+            <LoadingSpinner variant="loader" />
           </div>
         ) : recentNotifications.length === 0 ? (
           <div className="px-4 py-8 text-center text-gray-500">

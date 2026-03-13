@@ -36,7 +36,7 @@ const MyExtensionRequestsPage = lazy(() => import('./Pages/ExtensionRequest').th
 // Componente de loading para Suspense
 const PageLoader = () => (
   <div className="relative min-h-screen">
-    <LoadingSpinner variant="paging" />
+    <LoadingSpinner variant="loader" />
   </div>
 );
  

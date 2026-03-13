@@ -138,7 +138,7 @@ export const Table = React.memo(<T extends Record<string, unknown>>({
     return (
       <div className={cn("bg-blanco-una rounded-corner shadow-sm border", className)}>
         <div className="relative p-8 min-h-[300px]">
-          <LoadingSpinner variant="paging" />
+          <LoadingSpinner variant="loader" />
         </div>
       </div>
     );

@@ -294,7 +294,7 @@ export const ReviewStep: React.FC<ReviewStepProps> = ({
           {validatingDuplicates && (
             <div className="bg-blue-50 border border-blue-200 rounded-corner p-4">
               <div className="flex items-center gap-3">
-                <LoadingSpinner size="sm" />
+                <div className="w-4 h-4 border-2 border-azul-una border-t-transparent rounded-full animate-spin flex-shrink-0" role="status" aria-label="Cargando..." />
                 <p className="text-sm text-info">Validando asignaciones existentes...</p>
               </div>
             </div>
