@@ -44,7 +44,7 @@ export const AppHeader: React.FC<AppHeaderProps> = ({
 
   return (
     <header className={cn(
-      "flex h-16 shrink-0 items-center gap-2 border-b-blanco-una/20 px-4",
+      "flex h-12 shrink-0 items-center gap-2 border-b-blanco-una/20 px-4",
       className
     )}>
       {/* Trigger del Sidebar (botón hamburguesa) */}
@@ -57,19 +57,19 @@ export const AppHeader: React.FC<AppHeaderProps> = ({
         {/* Este texto salta cuando el usuario usa un lector de pantalla como NVDA o JAWS */}
         <span className="sr-only">Toggle Sidebar</span>
       </Button>
-
-      {/* Logo */}
+{/**
+      {/* Logo /}
       <img 
         src={logo} 
         alt={logoAlt} 
         className="h-8 w-8"
       />
 
-      {/* Título */}
+      {/* Título /}
       <h1 className={`${TYPOGRAPHY.pageTitle} text-negro-una font-semibold`}>
         {title}
       </h1>
-
+ */}
       {/* Contenido adicional en la derecha */}
       {rightContent && (
         <div className="ml-auto">

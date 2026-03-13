@@ -6,18 +6,21 @@ import { cn } from '@/Utils/ClassNames';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from '@/Components/Ui/Layout/Sheet';
 import { TooltipProvider } from '@/Components/Ui/Feedback/Tooltip';
 import { useAuth } from '@/Context/AuthContext';
+import { TYPOGRAPHY } from '@/Constants/Typography';
 
 interface SidebarProps {
   side?: 'left' | 'right';
   variant?: 'sidebar' | 'floating' | 'inset';
   collapsible?: 'offcanvas' | 'icon' | 'none';
   className?: string;
+  title?: string;
 }
 
 export const ModernSidebar: React.FC<SidebarProps> = ({ 
   side = 'left',
   variant = 'sidebar',
   collapsible = 'icon',
+  title = "SAAC",
   className 
 }) => {
   const { isMobile, state, openMobile, setOpenMobile } = useSidebar();
@@ -28,6 +31,7 @@ export const ModernSidebar: React.FC<SidebarProps> = ({
   const sidebarContent = (
     <div className="flex flex-col h-full">
       {/* Logo Section — altura fija para que los ítems no se muevan al colapsar */}
+      {/** h-20 para cuando se use imagen */}
       <div className="flex-shrink-0 h-20 flex justify-center items-center overflow-hidden">
         <a
           href="https://www.una.ac.cr/"
@@ -38,16 +42,22 @@ export const ModernSidebar: React.FC<SidebarProps> = ({
             isCollapsed ? 'opacity-0 pointer-events-none' : 'opacity-100'
           )}
         >
+
+          <h1 className={`${TYPOGRAPHY.pageTitle} text-blanco-una font-semibold`}>
+              {title}
+          </h1>
+          {/**
           <img
             src="/Images/UNAHorizontal-Blanco.png"
             alt="Universidad Nacional de Costa Rica"
             className="w-auto h-10 object-contain cursor-pointer"
-          />
+          /> 
+          */}
         </a>
       </div>
 
       {/* Navigation Menu */}
-      <nav className="flex-1 py-6 overflow-hidden">
+      <nav className="flex-1 py-2 overflow-hidden">
         <div className="space-y-2 flex flex-col">
           {getNavigationItems(user?.roles?.map(r => r.name)).map((item) => (
             <ModernSidebarItem 
