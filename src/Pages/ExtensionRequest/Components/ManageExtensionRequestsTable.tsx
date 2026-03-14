@@ -76,11 +76,14 @@ export const ManageExtensionRequestsTable: React.FC<ManageExtensionRequestsTable
 
     // Filtrar por búsqueda
     if (searchQuery.trim()) {
+      const q = searchQuery.toLowerCase();
       filtered = filtered.filter(req =>
-        req.motivo.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        req.solicitud_ampliacion_id.toString().includes(searchQuery) ||
-        req.usuario?.nombre?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        req.usuario?.email?.toLowerCase().includes(searchQuery.toLowerCase())
+        req.motivo.toLowerCase().includes(q) ||
+        req.solicitud_ampliacion_id.toString().includes(q) ||
+        req.usuario?.nombre?.toLowerCase().includes(q) ||
+        req.usuario?.email?.toLowerCase().includes(q) ||
+        new Date(req.fecha_sugerida).toLocaleDateString('es-ES').includes(q) ||
+        new Date(req.created_at).toLocaleDateString('es-ES').includes(q)
       );
     }
 

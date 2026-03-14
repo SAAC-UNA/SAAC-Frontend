@@ -25,6 +25,7 @@ import { SystemIcons } from '../Icons/SystemIcons';
 import { Tooltip, TooltipTrigger, TooltipContent } from '../Feedback/Tooltip';
 import { Button } from './Button';
 import { cn } from '@/Utils/ClassNames';
+import { ICON_SIZES } from '@/Constants/Components';
 
 export interface FilterOption<T = string> {
   value: T;
@@ -115,7 +116,7 @@ export function FilterButton<T = string>({
                 hasActiveFilter && "bg-azul-una/10"
               )}
             >
-              <SystemIcons.interface.filter size="md" color="currentColor" />
+              <SystemIcons.interface.filter className={ICON_SIZES.md} color="currentColor" />
             </Button>
           </div>
         </TooltipTrigger>
@@ -139,7 +140,7 @@ export function FilterButton<T = string>({
             className="ml-1 hover:bg-white/20 rounded-full p-0.5 transition-colors"
             aria-label="Eliminar filtro"
           >
-            <SystemIcons.actions.cancel size="xs" color="currentColor" />
+            <SystemIcons.actions.cancel className={ICON_SIZES.sm} color="currentColor" />
           </button>
         </div>
       )}
@@ -148,7 +149,7 @@ export function FilterButton<T = string>({
       {isOpen && (
         <div 
           className={cn(
-            "absolute top-full mt-2 w-56 rounded-corner bg-white shadow-lg border border-gray-300 overflow-hidden z-50",
+            "absolute top-full mt-2 w-56 rounded-corner bg-blanco-una-2 shadow-lg overflow-hidden z-50",
             dropdownPosition === 'left' ? 'left-0' : 'right-0'
           )}
         >
@@ -174,7 +175,7 @@ export function FilterButton<T = string>({
                   {/* Check icon - Mismo que SingleSelect para consistencia visual */}
                   {isSelected && (
                     <span className="absolute inset-y-0 right-0 flex items-center pr-3 text-blue-600">
-                      <SystemIcons.interface.check size="sm" color="currentColor" />
+                      <SystemIcons.interface.check className={ICON_SIZES.sm} color="currentColor" />
                     </span>
                   )}
                 </button>
