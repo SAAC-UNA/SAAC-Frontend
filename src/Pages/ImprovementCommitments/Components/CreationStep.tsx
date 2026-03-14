@@ -25,6 +25,7 @@ import { CriterionModal } from '@/Pages/ImprovementCommitments/Components/Criter
 import { DeleteConfirmationModal } from '@/Components/Ui/Modals/DeleteConfirmationModal';
 import { TABLE_ACTION_BUTTON } from '@/Constants/Components';
 import { TYPOGRAPHY } from '@/Constants/Typography';
+import { TABLE_PAGE_SIZE } from '@/Constants/TablePagination';
 
 interface CreationStepProps {
   formData: CompromisoFormData;
@@ -51,7 +52,7 @@ export const CreationStep: React.FC<CreationStepProps> = ({
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<StatusFilter>('todos');
   const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 5;
+  const itemsPerPage = TABLE_PAGE_SIZE.standard;
   
   // Modal state
   const [showModal, setShowModal] = useState(false);

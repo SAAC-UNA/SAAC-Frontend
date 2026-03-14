@@ -9,6 +9,7 @@ import { SystemIcons } from '@/Components/Ui/Icons/SystemIcons';
 import { DataTable, type DataTableColumn } from '@/Components/Ui/Table/DataTable';
 import { TYPOGRAPHY } from '@/Constants/Typography';
 import { TABLE_TRUNCATE } from '@/Constants/TableTruncate';
+import { TABLE_PAGE_SIZE } from '@/Constants/TablePagination';
 import { TableActionButton } from '@/Components/index';
 import { 
   EVIDENCE_STATUS_LABELS, 
@@ -28,7 +29,7 @@ export const EvidenceSearchResultsTable: React.FC<EvidenceSearchResultsTableProp
   results,
   loading = false,
   onViewDetails,
-  itemsPerPage = 4
+  itemsPerPage = TABLE_PAGE_SIZE.standard
 }) => {
   const [currentPage, setCurrentPage] = useState(1);
   
@@ -87,7 +88,7 @@ export const EvidenceSearchResultsTable: React.FC<EvidenceSearchResultsTableProp
         const count = item.responsables.length;
         return (
           <div className={`flex flex-col items-center ${TYPOGRAPHY.table.cell}`}>
-            <span className={`block font-sans antialiased font-semibold leading-normal text-negro-una-2 ${TYPOGRAPHY.table.cell}`}>
+            <span className={`block font-sans antialiased leading-normal text-negro-una-2 ${TYPOGRAPHY.table.cell}`}>
               {count === 0 && 'Sin asignar'}
               {count === 1 && '1 responsable'}
               {count > 1 && `${count} responsables`}
@@ -102,9 +103,33 @@ export const EvidenceSearchResultsTable: React.FC<EvidenceSearchResultsTableProp
       align: 'center',
       render: (_, item) => (
         <div className={`flex flex-col items-center ${TYPOGRAPHY.table.cell}`}>
-          <span className={`block font-sans antialiased font-normal leading-normal text-negro-una-2 ${TYPOGRAPHY.table.cell}`}>
+          <span className={`block font-sans antialiased leading-normal text-negro-una-2 ${TYPOGRAPHY.table.cell}`}>
             {formatDate(item.fecha_publicacion)}
           </span>
+        </div>
+      )
+    },
+    {
+      key: 'recursos',
+      header: 'Recursos',
+      align: 'center',
+      render: (_, item) => (
+        <div className={`flex items-center justify-center gap-3 text-negro-una-2 ${TYPOGRAPHY.table.cell}`}>
+          {item.archivos_count > 0 && (
+            <div className="flex items-center gap-1" title="Archivos adjuntos">
+              <SystemIcons.modal.document className={`text-gris-una ${ICON_SIZES.sm}`} />
+              <span>{item.archivos_count}</span>
+            </div>
+          )}
+          {item.enlaces_count > 0 && (
+            <div className="flex items-center gap-1" title="Enlaces">
+              <SystemIcons.interface.link className={`text-gris-una ${ICON_SIZES.sm}`} />
+              <span>{item.enlaces_count}</span>
+            </div>
+          )}
+          {item.archivos_count === 0 && item.enlaces_count === 0 && (
+            <span className={`text-gris-una ${TYPOGRAPHY.table.cell}`}>Sin recursos</span>
+          )}
         </div>
       )
     },
@@ -126,30 +151,6 @@ export const EvidenceSearchResultsTable: React.FC<EvidenceSearchResultsTableProp
           </div>
         );
       }
-    },
-    {
-      key: 'recursos',
-      header: 'Recursos',
-      align: 'center',
-      render: (_, item) => (
-        <div className={`flex items-center justify-center gap-3 text-gray-600 ${TYPOGRAPHY.table.cell}`}>
-          {item.archivos_count > 0 && (
-            <div className="flex items-center gap-1" title="Archivos adjuntos">
-              <SystemIcons.modal.document className={`text-gris-una ${ICON_SIZES.sm}`} />
-              <span>{item.archivos_count}</span>
-            </div>
-          )}
-          {item.enlaces_count > 0 && (
-            <div className="flex items-center gap-1" title="Enlaces">
-              <SystemIcons.interface.link className={`text-gris-una ${ICON_SIZES.sm}`} />
-              <span>{item.enlaces_count}</span>
-            </div>
-          )}
-          {item.archivos_count === 0 && item.enlaces_count === 0 && (
-            <span className={`text-gray-400 ${TYPOGRAPHY.table.cell}`}>Sin recursos</span>
-          )}
-        </div>
-      )
     },
     {
       key: 'actions',

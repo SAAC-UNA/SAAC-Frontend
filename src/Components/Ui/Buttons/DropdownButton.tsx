@@ -161,7 +161,7 @@ export const DropdownButton: React.FC<DropdownButtonProps> = ({
       {isOpen && (
         <div 
           className={cn(
-            "absolute top-full mt-2 rounded-corner bg-white shadow-lg border border-gray-300 overflow-hidden z-50",
+            "absolute top-full mt-2 rounded-corner bg-blanco-una-2 shadow-lg border border-gris-una/5 overflow-hidden z-50",
             getMenuWidthClass(),
             dropdownPosition === 'left' ? 'left-0' : 'right-0'
           )}

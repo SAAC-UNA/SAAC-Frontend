@@ -10,6 +10,7 @@ import { FilterButton, type FilterOption } from '@/Components/Ui/Buttons/FilterB
 import { extensionRequestService } from '@/Services/ExtensionRequestService';
 import { useToast } from '@/Context/ToastContext';
 import { getContextualInfo } from '@/Constants/ModuleInfo';
+import { TABLE_PAGE_SIZE } from '@/Constants/TablePagination';
 import { ExtensionRequestsTable } from './Components/ExtensionRequestsTable';
 import { ExtensionRequestDetailsModal } from './Components/ExtensionRequestDetailsModal';
 import type { 
@@ -112,7 +113,7 @@ export const MyExtensionRequestsPage: React.FC = () => {
         error={error}
         searchQuery={searchQuery}
         filterEstado={filtroEstado}
-        itemsPerPage={15}
+        itemsPerPage={TABLE_PAGE_SIZE.standard}
         onRetry={loadSolicitudes}
         onViewDetails={handleViewDetails}
       />

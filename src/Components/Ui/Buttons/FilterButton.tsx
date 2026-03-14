@@ -110,7 +110,7 @@ export function FilterButton<T = string>({
             disabled={disabled}
             className={cn(
               "p-2 rounded-corner border transition-colors",
-              "border-gris-una/5 bg-gris-una/10",
+              "border-gris-una/5 bg-blanco-una-2",
               "hover:bg-gris-una/20",
               disabled && "opacity-50 cursor-not-allowed",
               hasActiveFilter && "bg-azul-una/10"

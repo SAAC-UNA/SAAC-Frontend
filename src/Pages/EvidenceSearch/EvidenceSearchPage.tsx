@@ -26,6 +26,7 @@ import type {
   ExportFormat
 } from '@/Types/EvidenceSearchTypes';
 import { ICON_SIZES } from '@/Constants/Components';
+import { TABLE_PAGE_SIZE } from '@/Constants/TablePagination';
 
 export const EvidenceSearchPage: React.FC = () => {
   const { showToast } = useToast();
@@ -39,7 +40,7 @@ export const EvidenceSearchPage: React.FC = () => {
   
   // Paginación
   const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 10;
+  const itemsPerPage = TABLE_PAGE_SIZE.standard;
   
   // Filtros actuales
   const [currentFilters, setCurrentFilters] = useState<EvidenceFilters>({});
@@ -205,21 +206,14 @@ export const EvidenceSearchPage: React.FC = () => {
       />
       {/* Header con botones de acción */}
       <div className="mb-6 flex justify-end items-center gap-3">
-        <Tooltip>
-          <TooltipTrigger>
-            <DropdownButton
-              label="Exportar"
-              icon={<SystemIcons.actions.export className={`text-negro-una-2 ${ICON_SIZES.button}`} />}
-              variant="outline"
-              options={exportOptions}
-              disabled={loading || displayedResults.length === 0}
-            />
-          </TooltipTrigger>
-          <TooltipContent side="top">
-            <p>Exportar resultados</p>
-          </TooltipContent>
-        </Tooltip>
-      {/** TODO hacer un componente para este botón desplegable. Ya existe filterbutton pero es un dropdown, este hace aparecer multiples opciones singleselect 
+        <DropdownButton
+            label="Exportar"
+            icon={<SystemIcons.actions.export className={`text-negro-una-2 ${ICON_SIZES.button}`} />}
+            variant="outline"
+            options={exportOptions}
+            disabled={loading || displayedResults.length === 0}
+          />
+      {/** TODO: hacer un componente para este botón desplegable. Ya existe filterbutton pero es un dropdown, este hace aparecer multiples opciones singleselect 
        * Revisar si evidenceSearchFilter es el que lo maneja (no recuerdo) y si sí, hacerlo componente
       */}
         <Tooltip>
@@ -229,7 +223,7 @@ export const EvidenceSearchPage: React.FC = () => {
               onClick={() => setShowFilters(!showFilters)}
               className={
                 `p-2 rounded-corner border transition-colors
-                border-gris-una/5 bg-gris-una/10
+                border-blanco-una-2 bg-blanco-una-2
                 hover:bg-gris-una/20
                 ${showFilters ? 'bg-azul-una/10' : ''}`
               }

@@ -14,6 +14,7 @@ import { DataTable, TableActionButton } from '@/components/index';
 import { BackendErrorAlert } from '@/Components/Ui/Feedback/BackendErrorAlert';
 import { TYPOGRAPHY } from '@/Constants/Typography';
 import { TABLE_TRUNCATE } from '@/Constants/TableTruncate';
+import { TABLE_PAGE_SIZE } from '@/Constants/TablePagination';
 import type { ExtensionRequest, ExtensionRequestStatus } from '@/Types/ExtensionRequestTypes';
 
 interface ManageExtensionRequestsTableProps {
@@ -34,7 +35,7 @@ export const ManageExtensionRequestsTable: React.FC<ManageExtensionRequestsTable
   error = null,
   searchQuery = '',
   filterEstado = 'todos',
-  itemsPerPage = 15,
+  itemsPerPage = TABLE_PAGE_SIZE.standard,
   unstyled = false,
   onRetry,
   onReviewRequest
@@ -113,10 +114,10 @@ export const ManageExtensionRequestsTable: React.FC<ManageExtensionRequestsTable
       header: 'Solicitante',
       render: (_: unknown, item: ExtensionRequest) => (
         <div className="flex flex-col">
-          <p className={`relative grid items-center px-2 py-1 font-sans font-bold text-negro-una-2 rounded-corner select-none whitespace-nowrap ${TYPOGRAPHY.table.cell}`} title={item.usuario?.nombre || 'N/A'}>
+          <p className={`block font-sans antialiased font-bold leading-normal text-negro-una-2 ${TYPOGRAPHY.table.cell}`} title={item.usuario?.nombre || 'N/A'}>
             {truncateText(item.usuario?.nombre || 'N/A', TABLE_TRUNCATE.name)}
           </p>
-          <p className={`relative grid items-center px-2 py-1 font-sans text-gris-una-2 rounded-corner select-none whitespace-nowrap ${TYPOGRAPHY.table.cell}`} title={item.usuario?.email || ''}>
+          <p className={`block font-sans antialiased leading-normal text-gris-una-2 ${TYPOGRAPHY.table.cell}`} title={item.usuario?.email || ''}>
             {truncateText(item.usuario?.email || '', TABLE_TRUNCATE.email)}
           </p>
         </div>
@@ -127,7 +128,7 @@ export const ManageExtensionRequestsTable: React.FC<ManageExtensionRequestsTable
       header: 'Motivo',
       render: (_: unknown, item: ExtensionRequest) => (
         <div className="flex flex-col">
-          <p className={`relative grid items-center px-2 py-1 font-sans font-bold text-negro-una-2 rounded-corner select-none whitespace-nowrap ${TYPOGRAPHY.table.cell}`} title={item.motivo}>
+          <p className={`block font-sans antialiased leading-normal text-negro-una-2 ${TYPOGRAPHY.table.cell}`} title={item.motivo}>
             {truncateText(item.motivo, TABLE_TRUNCATE.text)}
           </p>
         </div>
@@ -138,7 +139,7 @@ export const ManageExtensionRequestsTable: React.FC<ManageExtensionRequestsTable
       header: 'Fecha Solicitud',
       align: 'center',
       render: (_: unknown, item: ExtensionRequest) => (
-        <span className={`relative grid items-center px-2 py-1 font-sans font-bold text-negro-una-2 rounded-corner select-none whitespace-nowrap ${TYPOGRAPHY.table.cell}`}>
+        <span className={`block font-sans antialiased leading-normal text-negro-una-2 ${TYPOGRAPHY.table.cell}`}>
           {new Date(item.created_at).toLocaleDateString('es-ES')}
         </span>
       )
@@ -148,7 +149,7 @@ export const ManageExtensionRequestsTable: React.FC<ManageExtensionRequestsTable
       header: 'Fecha Sugerida',
       align: 'center',
       render: (_: unknown, item: ExtensionRequest) => (
-        <span className={`relative grid items-center px-2 py-1 font-sans font-bold text-negro-una-2 rounded-corner select-none whitespace-nowrap ${TYPOGRAPHY.table.cell}`}>
+        <span className={`block font-sans antialiased leading-normal text-negro-una-2 ${TYPOGRAPHY.table.cell}`}>
           {new Date(item.fecha_sugerida).toLocaleDateString('es-ES')}
         </span>
       )
@@ -165,17 +166,12 @@ export const ManageExtensionRequestsTable: React.FC<ManageExtensionRequestsTable
       align: 'center',
       render: (_: unknown, item: ExtensionRequest) => (
         <div className="flex items-center justify-center gap-2 pr-2">
-          {item.estado === 'pendiente' ? (
-            <TableActionButton
-              action="edit"
-              tooltip="Revisar solicitud"
-              onClick={() => onReviewRequest?.(item)}
-            />
-          ) : (
-            <span className={`text-gray-500 ${TYPOGRAPHY.table.cell}`}>
-              {item.resolutor?.nombre || 'N/A'}
-            </span>
-          )}
+          <TableActionButton
+            action="edit"
+            tooltip={item.estado === 'pendiente' ? 'Revisar solicitud' : 'Solicitud ya resuelta'}
+            onClick={() => onReviewRequest?.(item)}
+            disabled={item.estado !== 'pendiente'}
+          />
         </div>
       )
     }

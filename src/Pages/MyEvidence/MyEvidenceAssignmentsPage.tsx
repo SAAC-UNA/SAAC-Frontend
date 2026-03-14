@@ -8,6 +8,7 @@ import { useNavigate } from 'react-router-dom';
 import { PageHeader, ScreenContainer } from '@/Components/Ui/Index';
 import { BackendErrorAlert } from '@/Components/Ui/Feedback/BackendErrorAlert';
 import { getModuleInfo } from '@/Constants/ModuleInfo';
+import { TABLE_PAGE_SIZE } from '@/Constants/TablePagination';
 import { useToast } from '@/Context/ToastContext';
 import { useAuth } from '@/Context/AuthContext';
 import { evidenceAssignmentService } from '@/Services/EvidenceAssignmentService';
@@ -38,7 +39,7 @@ export const MyEvidenceAssignmentsPage: React.FC = () => {
   
   const [selectedAssignment, setSelectedAssignment] = useState<EvidenceAssignment | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 10;
+  const itemsPerPage = TABLE_PAGE_SIZE.standard;
   
   // HU-016: Estado para modal de solicitud de ampliación
   const [showExtensionModal, setShowExtensionModal] = useState(false);

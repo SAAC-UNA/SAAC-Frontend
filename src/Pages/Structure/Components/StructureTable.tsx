@@ -24,6 +24,7 @@ import { TYPOGRAPHY } from '@/Constants/Typography';
 import { useDebounce } from '@/Hooks/UseDebounce';
 import { ELEMENT_TYPE_LABELS } from '@/Constants/StructureConstants';
 import { TABLE_TRUNCATE } from '@/Constants/TableTruncate';
+import { TABLE_PAGE_SIZE } from '@/Constants/TablePagination';
 import type { DataTableColumn} from '@/Components/Ui/Table/DataTable';
 import type { StructureElement, ElementType } from '@/Types/StructureTypes';
 import { SystemIcons } from '@/Components/Ui/Icons/SystemIcons';
@@ -49,7 +50,7 @@ export const StructureTable: React.FC<StructureTableProps> = ({
     onDelete,
     onToggleActive,
     searchQuery = '',
-    itemsPerPage = 5,
+    itemsPerPage = TABLE_PAGE_SIZE.standard,
     unstyled = false
 }) => {
 

@@ -20,6 +20,7 @@ import { DataTable, TableActionButton } from '@/components/index';
 import { BackendErrorAlert } from '@/Components/Ui/Feedback/BackendErrorAlert';
 import { TYPOGRAPHY } from '@/Constants/Typography';
 import { TABLE_TRUNCATE } from '@/Constants/TableTruncate';
+import { TABLE_PAGE_SIZE } from '@/Constants/TablePagination';
 import { useRoles } from '@/hooks/UseRoles';
 import type { Role } from '@/Services/RoleService';
 
@@ -40,7 +41,7 @@ export const RolesTable: React.FC<RolesTableProps> = ({
     onEdit,
     onDelete,
     onViewPermissions,
-    itemsPerPage = 4,
+    itemsPerPage = TABLE_PAGE_SIZE.standard,
     unstyled = false,
     roles: externalRoles,
     isLoading: externalIsLoading,

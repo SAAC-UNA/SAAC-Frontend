@@ -85,6 +85,30 @@ export const EvidenceAssignmentsTable: React.FC<EvidenceAssignmentsTableProps> =
       }
     },
     {
+      key: 'fecha_asignacion',
+      header: 'Fecha Asignación',
+      align: 'center',
+      render: (_: unknown, assignment: EvidenceAssignment) => (
+        <span className={`relative grid items-center px-2 py-1 font-sans text-negro-una-2 rounded-corner select-none whitespace-nowrap ${TYPOGRAPHY.table.cell}`}>
+          {formatDate(assignment.fecha_asignacion)}
+        </span>
+      )
+    },
+    {
+      key: 'fecha_limite',
+      header: 'Fecha Límite',
+      align: 'center',
+      render: (_: unknown, assignment: EvidenceAssignment) => {
+        const fechaLimite = assignment.fecha_limite ? formatDate(assignment.fecha_limite) : 'Sin límite';
+        const overdue = isOverdue(assignment);
+        return (
+          <span className={`relative grid items-center px-2 py-1 font-sans rounded-corner select-none whitespace-nowrap ${TYPOGRAPHY.table.cell} ${overdue ? 'text-red-600 font-bold' : 'text-negro-una-2'}`}>
+            {fechaLimite}
+          </span>
+        );
+      }
+    },
+    {
       key: 'estado',
       header: 'Estado',
       align: 'center',
@@ -109,30 +133,6 @@ export const EvidenceAssignmentsTable: React.FC<EvidenceAssignmentsTableProps> =
       }
     },
     {
-      key: 'fechas',
-      header: 'Fechas',
-      align: 'center',
-      render: (_: unknown, assignment: EvidenceAssignment) => {
-        const fechaAsignacion = formatDate(assignment.fecha_asignacion);
-        const fechaLimite = assignment.fecha_limite 
-          ? formatDate(assignment.fecha_limite)
-          : 'Sin límite';
-
-        return (
-          <div className={`flex flex-col items-center ${TYPOGRAPHY.table.cell}`}>
-            <div className="flex items-center gap-1 text-gris-una">
-              <span>Asignada: {fechaAsignacion}</span>
-            </div>
-            <div className="flex items-center gap-1 text-gris-una mt-1">
-              <span className={isOverdue(assignment) ? 'text-red-600 font-bold' : ''}>
-                Límite: {fechaLimite}
-              </span>
-            </div>
-          </div>
-        );
-      }
-    },
-    {
       key: 'actions',
       header: 'Acciones',
       align: 'center',
@@ -150,7 +150,7 @@ export const EvidenceAssignmentsTable: React.FC<EvidenceAssignmentsTableProps> =
         if (hasPendingRequest) {
           tooltip = "Ya hay una solicitud pendiente";
         } else if (!validStatus) {
-          tooltip = "No se puede solicitar ampliación para este estado";
+          tooltip = "No se puede solicitar ampliación";
         }
         
         return (

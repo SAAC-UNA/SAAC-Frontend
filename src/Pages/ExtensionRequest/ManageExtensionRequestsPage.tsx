@@ -11,6 +11,7 @@ import { extensionRequestService } from '@/Services/ExtensionRequestService';
 import { useToast } from '@/Context/ToastContext';
 import { useAuth } from '@/Context/AuthContext';
 import { getContextualInfo } from '@/Constants/ModuleInfo';
+import { TABLE_PAGE_SIZE } from '@/Constants/TablePagination';
 import { ManageExtensionRequestsTable } from './Components/ManageExtensionRequestsTable';
 import { ReviewExtensionRequestModal } from '@/Components/Ui/Modals/ReviewExtensionRequestModal';
 import type { 
@@ -31,7 +32,7 @@ export const ManageExtensionRequestsPage: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
-  const [filtroEstado, setFiltroEstado] = useState<ExtensionRequestStatus | 'todos'>('pendiente');
+  const [filtroEstado, setFiltroEstado] = useState<ExtensionRequestStatus | 'todos'>('todos');
   const [currentPage, setCurrentPage] = useState(1);
   
   // Estado para el modal de revisión
@@ -205,7 +206,7 @@ export const ManageExtensionRequestsPage: React.FC = () => {
             error={error}
             searchQuery={searchQuery}
             filterEstado={filtroEstado}
-            itemsPerPage={15}
+            itemsPerPage={TABLE_PAGE_SIZE.standard}
             onRetry={loadSolicitudes}
             onReviewRequest={handleReviewRequest}
           />

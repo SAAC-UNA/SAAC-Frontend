@@ -13,6 +13,7 @@ import { DataTable, TableActionButton } from '@/components/index';
 import { BackendErrorAlert } from '@/Components/Ui/Feedback/BackendErrorAlert';
 import { TYPOGRAPHY } from '@/Constants/Typography';
 import { TABLE_TRUNCATE } from '@/Constants/TableTruncate';
+import { TABLE_PAGE_SIZE } from '@/Constants/TablePagination';
 import type { ExtensionRequest, ExtensionRequestStatus } from '@/Types/ExtensionRequestTypes';
 
 interface ExtensionRequestsTableProps {
@@ -33,7 +34,7 @@ export const ExtensionRequestsTable: React.FC<ExtensionRequestsTableProps> = ({
   error = null,
   searchQuery = '',
   filterEstado = 'todos',
-  itemsPerPage = 15,
+  itemsPerPage = TABLE_PAGE_SIZE.standard,
   unstyled = false,
   onRetry,
   onViewDetails
@@ -112,7 +113,7 @@ export const ExtensionRequestsTable: React.FC<ExtensionRequestsTableProps> = ({
       header: 'Motivo',
       render: (_: unknown, item: ExtensionRequest) => (
         <div className="flex flex-col">
-          <p className={`relative grid items-center px-2 py-1 font-sans font-bold text-negro-una-2 rounded-corner select-none whitespace-nowrap ${TYPOGRAPHY.table.cell}`} title={item.motivo}>
+          <p className={`block font-sans antialiased font-bold leading-normal text-negro-una-2 ${TYPOGRAPHY.table.cell}`} title={item.motivo}>
             {truncateText(item.motivo, TABLE_TRUNCATE.text)}
           </p>
         </div>
@@ -123,7 +124,7 @@ export const ExtensionRequestsTable: React.FC<ExtensionRequestsTableProps> = ({
       header: 'Fecha Solicitud',
       align: 'center',
       render: (_: unknown, item: ExtensionRequest) => (
-        <span className={`relative grid items-center px-2 py-1 font-sans font-bold text-negro-una-2 rounded-corner select-none whitespace-nowrap ${TYPOGRAPHY.table.cell}`}>
+        <span className={`block font-sans antialiased leading-normal text-negro-una-2 ${TYPOGRAPHY.table.cell}`}>
           {new Date(item.created_at).toLocaleDateString('es-ES')}
         </span>
       )
@@ -133,7 +134,7 @@ export const ExtensionRequestsTable: React.FC<ExtensionRequestsTableProps> = ({
       header: 'Fecha Sugerida',
       align: 'center',
       render: (_: unknown, item: ExtensionRequest) => (
-        <span className={`relative grid items-center px-2 py-1 font-sans font-bold text-negro-una-2 rounded-corner select-none whitespace-nowrap ${TYPOGRAPHY.table.cell}`}>
+        <span className={`block font-sans antialiased leading-normal text-negro-una-2 ${TYPOGRAPHY.table.cell}`}>
           {new Date(item.fecha_sugerida).toLocaleDateString('es-ES')}
         </span>
       )

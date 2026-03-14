@@ -16,6 +16,7 @@ import type { DataTableColumn } from '@/Components/Ui/Table/DataTable';
 import { ButtonWithTooltip } from '@/Components/Ui/Buttons/ButtonWithTooltip';
 import { TABLE_ACTION_BUTTON } from '@/Constants/Components';
 import { TYPOGRAPHY } from '@/Constants/Typography';
+import { TABLE_PAGE_SIZE } from '@/Constants/TablePagination';
 
 export const ImprovementCommitmentsList: React.FC = () => {
   const moduleInfo = getModuleInfo('improvement_commitments');
@@ -63,7 +64,7 @@ export const ImprovementCommitmentsList: React.FC = () => {
   
   // Paginación
   const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 5;
+  const itemsPerPage = TABLE_PAGE_SIZE.standard;
   const totalPages = Math.ceil(filteredCommitments.length / itemsPerPage);
   const paginatedData = React.useMemo(() => {
     const start = (currentPage - 1) * itemsPerPage;

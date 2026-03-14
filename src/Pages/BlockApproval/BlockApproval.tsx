@@ -12,6 +12,7 @@ import { Pagination } from '@/Components/Ui/Table/Pagination';
 import { FilterButton, type FilterOption } from '@/Components/Ui/Buttons/FilterButton';
 import { ButtonWithTooltip } from '@/Components/Ui/Buttons/ButtonWithTooltip';
 import { TYPOGRAPHY } from '@/Constants/Typography';
+import { TABLE_PAGE_SIZE } from '@/Constants/TablePagination';
 
 type ApprovalStatus = 'pendiente' | 'aprobado' | 'rechazado';
 
@@ -62,7 +63,7 @@ const BlockApproval: React.FC = () => {
   
   // Estado para paginación
   const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 5;
+  const itemsPerPage = TABLE_PAGE_SIZE.standard;
   
   // Estado para evidencias expandidas
   const [expandedCriteria, setExpandedCriteria] = useState<Set<number>>(new Set());

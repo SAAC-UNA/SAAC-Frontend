@@ -13,6 +13,7 @@ import type { DataTableColumn } from '@/Components/Ui/Table/DataTable';
 import { ButtonWithTooltip } from '@/Components/Ui/Buttons/ButtonWithTooltip';
 import { TYPOGRAPHY } from '@/Constants/Typography';
 import { TABLE_ACTION_BUTTON } from '@/Constants/Components';
+import { TABLE_PAGE_SIZE } from '@/Constants/TablePagination';
 
 const formatDate = (date?: string) => {
   if (!date) return 'Sin fecha';
@@ -163,7 +164,7 @@ export const ImprovementCommitmentDetail: React.FC = () => {
   };
 
   // Paginación para criterios
-  const itemsPerPage = 5;
+  const itemsPerPage = TABLE_PAGE_SIZE.standard;
   const totalPages = Math.ceil(selectedCriteria.length / itemsPerPage);
   const paginatedCriteria = React.useMemo(() => {
     const start = (currentPage - 1) * itemsPerPage;

@@ -3,6 +3,7 @@ import { DataTable, TableActionButton } from '@/components/index';
 import { BackendErrorAlert } from '@/Components/Ui/Feedback/BackendErrorAlert';
 import { TYPOGRAPHY } from '@/Constants/Typography';
 import { TABLE_TRUNCATE } from '@/Constants/TableTruncate';
+import { TABLE_PAGE_SIZE } from '@/Constants/TablePagination';
 import { useUsers } from '@/Hooks/UseUsers';
 import { useDebounce } from '@/Hooks/UseDebounce';
 import type { DataTableColumn } from '@/Components/Ui/Table/DataTable';
@@ -25,7 +26,7 @@ export const UsersTable: React.FC<UsersTableProps> = ({
     onViewUser,
     onEdit,
     onState,
-    itemsPerPage = 4,
+    itemsPerPage = TABLE_PAGE_SIZE.standard,
     unstyled = false,
     users: externalUsers,
     isLoading: externalIsLoading,
@@ -113,7 +114,7 @@ export const UsersTable: React.FC<UsersTableProps> = ({
             align: 'center',
             render: (role) => (
                 <div className="w-max mx-auto">
-                    <div className={`relative grid items-center px-2 py-1 font-sans font-bold text-negro-una-2 rounded-corner select-none whitespace-nowrap ${TYPOGRAPHY.badge}`} title={String(role || 'Sin rol').toLowerCase().replace(/\b\w/g, c => c.toUpperCase())}>
+                    <div className={`relative grid items-center px-2 py-1 font-sans text-negro-una-2 rounded-corner select-none whitespace-nowrap ${TYPOGRAPHY.badge}`} title={String(role || 'Sin rol').toLowerCase().replace(/\b\w/g, c => c.toUpperCase())}>
                         <span>{truncateText(String(role || 'Sin rol').toLowerCase().replace(/\b\w/g, c => c.toUpperCase()), TABLE_TRUNCATE.name)}</span>
                     </div>
                 </div>
