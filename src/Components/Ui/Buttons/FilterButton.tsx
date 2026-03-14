@@ -23,6 +23,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { SystemIcons } from '../Icons/SystemIcons';
 import { Tooltip, TooltipTrigger, TooltipContent } from '../Feedback/Tooltip';
+import { Button } from './Button';
 import { cn } from '@/Utils/ClassNames';
 
 export interface FilterOption<T = string> {
@@ -56,7 +57,7 @@ export function FilterButton<T = string>({
   const [isOpen, setIsOpen] = useState(false);
   const [dropdownPosition, setDropdownPosition] = useState<'left' | 'right'>('left');
   const dropdownRef = useRef<HTMLDivElement>(null);
-  const buttonRef = useRef<HTMLButtonElement>(null);
+  const buttonRef = useRef<HTMLDivElement>(null);
 
   // Cerrar dropdown al hacer click fuera (misma lógica que SingleSelect)
   useEffect(() => {
@@ -103,23 +104,20 @@ export function FilterButton<T = string>({
       {/* Ícono con tooltip */}
       <Tooltip>
         <TooltipTrigger>
-          <button
-            ref={buttonRef}
-            type="button"
-            onClick={() => !disabled && setIsOpen(!isOpen)}
-            disabled={disabled}
-            className={cn(
-              "p-2 rounded-corner border transition-colors",
-              "border-gris-una/5 bg-blanco-una-2",
-              "hover:bg-gris-una/20",
-              disabled && "opacity-50 cursor-not-allowed",
-              hasActiveFilter && "bg-azul-una/10"
-            )}
-          >
-            <div className="text-gris-una">
+          <div ref={buttonRef} className="inline-flex">
+            <Button
+              type="button"
+              variant="ghost"
+              onClick={() => !disabled && setIsOpen(!isOpen)}
+              disabled={disabled}
+              className={cn(
+                "border border-blanco-una-2 bg-blanco-una-2",
+                hasActiveFilter && "bg-azul-una/10"
+              )}
+            >
               <SystemIcons.interface.filter size="md" color="currentColor" />
-            </div>
-          </button>
+            </Button>
+          </div>
         </TooltipTrigger>
         <TooltipContent side="top">
           {tooltipText}
