@@ -16,13 +16,15 @@
  */
 
 import React, { useEffect, useState, useMemo, useCallback } from 'react';
-import { DataTable, TableActionButton } from '@/components/index';
+import { DataTable, TableActionButton, StatusBadge } from '@/components/index';
 import { BackendErrorAlert } from '@/Components/Ui/Feedback/BackendErrorAlert';
 import { TYPOGRAPHY } from '@/Constants/Typography';
 import { TABLE_TRUNCATE } from '@/Constants/TableTruncate';
+import { truncateText } from '@/Utils';
 import { TABLE_PAGE_SIZE } from '@/Constants/TablePagination';
 import { useRoles } from '@/hooks/UseRoles';
 import type { Role } from '@/Services/RoleService';
+import { useFirstColumnConfig } from '@/Hooks/UseFirstColumnConfig';
 
 interface RolesTableProps {
     onEdit?: (role: Role) => void;
@@ -58,12 +60,6 @@ export const RolesTable: React.FC<RolesTableProps> = ({
     const searchQuery = externalSearchQuery;
     const [currentPage, setCurrentPage] = useState(1);
 
-    // Función para truncar texto - memoizada
-    const truncateText = useCallback((text: string, maxLength: number = 20): string => {
-        if (text.length <= maxLength) return text;
-        return text.substring(0, maxLength) + '...';
-    }, []);
-
     // Cargar roles al montar el componente solo si no se pasan como props
     useEffect(() => {
         if (!externalRoles) {
@@ -97,6 +93,8 @@ export const RolesTable: React.FC<RolesTableProps> = ({
         return { totalPages: total, paginatedData: paginated };
     }, [filteredRolesData, currentPage, itemsPerPage]);
 
+    const firstColumn = useFirstColumnConfig();
+
     // Handlers memoizados
     const handleEdit = useCallback((role: Role) => {
         onEdit?.(role);
@@ -111,14 +109,15 @@ export const RolesTable: React.FC<RolesTableProps> = ({
         {
             key: 'name',
             header: 'Nombre',
-            accessor: 'name',
+            align: 'left',
+            width: firstColumn.width,
             render: (value: unknown, item: Role) => (
                 <div className="flex flex-col pl-2">
                     <p className={`block font-sans antialiased font-bold leading-normal text-negro-una-2 ${TYPOGRAPHY.table.cell}`} title={String(value)}>
-                        {truncateText(String(value), TABLE_TRUNCATE.name)}
+                        {truncateText(String(value), firstColumn.maxLength)}
                     </p>
                     <p className={`block font-sans antialiased font-normal leading-normal text-gris-una-2 ${TYPOGRAPHY.table.cell}`} title={item.description || 'Sin descripción'}>
-                        {truncateText(item.description || 'Sin descripción', TABLE_TRUNCATE.name)}
+                        {truncateText(item.description || 'Sin descripción', firstColumn.maxLength)}
                     </p>
                 </div>
             )
@@ -129,11 +128,10 @@ export const RolesTable: React.FC<RolesTableProps> = ({
             accessor: 'permissions',
             align: 'center',
             render: (_: unknown, role: Role) => (
-                <div className="w-max mx-auto">
-                    <div className={`relative grid items-center px-2 py-1 font-sans font-bold text-negro-una-2 rounded-corner select-none whitespace-nowrap bg-gray-500/20 ${TYPOGRAPHY.badge}`}>
-                        <span>{Array.isArray(role.permissions) ? role.permissions.length : 0} permisos</span>
-                    </div>
-                </div>
+                <StatusBadge
+                    label={`${Array.isArray(role.permissions) ? role.permissions.length : 0} permisos`}
+                    colorClasses="text-negro-una-2 bg-gris-light"
+                />
             )
         },
         {
@@ -141,11 +139,7 @@ export const RolesTable: React.FC<RolesTableProps> = ({
             header: 'Estado',
             align: 'center',
             render: (_: unknown) => (
-                <div className="w-max mx-auto">
-                    <div className={`relative grid items-center px-2 py-1 font-sans font-bold text-green-900 rounded-corner select-none whitespace-nowrap bg-green-500/20 ${TYPOGRAPHY.badge}`}>
-                        <span>Activo</span>
-                    </div>
-                </div>
+                <StatusBadge label="Activo (no hay sección de estado)" colorClasses="text-verde-dark bg-verde-ring" />
             )
         },
         {
@@ -174,7 +168,7 @@ export const RolesTable: React.FC<RolesTableProps> = ({
                 </div>
             )
         }
-    ], [truncateText, onViewPermissions, onDelete, handleEdit]);
+    ], [onViewPermissions, onDelete, handleEdit]);
 
     if (error) {
         return (

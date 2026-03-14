@@ -7,8 +7,9 @@ import React from 'react';
 import { Modal } from '@/Components/Ui/Modals/Modal';
 import { Button } from '@/Components/Ui/Buttons/Button';
 import { SystemIcons } from '@/Components/Ui/Icons/SystemIcons';
-import type { ExtensionRequest, ExtensionRequestStatus } from '@/Types/ExtensionRequestTypes';
+import type { ExtensionRequest } from '@/Types/ExtensionRequestTypes';
 import { TYPOGRAPHY } from '@/constants/Typography';
+import { ExtensionRequestStatusBadge } from './ExtensionRequestStatusBadge';
 
 interface ExtensionRequestDetailsModalProps {
   isOpen: boolean;
@@ -22,20 +23,6 @@ export const ExtensionRequestDetailsModal: React.FC<ExtensionRequestDetailsModal
   solicitud
 }) => {
   if (!solicitud) return null;
-
-  const getEstadoBadge = (estado: ExtensionRequestStatus) => {
-    const badges = {
-      pendiente: 'bg-yellow-100 text-yellow-800 border-yellow-300',
-      aprobada: 'bg-green-100 text-green-800 border-green-300',
-      rechazada: 'bg-red-100 text-red-800 border-red-300'
-    };
-
-    return (
-      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border ${badges[estado]}`}>
-        {estado.charAt(0).toUpperCase() + estado.slice(1)}
-      </span>
-    );
-  };
 
   return (
     <Modal
@@ -53,7 +40,7 @@ export const ExtensionRequestDetailsModal: React.FC<ExtensionRequestDetailsModal
         {/* Estado */}
         <div>
           <p className={` ${TYPOGRAPHY.modal.body} text-negro-una-2 mb-2`}>Estado:</p>
-          {getEstadoBadge(solicitud.estado)}
+          <ExtensionRequestStatusBadge estado={solicitud.estado} />
         </div>
 
         {/* Motivo */}

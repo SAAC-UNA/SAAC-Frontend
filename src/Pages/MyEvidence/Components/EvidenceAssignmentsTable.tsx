@@ -8,13 +8,16 @@
  * - Acciones (ver detalles, subir archivos)
  */
 
-import React, { useMemo, useCallback } from 'react';
+import React, { useMemo } from 'react';
 import { DataTable, type DataTableColumn } from '@/Components/Ui/Table/DataTable';
 import { TYPOGRAPHY } from '@/Constants/Typography';
 import { TABLE_TRUNCATE } from '@/Constants/TableTruncate';
+import { truncateText } from '@/Utils';
 import { TableActionButton } from '@/Components/index';
+import { AssignmentStatusBadge } from './AssignmentStatusBadge';
 import type { EvidenceAssignment } from '@/Types/EvidenceAssignmentTypes';
-import { getStatusBadgeInfo, formatDate, isOverdue } from '@/Types/EvidenceAssignmentTypes';
+import { formatDate, isOverdue } from '@/Types/EvidenceAssignmentTypes';
+import { useFirstColumnConfig } from '@/Hooks/UseFirstColumnConfig';
 
 interface EvidenceAssignmentsTableProps {
   /** Asignaciones a mostrar */
@@ -37,6 +40,7 @@ interface EvidenceAssignmentsTableProps {
   };
 }
 
+
 export const EvidenceAssignmentsTable: React.FC<EvidenceAssignmentsTableProps> = ({
   assignments,
   loading = false,
@@ -46,17 +50,16 @@ export const EvidenceAssignmentsTable: React.FC<EvidenceAssignmentsTableProps> =
   onRequestExtension,
   pagination
 }) => {
-  // Función para truncar texto
-  const truncateText = useCallback((text: string, maxLength: number = 30): string => {
-    if (text.length <= maxLength) return text;
-    return text.substring(0, maxLength) + '...';
-  }, []);
+  
+  const firstColumn = useFirstColumnConfig();
 
   // Configuración de columnas
   const columns = useMemo<DataTableColumn<EvidenceAssignment>[]>(() => [
     {
       key: 'evidencia',
       header: 'Evidencia',
+      align: 'left',
+      width: firstColumn.width,
       render: (_: unknown, assignment: EvidenceAssignment) => {
         const { evidencia } = assignment;
         if (!evidencia) return <span className="text-gris-una">Sin información</span>;
@@ -72,13 +75,13 @@ export const EvidenceAssignmentsTable: React.FC<EvidenceAssignmentsTableProps> =
               className={`block font-sans antialiased font-bold leading-normal text-negro-una-2 ${TYPOGRAPHY.table.cell}`}
               title={fullText}
             >
-              {truncateText(fullText, TABLE_TRUNCATE.text)}
+              {truncateText(fullText, firstColumn.maxLength)}
             </p>
             <p 
               className={`block font-sans antialiased font-normal leading-normal text-gris-una opacity-70 ${TYPOGRAPHY.table.cell}`}
               title={`Criterio: ${criterionText}`}
             >
-              {truncateText(criterionText, TABLE_TRUNCATE.text)}
+              {truncateText(criterionText, firstColumn.maxLength)}
             </p>
           </div>
         );
@@ -113,23 +116,8 @@ export const EvidenceAssignmentsTable: React.FC<EvidenceAssignmentsTableProps> =
       header: 'Estado',
       align: 'center',
       render: (_: unknown, assignment: EvidenceAssignment) => {
-        const statusInfo = getStatusBadgeInfo(assignment.estado);
-        const overdue = isOverdue(assignment);
-        const finalInfo = overdue ? getStatusBadgeInfo('vencido') : statusInfo;
-
-        return (
-          <div className="w-max mx-auto">
-            <div 
-              className={`relative grid items-center px-2 py-1 font-sans font-bold rounded-corner select-none whitespace-nowrap ${TYPOGRAPHY.badge}`}
-              style={{ 
-                backgroundColor: finalInfo.bgColor,
-                color: finalInfo.color 
-              }}
-            >
-              <span>{finalInfo.label}</span>
-            </div>
-          </div>
-        );
+        const estado = isOverdue(assignment) ? 'vencido' : assignment.estado;
+        return <AssignmentStatusBadge estado={estado} />;
       }
     },
     {
@@ -180,7 +168,7 @@ export const EvidenceAssignmentsTable: React.FC<EvidenceAssignmentsTableProps> =
         );
       }
     }
-  ], [truncateText, onViewDetails, onUploadFiles]);
+  ], [firstColumn, onViewDetails, onUploadFiles, onRequestExtension]);
 
   return (
     <DataTable

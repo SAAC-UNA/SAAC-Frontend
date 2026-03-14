@@ -10,11 +10,12 @@
  * - Botón para ver detalle completo
  */
 
-import React, { useMemo, useCallback } from 'react';
+import React, { useMemo } from 'react';
 import { DataTable } from '@/Components/Ui/Table/DataTable';
 import { TableActionButton } from '@/Components/Ui/Buttons/TableActionButton';
 import { TYPOGRAPHY } from '@/Constants/Typography';
 import { TABLE_TRUNCATE } from '@/Constants/TableTruncate';
+import { truncateText } from '@/Utils';
 import { SystemIcons } from '@/Components/Ui/Icons/SystemIcons';
 import type { DataTableColumn } from '@/Components/Ui/Table/DataTable';
 import type { AuditLog } from '@/Types/AuditLogTypes';
@@ -51,15 +52,6 @@ export const AuditLogTable: React.FC<AuditLogTableProps> = ({
       hour12: false,
     }).format(date);
   };
-
-  /**
-   * Trunca texto largo
-   */
-  const truncateText = useCallback((text: string | null, maxLength: number = 50): string => {
-    if (!text) return 'N/A';
-    if (text.length <= maxLength) return text;
-    return text.substring(0, maxLength) + '...';
-  }, []);
 
   /**
    * Obtiene el badge de color según el tipo de acción
@@ -138,7 +130,7 @@ export const AuditLogTable: React.FC<AuditLogTableProps> = ({
         accessor: (log) => log.detalle || 'N/A',
         render: (_, log) => (
           <p className={`text-negro-una-2 ${TYPOGRAPHY.table.cell}`} title={log.detalle || 'Sin detalle'}>
-            {truncateText(log.detalle, TABLE_TRUNCATE.text)}
+            {truncateText(log.detalle, TABLE_TRUNCATE.text) || 'N/A'}
           </p>
         ),
       },
@@ -170,7 +162,7 @@ export const AuditLogTable: React.FC<AuditLogTableProps> = ({
         ),
       },
     ],
-    [onViewDetail, truncateText]
+    [onViewDetail]
   );
 
   return (

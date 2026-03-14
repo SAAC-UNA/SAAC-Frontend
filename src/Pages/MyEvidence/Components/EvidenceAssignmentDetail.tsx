@@ -169,7 +169,7 @@ export const EvidenceAssignmentDetail: React.FC<EvidenceAssignmentDetailProps> =
       <div className="flex items-center justify-between flex-wrap gap-3">
         <div className="flex items-center gap-3">
           <span className="text-sm font-semibold text-gray-800">Estado:</span>
-          <AssignmentStatusBadge estado={assignment.estado} size="md" showIcon />
+          <AssignmentStatusBadge estado={assignment.estado} />
         </div>
         {assignment.fecha_limite && (
           <div className="flex items-center gap-2">

@@ -1,12 +1,16 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { SearchInput } from '@/Components/Ui/Forms/SearchInput';
 import { CustomSelect } from '@/Components/Ui/Forms/SingleSelect';
 import { Button } from '@/Components/Ui/Buttons/Button';
 import { ScreenContainer } from '@/Components/Ui/Layout/ScreenContainer';
+import { PageHeader } from '@/Components/Ui/Index';
 import { LoadingSpinner } from '@/Components/Ui/Feedback/Loading';
+import { SystemIcons } from '@/Components/Ui/Icons/SystemIcons';
 import { useStructure } from '@/Hooks/UseStructure';
 import type { StructureElement, ElementType } from '@/Types/StructureTypes';
+import { ELEMENT_TYPE_LABELS } from '@/Constants/StructureConstants';
+import { TYPOGRAPHY } from '@/Constants/Typography';
 
 const StructureEditList: React.FC = () => {
   const navigate = useNavigate();
@@ -17,7 +21,6 @@ const StructureEditList: React.FC = () => {
   // Estados del componente
   const [searchTerm, setSearchTerm] = useState('');
   const [typeFilter, setTypeFilter] = useState<ElementType | 'all'>('all');
-  const [filteredElements, setFilteredElements] = useState<StructureElement[]>([]);
 
   // Aplanar el árbol para obtener todos los elementos como lista
   const availableElements = React.useMemo(() => {
@@ -38,41 +41,24 @@ const StructureEditList: React.FC = () => {
     loadTree();
   }, [loadTree]);
 
-  // Filtrar elementos cuando cambian los filtros
-  useEffect(() => {
+  // Filtrar elementos - MEMOIZADO
+  const filteredElements = useMemo(() => {
     let filtered = availableElements;
 
-    // Filtro por término de búsqueda
     if (searchTerm.trim()) {
       const term = searchTerm.toLowerCase();
-      filtered = filtered.filter(element => 
+      filtered = filtered.filter(element =>
         element.name?.toLowerCase().includes(term) ||
         element.nomenclature?.toLowerCase().includes(term)
       );
     }
 
-    // Filtro por tipo
     if (typeFilter !== 'all') {
       filtered = filtered.filter(element => element.type === typeFilter);
     }
 
-    setFilteredElements(filtered);
+    return filtered;
   }, [searchTerm, typeFilter, availableElements]);
-
-  // Obtener el label del tipo de elemento
-  const getElementTypeLabel = (type: ElementType): string => {
-    const labels = {
-      'university': 'Universidad',
-      'campus': 'Sede', 
-      'career': 'Carrera',
-      'dimension': 'Dimensión',
-      'component': 'Componente',
-      'criteria': 'Criterio',
-      'standard': 'Estándar',
-      'evidence': 'Evidencia'
-    };
-    return labels[type] || type;
-  };
 
   // Navegar a la página de edición del elemento
   const handleEdit = (element: StructureElement) => {
@@ -86,63 +72,55 @@ const StructureEditList: React.FC = () => {
   };
 
   return (
-    <ScreenContainer
-      title="Editar Elementos"
-      description="Selecciona y modifica elementos existentes en la estructura del repositorio. No es posible cambiar el tipo de elemento ni su posición en la jerarquía."
-    >
-      {/* Filtros de búsqueda */}
-      <div className="mb-6">
-          <h2 className="text-lg font-semibold text-gray-900 mb-4">Buscar Elemento a Editar</h2>
-          
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {/* Búsqueda por código o nombre */}
-            <div>
-              <SearchInput
-                placeholder="Buscar por código o nombre"
-                value={searchTerm}
-                onChange={(value) => setSearchTerm(value)}
-              />
-            </div>
-
-            {/* Filtrar por tipo */}
-            <div>
-              <CustomSelect
-                label=""
-                value={typeFilter}
-                placeholder="Filtrar por tipo"
-                size="sm"
-                onChange={(value) => setTypeFilter(value as ElementType | 'all')}
-                options={[
-                  { value: 'all', label: 'Todos los tipos' },
-                  { value: 'university', label: 'Universidad' },
-                  { value: 'campus', label: 'Sede' },
-                  { value: 'career', label: 'Carrera' },
-                  { value: 'dimension', label: 'Dimensión' },
-                  { value: 'component', label: 'Componente' },
-                  { value: 'criteria', label: 'Criterio' },
-                  { value: 'standard', label: 'Estándar' },
-                  { value: 'evidence', label: 'Evidencia' }
-                ]}
-              />
-            </div>
+    <ScreenContainer>
+      <PageHeader
+        title="Editar Elementos"
+        description="Selecciona y modifica elementos existentes en la estructura del repositorio. No es posible cambiar el tipo de elemento ni su posición en la jerarquía."
+        headerExtra={
+          <div className="flex flex-col sm:flex-row w-full gap-2 shrink-0 lg:w-auto">
+            <SearchInput
+              placeholder="Buscar por código o nombre"
+              value={searchTerm}
+              onChange={(value) => setSearchTerm(value)}
+            />
+            <CustomSelect
+              label=""
+              value={typeFilter}
+              placeholder="Filtrar por tipo"
+              size="sm"
+              onChange={(value) => setTypeFilter(value as ElementType | 'all')}
+              options={[
+                { value: 'all', label: 'Todos los tipos' },
+                { value: 'university', label: 'Universidad' },
+                { value: 'campus', label: 'Sede' },
+                { value: 'career', label: 'Carrera' },
+                { value: 'dimension', label: 'Dimensión' },
+                { value: 'component', label: 'Componente' },
+                { value: 'criteria', label: 'Criterio' },
+                { value: 'standard', label: 'Estándar' },
+                { value: 'evidence', label: 'Evidencia' }
+              ]}
+            />
+            <Button
+              onClick={handleRefresh}
+              disabled={isLoading}
+              variant="secondary"
+              className="gap-2"
+            >
+              <SystemIcons.interface.refresh className="w-4 h-4" />
+              Actualizar
+            </Button>
           </div>
-        </div>
+        }
+      />
 
         {/* Lista de elementos */}
         <div>
           {/* Header de la lista */}
-          <div className="flex items-center justify-between mb-4 pb-4 border-b border-gray-200">
-            <h3 className="text-lg font-semibold text-gray-900">
-              Elementos Disponibles ({filteredElements.length})
-            </h3>
-            <Button
-              onClick={handleRefresh}
-              disabled={isLoading}
-              className="flex items-center gap-2"
-            >
-              <span>🔄</span>
-              <span>Actualizar Lista</span>
-            </Button>
+          <div className="flex items-center justify-between mb-4 pb-4 border-t border-gray-200 pt-4">
+            <p className={`text-gris-una ${TYPOGRAPHY.table.cell}`}>
+              {filteredElements.length} elemento{filteredElements.length !== 1 ? 's' : ''} encontrado{filteredElements.length !== 1 ? 's' : ''}
+            </p>
           </div>
 
           {/* Contenido de la lista */}
@@ -153,7 +131,7 @@ const StructureEditList: React.FC = () => {
               </div>
             ) : filteredElements.length === 0 ? (
               <div className="text-center py-12">
-                <div className="mx-auto text-gray-400 mb-4 text-6xl">📄cambiar</div>
+                <SystemIcons.interface.informationCircle className="mx-auto w-12 h-12 text-gray-400 mb-4" />
                 <h3 className="text-lg font-medium text-gray-900 mb-2">No se encontraron elementos</h3>
                 <p className="text-gray-500">Intenta ajustar los filtros de búsqueda.</p>
               </div>
@@ -167,22 +145,22 @@ const StructureEditList: React.FC = () => {
                     <div className="flex items-start justify-between">
                       <div className="flex-1">
                         {/* Header del elemento */}
-                        <div className="flex items-center space-x-3 mb-2">
-                          <span className="px-2 py-1 bg-blue-100 text-blue-800 text-xs font-medium rounded">
-                            {getElementTypeLabel(element.type)}
+                        <div className="flex items-center gap-2 mb-2">
+                          <span className={`px-2 py-1 rounded-corner font-sans font-bold select-none whitespace-nowrap badge-info ${TYPOGRAPHY.badge}`}>
+                            {ELEMENT_TYPE_LABELS[element.type]}
                           </span>
-                          <span className="px-2 py-1 bg-gray-100 text-gray-800 text-xs font-medium rounded font-mono">
-                            {element.nomenclature}
-                          </span>
-                          <span className={`px-2 py-1 text-xs font-medium rounded ${
-                            element.active 
-                              ? 'badge-success' 
-                              : 'badge-error'
+                          {element.nomenclature && (
+                            <span className={`px-2 py-1 rounded-corner font-mono badge-info ${TYPOGRAPHY.badge}`}>
+                              {element.nomenclature}
+                            </span>
+                          )}
+                          <span className={`px-2 py-1 rounded-corner font-sans font-bold select-none whitespace-nowrap ${TYPOGRAPHY.badge} ${
+                            element.active ? 'text-green-900 bg-green-500/20' : 'text-red-900 bg-red-500/20'
                           }`}>
                             {element.active ? 'Activo' : 'Inactivo'}
                           </span>
                           {element.hasChildren && (
-                            <span className="px-2 py-1 badge-warning text-xs font-medium rounded">
+                            <span className={`px-2 py-1 rounded-corner font-sans font-bold select-none whitespace-nowrap badge-warning ${TYPOGRAPHY.badge}`}>
                               Tiene dependencias
                             </span>
                           )}

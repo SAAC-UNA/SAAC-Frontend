@@ -6,6 +6,7 @@
  */
 
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { StructureTable } from './Components/StructureTable';
 import { ScreenContainer } from '@/Components/Ui/Layout/ScreenContainer';
 import { PageHeader } from '@/Components/Ui/Index';
@@ -18,22 +19,14 @@ import { SuccessModal } from '@/Components/Ui/Modals/SuccessModal';
 import { SearchInput } from '@/Components/Ui/Forms/SearchInput';
 import { Button } from '@/Components/Ui/Buttons/Button';
 import { SystemIcons } from '@/Components/Ui/Icons/SystemIcons';
-
-/**
- * Función auxiliar para truncar texto largo
- */
-const truncateText = (text: string, maxLength: number = 25): string => {
-  if (!text || text.length <= maxLength) {
-    return text;
-  }
-  return text.substring(0, maxLength).trim() + '...';
-};
+import { truncateText } from '@/Utils';
 
 const StructureList: React.FC = () => {
   
   // Obtener información del módulo desde ModuleInfo
   const moduleInfo = getModuleInfo('structure_list');
-  
+  const navigate = useNavigate();
+
   const { 
   isLoading, 
   deleteElement,
@@ -42,7 +35,6 @@ const StructureList: React.FC = () => {
   loadTree,
   treeData 
 } = useStructure();
-  console.log('🗑️ Total elementos en treeData:', treeData.length);
 
   // Cargar árbol al montar la página
   useEffect(() => {
@@ -81,23 +73,19 @@ const StructureList: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('');
 
   const handleEditElement = (element: StructureElement) => {
-    // Navegar directamente a la página de edición con el ID del elemento
-    window.location.href = `/estructura/editar/formulario?id=${element.id}&type=${element.type}`;
+    navigate(`/estructura/editar/formulario?id=${element.id}&type=${element.type}`);
   };
 
   const handleDeleteElement = (element: StructureElement) => {
-    console.log('🗑️ handleDeleteElement llamado con:', element);
     setDeleteModalState({
       isOpen: true,
       element
     });
-    console.log('🗑️ deleteModalState actualizado:', { isOpen: true, element });
   };
 
   const handleToggleActive = async (element: StructureElement) => {
     // Cargar los datos si están vacíos
     if (treeData.length === 0) {
-      console.log('⚠️ treeData vacío, recargando...');
       await loadTree();
     }
     
@@ -109,13 +97,6 @@ const StructureList: React.FC = () => {
 
   // Verificar si un elemento tiene hijos buscando en todos los elementos
   const hasChildren = (element: StructureElement): boolean => {
-    console.log('🔍 hasChildren - Estado actual:', {
-      elementId: element.id,
-      elementName: element.name || element.nomenclature,
-      treeDataLength: treeData.length,
-    });
-    
-    // Aplanar el árbol para obtener todos los elementos
     const flattenTree = (nodes: StructureElement[]): StructureElement[] => {
       return nodes.reduce((acc, node) => {
         acc.push(node);
@@ -127,17 +108,7 @@ const StructureList: React.FC = () => {
     };
 
     const allElements = flattenTree(treeData);
-    
-    // Buscar si hay elementos que tengan este elemento como padre
-    const hasChildElements = allElements.some(el => el.parentElementId === element.id);
-    
-    console.log('🔍 hasChildren - Resultado:', {
-      allElementsCount: allElements.length,
-      hasChildElements,
-      childrenFound: allElements.filter(el => el.parentElementId === element.id).map(c => c.name || c.nomenclature)
-    });
-    
-    return hasChildElements;
+    return allElements.some(el => el.parentElementId === element.id);
   };
 
   const confirmDeleteElement = async () => {
@@ -173,19 +144,9 @@ const StructureList: React.FC = () => {
     const action = element.active ? 'deactivate' : 'activate';
     
     try {
-      console.log('🔍 DEBUG - Elemento seleccionado:', {
-        id: element.id,
-        type: element.type,
-        name: element.name || element.nomenclature,
-        active: element.active
-      });
-      
-      // Cambiar el estado del elemento
       if (element.active) {
-        console.log('⚡ DESACTIVANDO elemento');
         await deactivateElementWithoutReload(element.type, element.id);
       } else {
-        console.log('✅ ACTIVANDO elemento');
         await activateElementWithoutReload(element.type, element.id);
       }
       
@@ -215,10 +176,8 @@ const StructureList: React.FC = () => {
   };
 
   const handleCreateElement = () => {
-    window.location.href = '/estructura/crear';
+    navigate('/estructura/crear');
   };
-
-  console.log('🎯 Estado toggleActiveModalState:', toggleActiveModalState);
 
   const closeSuccessModal = () => {
     setSuccessModalState({ isOpen: false, elementName: '', action: 'activate' });
@@ -271,67 +230,49 @@ const StructureList: React.FC = () => {
       isLoading={isLoading}
     />
 
-      {/* Modal de confirmación para ACTIVAR */}
-      {toggleActiveModalState.isOpen && toggleActiveModalState.element && !toggleActiveModalState.element.active && (
+      {/* Modal de confirmación para activar/inactivar */}
+      {toggleActiveModalState.isOpen && toggleActiveModalState.element && (
         <Modal
           isOpen={true}
           onClose={cancelToggleActive}
           onConfirm={confirmToggleActive}
-          variant="info"
-          hideDefaultDangerMessage={true}
-          title="Confirmar activación"
+          variant={toggleActiveModalState.element.active ? 'warning' : 'info'}
+          hideDefaultDangerMessage={!toggleActiveModalState.element.active}
+          title={toggleActiveModalState.element.active ? 'Confirmar inactivación' : 'Confirmar activación'}
           message={
             <>
-              ¿Está seguro de que desea activar "<span className="font-bold">{truncateText(toggleActiveModalState.element?.name || toggleActiveModalState.element?.nomenclature || '')}</span>"?            </>
+              ¿Está seguro de que desea {toggleActiveModalState.element.active ? 'inactivar' : 'activar'} "<span className="font-bold">{truncateText(toggleActiveModalState.element.name || toggleActiveModalState.element.nomenclature || '')}</span>"?
+            </>
           }
-          confirmLabel="Activar"
+          confirmLabel={toggleActiveModalState.element.active ? 'Inactivar' : 'Activar'}
           cancelLabel="Cancelar"
           confirmLoading={isLoading}
           showCancel={true}
           showConfirm={true}
         >
-          <div className="mt-4 p-3 bg-[var(--color-info-light)] border border-[var(--color-info-ring)] rounded-corner">
-            <p className="text-sm text-info-dark">
-              Al activar este elemento, volverá a estar disponible para su uso en el sistema.
-            </p>
-            {hasChildren(toggleActiveModalState.element) && (
-              <p className="text-xs text-info-dark mt-2">
-                <strong>Cascada automática:</strong> Todos los elementos dependientes (hijos) se activarán automáticamente en cascada.
+          {toggleActiveModalState.element.active ? (
+            <div className="mt-4 p-3 bg-[var(--color-warning-light)] border border-[var(--color-warning-ring)] rounded-corner">
+              <p className="text-sm text-warning-dark">
+                Al inactivar este elemento, dejará de estar disponible en el sistema. Esta acción es reversible.
               </p>
-            )}
-          </div>
-        </Modal>
-      )}
-
-      {/* Modal de confirmación para INACTIVAR */}
-      {toggleActiveModalState.isOpen && toggleActiveModalState.element && toggleActiveModalState.element.active && (
-        <Modal
-          isOpen={true}
-          onClose={cancelToggleActive}
-          onConfirm={confirmToggleActive}
-          variant="warning"
-          hideDefaultDangerMessage={false}
-          title="Confirmar inactivación"
-          message={
-            <>
-              ¿Está seguro de que desea inactivar "<span className="font-bold">{truncateText(toggleActiveModalState.element?.name || toggleActiveModalState.element?.nomenclature || '')}</span>"?            </>
-          }
-          confirmLabel="Inactivar"
-          cancelLabel="Cancelar"
-          confirmLoading={isLoading}
-          showCancel={true}
-          showConfirm={true}
-        >
-          <div className="mt-4 p-3 bg-[var(--color-warning-light)] border border-[var(--color-warning-ring)] rounded-corner">
-            <p className="text-sm text-warning-dark">
-              Al inactivar este elemento, dejará de estar disponible en el sistema. Esta acción es reversible.
-            </p>
-            {hasChildren(toggleActiveModalState.element) && (
-              <p className="text-xs text-warning-dark mt-2">
-                <strong>⚠️ Importante:</strong> Todos los elementos dependientes (hijos) se inactivarán automáticamente en cascada.
+              {hasChildren(toggleActiveModalState.element) && (
+                <p className="text-xs text-warning-dark mt-2">
+                  <strong>Importante:</strong> Todos los elementos dependientes (hijos) se inactivarán automáticamente en cascada.
+                </p>
+              )}
+            </div>
+          ) : (
+            <div className="mt-4 p-3 bg-[var(--color-info-light)] border border-[var(--color-info-ring)] rounded-corner">
+              <p className="text-sm text-info-dark">
+                Al activar este elemento, volverá a estar disponible para su uso en el sistema.
               </p>
-            )}
-          </div>
+              {hasChildren(toggleActiveModalState.element) && (
+                <p className="text-xs text-info-dark mt-2">
+                  <strong>Cascada automática:</strong> Todos los elementos dependientes (hijos) se activarán automáticamente en cascada.
+                </p>
+              )}
+            </div>
+          )}
         </Modal>
       )}
             {/* Modal de éxito */}
@@ -345,11 +286,7 @@ const StructureList: React.FC = () => {
             ? 'Elemento inactivado'
             : 'Elemento eliminado'
         }
-        message={`El elemento "${
-          successModalState.elementName.length > 25 
-            ? successModalState.elementName.substring(0, 25).trim() + '...' 
-            : successModalState.elementName
-        }" ha sido ${
+        message={`El elemento "${truncateText(successModalState.elementName)}" ha sido ${
           successModalState.action === 'activate' 
             ? 'activado' 
             : successModalState.action === 'deactivate'

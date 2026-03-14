@@ -16,5 +16,5 @@ export const TABLE_TRUNCATE = {
   /** Correos electrónicos — 25 caracteres */
   email: 25,
   /** Texto largo: motivos, detalles, descripciones — 40 caracteres */
-  text: 20,
+  text: 40,
 } as const;

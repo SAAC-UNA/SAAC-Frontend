@@ -4,19 +4,19 @@
  */
 
 import React, { useState, useMemo, useCallback } from 'react';
-import { cn } from '@/Utils/ClassNames';
 import { SystemIcons } from '@/Components/Ui/Icons/SystemIcons';
 import { DataTable, type DataTableColumn } from '@/Components/Ui/Table/DataTable';
 import { TYPOGRAPHY } from '@/Constants/Typography';
 import { TABLE_TRUNCATE } from '@/Constants/TableTruncate';
 import { TABLE_PAGE_SIZE } from '@/Constants/TablePagination';
-import { TableActionButton } from '@/Components/index';
+import { TableActionButton, StatusBadge } from '@/Components/index';
 import { 
   EVIDENCE_STATUS_LABELS, 
   EVIDENCE_STATUS_BADGE,
   type EvidenceSearchResult 
 } from '@/Types/EvidenceSearchTypes';
 import { ICON_SIZES } from '@/Constants/Components';
+import { useFirstColumnConfig } from '@/Hooks/UseFirstColumnConfig';
 
 export interface EvidenceSearchResultsTableProps {
   results: EvidenceSearchResult[];
@@ -59,6 +59,8 @@ export const EvidenceSearchResultsTable: React.FC<EvidenceSearchResultsTableProp
     return { totalPages: total, paginatedData: paginated };
   }, [results, currentPage, itemsPerPage]);
 
+  const firstColumn = useFirstColumnConfig();
+
   // Handler de cambio de página
   const handlePageChange = useCallback((page: number) => {
     setCurrentPage(page);
@@ -69,13 +71,15 @@ export const EvidenceSearchResultsTable: React.FC<EvidenceSearchResultsTableProp
     {
       key: 'criterio',
       header: 'Criterio',
+      align: 'left',
+      width: firstColumn.width,
       render: (_, item) => (
         <div className="flex flex-col pl-2 py-1">
           <p className={`block font-sans antialiased font-bold leading-normal text-negro-una-2 ${TYPOGRAPHY.table.cell}`} title={item.criterio_nomenclatura}>
-            {truncateText(item.criterio_nomenclatura, TABLE_TRUNCATE.name)}
+            {truncateText(item.criterio_nomenclatura, firstColumn.maxLength)}
           </p>
           <p className={`block font-sans antialiased font-normal leading-normal text-gris-una-2 ${TYPOGRAPHY.table.cell}`} title={item.criterio_descripcion}>
-            {truncateText(item.criterio_descripcion, TABLE_TRUNCATE.text)}
+            {truncateText(item.criterio_descripcion, firstColumn.maxLength)}
           </p>
         </div>
       )
@@ -137,20 +141,12 @@ export const EvidenceSearchResultsTable: React.FC<EvidenceSearchResultsTableProp
       key: 'estado',
       header: 'Estado',
       align: 'center',
-      render: (_, item) => {
-        const badgeClass = EVIDENCE_STATUS_BADGE[item.estado];
-        return (
-          <div className="w-max mx-auto">
-            <div className={cn(
-              'relative grid items-center px-2 py-1 font-sans font-bold rounded-corner select-none whitespace-nowrap',
-              TYPOGRAPHY.badge,
-              badgeClass
-            )}>
-              <span>{EVIDENCE_STATUS_LABELS[item.estado]}</span>
-            </div>
-          </div>
-        );
-      }
+      render: (_, item) => (
+        <StatusBadge
+          label={EVIDENCE_STATUS_LABELS[item.estado]}
+          colorClasses={EVIDENCE_STATUS_BADGE[item.estado]}
+        />
+      )
     },
     {
       key: 'actions',

@@ -197,6 +197,7 @@ export const DataTable = React.memo(<T extends Record<string, unknown>>({
                 {columns.map((column, index) => (
                   <th 
                     key={index} 
+                    style={column.width ? { width: column.width } : undefined}
                     className={cn(
                       "py-4 border-b border-blue-gray-100 text-center",
                       index === 0 ? "pl-8 pr-4" : "px-4"
@@ -271,7 +272,7 @@ export const DataTable = React.memo(<T extends Record<string, unknown>>({
 
       {/* Paginación */}
       {pagination && pagination.totalPages > 1 && (
-        <div className="flex items-center justify-center p-4 border-t border-blue-gray-50">
+        <div className="flex items-center justify-center p-4">
           <Pagination
             currentPage={pagination.currentPage}
             totalPages={pagination.totalPages}

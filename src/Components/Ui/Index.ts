@@ -19,6 +19,7 @@ export { Pagination } from './Table/Pagination';
 export { PermissionsModal } from './Modals/PermissionsRoleModal';
 export { Modal, useModal } from './Modals/Modal';
 export { BackendErrorAlert } from './Feedback/BackendErrorAlert';
+export { StatusBadge } from './StatusBadge';
 export { DetailsModal } from './Modals/DetailsModal';
 export { CustomSelect } from './Forms/SingleSelect';
 export type { SelectOption, CustomSelectProps } from './Forms/SingleSelect';

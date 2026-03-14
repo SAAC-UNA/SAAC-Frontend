@@ -2,24 +2,17 @@ import React, { useState, useEffect } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { Input } from '@/Components/Ui/Forms/Input';
 import { Button } from '@/Components/Ui/Buttons/Button';
-import { Modal, useModal } from '@/Components/Ui/Modals/Modal';
+import { EditConfirmationModal } from '@/Components/Ui/Modals/EditConfirmationModal';
+import { DeleteConfirmationModal } from '@/Components/Ui/Modals/DeleteConfirmationModal';
 import { ScreenContainer } from '@/Components/Ui/Layout/ScreenContainer';
+import { PageHeader } from '@/Components/Ui/Index';
 import { LoadingSpinner } from '@/Components/Ui/Feedback/Loading';
 import { useStructure } from '@/Hooks/UseStructure';
 import type { StructureElement, ElementType } from '@/Types/StructureTypes';
-import { FORM_CONFIG, VALIDATION_RULES, getDescriptionMaxLength} from '@/Constants/StructureConstants';
+import { FORM_CONFIG, VALIDATION_RULES, getDescriptionMaxLength, ELEMENT_TYPE_LABELS } from '@/Constants/StructureConstants';
 import { SuccessModal } from '@/Components/Ui/Modals/SuccessModal';
 import { Textarea } from '@/Components/Ui/Forms/Textarea';
-
-/**
- * Función auxiliar para truncar texto largo
- */
-const truncateText = (text: string, maxLength: number = 25): string => {
-  if (!text || text.length <= maxLength) {
-    return text;
-  }
-  return text.substring(0, maxLength).trim() + '...';
-};
+import { truncateText } from '@/Utils';
 
 interface EditableElement extends StructureElement {
   originalNomenclature: string;
@@ -49,9 +42,10 @@ const StructureEditForm: React.FC = () => {
     description?: string;
   }>({});
 
-  // Modal para confirmaciones
-  const confirmModal = useModal();
-  const [pendingAction, setPendingAction] = useState<'save' | 'discard' | null>(null);
+  // Modal para confirmación de guardar
+  const [saveModalOpen, setSaveModalOpen] = useState(false);
+  // Modal para confirmación de descartar cambios
+  const [discardModalOpen, setDiscardModalOpen] = useState(false);
 
   // Estado para el modal de éxito
   const [successModalState, setSuccessModalState] = useState<{
@@ -276,93 +270,58 @@ const validateForm = (): boolean => {
   }
 };
 
-  // Obtener el label del tipo de elemento
-  const getElementTypeLabel = (type: ElementType): string => {
-    const labels = {
-      'university': 'Universidad',
-      'campus': 'Sede',
-      'career': 'Carrera',
-      'dimension': 'Dimensión',
-      'component': 'Componente',
-      'criteria': 'Criterio',
-      'standard': 'Estándar',
-      'evidence': 'Evidencia'
-    };
-    return labels[type] || type;
-  };
-
   // Manejar acción (guardar o descartar)
   const handleAction = (action: 'save' | 'discard') => {
-    setPendingAction(action);
-    confirmModal.openModal();
+    if (action === 'save') setSaveModalOpen(true);
+    else setDiscardModalOpen(true);
   };
 
-  // Confirmar acción
-  const confirmAction = async () => {
-    if (!pendingAction || !currentElement) return;
+  // Confirmar guardado
+  const confirmSave = async () => {
+    if (!currentElement) return;
+
+    if (!validateForm()) {
+      setSaveModalOpen(false);
+      return;
+    }
 
     try {
-      if (pendingAction === 'save') {
-        // Validar formulario antes de guardar
-        if (!validateForm()) {
-          confirmModal.closeModal();
-          setPendingAction(null);
-          return;
-        }
+      const result = await editElement(currentElement.type, currentElement.id, {
+        nomenclature: formData.nomenclature,
+        name: formData.name,
+        description: formData.description,
+        active: currentElement.active
+      });
 
-        // Usar el hook para editar el elemento
-        const result = await editElement(currentElement.type, currentElement.id, {
-          nomenclature: formData.nomenclature,
-          name: formData.name,
-          description: formData.description,
-          active: currentElement.active
+      if (result) {
+        setSaveModalOpen(false);
+        setSuccessModalState({
+          isOpen: true,
+          elementName: formData.name || formData.nomenclature || formData.description || 'elemento'
         });
-
-        if (result) {
-          console.log('Cambios guardados:', formData);
-          confirmModal.closeModal();
-          setPendingAction(null);
-          
-          // Mostrar modal de éxito
-          setSuccessModalState({
-            isOpen: true,
-            elementName: formData.name || formData.nomenclature || formData.description || 'elemento'
-          });
-        }
-      } else {
-        // Descartar cambios
-        setFormData({
-          nomenclature: currentElement.originalNomenclature || '',
-          name: currentElement.originalName || '',
-          description: currentElement.originalDescription || ''
-        });
-        setHasChanges(false);
-        confirmModal.closeModal();
-        setPendingAction(null);
       }
     } catch (error) {
-      console.error('Error al procesar la acción:', error);
-      confirmModal.closeModal();
-      setPendingAction(null);
+      console.error('Error al guardar el elemento:', error);
+      setSaveModalOpen(false);
     }
   };
 
-  // Obtener texto de confirmación
-  const getConfirmationText = (): string => {
-    if (!pendingAction) return '';
-    
-    if (pendingAction === 'save') {
-      return '¿Está seguro de que desea guardar los cambios realizados?';
-    } else {
-      return '¿Está seguro de que desea descartar todos los cambios? Esta acción no se puede deshacer.';
-    }
+  // Confirmar descarte de cambios
+  const confirmDiscard = () => {
+    if (!currentElement) return;
+    setFormData({
+      nomenclature: currentElement.originalNomenclature || '',
+      name: currentElement.originalName || '',
+      description: currentElement.originalDescription || ''
+    });
+    setHasChanges(false);
+    setDiscardModalOpen(false);
   };
 
   // Volver al listado
   const goBack = () => {
   if (hasChanges) {
-    setPendingAction('discard');
-    confirmModal.openModal();
+    setDiscardModalOpen(true);
   } else {
     navigate('/estructura/listar');
   }
@@ -377,10 +336,11 @@ const validateForm = (): boolean => {
   }
 
   return (
-    <ScreenContainer
-      title="Editar Elementos"
-      description="Selecciona y modifica elementos existentes en la estructura del repositorio"
-    >
+    <ScreenContainer>
+      <PageHeader
+        title="Editar Elemento"
+        description="Modifica los campos del elemento seleccionado"
+      />
 
       {/* Formulario de edición */}
       <div className="grid grid-cols-1 gap-6">
@@ -392,12 +352,12 @@ const validateForm = (): boolean => {
             </h3>
 
             {/* Información fija */}
-            <div className="bg-gray-50 rounded-corner p-4 mb-6">
+            <div className="bg-white border border-gray-200 rounded-corner p-4 mb-6">
               <h4 className="text-md font-medium text-gray-900 mb-3">Información Fija</h4>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
                 <div>
                   <span className="font-medium text-gray-700">Tipo:</span>
-                  <span className="ml-2">{getElementTypeLabel(currentElement.type)}</span>
+                  <span className="ml-2">{ELEMENT_TYPE_LABELS[currentElement.type]}</span>
                 </div>
                 <div>
                   <span className="font-medium text-gray-700">Creado:</span>
@@ -492,20 +452,25 @@ const validateForm = (): boolean => {
           </div>
         </div>
 
-      {/* Modal de confirmación */}
-      <Modal
-        isOpen={confirmModal.isOpen}
-        onClose={confirmModal.closeModal}
-        title={pendingAction === 'save' ? 'Confirmar Guardado' : 'Confirmar Descarte'}
-        size="md"
-        variant="warning"
-        message={getConfirmationText()}
-        showConfirm={true}
-        confirmLabel="Confirmar"
-        onConfirm={confirmAction}
-        confirmLoading={isLoading}
-        showCancel={true}
+      <EditConfirmationModal
+        isOpen={saveModalOpen}
+        onClose={() => setSaveModalOpen(false)}
+        onConfirm={confirmSave}
+        title="Confirmar Guardado"
+        message="¿Está seguro de que desea guardar los cambios realizados?"
+        confirmLabel="Guardar"
         cancelLabel="Cancelar"
+        isLoading={isLoading}
+      />
+      <DeleteConfirmationModal
+        isOpen={discardModalOpen}
+        onClose={() => setDiscardModalOpen(false)}
+        onConfirm={confirmDiscard}
+        title="Descartar cambios"
+        itemName={truncateText(currentElement?.name || currentElement?.nomenclature || 'elemento')}
+        confirmLabel="Descartar"
+        cancelLabel="Cancelar"
+        variant="warning"
       />
       {/* Modal de éxito */}
       <SuccessModal

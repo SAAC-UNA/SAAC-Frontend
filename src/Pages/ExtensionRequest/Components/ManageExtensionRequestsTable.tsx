@@ -15,7 +15,10 @@ import { BackendErrorAlert } from '@/Components/Ui/Feedback/BackendErrorAlert';
 import { TYPOGRAPHY } from '@/Constants/Typography';
 import { TABLE_TRUNCATE } from '@/Constants/TableTruncate';
 import { TABLE_PAGE_SIZE } from '@/Constants/TablePagination';
+import { truncateText } from '@/Utils';
+import { ExtensionRequestStatusBadge } from './ExtensionRequestStatusBadge';
 import type { ExtensionRequest, ExtensionRequestStatus } from '@/Types/ExtensionRequestTypes';
+import { useFirstColumnConfig } from '@/Hooks/UseFirstColumnConfig';
 
 interface ManageExtensionRequestsTableProps {
   requests?: ExtensionRequest[];
@@ -41,29 +44,6 @@ export const ManageExtensionRequestsTable: React.FC<ManageExtensionRequestsTable
   onReviewRequest
 }) => {
   const [currentPage, setCurrentPage] = useState(1);
-
-  // Función para truncar texto
-  const truncateText = useCallback((text: string, maxLength: number = 30): string => {
-    if (text.length <= maxLength) return text;
-    return text.substring(0, maxLength) + '...';
-  }, []);
-
-  // Badge de estado (sin íconos)
-  const getEstadoBadge = useCallback((estado: ExtensionRequestStatus) => {
-    const badges = {
-      pendiente: 'bg-yellow-100 text-yellow-800 border-yellow-300',
-      aprobada: 'bg-green-100 text-green-800 border-green-300',
-      rechazada: 'bg-red-100 text-red-800 border-red-300'
-    };
-
-    return (
-      <div className="w-max mx-auto">
-        <div className={`relative grid items-center px-2 py-1 font-sans font-bold rounded-corner select-none whitespace-nowrap ${TYPOGRAPHY.badge} ${badges[estado]}`}>
-          <span>{estado.charAt(0).toUpperCase() + estado.slice(1)}</span>
-        </div>
-      </div>
-    );
-  }, []);
 
   // Filtrar solicitudes
   const filteredRequests = useMemo(() => {
@@ -105,6 +85,8 @@ export const ManageExtensionRequestsTable: React.FC<ManageExtensionRequestsTable
     setCurrentPage(1);
   }, [searchQuery, filterEstado]);
 
+  const firstColumn = useFirstColumnConfig();
+
   // Handlers
   const handlePageChange = useCallback((page: number) => {
     setCurrentPage(page);
@@ -115,13 +97,15 @@ export const ManageExtensionRequestsTable: React.FC<ManageExtensionRequestsTable
     {
       key: 'solicitante',
       header: 'Solicitante',
+      align: 'left',
+      width: firstColumn.width,
       render: (_: unknown, item: ExtensionRequest) => (
         <div className="flex flex-col">
           <p className={`block font-sans antialiased font-bold leading-normal text-negro-una-2 ${TYPOGRAPHY.table.cell}`} title={item.usuario?.nombre || 'N/A'}>
-            {truncateText(item.usuario?.nombre || 'N/A', TABLE_TRUNCATE.name)}
+            {truncateText(item.usuario?.nombre || 'N/A', firstColumn.maxLength)}
           </p>
           <p className={`block font-sans antialiased leading-normal text-gris-una-2 ${TYPOGRAPHY.table.cell}`} title={item.usuario?.email || ''}>
-            {truncateText(item.usuario?.email || '', TABLE_TRUNCATE.email)}
+            {truncateText(item.usuario?.email || '', firstColumn.maxLength)}
           </p>
         </div>
       )
@@ -132,7 +116,7 @@ export const ManageExtensionRequestsTable: React.FC<ManageExtensionRequestsTable
       render: (_: unknown, item: ExtensionRequest) => (
         <div className="flex flex-col">
           <p className={`block font-sans antialiased leading-normal text-negro-una-2 ${TYPOGRAPHY.table.cell}`} title={item.motivo}>
-            {truncateText(item.motivo, TABLE_TRUNCATE.text)}
+            {truncateText(item.motivo, TABLE_TRUNCATE.name)}
           </p>
         </div>
       )
@@ -161,7 +145,7 @@ export const ManageExtensionRequestsTable: React.FC<ManageExtensionRequestsTable
       key: 'estado',
       header: 'Estado',
       align: 'center',
-      render: (_: unknown, item: ExtensionRequest) => getEstadoBadge(item.estado)
+      render: (_: unknown, item: ExtensionRequest) => <ExtensionRequestStatusBadge estado={item.estado} />
     },
     {
       key: 'acciones',
@@ -178,7 +162,7 @@ export const ManageExtensionRequestsTable: React.FC<ManageExtensionRequestsTable
         </div>
       )
     }
-  ], [truncateText, getEstadoBadge, onReviewRequest]);
+  ], [onReviewRequest]);
 
   if (error) {
     return (

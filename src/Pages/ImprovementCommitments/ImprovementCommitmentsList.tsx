@@ -16,7 +16,10 @@ import type { DataTableColumn } from '@/Components/Ui/Table/DataTable';
 import { ButtonWithTooltip } from '@/Components/Ui/Buttons/ButtonWithTooltip';
 import { TABLE_ACTION_BUTTON } from '@/Constants/Components';
 import { TYPOGRAPHY } from '@/Constants/Typography';
+import { StatusBadge } from '@/Components/Ui/StatusBadge';
 import { TABLE_PAGE_SIZE } from '@/Constants/TablePagination';
+import { truncateText } from '@/Utils';
+import { useFirstColumnConfig } from '@/Hooks/UseFirstColumnConfig';
 
 export const ImprovementCommitmentsList: React.FC = () => {
   const moduleInfo = getModuleInfo('improvement_commitments');
@@ -83,6 +86,8 @@ export const ImprovementCommitmentsList: React.FC = () => {
   const handleViewDetail = (id: number) => {
     navigate(`/compromisos/ver/${id}`);
   };
+
+  const firstColumn = useFirstColumnConfig();
   
   // Configuración de columnas de la tabla
   const columns: DataTableColumn<CompromisoMejora>[] = [
@@ -90,12 +95,15 @@ export const ImprovementCommitmentsList: React.FC = () => {
       key: 'descripcion',
       header: 'Descripción',
       align: 'left',
+      width: firstColumn.width,
       render: (_, compromiso) => (
-        <p 
-          className={`block font-sans antialiased font-normal leading-normal text-gris-una max-w-md truncate ${TYPOGRAPHY.table.cell}`}
+        <p
+          className={`block font-sans antialiased font-bold leading-normal text-negro-una-2 ${TYPOGRAPHY.table.cell} ${
+            !compromiso.descripcion ? 'text-center' : 'text-left'
+          }`}
           title={compromiso.descripcion || 'Sin descripción'}
         >
-          {compromiso.descripcion || 'Sin descripción'}
+          {truncateText(compromiso.descripcion, firstColumn.maxLength) || 'Sin descripción'}
         </p>
       )
     },
@@ -104,7 +112,7 @@ export const ImprovementCommitmentsList: React.FC = () => {
       header: 'Fecha Inicio',
       align: 'center',
       render: (_, compromiso) => (
-        <p className={`block font-sans antialiased font-normal leading-normal text-gris-una ${TYPOGRAPHY.table.cell}`}>
+        <p className={`block font-sans antialiased font-normal leading-normal text-negro-una-2 ${TYPOGRAPHY.table.cell}`}>
           {formatDate(compromiso.fecha_inicio)}
         </p>
       )
@@ -114,7 +122,7 @@ export const ImprovementCommitmentsList: React.FC = () => {
       header: 'Fecha Fin',
       align: 'center',
       render: (_, compromiso) => (
-        <p className={`block font-sans antialiased font-normal leading-normal text-gris-una ${TYPOGRAPHY.table.cell}`}>
+        <p className={`block font-sans antialiased font-normal leading-normal text-negro-una-2 ${TYPOGRAPHY.table.cell}`}>
           {formatDate(compromiso.fecha_fin)}
         </p>
       )
@@ -124,7 +132,7 @@ export const ImprovementCommitmentsList: React.FC = () => {
       header: 'Criterios',
       align: 'center',
       render: (_, compromiso) => (
-        <p className={`block font-sans antialiased font-normal leading-normal text-gris-una ${TYPOGRAPHY.table.cell}`}>
+        <p className={`block font-sans antialiased font-normal leading-normal text-negro-una-2 ${TYPOGRAPHY.table.cell}`}>
           {compromiso.selecciones?.length || 0}
         </p>
       )
@@ -134,7 +142,7 @@ export const ImprovementCommitmentsList: React.FC = () => {
       header: 'Asignaciones',
       align: 'center',
       render: (_, compromiso) => (
-        <p className={`block font-sans antialiased font-normal leading-normal text-gris-una ${TYPOGRAPHY.table.cell}`}>
+        <p className={`block font-sans antialiased font-normal leading-normal text-negro-una-2 ${TYPOGRAPHY.table.cell}`}>
           {compromiso.assignedEvidences?.length || 0}
         </p>
       )
@@ -144,15 +152,10 @@ export const ImprovementCommitmentsList: React.FC = () => {
       header: 'Estado',
       align: 'center',
       render: (_, compromiso) => (
-        <div className="w-max mx-auto">
-          <div className={`relative grid items-center px-2 py-1 font-sans font-bold rounded-corner select-none whitespace-nowrap ${TYPOGRAPHY.badge} ${
-            compromiso.is_overdue 
-              ? 'text-red-900 bg-red-500/20' 
-              : 'text-green-900 bg-green-500/20'
-          }`}>
-            <span>{compromiso.is_overdue ? 'Vencido' : 'Activo'}</span>
-          </div>
-        </div>
+        <StatusBadge
+          label={compromiso.is_overdue ? 'Vencido' : 'Activo'}
+          colorClasses={compromiso.is_overdue ? 'text-error-dark bg-error-ring' : 'text-verde-dark bg-verde-ring'}
+        />
       )
     },
     {

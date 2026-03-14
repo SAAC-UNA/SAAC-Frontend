@@ -3,11 +3,14 @@ import { DataTable, TableActionButton } from '@/components/index';
 import { BackendErrorAlert } from '@/Components/Ui/Feedback/BackendErrorAlert';
 import { TYPOGRAPHY } from '@/Constants/Typography';
 import { TABLE_TRUNCATE } from '@/Constants/TableTruncate';
+import { truncateText } from '@/Utils';
+import { StatusBadge } from '@/Components/Ui/StatusBadge';
 import { TABLE_PAGE_SIZE } from '@/Constants/TablePagination';
 import { useUsers } from '@/Hooks/UseUsers';
 import { useDebounce } from '@/Hooks/UseDebounce';
 import type { DataTableColumn } from '@/Components/Ui/Table/DataTable';
 import type { User } from '@/Services/UserService';
+import { useFirstColumnConfig } from '@/Hooks/UseFirstColumnConfig';
 
 interface UsersTableProps {
     onViewUser?: (user: User) => void;
@@ -48,12 +51,6 @@ export const UsersTable: React.FC<UsersTableProps> = ({
     // Debounce de búsqueda para evitar filtrados innecesarios mientras se escribe
     const debouncedSearchQuery = useDebounce(externalSearchQuery, 300);
 
-    // Función para truncar texto - memoizada
-    const truncateText = useCallback((text: string, maxLength: number = 20): string => {
-        if (text.length <= maxLength) return text;
-        return text.substring(0, maxLength) + '...';
-    }, []);
-
     // Cargar usuarios al montar el componente solo si no se pasan como props
     useEffect(() => {
         if (!shouldUseExternal) {
@@ -80,6 +77,8 @@ export const UsersTable: React.FC<UsersTableProps> = ({
         setCurrentPage(1);
     }, [debouncedSearchQuery]);
 
+    const firstColumn = useFirstColumnConfig();
+
     // Calcular datos paginados - memoizado
     const { totalPages, paginatedData } = useMemo(() => {
         const total = Math.ceil(filteredUsers.length / itemsPerPage);
@@ -95,14 +94,15 @@ export const UsersTable: React.FC<UsersTableProps> = ({
         {
             key: 'name',
             header: 'Nombre',
-            accessor: 'name',
+            align: 'left',
+            width: firstColumn.width,
             render: (value, user) => (
                 <div className="flex flex-col pl-2">
                     <p className={`block font-sans antialiased font-bold leading-normal text-negro-una-2 ${TYPOGRAPHY.table.cell}`} title={String(value)}>
-                        {truncateText(String(value), TABLE_TRUNCATE.name)}
+                        {truncateText(String(value), firstColumn.maxLength)}
                     </p>
                     <p className={`block font-sans antialiased font-normal leading-normal text-gris-una opacity-70 ${TYPOGRAPHY.table.cell}`} title={user.email}>
-                        {truncateText(user.email, TABLE_TRUNCATE.email)}
+                        {truncateText(user.email, firstColumn.maxLength)}
                     </p>
                 </div>
             )
@@ -125,15 +125,10 @@ export const UsersTable: React.FC<UsersTableProps> = ({
             header: 'Estado',
             align: 'center',
             render: (_, user) => (
-                <div className="w-max mx-auto">
-                    <div className={`relative grid items-center px-2 py-1 font-sans font-bold rounded-corner select-none whitespace-nowrap ${TYPOGRAPHY.badge} ${
-                        user.status === 'active'
-                            ? 'text-green-900 bg-green-500/20'
-                            : 'text-red-900 bg-red-500/20'
-                    }`}>
-                        <span>{user.status === 'active' ? 'Activo' : 'Inactivo'}</span>
-                    </div>
-                </div>
+                <StatusBadge
+                    label={user.status === 'active' ? 'Activo' : 'Inactivo'}
+                    colorClasses={user.status === 'active' ? 'text-verde-dark bg-verde-ring' : 'text-error-dark bg-error-ring'}
+                />
             )
         },
         {
@@ -163,7 +158,7 @@ export const UsersTable: React.FC<UsersTableProps> = ({
                 </div>
             )
         }
-    ], [truncateText, onViewUser, onEdit, onState]);
+    ], [onViewUser, onEdit, onState]);
 
     const handlePageChange = useCallback((page: number) => {
         setCurrentPage(page);

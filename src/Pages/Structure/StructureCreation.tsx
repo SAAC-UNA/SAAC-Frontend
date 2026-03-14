@@ -22,16 +22,7 @@ import {
   getRequiredParentType,
   getDescriptionMaxLength
 } from '@/Constants/StructureConstants';
-
-/**
- * Función auxiliar para truncar texto largo
- */
-const truncateText = (text: string, maxLength: number = 25): string => {
-  if (!text || text.length <= maxLength) {
-    return text;
-  }
-  return text.substring(0, maxLength).trim() + '...';
-};
+import { truncateText } from '@/Utils';
 
 /**
  * Interface para errores de validación del formulario
