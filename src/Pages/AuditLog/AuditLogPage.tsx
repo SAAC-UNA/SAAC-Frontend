@@ -28,22 +28,22 @@ const AuditLogPage: React.FC = () => {
   // Hook de toast
   const { showToast } = useToast();
 
-  // Estado de los registros
-  const [logs, setLogs] = useState<AuditLog[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-
-  // Estado de paginación
-  const [currentPage, setCurrentPage] = useState(1);
-  const [totalPages, setTotalPages] = useState(1);
-  const [perPage] = useState(15);
+  // Estado de los registros y paginación
+  const [logsState, setLogsState] = useState<{ logs: AuditLog[]; isLoading: boolean; error: string | null; currentPage: number; totalPages: number }>({ logs: [], isLoading: false, error: null, currentPage: 1, totalPages: 1 });
+  const logs = logsState.logs;
+  const isLoading = logsState.isLoading;
+  const error = logsState.error;
+  const currentPage = logsState.currentPage;
+  const totalPages = logsState.totalPages;
+  const perPage = 15;
 
   // Estado de filtros aplicados
   const [appliedFilters, setAppliedFilters] = useState<Filters>({});
   
   // Estado de búsqueda
-  const [searchTerm, setSearchTerm] = useState('');
-  const [filteredLogs, setFilteredLogs] = useState<AuditLog[]>([]);
+  const [searchState, setSearchState] = useState<{ searchTerm: string; filteredLogs: AuditLog[] }>({ searchTerm: '', filteredLogs: [] });
+  const searchTerm = searchState.searchTerm;
+  const filteredLogs = searchState.filteredLogs;
 
   // Estado del modal de detalle
   const [detailModal, setDetailModal] = useState<{
@@ -58,8 +58,7 @@ const AuditLogPage: React.FC = () => {
    * Cargar registros de bitácora
    */
   const loadAuditLogs = useCallback(async (filters: Filters = {}, page: number = 1) => {
-    setIsLoading(true);
-    setError(null);
+    setLogsState(prev => ({ ...prev, isLoading: true, error: null }));
 
     try {
       const response = await AuditLogService.getAuditLogs({
@@ -68,16 +67,11 @@ const AuditLogPage: React.FC = () => {
         per_page: perPage,
       });
 
-      setLogs(response.data);
-      setFilteredLogs(response.data);
-      setCurrentPage(response.current_page);
-      setTotalPages(response.last_page);
+      setLogsState(prev => ({ ...prev, logs: response.data, isLoading: false, currentPage: response.current_page, totalPages: response.last_page }));
+      setSearchState(prev => ({ ...prev, filteredLogs: response.data }));
     } catch (err: any) {
       console.error('Error cargando registros de bitácora:', err);
-      setError(err.message || 'Error al cargar los registros de bitácora');
-      setLogs([]);
-    } finally {
-      setIsLoading(false);
+      setLogsState(prev => ({ ...prev, isLoading: false, error: err.message || 'Error al cargar los registros de bitácora', logs: [] }));
     }
   }, [perPage]);
 
@@ -93,7 +87,7 @@ const AuditLogPage: React.FC = () => {
    */
   useEffect(() => {
     if (!searchTerm.trim()) {
-      setFilteredLogs(logs);
+      setSearchState(prev => ({ ...prev, filteredLogs: logs }));
       return;
     }
 
@@ -116,7 +110,7 @@ const AuditLogPage: React.FC = () => {
       );
     });
 
-    setFilteredLogs(filtered);
+    setSearchState(prev => ({ ...prev, filteredLogs: filtered }));
   }, [logs, searchTerm]);
 
   /**
@@ -131,7 +125,7 @@ const AuditLogPage: React.FC = () => {
    * Manejar cambio en el buscador
    */
   const handleSearchChange = useCallback((term: string) => {
-    setSearchTerm(term);
+    setSearchState(prev => ({ ...prev, searchTerm: term }));
   }, []);
 
   /**

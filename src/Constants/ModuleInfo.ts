@@ -15,7 +15,7 @@ export interface ModuleInfo {
 /**
  * Información de módulos principales del sistema
  */
-export const MODULE_INFO: Record<string, ModuleInfo> = {
+const MODULE_INFO: Record<string, ModuleInfo> = {
     // Página principal
   home: {
     title: 'Panel Principal',
@@ -239,24 +239,6 @@ export const getModuleInfo = (moduleKey: string): ModuleInfo => {
     description: 'Funcionalidad de acreditación y autoevaluación de carreras',
     shortDescription: 'Módulo de funcionalidades'
   };
-};
-
-/**
- * Obtiene solo el título de un módulo
- * @param moduleKey - Clave del módulo
- * @returns Título del módulo
- */
-export const getModuleTitle = (moduleKey: string): string => {
-  return getModuleInfo(moduleKey).title;
-};
-
-/**
- * Obtiene solo la descripción de un módulo
- * @param moduleKey - Clave del módulo
- * @returns Descripción del módulo
- */
-export const getModuleDescription = (moduleKey: string): string => {
-  return getModuleInfo(moduleKey).description;
 };
 
 /**

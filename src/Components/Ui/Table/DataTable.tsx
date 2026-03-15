@@ -196,7 +196,7 @@ export const DataTable = React.memo(<T extends Record<string, unknown>>({
               <tr>
                 {columns.map((column, index) => (
                   <th 
-                    key={index} 
+                    key={column.key} 
                     style={column.width ? { width: column.width } : undefined}
                     className={cn(
                       "py-4 border-b border-blue-gray-100 text-center",
@@ -219,10 +219,10 @@ export const DataTable = React.memo(<T extends Record<string, unknown>>({
             </thead>
             <tbody>
               {data.map((item, index) => (
-                <tr key={index}>
+                <tr key={String((item as Record<string, unknown>).id ?? index)}>
                   {columns.map((column, colIndex) => (
                     <td 
-                      key={colIndex} 
+                      key={column.key} 
                       className={cn(
                         "py-4",
                         colIndex === 0 ? "pl-8 pr-4" : "px-4", // Más padding en todas las columnas
@@ -243,9 +243,9 @@ export const DataTable = React.memo(<T extends Record<string, unknown>>({
                       index === data.length - 1 ? "" : "border-b border-blue-gray-50"
                     )}>
                       <div className="flex items-center gap-2">
-                        {actions.map((action, actionIndex) => (
+                        {actions.map((action) => (
                           <button
-                            key={actionIndex}
+                            key={action.label}
                             className={cn(
                               "relative h-10 max-h-[40px] w-10 max-w-[40px] select-none rounded-corner text-center align-middle font-sans text-xs font-medium uppercase transition-all disabled:pointer-events-none disabled:opacity-50 disabled:shadow-none",
                               action.className

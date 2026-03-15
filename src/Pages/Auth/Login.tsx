@@ -13,10 +13,11 @@ import { useToast } from '@/Hooks/useToast';
 import styles from './Login.module.css';
 
 export const Login = () => {
-  const [cedula, setCedula] = useState('');
-  const [password, setPassword] = useState('');
-  const [error, setError] = useState('');
-  const [loading, setLoading] = useState(false);
+  const [formState, setFormState] = useState({ cedula: '', password: '', error: '', loading: false });
+  const cedula = formState.cedula;
+  const password = formState.password;
+  const error = formState.error;
+  const loading = formState.loading;
   const [showPassword, setShowPassword] = useState(false);
   
   const { login } = useAuth();
@@ -25,19 +26,18 @@ export const Login = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError('');
-    setLoading(true);
+    setFormState(prev => ({ ...prev, error: '', loading: true }));
 
     try {
       await login({ cedula, password });
       navigate('/');
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Error al iniciar sesión';
-      setError(errorMessage);
+      setFormState(prev => ({ ...prev, error: errorMessage, loading: false }));
       toast.error(errorMessage);
-    } finally {
-      setLoading(false);
+      return;
     }
+    setFormState(prev => ({ ...prev, loading: false }));
   };
 
   // Login rápido para testing - Usando datos del seeder
@@ -91,14 +91,15 @@ export const Login = () => {
                 {SystemIcons.interface.user({ size: 'sm', color: '#a0aec0' })}
               </div>
               <input
+                id="cedula"
                 type="text"
                 value={cedula}
-                onChange={(e) => setCedula(e.target.value)}
+                onChange={(e) => setFormState(prev => ({ ...prev, cedula: e.target.value }))}
                 required
                 disabled={loading}
                 placeholder=""
               />
-              <label>Identificación</label>
+              <label htmlFor="cedula">Identificación</label>
             </div>
 
             <div className={`${styles['login-input-field-password']} ${error ? styles['error'] : ''}`}>
@@ -106,14 +107,15 @@ export const Login = () => {
                 {SystemIcons.interface.lock({ size: 'sm', color: '#a0aec0' })}
               </div>
               <input
+                id="password"
                 type={showPassword ? 'text' : 'password'}
                 value={password}
-                onChange={(e) => setPassword(e.target.value)}
+                onChange={(e) => setFormState(prev => ({ ...prev, password: e.target.value }))}
                 required
                 disabled={loading}
                 placeholder=""
               />
-              <label>Contraseña</label>
+              <label htmlFor="password">Contraseña</label>
               <button
                 type="button"
                 className={styles['login-toggle-password']}

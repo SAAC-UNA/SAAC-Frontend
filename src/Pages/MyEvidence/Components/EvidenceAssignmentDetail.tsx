@@ -24,27 +24,246 @@ interface EvidenceAssignmentDetailProps {
   onUploadFiles?: (assignment: EvidenceAssignment) => void;
 }
 
-/**
- * Modal de detalle de asignación de evidencia
- * 
- * Muestra información completa de la asignación incluyendo:
- * - Datos de la evidencia y proceso
- * - Estado actual y fecha límite
- * - Comentarios y observaciones
- * - Acciones disponibles según el estado
- */
+interface StatusAndDeadlineProps {
+  assignment: EvidenceAssignment;
+  isOverdue: boolean;
+  isNearDue: boolean;
+}
+
+const StatusAndDeadline: React.FC<StatusAndDeadlineProps> = ({ assignment, isOverdue, isNearDue }) => (
+  <div className="bg-white border border-gray-200 rounded-corner p-4 mb-6">
+    <div className="flex items-center justify-between flex-wrap gap-3">
+      <div className="flex items-center gap-3">
+        <span className="text-sm font-semibold text-gray-800">Estado:</span>
+        <AssignmentStatusBadge estado={assignment.estado} />
+      </div>
+      {assignment.fecha_limite && (
+        <div className="flex items-center gap-2">
+          <span className="text-sm font-semibold text-gray-800">Fecha Límite:</span>
+          <span className={`text-sm font-medium ${
+            isOverdue ? 'text-red-600' : isNearDue ? 'text-orange-600' : 'text-gray-700'
+          }`}>
+            {SystemIcons.interface.calendar({ size: 'xs', className: 'inline mr-1' })}
+            {formatDeadline(assignment.fecha_limite)}
+          </span>
+        </div>
+      )}
+    </div>
+  </div>
+);
+
+interface DeadlineWarningProps {
+  assignment: EvidenceAssignment;
+  isOverdue: boolean;
+  isNearDue: boolean;
+  daysUntilDeadline: number | null;
+}
+
+const DeadlineWarning: React.FC<DeadlineWarningProps> = ({ assignment, isOverdue, isNearDue, daysUntilDeadline }) => {
+  if (!assignment.fecha_limite || (!isOverdue && !isNearDue)) return null;
+  return (
+    <div className={`flex items-start gap-3 p-4 rounded-corner mb-6 ${
+      isOverdue ? 'bg-red-50 border border-red-200' : 'bg-orange-50 border border-orange-200'
+    }`}>
+      {isOverdue
+        ? SystemIcons.interface.alert({ size: 'md', className: 'flex-shrink-0 text-red-600' })
+        : SystemIcons.interface.clock({ size: 'md', className: 'flex-shrink-0 text-orange-600' })
+      }
+      <div className="flex-1">
+        <p className={`font-semibold ${isOverdue ? 'text-red-900' : 'text-orange-900'}`}>
+          {isOverdue ? '¡Fecha límite vencida!' : 'Fecha límite próxima'}
+        </p>
+        <p className={`text-sm ${isOverdue ? 'text-red-700' : 'text-orange-700'}`}>
+          {isOverdue
+            ? `Venció hace ${Math.abs(daysUntilDeadline!)} días`
+            : `Vence en ${daysUntilDeadline} días`
+          }
+        </p>
+      </div>
+    </div>
+  );
+};
+
+interface CriterionInfoProps { assignment: EvidenceAssignment; }
+
+const CriterionInfo: React.FC<CriterionInfoProps> = ({ assignment }) => {
+  if (!assignment.evidencia?.criterion) return null;
+  return (
+    <div className="mb-6">
+      <div className="flex items-center space-x-2 mb-3">
+        <SystemIcons.users.roles className="w-5 h-5 text-gray-600" />
+        <h3 className="font-sm text-gray-800">Criterio</h3>
+      </div>
+      <div className="bg-white border border-gray-200 rounded-corner p-4 max-h-60 overflow-y-auto">
+        <div className="space-y-2">
+          <div>
+            <span className="text-sm font-semibold text-gray-800">Nomenclatura:</span>
+            <p className="text-sm text-gray-700">{assignment.evidencia.criterion.nomenclatura}</p>
+          </div>
+          <div>
+            <span className="text-sm font-semibold text-gray-800">Descripción:</span>
+            <p className="text-sm text-gray-700">{assignment.evidencia.criterion.descripcion}</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+interface CommentsProps { assignment: EvidenceAssignment; }
+
+const Comments: React.FC<CommentsProps> = ({ assignment }) => {
+  if (!assignment.comentario) return null;
+  return (
+    <div className="mb-6">
+      <div className="flex items-center space-x-2 mb-3">
+        <SystemIcons.modal.document className="w-5 h-5 text-gray-600" />
+        <h3 className="font-sm text-gray-800">Comentarios</h3>
+      </div>
+      <div className="bg-white border border-gray-200 rounded-corner p-4 max-h-60 overflow-y-auto">
+        <p className="text-sm text-gray-700 whitespace-pre-wrap">{assignment.comentario}</p>
+      </div>
+    </div>
+  );
+};
+
+function formatAssignmentDate(fechaAsignacion: string): string {
+  const assignmentDate = new Date(fechaAsignacion);
+  const now = new Date();
+  const diffTime = now.getTime() - assignmentDate.getTime();
+  const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+  if (diffDays === 0) return 'Asignado hoy';
+  if (diffDays === 1) return 'Asignado ayer';
+  if (diffDays <= 7) return `Asignado hace ${diffDays} días`;
+  return new Intl.DateTimeFormat('es-CR', { day: '2-digit', month: 'short', year: 'numeric' }).format(assignmentDate);
+}
+
+interface DatesProps {
+  assignment: EvidenceAssignment;
+  isOverdue: boolean;
+  isNearDue: boolean;
+}
+
+const Dates: React.FC<DatesProps> = ({ assignment, isOverdue, isNearDue }) => (
+  <div className="mb-6">
+    <div className="flex items-center space-x-2 mb-3">
+      <SystemIcons.interface.calendar className="w-5 h-5 text-gray-600" />
+      <h3 className="font-sm text-gray-800">Fechas Importantes</h3>
+    </div>
+    <div className="bg-white border border-gray-200 rounded-corner p-4 max-h-60 overflow-y-auto">
+      <div className="space-y-2">
+        <div>
+          <span className="text-sm font-semibold text-gray-800">Fecha de Asignación:</span>
+          <p className="text-sm text-gray-700">{formatAssignmentDate(assignment.fecha_asignacion)}</p>
+        </div>
+        {assignment.fecha_limite && (
+          <div>
+            <span className="text-sm font-semibold text-gray-800">Fecha Límite:</span>
+            <p className={`text-sm font-medium ${
+              isOverdue ? 'text-red-600' : isNearDue ? 'text-orange-600' : 'text-gray-700'
+            }`}>
+              {formatDeadline(assignment.fecha_limite)}
+            </p>
+          </div>
+        )}
+      </div>
+    </div>
+  </div>
+);
+
+interface UploadedFilesProps {
+  uploadedFiles: FileModel[];
+  loadingFiles: boolean;
+  onDelete: (fileId: number) => Promise<void>;
+}
+
+const UploadedFiles: React.FC<UploadedFilesProps> = ({ uploadedFiles, loadingFiles, onDelete }) => (
+  <div className="mb-6">
+    <div className="flex items-center space-x-2 mb-3">
+      <SystemIcons.modal.document className="w-5 h-5 text-gray-600" />
+      <h3 className="font-sm text-gray-800">Archivos Subidos</h3>
+    </div>
+    <div className="bg-white border border-gray-200 rounded-corner p-4">
+      {loadingFiles ? (
+        <div className="relative min-h-[100px]">
+          <LoadingSpinner />
+        </div>
+      ) : uploadedFiles.length > 0 ? (
+        <FileList
+          files={uploadedFiles}
+          loading={loadingFiles}
+          onDelete={onDelete}
+          showActions={true}
+        />
+      ) : (
+        <p className="text-sm text-gray-500 text-center py-4">
+          No hay archivos subidos aún
+        </p>
+      )}
+    </div>
+  </div>
+);
+
+interface ActionsProps {
+  assignment: EvidenceAssignment;
+  updatingStatus: boolean;
+  onStatusChange: (status: AssignmentStatus) => Promise<void>;
+  onUploadClick: () => void;
+}
+
+const Actions: React.FC<ActionsProps> = ({ assignment, updatingStatus, onStatusChange, onUploadClick }) => (
+  <div className="mb-6 border-t border-gray-200 pt-4">
+    <h3 className="font-sm text-gray-800 mb-3">Acciones Disponibles</h3>
+    <div className="flex flex-col sm:flex-row gap-3">
+      {assignment.estado !== 'en_progreso' && assignment.estado !== 'completado' && (
+        <Button
+          variant="primary"
+          size="sm"
+          onClick={() => onStatusChange('en_progreso')}
+          disabled={updatingStatus}
+        >
+          {SystemIcons.interface.refresh({ size: 'sm' })}
+          Marcar en Progreso
+        </Button>
+      )}
+      {assignment.estado !== 'completado' && (
+        <Button
+          variant="success"
+          size="sm"
+          onClick={() => onStatusChange('completado')}
+          disabled={updatingStatus}
+        >
+          {SystemIcons.interface.checkCircle({ size: 'sm' })}
+          Marcar Completado
+        </Button>
+      )}
+      {assignment.estado !== 'completado' && (
+        <Button
+          variant="primary"
+          onClick={onUploadClick}
+        >
+          {SystemIcons.interface.upload({ size: 'sm' })}
+          Subir Archivos
+        </Button>
+      )}
+    </div>
+  </div>
+);
+
 export const EvidenceAssignmentDetail: React.FC<EvidenceAssignmentDetailProps> = ({
   assignmentId,
   onClose,
   onStatusUpdate,
   onUploadFiles
 }) => {
-  const [assignment, setAssignment] = useState<EvidenceAssignment | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [fetchState, setFetchState] = useState<{ assignment: EvidenceAssignment | null; loading: boolean }>({ assignment: null, loading: true });
+  const assignment = fetchState.assignment;
+  const loading = fetchState.loading;
   const [updatingStatus, setUpdatingStatus] = useState(false);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
-  const [uploadedFiles, setUploadedFiles] = useState<FileModel[]>([]);
-  const [loadingFiles, setLoadingFiles] = useState(false);
+  const [filesState, setFilesState] = useState<{ uploadedFiles: FileModel[]; loadingFiles: boolean }>({ uploadedFiles: [], loadingFiles: false });
+  const uploadedFiles = filesState.uploadedFiles;
+  const loadingFiles = filesState.loadingFiles;
   const { showToast } = useToast();
 
   useEffect(() => {
@@ -53,9 +272,9 @@ export const EvidenceAssignmentDetail: React.FC<EvidenceAssignmentDetailProps> =
 
   const loadAssignmentDetail = async () => {
     try {
-      setLoading(true);
+      setFetchState(prev => ({ ...prev, loading: true }));
       const data = await evidenceAssignmentService.getById(assignmentId);
-      setAssignment(data);
+      setFetchState({ assignment: data, loading: false });
       // Cargar archivos de la evidencia
       if (data.evidencia_id) {
         loadFiles(data.evidencia_id);
@@ -63,22 +282,20 @@ export const EvidenceAssignmentDetail: React.FC<EvidenceAssignmentDetailProps> =
     } catch (error) {
       console.error('Error al cargar detalle de asignación:', error);
       showToast({ type: 'error', title: 'Error', message: 'Error al cargar los detalles de la asignación' });
+      setFetchState(prev => ({ ...prev, loading: false }));
       onClose();
-    } finally {
-      setLoading(false);
     }
   };
 
   const loadFiles = async (evidenciaId: number) => {
     try {
-      setLoadingFiles(true);
+      setFilesState({ uploadedFiles: [], loadingFiles: true });
       const files = await fileService.listFiles({ evidencia_id: evidenciaId });
-      setUploadedFiles(files);
+      setFilesState({ uploadedFiles: files, loadingFiles: false });
     } catch (error) {
       console.error('Error al cargar archivos:', error);
+      setFilesState(prev => ({ ...prev, loadingFiles: false }));
       // No mostrar error, simplemente no mostrar archivos
-    } finally {
-      setLoadingFiles(false);
     }
   };
 
@@ -112,7 +329,7 @@ export const EvidenceAssignmentDetail: React.FC<EvidenceAssignmentDetailProps> =
         estado: newStatus
       });
       
-      setAssignment(updated);
+      setFetchState(prev => ({ ...prev, assignment: updated }));
       onStatusUpdate?.(updated);
       
       // Mostrar modal de éxito si se marca como completado
@@ -164,215 +381,6 @@ export const EvidenceAssignmentDetail: React.FC<EvidenceAssignmentDetailProps> =
     ? `${assignment.evidencia.nomenclatura} - ${assignment.evidencia.descripcion}`
     : '';
 
-  const renderStatusAndDeadline = () => (
-    <div className="bg-white border border-gray-200 rounded-corner p-4 mb-6">
-      <div className="flex items-center justify-between flex-wrap gap-3">
-        <div className="flex items-center gap-3">
-          <span className="text-sm font-semibold text-gray-800">Estado:</span>
-          <AssignmentStatusBadge estado={assignment.estado} />
-        </div>
-        {assignment.fecha_limite && (
-          <div className="flex items-center gap-2">
-            <span className="text-sm font-semibold text-gray-800">Fecha Límite:</span>
-            <span className={`text-sm font-medium ${
-              isOverdue ? 'text-red-600' : isNearDue ? 'text-orange-600' : 'text-gray-700'
-            }`}>
-              {SystemIcons.interface.calendar({ size: 'xs', className: 'inline mr-1' })}
-              {formatDeadline(assignment.fecha_limite)}
-            </span>
-          </div>
-        )}
-      </div>
-    </div>
-  );
-
-  const renderDeadlineWarning = () => {
-    if (!assignment.fecha_limite || (!isOverdue && !isNearDue)) return null;
-
-    return (
-      <div className={`flex items-start gap-3 p-4 rounded-corner mb-6 ${
-        isOverdue ? 'bg-red-50 border border-red-200' : 'bg-orange-50 border border-orange-200'
-      }`}>
-        {isOverdue 
-          ? SystemIcons.interface.alert({ size: 'md', className: 'flex-shrink-0 text-red-600' })
-          : SystemIcons.interface.clock({ size: 'md', className: 'flex-shrink-0 text-orange-600' })
-        }
-        <div className="flex-1">
-          <p className={`font-semibold ${isOverdue ? 'text-red-900' : 'text-orange-900'}`}>
-            {isOverdue ? '¡Fecha límite vencida!' : 'Fecha límite próxima'}
-          </p>
-          <p className={`text-sm ${isOverdue ? 'text-red-700' : 'text-orange-700'}`}>
-            {isOverdue
-              ? `Venció hace ${Math.abs(daysUntilDeadline!)} días`
-              : `Vence en ${daysUntilDeadline} días`
-            }
-          </p>
-        </div>
-      </div>
-    );
-  };
-
-
-
-  const renderComments = () => {
-    if (!assignment.comentario) return null;
-
-    return (
-      <div className="mb-6">
-        <div className="flex items-center space-x-2 mb-3">
-          <SystemIcons.modal.document className="w-5 h-5 text-gray-600" />
-          <h3 className="font-sm text-gray-800">Comentarios</h3>
-        </div>
-        
-        <div className="bg-white border border-gray-200 rounded-corner p-4 max-h-60 overflow-y-auto">
-          <p className="text-sm text-gray-700 whitespace-pre-wrap">{assignment.comentario}</p>
-        </div>
-      </div>
-    );
-  };
-
-  const renderCriterionInfo = () => {
-    if (!assignment.evidencia?.criterion) return null;
-
-    return (
-      <div className="mb-6">
-        <div className="flex items-center space-x-2 mb-3">
-          <SystemIcons.users.roles className="w-5 h-5 text-gray-600" />
-          <h3 className="font-sm text-gray-800">Criterio</h3>
-        </div>
-        
-        <div className="bg-white border border-gray-200 rounded-corner p-4 max-h-60 overflow-y-auto">
-          <div className="space-y-2">
-            <div>
-              <span className="text-sm font-semibold text-gray-800">Nomenclatura:</span>
-              <p className="text-sm text-gray-700">{assignment.evidencia.criterion.nomenclatura}</p>
-            </div>
-            <div>
-              <span className="text-sm font-semibold text-gray-800">Descripción:</span>
-              <p className="text-sm text-gray-700">{assignment.evidencia.criterion.descripcion}</p>
-            </div>
-          </div>
-        </div>
-      </div>
-    );
-  };
-
-  const formatAssignmentDate = (fechaAsignacion: string): string => {
-    const assignmentDate = new Date(fechaAsignacion);
-    const now = new Date();
-    const diffTime = now.getTime() - assignmentDate.getTime();
-    const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
-    
-    if (diffDays === 0) {
-      return 'Asignado hoy';
-    } else if (diffDays === 1) {
-      return 'Asignado ayer';
-    } else if (diffDays <= 7) {
-      return `Asignado hace ${diffDays} días`;
-    } else {
-      return new Intl.DateTimeFormat('es-CR', {
-        day: '2-digit',
-        month: 'short',
-        year: 'numeric'
-      }).format(assignmentDate);
-    }
-  };
-
-  const renderDates = () => (
-    <div className="mb-6">
-      <div className="flex items-center space-x-2 mb-3">
-        <SystemIcons.interface.calendar className="w-5 h-5 text-gray-600" />
-        <h3 className="font-sm text-gray-800">Fechas Importantes</h3>
-      </div>
-      
-      <div className="bg-white border border-gray-200 rounded-corner p-4 max-h-60 overflow-y-auto">
-        <div className="space-y-2">
-          <div>
-            <span className="text-sm font-semibold text-gray-800">Fecha de Asignación:</span>
-            <p className="text-sm text-gray-700">{formatAssignmentDate(assignment.fecha_asignacion)}</p>
-          </div>
-          {assignment.fecha_limite && (
-            <div>
-              <span className="text-sm font-semibold text-gray-800">Fecha Límite:</span>
-              <p className={`text-sm font-medium ${
-                isOverdue ? 'text-red-600' : isNearDue ? 'text-orange-600' : 'text-gray-700'
-              }`}>
-                {formatDeadline(assignment.fecha_limite)}
-              </p>
-            </div>
-          )}
-        </div>
-      </div>
-    </div>
-  );
-
-  const renderUploadedFiles = () => (
-    <div className="mb-6">
-      <div className="flex items-center space-x-2 mb-3">
-        <SystemIcons.modal.document className="w-5 h-5 text-gray-600" />
-        <h3 className="font-sm text-gray-800">Archivos Subidos</h3>
-      </div>
-      
-      <div className="bg-white border border-gray-200 rounded-corner p-4">
-        {loadingFiles ? (
-          <div className="relative min-h-[100px]">
-            <LoadingSpinner />
-          </div>
-        ) : uploadedFiles.length > 0 ? (
-          <FileList
-            files={uploadedFiles}
-            loading={loadingFiles}
-            onDelete={handleDeleteFile}
-            showActions={true}
-          />
-        ) : (
-          <p className="text-sm text-gray-500 text-center py-4">
-            No hay archivos subidos aún
-          </p>
-        )}
-      </div>
-    </div>
-  );
-
-  const renderActions = () => (
-    <div className="mb-6 border-t border-gray-200 pt-4">
-      <h3 className="font-sm text-gray-800 mb-3">Acciones Disponibles</h3>
-      <div className="flex flex-col sm:flex-row gap-3">
-        {assignment.estado !== 'en_progreso' && assignment.estado !== 'completado' && (
-          <Button
-            variant="primary"
-            size="sm"
-            onClick={() => handleStatusChange('en_progreso')}
-            disabled={updatingStatus}
-          >
-            {SystemIcons.interface.refresh({ size: 'sm' })}
-            Marcar en Progreso
-          </Button>
-        )}
-        {assignment.estado !== 'completado' && (
-          <Button
-            variant="success"
-            size="sm"
-            onClick={() => handleStatusChange('completado')}
-            disabled={updatingStatus}
-          >
-            {SystemIcons.interface.checkCircle({ size: 'sm' })}
-            Marcar Completado
-          </Button>
-        )}
-        {assignment.estado !== 'completado' && (
-          <Button
-            variant="primary"
-            onClick={handleUploadClick}
-          >
-            {SystemIcons.interface.upload({ size: 'sm' })}
-            Subir Archivos
-          </Button>
-        )}
-      </div>
-    </div>
-  );
-
   return (
     <DetailsModal
       isOpen={true}
@@ -383,13 +391,13 @@ export const EvidenceAssignmentDetail: React.FC<EvidenceAssignmentDetailProps> =
       cancelLabel="Cerrar"
       size="xl"
     >
-      {renderStatusAndDeadline()}
-      {renderDeadlineWarning()}
-      {renderCriterionInfo()}
-      {renderComments()}
-      {renderDates()}
-      {renderUploadedFiles()}
-      {renderActions()}
+      <StatusAndDeadline assignment={assignment} isOverdue={isOverdue} isNearDue={!!isNearDue} />
+      <DeadlineWarning assignment={assignment} isOverdue={isOverdue} isNearDue={!!isNearDue} daysUntilDeadline={daysUntilDeadline} />
+      <CriterionInfo assignment={assignment} />
+      <Comments assignment={assignment} />
+      <Dates assignment={assignment} isOverdue={isOverdue} isNearDue={!!isNearDue} />
+      <UploadedFiles uploadedFiles={uploadedFiles} loadingFiles={loadingFiles} onDelete={handleDeleteFile} />
+      <Actions assignment={assignment} updatingStatus={updatingStatus} onStatusChange={handleStatusChange} onUploadClick={handleUploadClick} />
       
       {/* Modal de éxito al completar */}
       <SuccessModal

@@ -27,9 +27,10 @@ const EditUserPage: React.FC = () => {
   const navigate = useNavigate();
 
   // Estados para el usuario
-  const [user, setUser] = useState<User | null>(null);
-  const [isLoadingUser, setIsLoadingUser] = useState(true);
-  const [loadError, setLoadError] = useState<string | null>(null);
+  const [userState, setUserState] = useState<{ user: User | null; isLoadingUser: boolean; loadError: string | null }>({ user: null, isLoadingUser: true, loadError: null });
+  const user = userState.user;
+  const isLoadingUser = userState.isLoadingUser;
+  const loadError = userState.loadError;
 
   // Estado para el modal de confirmación
   const [confirmModalState, setConfirmModalState] = useState<{
@@ -51,20 +52,18 @@ const EditUserPage: React.FC = () => {
 
   // Cargar datos del usuario al montar el componente
   useEffect(() => {
-    if (id) {
-      loadUserData(parseInt(id));
-    } else {
-      setLoadError('ID de usuario no válido');
-      setIsLoadingUser(false);
-    }
+    loadUserData(id ? parseInt(id) : 0);
   }, [id]);
 
   /**
    * Cargar los datos del usuario
    */
   const loadUserData = async (userId: number) => {
-    setIsLoadingUser(true);
-    setLoadError(null);
+    if (!userId) {
+      setUserState({ user: null, isLoadingUser: false, loadError: 'ID de usuario no válido' });
+      return;
+    }
+    setUserState(prev => ({...prev, isLoadingUser: true, loadError: null}));
 
     try {
       // Aquí necesitaríamos un método getUserById en el UserService
@@ -86,15 +85,15 @@ const EditUserPage: React.FC = () => {
           updatedAt: new Date(userData.updated_at)
         };
         
-        setUser(transformedUser);
+        setUserState(prev => ({...prev, user: transformedUser}));
       } else {
-        setLoadError('Usuario no encontrado');
+        setUserState(prev => ({...prev, loadError: 'Usuario no encontrado'}));
       }
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Error cargando usuario';
-      setLoadError(errorMessage);
+      setUserState(prev => ({...prev, loadError: errorMessage}));
     } finally {
-      setIsLoadingUser(false);
+      setUserState(prev => ({...prev, isLoadingUser: false}));
     }
   };
 
@@ -198,7 +197,7 @@ const EditUserPage: React.FC = () => {
         headerExtra={
           <div className="flex gap-4">
             <div className="text-right">
-              <label className="block text-sm font-medium text-negro-una mb-2">Estado</label>
+              <span className="block text-sm font-medium text-negro-una mb-2">Estado</span>
               <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${
                 user.status === 'active'
                   ? 'bg-green-100 text-green-800'
@@ -208,9 +207,9 @@ const EditUserPage: React.FC = () => {
               </span>
             </div>
             <div className="text-right">
-              <label className="block text-sm font-medium text-negro-una mb-2">
+              <span className="block text-sm font-medium text-negro-una mb-2">
                 {user.role ? 'Rol Actual' : 'Roles Actuales'}
-              </label>
+              </span>
               <div className="flex flex-wrap gap-2 justify-end">
                 {user.role ? (
                   <div className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800">

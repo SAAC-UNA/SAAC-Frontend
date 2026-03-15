@@ -43,6 +43,7 @@ export function Sheet({ open, onOpenChange, children }: SheetProps) {
       {/* Backdrop con efecto blur */}
       <div 
         className="fixed inset-0 z-50 backdrop-blur-sm bg-black/20"
+        role="presentation"
         onClick={() => onOpenChange(false)}
       />
       {children}

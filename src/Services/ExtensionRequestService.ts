@@ -207,4 +207,3 @@ class ExtensionRequestService {
 
 // Exportar instancia única del servicio
 export const extensionRequestService = new ExtensionRequestService();
-export default extensionRequestService;

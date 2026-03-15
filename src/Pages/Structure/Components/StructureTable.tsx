@@ -16,7 +16,7 @@
  * @param showHeader - Mostrar/ocultar el header
  */
 
-import React, { useEffect, useState, useMemo } from 'react';
+import React, { useState, useMemo, useRef } from 'react';
 import { StructureElementDetail } from './StructureElementDetail';
 import { DataTable } from '@/components/index';
 import { TYPOGRAPHY } from '@/Constants/Typography';
@@ -62,6 +62,13 @@ export const StructureTable: React.FC<StructureTableProps> = ({
 
     // Debounce de búsqueda para evitar filtrados innecesarios mientras se escribe
     const debouncedSearchQuery = useDebounce(searchQuery, 300);
+
+    // Resetear página cuando cambia la búsqueda debounced (sin useEffect - patrón derived state)
+    const prevDebouncedSearch = useRef(debouncedSearchQuery);
+    if (prevDebouncedSearch.current !== debouncedSearchQuery) {
+        prevDebouncedSearch.current = debouncedSearchQuery;
+        setCurrentPage(1);
+    }
 
     // Aplanar el árbol para obtener todos los elementos como lista - MEMOIZADO
     const allElements = useMemo(() => {
@@ -114,9 +121,7 @@ export const StructureTable: React.FC<StructureTableProps> = ({
     }, [debouncedSearchQuery, allElements]);
 
     // Resetear página cuando cambian los filtros (usar debounced para evitar resets innecesarios)
-    useEffect(() => {
-        setCurrentPage(1);
-    }, [debouncedSearchQuery]);
+    // (movido a patrón derived state arriba)
 
     // Calcular datos paginados - MEMOIZADO
     const { totalPages, paginatedData } = useMemo(() => {

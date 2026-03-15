@@ -27,17 +27,22 @@ export const EvidenceSearchFilters: React.FC<EvidenceSearchFiltersProps> = ({
 }) => {
   const { showToast } = useToast();
 
-  // Estados para opciones dinámicas
-  const [criteriaOptions, setCriteriaOptions] = useState<Array<{ value: string; label: string }>>([]);
-  const [responsibleOptions, setResponsibleOptions] = useState<Array<{ value: number; label: string }>>([]);
-  const [roleOptions, setRoleOptions] = useState<Array<{ value: number; label: string }>>([]);
-  const [statusOptions, setStatusOptions] = useState<Array<{ value: string; label: string }>>([]);
-
-  // Estados de carga
-  const [loadingCriteria, setLoadingCriteria] = useState(false);
-  const [loadingResponsibles, setLoadingResponsibles] = useState(false);
-  const [loadingRoles, setLoadingRoles] = useState(false);
-  const [loadingStatus, setLoadingStatus] = useState(false);
+  // Estados para opciones dinámicas con sus cargas
+  const [catalogState, setCatalogState] = useState<{
+    criteria: { options: Array<{ value: string; label: string }>; loading: boolean };
+    responsibles: { options: Array<{ value: number; label: string }>; loading: boolean };
+    roles: { options: Array<{ value: number; label: string }>; loading: boolean };
+    statuses: { options: Array<{ value: string; label: string }>; loading: boolean };
+  }>({
+    criteria: { options: [], loading: false },
+    responsibles: { options: [], loading: false },
+    roles: { options: [], loading: false },
+    statuses: { options: [], loading: false },
+  });
+  const criteriaOptions = catalogState.criteria.options; const loadingCriteria = catalogState.criteria.loading;
+  const responsibleOptions = catalogState.responsibles.options; const loadingResponsibles = catalogState.responsibles.loading;
+  const roleOptions = catalogState.roles.options; const loadingRoles = catalogState.roles.loading;
+  const statusOptions = catalogState.statuses.options; const loadingStatus = catalogState.statuses.loading;
 
   const [filters, setFilters] = useState<Filters>({
     criterio: null,
@@ -54,52 +59,43 @@ export const EvidenceSearchFilters: React.FC<EvidenceSearchFiltersProps> = ({
    */
   useEffect(() => {
     const loadFilterOptions = async () => {
-      // Cargar criterios
-      try {
-        setLoadingCriteria(true);
-        const criterios = await evidenceSearchFiltersService.getCriterios();
-        setCriteriaOptions(criterios);
-      } catch (error) {
-        console.error('Error al cargar criterios:', error);
+      setCatalogState(prev => ({
+        ...prev,
+        criteria: { ...prev.criteria, loading: true },
+        responsibles: { ...prev.responsibles, loading: true },
+        roles: { ...prev.roles, loading: true },
+        statuses: { ...prev.statuses, loading: true },
+      }));
+
+      const [criteriosResult, usuariosResult, rolesResult, estadosResult] = await Promise.allSettled([
+        evidenceSearchFiltersService.getCriterios(),
+        evidenceSearchFiltersService.getUsuarios(),
+        evidenceSearchFiltersService.getRoles(),
+        evidenceSearchFiltersService.getEstados(),
+      ]);
+
+      setCatalogState({
+        criteria: { options: criteriosResult.status === 'fulfilled' ? criteriosResult.value : [], loading: false },
+        responsibles: { options: usuariosResult.status === 'fulfilled' ? usuariosResult.value : [], loading: false },
+        roles: { options: rolesResult.status === 'fulfilled' ? rolesResult.value : [], loading: false },
+        statuses: { options: estadosResult.status === 'fulfilled' ? estadosResult.value : [], loading: false },
+      });
+
+      if (criteriosResult.status === 'rejected') {
+        console.error('Error al cargar criterios:', criteriosResult.reason);
         showToast({ title: 'Error', message: 'Error al cargar criterios', type: 'error' });
-      } finally {
-        setLoadingCriteria(false);
       }
-
-      // Cargar responsables
-      try {
-        setLoadingResponsibles(true);
-        const usuarios = await evidenceSearchFiltersService.getUsuarios();
-        setResponsibleOptions(usuarios);
-      } catch (error) {
-        console.error('Error al cargar responsables:', error);
+      if (usuariosResult.status === 'rejected') {
+        console.error('Error al cargar responsables:', usuariosResult.reason);
         showToast({ title: 'Error', message: 'Error al cargar responsables', type: 'error' });
-      } finally {
-        setLoadingResponsibles(false);
       }
-
-      // Cargar roles
-      try {
-        setLoadingRoles(true);
-        const roles = await evidenceSearchFiltersService.getRoles();
-        setRoleOptions(roles);
-      } catch (error) {
-        console.error('Error al cargar roles:', error);
+      if (rolesResult.status === 'rejected') {
+        console.error('Error al cargar roles:', rolesResult.reason);
         showToast({ title: 'Error', message: 'Error al cargar roles', type: 'error' });
-      } finally {
-        setLoadingRoles(false);
       }
-
-      // Cargar estados
-      try {
-        setLoadingStatus(true);
-        const estados = await evidenceSearchFiltersService.getEstados();
-        setStatusOptions(estados);
-      } catch (error) {
-        console.error('Error al cargar estados:', error);
+      if (estadosResult.status === 'rejected') {
+        console.error('Error al cargar estados:', estadosResult.reason);
         showToast({ title: 'Error', message: 'Error al cargar estados', type: 'error' });
-      } finally {
-        setLoadingStatus(false);
       }
     };
 

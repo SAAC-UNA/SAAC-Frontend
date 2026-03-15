@@ -46,18 +46,21 @@ export const CreationStep: React.FC<CreationStepProps> = ({
   actualizarCriterio: updateCriterion,
   errors
 }) => {
-  const [ciclos, setCiclos] = useState<CicloAcreditacion[]>([]);
-  const [criterios, setCriterios] = useState<Criterio[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [statusFilter, setStatusFilter] = useState<StatusFilter>('todos');
-  const [currentPage, setCurrentPage] = useState(1);
+  const [catalogState, setCatalogState] = useState<{ ciclos: CicloAcreditacion[]; criterios: Criterio[]; loading: boolean }>({ ciclos: [], criterios: [], loading: true });
+  const ciclos = catalogState.ciclos;
+  const criterios = catalogState.criterios;
+  const loading = catalogState.loading;
+  const [filterState, setFilterState] = useState<{ searchTerm: string; statusFilter: StatusFilter; currentPage: number }>({ searchTerm: '', statusFilter: 'todos', currentPage: 1 });
+  const searchTerm = filterState.searchTerm;
+  const statusFilter = filterState.statusFilter;
+  const currentPage = filterState.currentPage;
   const itemsPerPage = TABLE_PAGE_SIZE.standard;
   
   // Modal state
-  const [showModal, setShowModal] = useState(false);
-  const [selectedCriterion, setSelectedCriterion] = useState<Criterio | null>(null);
-  const [editMode, setEditMode] = useState(false);
+  const [modalState, setModalState] = useState<{ showModal: boolean; selectedCriterion: Criterio | null; editMode: boolean }>({ showModal: false, selectedCriterion: null, editMode: false });
+  const showModal = modalState.showModal;
+  const selectedCriterion = modalState.selectedCriterion;
+  const editMode = modalState.editMode;
   const [criterionToDelete, setCriterionToDelete] = useState<{ id: number; nombre: string } | null>(null);
 
   useEffect(() => {
@@ -66,18 +69,16 @@ export const CreationStep: React.FC<CreationStepProps> = ({
 
   const loadData = async () => {
     try {
-      setLoading(true);
+      setCatalogState(prev => ({ ...prev, loading: true }));
       const [ciclosData, criteriosData] = await Promise.all([
         improvementCommitmentService.obtenerCiclosAcreditacion(),
         improvementCommitmentService.obtenerCriterios({ activo: true })
       ]);
 
-      setCiclos(ciclosData);
-      setCriterios(criteriosData);
+      setCatalogState({ ciclos: ciclosData, criterios: criteriosData, loading: false });
     } catch (error) {
       console.error('Error cargando datos:', error);
-    } finally {
-      setLoading(false);
+      setCatalogState(prev => ({ ...prev, loading: false }));
     }
   };
 
@@ -121,11 +122,6 @@ export const CreationStep: React.FC<CreationStepProps> = ({
     return criteriosFiltrados.slice(startIndex, startIndex + itemsPerPage);
   }, [criteriosFiltrados, currentPage, itemsPerPage]);
 
-  // Reset page when filters change
-  useEffect(() => {
-    setCurrentPage(1);
-  }, [searchTerm, statusFilter]);
-
   const handleCicloChange = (value: string) => {
     updateFormData({ ciclo_acreditacion_id: parseInt(value) });
   };
@@ -136,9 +132,7 @@ export const CreationStep: React.FC<CreationStepProps> = ({
       c => c.criterio_id === criterio.criterio_id
     );
 
-    setSelectedCriterion(criterio);
-    setEditMode(!!yaSeleccionado);
-    setShowModal(true);
+    setModalState({ showModal: true, selectedCriterion: criterio, editMode: !!yaSeleccionado });
   };
 
   const handleSaveCriterion = (criterioConfig: CriterioSeleccionado) => {
@@ -150,9 +144,7 @@ export const CreationStep: React.FC<CreationStepProps> = ({
     } else {
       addCriterion(criterioConfig);
     }
-    setShowModal(false);
-    setSelectedCriterion(null);
-    setEditMode(false);
+    setModalState({ showModal: false, selectedCriterion: null, editMode: false });
   };
 
   const handleDeleteCriterion = (criterioId: number, criterioNombre: string) => {
@@ -310,7 +302,7 @@ export const CreationStep: React.FC<CreationStepProps> = ({
           <div className="flex-1">
             <SearchInput
               value={searchTerm}
-              onChange={setSearchTerm}
+              onChange={(v) => { setFilterState(prev => ({ ...prev, searchTerm: v, currentPage: 1 })); }}
               placeholder="Buscar por nomenclatura o descripción..."
             />
           </div>
@@ -321,7 +313,7 @@ export const CreationStep: React.FC<CreationStepProps> = ({
               tooltipText="Filtrar por estado"
               options={filterOptions}
               value={statusFilter}
-              onChange={setStatusFilter}
+              onChange={(v) => { setFilterState(prev => ({ ...prev, statusFilter: v as StatusFilter, currentPage: 1 })); }}
             />
           </div>
         </div>
@@ -353,7 +345,7 @@ export const CreationStep: React.FC<CreationStepProps> = ({
             pagination={{
               currentPage,
               totalPages,
-              onPageChange: setCurrentPage
+              onPageChange: (page: number) => setFilterState(prev => ({ ...prev, currentPage: page }))
             }}
           />
         )}
@@ -364,9 +356,7 @@ export const CreationStep: React.FC<CreationStepProps> = ({
         <CriterionModal
           isOpen={showModal}
           onClose={() => {
-            setShowModal(false);
-            setSelectedCriterion(null);
-            setEditMode(false);
+            setModalState({ showModal: false, selectedCriterion: null, editMode: false });
           }}
           criterio={selectedCriterion}
           configuracionExistente={

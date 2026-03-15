@@ -43,17 +43,10 @@ const SidebarItemComponent: React.FC<SidebarItemProps> = ({
    *   de encogerse antes que el contenedor.
    * - Al expandir: aplica inmediatamente para que el botón se expanda junto con el sidebar.
    */
-  const [layoutCollapsed, setLayoutCollapsed] = useState(isCollapsed);
+  const [layoutCollapsed, setLayoutCollapsed] = useState(() => isCollapsed);
   useEffect(() => {
-    if (!isCollapsed) {
-      // Al expandir: layout inmediato para que el botón crezca junto al sidebar
-      setLayoutCollapsed(false);
-    } else {
-      // Al colapsar: esperar a que el sidebar termine su animación (300ms) + margen (20ms)
-      // para que el cambio de layout ocurra cuando el sidebar ya clippea el contenido
-      const timer = setTimeout(() => setLayoutCollapsed(true), 320);
-      return () => clearTimeout(timer);
-    }
+    const timer = setTimeout(() => setLayoutCollapsed(isCollapsed), isCollapsed ? 320 : 0);
+    return () => clearTimeout(timer);
   }, [isCollapsed]);
 
   const handleClick = useCallback(() => {
@@ -127,6 +120,3 @@ const SidebarItemComponent: React.FC<SidebarItemProps> = ({
 };
 
 export const SidebarItem = React.memo(SidebarItemComponent);
-
-// Alias para compatibilidad con imports anteriores
-export const ModernSidebarItem = SidebarItem;

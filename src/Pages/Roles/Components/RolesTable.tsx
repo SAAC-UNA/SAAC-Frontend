@@ -15,11 +15,11 @@
  * @param showHeader - Mostrar/ocultar el header
  */
 
-import React, { useEffect, useState, useMemo, useCallback } from 'react';
-import { DataTable, TableActionButton, StatusBadge } from '@/components/index';
+import React, { useEffect, useState, useMemo, useCallback, useRef } from 'react';
+import { DataTable, StatusBadge } from '@/components/index';
+import { TableActionButton } from '@/Components/Ui/Buttons/TableActionButton';
 import { BackendErrorAlert } from '@/Components/Ui/Feedback/BackendErrorAlert';
 import { TYPOGRAPHY } from '@/Constants/Typography';
-import { TABLE_TRUNCATE } from '@/Constants/TableTruncate';
 import { truncateText } from '@/Utils';
 import { TABLE_PAGE_SIZE } from '@/Constants/TablePagination';
 import { useRoles } from '@/hooks/UseRoles';
@@ -60,6 +60,13 @@ export const RolesTable: React.FC<RolesTableProps> = ({
     const searchQuery = externalSearchQuery;
     const [currentPage, setCurrentPage] = useState(1);
 
+    // Reset página cuando cambia la búsqueda (sin useEffect - patrón derived state)
+    const prevSearchRef = useRef(searchQuery);
+    if (prevSearchRef.current !== searchQuery) {
+        prevSearchRef.current = searchQuery;
+        setCurrentPage(1);
+    }
+
     // Cargar roles al montar el componente solo si no se pasan como props
     useEffect(() => {
         if (!externalRoles) {
@@ -79,9 +86,7 @@ export const RolesTable: React.FC<RolesTableProps> = ({
     }, [roles, searchQuery]);
 
     // Reset página cuando cambian los filtros
-    useEffect(() => {
-        setCurrentPage(1);
-    }, [searchQuery]);
+    // (movido a patrón derived state arriba)
 
     // Calcular datos paginados - memoizado
     const { totalPages, paginatedData } = useMemo(() => {

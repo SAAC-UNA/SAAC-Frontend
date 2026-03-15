@@ -22,8 +22,7 @@ export const NotificationDropdown: React.FC<NotificationDropdownProps> = ({
   onClose,
   onViewAll,
 }) => {
-  const [recentNotifications, setRecentNotifications] = useState<Notification[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const [notifData, setNotifData] = useState<{ notifications: Notification[]; loading: boolean }>({ notifications: [], loading: true });
   
   const { markAsRead, markAllAsRead, unreadCount } = useNotifications({
     enablePolling: false,
@@ -34,13 +33,11 @@ export const NotificationDropdown: React.FC<NotificationDropdownProps> = ({
   useEffect(() => {
     const loadRecent = async () => {
       try {
-        setIsLoading(true);
         const recent = await NotificationService.getRecent(6);
-        setRecentNotifications(recent);
+        setNotifData({ notifications: recent, loading: false });
       } catch (error) {
         console.error('Error cargando notificaciones recientes:', error);
-      } finally {
-        setIsLoading(false);
+        setNotifData(prev => ({ ...prev, loading: false }));
       }
     };
 
@@ -49,26 +46,26 @@ export const NotificationDropdown: React.FC<NotificationDropdownProps> = ({
 
   const handleMarkAsRead = async (id: number) => {
     await markAsRead(id);
-    // Actualizar lista local
-    setRecentNotifications(prev =>
-      prev.map(n =>
+    setNotifData(prev => ({
+      ...prev,
+      notifications: prev.notifications.map(n =>
         n.notificacion_id === id
           ? { ...n, leida: true, fecha_lectura: new Date().toISOString() }
           : n
-      )
-    );
+      ),
+    }));
   };
 
   const handleMarkAllAsRead = async () => {
     await markAllAsRead();
-    // Actualizar lista local
-    setRecentNotifications(prev =>
-      prev.map(n => ({
+    setNotifData(prev => ({
+      ...prev,
+      notifications: prev.notifications.map(n => ({
         ...n,
         leida: true,
         fecha_lectura: new Date().toISOString(),
-      }))
-    );
+      })),
+    }));
   };
 
   const handleViewAll = () => {
@@ -100,17 +97,17 @@ export const NotificationDropdown: React.FC<NotificationDropdownProps> = ({
 
       {/* Lista de notificaciones */}
       <div className="overflow-y-auto flex-1">
-        {isLoading ? (
+        {notifData.loading ? (
           <div className="relative py-4 min-h-[200px]">
             <LoadingSpinner variant="loader" />
           </div>
-        ) : recentNotifications.length === 0 ? (
+        ) : notifData.notifications.length === 0 ? (
           <div className="px-4 py-8 text-center text-gray-500">
             <p className="text-sm">No tienes notificaciones</p>
           </div>
         ) : (
           <div className="p-3 space-y-2">
-            {recentNotifications.map((notification) => (
+            {notifData.notifications.map((notification) => (
               <NotificationCard
                 key={notification.notificacion_id}
                 notification={notification}

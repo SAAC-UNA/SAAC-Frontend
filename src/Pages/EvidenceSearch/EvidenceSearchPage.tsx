@@ -31,23 +31,25 @@ import { TABLE_PAGE_SIZE } from '@/Constants/TablePagination';
 export const EvidenceSearchPage: React.FC = () => {
   const { showToast } = useToast();
 
-  // Estado de resultados
-  const [filteredResults, setFilteredResults] = useState<EvidenceSearchResult[]>([]);
-  const [displayedResults, setDisplayedResults] = useState<EvidenceSearchResult[]>([]);
-  const [loading, setLoading] = useState(false);
+  // Estado de resultados y búsqueda
+  const [searchState, setSearchState] = useState<{ filteredResults: EvidenceSearchResult[]; displayedResults: EvidenceSearchResult[]; loading: boolean; searchTerm: string; currentPage: number; currentFilters: EvidenceFilters }>({
+    filteredResults: [], displayedResults: [], loading: false, searchTerm: '', currentPage: 1, currentFilters: {}
+  });
+  const filteredResults = searchState.filteredResults;
+  const displayedResults = searchState.displayedResults;
+  const loading = searchState.loading;
+  const searchTerm = searchState.searchTerm;
+  const currentPage = searchState.currentPage;
+  const currentFilters = searchState.currentFilters;
   const [showFilters, setShowFilters] = useState(false);
-  const [searchTerm, setSearchTerm] = useState('');
   
   // Paginación
-  const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = TABLE_PAGE_SIZE.standard;
-  
-  // Filtros actuales
-  const [currentFilters, setCurrentFilters] = useState<EvidenceFilters>({});
 
   // Modal de detalles
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [selectedCriterioId, setSelectedCriterioId] = useState<number | null>(null);
+  const [modalState, setModalState] = useState<{ isOpen: boolean; selectedCriterioId: number | null }>({ isOpen: false, selectedCriterioId: null });
+  const isModalOpen = modalState.isOpen;
+  const selectedCriterioId = modalState.selectedCriterioId;
 
   // Cargar datos iniciales
   useEffect(() => {
@@ -58,7 +60,7 @@ export const EvidenceSearchPage: React.FC = () => {
   // Filtrar localmente según término de búsqueda
   useEffect(() => {
     if (!searchTerm.trim()) {
-      setDisplayedResults(filteredResults);
+      setSearchState(prev => ({ ...prev, displayedResults: filteredResults }));
       return;
     }
 
@@ -71,19 +73,17 @@ export const EvidenceSearchPage: React.FC = () => {
         item.responsables.some(r => r.nombre.toLowerCase().includes(term))
     );
 
-    setDisplayedResults(filtered);
+    setSearchState(prev => ({ ...prev, displayedResults: filtered }));
   }, [filteredResults, searchTerm]);
 
   // Handler para cambio en el buscador
   const handleSearchChange = useCallback((term: string) => {
-    setSearchTerm(term);
+    setSearchState(prev => ({ ...prev, searchTerm: term }));
   }, []);
 
   // Aplicar filtros
   const applyFilters = useCallback(async (filtersToApply: EvidenceFilters, page: number = 1) => {
-    setLoading(true);
-    setCurrentFilters(filtersToApply);
-    setCurrentPage(page);
+    setSearchState(prev => ({ ...prev, loading: true, currentFilters: filtersToApply, currentPage: page }));
 
     try {
       // Llamar al backend con timestamp para evitar caché
@@ -96,10 +96,7 @@ export const EvidenceSearchPage: React.FC = () => {
       // Mapear datos del backend a nuestro formato
       const mappedResults = response.data.map(mapBackendToFrontend);
       
-      setFilteredResults(mappedResults);
-      setDisplayedResults(mappedResults);
-
-      setLoading(false);
+      setSearchState(prev => ({ ...prev, filteredResults: mappedResults, displayedResults: mappedResults, loading: false }));
 
       // TODO: Implementar componente de toast y descomentar
       // if (mappedResults.length === 0) {
@@ -114,9 +111,7 @@ export const EvidenceSearchPage: React.FC = () => {
       //   });
       // }
     } catch (error) {
-      setLoading(false);
-      setFilteredResults([]);
-      setDisplayedResults([]);
+      setSearchState(prev => ({ ...prev, loading: false, filteredResults: [], displayedResults: [] }));
       // TODO: Implementar componente de toast y descomentar
       // showToast({
       //   type: 'error',
@@ -128,8 +123,7 @@ export const EvidenceSearchPage: React.FC = () => {
 
   // Exportar resultados
   const handleExport = async (format: ExportFormat) => {
-    setLoading(true);
-
+    setSearchState(prev => ({ ...prev, loading: true }));
     try {
       if (format === 'excel') {
         await evidenceSearchService.exportExcel(currentFilters);
@@ -137,14 +131,14 @@ export const EvidenceSearchPage: React.FC = () => {
         await evidenceSearchService.exportPDF(currentFilters);
       }
 
-      setLoading(false);
+      setSearchState(prev => ({ ...prev, loading: false }));
       // TODO: Implementar componente de toast y descomentar
       // showToast({
       //   type: 'success',
       //   title: 'Archivo descargado exitosamente'
       // });
     } catch (error) {
-      setLoading(false);
+      setSearchState(prev => ({ ...prev, loading: false }));
       // TODO: Implementar componente de toast y descomentar
       // showToast({
       //   type: 'error',
@@ -158,14 +152,12 @@ export const EvidenceSearchPage: React.FC = () => {
   const handleViewDetails = (evidenceId: number) => {
     const evidence = displayedResults.find(e => e.evidencia_id === evidenceId);
     if (evidence) {
-      setSelectedCriterioId(evidence.criterio_id);
-      setIsModalOpen(true);
+      setModalState({ isOpen: true, selectedCriterioId: evidence.criterio_id });
     }
   };
 
   const handleCloseModal = () => {
-    setIsModalOpen(false);
-    setSelectedCriterioId(null);
+    setModalState({ isOpen: false, selectedCriterioId: null });
   };
 
   const moduleInfo = getModuleInfo('evidence_search');
@@ -268,4 +260,3 @@ export const EvidenceSearchPage: React.FC = () => {
   );
 };
 
-export default EvidenceSearchPage;

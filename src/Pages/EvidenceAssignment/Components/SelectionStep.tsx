@@ -14,7 +14,7 @@ import type {
   Criterion, 
   Evidence
 } from '@/Types/EvidenceAssignment';
-import evidenceAssignmentService from '@/Services/EvidenceAssignmentService';
+import { evidenceAssignmentService } from '@/Services/EvidenceAssignmentService';
 import { userService, type User } from '@/Services/UserService';
 import { roleService, type Role } from '@/Services/RoleService';
 import type { MultiSelectOption } from '@/Components/Ui/Forms/MultiSelect';
@@ -31,17 +31,19 @@ export const SelectionStep: React.FC<SelectionStepProps> = ({
   errors
 }) => {
   // Estados para criterios y evidencias
-  const [criteria, setCriteria] = useState<Criterion[]>([]);
-  const [evidences, setEvidences] = useState<Evidence[]>([]);
-  const [criteriaLoading, setCriteriaLoading] = useState(true);
+  const [criteriaState, setCriteriaState] = useState<{ criteria: Criterion[]; evidences: Evidence[]; criteriaLoading: boolean }>({ criteria: [], evidences: [], criteriaLoading: true });
+  const criteria = criteriaState.criteria;
+  const evidences = criteriaState.evidences;
+  const criteriaLoading = criteriaState.criteriaLoading;
   
   // Estados para usuarios y roles
-  const [availableUsers, setAvailableUsers] = useState<User[]>([]);
-  const [availableRoles, setAvailableRoles] = useState<Role[]>([]);
-  const [usersLoading, setUsersLoading] = useState(true);
-  const [userError, setUserError] = useState<string | null>(null);
-  const [roleError, setRoleError] = useState<string | null>(null);
-  const [userCountByRole, setUserCountByRole] = useState<Record<number, number>>({});
+  const [catalogState, setCatalogState] = useState<{ availableUsers: User[]; availableRoles: Role[]; usersLoading: boolean; userError: string | null; roleError: string | null; userCountByRole: Record<number, number> }>({ availableUsers: [], availableRoles: [], usersLoading: true, userError: null, roleError: null, userCountByRole: {} });
+  const availableUsers = catalogState.availableUsers;
+  const availableRoles = catalogState.availableRoles;
+  const usersLoading = catalogState.usersLoading;
+  const userError = catalogState.userError;
+  const roleError = catalogState.roleError;
+  const userCountByRole = catalogState.userCountByRole;
   
   const [dataLoaded, setDataLoaded] = useState(false);
 
@@ -53,8 +55,8 @@ export const SelectionStep: React.FC<SelectionStepProps> = ({
 
   const loadAllData = async () => {
     try {
-      setCriteriaLoading(true);
-      setUsersLoading(true);
+      setCriteriaState(prev => ({...prev, criteriaLoading: true}));
+      setCatalogState(prev => ({...prev, usersLoading: true}));
       
       // Cargar criterios, evidencias, usuarios y roles en paralelo
       const [criteriaData, evidencesData] = await Promise.all([
@@ -62,9 +64,7 @@ export const SelectionStep: React.FC<SelectionStepProps> = ({
         evidenceAssignmentService.getAllEvidences()
       ]);
       
-      setCriteria(criteriaData);
-      setEvidences(evidencesData);
-      setCriteriaLoading(false);
+      setCriteriaState({ criteria: criteriaData, evidences: evidencesData, criteriaLoading: false });
       
       // Auto-seleccionar el primer proceso disponible
       const processesData = await evidenceAssignmentService.getAllProcesses();
@@ -80,12 +80,12 @@ export const SelectionStep: React.FC<SelectionStepProps> = ({
         loadRoles()
       ]);
       
-      setUsersLoading(false);
+      setCatalogState(prev => ({...prev, usersLoading: false}));
       setDataLoaded(true);
     } catch (error) {
       console.error('Error crítico cargando datos:', error);
-      setCriteriaLoading(false);
-      setUsersLoading(false);
+      setCriteriaState(prev => ({...prev, criteriaLoading: false}));
+      setCatalogState(prev => ({...prev, usersLoading: false}));
     }
   };
 
@@ -99,11 +99,11 @@ export const SelectionStep: React.FC<SelectionStepProps> = ({
         status: user.status === 'active' ? 'active' : 'inactive',
         role: user.roles?.[0]?.name
       }));
-      setAvailableUsers(transformedUsers);
+      setCatalogState(prev => ({...prev, availableUsers: transformedUsers}));
       calculateUserCountByRole(users);
     } catch (error) {
       console.error('Error loading users:', error);
-      setUserError('Error al cargar la lista de usuarios');
+      setCatalogState(prev => ({...prev, userError: 'Error al cargar la lista de usuarios'}));
     }
   };
 
@@ -118,16 +118,16 @@ export const SelectionStep: React.FC<SelectionStepProps> = ({
         });
       }
     });
-    setUserCountByRole(countMap);
+    setCatalogState(prev => ({...prev, userCountByRole: countMap}));
   };
 
   const loadRoles = async () => {
     try {
       const response = await roleService.listarRoles();
-      setAvailableRoles(response.data || []);
+      setCatalogState(prev => ({...prev, availableRoles: response.data || []}));
     } catch (error) {
       console.error('Error loading roles:', error);
-      setRoleError('Error al cargar la lista de roles');
+      setCatalogState(prev => ({...prev, roleError: 'Error al cargar la lista de roles'}));
     }
   };
 
@@ -279,7 +279,7 @@ export const SelectionStep: React.FC<SelectionStepProps> = ({
                     <BackendErrorAlert
                       error={userError}
                       onRetry={async () => {
-                        setUserError(null);
+                        setCatalogState(prev => ({...prev, userError: null}));
                         await loadUsers();
                       }}
                     />
@@ -305,7 +305,7 @@ export const SelectionStep: React.FC<SelectionStepProps> = ({
                     <BackendErrorAlert
                       error={roleError}
                       onRetry={async () => {
-                        setRoleError(null);
+                        setCatalogState(prev => ({...prev, roleError: null}));
                         await loadRoles();
                       }}
                     />

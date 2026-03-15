@@ -31,39 +31,35 @@ export const CriterionModal: React.FC<CriterionModalProps> = ({
   onGuardar,
   modoEdicion
 }) => {
-  const [loading, setLoading] = useState(true);
-  const [evidencias, setEvidencias] = useState<Evidencia[]>([]);
-  const [usuarios, setUsuarios] = useState<User[]>([]);
+  const [catalogState, setCatalogState] = useState<{ loading: boolean; evidencias: Evidencia[]; usuarios: User[] }>({ loading: true, evidencias: [], usuarios: [] });
+  const loading = catalogState.loading;
+  const evidencias = catalogState.evidencias;
+  const usuarios = catalogState.usuarios;
   
   // Form state
-  const [selectedEvidences, setSelectedEvidences] = useState<number[]>(
-    configuracionExistente?.evidencias_seleccionadas || []
-  );
-  const [assignedUsers, setAssignedUsers] = useState<number[]>(
-    configuracionExistente?.encargados_usuarios || []
-  );
-  const [fechaLimite, setFechaLimite] = useState(
-    configuracionExistente?.fecha_limite || ''
-  );
-  const [comentario, setComentario] = useState(
-    configuracionExistente?.comentario || ''
-  );
+  const [formState, setFormState] = useState<{ selectedEvidences: number[]; assignedUsers: number[]; fechaLimite: string; comentario: string }>({
+    selectedEvidences: configuracionExistente?.evidencias_seleccionadas || [],
+    assignedUsers: configuracionExistente?.encargados_usuarios || [],
+    fechaLimite: configuracionExistente?.fecha_limite || '',
+    comentario: configuracionExistente?.comentario || ''
+  });
+  const selectedEvidences = formState.selectedEvidences;
+  const assignedUsers = formState.assignedUsers;
+  const fechaLimite = formState.fechaLimite;
+  const comentario = formState.comentario;
 
   const [errors, setErrors] = useState<Record<string, string>>({});
 
   useEffect(() => {
-    if (isOpen) {
-      loadData();
-    }
-  }, [isOpen, criterio.criterio_id]);
+    loadData();
+  }, [criterio.criterio_id]);
 
   const loadData = async () => {
     try {
-      setLoading(true);
+      setCatalogState(prev => ({...prev, loading: true}));
 
       if (!criterio?.criterio_id) {
-        setEvidencias([]);
-        setLoading(false);
+        setCatalogState(prev => ({...prev, evidencias: [], loading: false}));
         return;
       }
 
@@ -72,7 +68,7 @@ export const CriterionModal: React.FC<CriterionModalProps> = ({
         userService.listUsers()
       ]);
 
-      setEvidencias(evidenciasData);
+      setCatalogState(prev => ({...prev, evidencias: evidenciasData}));
       
       const transformedUsers: User[] = usuariosData.map(user => ({
         id: user.id,
@@ -81,11 +77,11 @@ export const CriterionModal: React.FC<CriterionModalProps> = ({
         status: user.status === 'active' ? 'active' : 'inactive',
         role: user.roles?.[0]?.name
       }));
-      setUsuarios(transformedUsers);
+      setCatalogState(prev => ({...prev, usuarios: transformedUsers}));
     } catch (error) {
       console.error('Error cargando datos:', error);
     } finally {
-      setLoading(false);
+      setCatalogState(prev => ({...prev, loading: false}));
     }
   };
 
@@ -111,9 +107,9 @@ export const CriterionModal: React.FC<CriterionModalProps> = ({
 
   const handleSelectAllEvidences = () => {
     if (selectedEvidences.length === evidencias.length) {
-      setSelectedEvidences([]);
+      setFormState(prev => ({...prev, selectedEvidences: []}));
     } else {
-      setSelectedEvidences(evidencias.map(e => e.evidencia_id));
+      setFormState(prev => ({...prev, selectedEvidences: evidencias.map(e => e.evidencia_id)}));
     }
   };
 
@@ -179,9 +175,9 @@ export const CriterionModal: React.FC<CriterionModalProps> = ({
           {/* Selección de Evidencias */}
           <div>
             <div className="flex items-center justify-between mb-2">
-              <label className="block text-sm font-medium text-negro-una">
+              <p className="block text-sm font-medium text-negro-una">
                 Evidencias a incluir <span className="text-red-500">*</span>
-              </label>
+              </p>
               <button
                 type="button"
                 onClick={handleSelectAllEvidences}
@@ -196,7 +192,7 @@ export const CriterionModal: React.FC<CriterionModalProps> = ({
               label=""
               options={evidenciaOptions}
               value={selectedEvidences.map(id => id.toString())}
-              onChange={(values) => setSelectedEvidences(values.map(v => parseInt(v)))}
+              onChange={(values) => setFormState(prev => ({...prev, selectedEvidences: values.map(v => parseInt(v))}))}
               placeholder="Seleccione evidencias..."
               required
               showSelectAll={false}
@@ -213,14 +209,14 @@ export const CriterionModal: React.FC<CriterionModalProps> = ({
 
           {/* Encargados - Usuarios */}
           <div>
-            <label className="block text-sm font-medium text-negro-una mb-2">
+            <p className="block text-sm font-medium text-negro-una mb-2">
               Usuarios encargados <span className="text-red-500">*</span>
-            </label>
+            </p>
             <MultiSelect
               label=""
               options={usuarioOptions}
               value={assignedUsers.map(id => id.toString())}
-              onChange={(values) => setAssignedUsers(values.map(v => Number(v)))}
+              onChange={(values) => setFormState(prev => ({...prev, assignedUsers: values.map(v => Number(v))}))}
               placeholder="Seleccione usuarios..."
               selectAllText="Seleccionar todos"
               deselectAllText="Deseleccionar todos"
@@ -242,7 +238,7 @@ export const CriterionModal: React.FC<CriterionModalProps> = ({
             <DatePicker
               label="Fecha Límite"
               value={fechaLimite}
-              onChange={setFechaLimite}
+              onChange={(val) => setFormState(prev => ({...prev, fechaLimite: val}))}
               placeholder="Seleccione una fecha límite..."
               minDate={new Date().toISOString().split('T')[0]}
               helperText="Fecha límite para completar este criterio"
@@ -254,7 +250,7 @@ export const CriterionModal: React.FC<CriterionModalProps> = ({
             <Textarea
               label="Comentario"
               value={comentario}
-              onChange={(e) => setComentario(e.target.value)}
+              onChange={(e) => setFormState(prev => ({...prev, comentario: e.target.value}))}
               placeholder="Instrucciones especiales o notas sobre este criterio..."
               rows={4}
               maxLength={500}

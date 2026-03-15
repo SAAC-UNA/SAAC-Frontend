@@ -16,27 +16,10 @@ interface UserDetailsModalProps {
     user: User | null;
 }
 
-export const UserDetailsModal: React.FC<UserDetailsModalProps> = ({
-    isOpen,
-    onClose,
-    user
-}) => {
-    if (!user) return null;
+interface UserInfoProps { user: User; formatDate: (date?: Date) => string; }
 
-    const formatDate = (date?: Date): string => {
-        if (!date) return 'No disponible';
-        
-        return new Intl.DateTimeFormat('es-ES', {
-            year: 'numeric',
-            month: 'long',
-            day: 'numeric',
-            hour: '2-digit',
-            minute: '2-digit'
-        }).format(date);
-    };
-    
-    const renderUserInfo = () => (
-        <div>
+const UserInfo: React.FC<UserInfoProps> = ({ user, formatDate }) => (
+    <div>
             {/* Información personal */}
             <div className="bg-white border border-gray-200 rounded-corner p-4 max-h-60 overflow-y-auto mb-6">
                 <div className="flex items-center space-x-2 mb-3">
@@ -101,10 +84,12 @@ export const UserDetailsModal: React.FC<UserDetailsModalProps> = ({
                 </div>
             </div>
         </div>
-    );
-    
-    const renderPermissionsList = () => (
-        <div className="mb-6">
+);
+
+interface UserPermissionsProps { user: User; }
+
+const UserPermissions: React.FC<UserPermissionsProps> = ({ user }) => (
+    <div className="mb-6">
             <div className="flex items-center space-x-2 mb-3">
                 <SystemIcons.modal.key className="w-5 h-5 text-gray-600" />
                 <h3 className="font-sm text-gray-800">Permisos Directos</h3>
@@ -113,8 +98,8 @@ export const UserDetailsModal: React.FC<UserDetailsModalProps> = ({
             <div className="bg-white border border-gray-200 rounded-corner p-4 max-h-60 overflow-y-auto">
                 {user.allPermissions && user.allPermissions.length > 0 ? (
                     <div className="space-y-2">
-                        {user.allPermissions.map((permission, index) => (
-                            <div key={index} className="flex items-start space-x-2">
+                        {user.allPermissions.map((permission) => (
+                            <div key={permission.label} className="flex items-start space-x-2">
                                 <div className="w-2 h-2 bg-green-500 rounded-full mt-2 flex-shrink-0" />
                                 <span className="text-sm text-gray-700">
                                     {permission.label}
@@ -133,7 +118,26 @@ export const UserDetailsModal: React.FC<UserDetailsModalProps> = ({
                 Total: {user.allPermissions?.length || 0} permiso{(user.allPermissions?.length || 0) !== 1 ? 's' : ''}
             </div>
         </div>
-    );
+);
+
+export const UserDetailsModal: React.FC<UserDetailsModalProps> = ({
+    isOpen,
+    onClose,
+    user
+}) => {
+    if (!user) return null;
+
+    const formatDate = (date?: Date): string => {
+        if (!date) return 'No disponible';
+        
+        return new Intl.DateTimeFormat('es-ES', {
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit'
+        }).format(date);
+    };
 
     return (
         <DetailsModal
@@ -145,8 +149,8 @@ export const UserDetailsModal: React.FC<UserDetailsModalProps> = ({
             cancelLabel="Cerrar"
             size="lg"
         >
-            {renderUserInfo()}
-            {renderPermissionsList()}
+            <UserInfo user={user} formatDate={formatDate} />
+            <UserPermissions user={user} />
         </DetailsModal>
     );
 };

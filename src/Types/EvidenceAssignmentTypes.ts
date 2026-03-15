@@ -98,36 +98,6 @@ export interface StatusBadgeInfo {
  * Helpers para trabajar con estados
  */
 
-export const STATUS_LABELS: Record<AssignmentStatus, string> = {
-  pendiente: 'Pendiente',
-  en_progreso: 'En Progreso',
-  completado: 'Completado',
-  vencido: 'Vencido'
-};
-
-export const STATUS_COLORS: Record<AssignmentStatus, { text: string; bg: string; border: string }> = {
-  pendiente: {
-    text: 'text-yellow-700',
-    bg: 'bg-yellow-100',
-    border: 'border-yellow-300'
-  },
-  en_progreso: {
-    text: 'text-blue-700',
-    bg: 'bg-blue-100',
-    border: 'border-blue-300'
-  },
-  completado: {
-    text: 'text-green-700',
-    bg: 'bg-green-100',
-    border: 'border-green-300'
-  },
-  vencido: {
-    text: 'text-red-700',
-    bg: 'bg-red-100',
-    border: 'border-red-300'
-  }
-};
-
 /**
  * Calcula si una asignación está próxima a vencer (menos de 7 días)
  */
@@ -201,36 +171,6 @@ export function formatDate(isoDate: string): string {
 export function isOverdue(assignment: EvidenceAssignment): boolean {
   if (!assignment.fecha_limite) return false;
   return new Date(assignment.fecha_limite) < new Date() && assignment.estado !== 'completado';
-}
-
-/**
- * Obtiene la información de badge para un estado
- */
-export function getStatusBadgeInfo(estado: AssignmentStatus): StatusBadgeInfo {
-  const configs: Record<AssignmentStatus, StatusBadgeInfo> = {
-    pendiente: {
-      label: 'Pendiente',
-      color: '#854d0e',
-      bgColor: '#fef3c7'
-    },
-    en_progreso: {
-      label: 'En Progreso',
-      color: '#1e40af',
-      bgColor: '#dbeafe'
-    },
-    completado: {
-      label: 'Completado',
-      color: '#15803d',
-      bgColor: '#dcfce7'
-    },
-    vencido: {
-      label: 'Vencido',
-      color: '#991b1b',
-      bgColor: '#fee2e2'
-    }
-  };
-  
-  return configs[estado];
 }
 
 /**

@@ -27,12 +27,10 @@ export const ReviewStep: React.FC<ReviewStepProps> = ({
   updateFormData,
   errors
 }) => {
-  const [showDetailModal, setShowDetailModal] = useState(false);
-  const [criterionDetail, setCriterionDetail] = useState<CriterioSeleccionado | null>(null);
+  const [detailModal, setDetailModal] = useState<{ open: boolean; criterion: CriterioSeleccionado | null }>({ open: false, criterion: null });
 
   const handleViewDetail = (criterio: CriterioSeleccionado) => {
-    setCriterionDetail(criterio);
-    setShowDetailModal(true);
+    setDetailModal({ open: true, criterion: criterio });
   };
 
   // Columnas para la tabla de criterios
@@ -168,13 +166,12 @@ export const ReviewStep: React.FC<ReviewStepProps> = ({
             </span>
           </div>
 
-          <DataTable<CriterioSeleccionado>
+          <DataTable
             title=""
-            data={formData.criterios_seleccionados}
-            columns={columns}
+            data={formData.criterios_seleccionados as unknown as Record<string, unknown>[]}
+            columns={columns as unknown as import('@/Components/Ui/Table/DataTable').DataTableColumn<Record<string, unknown>>[]}
             emptyMessage="No hay criterios seleccionados. Regrese al paso anterior para agregar criterios."
             searchable={false}
-            pagination={false}
           />
         </div>
 
@@ -191,43 +188,40 @@ export const ReviewStep: React.FC<ReviewStepProps> = ({
       </div>
 
       {/* Modal de Detalle de Criterio */}
-      {showDetailModal && criterionDetail && (
+      {detailModal.open && detailModal.criterion && (
         <Modal
-          isOpen={showDetailModal}
-          onClose={() => {
-            setShowDetailModal(false);
-            setCriterionDetail(null);
-          }}
-          title={`Detalle: ${criterionDetail.criterio.nomenclatura}`}
+          isOpen={detailModal.open}
+          onClose={() => setDetailModal({ open: false, criterion: null })}
+          title={`Detalle: ${detailModal.criterion.criterio.nomenclatura}`}
           size="md"
         >
           <div className="space-y-4">
             <div>
               <p className="text-xs font-medium text-gris-una mb-1">Descripción</p>
-              <p className="text-sm text-negro-una">{criterionDetail.criterio.descripcion}</p>
+              <p className="text-sm text-negro-una">{detailModal.criterion.criterio.descripcion}</p>
             </div>
 
             <div className="border-t border-gray-200 pt-4">
               <p className="text-xs font-medium text-gris-una mb-2">
-                Evidencias seleccionadas ({criterionDetail.evidencias_seleccionadas.length})
+                Evidencias seleccionadas ({detailModal.criterion.evidencias_seleccionadas.length})
               </p>
               <p className="text-sm text-gris-una">
-                {criterionDetail.evidencias_seleccionadas.length} evidencias serán asignadas
+                {detailModal.criterion.evidencias_seleccionadas.length} evidencias serán asignadas
               </p>
             </div>
 
             <div className="border-t border-gray-200 pt-4">
               <p className="text-xs font-medium text-gris-una mb-2">Encargados</p>
               <p className="text-sm text-negro-una">
-                {criterionDetail.encargados_usuarios.length} usuario(s) asignado(s)
+                {detailModal.criterion.encargados_usuarios.length} usuario(s) asignado(s)
               </p>
             </div>
 
-            {criterionDetail.fecha_limite && (
+            {detailModal.criterion.fecha_limite && (
               <div className="border-t border-gray-200 pt-4">
                 <p className="text-xs font-medium text-gris-una mb-1">Fecha límite</p>
                 <p className="text-sm text-negro-una">
-                  {new Date(criterionDetail.fecha_limite).toLocaleDateString('es-CR', {
+                  {new Date(detailModal.criterion.fecha_limite).toLocaleDateString('es-CR', {
                     weekday: 'long',
                     year: 'numeric',
                     month: 'long',
@@ -237,11 +231,11 @@ export const ReviewStep: React.FC<ReviewStepProps> = ({
               </div>
             )}
 
-            {criterionDetail.comentario && (
+            {detailModal.criterion.comentario && (
               <div className="border-t border-gray-200 pt-4">
                 <p className="text-xs font-medium text-gris-una mb-1">Comentario</p>
                 <p className="text-sm text-negro-una whitespace-pre-wrap">
-                  {criterionDetail.comentario}
+                  {detailModal.criterion.comentario}
                 </p>
               </div>
             )}

@@ -162,7 +162,7 @@ export const LinkInput: React.FC<LinkInputProps> = ({
           <ul className="space-y-2">
             {links.map((link, index) => (
               <li
-                key={index}
+                key={link}
                 className="flex items-center justify-between p-3 bg-gray-50 border border-gray-200 rounded-corner"
               >
                 <div className="flex items-center gap-2 flex-1 min-w-0">
@@ -210,4 +210,3 @@ export const LinkInput: React.FC<LinkInputProps> = ({
   );
 };
 
-export default LinkInput;

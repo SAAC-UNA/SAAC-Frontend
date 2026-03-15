@@ -35,26 +35,15 @@ const StructureEditForm: React.FC = () => {
     name: '',
     description: ''
   });
-  const [hasChanges, setHasChanges] = useState(false);
-  const [errors, setErrors] = useState<{
-    nomenclature?: string;
-    name?: string;
-    description?: string;
-  }>({});
+  const [validationState, setValidationState] = useState<{ hasChanges: boolean; errors: { nomenclature?: string; name?: string; description?: string } }>({ hasChanges: false, errors: {} });
+  const hasChanges = validationState.hasChanges;
+  const errors = validationState.errors;
 
-  // Modal para confirmación de guardar
-  const [saveModalOpen, setSaveModalOpen] = useState(false);
-  // Modal para confirmación de descartar cambios
-  const [discardModalOpen, setDiscardModalOpen] = useState(false);
-
-  // Estado para el modal de éxito
-  const [successModalState, setSuccessModalState] = useState<{
-    isOpen: boolean;
-    elementName: string;
-  }>({
-    isOpen: false,
-    elementName: ''
-  });
+  // Modales (save, discard, success)
+  const [modalState, setModalState] = useState({ saveOpen: false, discardOpen: false, successOpen: false, successElementName: '' });
+  const saveModalOpen = modalState.saveOpen;
+  const discardModalOpen = modalState.discardOpen;
+  const successModalState = { isOpen: modalState.successOpen, elementName: modalState.successElementName };
 
   /**
     Determinar si un campo debe mostrarse según el tipo de elemento
@@ -69,7 +58,7 @@ const shouldShowField = (field: 'nomenclature' | 'name' | 'description'): boolea
  * Manejar el cierre del modal de éxito y redireccionar
  */
 const handleSuccessModalClose = () => {
-  setSuccessModalState({ isOpen: false, elementName: '' });
+  setModalState(prev => ({...prev, successOpen: false, successElementName: ''}));
   navigate('/estructura/listar');
 };
 
@@ -172,7 +161,7 @@ const validateForm = (): boolean => {
     if (error) newErrors.description = error;
   }
 
-  setErrors(newErrors);
+  setValidationState(prev => ({...prev, errors: newErrors}));
   return Object.keys(newErrors).length === 0;
 };
 
@@ -237,7 +226,7 @@ const validateForm = (): boolean => {
       name: element.name || '',
       description: element.description || ''
     });
-    setHasChanges(false);
+    setValidationState(prev => ({...prev, hasChanges: false}));
   };
 
   // Manejar cambios en el formulario
@@ -249,13 +238,13 @@ const validateForm = (): boolean => {
 
   // Limpiar error del campo cuando el usuario empiece a escribir
   if (errors[field as keyof typeof errors]) {
-    setErrors(prev => ({ ...prev, [field]: undefined }));
+    setValidationState(prev => ({...prev, errors: {...prev.errors, [field]: undefined}}));
   }
 
   // Validar el campo en tiempo real
   const error = validateField(field as 'nomenclature' | 'name' | 'description', value);
   if (error) {
-    setErrors(prev => ({ ...prev, [field]: error }));
+    setValidationState(prev => ({...prev, errors: {...prev.errors, [field]: error}}));
   }
 
   // Verificar si hay cambios
@@ -266,14 +255,14 @@ const validateForm = (): boolean => {
       newFormData.name !== currentElement.originalName ||
       newFormData.description !== currentElement.originalDescription;
     
-    setHasChanges(hasFieldChanges);
+    setValidationState(prev => ({...prev, hasChanges: hasFieldChanges}));
   }
 };
 
   // Manejar acción (guardar o descartar)
   const handleAction = (action: 'save' | 'discard') => {
-    if (action === 'save') setSaveModalOpen(true);
-    else setDiscardModalOpen(true);
+    if (action === 'save') setModalState(prev => ({ ...prev, saveOpen: true }));
+    else setModalState(prev => ({ ...prev, discardOpen: true }));
   };
 
   // Confirmar guardado
@@ -281,7 +270,7 @@ const validateForm = (): boolean => {
     if (!currentElement) return;
 
     if (!validateForm()) {
-      setSaveModalOpen(false);
+      setModalState(prev => ({ ...prev, saveOpen: false }));
       return;
     }
 
@@ -294,15 +283,11 @@ const validateForm = (): boolean => {
       });
 
       if (result) {
-        setSaveModalOpen(false);
-        setSuccessModalState({
-          isOpen: true,
-          elementName: formData.name || formData.nomenclature || formData.description || 'elemento'
-        });
+        setModalState(prev => ({ ...prev, saveOpen: false, successOpen: true, successElementName: formData.name || formData.nomenclature || formData.description || 'elemento' }));
       }
     } catch (error) {
       console.error('Error al guardar el elemento:', error);
-      setSaveModalOpen(false);
+      setModalState(prev => ({ ...prev, saveOpen: false }));
     }
   };
 
@@ -314,14 +299,14 @@ const validateForm = (): boolean => {
       name: currentElement.originalName || '',
       description: currentElement.originalDescription || ''
     });
-    setHasChanges(false);
-    setDiscardModalOpen(false);
+    setValidationState(prev => ({...prev, hasChanges: false}));
+    setModalState(prev => ({ ...prev, discardOpen: false }));
   };
 
   // Volver al listado
   const goBack = () => {
   if (hasChanges) {
-    setDiscardModalOpen(true);
+    setModalState(prev => ({ ...prev, discardOpen: true }));
   } else {
     navigate('/estructura/listar');
   }
@@ -454,7 +439,7 @@ const validateForm = (): boolean => {
 
       <EditConfirmationModal
         isOpen={saveModalOpen}
-        onClose={() => setSaveModalOpen(false)}
+        onClose={() => setModalState(prev => ({ ...prev, saveOpen: false }))}
         onConfirm={confirmSave}
         title="Confirmar Guardado"
         message="¿Está seguro de que desea guardar los cambios realizados?"
@@ -464,7 +449,7 @@ const validateForm = (): boolean => {
       />
       <DeleteConfirmationModal
         isOpen={discardModalOpen}
-        onClose={() => setDiscardModalOpen(false)}
+        onClose={() => setModalState(prev => ({ ...prev, discardOpen: false }))}
         onConfirm={confirmDiscard}
         title="Descartar cambios"
         itemName={truncateText(currentElement?.name || currentElement?.nomenclature || 'elemento')}

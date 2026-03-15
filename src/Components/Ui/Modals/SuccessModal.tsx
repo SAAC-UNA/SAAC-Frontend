@@ -200,10 +200,12 @@ export const SuccessModal: React.FC<SuccessModalProps> = ({
       
       <div 
         className={`success-modal-overlay fixed inset-0 bg-black/60 backdrop-blur-sm flex justify-center items-center z-50 ${isClosing ? 'fadeOut' : ''}`}
+        role="presentation"
         onClick={handleOverlayClick}
       >
         <div 
           className={`success-modal-content relative bg-gradient-to-br from-white to-gray-50 p-8 rounded-2xl shadow-2xl text-center max-w-md mx-4 overflow-visible ${isClosing ? 'slideOut' : ''}`}
+          role="presentation"
           onClick={(e) => e.stopPropagation()}
         >
           {/* Contenedor del checkmark */}

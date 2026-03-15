@@ -63,22 +63,26 @@ const FinalReports: React.FC = () => {
   const { exportToPdf: generatePdfReport } = usePdfExport();
   const { showToast } = useToast();
   
-  const [isLoading, setIsLoading] = useState(true);
-  const [criteria, setCriteria] = useState<Criterio[]>([]);
-  const [evidences, setEvidences] = useState<Evidencia[]>([]);
-  const [processes, setProcesses] = useState<Proceso[]>([]);
-  const [selectedProcesoId, setSelectedProcesoId] = useState<number | null>(null);
-  const [expandedCriteria, setExpandedCriteria] = useState<Set<number>>(new Set());
-  const [loadingFiles, setLoadingFiles] = useState<Set<number>>(new Set());
+  const [dataState, setDataState] = useState<{ isLoading: boolean; criteria: Criterio[]; evidences: Evidencia[]; processes: Proceso[] }>({ isLoading: true, criteria: [], evidences: [], processes: [] });
+  const isLoading = dataState.isLoading;
+  const criteria = dataState.criteria;
+  const evidences = dataState.evidences;
+  const processes = dataState.processes;
+  const [uiState, setUiState] = useState<{ selectedProcesoId: number | null; expandedCriteria: Set<number>; loadingFiles: Set<number> }>({ selectedProcesoId: null, expandedCriteria: new Set(), loadingFiles: new Set() });
+  const selectedProcesoId = uiState.selectedProcesoId;
+  const expandedCriteria = uiState.expandedCriteria;
+  const loadingFiles = uiState.loadingFiles;
   
   // Modal de enlaces públicos
-  const [publicLinkModalOpen, setPublicLinkModalOpen] = useState(false);
-  const [selectedArchivo, setSelectedArchivo] = useState<Archivo | null>(null);
-  const [selectedEvidencia, setSelectedEvidencia] = useState<Evidencia | null>(null);
+  const [publicLinkModal, setPublicLinkModal] = useState<{ open: boolean; archivo: Archivo | null; evidencia: Evidencia | null }>({ open: false, archivo: null, evidencia: null });
+  const publicLinkModalOpen = publicLinkModal.open;
+  const selectedArchivo = publicLinkModal.archivo;
+  const selectedEvidencia = publicLinkModal.evidencia;
   
   // Modal de confirmación para generar todos los enlaces
-  const [showConfirmModal, setShowConfirmModal] = useState(false);
-  const [isGeneratingLinks, setIsGeneratingLinks] = useState(false);
+  const [confirmModal, setConfirmModal] = useState<{ show: boolean; isGeneratingLinks: boolean }>({ show: false, isGeneratingLinks: false });
+  const showConfirmModal = confirmModal.show;
+  const isGeneratingLinks = confirmModal.isGeneratingLinks;
 
   useEffect(() => {
     fetchData();
@@ -86,7 +90,7 @@ const FinalReports: React.FC = () => {
 
   const fetchData = async () => {
     try {
-      setIsLoading(true);
+      setDataState(prev => ({ ...prev, isLoading: true }));
       const [criteriaResponse, evidencesResponse, processesResponse, approvalsResponse] = await Promise.all([
         axiosInstance.get('/estructura/criterios'),
         axiosInstance.get('/estructura/evidencias'),
@@ -122,13 +126,11 @@ const FinalReports: React.FC = () => {
         (c: Criterio) => c.estado_aprobacion === 'aprobado'
       );
       
-      setCriteria(approvedCriteria);
-      setEvidences(evidencesArray);
-      setProcesses(processesArray);
+      setDataState(prev => ({ ...prev, criteria: approvedCriteria, evidences: evidencesArray, processes: processesArray }));
     } catch (error) {
       console.error('Error:', error);
     } finally {
-      setIsLoading(false);
+      setDataState(prev => ({ ...prev, isLoading: false }));
     }
   };
 
@@ -139,14 +141,14 @@ const FinalReports: React.FC = () => {
   const toggleEvidencias = async (criterioId: number) => {
     const isExpanding = !expandedCriteria.has(criterioId);
     
-    setExpandedCriteria(prev => {
-      const newSet = new Set(prev);
+    setUiState(prev => {
+      const newSet = new Set(prev.expandedCriteria);
       if (newSet.has(criterioId)) {
         newSet.delete(criterioId);
       } else {
         newSet.add(criterioId);
       }
-      return newSet;
+      return {...prev, expandedCriteria: newSet};
     });
     
     // Si estamos expandiendo, cargar los archivos de las evidencias
@@ -161,23 +163,23 @@ const FinalReports: React.FC = () => {
   const loadEvidenceFiles = async (evidenciaId: number) => {
     if (loadingFiles.has(evidenciaId)) return;
     
-    setLoadingFiles(prev => new Set(prev).add(evidenciaId));
+    setUiState(prev => ({...prev, loadingFiles: new Set(prev.loadingFiles).add(evidenciaId)}));
     
     try {
       const response = await axiosInstance.get(`/archivos?evidencia_id=${evidenciaId}`);
       const archivos = response.data.data || response.data;
       
       // Update evidences with loaded files
-      setEvidences(prev => prev.map(ev => 
+      setDataState(prev => ({ ...prev, evidences: prev.evidences.map(ev => 
         ev.id === evidenciaId ? { ...ev, archivos } : ev
-      ));
+      ) }));
     } catch (error) {
       console.error('Error cargando archivos:', error);
     } finally {
-      setLoadingFiles(prev => {
-        const newSet = new Set(prev);
+      setUiState(prev => {
+        const newSet = new Set(prev.loadingFiles);
         newSet.delete(evidenciaId);
-        return newSet;
+        return {...prev, loadingFiles: newSet};
       });
     }
   };
@@ -201,9 +203,7 @@ const FinalReports: React.FC = () => {
   };
 
   const handleGenerateLink = (archivo: Archivo, evidencia: Evidencia) => {
-    setSelectedArchivo(archivo);
-    setSelectedEvidencia(evidencia);
-    setPublicLinkModalOpen(true);
+    setPublicLinkModal({ open: true, archivo, evidencia });
   };
 
   const handleAbrirEnlaceEvidencia = (evidencia: Evidencia) => {
@@ -221,9 +221,7 @@ const FinalReports: React.FC = () => {
     if (selectedEvidencia) {
       await loadEvidenceFiles(selectedEvidencia.id);
     }
-    setPublicLinkModalOpen(false);
-    setSelectedArchivo(null);
-    setSelectedEvidencia(null);
+    setPublicLinkModal({ open: false, archivo: null, evidencia: null });
   };
 
   const handleGenerateAllLinks = async () => {
@@ -232,12 +230,11 @@ const FinalReports: React.FC = () => {
       return;
     }
     
-    setShowConfirmModal(true);
+    setConfirmModal({ show: true, isGeneratingLinks: false });
   };
   
   const confirmGenerateAllLinks = async () => {
-    setShowConfirmModal(false);
-    setIsGeneratingLinks(true);
+    setConfirmModal({ show: false, isGeneratingLinks: true });
 
     try {
       // Collect all files from all evidences
@@ -284,7 +281,7 @@ const FinalReports: React.FC = () => {
         title: error.response?.data?.message || 'Error al generar enlaces públicos' 
       });
     } finally {
-      setIsGeneratingLinks(false);
+      setConfirmModal(prev => ({ ...prev, isGeneratingLinks: false }));
     }
   };
 
@@ -374,7 +371,7 @@ const FinalReports: React.FC = () => {
                 value={selectedProcesoId?.toString() || ''}
                 placeholder="Seleccione un proceso"
                 size="sm"
-                onChange={(value) => setSelectedProcesoId(value ? Number(value) : null)}
+                onChange={(value) => setUiState(prev => ({...prev, selectedProcesoId: value ? Number(value) : null}))}
                 options={processes
                   .filter((proceso: Proceso) => 
                     proceso.accreditation_cycle?.career_campus?.career?.nombre && 
@@ -585,7 +582,7 @@ const FinalReports: React.FC = () => {
       {/* Modal de confirmación para generar todos los enlaces */}
       <Modal
         isOpen={showConfirmModal}
-        onClose={() => setShowConfirmModal(false)}
+        onClose={() => setConfirmModal(prev => ({ ...prev, show: false }))}
         title="Generar Enlaces Públicos"
         size="md"
         variant="warning"
@@ -601,11 +598,7 @@ const FinalReports: React.FC = () => {
       {/* Modal para gestionar enlaces públicos */}
       <PublicLinkModal
         isOpen={publicLinkModalOpen}
-        onClose={() => {
-          setPublicLinkModalOpen(false);
-          setSelectedArchivo(null);
-          setSelectedEvidencia(null);
-        }}
+        onClose={() => setPublicLinkModal({ open: false, archivo: null, evidencia: null })}
         archivo={selectedArchivo}
         evidencia={selectedEvidencia}
         onSuccess={handleEnlaceGenerado}

@@ -1,5 +1,6 @@
-import React, { useEffect, useState, useMemo, useCallback } from 'react';
-import { DataTable, TableActionButton } from '@/components/index';
+import React, { useEffect, useState, useMemo, useCallback, useRef } from 'react';
+import { DataTable } from '@/components/index';
+import { TableActionButton } from '@/Components/Ui/Buttons/TableActionButton';
 import { BackendErrorAlert } from '@/Components/Ui/Feedback/BackendErrorAlert';
 import { TYPOGRAPHY } from '@/Constants/Typography';
 import { TABLE_TRUNCATE } from '@/Constants/TableTruncate';
@@ -51,6 +52,13 @@ export const UsersTable: React.FC<UsersTableProps> = ({
     // Debounce de búsqueda para evitar filtrados innecesarios mientras se escribe
     const debouncedSearchQuery = useDebounce(externalSearchQuery, 300);
 
+    // Reset página cuando cambia la búsqueda debounced (sin useEffect - patrón derived state)
+    const prevDebouncedSearch = useRef(debouncedSearchQuery);
+    if (prevDebouncedSearch.current !== debouncedSearchQuery) {
+        prevDebouncedSearch.current = debouncedSearchQuery;
+        setCurrentPage(1);
+    }
+
     // Cargar usuarios al montar el componente solo si no se pasan como props
     useEffect(() => {
         if (!shouldUseExternal) {
@@ -73,9 +81,7 @@ export const UsersTable: React.FC<UsersTableProps> = ({
     }, [users, debouncedSearchQuery]);
 
     // Reset página cuando cambian los filtros (usar debounced para evitar resets innecesarios)
-    useEffect(() => {
-        setCurrentPage(1);
-    }, [debouncedSearchQuery]);
+    // (movido a patrón derived state arriba)
 
     const firstColumn = useFirstColumnConfig();
 

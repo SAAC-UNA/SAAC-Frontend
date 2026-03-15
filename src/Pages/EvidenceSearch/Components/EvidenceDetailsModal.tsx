@@ -37,6 +37,91 @@ interface FilesByUser {
   archivos: FileModel[];
 }
 
+interface BasicInfoProps {
+  criterio: EvidenceSearchResult;
+  evidenciasCount: number;
+}
+
+const BasicInfo: React.FC<BasicInfoProps> = ({ criterio, evidenciasCount }) => (
+  <div className="mb-6">
+    <div className="flex items-center space-x-2 mb-3">
+      <SystemIcons.modal.document className={`text-gris-una-2 ${ICON_SIZES.sm}`} />
+      <h3 className={`font-semibold text-negro-una-2 ${TYPOGRAPHY.modal.subtitle}`}>Información General</h3>
+    </div>
+    <div className="bg-white border border-gray-200 rounded-corner p-4 space-y-3">
+      <div>
+        <span className={`font-semibold text-negro-una-2 ${TYPOGRAPHY.modal.body}`}>Criterio:</span>
+        <p className={`text-gris-una-2 mt-1 ${TYPOGRAPHY.modal.body}`}>
+          {criterio.criterio_nomenclatura} - {criterio.criterio_descripcion}
+        </p>
+      </div>
+      <div>
+        <span className={`font-semibold text-negro-una-2 ${TYPOGRAPHY.modal.body}`}>Evidencias asociadas:</span>
+        <p className={`text-gris-una-2 mt-1 ${TYPOGRAPHY.modal.body}`}>{evidenciasCount}</p>
+      </div>
+    </div>
+  </div>
+);
+
+interface RecursosProps {
+  evidencias: EvidenceSearchResult[];
+  filesByEvidencia: Map<number, FilesByUser[]>;
+  loadingFiles: boolean;
+  onDelete: (fileId: number) => Promise<void>;
+  onUpload: (evidenciaId: number, group: ResponsableGroup) => void;
+}
+
+const Recursos: React.FC<RecursosProps> = ({ evidencias, filesByEvidencia, loadingFiles, onDelete, onUpload }) => {
+  const entries: EvidenciaEntry[] = evidencias.map(ev => ({
+    evidencia: {
+      id: ev.evidencia_id,
+      nomenclatura: ev.nomenclatura,
+      descripcion: ev.descripcion,
+    },
+    groups: filesByEvidencia.get(ev.evidencia_id) ?? [],
+  }));
+  return (
+    <div className="mb-6">
+      <div className="flex items-center space-x-2 mb-3">
+        <SystemIcons.interface.link className={`text-gris-una-2 ${ICON_SIZES.sm}`} />
+        <h3 className={`font-semibold text-negro-una-2 ${TYPOGRAPHY.modal.subtitle}`}>Responsables y Recursos</h3>
+      </div>
+      <Accordion
+        entries={entries}
+        loading={loadingFiles}
+        onDelete={onDelete}
+        onUpload={onUpload}
+      />
+    </div>
+  );
+};
+
+interface RolesAccesoProps { criterio: EvidenceSearchResult; }
+
+const RolesAcceso: React.FC<RolesAccesoProps> = ({ criterio }) => {
+  if (!criterio.roles_acceso || criterio.roles_acceso.length === 0) return null;
+  return (
+    <div className="mb-6">
+      <div className="flex items-center space-x-2 mb-3">
+        <SystemIcons.users.roles className={`text-gris-una-2 ${ICON_SIZES.sm}`} />
+        <h3 className={`font-semibold text-negro-una-2 ${TYPOGRAPHY.modal.subtitle}`}>Roles con Acceso</h3>
+      </div>
+      <div className="bg-white border border-gray-200 rounded-corner p-4">
+        <div className="flex flex-wrap gap-2">
+          {criterio.roles_acceso.map((rol) => (
+            <span
+              key={rol}
+              className={`inline-flex px-3 py-1 font-medium rounded-full bg-azul-una/10 text-azul-una ${TYPOGRAPHY.badge}`}
+            >
+              {rol}
+            </span>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+};
+
 export const EvidenceDetailsModal: React.FC<EvidenceDetailsModalProps> = ({
   isOpen,
   onClose,
@@ -177,85 +262,6 @@ export const EvidenceDetailsModal: React.FC<EvidenceDetailsModalProps> = ({
     );
   }
 
-  const renderBasicInfo = () => {
-    if (!criterio) return null;
-    return (
-    <div className="mb-6">
-      <div className="flex items-center space-x-2 mb-3">
-        <SystemIcons.modal.document className={`text-gris-una-2 ${ICON_SIZES.sm}`} />
-        <h3 className={`font-semibold text-negro-una-2 ${TYPOGRAPHY.modal.subtitle}`}>Información General</h3>
-      </div>
-
-      <div className="bg-white border border-gray-200 rounded-corner p-4 space-y-3">
-        <div>
-          <span className={`font-semibold text-negro-una-2 ${TYPOGRAPHY.modal.body}`}>Criterio:</span>
-          <p className={`text-gris-una-2 mt-1 ${TYPOGRAPHY.modal.body}`}>
-            {criterio.criterio_nomenclatura} - {criterio.criterio_descripcion}
-          </p>
-        </div>
-        <div>
-          <span className={`font-semibold text-negro-una-2 ${TYPOGRAPHY.modal.body}`}>Evidencias asociadas:</span>
-          <p className={`text-gris-una-2 mt-1 ${TYPOGRAPHY.modal.body}`}>{evidencias.length}</p>
-        </div>
-      </div>
-    </div>
-    );
-  };
-
-
-
-  const renderRecursos = () => {
-    const entries: EvidenciaEntry[] = evidencias.map(ev => ({
-      evidencia: {
-        id: ev.evidencia_id,
-        nomenclatura: ev.nomenclatura,
-        descripcion: ev.descripcion,
-      },
-      groups: filesByEvidencia.get(ev.evidencia_id) ?? [],
-    }));
-
-    return (
-      <div className="mb-6">
-        <div className="flex items-center space-x-2 mb-3">
-          <SystemIcons.interface.link className={`text-gris-una-2 ${ICON_SIZES.sm}`} />
-          <h3 className={`font-semibold text-negro-una-2 ${TYPOGRAPHY.modal.subtitle}`}>Responsables y Recursos</h3>
-        </div>
-        <Accordion
-          entries={entries}
-          loading={loadingFiles}
-          onDelete={handleDeleteFile}
-          onUpload={handleOpenUpload}
-        />
-      </div>
-    );
-  };
-/*TODO revisar esta sección, si realmente se usa */
-  const renderRolesAcceso = () => {
-    if (!criterio || !criterio.roles_acceso || criterio.roles_acceso.length === 0) return null;
-
-    return (
-      <div className="mb-6">
-        <div className="flex items-center space-x-2 mb-3">
-          <SystemIcons.users.roles className={`text-gris-una-2 ${ICON_SIZES.sm}`} />
-          <h3 className={`font-semibold text-negro-una-2 ${TYPOGRAPHY.modal.subtitle}`}>Roles con Acceso</h3>
-        </div>
-        
-        <div className="bg-white border border-gray-200 rounded-corner p-4">
-          <div className="flex flex-wrap gap-2">
-            {criterio.roles_acceso.map((rol, index) => (
-              <span
-                key={index}
-                className={`inline-flex px-3 py-1 font-medium rounded-full bg-azul-una/10 text-azul-una ${TYPOGRAPHY.badge}`}
-              >
-                {rol}
-              </span>
-            ))}
-          </div>
-        </div>
-      </div>
-    );
-  };
-
   return (
     <DetailsModal
       isOpen={isOpen}
@@ -268,10 +274,15 @@ export const EvidenceDetailsModal: React.FC<EvidenceDetailsModalProps> = ({
       cancelLabel="Cerrar"
       size="lg"
     >
-      {renderBasicInfo()}
-      {renderRecursos()}
-      {renderRolesAcceso()}
-
+      {criterio && <BasicInfo criterio={criterio} evidenciasCount={evidencias.length} />}
+      <Recursos
+        evidencias={evidencias}
+        filesByEvidencia={filesByEvidencia}
+        loadingFiles={loadingFiles}
+        onDelete={handleDeleteFile}
+        onUpload={handleOpenUpload}
+      />
+      {criterio && <RolesAcceso criterio={criterio} />}
     </DetailsModal>
   );
 };

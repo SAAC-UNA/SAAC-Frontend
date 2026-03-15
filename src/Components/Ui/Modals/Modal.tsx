@@ -208,6 +208,7 @@ export const Modal: React.FC<UnifiedModalProps> = React.memo(({
       <div className="fixed inset-0 z-10 w-screen overflow-y-auto">
         <div 
           className="flex min-h-full items-center justify-center p-4"
+          role="presentation"
           onClick={handleOverlayClick}
         >
           <DialogPanel
@@ -327,27 +328,3 @@ export const Modal: React.FC<UnifiedModalProps> = React.memo(({
     </Dialog>
   );
 });
-
-/**
- * Hook para manejar estado de modales
- */
-export const useModal = (initialState = false) => {
-  const [isOpen, setIsOpen] = React.useState(initialState);
-
-  const openModal = () => setIsOpen(true);
-  const closeModal = () => setIsOpen(false);
-  const toggleModal = () => setIsOpen(!isOpen);
-
-  return {
-    isOpen,
-    open: openModal,
-    close: closeModal,
-    toggle: toggleModal,
-    // Aliases para compatibilidad
-    openModal,
-    closeModal,
-    toggleModal
-  };
-};
-
-export default Modal;

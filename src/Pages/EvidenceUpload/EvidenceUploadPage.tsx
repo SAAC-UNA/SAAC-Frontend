@@ -11,7 +11,7 @@ import { SystemIcons } from '@/Components/Ui/Icons/SystemIcons';
 import { Tooltip, TooltipTrigger, TooltipContent } from '@/Components/Ui/Feedback/Tooltip';
 import { FileUploader, FileUploadProgress, FileList } from '@/Components/Ui/Upload';
 import type { FileUploadProgressItem } from '@/Components/Ui/Upload';
-import LinkInput from '@/Components/Ui/Forms/LinkInput';
+import { LinkInput } from '@/Components/Ui/Forms/LinkInput';
 import { fileService } from '@/Services/FileService';
 import { useToast } from '@/Context/ToastContext';
 import { getModuleInfo } from '@/Constants/ModuleInfo';
@@ -39,19 +39,18 @@ export const EvidenceUploadPage: React.FC<EvidenceUploadPageProps> = ({
   const evidenciaNombre = propEvidenciaNombre ?? searchParams.get('nombre') ?? 'Evidencia';
   
   // Estados
-  const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
-  const [selectedLinks, setSelectedLinks] = useState<string[]>([]);
-  const [uploadProgress, setUploadProgress] = useState<FileUploadProgressItem[]>([]);
-  const [isUploading, setIsUploading] = useState(false);
+  const [uploadState, setUploadState] = useState<{ selectedFiles: File[]; selectedLinks: string[]; uploadProgress: FileUploadProgressItem[]; isUploading: boolean; uploaderKey: number }>({ selectedFiles: [], selectedLinks: [], uploadProgress: [], isUploading: false, uploaderKey: 0 });
+  const selectedFiles = uploadState.selectedFiles;
+  const selectedLinks = uploadState.selectedLinks;
+  const uploadProgress = uploadState.uploadProgress;
+  const isUploading = uploadState.isUploading;
+  const uploaderKey = uploadState.uploaderKey;
   const [uploadedFiles, setUploadedFiles] = useState<FileModel[]>([]);
   const [loadingFiles, setLoadingFiles] = useState(false);
-  const [uploaderKey, setUploaderKey] = useState(0); // Key para forzar re-render de componentes
 
   // Cargar archivos existentes al montar el componente
   useEffect(() => {
-    if (evidenciaId) {
-      loadFiles();
-    }
+    loadFiles();
   }, [evidenciaId]);
 
   const loadFiles = async () => {
@@ -73,7 +72,7 @@ export const EvidenceUploadPage: React.FC<EvidenceUploadPageProps> = ({
   };
 
   const handleFilesSelected = (files: File[]) => {
-    setSelectedFiles(files);
+    setUploadState(prev => ({...prev, selectedFiles: files}));
   };
 
   const handleStartUpload = async () => {
@@ -95,7 +94,7 @@ export const EvidenceUploadPage: React.FC<EvidenceUploadPageProps> = ({
       return;
     }
 
-    setIsUploading(true);
+    setUploadState(prev => ({...prev, isUploading: true}));
 
     // Inicializar el progreso con todos los archivos en "pending"
     const initialProgress: FileUploadProgressItem[] = selectedFiles.map(file => ({
@@ -103,7 +102,7 @@ export const EvidenceUploadPage: React.FC<EvidenceUploadPageProps> = ({
       status: 'pending',
       progress: 0
     }));
-    setUploadProgress(initialProgress);
+    setUploadState(prev => ({...prev, uploadProgress: initialProgress}));
 
     try {
       let result;
@@ -117,13 +116,11 @@ export const EvidenceUploadPage: React.FC<EvidenceUploadPageProps> = ({
           evidenciaId,
           procesoId,
           (progress) => {
-            setUploadProgress(prev => 
-              prev.map(item => ({
+            setUploadState(prev => ({...prev, uploadProgress: prev.uploadProgress.map(item => ({
                 ...item,
                 status: item.status === 'pending' ? 'uploading' : item.status,
                 progress: item.status === 'success' || item.status === 'error' ? item.progress : progress
-              }))
-            );
+              }))}));
           }
         );
       } else if (selectedFiles.length > 0) {
@@ -133,13 +130,11 @@ export const EvidenceUploadPage: React.FC<EvidenceUploadPageProps> = ({
           evidenciaId,
           procesoId,
           (progress) => {
-            setUploadProgress(prev => 
-              prev.map(item => ({
+            setUploadState(prev => ({...prev, uploadProgress: prev.uploadProgress.map(item => ({
                 ...item,
                 status: item.status === 'pending' ? 'uploading' : item.status,
                 progress: item.status === 'success' || item.status === 'error' ? item.progress : progress
-              }))
-            );
+              }))}));
           }
         );
       } else {
@@ -152,8 +147,7 @@ export const EvidenceUploadPage: React.FC<EvidenceUploadPageProps> = ({
       }
 
       // Actualizar estado de cada archivo según el resultado
-      setUploadProgress(prev =>
-        prev.map((item, index) => {
+      setUploadState(prev => ({...prev, uploadProgress: prev.uploadProgress.map((item, index) => {
           // Buscar si este archivo está en successful o failed
           const successFile = result.successful.find(
             (_, i) => i === index && index < result.successful.length
@@ -188,8 +182,7 @@ export const EvidenceUploadPage: React.FC<EvidenceUploadPageProps> = ({
             };
           }
           return item;
-        })
-      );
+        })}));
 
       // Mostrar resumen de la subida
       const successCount = result.successful.length;
@@ -226,11 +219,9 @@ export const EvidenceUploadPage: React.FC<EvidenceUploadPageProps> = ({
 
       // Limpiar selección si todos fueron exitosos
       if (failedCount === 0) {
-        setSelectedFiles([]);
-        setSelectedLinks([]);
-        setUploaderKey(prev => prev + 1); // Cambiar key para forzar re-render
+        setUploadState(prev => ({ ...prev, selectedFiles: [], selectedLinks: [], uploaderKey: prev.uploaderKey + 1 }));
         setTimeout(() => {
-          setUploadProgress([]);
+          setUploadState(prev => ({ ...prev, uploadProgress: [] }));
         }, 3000); // Mantener el progreso visible por 3 segundos
       }
     } catch (error: any) {
@@ -242,23 +233,18 @@ export const EvidenceUploadPage: React.FC<EvidenceUploadPageProps> = ({
       });
       
       // Marcar todos como error
-      setUploadProgress(prev =>
-        prev.map(item => ({
+      setUploadState(prev => ({...prev, uploadProgress: prev.uploadProgress.map(item => ({
           ...item,
           status: 'error',
           error: error.message || 'Error desconocido'
-        }))
-      );
+        }))}));
     } finally {
-      setIsUploading(false);
+      setUploadState(prev => ({...prev, isUploading: false}));
     }
   };
 
   const handleCancelUpload = () => {
-    setSelectedFiles([]);
-    setSelectedLinks([]);
-    setUploadProgress([]);
-    setUploaderKey(prev => prev + 1); // Cambiar key para forzar re-render
+    setUploadState(prev => ({ ...prev, selectedFiles: [], selectedLinks: [], uploadProgress: [], uploaderKey: prev.uploaderKey + 1 }));
   };
 
   const handleDeleteFile = async (fileId: number) => {
@@ -315,7 +301,7 @@ export const EvidenceUploadPage: React.FC<EvidenceUploadPageProps> = ({
             
             <LinkInput
               key={`link-input-${uploaderKey}`}
-              onLinksChange={setSelectedLinks}
+              onLinksChange={(links) => setUploadState(prev => ({...prev, selectedLinks: links}))}
               disabled={isUploading}
               className="w-full"
             />

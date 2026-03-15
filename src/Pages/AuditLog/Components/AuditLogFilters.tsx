@@ -35,17 +35,17 @@ export const AuditLogFilters: React.FC<AuditLogFiltersProps> = ({
   });
 
   // Catálogos desde el backend
-  const [users, setUsers] = useState<BackendUser[]>([]);
-  const [modules, setModules] = useState<string[]>([]);
-  const [actionTypes, setActionTypes] = useState<ActionType[]>([]);
-  const [loadingCatalogs, setLoadingCatalogs] = useState(false);
+  const [catalogState, setCatalogState] = useState<{ users: BackendUser[]; modules: string[]; actionTypes: ActionType[]; loading: boolean }>({ users: [], modules: [], actionTypes: [], loading: true });
+  const users = catalogState.users;
+  const modules = catalogState.modules;
+  const actionTypes = catalogState.actionTypes;
+  const loadingCatalogs = catalogState.loading;
 
   /**
    * Cargar catálogos de módulos y tipos de acción al montar el componente
    */
   useEffect(() => {
     const loadCatalogs = async () => {
-      setLoadingCatalogs(true);
       try {
         // Cargar cada catálogo independientemente para que si uno falla, los otros se carguen
         const [usersResult, modulesResult, actionTypesResult] = await Promise.allSettled([
@@ -54,27 +54,19 @@ export const AuditLogFilters: React.FC<AuditLogFiltersProps> = ({
           AuditLogService.getActionTypes(),
         ]);
 
-        if (usersResult.status === 'fulfilled') {
-          setUsers(usersResult.value);
-        } else {
-          console.error('Error cargando usuarios:', usersResult.reason);
-        }
+        setCatalogState({
+          users: usersResult.status === 'fulfilled' ? usersResult.value : [],
+          modules: modulesResult.status === 'fulfilled' ? modulesResult.value : [],
+          actionTypes: actionTypesResult.status === 'fulfilled' ? actionTypesResult.value : [],
+          loading: false,
+        });
 
-        if (modulesResult.status === 'fulfilled') {
-          setModules(modulesResult.value);
-        } else {
-          console.error('Error cargando módulos:', modulesResult.reason);
-        }
-
-        if (actionTypesResult.status === 'fulfilled') {
-          setActionTypes(actionTypesResult.value);
-        } else {
-          console.error('Error cargando tipos de acción:', actionTypesResult.reason);
-        }
+        if (usersResult.status === 'rejected') console.error('Error cargando usuarios:', usersResult.reason);
+        if (modulesResult.status === 'rejected') console.error('Error cargando módulos:', modulesResult.reason);
+        if (actionTypesResult.status === 'rejected') console.error('Error cargando tipos de acción:', actionTypesResult.reason);
       } catch (error) {
         console.error('Error inesperado cargando catálogos:', error);
-      } finally {
-        setLoadingCatalogs(false);
+        setCatalogState(prev => ({ ...prev, loading: false }));
       }
     };
 

@@ -188,4 +188,3 @@ export function FilterButton<T = string>({
   );
 }
 
-export default FilterButton;

@@ -9,7 +9,7 @@ import { LoadingSpinner } from '@/Components/Ui/Feedback/Loading';
 import { cn } from '@/Utils/ClassNames';
 import { userService, type User } from '@/Services/UserService';
 import { roleService, type Role } from '@/Services/RoleService';
-import evidenceAssignmentService from '@/Services/EvidenceAssignmentService';
+import { evidenceAssignmentService } from '@/Services/EvidenceAssignmentService';
 import type { 
   EvidenceAssignmentFormData, 
   ValidationErrors,
@@ -27,36 +27,34 @@ export const ReviewStep: React.FC<ReviewStepProps> = ({
   formData,
   updateFormData
 }) => {
-  const [loading, setLoading] = useState(true);
-  const [validatingDuplicates, setValidatingDuplicates] = useState(false);
-  const [evidences, setEvidences] = useState<Evidence[]>([]);
-  const [users, setUsers] = useState<User[]>([]);
-  const [roles, setRoles] = useState<Role[]>([]);
-  const [duplicates, setDuplicates] = useState<DuplicateAssignment[]>([]);
+  const [dataState, setDataState] = useState<{ loading: boolean; validatingDuplicates: boolean; evidences: Evidence[]; users: User[]; roles: Role[]; duplicates: DuplicateAssignment[] }>({ loading: true, validatingDuplicates: false, evidences: [], users: [], roles: [], duplicates: [] });
+  const loading = dataState.loading;
+  const validatingDuplicates = dataState.validatingDuplicates;
+  const evidences = dataState.evidences;
+  const users = dataState.users;
+  const roles = dataState.roles;
+  const duplicates = dataState.duplicates;
   
   // Convertir excludedUsers de array a Set para operaciones más rápidas
   const excludedUsersSet = useMemo(() => new Set(formData.excludedUsers || []), [formData.excludedUsers]);
   
   // Estados para secciones colapsables
-  const [expandedEvidences, setExpandedEvidences] = useState(false);
-  const [expandedDestinators, setExpandedDestinators] = useState(false);
-  const [expandedActiveDuplicates, setExpandedActiveDuplicates] = useState(true); // Tabla amarilla
-  const [expandedCompletedDuplicates, setExpandedCompletedDuplicates] = useState(true); // Tabla azul
+  const [expanded, setExpanded] = useState({ evidences: false, destinators: false, activeDuplicates: true, completedDuplicates: true });
+  const expandedEvidences = expanded.evidences;
+  const expandedDestinators = expanded.destinators;
+  const expandedActiveDuplicates = expanded.activeDuplicates;
+  const expandedCompletedDuplicates = expanded.completedDuplicates;
 
   // Cargar datos necesarios para mostrar nombres
   useEffect(() => {
     const loadData = async () => {
       try {
-        setLoading(true);
         const [evidencesData, usersData, rolesData] = await Promise.all([
           evidenceAssignmentService.getAllEvidences(),
           userService.listUsers(),
           roleService.listarRoles()
         ]);
 
-        setEvidences(evidencesData);
-        
-        // Transformar users de backend format
         const transformedUsers: User[] = usersData.map(user => ({
           id: user.id,
           name: user.name,
@@ -64,13 +62,11 @@ export const ReviewStep: React.FC<ReviewStepProps> = ({
           status: user.status === 'active' ? 'active' : 'inactive',
           role: user.roles?.[0]?.name
         }));
-        setUsers(transformedUsers);
-        
-        setRoles(rolesData.data || []);
+
+        setDataState(prev => ({ ...prev, loading: false, evidences: evidencesData, users: transformedUsers, roles: rolesData.data || [] }));
       } catch (error) {
         console.error('Error loading review data:', error);
-      } finally {
-        setLoading(false);
+        setDataState(prev => ({ ...prev, loading: false }));
       }
     };
 
@@ -80,50 +76,30 @@ export const ReviewStep: React.FC<ReviewStepProps> = ({
   // Validar duplicados cuando se seleccionan usuarios
   useEffect(() => {
     const validateDuplicates = async () => {
-      // Solo validar si hay proceso, evidencia y usuarios seleccionados
-      if (!formData.proceso_id || formData.selectedEvidences.length === 0 || formData.selectedUsers.length === 0) {
-        setDuplicates([]);
-        updateFormData({ excludedUsers: [] });
-        return;
-      }
+      setDataState(prev => ({ ...prev, validatingDuplicates: true, duplicates: [] }));
 
-      try {
-        setValidatingDuplicates(true);
-        const allDuplicates: DuplicateAssignment[] = [];
+      let newDuplicates: DuplicateAssignment[] = [];
 
-        // Validar cada evidencia seleccionada
-        for (const evidenciaId of formData.selectedEvidences) {
-          const response = await evidenceAssignmentService.validateDuplicates({
-            proceso_id: formData.proceso_id,
-            evidencia_id: evidenciaId,
-            usuarios: formData.selectedUsers
-          });
-
-          if (response.tiene_duplicados) {
-            allDuplicates.push(...response.duplicados);
+      if (formData.proceso_id && formData.selectedEvidences.length > 0 && formData.selectedUsers.length > 0) {
+        try {
+          for (const evidenciaId of formData.selectedEvidences) {
+            const response = await evidenceAssignmentService.validateDuplicates({
+              proceso_id: formData.proceso_id,
+              evidencia_id: evidenciaId,
+              usuarios: formData.selectedUsers
+            });
+            if (response.tiene_duplicados) {
+              newDuplicates.push(...response.duplicados);
+            }
           }
+        } catch (error: any) {
+          console.error('Error validating duplicates:', error);
+          newDuplicates = [];
         }
-
-        setDuplicates(allDuplicates);
-        
-        // Auto-excluir TODOS los duplicados (activos y completados) por defecto
-        // Los usuarios deberán marcar explícitamente si quieren reasignar completados
-        const allDuplicatesIds = allDuplicates.map(d => d.usuario_id);
-        
-        if (allDuplicatesIds.length > 0) {
-          updateFormData({ excludedUsers: allDuplicatesIds });
-        } else {
-          updateFormData({ excludedUsers: [] });
-        }
-      } catch (error: any) {
-        console.error('Error validating duplicates:', error);
-        // No bloquear el flujo si el endpoint no está disponible
-        // El backend rechazará duplicados al confirmar de todas formas
-        setDuplicates([]);
-        updateFormData({ excludedUsers: [] });
-      } finally {
-        setValidatingDuplicates(false);
       }
+
+      setDataState(prev => ({ ...prev, duplicates: newDuplicates, validatingDuplicates: false }));
+      updateFormData({ excludedUsers: newDuplicates.map(d => d.usuario_id) });
     };
 
     validateDuplicates();
@@ -307,7 +283,7 @@ export const ReviewStep: React.FC<ReviewStepProps> = ({
               {duplicates.filter(d => d.estado !== 'completado').length > 0 && (
                 <div className="relative overflow-hidden rounded-corner border-2 border-yellow-300 bg-gradient-to-br from-yellow-50 to-yellow-100">
                   <button
-                    onClick={() => setExpandedActiveDuplicates(!expandedActiveDuplicates)}
+                    onClick={() => setExpanded(prev => ({...prev, activeDuplicates: !prev.activeDuplicates}))}
                     className="w-full relative z-10 p-6 text-left hover:bg-yellow-100/50 transition-all"
                   >
                     <div className="flex items-center justify-between">
@@ -348,8 +324,8 @@ export const ReviewStep: React.FC<ReviewStepProps> = ({
                           <tbody>
                             {duplicates
                               .filter(d => d.estado !== 'completado')
-                              .map((duplicate, index) => (
-                                <tr key={`active-${duplicate.usuario_id}-${index}`} className="border-b border-yellow-200 bg-yellow-50/50">
+                              .map((duplicate) => (
+                                <tr key={`active-${duplicate.usuario_id}`} className="border-b border-yellow-200 bg-yellow-50/50">
                                   <td className="py-3 px-4 text-yellow-900 font-medium">{duplicate.usuario_nombre}</td>
                                   <td className="py-3 px-4">
                                     <span className={cn(
@@ -383,7 +359,7 @@ export const ReviewStep: React.FC<ReviewStepProps> = ({
               {duplicates.filter(d => d.estado === 'completado').length > 0 && (
                 <div className="relative overflow-hidden rounded-corner border-2 border-blue-300 bg-gradient-to-br from-blue-50 to-blue-100">
                   <button
-                    onClick={() => setExpandedCompletedDuplicates(!expandedCompletedDuplicates)}
+                    onClick={() => setExpanded(prev => ({...prev, completedDuplicates: !prev.completedDuplicates}))}
                     className="w-full relative z-10 p-6 text-left hover:bg-blue-100/50 transition-all"
                   >
                     <div className="flex items-center justify-between">
@@ -458,8 +434,8 @@ export const ReviewStep: React.FC<ReviewStepProps> = ({
                           <tbody>
                             {duplicates
                               .filter(d => d.estado === 'completado')
-                              .map((duplicate, index) => (
-                                <tr key={`completed-${duplicate.usuario_id}-${index}`} className="border-b border-blue-200 hover:bg-blue-50">
+                              .map((duplicate) => (
+                                <tr key={`completed-${duplicate.usuario_id}`} className="border-b border-blue-200 hover:bg-blue-50">
                                   <td className="py-3 px-4">
                                     <input
                                       type="checkbox"
@@ -496,7 +472,7 @@ export const ReviewStep: React.FC<ReviewStepProps> = ({
             <div className="relative overflow-hidden rounded-corner border-2 border-gris-una/30 bg-gradient-to-br from-gris-una/5 to-gris-una/10">
               {/*<div className="absolute top-0 right-0 w-32 h-32 bg-negro-una/20 rounded-full -mr-16 -mt-16 opacity-20"></div>*/}
               <button
-                onClick={() => setExpandedEvidences(!expandedEvidences)}
+                onClick={() => setExpanded(prev => ({...prev, evidences: !prev.evidences}))}
                 className="w-full relative z-10 p-6 text-left hover:bg-gris-una/5 transition-all"
               >
                 <div className="flex items-center justify-between">
@@ -537,7 +513,7 @@ export const ReviewStep: React.FC<ReviewStepProps> = ({
             <div className="relative overflow-hidden rounded-corner border-2 border-gris-una/30 bg-gradient-to-br from-gris-una/5 to-gris-una/10">
               {/*<div className="absolute top-0 right-0 w-32 h-32 bg-azul-una/20 rounded-full -mr-16 -mt-16 opacity-20"></div>*/}
               <button
-                onClick={() => setExpandedDestinators(!expandedDestinators)}
+                onClick={() => setExpanded(prev => ({...prev, destinators: !prev.destinators}))}
                 className="w-full relative z-10 p-6 text-left hover:bg-gris-una/5 transition-all"
               >
                 <div className="flex items-center justify-between">

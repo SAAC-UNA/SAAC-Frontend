@@ -99,7 +99,7 @@ export const Pagination: React.FC<PaginationProps> = ({
           if (page === '...') {
             return (
               <span
-                key={`dots-${index}`}
+                key={`dots-after-${pageNumbers[index - 1]}`}
                 className={`flex items-center justify-center w-8 h-8 text-gris-una ${TYPOGRAPHY.pagination}`}
               >
                 ···
@@ -142,4 +142,3 @@ export const Pagination: React.FC<PaginationProps> = ({
   );
 };
 
-export default Pagination;

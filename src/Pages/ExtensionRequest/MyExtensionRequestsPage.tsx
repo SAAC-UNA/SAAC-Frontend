@@ -24,13 +24,15 @@ export const MyExtensionRequestsPage: React.FC = () => {
   // Obtener información del módulo desde ModuleInfo
   const moduleInfo = getContextualInfo('extension_requests', 'my');
   
-  const [solicitudes, setSolicitudes] = useState<ExtensionRequest[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const [pageState, setPageState] = useState<{ solicitudes: ExtensionRequest[]; loading: boolean; error: string | null }>({ solicitudes: [], loading: true, error: null });
+  const solicitudes = pageState.solicitudes;
+  const loading = pageState.loading;
+  const error = pageState.error;
   const [searchQuery, setSearchQuery] = useState('');
-  const [filtroEstado, setFiltroEstado] = useState<ExtensionRequestStatus | 'todos'>('todos');
-  const [currentPage, setCurrentPage] = useState(1);
-  
+  const [filterState, setFilterState] = useState<{ filtroEstado: ExtensionRequestStatus | 'todos'; currentPage: number }>({ filtroEstado: 'todos', currentPage: 1 });
+  const filtroEstado = filterState.filtroEstado;
+  const currentPage = filterState.currentPage;
+
   // Estado para el modal de detalles
   const [selectedSolicitud, setSelectedSolicitud] = useState<ExtensionRequest | null>(null);
 
@@ -48,8 +50,7 @@ export const MyExtensionRequestsPage: React.FC = () => {
 
   const loadSolicitudes = async () => {
     try {
-      setLoading(true);
-      setError(null);
+      setPageState(prev => ({...prev, loading: true, error: null}));
       
       const filters = {
         page: currentPage,
@@ -57,17 +58,17 @@ export const MyExtensionRequestsPage: React.FC = () => {
       };
 
       const response = await extensionRequestService.getMyRequests(filters);
-      setSolicitudes(response.data);
+      setPageState(prev => ({...prev, solicitudes: response.data}));
     } catch (error: any) {
       const errorMessage = error.message || 'No se pudieron cargar las solicitudes';
-      setError(errorMessage);
+      setPageState(prev => ({...prev, error: errorMessage}));
       showToast({
         type: 'error',
         title: 'Error al Cargar',
         message: errorMessage
       });
     } finally {
-      setLoading(false);
+      setPageState(prev => ({...prev, loading: false}));
     }
   };
 
@@ -98,8 +99,7 @@ export const MyExtensionRequestsPage: React.FC = () => {
               options={estadoOptions}
               value={filtroEstado}
               onChange={(value) => {
-                setFiltroEstado(value);
-                setCurrentPage(1);
+                setFilterState({ filtroEstado: value, currentPage: 1 });
               }}
             />
           </div>

@@ -290,4 +290,3 @@ class EvidenceAssignmentService {
 }
 
 export const evidenceAssignmentService = new EvidenceAssignmentService();
-export default evidenceAssignmentService;

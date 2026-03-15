@@ -49,21 +49,27 @@ export const DatePicker: React.FC<DatePickerProps> = ({
 }) => {
   const [currentDate, setCurrentDate] = useState(() => {
     if (value) {
-      // Parsear fecha en zona local
       const dateParts = value.split('-');
       return new Date(parseInt(dateParts[0]), parseInt(dateParts[1]) - 1, parseInt(dateParts[2]));
     }
     return new Date();
   });
   
-  const [selectedDate, setSelectedDate] = useState<Date | null>(() => {
+  // selectedDate se deriva del prop value (componente controlado)
+  const selectedDate: Date | null = value ? (() => {
+    const dateParts = value.split('-');
+    return new Date(parseInt(dateParts[0]), parseInt(dateParts[1]) - 1, parseInt(dateParts[2]));
+  })() : null;
+
+  // Cuando value cambia externamente, sincronizar currentDate para mostrar el mes correcto
+  const prevValueRef = useRef(value);
+  if (prevValueRef.current !== value) {
+    prevValueRef.current = value;
     if (value) {
-      // Parsear fecha en zona local
       const dateParts = value.split('-');
-      return new Date(parseInt(dateParts[0]), parseInt(dateParts[1]) - 1, parseInt(dateParts[2]));
+      setCurrentDate(new Date(parseInt(dateParts[0]), parseInt(dateParts[1]) - 1, parseInt(dateParts[2])));
     }
-    return null;
-  });
+  }
   
   const [showPicker, setShowPicker] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -83,17 +89,7 @@ export const DatePicker: React.FC<DatePickerProps> = ({
   }, []);
 
   // Actualizar fecha seleccionada cuando cambia el valor
-  useEffect(() => {
-    if (value) {
-      // Parsear fecha en zona local
-      const dateParts = value.split('-');
-      const newDate = new Date(parseInt(dateParts[0]), parseInt(dateParts[1]) - 1, parseInt(dateParts[2]));
-      setSelectedDate(newDate);
-      setCurrentDate(newDate);
-    } else {
-      setSelectedDate(null);
-    }
-  }, [value]);
+  // (ahora se deriva directamente de value prop - ver selectedDate arriba)
 
   const getDaysInMonth = (date: Date) => {
     return new Date(date.getFullYear(), date.getMonth() + 1, 0).getDate();
@@ -166,7 +162,6 @@ export const DatePicker: React.FC<DatePickerProps> = ({
       }
     }
     
-    setSelectedDate(selected);
     // Formatear fecha en zona local para evitar desfase
     const year = selected.getFullYear();
     const month = String(selected.getMonth() + 1).padStart(2, '0');
@@ -177,7 +172,6 @@ export const DatePicker: React.FC<DatePickerProps> = ({
   };
 
   const handleClearDate = () => {
-    setSelectedDate(null);
     onChange?.('');
     setShowPicker(false);
   };
@@ -365,8 +359,8 @@ export const DatePicker: React.FC<DatePickerProps> = ({
                   className={`${TYPOGRAPHY.form.input} font-semibold text-negro-una bg-white border border-gris-una/20 rounded px-2 py-1 hover:border-gris-una/40 focus:outline-none focus:ring-1 focus:ring-azul-una/30 cursor-pointer`}
                   aria-label="Seleccionar mes"
                 >
-                  {monthNames.map((month, index) => (
-                    <option key={index} value={index}>
+                  {monthNames.map((month) => (
+                    <option key={month} value={monthNames.indexOf(month)}>
                       {month}
                     </option>
                   ))}
@@ -410,7 +404,7 @@ export const DatePicker: React.FC<DatePickerProps> = ({
             <div className="grid grid-cols-7 gap-1 mb-3">
               {days.map((day, idx) => (
                 <button
-                  key={idx}
+                  key={day ? day.toString() : `empty-${idx}`}
                   type="button"
                   onClick={() => day && !isDateDisabled(day) && handleSelectDate(day)}
                   disabled={!day || isDateDisabled(day)}

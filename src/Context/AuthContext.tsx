@@ -3,7 +3,7 @@
  * Maneja el estado del usuario autenticado y sus permisos
  */
 
-import { createContext, useContext, useState, useEffect } from 'react';
+import { createContext, useContext, useState } from 'react';
 import type { ReactNode } from 'react';
 import { authService, type User, type Career } from '@/Services/AuthService';
 
@@ -40,14 +40,8 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
     if (!saved) return null;
     try { return JSON.parse(saved); } catch { localStorage.removeItem('auth_user'); return null; }
   });
-  const [loading, setLoading] = useState(false);
+  const loading = false;
   const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    // Nothing to load — user is already hydrated from localStorage above.
-    // Keep this effect only to set loading false for backwards compatibility.
-    setLoading(false);
-  }, []);
 
   const login = async (credentials: LoginCredentials): Promise<void> => {
     try {

@@ -61,40 +61,6 @@ export interface UnreadCountResponse {
 }
 
 /**
- * Configuración de colores por tipo de evento
- * Sincronizado con el backend
- */
-export const NOTIFICATION_COLORS: Record<TipoEvento, string> = {
-  asignacion_evidencia: 'blue',
-  carga_archivo: 'green',
-  vencimiento_plazo: 'red',
-  devolucion_observacion: 'orange',
-  aprobacion_criterio: 'green',
-  aprobacion_evidencia: 'green',
-  rechazo_evidencia: 'red',
-  solicitud_ampliacion: 'purple',
-  respuesta_ampliacion: 'blue',
-  comentario_nuevo: 'teal',
-  actualizacion_sistema: 'gray',
-};
-
-/**
- * Mapeo de iconos del backend a SystemIcons
- */
-export const NOTIFICATION_ICONS: Record<string, string> = {
-  assignment: 'clipboard-check',
-  upload: 'cloud',
-  alarm: 'clock',
-  undo: 'back',
-  check_circle: 'check-circle',
-  cancel: 'x-circle',
-  schedule: 'clock',
-  reply: 'back',
-  comment: 'document',
-  notifications: 'information-circle',
-};
-
-/**
  * Etiquetas legibles para tipos de evento
  */
 export const TIPO_EVENTO_LABELS: Record<TipoEvento, string> = {

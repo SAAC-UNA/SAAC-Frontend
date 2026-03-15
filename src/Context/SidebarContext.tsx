@@ -52,7 +52,7 @@ export const SidebarProvider: React.FC<SidebarProviderProps> = ({
   const [openMobile, setOpenMobile] = useState(false);
 
   // Estado interno del sidebar
-  const [_open, _setOpen] = useState(defaultOpen);
+  const [_open, _setOpen] = useState(() => defaultOpen);
   const open = openProp ?? _open;
   
   const setOpen = useCallback(

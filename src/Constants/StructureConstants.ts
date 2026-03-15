@@ -23,7 +23,7 @@ export const ELEMENT_TYPE_LABELS = {
    Define qué elementos pueden ser hijos de otros elementos
  */
 
-export const HIERARCHY_RULES = {
+const HIERARCHY_RULES = {
   [ElementType.UNIVERSITY]: { 
     canHaveChildren: [ElementType.CAMPUS],
     mustHaveParent: null,
@@ -126,65 +126,6 @@ export const getDescriptionMaxLength = (type: ElementType): number => {
  * Define comportamientos y límites de la UI
  */
 
-export const UI_CONFIG = {
-
-  /** Duración por defecto de toasts/notificaciones (ms) */
-  TOAST_DURATION: 5000,
-
-  /** Número máximo de toasts simultáneos */
-  TOAST_MAX_COUNT: 5,
-
-  /** Tiempo de espera para auto-guardado de formularios (ms) */
-  FORM_AUTO_SAVE_DELAY: 2000,
-
-  /** Retraso para búsqueda con debounce (ms) */
-  SEARCH_DEBOUNCE_DELAY: 300,
-
-  /** Tiempo límite para peticiones API (ms) */
-  API_TIMEOUT: 30000,
-
-  /** Número de elementos por página en listados */
-  ITEMS_PER_PAGE: 20,
-
-  /** Número máximo de niveles a mostrar en árbol expandido */
-  MAX_TREE_DEPTH: 5
-} as const;
-
-/**
-   Mensajes de usuario para operaciones CRUD
-   Mensajes estandarizados para mostrar al usuario
- */
-
-export const USER_MESSAGES = {
-  SUCCESS: {
-    CREATE: 'Elemento creado exitosamente',
-    UPDATE: 'Elemento actualizado exitosamente', 
-    DELETE: 'Elemento eliminado exitosamente',
-    DEACTIVATE: 'Elemento desactivado exitosamente'
-  },
-  ERROR: {
-    CREATE: 'Error al crear el elemento',
-    UPDATE: 'Error al actualizar el elemento',
-    DELETE: 'Error al eliminar el elemento',
-    DEACTIVATE: 'Error al desactivar el elemento',
-    FETCH: 'Error al cargar los datos',
-    VALIDATION: 'Por favor corrige los errores en el formulario',
-    NETWORK: 'Error de conexión. Verifica tu conexión a internet',
-    PERMISSION: 'No tienes permisos para realizar esta acción'
-  },
-  CONFIRMATION: {
-    DELETE: '¿Estás seguro de que deseas eliminar este elemento?',
-    DEACTIVATE: '¿Estás seguro de que deseas desactivar este elemento?',
-    UNSAVED_CHANGES: 'Tienes cambios sin guardar. ¿Deseas continuar?'
-  },
-  WARNING: {
-    HAS_CHILDREN: 'Este elemento tiene elementos dependientes',
-    CANNOT_DELETE: 'No se puede eliminar un elemento con dependencias',
-    DUPLICATE_NAME: 'Ya existe un elemento con este nombre en este nivel',
-    DUPLICATE_NOMENCLATURE: 'Ya existe un elemento con este código'
-  }
-} as const;
-
 /**
  * Define la estructura de configuración para un formulario de un tipo de elemento.
  */
@@ -243,17 +184,6 @@ export const FORM_CONFIG: Record<ElementType, FormConfig> = {
 };
 
 /**
- * Utilidad para obtener tipos de elementos que pueden ser hijos de un padre específico
-   @param parentType Tipo del elemento padre
-   @returns Array de tipos que pueden ser hijos
- */
-
-export const getChildrenTypes = (parentType: ElementType): ElementType[] => {
-  const children = HIERARCHY_RULES[parentType]?.canHaveChildren;
-  return children ? [...children] : [];
-};
-
-/**
  * Utilidad para obtener el tipo de elemento padre requerido
    @param childType Tipo del elemento hijo
    @returns Tipo del elemento padre o null si no requiere padre
@@ -261,18 +191,4 @@ export const getChildrenTypes = (parentType: ElementType): ElementType[] => {
 
 export const getRequiredParentType = (childType: ElementType): ElementType | null => {
   return HIERARCHY_RULES[childType]?.mustHaveParent || null;
-};
-
-/**
- * Utilidad para validar si una relación padre-hijo es válida
-   @param parentType Tipo del elemento padre
-   @param childType Tipo del elemento hijo
-   @returns true si la relación es válida
- */
-
-export const isValidParentChildRelation = (parentType: ElementType, childType: ElementType): boolean => {
-  const rules = HIERARCHY_RULES[parentType];
-  return rules?.canHaveChildren ? 
-  (rules.canHaveChildren as ElementType[]).includes(childType) : 
-  false;
 };

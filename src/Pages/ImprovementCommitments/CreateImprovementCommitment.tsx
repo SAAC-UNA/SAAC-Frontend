@@ -37,10 +37,12 @@ const CreateImprovementCommitment: React.FC = () => {
   const navigate = useNavigate();
   
   const [currentStep, setCurrentStep] = useState(1);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [showSuccessModal, setShowSuccessModal] = useState(false);
-  const [showConfirmModal, setShowConfirmModal] = useState(false);
-  const [errors, setErrors] = useState<ValidationErrors>({});
+  const [submitState, setSubmitState] = useState<{ isSubmitting: boolean; errors: ValidationErrors }>({ isSubmitting: false, errors: {} });
+  const isSubmitting = submitState.isSubmitting;
+  const errors = submitState.errors;
+  const [modals, setModals] = useState({ showSuccessModal: false, showConfirmModal: false });
+  const showSuccessModal = modals.showSuccessModal;
+  const showConfirmModal = modals.showConfirmModal;
 
   const [formData, setFormData] = useState<CompromisoFormData>({
     ciclo_acreditacion_id: null,
@@ -129,7 +131,7 @@ const CreateImprovementCommitment: React.FC = () => {
         break;
     }
     
-    setErrors(newErrors);
+    setSubmitState(prev => ({...prev, errors: newErrors}));
     return Object.keys(newErrors).length === 0;
   };
 
@@ -139,7 +141,7 @@ const CreateImprovementCommitment: React.FC = () => {
   const handleNext = () => {
     if (validateStep(currentStep)) {
       setCurrentStep(prev => Math.min(prev + 1, steps.length));
-      setErrors({});
+      setSubmitState(prev => ({...prev, errors: {}}));
     } else {
       showToast({ type: 'error', title: 'Por favor, complete todos los campos obligatorios' });
     }
@@ -154,7 +156,7 @@ const CreateImprovementCommitment: React.FC = () => {
       return;
     }
 
-    setIsSubmitting(true);
+    setSubmitState(prev => ({...prev, isSubmitting: true}));
     
     try {
       // Preparar selecciones (criterios)
@@ -182,8 +184,7 @@ const CreateImprovementCommitment: React.FC = () => {
       // Crear compromiso
       await improvementCommitmentService.crearCompromiso(payload);
       
-      setShowConfirmModal(false);
-      setShowSuccessModal(true);
+      setModals({ showSuccessModal: true, showConfirmModal: false });
     } catch (error: any) {
       console.error('Error completo:', error);
       
@@ -213,16 +214,16 @@ const CreateImprovementCommitment: React.FC = () => {
           mappedErrors.general = Object.values(backendErrors).flat().join(', ');
         }
 
-        setErrors(mappedErrors);
+        setSubmitState(prev => ({...prev, errors: mappedErrors}));
       }
       
       showToast({
         type: 'error',
         title: error.response?.data?.message || error.message || 'Error al crear el compromiso'
       });
-      setShowConfirmModal(false);
+      setModals(prev => ({...prev, showConfirmModal: false}));
     } finally {
-      setIsSubmitting(false);
+      setSubmitState(prev => ({...prev, isSubmitting: false}));
     }
   };
 
@@ -234,7 +235,7 @@ const CreateImprovementCommitment: React.FC = () => {
       showToast({ type: 'error', title: 'Hay errores en el formulario' });
       return;
     }
-    setShowConfirmModal(true);
+    setModals(prev => ({...prev, showConfirmModal: true}));
   };
 
 
@@ -242,40 +243,14 @@ const CreateImprovementCommitment: React.FC = () => {
    * Manejar cierre del modal de éxito
    */
   const handleSuccessClose = () => {
-    setShowSuccessModal(false);
+    setModals(prev => ({...prev, showSuccessModal: false}));
     navigate('/compromisos/listar');
   };
 
   /**
    * Renderizar el contenido del paso actual
    */
-  const renderStepContent = () => {
-    switch (currentStep) {
-      case 1:
-        return (
-          <CreationStep
-            formData={formData}
-            updateFormData={updateFormData}
-            agregarCriterio={addCriterion}
-            eliminarCriterio={deleteCriterion}
-            actualizarCriterio={updateCriterion}
-            errors={errors}
-          />
-        );
-      case 2:
-        return (
-          <ReviewStep
-            formData={formData}
-            updateFormData={updateFormData}
-            onSubmit={handleSubmit}
-            isSubmitting={isSubmitting}
-            errors={errors}
-          />
-        );
-      default:
-        return null;
-    }
-  };
+  // (inline en el JSX, ver abajo)
 
   return (
     <>
@@ -310,7 +285,24 @@ const CreateImprovementCommitment: React.FC = () => {
 
           {/* Step Content */}
           <div className="min-h-[400px]">
-            {renderStepContent()}
+            {currentStep === 1 ? (
+              <CreationStep
+                formData={formData}
+                updateFormData={updateFormData}
+                agregarCriterio={addCriterion}
+                eliminarCriterio={deleteCriterion}
+                actualizarCriterio={updateCriterion}
+                errors={errors}
+              />
+            ) : currentStep === 2 ? (
+              <ReviewStep
+                formData={formData}
+                updateFormData={updateFormData}
+                onSubmit={handleSubmit}
+                isSubmitting={isSubmitting}
+                errors={errors}
+              />
+            ) : null}
           </div>
 
           {/* Navigation */}
@@ -320,7 +312,7 @@ const CreateImprovementCommitment: React.FC = () => {
               onClick={() => {
                 if (currentStep === 2) {
                   setCurrentStep(1);
-                  setErrors({});
+                  setSubmitState(prev => ({...prev, errors: {}}));
                 } else {
                   navigate('/compromisos/listar');
                 }
@@ -354,7 +346,7 @@ const CreateImprovementCommitment: React.FC = () => {
       {/* Modal de Confirmación */}
       <CreateConfirmationModal
         isOpen={showConfirmModal}
-        onClose={() => setShowConfirmModal(false)}
+        onClose={() => setModals(prev => ({...prev, showConfirmModal: false}))}
         onConfirm={handleSubmit}
         title="Confirmar creación de compromiso"
         message="¿Está seguro de que desea crear este compromiso de mejora? Se asignarán todas las evidencias y notificaciones a los encargados."

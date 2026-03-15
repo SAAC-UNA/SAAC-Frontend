@@ -28,7 +28,7 @@ export const UserProfileHeader: React.FC<UserProfileHeaderProps> = ({ className 
   const [isOpen, setIsOpen] = useState(false);
   const [isNotificationOpen, setIsNotificationOpen] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [prevCount, setPrevCount] = useState(0);
+  const prevCountRef = useRef(0);
   const [shouldShake, setShouldShake] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const notificationRef = useRef<HTMLDivElement>(null);
@@ -51,12 +51,14 @@ export const UserProfileHeader: React.FC<UserProfileHeaderProps> = ({ className 
 
   // Detectar nuevas notificaciones para animar
   useEffect(() => {
-    if (unreadCount > prevCount && prevCount > 0) {
+    if (unreadCount > prevCountRef.current && prevCountRef.current > 0) {
+      prevCountRef.current = unreadCount;
       setShouldShake(true);
-      setTimeout(() => setShouldShake(false), 500);
+      const timer = setTimeout(() => setShouldShake(false), 500);
+      return () => clearTimeout(timer);
     }
-    setPrevCount(unreadCount);
-  }, [unreadCount, prevCount]);
+    prevCountRef.current = unreadCount;
+  }, [unreadCount]);
 
   const handleMouseEnter = () => {
     if (hoverTimeoutRef.current) {
@@ -195,4 +197,3 @@ export const UserProfileHeader: React.FC<UserProfileHeaderProps> = ({ className 
   );
 };
 
-export default UserProfileHeader;

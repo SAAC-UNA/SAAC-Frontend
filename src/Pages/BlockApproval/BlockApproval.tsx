@@ -50,36 +50,30 @@ interface Proceso {
 
 const BlockApproval: React.FC = () => {
   const moduleInfo = getModuleInfo('block_approval');
-  const [isLoading, setIsLoading] = useState(true);
-  const [criteria, setCriteria] = useState<Criterio[]>([]);
-  const [evidences, setEvidences] = useState<Evidencia[]>([]);
-  const [processes, setProcesses] = useState<Proceso[]>([]);
-  const [selectedProcesoId, setSelectedProcesoId] = useState<number | null>(null);
-  
-  // Estado para el modal de aprobación
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [modalAction, setModalAction] = useState<'aprobar' | 'rechazar'>('aprobar');
-  const [selectedCriterion, setSelectedCriterion] = useState<Criterio | null>(null);
-  
-  // Estado para paginación
-  const [currentPage, setCurrentPage] = useState(1);
+  const [dataState, setDataState] = useState<{ isLoading: boolean; criteria: Criterio[]; evidences: Evidencia[]; processes: Proceso[] }>({ isLoading: true, criteria: [], evidences: [], processes: [] });
+  const isLoading = dataState.isLoading;
+  const criteria = dataState.criteria;
+  const evidences = dataState.evidences;
+  const processes = dataState.processes;
+  // Estado para filtros y UI
+  const [filterState, setFilterState] = useState<{ selectedProcesoId: number | null; currentPage: number; approvalFilter: ApprovalStatus | 'todos'; expandedCriteria: Set<number> }>({ selectedProcesoId: null, currentPage: 1, approvalFilter: 'pendiente', expandedCriteria: new Set() });
+  const selectedProcesoId = filterState.selectedProcesoId;
+  const currentPage = filterState.currentPage;
+  const approvalFilter = filterState.approvalFilter;
+  const expandedCriteria = filterState.expandedCriteria;
   const itemsPerPage = TABLE_PAGE_SIZE.standard;
-  
-  // Estado para evidencias expandidas
-  const [expandedCriteria, setExpandedCriteria] = useState<Set<number>>(new Set());
-  
-  // Estado para modal de éxito
-  const [successModalState, setSuccessModalState] = useState<{
-    isOpen: boolean;
-    action: 'aprobar' | 'rechazar';
-  }>({ isOpen: false, action: 'aprobar' });
 
-  // Estado para filtro de aprobación
-  const [approvalFilter, setApprovalFilter] = useState<ApprovalStatus | 'todos'>('pendiente');
+  // Estado para modales de aprobación y éxito
+  const [approvalState, setApprovalState] = useState<{ isOpen: boolean; action: 'aprobar' | 'rechazar'; criterion: Criterio | null; successOpen: boolean }>({ isOpen: false, action: 'aprobar', criterion: null, successOpen: false });
+  const isModalOpen = approvalState.isOpen;
+  const modalAction = approvalState.action;
+  const selectedCriterion = approvalState.criterion;
+  const successModalState = { isOpen: approvalState.successOpen, action: approvalState.action };
 
   // Estado para modal de archivos
-  const [filesModalOpen, setFilesModalOpen] = useState(false);
-  const [selectedEvidencia, setSelectedEvidencia] = useState<Evidencia | null>(null);
+  const [filesModal, setFilesModal] = useState<{ open: boolean; evidencia: Evidencia | null }>({ open: false, evidencia: null });
+  const filesModalOpen = filesModal.open;
+  const selectedEvidencia = filesModal.evidencia;
 
   // Opciones para el filtro de aprobación
   const filtroOptions: FilterOption<ApprovalStatus | 'todos'>[] = [
@@ -127,13 +121,16 @@ const BlockApproval: React.FC = () => {
         };
       });
       
-          setCriteria(criteriaWithStatus);
-          setEvidences(evidencesArray);
-      setProcesses(processesArray);
+      setDataState(prev => ({
+        ...prev,
+        criteria: criteriaWithStatus,
+        evidences: evidencesArray,
+        processes: processesArray,
+        isLoading: false
+      }));
     } catch (error) {
       console.error('Error:', error);
-    } finally {
-      setIsLoading(false);
+      setDataState(prev => ({ ...prev, isLoading: false }));
     }
   };
 
@@ -142,19 +139,18 @@ const BlockApproval: React.FC = () => {
   };
   
   const toggleEvidences = (criterionId: number) => {
-    setExpandedCriteria(prev => {
+    setFilterState(prev => {
       const newSet = new Set<number>();
       // Si el criterio ya está expandido, ciérralo. Si no, ábrelo y cierra los demás
-      if (!prev.has(criterionId)) {
+      if (!prev.expandedCriteria.has(criterionId)) {
         newSet.add(criterionId);
       }
-      return newSet;
+      return {...prev, expandedCriteria: newSet};
     });
   };
 
   const handleViewFiles = (evidencia: Evidencia) => {
-    setSelectedEvidencia(evidencia);
-    setFilesModalOpen(true);
+    setFilesModal({ open: true, evidencia });
   };
 
   // Filter criteria by approval status
@@ -172,19 +168,15 @@ const BlockApproval: React.FC = () => {
 
   // Reset page when filtered criteria changes
   useEffect(() => {
-    setCurrentPage(1);
+    setFilterState(prev => ({...prev, currentPage: 1}));
   }, [filteredCriteria.length]);
 
   const handleAprobar = (criterio: Criterio) => {
-    setSelectedCriterion(criterio);
-    setModalAction('aprobar');
-    setIsModalOpen(true);
+    setApprovalState(prev => ({ ...prev, isOpen: true, action: 'aprobar', criterion: criterio }));
   };
 
   const handleRechazar = (criterio: Criterio) => {
-    setSelectedCriterion(criterio);
-    setModalAction('rechazar');
-    setIsModalOpen(true);
+    setApprovalState(prev => ({ ...prev, isOpen: true, action: 'rechazar', criterion: criterio }));
   };
 
   const handleConfirmAction = async (comentario: string) => {
@@ -202,15 +194,8 @@ const BlockApproval: React.FC = () => {
 
       console.log('Respuesta del backend:', response.data);
 
-      // Cerrar modal de confirmación
-      setIsModalOpen(false);
-      setSelectedCriterion(null);
-      
-      // Mostrar modal de éxito
-      setSuccessModalState({
-        isOpen: true,
-        action: modalAction
-      });
+      // Cerrar modal de confirmación y mostrar modal de éxito
+      setApprovalState(prev => ({ ...prev, isOpen: false, criterion: null, successOpen: true }));
       
       // Recargar datos para actualizar el estado
       await fetchData();
@@ -223,8 +208,7 @@ const BlockApproval: React.FC = () => {
       alert(errorMessage);
       
       // Cerrar modal de confirmación
-      setIsModalOpen(false);
-      setSelectedCriterion(null);
+      setApprovalState(prev => ({ ...prev, isOpen: false, criterion: null }));
     }
   };
 
@@ -248,7 +232,7 @@ const BlockApproval: React.FC = () => {
                 value={selectedProcesoId?.toString() || ''}
                 placeholder="Seleccione un proceso"
                 size="sm"
-                onChange={(value) => setSelectedProcesoId(value ? Number(value) : null)}
+                onChange={(value) => setFilterState(prev => ({...prev, selectedProcesoId: value ? Number(value) : null}))}
                 options={processes
                   .filter(proceso => 
                     proceso.accreditation_cycle?.career_campus?.career?.nombre && 
@@ -266,7 +250,7 @@ const BlockApproval: React.FC = () => {
               tooltipText="Filtrar por estado"
               options={filtroOptions}
               value={approvalFilter}
-              onChange={setApprovalFilter}
+              onChange={(value) => setFilterState(prev => ({...prev, approvalFilter: value}))}
             />
           </div>
 
@@ -434,7 +418,7 @@ const BlockApproval: React.FC = () => {
                   <Pagination
                     currentPage={currentPage}
                     totalPages={totalPages}
-                    onPageChange={setCurrentPage}
+                    onPageChange={(value) => setFilterState(prev => ({...prev, currentPage: value}))}
                   />
                 </div>
               )}
@@ -447,10 +431,7 @@ const BlockApproval: React.FC = () => {
       {selectedCriterion && (
         <ApprovalModal
           isOpen={isModalOpen}
-          onClose={() => {
-            setIsModalOpen(false);
-            setSelectedCriterion(null);
-          }}
+          onClose={() => setApprovalState(prev => ({ ...prev, isOpen: false, criterion: null }))}
           onConfirm={handleConfirmAction}
           action={modalAction}
           criterio={selectedCriterion}
@@ -461,7 +442,7 @@ const BlockApproval: React.FC = () => {
       {/* Modal de éxito */}
       <SuccessModal
         isOpen={successModalState.isOpen}
-        onClose={() => setSuccessModalState({ isOpen: false, action: 'aprobar' })}
+        onClose={() => setApprovalState(prev => ({ ...prev, successOpen: false }))}
         title={successModalState.action === 'aprobar' ? 'Criterio Aprobado' : 'Criterio Rechazado'}
         message={`El criterio ha sido ${successModalState.action === 'aprobar' ? 'aprobado' : 'rechazado'} exitosamente.`}
       />
@@ -469,10 +450,7 @@ const BlockApproval: React.FC = () => {
       {/* Modal de archivos asociados */}
       <EvidenceFilesModal
         isOpen={filesModalOpen}
-        onClose={() => {
-          setFilesModalOpen(false);
-          setSelectedEvidencia(null);
-        }}
+        onClose={() => setFilesModal({ open: false, evidencia: null })}
         evidencia={selectedEvidencia}
       />
     </ScreenContainer>

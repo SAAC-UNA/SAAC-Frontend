@@ -202,4 +202,3 @@ class ImprovementCommitmentService {
 // Exportar instancia única del servicio
 export const improvementCommitmentService = new ImprovementCommitmentService();
 
-export default improvementCommitmentService;

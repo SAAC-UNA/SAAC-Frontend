@@ -46,4 +46,3 @@ export const MainContent: React.FC<MainContentProps> = ({
 };
 
 // Alias para mantener compatibilidad durante la transición
-export const SidebarInset = MainContent;

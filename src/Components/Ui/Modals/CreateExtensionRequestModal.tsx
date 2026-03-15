@@ -37,15 +37,13 @@ export const CreateExtensionRequestModal: React.FC<CreateExtensionRequestModalPr
 
   // Actualizar formData cuando cambia evidenciaAsignacionId
   useEffect(() => {
-    if (isOpen) {
-      setFormData({
-        evidencia_asignacion_id: evidenciaAsignacionId,
-        motivo: '',
-        fecha_sugerida: ''
-      });
-      setErrors({});
-    }
-  }, [isOpen, evidenciaAsignacionId]);
+    setFormData({
+      evidencia_asignacion_id: evidenciaAsignacionId,
+      motivo: '',
+      fecha_sugerida: ''
+    });
+    setErrors({});
+  }, [evidenciaAsignacionId]);
 
   const handleClose = () => {
     if (!isSubmitting) {

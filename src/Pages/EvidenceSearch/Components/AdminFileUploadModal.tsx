@@ -37,43 +37,40 @@ export const AdminFileUploadModal: React.FC<AdminFileUploadModalProps> = ({
 }) => {
   const { showToast } = useToast();
 
-  const [tab, setTab] = useState<Tab>('archivos');
-  const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
-  const [selectedLinks, setSelectedLinks] = useState<string[]>([]);
+  const [modalState, setModalState] = useState<{
+    tab: Tab; selectedFiles: File[]; selectedLinks: string[];
+    resolvedId: number; resolving: boolean; error: boolean;
+  }>({ tab: 'archivos', selectedFiles: [], selectedLinks: [], resolvedId: procesoIdProp, resolving: false, error: false });
+  const tab = modalState.tab;
+  const selectedFiles = modalState.selectedFiles;
+  const selectedLinks = modalState.selectedLinks;
+  const resolvedProcesoId = modalState.resolvedId;
+  const resolvingProceso = modalState.resolving;
+  const resolveError = modalState.error;
   const [uploading, setUploading] = useState(false);
-  const [resolvedProcesoId, setResolvedProcesoId] = useState<number>(procesoIdProp);
-  const [resolvingProceso, setResolvingProceso] = useState(false);
-  const [resolveError, setResolveError] = useState(false);
 
   // Cuando abre el modal, resolver proceso_id si aún no se tiene
   useEffect(() => {
     if (!isOpen) return;
-    setSelectedFiles([]);
-    setSelectedLinks([]);
-    setResolveError(false);
-    setTab('archivos');
+    const resolve = async () => {
+      let resolvedId = procesoIdProp && procesoIdProp !== 0 ? procesoIdProp : 0;
+      let hasError = false;
 
-    if (procesoIdProp && procesoIdProp !== 0) {
-      setResolvedProcesoId(procesoIdProp);
-      return;
-    }
-
-    // Obtener desde las asignaciones de la evidencia
-    setResolvingProceso(true);
-    axiosInstance
-      .get(`/evidencias/${evidenciaId}/asignaciones`)
-      .then((res) => {
-        const data = res.data?.data ?? res.data ?? [];
-        const first = Array.isArray(data) ? data[0] : null;
-        const pid = first?.proceso_id ?? first?.proceso?.proceso_id ?? 0;
-        if (pid) {
-          setResolvedProcesoId(pid);
-        } else {
-          setResolveError(true);
+      if (!resolvedId) {
+        try {
+          const res = await axiosInstance.get(`/evidencias/${evidenciaId}/asignaciones`);
+          const data = res.data?.data ?? res.data ?? [];
+          const first = Array.isArray(data) ? data[0] : null;
+          resolvedId = first?.proceso_id ?? first?.proceso?.proceso_id ?? 0;
+          hasError = !resolvedId;
+        } catch {
+          hasError = true;
         }
-      })
-      .catch(() => setResolveError(true))
-      .finally(() => setResolvingProceso(false));
+      }
+
+      setModalState({ tab: 'archivos', selectedFiles: [], selectedLinks: [], resolvedId, resolving: false, error: hasError });
+    };
+    resolve();
   }, [isOpen, evidenciaId, procesoIdProp]);
 
   const canSubmit = (): boolean => {
@@ -171,7 +168,7 @@ export const AdminFileUploadModal: React.FC<AdminFileUploadModalProps> = ({
             <button
               key={t}
               type="button"
-              onClick={() => setTab(t)}
+              onClick={() => setModalState(prev => ({ ...prev, tab: t }))}
               className={`px-4 py-2 capitalize ${TYPOGRAPHY.modal.body} border-b-2 transition-colors ${
                 tab === t
                   ? 'border-azul-una text-azul-una font-semibold'
@@ -200,18 +197,18 @@ export const AdminFileUploadModal: React.FC<AdminFileUploadModalProps> = ({
           <>
             {tab === 'archivos' && (
               <DropZone
-                onFilesSelected={setSelectedFiles}
+                onFilesSelected={(files) => setModalState(prev => ({ ...prev, selectedFiles: files }))}
                 disabled={uploading}
               />
             )}
             {tab === 'archivos' && selectedFiles.length > 0 && (
               <ul className={`space-y-1 ${TYPOGRAPHY.modal.body}`}>
                 {selectedFiles.map((f, i) => (
-                  <li key={i} className="flex items-center justify-between text-negro-una-2">
+                  <li key={f.name} className="flex items-center justify-between text-negro-una-2">
                     <span className="truncate max-w-xs">{f.name}</span>
                     <button
                       type="button"
-                      onClick={() => setSelectedFiles(prev => prev.filter((_, j) => j !== i))}
+                      onClick={() => setModalState(prev => ({ ...prev, selectedFiles: prev.selectedFiles.filter((_, j) => j !== i) }))}
                       className="text-gris-una hover:text-rojo-una ml-2 flex-shrink-0"
                     >
                       ✕
@@ -223,7 +220,7 @@ export const AdminFileUploadModal: React.FC<AdminFileUploadModalProps> = ({
 
             {tab === 'enlaces' && (
               <LinkInput
-                onLinksChange={setSelectedLinks}
+                onLinksChange={(links) => setModalState(prev => ({ ...prev, selectedLinks: links }))}
                 disabled={uploading}
               />
             )}

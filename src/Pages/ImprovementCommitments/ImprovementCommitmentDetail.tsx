@@ -29,29 +29,24 @@ export const ImprovementCommitmentDetail: React.FC = () => {
   const { id } = useParams();
   const navigate = useNavigate();
 
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [compromiso, setCompromiso] = useState<CompromisoMejora | null>(null);
-  const [criterionDetail, setCriterionDetail] = useState<any | null>(null);
-  const [showCriterionModal, setShowCriterionModal] = useState(false);
+  const [fetchState, setFetchState] = useState<{ loading: boolean; error: string | null; compromiso: CompromisoMejora | null }>({ loading: true, error: null, compromiso: null });
+  const loading = fetchState.loading;
+  const error = fetchState.error;
+  const compromiso = fetchState.compromiso;
+  const [criterionModal, setCriterionModal] = useState<{ criterionDetail: any | null; showCriterionModal: boolean }>({ criterionDetail: null, showCriterionModal: false });
+  const criterionDetail = criterionModal.criterionDetail;
+  const showCriterionModal = criterionModal.showCriterionModal;
   const [evidenceDetails, setEvidenceDetails] = useState<Record<number, any>>({});
   const [currentPage, setCurrentPage] = useState(1);
 
   useEffect(() => {
     const fetchDetalle = async () => {
       try {
-        setLoading(true);
-        setError(null);
-        if (!id) {
-          setError('ID de compromiso no válido.');
-          return;
-        }
+        if (!id) throw new Error('ID de compromiso no válido.');
         const data = await improvementCommitmentService.obtenerCompromiso(Number(id));
-        setCompromiso(data);
+        setFetchState({ loading: false, error: null, compromiso: data });
       } catch (err: any) {
-        setError(err?.response?.data?.message || 'No se pudo cargar el compromiso.');
-      } finally {
-        setLoading(false);
+        setFetchState({ loading: false, error: err?.response?.data?.message || err?.message || 'No se pudo cargar el compromiso.', compromiso: null });
       }
     };
 
@@ -119,8 +114,7 @@ export const ImprovementCommitmentDetail: React.FC = () => {
   };
 
   const handleOpenCriterion = (item: any) => {
-    setCriterionDetail(item);
-    setShowCriterionModal(true);
+    setCriterionModal({ criterionDetail: item, showCriterionModal: true });
   };
 
   const criterionId = criterionDetail?.criterio?.criterio_id;
@@ -342,8 +336,7 @@ export const ImprovementCommitmentDetail: React.FC = () => {
         <Modal
           isOpen={showCriterionModal}
           onClose={() => {
-            setShowCriterionModal(false);
-            setCriterionDetail(null);
+            setCriterionModal({ criterionDetail: null, showCriterionModal: false });
           }}
           title={`Detalle: ${criterionDetail?.criterio?.nomenclatura || 'Criterio'}`}
           size="lg"
@@ -449,4 +442,3 @@ export const ImprovementCommitmentDetail: React.FC = () => {
   );
 };
 
-export default ImprovementCommitmentDetail;

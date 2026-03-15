@@ -15,7 +15,7 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { CreateRoleForm } from './Components/CreateRoleForm';
-import { LoadingSpinner, Button, BackendErrorAlert, ScreenContainer, PageHeader } from '@/components/Ui/Index';
+import { Button, ScreenContainer, PageHeader } from '@/components/Ui/Index';
 import { CreateConfirmationModal } from '@/Components/Ui/Modals/CreateConfirmationModal';
 import { EditConfirmationModal } from '@/Components/Ui/Modals/EditConfirmationModal';
 import { SuccessModal } from '@/Components/Ui/Modals/SuccessModal';
@@ -43,9 +43,10 @@ const RoleForm: React.FC = () => {
   const isEditing = !!id;
   
   // Estados para el rol (solo en modo edición)
-  const [role, setRole] = useState<Role | null>(null);
-  const [isLoadingRole, setIsLoadingRole] = useState(isEditing);
-  const [loadError, setLoadError] = useState<string | null>(null);
+  const [roleState, setRoleState] = useState<{ role: Role | null; loading: boolean; error: string | null }>(
+    { role: null, loading: isEditing, error: null }
+  );
+  const role = roleState.role;
 
   // Estado para detectar cambios en el formulario
   const [hasChanges, setHasChanges] = useState(false);
@@ -77,20 +78,11 @@ const RoleForm: React.FC = () => {
     if (isEditing && id) {
       const loadRole = async () => {
         try {
-          setIsLoadingRole(true);
           const roleData = await getRoleById(parseInt(id));
-          
-          if (roleData) {
-            setRole(roleData);
-            setLoadError(null);
-          } else {
-            setLoadError('Rol no encontrado');
-          }
+          setRoleState({ role: roleData || null, loading: false, error: roleData ? null : 'Rol no encontrado' });
         } catch (err) {
           console.error('Error al cargar rol:', err);
-          setLoadError('Error al cargar los datos del rol');
-        } finally {
-          setIsLoadingRole(false);
+          setRoleState({ role: null, loading: false, error: 'Error al cargar los datos del rol' });
         }
       };
 
@@ -98,14 +90,11 @@ const RoleForm: React.FC = () => {
     }
   }, [id, isEditing, getRoleById]);
 
-  /**
-   * Obtiene la información del módulo según el modo
-   */
-  const getModuleInfo = () => {
+  const moduleInfo = (() => {
     const action = isEditing ? 'edit' : 'create';
     const itemName = role?.name;
     return getModuleInfoWithDynamicTitle('roles', action, itemName);
-  };
+  })();
 
   /**
    * Maneja el envío del formulario (crear o editar)
@@ -182,45 +171,9 @@ const RoleForm: React.FC = () => {
     return isEditing ? 'Guardar' : 'Crear';
   };
 
-  /**
-   * Renderiza el contenido según el estado
-   */
-  const renderContent = () => {
-    // Estado de carga del rol (solo en modo edición)
-    if (isLoadingRole) {
-      return (
-        <div className="relative py-12 min-h-[400px]">
-          <LoadingSpinner variant="loader" />
-        </div>
-      );
-    }
-
-    // Estado de error al cargar rol (solo en modo edición)
-    if (loadError) {
-      return (
-        <ScreenContainer>
-          <BackendErrorAlert
-            error={loadError}
-            onRetry={() => window.location.reload()}
-          />
-        </ScreenContainer>
-      );
-    }
-
-    // Rol no encontrado (solo en modo edición)
-    if (isEditing && !role) {
-      return (
-        <BackendErrorAlert
-          error="El rol que está buscando no existe o ha sido eliminado."
-          onRetry={() => navigate('/roles/listar')}
-        />
-      );
-    }
-
-    // Formulario normal
-    const moduleInfo = getModuleInfo();
-    
-    return (
+  // Formulario normal
+  return (
+    <>
       <ScreenContainer>
         <PageHeader
           title={moduleInfo.title}
@@ -275,12 +228,6 @@ const RoleForm: React.FC = () => {
         </div>
         </div>  {/* Cierre de LAYOUT.FORM_CONTAINER */}
       </ScreenContainer>
-    );
-  };
-
-  return (
-    <>
-      {renderContent()}
 
       {/* Modal de confirmación - Crear */}
       {!isEditing && (

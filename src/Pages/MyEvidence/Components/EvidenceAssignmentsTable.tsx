@@ -11,9 +11,8 @@
 import React, { useMemo } from 'react';
 import { DataTable, type DataTableColumn } from '@/Components/Ui/Table/DataTable';
 import { TYPOGRAPHY } from '@/Constants/Typography';
-import { TABLE_TRUNCATE } from '@/Constants/TableTruncate';
 import { truncateText } from '@/Utils';
-import { TableActionButton } from '@/Components/index';
+import { TableActionButton } from '@/Components/Ui/Buttons/TableActionButton';
 import { AssignmentStatusBadge } from './AssignmentStatusBadge';
 import type { EvidenceAssignment } from '@/Types/EvidenceAssignmentTypes';
 import { formatDate, isOverdue } from '@/Types/EvidenceAssignmentTypes';

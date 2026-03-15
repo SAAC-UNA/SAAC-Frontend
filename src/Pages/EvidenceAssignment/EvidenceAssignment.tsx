@@ -17,7 +17,7 @@ import type {
   WizardStep, 
   ValidationErrors 
 } from '@/Types/EvidenceAssignment';
-import evidenceAssignmentService from '@/Services/EvidenceAssignmentService';
+import { evidenceAssignmentService } from '@/Services/EvidenceAssignmentService';
 
 // Importar los componentes de cada paso
 import { SelectionStep } from './Components/SelectionStep.tsx';
@@ -27,11 +27,13 @@ import { ReviewStep } from './Components/ReviewStep.tsx';
 const EvidenceAssignment: React.FC = () => {
   const { showToast } = useToast();
   const [currentStep, setCurrentStep] = useState(1);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [errors, setErrors] = useState<ValidationErrors>({});
-  const [showSuccessModal, setShowSuccessModal] = useState(false);
-  const [showConfirmModal, setShowConfirmModal] = useState(false);
-  const [assignedEvidencesCount, setAssignedEvidencesCount] = useState(0);
+  const [submitState, setSubmitState] = useState<{ isSubmitting: boolean; errors: ValidationErrors }>({ isSubmitting: false, errors: {} });
+  const isSubmitting = submitState.isSubmitting;
+  const errors = submitState.errors;
+  const [modalState, setModalState] = useState({ showSuccessModal: false, showConfirmModal: false, assignedEvidencesCount: 0 });
+  const showSuccessModal = modalState.showSuccessModal;
+  const showConfirmModal = modalState.showConfirmModal;
+  const assignedEvidencesCount = modalState.assignedEvidencesCount;
 
   // Obtener información del módulo desde ModuleInfo
   const moduleInfo = getContextualInfo('evidence_assignment', 'wizard');
@@ -101,7 +103,7 @@ const EvidenceAssignment: React.FC = () => {
         return step1Valid && step2Valid;
     }
     
-    setErrors(newErrors);
+    setSubmitState(prev => ({...prev, errors: newErrors}));
     return Object.keys(newErrors).length === 0;
   };
 
@@ -111,7 +113,7 @@ const EvidenceAssignment: React.FC = () => {
   const handleNextStep = () => {
     if (validateStep(currentStep)) {
       setCurrentStep(prev => prev + 1);
-      setErrors({});
+      setSubmitState(prev => ({...prev, errors: {}}));
     }
   };
 
@@ -120,7 +122,7 @@ const EvidenceAssignment: React.FC = () => {
    */
   const handlePreviousStep = () => {
     setCurrentStep(prev => prev - 1);
-    setErrors({});
+    setSubmitState(prev => ({...prev, errors: {}}));
   };
 
   /**
@@ -144,7 +146,7 @@ const EvidenceAssignment: React.FC = () => {
     }
 
     // Mostrar modal de confirmación
-    setShowConfirmModal(true);
+    setModalState(prev => ({...prev, showConfirmModal: true}));
   };
 
   /**
@@ -155,7 +157,7 @@ const EvidenceAssignment: React.FC = () => {
       return; // Evitar múltiples envíos
     }
 
-    setIsSubmitting(true);
+    setSubmitState(prev => ({...prev, isSubmitting: true}));
 
     try {
       // Procesar cada evidencia seleccionada
@@ -177,9 +179,7 @@ const EvidenceAssignment: React.FC = () => {
       }
 
       // Cerrar modal de confirmación y mostrar modal de éxito
-      setShowConfirmModal(false);
-      setAssignedEvidencesCount(formData.selectedEvidences.length);
-      setShowSuccessModal(true);
+      setModalState({ showSuccessModal: true, showConfirmModal: false, assignedEvidencesCount: formData.selectedEvidences.length });
 
       // Resetear formulario
       setFormData({
@@ -193,6 +193,7 @@ const EvidenceAssignment: React.FC = () => {
         excludedUsers: []
       });
       setCurrentStep(1);
+      setSubmitState(prev => ({...prev, errors: {}}));
 
     } catch (error) {
       console.error('Error al crear asignación:', error);
@@ -202,7 +203,7 @@ const EvidenceAssignment: React.FC = () => {
         message: error instanceof Error ? error.message : 'Error desconocido'
       });
     } finally {
-      setIsSubmitting(false);
+      setSubmitState(prev => ({...prev, isSubmitting: false}));
     }
   };
 
@@ -210,7 +211,7 @@ const EvidenceAssignment: React.FC = () => {
    * Cierra el modal de confirmación
    */
   const closeConfirmModal = () => {
-    setShowConfirmModal(false);
+    setModalState(prev => ({...prev, showConfirmModal: false}));
   };
 
   /**
@@ -333,7 +334,7 @@ const EvidenceAssignment: React.FC = () => {
         isOpen={showSuccessModal}
         title="¡Asignación completada!"
         message={`Se asignaron ${assignedEvidencesCount} evidencia(s) exitosamente.`}
-        onClose={() => setShowSuccessModal(false)}
+        onClose={() => setModalState(prev => ({...prev, showSuccessModal: false}))}
         autoClose={true}
       />
     </ScreenContainer>

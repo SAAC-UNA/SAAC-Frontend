@@ -68,9 +68,7 @@ export const CustomSelect: React.FC<CustomSelectProps> = ({
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
-  const [selectedOption, setSelectedOption] = useState<SelectOption | null>(
-    value ? options.find(opt => opt.value === value) || null : null
-  );
+  const selectedOption = value ? options.find(opt => opt.value === value) || null : null;
   const selectRef = useRef<HTMLDivElement>(null);
   const searchInputRef = useRef<HTMLInputElement>(null);
   const generatedId = useId();
@@ -100,19 +98,11 @@ export const CustomSelect: React.FC<CustomSelectProps> = ({
   }, [isOpen, searchable, options.length, minItemsForSearch]);
 
   // Actualizar opción seleccionada cuando cambia el value prop
-  useEffect(() => {
-    if (value) {
-      const option = options.find(opt => opt.value === value);
-      setSelectedOption(option || null);
-    } else {
-      setSelectedOption(null);
-    }
-  }, [value, options]);
+  // (ahora se deriva directamente en render - ver selectedOption arriba)
 
   const handleOptionSelect = (option: SelectOption) => {
     if (option.disabled) return;
     
-    setSelectedOption(option);
     setIsOpen(false);
     onChange?.(option.value);
   };
@@ -486,5 +476,3 @@ export const CustomSelect: React.FC<CustomSelectProps> = ({
     </div>
   );
 };
-
-export default CustomSelect;

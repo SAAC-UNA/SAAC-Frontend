@@ -20,7 +20,7 @@ export const ELEMENT_TYPE_TO_ENDPOINT: Record<ElementType, string> = {
 };
 
 // Mapeo de tipos a nombres de ID en el backend
-export const ELEMENT_TYPE_TO_ID_FIELD: Record<ElementType, string> = {
+const ELEMENT_TYPE_TO_ID_FIELD: Record<ElementType, string> = {
   university: 'universidad_id',
   campus: 'sede_id',
   career: 'carrera_id',
@@ -32,7 +32,7 @@ export const ELEMENT_TYPE_TO_ID_FIELD: Record<ElementType, string> = {
 };
 
 // Mapeo de tipos a campo del padre
-export const ELEMENT_TYPE_TO_PARENT_FIELD: Record<ElementType, string | null> = {
+const ELEMENT_TYPE_TO_PARENT_FIELD: Record<ElementType, string | null> = {
   university: null,
   campus: 'universidad_id',
   career: 'sede_id',

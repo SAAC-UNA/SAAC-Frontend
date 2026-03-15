@@ -190,9 +190,3 @@ export const getNavigationItems = (userRoles?: string | string[]): NavItem[] => 
 
   return items;
 };
-
-/**
- * Items de navegación por defecto (sin filtrar por rol)
- * Usar getNavigationItems() para obtener los items filtrados
- */
-export const navigationItems: NavItem[] = getNavigationItems();

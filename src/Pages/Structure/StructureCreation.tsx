@@ -74,8 +74,9 @@ export const StructureCreation: React.FC = () => {
 
   // Estados de UI
   const [errors, setErrors] = useState<FormErrors>({});
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [availableParents, setAvailableParents] = useState<StructureElement[]>([]);
+  const [uiState, setUiState] = useState<{ isSubmitting: boolean; availableParents: StructureElement[] }>({ isSubmitting: false, availableParents: [] });
+  const isSubmitting = uiState.isSubmitting;
+  const availableParents = uiState.availableParents;
 
   // Estado para el modal de éxito
   const [successModalState, setSuccessModalState] = useState<{
@@ -243,7 +244,7 @@ export const StructureCreation: React.FC = () => {
     }));
 
     // Actualizar padres disponibles
-    setAvailableParents(getAvailableParents(newType));
+    setUiState(prev => ({ ...prev, availableParents: getAvailableParents(newType) }));
   };
 
  /**
@@ -256,7 +257,7 @@ const handleSubmit = async (e: React.FormEvent) => {
     return;
   }
 
-  setIsSubmitting(true);
+  setUiState(prev => ({ ...prev, isSubmitting: true }));
   
   try {
     const success = await createElement(formData);
@@ -273,7 +274,7 @@ const handleSubmit = async (e: React.FormEvent) => {
   } catch (error) {
     console.error('Error creating element:', error);
   } finally {
-    setIsSubmitting(false);
+    setUiState(prev => ({ ...prev, isSubmitting: false }));
   }
 };
 
@@ -286,7 +287,7 @@ const handleSubmit = async (e: React.FormEvent) => {
 
   // Efecto para actualizar padres disponibles cuando cambia el tipo
   useEffect(() => {
-    setAvailableParents(getAvailableParents(formData.type));
+    setUiState(prev => ({ ...prev, availableParents: getAvailableParents(formData.type) }));
   }, [formData.type, elements]);
 
   // Opciones para el select de tipo
@@ -432,5 +433,3 @@ const handleSubmit = async (e: React.FormEvent) => {
     </>
   );
 };
-
-export default StructureCreation;

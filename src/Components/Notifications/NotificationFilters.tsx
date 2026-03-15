@@ -12,6 +12,8 @@ import { CustomSelect } from '@/Components/Ui/Forms/SingleSelect';
 import { TIPO_EVENTO_LABELS } from '@/Types/NotificationTypes';
 import type { NotificationFilters, TipoEvento } from '@/Types/NotificationTypes';
 
+const EMPTY_FILTERS: NotificationFilters = {};
+
 interface NotificationFiltersProps {
   onFilterChange: (filters: NotificationFilters) => void;
   initialFilters?: NotificationFilters;
@@ -19,9 +21,9 @@ interface NotificationFiltersProps {
 
 export const NotificationFiltersComponent: React.FC<NotificationFiltersProps> = ({
   onFilterChange,
-  initialFilters = {},
+  initialFilters = EMPTY_FILTERS,
 }) => {
-  const [filters, setFilters] = useState<NotificationFilters>(initialFilters);
+  const [filters, setFilters] = useState<NotificationFilters>(() => initialFilters);
 
   const handleFilterChange = (key: keyof NotificationFilters, value: any) => {
     const newFilters = { ...filters, [key]: value };

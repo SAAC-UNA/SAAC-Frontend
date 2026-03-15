@@ -156,7 +156,7 @@ export const FileUploadProgress: React.FC<FileUploadProgressProps> = ({
     <div className="w-full space-y-2">
       {files.map((item, index) => (
         <FileProgressItem
-          key={`${item.file.name}-${index}`}
+          key={item.file.name}
           item={item}
           index={index}
           onCancel={onCancel}

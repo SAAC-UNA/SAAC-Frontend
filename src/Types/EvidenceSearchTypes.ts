@@ -168,18 +168,3 @@ export const EVIDENCE_STATUS_BADGE: Record<EvidencePublicationStatus, string> = 
 };
 
 // Mantener compatibilidad con código existente (deprecated - usar EVIDENCE_STATUS_BADGE)
-export const EVIDENCE_STATUS_COLORS: Record<EvidencePublicationStatus, { bg: string; text: string }> = {
-  pendiente: { bg: 'bg-gray-100', text: 'text-gray-800' },
-  en_proceso: { bg: 'bg-yellow-100', text: 'text-yellow-800' },
-  aprobado: { bg: 'bg-verde-light', text: 'text-verde' },
-  rechazado: { bg: 'bg-red-100', text: 'text-red-800' },
-  completado: { bg: 'bg-blue-100', text: 'text-blue-800' },
-  vencido: { bg: 'bg-red-100', text: 'text-red-800' }
-};
-
-export const SORT_FIELD_LABELS: Record<SortField, string> = {
-  fecha_publicacion: 'Fecha de Publicación',
-  criterio: 'Criterio',
-  responsable: 'Responsable',
-  estado: 'Estado'
-};

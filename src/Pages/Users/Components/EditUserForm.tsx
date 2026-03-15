@@ -34,17 +34,16 @@ export const EditUserForm: React.FC<EditUserFormProps> = ({
 }) => {
   
   // Estados para roles
-  const [roles, setRoles] = useState<Role[]>([]);
-  const [selectedRole, setSelectedRole] = useState<string>('');
-  const [isLoadingRoles, setIsLoadingRoles] = useState(true);
-  const [isSaving] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-
-  // Estados para vista previa de permisos
-  const [previewPermissions, setPreviewPermissions] = useState<string[] | BackendPermission[]>([]);
-
-  // Estado para detectar cambios
-  const [hasChanges, setHasChanges] = useState<boolean>(false);
+  const [rolesState, setRolesState] = useState<{ roles: Role[]; isLoadingRoles: boolean; error: string | null }>({ roles: [], isLoadingRoles: true, error: null });
+  const roles = rolesState.roles;
+  const isLoadingRoles = rolesState.isLoadingRoles;
+  const error = rolesState.error;
+  // Estado del formulario
+  const [formState, setFormState] = useState<{ selectedRole: string; previewPermissions: string[] | BackendPermission[]; hasChanges: boolean }>({ selectedRole: '', previewPermissions: [], hasChanges: false });
+  const selectedRole = formState.selectedRole;
+  const previewPermissions = formState.previewPermissions;
+  const hasChanges = formState.hasChanges;
+  const isSaving = false;
 
   // Cargar roles al montar el componente
   useEffect(() => {
@@ -56,7 +55,7 @@ export const EditUserForm: React.FC<EditUserFormProps> = ({
     if (roles.length > 0 && user.role) {
       const currentRole = roles.find(role => role.name === user.role);
       if (currentRole) {
-        setSelectedRole(currentRole.name);
+        setFormState(prev => ({...prev, selectedRole: currentRole.name}));
         updatePermissionsPreview(currentRole.name);
       }
     }
@@ -65,26 +64,23 @@ export const EditUserForm: React.FC<EditUserFormProps> = ({
   // Detectar cambios en el rol seleccionado
   useEffect(() => {
     const roleHasChanged = selectedRole !== '' && selectedRole !== user.role;
-    setHasChanges(roleHasChanged);
+    setFormState(prev => ({...prev, hasChanges: roleHasChanged}));
   }, [selectedRole, user.role]);
 
   /**
    * Cargar roles disponibles
    */
   const loadRoles = async () => {
-    setIsLoadingRoles(true);
-    setError(null);
+    setRolesState(prev => ({ ...prev, isLoadingRoles: true, error: null }));
 
     try {
       const response = await roleService.listarRoles();
       if (response.data) {
-        setRoles(response.data);
+        setRolesState({ roles: response.data, isLoadingRoles: false, error: null });
       }
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Error cargando roles';
-      setError(errorMessage);
-    } finally {
-      setIsLoadingRoles(false);
+      setRolesState(prev => ({ ...prev, isLoadingRoles: false, error: errorMessage }));
     }
   };
 
@@ -93,15 +89,15 @@ export const EditUserForm: React.FC<EditUserFormProps> = ({
    */
   const updatePermissionsPreview = (roleName: string) => {
     if (!roleName) {
-      setPreviewPermissions([]);
+      setFormState(prev => ({...prev, previewPermissions: []}));
       return;
     }
 
     const role = roles.find(r => r.name === roleName);
     if (role) {
-      setPreviewPermissions(role.permissions);
+      setFormState(prev => ({...prev, previewPermissions: role.permissions}));
     } else {
-      setPreviewPermissions([]);
+      setFormState(prev => ({...prev, previewPermissions: []}));
     }
   };
 
@@ -109,7 +105,7 @@ export const EditUserForm: React.FC<EditUserFormProps> = ({
    * Manejar cambio en la selección de rol
    */
   const handleRoleChange = (newRole: string) => {
-    setSelectedRole(newRole);
+    setFormState(prev => ({...prev, selectedRole: newRole}));
     updatePermissionsPreview(newRole);
   };
 
@@ -118,7 +114,7 @@ export const EditUserForm: React.FC<EditUserFormProps> = ({
    */
   const handleSubmit = async () => {
     if (!selectedRole) {
-      setError('Debe seleccionar un rol');
+      setRolesState(prev => ({ ...prev, error: 'Debe seleccionar un rol' }));
       return;
     }
 
@@ -148,7 +144,7 @@ export const EditUserForm: React.FC<EditUserFormProps> = ({
             <BackendErrorAlert
               error={error}
               onRetry={async () => {
-                setError(null);
+                setRolesState(prev => ({ ...prev, error: null }));
                 await loadRoles();
               }}
             />

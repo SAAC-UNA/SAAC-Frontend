@@ -33,9 +33,11 @@ export interface MultiSelectProps {
   minItemsForSearch?: number; // Número mínimo de items para mostrar búsqueda (default: 5)
 }
 
+const EMPTY_VALUE: string[] = [];
+
 export const MultiSelect: React.FC<MultiSelectProps> = ({
   label,
-  value = [],
+  value = EMPTY_VALUE,
   placeholder = 'Seleccionar...',
   options,
   disabled = false,
@@ -55,9 +57,8 @@ export const MultiSelect: React.FC<MultiSelectProps> = ({
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
-  const [selectedOptions, setSelectedOptions] = useState<MultiSelectOption[]>(
-    value ? options.filter(opt => value.includes(opt.value)) : []
-  );
+  // Derived state: la selección es completamente controlada por el prop value
+  const selectedOptions = value ? options.filter(opt => value.includes(opt.value)) : [];
   const selectRef = useRef<HTMLDivElement>(null);
   const searchInputRef = useRef<HTMLInputElement>(null);
   const generatedId = useId();
@@ -95,14 +96,7 @@ export const MultiSelect: React.FC<MultiSelectProps> = ({
   }, [isOpen, searchable, options.length, minItemsForSearch]);
 
   // Actualizar opciones seleccionadas cuando cambia el value prop
-  useEffect(() => {
-    if (value) {
-      const newSelectedOptions = options.filter(opt => value.includes(opt.value));
-      setSelectedOptions(newSelectedOptions);
-    } else {
-      setSelectedOptions([]);
-    }
-  }, [value, options]);
+  // (ahora se deriva directamente en render - ver selectedOptions arriba)
 
   const handleOptionToggle = (option: MultiSelectOption) => {
     if (option.disabled || disabled) return;
@@ -118,7 +112,7 @@ export const MultiSelect: React.FC<MultiSelectProps> = ({
       newSelectedOptions = [...selectedOptions, option];
     }
     
-    setSelectedOptions(newSelectedOptions);
+    setIsOpen(false);
     onChange?.(newSelectedOptions.map(opt => opt.value));
   };
 
@@ -131,7 +125,6 @@ export const MultiSelect: React.FC<MultiSelectProps> = ({
       const newSelectedOptions = selectedOptions.filter(selected => 
         !enabledOptions.some(enabled => enabled.value === selected.value)
       );
-      setSelectedOptions(newSelectedOptions);
       onChange?.(newSelectedOptions.map(opt => opt.value));
     } else {
       // Seleccionar todo
@@ -141,7 +134,6 @@ export const MultiSelect: React.FC<MultiSelectProps> = ({
           newSelectedOptions.push(opt);
         }
       });
-      setSelectedOptions(newSelectedOptions);
       onChange?.(newSelectedOptions.map(opt => opt.value));
     }
   };

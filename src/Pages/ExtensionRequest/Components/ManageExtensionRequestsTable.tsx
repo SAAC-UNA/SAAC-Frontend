@@ -9,8 +9,9 @@
  * - Acción de revisar/aprobar solicitudes
  */
 
-import React, { useState, useEffect, useMemo, useCallback } from 'react';
-import { DataTable, TableActionButton } from '@/components/index';
+import React, { useState, useMemo, useCallback, useRef } from 'react';
+import { DataTable } from '@/components/index';
+import { TableActionButton } from '@/Components/Ui/Buttons/TableActionButton';
 import { BackendErrorAlert } from '@/Components/Ui/Feedback/BackendErrorAlert';
 import { TYPOGRAPHY } from '@/Constants/Typography';
 import { TABLE_TRUNCATE } from '@/Constants/TableTruncate';
@@ -19,6 +20,8 @@ import { truncateText } from '@/Utils';
 import { ExtensionRequestStatusBadge } from './ExtensionRequestStatusBadge';
 import type { ExtensionRequest, ExtensionRequestStatus } from '@/Types/ExtensionRequestTypes';
 import { useFirstColumnConfig } from '@/Hooks/UseFirstColumnConfig';
+
+const EMPTY_REQUESTS: ExtensionRequest[] = [];
 
 interface ManageExtensionRequestsTableProps {
   requests?: ExtensionRequest[];
@@ -33,7 +36,7 @@ interface ManageExtensionRequestsTableProps {
 }
 
 export const ManageExtensionRequestsTable: React.FC<ManageExtensionRequestsTableProps> = ({
-  requests = [],
+  requests = EMPTY_REQUESTS,
   isLoading = false,
   error = null,
   searchQuery = '',
@@ -44,6 +47,13 @@ export const ManageExtensionRequestsTable: React.FC<ManageExtensionRequestsTable
   onReviewRequest
 }) => {
   const [currentPage, setCurrentPage] = useState(1);
+
+  // Reset página cuando cambian los filtros (sin useEffect - patrón derived state)
+  const prevFiltersRef = useRef({ searchQuery, filterEstado });
+  if (prevFiltersRef.current.searchQuery !== searchQuery || prevFiltersRef.current.filterEstado !== filterEstado) {
+    prevFiltersRef.current = { searchQuery, filterEstado };
+    setCurrentPage(1);
+  }
 
   // Filtrar solicitudes
   const filteredRequests = useMemo(() => {
@@ -81,9 +91,7 @@ export const ManageExtensionRequestsTable: React.FC<ManageExtensionRequestsTable
   }, [filteredRequests, currentPage, itemsPerPage]);
 
   // Reset página cuando cambian los filtros
-  useEffect(() => {
-    setCurrentPage(1);
-  }, [searchQuery, filterEstado]);
+  // (movido a patrón derived state arriba)
 
   const firstColumn = useFirstColumnConfig();
 

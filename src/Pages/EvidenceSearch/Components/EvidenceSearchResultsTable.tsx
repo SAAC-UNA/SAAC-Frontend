@@ -7,9 +7,9 @@ import React, { useState, useMemo, useCallback } from 'react';
 import { SystemIcons } from '@/Components/Ui/Icons/SystemIcons';
 import { DataTable, type DataTableColumn } from '@/Components/Ui/Table/DataTable';
 import { TYPOGRAPHY } from '@/Constants/Typography';
-import { TABLE_TRUNCATE } from '@/Constants/TableTruncate';
 import { TABLE_PAGE_SIZE } from '@/Constants/TablePagination';
-import { TableActionButton, StatusBadge } from '@/Components/index';
+import { StatusBadge } from '@/Components/index';
+import { TableActionButton } from '@/Components/Ui/Buttons/TableActionButton';
 import { 
   EVIDENCE_STATUS_LABELS, 
   EVIDENCE_STATUS_BADGE,
@@ -182,4 +182,3 @@ export const EvidenceSearchResultsTable: React.FC<EvidenceSearchResultsTableProp
   );
 };
 
-export default EvidenceSearchResultsTable;

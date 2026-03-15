@@ -45,27 +45,27 @@ export const StructureElementDetail: React.FC<StructureElementDetailProps> = ({
           </div>
           <div className="bg-white border border-gray-200 rounded-corner p-4 space-y-3">
             <div>
-              <label className={`font-medium text-gray-500 ${TYPOGRAPHY.badge}`}>Tipo de Elemento</label>
+              <span className={`font-medium text-gray-500 ${TYPOGRAPHY.badge}`}>Tipo de Elemento</span>
               <p className={`text-negro-una-2 mt-1 ${TYPOGRAPHY.table.cell}`}>
                 {ELEMENT_TYPE_LABELS[element.type]}
               </p>
             </div>
             {element.nomenclature && (
               <div>
-                <label className={`font-medium text-gray-500 ${TYPOGRAPHY.badge}`}>Nomenclatura</label>
+                <span className={`font-medium text-gray-500 ${TYPOGRAPHY.badge}`}>Nomenclatura</span>
                 <p className={`text-negro-una-2 mt-1 ${TYPOGRAPHY.table.cell}`}>
                   {element.nomenclature}
                 </p>
               </div>
             )}
             <div>
-              <label className={`font-medium text-gray-500 ${TYPOGRAPHY.badge}`}>Nombre</label>
+              <span className={`font-medium text-gray-500 ${TYPOGRAPHY.badge}`}>Nombre</span>
               <p className={`text-negro-una-2 mt-1 ${TYPOGRAPHY.table.cell}`}>
                 {element.name || '-'}
               </p>
             </div>
             <div>
-              <label className={`font-medium text-gray-500 ${TYPOGRAPHY.badge}`}>Estado</label>
+              <span className={`font-medium text-gray-500 ${TYPOGRAPHY.badge}`}>Estado</span>
               <div className="mt-1">
                 <div className={`inline-flex items-center px-2 py-1 font-sans font-bold rounded-corner ${TYPOGRAPHY.badge} ${
                   element.active

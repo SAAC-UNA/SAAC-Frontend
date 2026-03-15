@@ -27,23 +27,24 @@ export const MyEvidenceAssignmentsPage: React.FC = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
   
-  const [assignments, setAssignments] = useState<EvidenceAssignment[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const [pageState, setPageState] = useState<{ assignments: EvidenceAssignment[]; loading: boolean; error: string | null }>({ assignments: [], loading: true, error: null });
+  const assignments = pageState.assignments;
+  const loading = pageState.loading;
+  const error = pageState.error;
   const [filters, setFilters] = useState<AssignmentFilters>({
     estado: 'todos',
     search: '',
     sortBy: 'fecha_asignacion',
     sortDirection: 'desc'
   });
-  
-  const [selectedAssignment, setSelectedAssignment] = useState<EvidenceAssignment | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = TABLE_PAGE_SIZE.standard;
-  
-  // HU-016: Estado para modal de solicitud de ampliación
-  const [showExtensionModal, setShowExtensionModal] = useState(false);
-  const [selectedAssignmentForExtension, setSelectedAssignmentForExtension] = useState<EvidenceAssignment | null>(null);
+
+  // HU-016: modales de detalle y extensión
+  const [modalState, setModalState] = useState<{ selectedAssignment: EvidenceAssignment | null; showExtensionModal: boolean; selectedAssignmentForExtension: EvidenceAssignment | null }>({ selectedAssignment: null, showExtensionModal: false, selectedAssignmentForExtension: null });
+  const selectedAssignment = modalState.selectedAssignment;
+  const showExtensionModal = modalState.showExtensionModal;
+  const selectedAssignmentForExtension = modalState.selectedAssignmentForExtension;
 
   // Cargar asignaciones al montar
   useEffect(() => {
@@ -55,40 +56,36 @@ export const MyEvidenceAssignmentsPage: React.FC = () => {
     const userId = user?.usuario_id || (user as any)?.id;
     
     if (!userId) {
-      setError('No se pudo obtener la información del usuario');
-      setLoading(false);
+      setPageState(prev => ({...prev, error: 'No se pudo obtener la información del usuario', loading: false}));
       return;
     }
 
     try {
-      setLoading(true);
-      setError(null);
+      setPageState(prev => ({...prev, loading: true, error: null}));
       const data = await evidenceAssignmentService.getMyAssignments(userId);
-      setAssignments(data);
+      setPageState(prev => ({...prev, assignments: data}));
     } catch (error: any) {
-      setError(error.message || 'No se pudieron obtener las evidencias asignadas');
+      setPageState(prev => ({...prev, error: error.message || 'No se pudieron obtener las evidencias asignadas'}));
     } finally {
-      setLoading(false);
+      setPageState(prev => ({...prev, loading: false}));
     }
   };
 
   const handleViewDetails = (assignment: EvidenceAssignment) => {
-    setSelectedAssignment(assignment);
+    setModalState(prev => ({...prev, selectedAssignment: assignment}));
   };
 
   const handleCloseDetail = () => {
-    setSelectedAssignment(null);
+    setModalState(prev => ({...prev, selectedAssignment: null}));
   };
 
   const handleStatusUpdate = (updatedAssignment: EvidenceAssignment) => {
     // Actualizar la asignación en la lista
-    setAssignments(prev =>
-      prev.map(a =>
+    setPageState(prev => ({...prev, assignments: prev.assignments.map(a =>
         a.evidencia_asignacion_id === updatedAssignment.evidencia_asignacion_id
           ? updatedAssignment
           : a
-      )
-    );
+      )}));
   };
 
   const handleUploadFiles = (assignment: EvidenceAssignment) => {
@@ -113,15 +110,13 @@ export const MyEvidenceAssignmentsPage: React.FC = () => {
 
   // HU-016: Handler para solicitar ampliación
   const handleRequestExtension = (assignment: EvidenceAssignment) => {
-    setSelectedAssignmentForExtension(assignment);
-    setShowExtensionModal(true);
+    setModalState(prev => ({...prev, selectedAssignmentForExtension: assignment, showExtensionModal: true}));
   };
 
   const handleConfirmExtensionRequest = async (data: any) => {
     try {
       await extensionRequestService.createRequest(data);
-      setShowExtensionModal(false);
-      setSelectedAssignmentForExtension(null);
+      setModalState(prev => ({...prev, showExtensionModal: false, selectedAssignmentForExtension: null}));
       showToast({
         type: 'success',
         title: 'Solicitud enviada',
@@ -143,8 +138,7 @@ export const MyEvidenceAssignmentsPage: React.FC = () => {
       
       // Si es duplicado, cerrar modal y recargar para actualizar el estado
       if (isDuplicate) {
-        setShowExtensionModal(false);
-        setSelectedAssignmentForExtension(null);
+        setModalState(prev => ({...prev, showExtensionModal: false, selectedAssignmentForExtension: null}));
         loadAssignments();
       } else {
         throw error; // Re-lanzar para que el modal maneje el estado de loading
@@ -153,8 +147,12 @@ export const MyEvidenceAssignmentsPage: React.FC = () => {
   };
 
   const handleCloseExtensionModal = () => {
-    setShowExtensionModal(false);
-    setSelectedAssignmentForExtension(null);
+    setModalState(prev => ({...prev, showExtensionModal: false, selectedAssignmentForExtension: null}));
+  };
+
+  const handleFiltersChange = (newFilters: AssignmentFilters) => {
+    setFilters(newFilters);
+    setCurrentPage(1);
   };
 
   const filteredAssignments = filterAndSortAssignments(assignments, filters);
@@ -167,11 +165,6 @@ export const MyEvidenceAssignmentsPage: React.FC = () => {
     currentPage * itemsPerPage
   );
 
-  // Reset página cuando cambian los filtros
-  useEffect(() => {
-    setCurrentPage(1);
-  }, [filters]);
-
   return (
     <ScreenContainer>
       <PageHeader
@@ -181,7 +174,7 @@ export const MyEvidenceAssignmentsPage: React.FC = () => {
           !error && assignments.length > 0 ? (
             <EvidenceAssignmentFilters
               filters={filters}
-              onFiltersChange={setFilters}
+              onFiltersChange={handleFiltersChange}
               totalCount={assignments.length}
               filteredCount={filteredAssignments.length}
             />
@@ -241,4 +234,3 @@ export const MyEvidenceAssignmentsPage: React.FC = () => {
   );
 };
 
-export default MyEvidenceAssignmentsPage;

@@ -56,5 +56,3 @@ export const devLog = {
     logCache.clear();
   }
 };
-
-export default devLog;

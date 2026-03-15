@@ -15,7 +15,7 @@ const RolesRepository = lazy(() => import('./Pages/Roles').then(m => ({ default:
 const UsersRepository = lazy(() => import('./Pages/Users').then(m => ({ default: m.UsersRepository })));
 const EditUserPage = lazy(() => import('./Pages/Users').then(m => ({ default: m.EditUserPage })));
 const StructureList = lazy(() => import('@/Pages/Structure/StructureList'));
-const StructureCreation = lazy(() => import('@/Pages/Structure/StructureCreation'));
+const StructureCreation = lazy(() => import('@/Pages/Structure/StructureCreation').then(m => ({ default: m.StructureCreation })));
 const StructureEditForm = lazy(() => import('@/Pages/Structure/StructureEditForm'));
 const StructureEditList = lazy(() => import('./Pages/Structure/StructureEditList'));
 const EvidenceAssignment = lazy(() => import('./Pages/EvidenceAssignment').then(m => ({ default: m.EvidenceAssignment })));
@@ -25,7 +25,7 @@ const MyEvidenceAssignmentsPage = lazy(() => import('./Pages/MyEvidence').then(m
 const AuditLogPage = lazy(() => import('@/Pages/AuditLog/AuditLogPage'));
 const ImprovementCommitmentsList = lazy(() => import('./Pages/ImprovementCommitments/ImprovementCommitmentsList').then(m => ({ default: m.ImprovementCommitmentsList })));
 const CreateImprovementCommitment = lazy(() => import('./Pages/ImprovementCommitments/CreateImprovementCommitment'));
-const ImprovementCommitmentDetail = lazy(() => import('./Pages/ImprovementCommitments/ImprovementCommitmentDetail'));
+const ImprovementCommitmentDetail = lazy(() => import('./Pages/ImprovementCommitments/ImprovementCommitmentDetail').then(m => ({ default: m.ImprovementCommitmentDetail })));
 const BlockApproval = lazy(() => import('./Pages/BlockApproval/BlockApproval'));
 const FinalReports = lazy(() => import('./Pages/ReportManagement').then(m => ({ default: m.FinalReports })));
 

@@ -128,9 +128,14 @@ export const NotificationCard: React.FC<NotificationCardProps> = ({
         ${!notification.leida ? 'shadow-md' : 'opacity-75'}
         ${compact ? 'p-2.5' : 'p-3'}
       `}
-      onClick={handleClick}
-      role={notification.enlace ? 'button' : 'article'}
-      tabIndex={notification.enlace ? 0 : undefined}
+      {...(notification.enlace
+        ? {
+            onClick: handleClick,
+            onKeyDown: (e: React.KeyboardEvent) => { if (e.key === 'Enter' || e.key === ' ') handleClick(); },
+            role: 'button' as const,
+            tabIndex: 0,
+          }
+        : { role: 'article' as const })}
     >
       <div className="flex gap-3">
         {/* Icono */}
