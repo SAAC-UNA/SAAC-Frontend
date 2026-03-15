@@ -1,5 +1,5 @@
 import React from 'react';
-import { StatusBadge } from '@/Components/Ui/StatusBadge';
+import { StatusBadge } from '@/Components/Ui/Feedback/StatusBadge';
 import type { ExtensionRequestStatus } from '@/Types/ExtensionRequestTypes';
 
 const STATUS_BADGE: Record<ExtensionRequestStatus, { label: string; colorClasses: string }> = {

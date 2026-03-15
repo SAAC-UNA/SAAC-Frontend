@@ -11,7 +11,7 @@ export { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from './Feed
 export { DataTable } from './Table/DataTable';
 export type { DataTableColumn, DataTableAction, DataTableProps } from './Table/DataTable';
 export { BackendErrorAlert } from './Feedback/BackendErrorAlert';
-export { StatusBadge } from './StatusBadge';
+export { StatusBadge } from './Feedback/StatusBadge';
 export { CustomSelect } from './Forms/SingleSelect';
 export type { SelectOption, CustomSelectProps } from './Forms/SingleSelect';
 export { ScreenContainer } from './Layout/ScreenContainer';

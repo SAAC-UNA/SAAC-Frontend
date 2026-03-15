@@ -16,7 +16,7 @@ import type { DataTableColumn } from '@/Components/Ui/Table/DataTable';
 import { ButtonWithTooltip } from '@/Components/Ui/Buttons/ButtonWithTooltip';
 import { TABLE_ACTION_BUTTON } from '@/Constants/Components';
 import { TYPOGRAPHY } from '@/Constants/Typography';
-import { StatusBadge } from '@/Components/Ui/StatusBadge';
+import { StatusBadge } from '@/Components/Ui/Feedback/StatusBadge';
 import { TABLE_PAGE_SIZE } from '@/Constants/TablePagination';
 import { truncateText } from '@/Utils';
 import { useFirstColumnConfig } from '@/Hooks/UseFirstColumnConfig';

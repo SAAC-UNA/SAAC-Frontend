@@ -4,7 +4,7 @@
  */
 
 import React from 'react';
-import { StatusBadge } from '@/Components/Ui/StatusBadge';
+import { StatusBadge } from '@/Components/Ui/Feedback/StatusBadge';
 import type { AssignmentStatus } from '@/Types/EvidenceAssignmentTypes';
 
 const STATUS_BADGE_CLASSES: Record<AssignmentStatus, { label: string; colorClasses: string }> = {

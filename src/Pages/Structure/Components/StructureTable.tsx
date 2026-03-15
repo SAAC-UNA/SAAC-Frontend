@@ -27,7 +27,7 @@ import { TABLE_PAGE_SIZE } from '@/Constants/TablePagination';
 import type { DataTableColumn} from '@/Components/Ui/Table/DataTable';
 import type { StructureElement, ElementType } from '@/Types/StructureTypes';
 import { TableActionButton } from '@/Components/Ui/Buttons/TableActionButton';
-import { StatusBadge } from '@/Components/Ui/StatusBadge';
+import { StatusBadge } from '@/Components/Ui/Feedback/StatusBadge';
 import { useFirstColumnConfig } from '@/Hooks/UseFirstColumnConfig';
 
 

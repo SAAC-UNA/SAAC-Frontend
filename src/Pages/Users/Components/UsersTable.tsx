@@ -5,7 +5,7 @@ import { BackendErrorAlert } from '@/Components/Ui/Feedback/BackendErrorAlert';
 import { TYPOGRAPHY } from '@/Constants/Typography';
 import { TABLE_TRUNCATE } from '@/Constants/TableTruncate';
 import { truncateText } from '@/Utils';
-import { StatusBadge } from '@/Components/Ui/StatusBadge';
+import { StatusBadge } from '@/Components/Ui/Feedback/StatusBadge';
 import { TABLE_PAGE_SIZE } from '@/Constants/TablePagination';
 import { useUsers } from '@/Hooks/UseUsers';
 import { useDebounce } from '@/Hooks/UseDebounce';
