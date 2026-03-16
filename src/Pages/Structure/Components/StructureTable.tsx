@@ -86,13 +86,22 @@ export const StructureTable: React.FC<StructureTableProps> = ({
 
     const firstColumn = useFirstColumnConfig();
 
+    const normalizeSearchText = (value?: string | null): string => {
+        if (!value) return '';
+        return value
+            .normalize('NFD')
+            .replace(/[\u0300-\u036f]/g, '')
+            .toLowerCase()
+            .trim();
+    };
+
     // Filtrar elementos basado en la búsqueda y tipo - MEMOIZADO con debounced search
     const filteredElements = useMemo(() => {
         let filtered = allElements;
         
         // Filtro por búsqueda (usar debounced query)
         if (debouncedSearchQuery.trim()) {
-            const query = debouncedSearchQuery.toLowerCase();
+            const query = normalizeSearchText(debouncedSearchQuery);
             
             // Verificar si está buscando SOLO por estado (palabra exacta)
             const isOnlyActiveSearch = query === 'activo';
@@ -108,12 +117,22 @@ export const StructureTable: React.FC<StructureTableProps> = ({
                     return element.active === false;
                 }
                 
-                // Para cualquier otra búsqueda, buscar SOLO en nombre y nomenclatura
-                const matchesName = element.name?.toLowerCase().includes(query);
-                const matchesNomenclature = element.nomenclature?.toLowerCase().includes(query);
-                const matchesDescription = element.description?.toLowerCase().includes(query);
+                // Buscar en todas las columnas visibles de la tabla
+                const matchesTypeLabel = normalizeSearchText(ELEMENT_TYPE_LABELS[element.type]).includes(query);
+                const matchesTypeValue = normalizeSearchText(element.type).includes(query);
+                const matchesNomenclature = normalizeSearchText(element.nomenclature).includes(query);
+                const matchesName = normalizeSearchText(element.name).includes(query);
+                const matchesDescription = normalizeSearchText(element.description).includes(query);
+                const matchesStatus = normalizeSearchText(element.active ? 'Activo' : 'Inactivo').includes(query);
                 
-                return matchesName || matchesNomenclature || matchesDescription;
+                return (
+                    matchesTypeLabel ||
+                    matchesTypeValue ||
+                    matchesNomenclature ||
+                    matchesName ||
+                    matchesDescription ||
+                    matchesStatus
+                );
             });
         }
         
@@ -123,15 +142,24 @@ export const StructureTable: React.FC<StructureTableProps> = ({
     // Resetear página cuando cambian los filtros (usar debounced para evitar resets innecesarios)
     // (movido a patrón derived state arriba)
 
+    const safeItemsPerPage = Number.isFinite(itemsPerPage) && itemsPerPage > 0
+        ? Math.floor(itemsPerPage)
+        : TABLE_PAGE_SIZE.standard;
+
     // Calcular datos paginados - MEMOIZADO
-    const { totalPages, paginatedData } = useMemo(() => {
-        const total = Math.ceil(filteredElements.length / itemsPerPage);
+    const { totalPages, paginatedData, boundedCurrentPage } = useMemo(() => {
+        const total = Math.max(1, Math.ceil(filteredElements.length / safeItemsPerPage));
+        const boundedPage = Math.min(currentPage, total);
         const paginated = filteredElements.slice(
-            (currentPage - 1) * itemsPerPage,
-            currentPage * itemsPerPage
+            (boundedPage - 1) * safeItemsPerPage,
+            boundedPage * safeItemsPerPage
         );
-        return { totalPages: total, paginatedData: paginated };
-    }, [filteredElements, currentPage, itemsPerPage]);
+        return { totalPages: total, paginatedData: paginated, boundedCurrentPage: boundedPage };
+    }, [filteredElements, currentPage, safeItemsPerPage]);
+
+    if (currentPage !== boundedCurrentPage) {
+        setCurrentPage(boundedCurrentPage);
+    }
 
     const getExpectedParentType = (elementType: ElementType): ElementType | null => {
         const parentTypeMap: Record<ElementType, ElementType | null> = {
@@ -278,7 +306,7 @@ export const StructureTable: React.FC<StructureTableProps> = ({
                 title=""
                 searchable={false}
                 pagination={totalPages > 1 ? {
-                    currentPage,
+                    currentPage: boundedCurrentPage,
                     totalPages,
                     onPageChange: setCurrentPage
                 } : undefined}

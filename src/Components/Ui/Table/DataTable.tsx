@@ -219,7 +219,7 @@ export const DataTable = React.memo(<T extends Record<string, unknown>>({
             </thead>
             <tbody>
               {data.map((item, index) => (
-                <tr key={String((item as Record<string, unknown>).id ?? index)}>
+                <tr key={`${String((item as Record<string, unknown>).id ?? 'row')}-${index}`}>
                   {columns.map((column, colIndex) => (
                     <td 
                       key={column.key} 
