@@ -61,7 +61,7 @@ export const ReviewStep: React.FC<ReviewStepProps> = ({
       align: 'center',
       render: (_, item) => (
         <p className={`block font-sans antialiased font-normal leading-normal text-negro-una ${TYPOGRAPHY.table.cell}`}>
-          {item.encargados_usuarios.length}
+          {item.encargados_usuarios.length + item.encargados_roles.length}
         </p>
       )
     },
@@ -214,6 +214,9 @@ export const ReviewStep: React.FC<ReviewStepProps> = ({
               <p className="text-xs font-medium text-gris-una mb-2">Encargados</p>
               <p className="text-sm text-negro-una">
                 {detailModal.criterion.encargados_usuarios.length} usuario(s) asignado(s)
+              </p>
+              <p className="text-sm text-negro-una mt-1">
+                {detailModal.criterion.encargados_roles.length} rol(es) asignado(s)
               </p>
             </div>
 

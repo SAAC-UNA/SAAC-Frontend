@@ -195,10 +195,13 @@ const CreateImprovementCommitment: React.FC = () => {
 
         const allowedFields = new Set([
           'ciclo_acreditacion_id',
+          'proceso_id',
           'descripcion',
           'fecha_inicio',
           'fecha_fin',
-          'criterios'
+          'criterios',
+          'evidencias_asignar',
+          'selecciones'
         ]);
 
         Object.entries(backendErrors).forEach(([field, messages]) => {
@@ -214,13 +217,24 @@ const CreateImprovementCommitment: React.FC = () => {
           mappedErrors.general = Object.values(backendErrors).flat().join(', ');
         }
 
+        // Si el backend devuelve error del ciclo/proceso, llevar al paso 1 para corregir rápido.
+        if (mappedErrors.ciclo_acreditacion_id || (mappedErrors as any).proceso_id) {
+          setCurrentStep(1);
+        }
+
         setSubmitState(prev => ({...prev, errors: mappedErrors}));
+
+        showToast({
+          type: 'error',
+          title: mappedErrors.general || error.response?.data?.message || 'Error de validación'
+        });
+      } else {
+        showToast({
+          type: 'error',
+          title: error.response?.data?.message || error.message || 'Error al crear el compromiso'
+        });
       }
-      
-      showToast({
-        type: 'error',
-        title: error.response?.data?.message || error.message || 'Error al crear el compromiso'
-      });
+
       setModals(prev => ({...prev, showConfirmModal: false}));
     } finally {
       setSubmitState(prev => ({...prev, isSubmitting: false}));

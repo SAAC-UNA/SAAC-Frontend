@@ -4,11 +4,12 @@ import { TYPOGRAPHY } from '@/Constants/Typography';
 interface StatusBadgeProps {
     label: string;
     colorClasses: string;
+    badgeClassName?: string;
 }
 
-export const StatusBadge: React.FC<StatusBadgeProps> = ({ label, colorClasses }) => (
+export const StatusBadge: React.FC<StatusBadgeProps> = ({ label, colorClasses, badgeClassName = '' }) => (
     <div className="w-max mx-auto">
-        <div className={`relative grid items-center px-2 py-1 font-sans font-bold rounded-corner select-none whitespace-nowrap ${TYPOGRAPHY.badge} ${colorClasses}`}>
+        <div className={`relative grid items-center px-2 py-1 font-sans font-bold rounded-corner select-none whitespace-nowrap ${TYPOGRAPHY.badge} ${colorClasses} ${badgeClassName}`}>
             <span>{label}</span>
         </div>
     </div>

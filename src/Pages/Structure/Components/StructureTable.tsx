@@ -245,6 +245,7 @@ export const StructureTable: React.FC<StructureTableProps> = ({
                 <StatusBadge
                     label={element.active ? 'Activo' : 'Inactivo'}
                     colorClasses={element.active ? 'text-verde-dark bg-verde-ring' : 'text-error-dark bg-error-ring'}
+                    badgeClassName="min-w-[76px] justify-center text-center"
                 />
             )
         },
