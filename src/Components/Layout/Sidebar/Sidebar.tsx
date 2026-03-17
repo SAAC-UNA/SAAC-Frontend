@@ -112,22 +112,24 @@ export const ModernSidebar: React.FC<SidebarProps> = ({
         data-variant={variant}
         data-side={side}
       >
-        {/* Gap del sidebar en desktop — ancho del sidebar + margen izquierdo (left-3 = 0.75rem) */}
+        {/* Gap del sidebar en desktop — mantiene espacio según anclaje y estado */}
         <div
           className={cn(
             'relative bg-transparent transition-[width] duration-300 ease-in-out',
-            'w-[calc(var(--sidebar-width)+0.75rem)]',
-            'group-data-[state=collapsed]:w-[calc(var(--sidebar-width-icon)+0.75rem)]',
+            side === 'left' ? 'w-[var(--sidebar-width)]' : 'w-[calc(var(--sidebar-width)+0.75rem)]',
+            side === 'left'
+              ? 'group-data-[state=collapsed]:w-[var(--sidebar-width-icon)]'
+              : 'group-data-[state=collapsed]:w-[calc(var(--sidebar-width-icon)+0.75rem)]',
             collapsible === 'offcanvas' && 'group-data-[state=collapsed]:w-0'
           )}
         />
         
-        {/* Container del sidebar — margen vertical para que el redondeo sea visible */}
+        {/* Container del sidebar */}
         <div
           className={cn(
-            'fixed inset-y-3 z-10 hidden transition-[left,right,width] duration-300 ease-in-out md:flex',
+            'fixed z-10 hidden transition-[left,right,width,top,bottom] duration-300 ease-in-out md:flex',
             'w-[var(--sidebar-width)]',
-            side === 'left' ? 'left-3' : 'right-3',
+            side === 'left' ? 'inset-y-0 left-0' : 'inset-y-3 right-3',
             state === 'collapsed' && collapsible === 'offcanvas' && (
               side === 'left'
                 ? '-left-[var(--sidebar-width)]'
@@ -140,7 +142,7 @@ export const ModernSidebar: React.FC<SidebarProps> = ({
           <div
             className={cn(
               'bg-rojo-una-2 flex h-full w-full flex-col overflow-hidden',
-              'rounded-corner',
+              side === 'left' ? 'rounded-l-none rounded-r-3xl' : 'rounded-corner',
               {/** shadow-2xl */}
             )}
           >
