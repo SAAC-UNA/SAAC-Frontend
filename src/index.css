@@ -523,6 +523,22 @@
     background: rgba(167, 167, 169, 0.6);
   }
 
+  /* Scrollbar sutil para navegación del sidebar */
+  .sidebar-scrollbar {
+    scrollbar-width: none; /* Firefox */
+    -ms-overflow-style: none; /* IE/Edge legacy */
+  }
+
+  .sidebar-scrollbar::-webkit-scrollbar {
+    width: 0;
+    height: 0;
+  }
+
+  .sidebar-scrollbar::-webkit-scrollbar-track,
+  .sidebar-scrollbar::-webkit-scrollbar-thumb {
+    background: transparent;
+  }
+
   /*===== Mínima altura del Layout para el screenContainer =====*/
   .min-h-app {
     /* py-8 = 4rem (2 + 2) */

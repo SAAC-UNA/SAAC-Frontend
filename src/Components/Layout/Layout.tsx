@@ -36,7 +36,7 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
       <div className="flex min-h-screen w-full">
         <ModernSidebar />
         <MainContent>
-          <AppHeader rightContent={<UserProfileHeader />} />
+          <AppHeader rightContent={<UserProfileHeader showUserMenu={false} showNotifications={true} showQuickLogout={true} />} />
           <div className="flex-1">
             <div className="px-4 pt-4 pb-8"
               style={{ ['--app-header-height' as any]: '64px' }}

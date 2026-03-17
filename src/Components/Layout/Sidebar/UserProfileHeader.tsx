@@ -6,40 +6,47 @@ import { useAuth } from '@/Context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import { cn } from '@/Utils/ClassNames';
 import { APP_HEADER_BUTTON } from '@/Constants/Components';
-import { TYPOGRAPHY } from '@/Constants/Typography';
 import { NotificationDropdown } from '@/Components/Notifications/NotificationDropdown';
 import NotificationCenter from '@/Pages/Notifications/NotificationCenter';
 import { useNotifications } from '@/Hooks/useNotifications';
 
 interface UserProfileHeaderProps {
   className?: string;
+  showUserMenu?: boolean;
+  showNotifications?: boolean;
+  showQuickLogout?: boolean;
+  showInlineIdentity?: boolean;
+  useSidebarAvatarStyle?: boolean;
 }
 
 /**
  * COMPONENTE DE PERFIL DE USUARIO EN HEADER
  * ==========================================
  * 
- * Muestra el nombre y rol del usuario autenticado con un dropdown menu al hover.
- * Se integra en el AppHeader en la sección derecha.
+ * Muestra notificaciones, logout rápido y/o bloque de usuario según props.
+ * Se integra en header y en footer del sidebar.
  */
-export const UserProfileHeader: React.FC<UserProfileHeaderProps> = ({ className }) => {
+export const UserProfileHeader: React.FC<UserProfileHeaderProps> = ({
+  className,
+  showUserMenu = true,
+  showNotifications = true,
+  showQuickLogout = false,
+  showInlineIdentity = false,
+  useSidebarAvatarStyle = false,
+}) => {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
-  const [isOpen, setIsOpen] = useState(false);
   const [isNotificationOpen, setIsNotificationOpen] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const prevCountRef = useRef(0);
   const [shouldShake, setShouldShake] = useState(false);
-  const dropdownRef = useRef<HTMLDivElement>(null);
   const notificationRef = useRef<HTMLDivElement>(null);
-  const hoverTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const { unreadCount, refreshNotifications } = useNotifications();
 
   const handleLogout = () => {
     logout();
     navigate('/login');
-    setIsOpen(false);
   };
 
   const handleToggleNotifications = () => {
@@ -60,25 +67,9 @@ export const UserProfileHeader: React.FC<UserProfileHeaderProps> = ({ className 
     prevCountRef.current = unreadCount;
   }, [unreadCount]);
 
-  const handleMouseEnter = () => {
-    if (hoverTimeoutRef.current) {
-      clearTimeout(hoverTimeoutRef.current);
-    }
-    setIsOpen(true);
-  };
-
-  const handleMouseLeave = () => {
-    hoverTimeoutRef.current = setTimeout(() => {
-      setIsOpen(false);
-    }, 200); // 200ms de delay antes de cerrar
-  };
-
   // Cerrar dropdown cuando se hace click afuera
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
-        setIsOpen(false);
-      }
       if (notificationRef.current && !notificationRef.current.contains(event.target as Node)) {
         setIsNotificationOpen(false);
       }
@@ -87,58 +78,44 @@ export const UserProfileHeader: React.FC<UserProfileHeaderProps> = ({ className 
     document.addEventListener('mousedown', handleClickOutside);
     return () => {
       document.removeEventListener('mousedown', handleClickOutside);
-      if (hoverTimeoutRef.current) {
-        clearTimeout(hoverTimeoutRef.current);
-      }
     };
   }, []);
 
-  if (!user) return null;
+  if (!user || (!showUserMenu && !showNotifications && !showQuickLogout)) return null;
 
   return (
     <TooltipProvider delayDuration={0}>
-      <div className={cn('flex items-center gap-3 pr-6', className)}>
+      <div className={cn('flex items-center gap-2 pr-6 min-w-0 max-w-full', className)}>
         {/* Información del Usuario - Avatar con Dropdown */}
-        <div 
-          className="flex items-center gap-2 relative"
-          ref={dropdownRef}
-          onMouseEnter={handleMouseEnter}
-          onMouseLeave={handleMouseLeave}
-        >
-          {/* Avatar circular con borde gris oscuro */}
-          {/** TODO Todo esto debería de ser un botón, no un div, así podemos manejar los colores por separado porque si se elimina h-5 w-5 por alguna razón el ícono se vuelve negro (quizá hay que revisar los estilos en index) */}
-          <div className="w-9 h-9 rounded-full bg-blanco-una-2 flex items-center justify-center border-2 border-gris-una flex-shrink-0 cursor-pointer">
-            <SystemIcons.users.user className={`${APP_HEADER_BUTTON.icon} text-gris-una`} />
-          </div>
+        {showUserMenu && (
+          <div className="flex items-center gap-2 relative min-w-0 w-full">
+            {/* Avatar circular con borde gris oscuro */}
+            {/** TODO Todo esto debería de ser un botón, no un div, así podemos manejar los colores por separado porque si se elimina h-5 w-5 por alguna razón el ícono se vuelve negro (quizá hay que revisar los estilos en index) */}
+            <div className={cn(
+              'w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0 cursor-pointer',
+              (showInlineIdentity || useSidebarAvatarStyle)
+                ? 'bg-blanco-una/10 border border-blanco-una/40'
+                : 'bg-blanco-una-2 border-2 border-gris-una'
+            )}>
+              <SystemIcons.users.user className={`${APP_HEADER_BUTTON.icon} ${(showInlineIdentity || useSidebarAvatarStyle) ? 'text-blanco-una' : 'text-gris-una'}`} />
+            </div>
 
-          {/* Dropdown Content */}
-          {isOpen && (
-            <div className="absolute top-full left-1/2 -translate-x-1/2 mt-2 w-48 bg-blanco-una rounded-corner shadow-md border border-gris-una/15 z-50 py-1.5">
-              {/* Información del Usuario */}
-              <div className="px-3 py-2 border-b border-gris-una/25">
-                <p className={`text-negro-una leading-none ${TYPOGRAPHY.header}`}>
+            {showInlineIdentity && (
+              <div className="min-w-0 pr-1 w-[150px] max-w-[150px]">
+                <p className="block w-full truncate text-blanco-una font-semibold leading-tight text-xs" title={user.name}>
                   {user.name}
                 </p>
-                <p className={`text-negro-una/60 leading-none ${TYPOGRAPHY.header}`}>
-                  {user.roles[0]?.name}
+                <p className="block w-full truncate text-blanco-una/80 leading-tight text-[11px]" title={user.roles[0]?.name || ''}>
+                  {user.roles[0]?.name || 'Sin rol'}
                 </p>
               </div>
-              
-              {/* Acciones */}
-              {/* TODO Cambiar según el estándar de Mari??? (Botón de inicio de sesión) */}
-              <button
-                onClick={handleLogout}
-                className="w-full px-3 py-1.5 mx-0 text-left text-xs text-rojo-una-2 hover:bg-rojo-una/8 flex items-center gap-2 transition-all duration-200 rounded"
-              >
-                <SystemIcons.actions.logout className={`${APP_HEADER_BUTTON.icon}`} />
-                <span className={`${TYPOGRAPHY.header}`}>Cerrar sesión</span>
-              </button>
-            </div>
-          )}
-        </div>
+            )}
+          </div>
+        )}
 
         {/* Botón Notificaciones con Tooltip y Dropdown */}
-        <div className="relative" ref={notificationRef}>
+        {showNotifications && (
+          <div className="relative" ref={notificationRef}>
           <Tooltip>
             <TooltipTrigger asChild>
               <Button
@@ -173,25 +150,53 @@ export const UserProfileHeader: React.FC<UserProfileHeaderProps> = ({ className 
               }}
             />
           )}
-        </div>
+          </div>
+        )}
+
+        {/* Botón rápido de cerrar sesión */}
+        {showQuickLogout && (
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                variant="ghost"
+                size="sm"
+                className={cn(
+                  APP_HEADER_BUTTON.button,
+                  'text-gris-una hover:bg-gris-una/10'
+                )}
+                aria-label="Cerrar sesión"
+                onClick={handleLogout}
+              >
+                <SystemIcons.actions.logout className={APP_HEADER_BUTTON.icon} />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent side="bottom" align="center">
+              Cerrar sesión
+            </TooltipContent>
+          </Tooltip>
+        )}
 
         {/* TODO Modal de Centro de Notificaciones */}
-        <NotificationCenter
-          isOpen={isModalOpen}
-          onClose={() => setIsModalOpen(false)}
-        />
+        {showNotifications && (
+          <NotificationCenter
+            isOpen={isModalOpen}
+            onClose={() => setIsModalOpen(false)}
+          />
+        )}
 
         {/* Estilos para animación */}
-        <style>{`
-          @keyframes shake {
-            0%, 100% { transform: rotate(0deg); }
-            10%, 30%, 50%, 70%, 90% { transform: rotate(-10deg); }
-            20%, 40%, 60%, 80% { transform: rotate(10deg); }
-          }
-          .animate-shake {
-            animation: shake 0.5s ease-in-out;
-          }
-        `}</style>
+        {showNotifications && (
+          <style>{`
+            @keyframes shake {
+              0%, 100% { transform: rotate(0deg); }
+              10%, 30%, 50%, 70%, 90% { transform: rotate(-10deg); }
+              20%, 40%, 60%, 80% { transform: rotate(10deg); }
+            }
+            .animate-shake {
+              animation: shake 0.5s ease-in-out;
+            }
+          `}</style>
+        )}
       </div>
     </TooltipProvider>
   );

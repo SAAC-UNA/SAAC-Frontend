@@ -7,6 +7,7 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from '
 import { TooltipProvider } from '@/Components/Ui/Feedback/Tooltip';
 import { useAuth } from '@/Context/AuthContext';
 import { TYPOGRAPHY } from '@/Constants/Typography';
+import { UserProfileHeader } from './UserProfileHeader';
 
 interface SidebarProps {
   side?: 'left' | 'right';
@@ -56,7 +57,7 @@ export const ModernSidebar: React.FC<SidebarProps> = ({
       </div>
 
       {/* Navigation Menu */}
-      <nav className="flex-1 py-2 overflow-hidden">
+      <nav className="flex-1 py-2 overflow-y-auto overflow-x-hidden sidebar-scrollbar">
         <div className="space-y-2 flex flex-col">
           {getNavigationItems(user?.roles?.map(r => r.name)).map((item) => (
             <SidebarItem 
@@ -67,6 +68,23 @@ export const ModernSidebar: React.FC<SidebarProps> = ({
           ))}
         </div>
       </nav>
+
+      {/* Usuario autenticado al final del sidebar */}
+      <div className={cn(
+        'flex-shrink-0 h-20 flex items-center',
+        isCollapsed ? 'px-0 justify-center' : 'px-3 justify-start'
+      )}>
+        <UserProfileHeader
+          className={cn(
+            'pr-0',
+            isCollapsed ? 'w-auto justify-center px-0' : 'w-full justify-start px-0'
+          )}
+          showUserMenu={true}
+          showNotifications={false}
+          showInlineIdentity={!isCollapsed}
+          useSidebarAvatarStyle={true}
+        />
+      </div>
     </div>
   );
 
