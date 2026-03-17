@@ -30,8 +30,8 @@ const StructureList: React.FC = () => {
   const { 
   isLoading, 
   deleteElement,
-  activateElementWithoutReload,
-  deactivateElementWithoutReload,
+  activateElement,
+  deactivateElement,
   loadTree,
   treeData 
 } = useStructure();
@@ -144,14 +144,17 @@ const StructureList: React.FC = () => {
     const action = element.active ? 'deactivate' : 'activate';
     
     try {
+        let changed = false;
       if (element.active) {
-        await deactivateElementWithoutReload(element.type, element.id);
+          changed = await deactivateElement(element.type, element.id);
       } else {
-        await activateElementWithoutReload(element.type, element.id);
+          changed = await activateElement(element.type, element.id);
       }
-      
-      // Recargar el árbol
-      await loadTree();
+
+        if (!changed) {
+          setToggleActiveModalState({ isOpen: false, element: null });
+          return;
+        }
 
       const elementName = element.name || element.nomenclature || 'Elemento';
       

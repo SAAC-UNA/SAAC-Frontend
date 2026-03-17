@@ -261,7 +261,6 @@ const handleSubmit = async (e: React.FormEvent) => {
   
   try {
     const success = await createElement(formData);
-    console.log('🔍 Success:', success);
     
     if (success) {
       // Mostrar modal de éxito

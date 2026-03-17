@@ -124,21 +124,20 @@ class StructureService {
       'dimension', 'component', 'criteria', 'standard', 'evidence'
     ];
 
-    const results = await Promise.allSettled(
-      types.map(async (type) => {
-        try {
-          const result = await this.listByType(type);
-          return result.data || [];
-        } catch (error) {
-          console.warn(`Error cargando ${type}, devolviendo array vacío:`, error);
-          return [];
-        }
-      })
-    );
+    const results = await Promise.allSettled(types.map(type => this.listByType(type)));
 
-    const allElements = results
-      .filter(r => r.status === 'fulfilled')
-      .flatMap(r => (r as PromiseFulfilledResult<StructureElement[]>).value);
+    const failedCount = results.filter(r => r.status === 'rejected').length;
+    if (failedCount === types.length) {
+      throw new Error('No se pudo cargar la estructura en este momento. Intente nuevamente.');
+    }
+
+    const allElements = results.flatMap(result => {
+      if (result.status === 'fulfilled') {
+        return result.value.data || [];
+      }
+      console.warn('Error cargando un tipo de elemento de estructura:', result.reason);
+      return [];
+    });
 
     return { message: 'Estructura cargada exitosamente', data: allElements };
   }
@@ -204,11 +203,14 @@ class StructureService {
       console.log('🔍 Backend response data:', data);
 
       const responseData = data.data || data;
+
       console.log('🔍 Element data to transform:', responseData);
 
       if (responseData && typeof responseData === 'object') {
         const transformedElement = mapBackendToFrontend(responseData, elementData.type);
+
         console.log('🔍 Transformed element:', transformedElement);
+
         return {
           message: data.message || 'Elemento creado exitosamente',
           data: transformedElement
