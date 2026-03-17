@@ -89,8 +89,8 @@ export const authService = {
         throw new Error('Respuesta inválida del servidor');
       }
 
-      // Guardar SOLO usuario en localStorage (el token está en httpOnly cookie)
-      localStorage.setItem(USER_DATA_KEY, JSON.stringify(data.user));
+      // Persistencia por pestaña: sobrevive refresh, pero no una pestaña nueva.
+      sessionStorage.setItem(USER_DATA_KEY, JSON.stringify(data.user));
 
       return {
         user: data.user,
@@ -118,23 +118,25 @@ export const authService = {
     } catch (error) {
       console.error('Error en logout:', error);
     } finally {
-      // Limpiar localStorage
+      // Limpiar almacenamiento de sesión/local heredado
+      sessionStorage.removeItem(AUTH_TOKEN_KEY);
+      sessionStorage.removeItem(USER_DATA_KEY);
       localStorage.removeItem(AUTH_TOKEN_KEY);
       localStorage.removeItem(USER_DATA_KEY);
     }
   },
 
   getCurrentUser: (): User | null => {
-    const userData = localStorage.getItem(USER_DATA_KEY);
+    const userData = sessionStorage.getItem(USER_DATA_KEY);
     return userData ? JSON.parse(userData) : null;
   },
 
   getAuthToken: (): string | null => {
-    return localStorage.getItem(AUTH_TOKEN_KEY);
+    return sessionStorage.getItem(AUTH_TOKEN_KEY);
   },
 
   isAuthenticated: (): boolean => {
-    const user = localStorage.getItem(USER_DATA_KEY);
+    const user = sessionStorage.getItem(USER_DATA_KEY);
     // El token está en httpOnly cookie, solo verificamos el usuario
     return !!user;
   }

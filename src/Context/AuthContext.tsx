@@ -32,14 +32,7 @@ interface AuthProviderProps {
 }
 
 export const AuthProvider = ({ children }: AuthProviderProps) => {
-  const [user, setUser] = useState<User | null>(() => {
-    // Initialize synchronously so isAuthenticated is correct on first render.
-    // This prevents ProtectedRoute from flashing a redirect to /login
-    // and avoids the double component mount that caused duplicate API calls.
-    const saved = localStorage.getItem('auth_user');
-    if (!saved) return null;
-    try { return JSON.parse(saved); } catch { localStorage.removeItem('auth_user'); return null; }
-  });
+  const [user, setUser] = useState<User | null>(() => authService.getCurrentUser());
   const loading = false;
   const [error, setError] = useState<string | null>(null);
 
