@@ -153,7 +153,7 @@
   --color-gris-una: #A7A7A9;
   --color-gris-una-2: #888887;
   --color-gris-una-3: #444852;
-    --color-gris-una-4: #2d3037;
+  --color-gris-una-4: #2d3037;
   --color-azul-una: #034991;
   --color-azul-una-2: #2b57da;
   --color-blanco-una: #FFFFFF;
@@ -213,8 +213,8 @@
   --text-pagination: 0.875rem;      /* 14px - Paginación */
   --text-tooltip: 0.75rem;         /* 12px - Texto de tooltips */
 
-   /* SIDEBAR */
-  --sidebar-width: 14rem;            /* 256px - Ancho expandido */
+  /* SIDEBAR */
+  --sidebar-width: 14rem;            /* 224px - Ancho expandido */
   --sidebar-width-mobile: 18rem;     /* 288px - Ancho en móvil */
   --sidebar-width-icon: 3.50rem;     /* 56px - Ancho colapsado (solo íconos) */
   --height-sidebar-item: 3.25rem;    /* 52px - Altura fija del botón */

@@ -1054,6 +1054,7 @@ export const getIconByName = (iconName: string, size: IconProps['size'] = 'md'):
     'collapse': () => SystemIcons.interface.collapse({ size }),
     'calendar': () => SystemIcons.interface.calendar({ size }),
     'chevron-down': () => SystemIcons.interface.chevronDown({ size }),
+    'chevron-right': () => SystemIcons.interface.chevronRight({ size }),
     'cloud': () => SystemIcons.interface.cloud({ size }),
     'upload-arrow': () => SystemIcons.interface.uploadArrow({ size }),
     'clock': () => SystemIcons.interface.clock({ size }),
