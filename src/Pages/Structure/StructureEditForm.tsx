@@ -424,12 +424,14 @@ const validateForm = (): boolean => {
                   </Button>
                   <Button
                     onClick={() => handleAction('save')}
+                    isLoading={isLoading}
+                    loadingText="Guardando"
                     disabled={!hasChanges || isLoading}
                     variant="primary"
                     standardWidth={true}
                     size="sm"
                   >
-                    {isLoading ? 'Guardando...' : 'Guardar'}
+                    Guardar
                   </Button>
                 </div>
               </div>

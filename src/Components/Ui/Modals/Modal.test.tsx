@@ -1,4 +1,4 @@
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { Modal } from './Modal';
 import React from 'react';
 
@@ -43,6 +43,32 @@ describe('Modal', () => {
     const confirmBtn = screen.getByText('Confirmar');
     fireEvent.click(confirmBtn);
     expect(onConfirm).toHaveBeenCalled();
+  });
+
+  it('bloquea la confirmación mientras espera una operación asíncrona', async () => {
+    let resolveConfirm: (() => void) | undefined;
+    const onConfirm = jest.fn(
+      () => new Promise<void>((resolve) => {
+        resolveConfirm = resolve;
+      })
+    );
+
+    render(<Modal {...defaultProps} variant="danger" message="¿Está seguro?" onConfirm={onConfirm} />);
+
+    const confirmBtn = screen.getByRole('button', { name: 'Confirmar' });
+    fireEvent.click(confirmBtn);
+
+    await waitFor(() => {
+      expect(screen.getByRole('status', { name: 'Procesando' })).toBeInTheDocument();
+    });
+
+    const processingButton = screen.getAllByRole('button').find((button) => button.getAttribute('aria-busy') === 'true');
+    expect(processingButton).toBeDisabled();
+
+    fireEvent.click(processingButton!);
+    expect(onConfirm).toHaveBeenCalledTimes(1);
+
+    resolveConfirm?.();
   });
 
   it('no renderiza nada si isOpen es false', () => {

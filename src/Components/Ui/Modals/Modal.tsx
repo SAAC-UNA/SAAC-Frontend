@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { Dialog, DialogBackdrop, DialogPanel, DialogTitle } from '@headlessui/react';
 import { SystemIcons } from '@/Components/Ui/Icons/SystemIcons';
 import { cn } from '@/Utils/ClassNames';
@@ -54,7 +54,7 @@ interface UnifiedModalProps {
   confirmLabel?: string;
   
   /** Función al confirmar */
-  onConfirm?: () => void;
+  onConfirm?: () => void | Promise<void>;
   
   /** Estado de carga del botón de confirmación */
   confirmLoading?: boolean;
@@ -92,6 +92,9 @@ export const Modal: React.FC<UnifiedModalProps> = React.memo(({
 }) => {
   const modalRef = useRef<HTMLDivElement>(null);
   const previousFocusRef = useRef<HTMLElement | null>(null);
+  const confirmGuardRef = useRef(false);
+  const [internalConfirmLoading, setInternalConfirmLoading] = useState(false);
+  const isConfirmPending = confirmLoading || internalConfirmLoading;
   
   // Determinar si estamos en modo básico o avanzado
   const isAdvancedMode = variant || message || onConfirm;
@@ -160,11 +163,18 @@ export const Modal: React.FC<UnifiedModalProps> = React.memo(({
       document.body.style.overflow = 'unset';
     };
   }, [isOpen]);
+
+  useEffect(() => {
+    if (!isOpen) {
+      confirmGuardRef.current = false;
+      setInternalConfirmLoading(false);
+    }
+  }, [isOpen]);
   
   // Manejo de tecla Escape
   useEffect(() => {
     const handleEscapeKey = (event: KeyboardEvent) => {
-      if (event.key === 'Escape' && closable && !confirmLoading) {
+      if (event.key === 'Escape' && closable && !isConfirmPending) {
         onClose();
       }
     };
@@ -173,21 +183,41 @@ export const Modal: React.FC<UnifiedModalProps> = React.memo(({
       document.addEventListener('keydown', handleEscapeKey);
       return () => document.removeEventListener('keydown', handleEscapeKey);
     }
-  }, [isOpen, closable, confirmLoading, onClose]);
+  }, [isOpen, closable, isConfirmPending, onClose]);
   
   // Handlers
   const handleOverlayClick = (event: React.MouseEvent<HTMLDivElement>) => {
-    if (event.target === event.currentTarget && closable && !confirmLoading) {
+    if (event.target === event.currentTarget && closable && !isConfirmPending) {
       onClose();
     }
   };
-  
-  const handleConfirm = () => {
-    onConfirm?.();
+
+  const isPromiseLike = (value: unknown): value is Promise<void> => {
+    return typeof value === 'object' && value !== null && 'then' in value && typeof value.then === 'function';
+  };
+
+  const handleConfirm = async () => {
+    if (!onConfirm || confirmLoading || confirmGuardRef.current) {
+      return;
+    }
+
+    confirmGuardRef.current = true;
+
+    try {
+      const result = onConfirm();
+
+      if (isPromiseLike(result)) {
+        setInternalConfirmLoading(true);
+        await result;
+      }
+    } finally {
+      confirmGuardRef.current = false;
+      setInternalConfirmLoading(false);
+    }
   };
   
   const handleClose = () => {
-    if (!confirmLoading) {
+    if (!isConfirmPending) {
       onClose();
     }
   };
@@ -233,7 +263,7 @@ export const Modal: React.FC<UnifiedModalProps> = React.memo(({
                   type="button"
                   className="rounded-full bg-gray-100 p-2 text-gray-500 hover:bg-gray-200 hover:text-gray-700 focus:outline-none transition-all duration-200"
                   onClick={handleClose}
-                  disabled={confirmLoading}
+                  disabled={isConfirmPending}
                   aria-label="Cerrar modal"
                 >
                   <SystemIcons.interface.closeCircle className="h-5 w-5" />
@@ -301,7 +331,7 @@ export const Modal: React.FC<UnifiedModalProps> = React.memo(({
                       <Button
                         variant="secondary"
                         onClick={handleClose}
-                        disabled={confirmLoading}
+                        disabled={isConfirmPending}
                         standardWidth={true}
                       >
                         {cancelLabel}
@@ -312,10 +342,12 @@ export const Modal: React.FC<UnifiedModalProps> = React.memo(({
                       <Button
                         variant="primary"
                         onClick={handleConfirm}
-                        disabled={confirmLoading}
+                        disabled={isConfirmPending}
+                        isLoading={isConfirmPending}
+                        loadingText="Procesando"
                         standardWidth={true}
                       >
-                        {confirmLoading ? 'Procesando...' : confirmLabel}
+                        {confirmLabel}
                       </Button>
                     )}
                   </>

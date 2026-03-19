@@ -142,7 +142,6 @@ const RolesRepository: React.FC = () => {
                 variant="secondary"
                 className="gap-2"
               >
-                <SystemIcons.actions.add className= {`${ICON_SIZES.button}`} />
                 Crear
               </Button>
             </div>

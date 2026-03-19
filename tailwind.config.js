@@ -15,6 +15,8 @@ module.exports = {
       animation: {
         'slide-in': 'slide-in 0.3s ease-out',
         'fade-in': 'fade-in 0.2s ease-out',
+        'shimmer': 'shimmer 2s linear infinite',
+        'ripple': 'ripple-effect 0.65s ease-out forwards',
       },
       keyframes: {
         'slide-in': {
@@ -24,6 +26,10 @@ module.exports = {
         'fade-in': {
           '0%': { opacity: '0' },
           '100%': { opacity: '1' },
+        },
+        'shimmer': {
+          '0%': { backgroundPosition: '200% center' },
+          '100%': { backgroundPosition: '-200% center' },
         },
       }
     },

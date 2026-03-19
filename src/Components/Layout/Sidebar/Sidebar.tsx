@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useSidebar } from '@/Context/SidebarContext';
 import { SidebarItem } from './SidebarItem';
 import { getNavigationItems } from '@/Navigation';
@@ -26,6 +26,11 @@ export const ModernSidebar: React.FC<SidebarProps> = ({
   const { isMobile, state, openMobile, setOpenMobile } = useSidebar();
   const isCollapsed = state === 'collapsed' && !isMobile;
 
+  // Hover: expande visualmente cuando está colapsado, sin afectar el layout del MainContent
+  const [isHovered, setIsHovered] = useState(false);
+  const isVisuallyExpanded = !isCollapsed || isHovered;
+  const isItemCollapsed = isCollapsed && !isHovered;
+
   const { user } = useAuth();
 
   const sidebarContent = (
@@ -39,7 +44,7 @@ export const ModernSidebar: React.FC<SidebarProps> = ({
           rel="noopener noreferrer"
           className={cn(
             'transition-opacity duration-300 ease-in-out',
-            isCollapsed ? 'opacity-0 pointer-events-none' : 'opacity-100'
+            isItemCollapsed ? 'opacity-0 pointer-events-none' : 'opacity-100'
           )}
         >
           <h1 className={`${TYPOGRAPHY.pageTitle} text-blanco-una font-semibold`}>
@@ -62,7 +67,7 @@ export const ModernSidebar: React.FC<SidebarProps> = ({
             <SidebarItem 
               key={item.id} 
               item={item}
-              isCollapsed={isCollapsed}
+              isCollapsed={isItemCollapsed}
             />
           ))}
         </div>
@@ -111,16 +116,17 @@ export const ModernSidebar: React.FC<SidebarProps> = ({
         data-collapsible={state === 'collapsed' ? collapsible : ''}
         data-variant={variant}
         data-side={side}
+        onMouseEnter={() => setIsHovered(true)}
+        onMouseLeave={() => setIsHovered(false)}
       >
-        {/* Gap del sidebar en desktop — mantiene espacio según anclaje y estado */}
+        {/* Gap del sidebar en desktop — se expande con el estado visual (hover + toggle) */}
         <div
           className={cn(
             'relative bg-transparent transition-[width] duration-300 ease-in-out',
-            side === 'left' ? 'w-[var(--sidebar-width)]' : 'w-[calc(var(--sidebar-width)+0.75rem)]',
             side === 'left'
-              ? 'group-data-[state=collapsed]:w-[var(--sidebar-width-icon)]'
-              : 'group-data-[state=collapsed]:w-[calc(var(--sidebar-width-icon)+0.75rem)]',
-            collapsible === 'offcanvas' && 'group-data-[state=collapsed]:w-0'
+              ? (isVisuallyExpanded ? 'w-[var(--sidebar-width)]' : 'w-[var(--sidebar-width-icon)]')
+              : (isVisuallyExpanded ? 'w-[calc(var(--sidebar-width)+0.75rem)]' : 'w-[calc(var(--sidebar-width-icon)+0.75rem)]'),
+            collapsible === 'offcanvas' && !isVisuallyExpanded && 'w-0'
           )}
         />
         
@@ -135,14 +141,16 @@ export const ModernSidebar: React.FC<SidebarProps> = ({
                 ? '-left-[var(--sidebar-width)]'
                 : '-right-[var(--sidebar-width)]'
             ),
-            state === 'collapsed' && collapsible === 'icon' && 'w-[var(--sidebar-width-icon)]',
+            !isVisuallyExpanded && collapsible === 'icon' && 'w-[var(--sidebar-width-icon)]',
             className
           )}
         >
           <div
             className={cn(
               'bg-rojo-una-2 flex h-full w-full flex-col overflow-hidden',
-              side === 'left' ? 'rounded-l-none rounded-r-3xl' : 'rounded-corner',
+              side === 'left'
+                ? 'rounded-l-none [border-top-right-radius:var(--radius-lg)] [border-bottom-right-radius:var(--radius-lg)]'
+                : 'rounded-corner-lg',
               {/** shadow-2xl */}
             )}
           >

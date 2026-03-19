@@ -1,4 +1,5 @@
 import React from 'react';
+import { motion } from 'framer-motion';
 import { cn } from '@/Utils/ClassNames';
 import { TYPOGRAPHY } from '@/Constants/Typography';
 
@@ -10,20 +11,26 @@ interface SidebarLabelProps {
 
 /**
  * Texto del sidebar
- * Responsabilidad: tipografía y truncado del label.
- * Totalmente independiente de la altura del botón y del tamaño del ícono.
- * Usa transición de opacidad en lugar de desmontado para una animación fluida.
+ * Usa Framer Motion para animar opacity + display simultáneamente (CSS solo no puede).
+ * En hover el texto se desplaza ligeramente a la derecha, igual que el prompt de Aceternity.
  */
 export const SidebarLabel: React.FC<SidebarLabelProps> = ({ label, isCollapsed = false, isActive = false }) => {
   return (
-    <span className={cn(
-      'truncate transition-[opacity,max-width,filter] duration-300 ease-in-out',
-      'group-hover/btn:brightness-125',
-      TYPOGRAPHY.sidebarItem,
-      isActive ? 'text-rojo-una-2' : 'text-blanco-una-2',
-      isCollapsed ? 'opacity-0 max-w-0 overflow-hidden' : 'opacity-100 max-w-full',
-    )}>
+    <motion.span
+      animate={{
+        display: isCollapsed ? 'none' : 'inline-block',
+        opacity: isCollapsed ? 0 : 1,
+      }}
+      transition={{ duration: 0.2, ease: 'easeInOut' }}
+      className={cn(
+        'truncate whitespace-pre inline-block',
+        'group-hover/btn:translate-x-1 transition-transform duration-150',
+        'group-hover/btn:brightness-125',
+        TYPOGRAPHY.sidebarItem,
+        isActive ? 'text-rojo-una-2' : 'text-blanco-una-2',
+      )}
+    >
       {label}
-    </span>
+    </motion.span>
   );
 };

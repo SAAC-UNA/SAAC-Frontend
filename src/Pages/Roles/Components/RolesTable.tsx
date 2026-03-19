@@ -140,14 +140,6 @@ export const RolesTable: React.FC<RolesTableProps> = ({
             )
         },
         {
-            key: 'status',
-            header: 'Estado',
-            align: 'center',
-            render: (_: unknown) => (
-                <StatusBadge label="Activo (no hay sección de estado)" colorClasses="text-verde-dark bg-verde-ring" />
-            )
-        },
-        {
             key: 'actions',
             header: 'Acciones',
             align: 'center',

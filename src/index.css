@@ -127,6 +127,18 @@
     opacity: 0;
   }
 }
+/*! Animación de efecto ripple para los botones 17-03-2026 */
+
+@keyframes ripple-effect {
+  0% {
+    transform: translate(-50%, -50%) scale(0);
+    opacity: 0.35;
+  }
+  100% {
+    transform: translate(-50%, -50%) scale(10);
+    opacity: 0;
+  }
+}
 
 .pfile {
   animation-delay: calc(var(--i) * 0.6s);
@@ -208,7 +220,12 @@
   --height-sidebar-item: 3.25rem;    /* 52px - Altura fija del botón */
   --padding-sidebar-x: 1rem;         /* 16px - Padding horizontal del botón */
   --size-sidebar-icon: 2rem;         /* 32px - Tamaño del ícono */
-  --radius-sidebar-item: 1.25rem;    /* 20px - Radio de las esquinas del botón y curvas decorativas */
+  --radius-sm: 0.5rem;               /* 8px - Inputs, badges y elementos compactos */
+  --radius-md: 0.875rem;             /* 14px - Cards, botones y contenedores estándar */
+  --radius-lg: 1.25rem;              /* 20px - Modales, sidebar y contenedores destacados */
+  --radius-full: 9999px;             /* Full - Pills y formas completamente redondeadas */
+  --radius-sidebar-item: var(--radius-lg); /* Alias semántico para el sidebar */
+  --radius-corner: var(--radius-md); /* Alias de compatibilidad para rounded-corner */
 
   /* Tamaño de button */
   --width-button: 8rem; /* 128px - Ancho mínimo estándar para botones de contenido */
@@ -376,12 +393,25 @@
 
 /* ===== UTILIDADES ADICIONALES ===== */
 /* Transiciones, sombras, efectos especiales y scrollbars */
-/* TODO Revisar si hay contradicción entre esto y los tamaños definidos en Typography.ts */
 @layer utilities {
 
   /*! ===== Border radius del sistema ===== 05-03-2026 */
+  /* TODO: hay que unificar estos redondeos a lo largo del sistema */
+  .rounded-corner-sm {
+    border-radius: var(--radius-sm);
+  }
+
+  .rounded-corner-md,
   .rounded-corner {
-    border-radius: 14px;
+    border-radius: var(--radius-md);
+  }
+
+  .rounded-corner-lg {
+    border-radius: var(--radius-lg);
+  }
+
+  .rounded-corner-full {
+    border-radius: var(--radius-full);
   }
 
   /*! ===== TIPOGRAFÍA ESTANDARIZADA ===== 14-02-2026 */

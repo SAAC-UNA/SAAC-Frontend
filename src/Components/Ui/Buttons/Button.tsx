@@ -2,28 +2,167 @@
  * Button - Componente de botón reutilizable del Design System SAAC-UNA
  *
  * Características:
- * - Múltiples variantes (primary, secondary, outline, ghost, transparent)
- * - Sistema de tamaños responsivo integrado
- * - Estados de loading, disabled, fullWidth
- * - Colores consistentes con la marca UNA
- * - Transiciones suaves y accesibilidad
+ * - Múltiples variantes usando class-variance-authority (CVA)
+ * - Variantes filled (primary, secondary, success) y bordered (tertiary, outline, error)
+ * - Variantes premium: shimmer (gradiente animado) y glow (sombra azul)
+ * - Soporte para íconos a la izquierda y derecha (leftIcon / rightIcon)
+ * - Estados de loading con animación de entrada/salida
+ * - Accesibilidad: aria-busy, aria-hidden en capas de loading
  */
-import React from 'react';
+import React, { useState } from 'react';
+import { cva, type VariantProps } from 'class-variance-authority';
 import { cn } from '@/Utils/ClassNames';
-import { getComponentSizeClasses, type ComponentSize } from '@/constants/ComponentSizes';
+import { getComponentSizeClasses } from '@/Constants/ComponentSizes';
 
-/**
- * Variantes disponibles para el componente Button
- */
-type ButtonVariant = 'primary' | 'secondary' | 'tertiary' | 'outline' | 'ghost' | 'transparent' | 'success' | 'tableView' | 'tableEdit' | 'tableDelete' | 'tablePower' | 'tablePowerInactive' | 'error';
+const buttonVariants = cva(
+  [
+    'inline-flex items-center justify-center whitespace-nowrap',
+    'font-poppins font-semibold',
+    'transition-all duration-150',
+    'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2',
+    'disabled:pointer-events-none disabled:opacity-50',
+    'rounded-corner-md',
+    'group relative overflow-hidden',
+  ].join(' '),
+  {
+    variants: {
+      variant: {
+        // ===== Variantes principales (filled) =====
+        primary: [
+          'bg-azul-una text-blanco-una border-0',
+          'hover:bg-azul-una/90',
+          'focus-visible:ring-azul-una',
+          '[--ripple-color:rgba(255,255,255,0.30)]',
+        ].join(' '),
 
-/**
- * Props del componente Button
- */
-interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
-  variant?: ButtonVariant;
-  size?: ComponentSize;
+        secondary: [
+          'bg-rojo-una-2 text-blanco-una-2 border-0',
+          'hover:bg-rojo-una-2/90',
+          'focus-visible:ring-rojo-una-2',
+          '[--ripple-color:rgba(255,255,255,0.30)]',
+        ].join(' '),
+
+        success: [
+          'bg-verde text-blanco-una border-0',
+          'hover:bg-verde/90',
+          'focus-visible:ring-verde',
+          '[--ripple-color:rgba(255,255,255,0.30)]',
+        ].join(' '),
+
+        // ===== Variantes de contorno (bordered) =====
+        tertiary: [
+          'bg-transparent text-gris-una border-2 border-gris-una',
+          'hover:bg-gris-una/5',
+          'focus-visible:ring-gris-una',
+          '[--ripple-color:rgba(167,167,169,0.25)]',
+        ].join(' '),
+
+        outline: [
+          'border border-gris-una/50 bg-transparent text-negro-una',
+          'hover:bg-gris-una/10',
+          'focus-visible:ring-gris-una',
+          '[--ripple-color:rgba(0,0,0,0.08)]',
+        ].join(' '),
+
+        error: [
+          'bg-transparent text-error-dark border-2 border-error',
+          'hover:bg-error/10',
+          'focus-visible:ring-error',
+          '[--ripple-color:rgba(239,68,68,0.18)]',
+        ].join(' '),
+
+        // ===== Variantes sutiles =====
+        ghost: [
+          'bg-transparent text-gris-una border-0',
+          'hover:bg-gris-una/10',
+          'focus-visible:ring-azul-una',
+          '[--ripple-color:rgba(3,73,145,0.12)]',
+        ].join(' '),
+
+        transparent: [
+          'bg-transparent text-azul-una border-0',
+          'hover:bg-azul-una/10',
+          'focus-visible:ring-azul-una',
+          '[--ripple-color:rgba(3,73,145,0.12)]',
+        ].join(' '),
+
+        // ===== Variantes premium =====
+        shimmer: [
+          'text-blanco-una border-0',
+          'bg-gradient-to-r from-azul-una via-azul-una-2 to-azul-una',
+          '[background-size:200%_auto]',
+          'animate-shimmer',
+          'focus-visible:ring-azul-una',
+          '[--ripple-color:rgba(255,255,255,0.30)]',
+        ].join(' '),
+
+        glow: [
+          'bg-azul-una text-blanco-una border-0',
+          'shadow-[0_4px_20px_rgba(3,73,145,0.25)]',
+          'hover:bg-azul-una/90 hover:shadow-[0_4px_30px_rgba(3,73,145,0.45)]',
+          'transition-shadow',
+          'focus-visible:ring-azul-una',
+          '[--ripple-color:rgba(255,255,255,0.30)]',
+        ].join(' '),
+
+        // ===== Variantes de tabla (sin ancho estándar ni estilos principales) =====
+        tableView: [
+          'bg-transparent text-info border-0 p-2',
+          'hover:bg-[var(--color-info-light)] hover:text-info transition-colors duration-200',
+          'disabled:opacity-50 disabled:cursor-not-allowed',
+        ].join(' '),
+
+        tableEdit: [
+          'bg-transparent text-warning border-0 p-2',
+          'hover:bg-[var(--color-warning-light)] hover:text-warning transition-colors duration-200',
+          'disabled:opacity-50 disabled:cursor-not-allowed',
+        ].join(' '),
+
+        tableDelete: [
+          'bg-transparent text-error border-0 p-2',
+          'hover:bg-[var(--color-error-light)] hover:text-error transition-colors duration-200',
+          'disabled:opacity-50 disabled:cursor-not-allowed',
+        ].join(' '),
+
+        tablePower: [
+          'bg-transparent text-verde border-0 p-2',
+          'hover:bg-[var(--color-verde-light)] hover:text-verde transition-colors duration-200',
+          'disabled:opacity-50 disabled:cursor-not-allowed',
+        ].join(' '),
+
+        tablePowerInactive: [
+          'bg-transparent text-gris-una border-0 p-2',
+          'hover:bg-[var(--color-gris-light)] hover:text-gris-una transition-colors duration-200',
+          'disabled:opacity-50 disabled:cursor-not-allowed',
+        ].join(' '),
+      },
+
+      size: {
+        sm: getComponentSizeClasses.button('sm'),
+        md: getComponentSizeClasses.button('md'),
+        lg: getComponentSizeClasses.button('lg'),
+      },
+    },
+    defaultVariants: {
+      variant: 'primary',
+      size: 'sm',
+    },
+  }
+);
+
+// Tipo derivado de CVA para uso externo
+export type ButtonVariant = NonNullable<VariantProps<typeof buttonVariants>['variant']>;
+
+// Variantes que no reciben ancho estándar automático
+const TABLE_VARIANTS: ButtonVariant[] = [
+  'tableView', 'tableEdit', 'tableDelete', 'tablePower', 'tablePowerInactive', 'ghost',
+];
+
+export interface ButtonProps
+  extends React.ButtonHTMLAttributes<HTMLButtonElement>,
+    VariantProps<typeof buttonVariants> {
   isLoading?: boolean;
+  loadingText?: string;
   fullWidth?: boolean;
   /** Para layouts flexbox específicos */
   flex?: boolean;
@@ -31,130 +170,56 @@ interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   responsive?: boolean;
   /** Aplica el ancho estándar de 128px para botones de modales */
   standardWidth?: boolean;
+  leftIcon?: React.ReactNode;
+  rightIcon?: React.ReactNode;
   children: React.ReactNode;
 }
 
-// Definición de estilos para cada variante del botón
-const VARIANT_CLASSES = {
-  // Botón principal con color Azul UNA
-  primary: [
-    'bg-transparent text-azul-una font-poppins font-semibold border-2 border-azul-una',
-    'hover:bg-azul-una/5 transition-colors duration-200',
-    'disabled:!bg-transparent disabled:!text-gris-una disabled:!border-gris-una/30 disabled:cursor-not-allowed'
-  ].join(' '),
-  
-  // Botón secundario con color Rojo UNA
-  secondary: [
-    'bg-transparent text-rojo-una-2 font-poppins font-semibold border-2 border-rojo-una-2', 
-    'hover:bg-rojo-una-2/5 transition-colors duration-200',
-    'disabled:!bg-transparent disabled:!text-gris-una disabled:!border-gris-una/30 disabled:cursor-not-allowed'
-  ].join(' '),
-
-  tertiary: [
-    'bg-transparent text-gris-una font-poppins font-semibold border-2 border-gris-una', 
-    'hover:bg-gris-una/5 transition-colors duration-200',
-    'disabled:!bg-transparent disabled:!text-gris-una disabled:!border-gris-una/30 disabled:cursor-not-allowed'
-  ].join(' '),
-
-  // Botón de éxito/activar con color verde
-  success: [
-    'btn-success font-poppins font-semibold', 
-    'transition-colors duration-200',
-    'disabled:!bg-transparent disabled:!text-gris-una disabled:!border-gris-una/30 disabled:cursor-not-allowed'
-  ].join(' '),
-
-  // Botón transparente para acciones discretas
-  transparent: [
-    'bg-transparent text-azul-una font-poppins font-semibold border-0', 
-    'hover:bg-azul-una/10 transition-colors duration-200',
-    'disabled:!bg-transparent disabled:!text-gris-una disabled:!border-gris-una/30 disabled:cursor-not-allowed'
-  ].join(' '),
-
-  // Botón con solo borde
-  outline: 'border border-gris-una/30 bg-transparent text-negro-una font-poppins font-semibold hover:bg-gris-una/5 disabled:!bg-transparent disabled:!text-gris-una disabled:!border-gris-una/30 disabled:cursor-not-allowed',
-  // Botón fantasma para acciones sutiles
-  ghost: 'bg-transparent text-gris-una hover:bg-gris-una/10 disabled:!bg-transparent disabled:!text-gris-una disabled:!border-gris-una/30 disabled:cursor-not-allowed',
-  
-  // Botones de la tabla (ojo, lapiz, basurero)
-  tableView: [
-    'bg-transparent text-info border-0 p-2',
-    'hover:bg-[var(--color-info-light)] hover:text-info transition-colors duration-200',
-    'disabled:opacity-50 disabled:cursor-not-allowed'
-  ].join(' '),
-  
-  tableEdit: [
-    'bg-transparent text-warning border-0 p-2',
-    'hover:bg-[var(--color-warning-light)] hover:text-warning transition-colors duration-200',
-    'disabled:opacity-50 disabled:cursor-not-allowed'
-  ].join(' '),
-  
-  tableDelete: [
-    'bg-transparent text-error border-0 p-2',
-    'hover:bg-[var(--color-error-light)] hover:text-error transition-colors duration-200',
-    'disabled:opacity-50 disabled:cursor-not-allowed'
-  ].join(' '),
-
-  tablePower: [
-    'bg-transparent text-verde border-0 p-2',
-    'hover:bg-[var(--color-verde-light)] hover:text-verde transition-colors duration-200',
-    'disabled:opacity-50 disabled:cursor-not-allowed'
-  ].join(' '),
-
-  tablePowerInactive: [
-    'bg-transparent text-gris-una border-0 p-2',
-    'hover:bg-[var(--color-gris-light)] hover:text-gris-una transition-colors duration-200',
-    'disabled:opacity-50 disabled:cursor-not-allowed'
-  ].join(' '),
-
-  // Botón para manejo de errores
-  error: [
-    'bg-transparent text-error-dark font-poppins font-semibold border-2 border-error',
-    'hover:bg-error/10 transition-colors duration-200',
-    'disabled:opacity-50 disabled:cursor-not-allowed'
-  ].join(' ')
-};
-
-// Variantes de tabla: no reciben ancho mínimo estándar
-const TABLE_VARIANTS: ButtonVariant[] = ['tableView', 'tableEdit', 'tableDelete', 'tablePower', 'tablePowerInactive', 'ghost'];
-
-export const Button: React.FC<ButtonProps> = ({
+const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(({
   variant = 'primary',
   size = 'sm',
   isLoading = false,
+  loadingText,
   fullWidth = false,
   flex = false,
   responsive = false,
   standardWidth = false,
+  leftIcon,
+  rightIcon,
   className,
   disabled,
+  onPointerDown,
   children,
   ...props
-}) => {
-  const baseClasses = [
-    'font-poppins transition-colors duration-200',
-    'focus:outline-none disabled:cursor-not-allowed',
-    'inline-flex items-center justify-center gap-2',
-    'rounded-corner'
-  ];
+}, ref) => {
+  const isTableVariant = TABLE_VARIANTS.includes(variant as ButtonVariant);
+  const resolvedLoadingText = loadingText || (typeof children === 'string' ? children : 'Procesando');
 
-  const isTableVariant = TABLE_VARIANTS.includes(variant);
+  // ===== Ripple effect =====
+  const [ripples, setRipples] = useState<Array<{ id: number; x: number; y: number }>>([]);
 
-  // Lógica para manejo responsivo
+  const handlePointerDown = (e: React.PointerEvent<HTMLButtonElement>) => {
+    if (!isTableVariant) {
+      const rect = e.currentTarget.getBoundingClientRect();
+      const id = Date.now();
+      setRipples(prev => [...prev, { id, x: e.clientX - rect.left, y: e.clientY - rect.top }]);
+      setTimeout(() => setRipples(prev => prev.filter(r => r.id !== id)), 700);
+    }
+    onPointerDown?.(e);
+  };
+
   const getResponsiveClasses = () => {
     if (!responsive) return '';
-    
-    // En desktop: ancho mínimo y padding específico (128px estándar)
-    // En mobile: flex para ocupar todo el ancho
     return 'flex-1 lg:flex-none lg:min-w-32 lg:px-8';
   };
 
   return (
     <button
+      ref={ref}
       className={cn(
-        baseClasses,
-        getComponentSizeClasses.button(size),
-        VARIANT_CLASSES[variant],
-        // Ancho mínimo estándar automático para variantes no-tabla
+        buttonVariants({ variant, size }),
+        isLoading && 'select-none',
+        !isTableVariant && 'hover:scale-[1.02] active:scale-[0.97]',
         !isTableVariant && !fullWidth && !flex && !responsive && !standardWidth && 'w-button-standard',
         standardWidth && 'w-button-standard',
         fullWidth && !standardWidth && 'w-full',
@@ -163,9 +228,57 @@ export const Button: React.FC<ButtonProps> = ({
         className
       )}
       disabled={disabled || isLoading}
+      aria-busy={isLoading}
+      onPointerDown={handlePointerDown}
       {...props}
     >
-      {children}
+      {/* Capa ripple — renderizada bajo el contenido */}
+      {ripples.map(r => (
+        <span
+          key={r.id}
+          className="animate-ripple pointer-events-none absolute rounded-full"
+          style={{
+            left: r.x,
+            top: r.y,
+            width: '1.25rem',
+            height: '1.25rem',
+            backgroundColor: 'var(--ripple-color, rgba(255,255,255,0.25))',
+          }}
+          aria-hidden="true"
+        />
+      ))}
+      {/* Capa 1: Contenido normal — oculto durante loading */}
+      <span
+        className={cn(
+          'inline-flex items-center justify-center gap-2 transition-all duration-200',
+          isLoading ? 'translate-y-1 opacity-0' : 'translate-y-0 opacity-100'
+        )}
+        aria-hidden={isLoading}
+      >
+        {leftIcon && <span aria-hidden="true" className="inline-flex">{leftIcon}</span>}
+        {children}
+        {rightIcon && <span aria-hidden="true" className="inline-flex">{rightIcon}</span>}
+      </span>
+
+      {/* Capa 2: Overlay de loading — oculto en reposo para no duplicar texto en DOM */}
+      <span
+        className={cn(
+          'pointer-events-none absolute inset-0 flex items-center justify-center gap-2 transition-all duration-200',
+          isLoading ? 'translate-y-0 opacity-100' : 'hidden -translate-y-1 opacity-0'
+        )}
+        aria-hidden={!isLoading}
+      >
+        <span
+          className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent"
+          role="status"
+          aria-label={resolvedLoadingText}
+        />
+        <span>{resolvedLoadingText}</span>
+      </span>
     </button>
   );
-};
+});
+
+Button.displayName = 'Button';
+
+export { Button, buttonVariants };

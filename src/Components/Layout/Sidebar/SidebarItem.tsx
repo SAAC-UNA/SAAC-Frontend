@@ -62,8 +62,8 @@ const SidebarItemComponent: React.FC<SidebarItemProps> = ({
     <div className={cn('relative', !layoutCollapsed && (isSubItem ? 'ml-3' : 'ml-1'), layoutCollapsed && 'mx-1')}>
       <SidebarButton isActive={isActive} isCollapsed={layoutCollapsed} onClick={handleClick}>
 
-        {/* Ícono + Label siempre juntos — gap se elimina cuando colapsado para no inflar el ancho */}
-        <span className={cn('flex items-center flex-1 min-w-0 h-full relative z-10 transition-transform duration-300 ease-out', !layoutCollapsed && 'group-hover/btn:translate-x-1.5', layoutCollapsed ? 'gap-1' : 'gap-3')}>
+        {/* Ícono siempre visible — no se mueve con hover, solo el label lo hace */}
+        <span className={cn('flex items-center flex-1 min-w-0 h-full relative z-10', layoutCollapsed ? 'gap-1 justify-center' : 'gap-3')}>
           {item.icon && (
             <SidebarIcon icon={item.icon} isActive={isActive} />
           )}

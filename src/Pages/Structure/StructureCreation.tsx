@@ -414,11 +414,12 @@ const handleSubmit = async (e: React.FormEvent) => {
               type="submit"
               variant="primary"
               isLoading={isSubmitting}
+              loadingText="Creando"
               disabled={isSubmitting}
               standardWidth={true}
               size="sm"
             >
-              {isSubmitting ? 'Creando...' : 'Crear'}
+              Crear
             </Button>
           </div>
         </form>

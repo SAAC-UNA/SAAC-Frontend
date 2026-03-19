@@ -42,7 +42,7 @@ export const ScreenContainer: React.FC<ScreenContainerProps> = ({
   return (
     <div className={getOuterContainer()}>
       <div className={cn(
-        'relative w-full bg-blanco-una-2 rounded-corner shadow-lg border border-gris-una/20 transition-all duration-300 min-h-app',
+        'relative w-full bg-blanco-una-2 rounded-corner-lg shadow-lg border border-gris-una/20 transition-all duration-300 min-h-app',
         className
       )}>
         <div className={getFormPadding()}>

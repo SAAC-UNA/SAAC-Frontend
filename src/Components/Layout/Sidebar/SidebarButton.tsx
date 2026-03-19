@@ -42,7 +42,7 @@ export const SidebarButton: React.FC<SidebarButtonProps> = ({
       {isActive && (
         <div className="absolute inset-0 rounded-l-sidebar-item bg-blanco-una-2 pointer-events-none">
           <div
-            className="absolute right-0 rounded-full"
+            className="absolute right-0 rounded-corner-full"
             style={{
               top: 'calc(-1 * var(--radius-sidebar-item))',
               width: 'var(--radius-sidebar-item)',
@@ -51,7 +51,7 @@ export const SidebarButton: React.FC<SidebarButtonProps> = ({
             } as React.CSSProperties}
           />
           <div
-            className="absolute right-0 rounded-full"
+            className="absolute right-0 rounded-corner-full"
             style={{
               bottom: 'calc(-1 * var(--radius-sidebar-item))',
               width: 'var(--radius-sidebar-item)',
