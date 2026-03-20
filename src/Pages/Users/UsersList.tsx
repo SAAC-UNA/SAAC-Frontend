@@ -13,8 +13,8 @@ import { SearchInput } from '@/Components/Ui/Forms/SearchInput';
 
 // Lazy load de modales para mejor rendimiento
 const UserDetailsModal = lazy(() => import('./Components/UserDetailsModal').then(m => ({ default: m.UserDetailsModal })));
-const DeleteConfirmationModal = lazy(() => import('@/Components/Ui/Modals/DeleteConfirmationModal').then(m => ({ default: m.DeleteConfirmationModal })));
 const SuccessModal = lazy(() => import('@/Components/Ui/Modals/SuccessModal').then(m => ({ default: m.SuccessModal })));
+import { Modal } from '@/Components/Ui/Modals/Modal';
 import { getContextualInfo } from '@/Constants/ModuleInfo';
 import { useUsers } from '@/Hooks/UseUsers';
 import type { User } from '@/Services/UserService';
@@ -164,47 +164,49 @@ const UsersRepository: React.FC = () => {
 
         {/* Modal de confirmación para activación */}
         {stateChangeModalState.user?.status === 'inactive' && (
-          <Suspense fallback={null}>
-            <DeleteConfirmationModal
+          <Modal
             isOpen={stateChangeModalState.isOpen}
             onClose={closeStateChangeModal}
             onConfirm={confirmStateChange}
             title="Confirmar activación de usuario"
-            message={
-              <>
-                ¿Está seguro de que desea activar al usuario <strong>"{stateChangeModalState.user?.name}"</strong>?
-              </>
-            }
+            variant="success"
             confirmLabel="Activar"
             cancelLabel="Cancelar"
-            variant="warning"
-            isLoading={isLoading}
-            description="Al activar este usuario, podrá acceder al sistema con sus credenciales."
-          />
-          </Suspense>
+            confirmLoading={isLoading}
+            showCancel
+            showConfirm
+          >
+            <p className="text-sm text-gris-una-2 leading-relaxed">
+              ¿Está seguro de que desea activar al usuario <strong>"{stateChangeModalState.user?.name}"</strong>?
+            </p>
+            <p className="mt-2 text-sm text-gris-una-2">
+              Al activar este usuario, podrá acceder al sistema con sus credenciales.
+            </p>
+          </Modal>
         )}
 
         {/* Modal de confirmación para inactivación */}
         {stateChangeModalState.user?.status === 'active' && (
-          <Suspense fallback={null}>
-            <DeleteConfirmationModal
+          <Modal
             isOpen={stateChangeModalState.isOpen}
             onClose={closeStateChangeModal}
             onConfirm={confirmStateChange}
             title="Confirmar inactivación de usuario"
-            message={
-              <>
-                ¿Está seguro de que desea inactivar al usuario <strong>"{stateChangeModalState.user?.name}"</strong>?
-              </>
-            }
+            variant="info"
             confirmLabel="Inactivar"
             cancelLabel="Cancelar"
-            variant="danger"
-            hideDefaultDangerMessage={true}
-            isLoading={isLoading}
-            description="Al inactivar este usuario, se revocará su acceso al sistema. Esta acción puede ser revertida en el futuro."
-          />
-          </Suspense>
+            confirmLoading={isLoading}
+            showCancel
+            showConfirm
+            footerMeta="Esta acción puede ser revertida en el futuro"
+          >
+            <p className="text-sm text-gris-una-2 leading-relaxed">
+              ¿Está seguro de que desea inactivar al usuario <strong>"{stateChangeModalState.user?.name}"</strong>?
+            </p>
+            <p className="mt-2 text-sm text-gris-una-2">
+              Al inactivar este usuario, se revocará su acceso al sistema.
+            </p>
+          </Modal>
         )}
 
         {/* Modal de éxito */}

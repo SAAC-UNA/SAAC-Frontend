@@ -150,6 +150,20 @@ export const MyEvidenceAssignmentsPage: React.FC = () => {
     setModalState(prev => ({...prev, showExtensionModal: false, selectedAssignmentForExtension: null}));
   };
 
+  const handleTableStatusChange = async (assignment: EvidenceAssignment, newStatus: 'en_progreso' | 'completado') => {
+    try {
+      const updated = await evidenceAssignmentService.updateStatus(assignment.evidencia_asignacion_id, { estado: newStatus });
+      handleStatusUpdate(updated);
+      showToast({
+        type: 'success',
+        title: 'Estado actualizado',
+        message: `Evidencia marcada como ${newStatus === 'completado' ? 'completada' : 'en progreso'}`
+      });
+    } catch {
+      showToast({ type: 'error', title: 'Error', message: 'No se pudo actualizar el estado' });
+    }
+  };
+
   const handleFiltersChange = (newFilters: AssignmentFilters) => {
     setFilters(newFilters);
     setCurrentPage(1);
@@ -199,6 +213,7 @@ export const MyEvidenceAssignmentsPage: React.FC = () => {
             loading={loading}
             onViewDetails={handleViewDetails}
             onUploadFiles={handleUploadFiles}
+            onStatusChange={handleTableStatusChange}
             onRequestExtension={handleRequestExtension}
             hasFilters={filters.estado !== 'todos' || filters.search !== ''}
             pagination={totalPages > 1 ? {
@@ -215,8 +230,6 @@ export const MyEvidenceAssignmentsPage: React.FC = () => {
         <EvidenceAssignmentDetail
           assignmentId={selectedAssignment.evidencia_asignacion_id}
           onClose={handleCloseDetail}
-          onStatusUpdate={handleStatusUpdate}
-          onUploadFiles={handleUploadFiles}
         />
       )}
 

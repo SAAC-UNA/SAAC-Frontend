@@ -8,6 +8,9 @@ import { Modal } from '@/Components/Ui/Modals/Modal';
 import { Button } from '@/Components/Ui/Buttons/Button';
 import { Textarea } from '@/Components/Ui/Forms/Textarea';
 import { DatePicker } from '@/Components/Ui/Calendar/DatePicker';
+import { SystemIcons } from '@/Components/Ui/Icons/SystemIcons';
+import { ICON_SIZES } from '@/Constants/Components';
+import { TYPOGRAPHY } from '@/Constants/Typography';
 import type { ExtensionRequestFormData } from '@/Types/ExtensionRequestTypes';
 
 interface CreateExtensionRequestModalProps {
@@ -106,6 +109,8 @@ export const CreateExtensionRequestModal: React.FC<CreateExtensionRequestModalPr
       onClose={handleClose}
       title="Solicitar Ampliación de Plazo"
       size="md"
+      variant="warning"
+      heroIcon={<SystemIcons.interface.clock className={`${ICON_SIZES.md} text-blanco-una`} />}
       footerButtons={
         <>
           <Button
@@ -131,16 +136,16 @@ export const CreateExtensionRequestModal: React.FC<CreateExtensionRequestModalPr
         {/* Información de la evidencia */}
         {nombreEvidencia && (
           <div className="bg-blue-50 border border-blue-200 rounded-corner p-3">
-            <p className="text-sm font-medium text-blue-900">Evidencia:</p>
-            <p className="text-sm text-blue-700">{nombreEvidencia}</p>
+            <p className={`${TYPOGRAPHY.modal.body} font-medium text-blue-900`}>Evidencia:</p>
+            <p className={`${TYPOGRAPHY.modal.body} text-blue-700`}>{nombreEvidencia}</p>
           </div>
         )}
 
         {/* Fecha límite actual */}
         {fechaLimiteActual && (
           <div className="bg-yellow-50 border border-yellow-200 rounded-corner p-3">
-            <p className="text-sm font-medium text-yellow-900">Fecha límite actual:</p>
-            <p className="text-sm text-yellow-700">
+            <p className={`${TYPOGRAPHY.modal.body} font-medium text-yellow-900`}>Fecha límite actual:</p>
+            <p className={`${TYPOGRAPHY.modal.body} text-yellow-700`}>
               {new Date(fechaLimiteActual).toLocaleDateString('es-ES', {
                 day: '2-digit',
                 month: 'long',
@@ -195,7 +200,7 @@ export const CreateExtensionRequestModal: React.FC<CreateExtensionRequestModalPr
 
         {/* Información adicional */}
         <div className="bg-gray-50 border border-gray-200 rounded-corner p-3">
-          <p className="text-xs text-gray-600">
+          <p className={`${TYPOGRAPHY.form.helper} text-gris-una`}>
             <strong>Nota:</strong> La solicitud será revisada por el encargado de acreditación,
             quien decidirá si aprobar o rechazar la ampliación del plazo.
           </p>

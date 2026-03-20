@@ -54,15 +54,15 @@ export const CreateConfirmationModal: React.FC<CreateConfirmationModalProps> = (
             onConfirm={onConfirm}
             variant={variant}
             title={title}
-            message={finalMessage}
             confirmLabel={confirmLabel}
             cancelLabel={cancelLabel}
             confirmLoading={isLoading}
-            showCancel={true}
-            showConfirm={true}
+            showCancel
+            showConfirm
         >
+            <p className="text-sm text-gris-una-2 leading-relaxed">{finalMessage}</p>
             {description && (
-                <div className="mt-4 p-4 bg-gray-50 rounded-corner">
+                <div className="mt-3 p-4 bg-gray-50 rounded-corner">
                     <p className="text-sm text-gray-600">
                         <strong>Descripción:</strong> {description}
                     </p>

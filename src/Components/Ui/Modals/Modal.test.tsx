@@ -26,20 +26,17 @@ describe('Modal', () => {
     expect(defaultProps.onClose).toHaveBeenCalled();
   });
 
-  it('renderiza el mensaje y el icono en modo avanzado', () => {
-    render(<Modal {...defaultProps} variant="danger" message="¿Está seguro?" />);
+  it('renderiza el hero card con variante y el ícono SVG', () => {
+    render(<Modal {...defaultProps} variant="danger">¿Está seguro?</Modal>);
     expect(screen.getByText('¿Está seguro?')).toBeInTheDocument();
-    // Verificar que el contenedor del icono existe (el div con clases de icono)
-    const container = screen.getByText('¿Está seguro?').closest('.sm\\:flex');
-    expect(container).toBeInTheDocument();
-    // Verificar que hay un SVG en el documento (el icono)
+    // Verificar que hay SVGs en el documento (ícono en hero card + botón cerrar)
     const svgs = document.querySelectorAll('svg');
     expect(svgs.length).toBeGreaterThan(0);
   });
 
   it('llama onConfirm al hacer click en el botón de confirmar', () => {
     const onConfirm = jest.fn();
-    render(<Modal {...defaultProps} variant="danger" message="¿Está seguro?" onConfirm={onConfirm} />);
+    render(<Modal {...defaultProps} variant="danger" onConfirm={onConfirm}>¿Está seguro?</Modal>);
     const confirmBtn = screen.getByText('Confirmar');
     fireEvent.click(confirmBtn);
     expect(onConfirm).toHaveBeenCalled();
@@ -53,7 +50,7 @@ describe('Modal', () => {
       })
     );
 
-    render(<Modal {...defaultProps} variant="danger" message="¿Está seguro?" onConfirm={onConfirm} />);
+    render(<Modal {...defaultProps} variant="danger" onConfirm={onConfirm}>¿Está seguro?</Modal>);
 
     const confirmBtn = screen.getByRole('button', { name: 'Confirmar' });
     fireEvent.click(confirmBtn);

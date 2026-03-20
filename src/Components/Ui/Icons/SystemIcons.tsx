@@ -517,6 +517,25 @@ export const SystemIcons = {
       </svg>
     ),
 
+    /** Ciclo/reinicio - Para marcar como en progreso */
+    inProgress: ({ className, size, color }: IconProps) => (
+      <svg
+        className={`${getSizeClasses(size)} ${className || ''}`}
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke={color || "currentColor"}
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth="2"
+        xmlns="http://www.w3.org/2000/svg"
+      >
+        <path d="M12 7.5V12" />
+        <path d="M15.9 14.25 12 12" />
+        <path d="M6.731 9.348h-3.75v-3.75" />
+        <path d="M6.169 17.831a8.25 8.25 0 1 0 0-11.662L2.98 9.347" />
+      </svg>
+    ),
+
     /** Chevron down - Para dropdowns y secciones colapsables */
     chevronDown: ({ className, size, color }: IconProps) => (
       <svg
@@ -599,11 +618,11 @@ export const SystemIcons = {
     // ===== ICONOS ESPECÍFICOS PARA MODALES =====
     
     /** Círculo de información - Para mensajes informativos */
-    informationCircle: ({ className, size, color = 'var(--color-info)' }: IconProps) => (
+    informationCircle: ({ className, size }: IconProps) => (
       <svg
         className={`${getSizeClasses(size)} ${className || ''}`}
         viewBox="0 0 24 24"
-        fill={color}
+        fill="currentColor"
       >
         <path
           fillRule="evenodd"

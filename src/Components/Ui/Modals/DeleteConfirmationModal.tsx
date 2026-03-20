@@ -1,12 +1,7 @@
-/**
- * DeleteConfirmationModal - Modal de confirmación para operaciones de eliminación
- * 
- * Utiliza el componente Modal base con variant="danger" o "warning".
- * Los botones tienen ancho fijo de 128px (standardWidth={true}) por estandarización.
- */
-
 import React from 'react';
 import { Modal } from './Modal';
+import { TYPOGRAPHY } from '@/Constants/Typography';
+import { cn } from '@/Utils/ClassNames';
 
 interface DeleteConfirmationModalProps {
   isOpen: boolean;
@@ -20,7 +15,7 @@ interface DeleteConfirmationModalProps {
   isLoading?: boolean;
   variant?: 'danger' | 'warning';
   description?: string;
-  hideDefaultDangerMessage?: boolean;
+  footerMeta?: string;
 }
 
 export const DeleteConfirmationModal: React.FC<DeleteConfirmationModalProps> = ({
@@ -35,7 +30,7 @@ export const DeleteConfirmationModal: React.FC<DeleteConfirmationModalProps> = (
   isLoading = false,
   variant = 'danger',
   description,
-  hideDefaultDangerMessage = false
+  footerMeta = 'Esta acción no se puede deshacer',
 }) => {
   const defaultMessage = itemName
     ? (
@@ -45,7 +40,7 @@ export const DeleteConfirmationModal: React.FC<DeleteConfirmationModalProps> = (
       )
     : '¿Está seguro de que desea eliminar este elemento?';
 
-  const finalMessage = message || defaultMessage;
+  const finalMessage = message ?? defaultMessage;
 
   return (
     <Modal
@@ -53,20 +48,18 @@ export const DeleteConfirmationModal: React.FC<DeleteConfirmationModalProps> = (
       onClose={onClose}
       onConfirm={onConfirm}
       variant={variant}
-      hideDefaultDangerMessage={hideDefaultDangerMessage}
       title={title}
-      message={finalMessage}
       confirmLabel={confirmLabel}
       cancelLabel={cancelLabel}
       confirmLoading={isLoading}
-      showCancel={true}
-      showConfirm={true}
+      showCancel
+      showConfirm
+      footerMeta={footerMeta}
     >
+      <p className={cn(TYPOGRAPHY.modal.body, 'text-gris-una-2 leading-relaxed')}>{finalMessage}</p>
       {description && (
-        <div className="mt-4 p-3 bg-[var(--color-error-light)] border border-[var(--color-error-ring)] rounded-corner">
-          <p className="text-sm text-error-dark">
-            {description}
-          </p>
+        <div className="mt-3 p-3 bg-[var(--color-error-light)] border border-[var(--color-error-ring)] rounded-corner">
+          <p className={cn(TYPOGRAPHY.modal.body, 'text-error-dark')}>{description}</p>
         </div>
       )}
     </Modal>

@@ -16,7 +16,7 @@ import { SystemIcons } from '@/Components/Ui/Icons/SystemIcons';
 import { ButtonWithTooltip } from './ButtonWithTooltip';
 import { TABLE_ACTION_BUTTON } from '@/Constants/Components';
 
-export type TableActionType = 'view' | 'edit' | 'delete' | 'power' | 'add' | 'upload' | 'uploadArrow' | 'search' | 'roles' | 'users' | 'clock' | 'custom';
+export type TableActionType = 'view' | 'edit' | 'delete' | 'power' | 'add' | 'upload' | 'uploadArrow' | 'search' | 'roles' | 'users' | 'clock' | 'markComplete' | 'markInProgress' | 'approveRequest' | 'rejectRequest' | 'custom';
 
 interface TableActionButtonProps extends Omit<React.ButtonHTMLAttributes<HTMLButtonElement>, 'onClick'> {
   /**
@@ -111,7 +111,21 @@ const actionConfig: Record<TableActionType, {
     icon: <SystemIcons.interface.hourglass className={TABLE_ACTION_BUTTON.icon} />,
     variant: 'tablePower'
   },
-  custom: {
+  markComplete: {
+    icon: <SystemIcons.interface.checkCircle className={TABLE_ACTION_BUTTON.icon} />,
+    variant: 'tablePower'
+  },
+  markInProgress: {
+    icon: <SystemIcons.interface.inProgress className={TABLE_ACTION_BUTTON.icon} />,
+    variant: 'tableEdit'
+  },  approveRequest: {
+    icon: <SystemIcons.interface.checkCircle className={TABLE_ACTION_BUTTON.icon} />,
+    variant: 'tablePower'
+  },
+  rejectRequest: {
+    icon: <SystemIcons.interface.xCircle className={TABLE_ACTION_BUTTON.icon} />,
+    variant: 'tableDelete'
+  },  custom: {
     icon: null,
     variant: 'tableView'
   }

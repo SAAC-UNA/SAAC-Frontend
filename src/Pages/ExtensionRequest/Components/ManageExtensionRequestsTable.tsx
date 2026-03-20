@@ -33,6 +33,8 @@ interface ManageExtensionRequestsTableProps {
   unstyled?: boolean;
   onRetry?: () => void;
   onReviewRequest?: (request: ExtensionRequest) => void;
+  onApproveRequest?: (request: ExtensionRequest) => void;
+  onRejectRequest?: (request: ExtensionRequest) => void;
 }
 
 export const ManageExtensionRequestsTable: React.FC<ManageExtensionRequestsTableProps> = ({
@@ -44,7 +46,9 @@ export const ManageExtensionRequestsTable: React.FC<ManageExtensionRequestsTable
   itemsPerPage = TABLE_PAGE_SIZE.standard,
   unstyled = false,
   onRetry,
-  onReviewRequest
+  onReviewRequest,
+  onApproveRequest,
+  onRejectRequest,
 }) => {
   const [currentPage, setCurrentPage] = useState(1);
 
@@ -159,18 +163,28 @@ export const ManageExtensionRequestsTable: React.FC<ManageExtensionRequestsTable
       key: 'acciones',
       header: 'Acciones',
       align: 'center',
-      render: (_: unknown, item: ExtensionRequest) => (
-        <div className="flex items-center justify-center gap-2 pr-2">
-          <TableActionButton
-            action="edit"
-            tooltip={item.estado === 'pendiente' ? 'Revisar solicitud' : 'Solicitud ya resuelta'}
-            onClick={() => onReviewRequest?.(item)}
-            disabled={item.estado !== 'pendiente'}
-          />
-        </div>
-      )
+      render: (_: unknown, item: ExtensionRequest) => {
+        const isPending = item.estado === 'pendiente';
+        const isApproved = item.estado === 'aprobada';
+        return (
+          <div className="flex items-center justify-center gap-2 pr-2">
+            <TableActionButton
+              action="view"
+              tooltip="Ver detalles"
+              onClick={() => onReviewRequest?.(item)}
+            />
+            {/* Toggle decisión: aprobada ↔ rechazada / pendiente → aprobar */}
+            <TableActionButton
+              action={isApproved || isPending ? 'approveRequest' : 'rejectRequest'}
+              tooltip={isPending ? 'Aprobar solicitud' : isApproved ? 'Solicitud aprobada' : 'Solicitud rechazada'}
+              onClick={() => onApproveRequest?.(item)}
+              disabled={!isPending}
+            />
+          </div>
+        );
+      }
     }
-  ], [onReviewRequest]);
+  ], [onReviewRequest, onApproveRequest, onRejectRequest]);
 
   if (error) {
     return (

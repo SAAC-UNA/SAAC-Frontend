@@ -14,6 +14,8 @@ import { getContextualInfo } from '@/Constants/ModuleInfo';
 import { TABLE_PAGE_SIZE } from '@/Constants/TablePagination';
 import { ManageExtensionRequestsTable } from './Components/ManageExtensionRequestsTable';
 import { ReviewExtensionRequestModal } from '@/Components/Ui/Modals/ReviewExtensionRequestModal';
+import { CreateConfirmationModal } from '@/Components/Ui/Modals/CreateConfirmationModal';
+import { DeleteConfirmationModal } from '@/Components/Ui/Modals/DeleteConfirmationModal';
 import type { 
   ExtensionRequest, 
   ExtensionRequestStatus,
@@ -37,8 +39,11 @@ export const ManageExtensionRequestsPage: React.FC = () => {
   const filtroEstado = filterState.filtroEstado;
   const currentPage = filterState.currentPage;
 
-  // Estado para el modal de revisión
+  // Estado para el modal de revisión (detalles)
   const [selectedSolicitud, setSelectedSolicitud] = useState<ExtensionRequest | null>(null);
+
+  // Estado para las confirmaciones de aprobación/rechazo
+  const [confirmState, setConfirmState] = useState<{ action: 'approve' | 'reject' | null; solicitud: ExtensionRequest | null; loading: boolean }>({ action: null, solicitud: null, loading: false });
 
   // Opciones para el filtro de estado
   const estadoOptions: FilterOption<ExtensionRequestStatus | 'todos'>[] = [
@@ -89,12 +94,42 @@ export const ManageExtensionRequestsPage: React.FC = () => {
     setSelectedSolicitud(null);
   }, []);
 
-  const handleApprove = async (data: ReviewFormData) => {
-    if (!selectedSolicitud) return;
+  const handleOpenApprove = useCallback((solicitud: ExtensionRequest) => {
+    setConfirmState({ action: 'approve', solicitud, loading: false });
+  }, []);
+
+  const handleOpenReject = useCallback((solicitud: ExtensionRequest) => {
+    setConfirmState({ action: 'reject', solicitud, loading: false });
+  }, []);
+
+  const handleCloseConfirm = useCallback(() => {
+    setConfirmState({ action: null, solicitud: null, loading: false });
+  }, []);
+
+  const handleConfirmAction = async () => {
+    const { action, solicitud } = confirmState;
+    if (!action || !solicitud) return;
+    setConfirmState(prev => ({ ...prev, loading: true }));
+    try {
+      const data: ReviewFormData = { justificacion: '' };
+      if (action === 'approve') {
+        await handleApprove(data, solicitud);
+      } else {
+        await handleReject(data, solicitud);
+      }
+      handleCloseConfirm();
+    } catch {
+      setConfirmState(prev => ({ ...prev, loading: false }));
+    }
+  };
+
+  const handleApprove = async (data: ReviewFormData, solicitud?: ExtensionRequest) => {
+    const target = solicitud ?? selectedSolicitud;
+    if (!target) return;
 
     try {
       await extensionRequestService.approveRequest(
-        selectedSolicitud.solicitud_ampliacion_id,
+        target.solicitud_ampliacion_id,
         data
       );
 
@@ -104,7 +139,6 @@ export const ManageExtensionRequestsPage: React.FC = () => {
         message: 'La solicitud ha sido aprobada correctamente y la fecha límite ha sido actualizada.'
       });
 
-      // Recargar la lista
       await loadSolicitudes();
       handleCloseModal();
     } catch (error: any) {
@@ -117,12 +151,13 @@ export const ManageExtensionRequestsPage: React.FC = () => {
     }
   };
 
-  const handleReject = async (data: ReviewFormData) => {
-    if (!selectedSolicitud) return;
+  const handleReject = async (data: ReviewFormData, solicitud?: ExtensionRequest) => {
+    const target = solicitud ?? selectedSolicitud;
+    if (!target) return;
 
     try {
       await extensionRequestService.rejectRequest(
-        selectedSolicitud.solicitud_ampliacion_id,
+        target.solicitud_ampliacion_id,
         data
       );
 
@@ -132,7 +167,6 @@ export const ManageExtensionRequestsPage: React.FC = () => {
         message: 'La solicitud ha sido rechazada.'
       });
 
-      // Recargar la lista
       await loadSolicitudes();
       handleCloseModal();
     } catch (error: any) {
@@ -209,18 +243,43 @@ export const ManageExtensionRequestsPage: React.FC = () => {
             itemsPerPage={TABLE_PAGE_SIZE.standard}
             onRetry={loadSolicitudes}
             onReviewRequest={handleReviewRequest}
+            onApproveRequest={handleOpenApprove}
+            onRejectRequest={handleOpenReject}
           />
           
-          {/* Modal de revisión */}
+          {/* Modal de detalles (solo lectura) */}
           {selectedSolicitud && (
             <ReviewExtensionRequestModal
               isOpen={!!selectedSolicitud}
               onClose={handleCloseModal}
-              onApprove={handleApprove}
-              onReject={handleReject}
               solicitud={selectedSolicitud}
             />
           )}
+
+          {/* Confirmación de aprobación */}
+          <CreateConfirmationModal
+            isOpen={confirmState.action === 'approve'}
+            onClose={handleCloseConfirm}
+            onConfirm={handleConfirmAction}
+            title="Aprobar solicitud"
+            message="¿Está seguro de que desea aprobar esta solicitud de ampliación? La fecha límite de la asignación se actualizará automáticamente."
+            confirmLabel="Aprobar"
+            isLoading={confirmState.loading}
+            variant="success"
+          />
+
+          {/* Confirmación de rechazo */}
+          <DeleteConfirmationModal
+            isOpen={confirmState.action === 'reject'}
+            onClose={handleCloseConfirm}
+            onConfirm={handleConfirmAction}
+            title="Rechazar solicitud"
+            message="¿Está seguro de que desea rechazar esta solicitud de ampliación? Esta acción no se puede revertir."
+            confirmLabel="Rechazar"
+            footerMeta="Esta acción no se puede deshacer"
+            isLoading={confirmState.loading}
+            variant="danger"
+          />
         </>
       )}
     </ScreenContainer>

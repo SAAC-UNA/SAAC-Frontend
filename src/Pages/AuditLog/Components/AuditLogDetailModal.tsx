@@ -11,7 +11,7 @@
  */
 
 import React from 'react';
-import { Modal } from '@/Components/Ui/Modals/Modal';
+import { DetailsModal } from '@/Components/Ui/Modals/DetailsModal';
 import { SystemIcons } from '@/Components/Ui/Icons/SystemIcons';
 import type { AuditLog } from '@/Types/AuditLogTypes';
 import { TYPOGRAPHY } from '@/constants/Typography';
@@ -76,12 +76,13 @@ export const AuditLogDetailModal: React.FC<AuditLogDetailModalProps> = ({
   const { icon, color } = getActionIcon(log.tipo_accion.descripcion);
 
   return (
-    <Modal
+    <DetailsModal
       isOpen={isOpen}
       onClose={onClose}
       title="Detalle del Registro de Bitácora"
       size="lg"
-      closable={true}
+      variant="neutral"
+      heroIcon={<SystemIcons.navigation.auditLog className={`${ICON_SIZES.md} text-blanco-una`} />}
     >
       <div className="space-y-6">
         {/* ID del Registro */}
@@ -205,6 +206,6 @@ export const AuditLogDetailModal: React.FC<AuditLogDetailModalProps> = ({
           </div>
         </div>
       </div>
-    </Modal>
+    </DetailsModal>
   );
 };

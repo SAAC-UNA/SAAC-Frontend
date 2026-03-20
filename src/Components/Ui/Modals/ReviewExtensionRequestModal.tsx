@@ -1,272 +1,121 @@
 /**
- * ReviewExtensionRequestModal - Modal para aprobar/rechazar solicitud de ampliación
+ * ReviewExtensionRequestModal - Modal de detalles de solicitud de ampliación (solo lectura)
  * HU-016 - Gestión de solicitudes de ampliación
  */
 
-import React, { useState } from 'react';
-import { Modal } from '@/Components/Ui/Modals/Modal';
-import { Button } from '@/Components/Ui/Buttons/Button';
-import { Textarea } from '@/Components/Ui/Forms/Textarea';
-import type { ReviewFormData, ExtensionRequest } from '@/Types/ExtensionRequestTypes';
+import React from 'react';
+import { DetailsModal } from '@/Components/Ui/Modals/DetailsModal';
+import { SystemIcons } from '@/Components/Ui/Icons/SystemIcons';
+import { ICON_SIZES } from '@/Constants/Components';
+import { TYPOGRAPHY } from '@/Constants/Typography';
+import { cn } from '@/Utils/ClassNames';
+import type { ExtensionRequest } from '@/Types/ExtensionRequestTypes';
 
 interface ReviewExtensionRequestModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onApprove: (data: ReviewFormData) => Promise<void>;
-  onReject: (data: ReviewFormData) => Promise<void>;
   solicitud: ExtensionRequest;
 }
+
+const SectionLabel: React.FC<{ label: string }> = ({ label }) => (
+  <span className={cn('uppercase tracking-wider font-semibold text-gris-una-2 mb-2.5 block', TYPOGRAPHY.table.header)}>
+    {label}
+  </span>
+);
+
+const InfoCell: React.FC<{ label: string; children: React.ReactNode; className?: string }> = ({
+  label, children, className,
+}) => (
+  <div className={cn('flex flex-col gap-1', className)}>
+    <span className={cn('uppercase tracking-wider font-semibold text-gris-una-2', TYPOGRAPHY.table.header)}>
+      {label}
+    </span>
+    <div>{children}</div>
+  </div>
+);
+
+const formatDate = (dateStr: string, includeTime = false) =>
+  new Date(dateStr).toLocaleDateString('es-ES', {
+    day: '2-digit', month: 'long', year: 'numeric',
+    ...(includeTime ? { hour: '2-digit', minute: '2-digit' } : {}),
+  });
 
 export const ReviewExtensionRequestModal: React.FC<ReviewExtensionRequestModalProps> = ({
   isOpen,
   onClose,
-  onApprove,
-  onReject,
-  solicitud
+  solicitud,
 }) => {
-  const [action, setAction] = useState<'approve' | 'reject' | null>(null);
-  const [justificacion, setJustificacion] = useState('');
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [error, setError] = useState('');
-
-  const handleClose = () => {
-    if (!isSubmitting) {
-      setAction(null);
-      setJustificacion('');
-      setError('');
-      onClose();
-    }
-  };
-
-  const validateJustificacion = (): boolean => {
-    if (action === 'reject' && !justificacion.trim()) {
-      setError('La justificación es obligatoria al rechazar');
-      return false;
-    }
-
-    if (justificacion.trim() && justificacion.length < 10) {
-      setError('La justificación debe tener al menos 10 caracteres');
-      return false;
-    }
-
-    if (justificacion.length > 500) {
-      setError('La justificación no puede exceder los 500 caracteres');
-      return false;
-    }
-
-    setError('');
-    return true;
-  };
-
-  const handleSubmit = async () => {
-    if (!validateJustificacion()) {
-      return;
-    }
-
-    setIsSubmitting(true);
-    try {
-      const data: ReviewFormData = {
-        justificacion: justificacion.trim() || ''
-      };
-
-      if (action === 'approve') {
-        await onApprove(data);
-      } else if (action === 'reject') {
-        await onReject(data);
-      }
-
-      handleClose();
-    } catch (error) {
-      // El error se maneja en el componente padre
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
-
-  // Vista inicial: Seleccionar acción
-  if (!action) {
-    return (
-      <Modal
-        isOpen={isOpen}
-        onClose={handleClose}
-        title="Revisar Solicitud de Ampliación"
-        size="lg"
-      >
-        <div className="space-y-4">
-          {/* Información del solicitante */}
-          <div className="bg-blue-50 border border-blue-200 rounded-corner p-4">
-            <h4 className="text-sm font-semibold text-blue-900 mb-2">Información del Solicitante</h4>
-            <div className="space-y-1 text-sm">
-              <p><strong>Nombre:</strong> {solicitud.usuario?.nombre}</p>
-              <p><strong>Email:</strong> {solicitud.usuario?.email}</p>
-              <p>
-                <strong>Fecha de solicitud:</strong>{' '}
-                {new Date(solicitud.created_at).toLocaleDateString('es-ES', {
-                  day: '2-digit',
-                  month: 'long',
-                  year: 'numeric',
-                  hour: '2-digit',
-                  minute: '2-digit'
-                })}
-              </p>
-            </div>
-          </div>
-
-          {/* Detalles de la solicitud */}
-          <div className="bg-gray-50 border border-gray-200 rounded-corner p-4">
-            <h4 className="text-sm font-semibold text-gray-900 mb-2">Detalles de la Solicitud</h4>
-            <div className="space-y-3 text-sm">
-              <div>
-                <p className="font-medium text-gray-700">Motivo:</p>
-                <p className="text-gray-600 mt-1">{solicitud.motivo}</p>
-              </div>
-              
-              {solicitud.evidencia_asignacion && (
-                <div>
-                  <p className="font-medium text-gray-700">Fecha límite actual:</p>
-                  <p className="text-gray-600">
-                    {new Date(solicitud.evidencia_asignacion.fecha_limite).toLocaleDateString('es-ES', {
-                      day: '2-digit',
-                      month: 'long',
-                      year: 'numeric'
-                    })}
-                  </p>
-                </div>
-              )}
-
-              <div>
-                <p className="font-medium text-gray-700">Fecha límite solicitada:</p>
-                <p className="text-gray-600">
-                  {new Date(solicitud.fecha_sugerida).toLocaleDateString('es-ES', {
-                    day: '2-digit',
-                    month: 'long',
-                    year: 'numeric'
-                  })}
-                </p>
-              </div>
-            </div>
-          </div>
-
-          {/* Advertencia */}
-          <div className="bg-yellow-50 border border-yellow-200 rounded-corner p-3">
-            <p className="text-xs text-yellow-800">
-              <strong>Importante:</strong> Una vez aprobada o rechazada, la decisión no podrá revertirse.
-              {solicitud.evidencia_asignacion && ' Si aprueba, la fecha límite de la asignación se actualizará automáticamente.'}
-            </p>
-          </div>
-
-          {/* Botones de acción */}
-          <div className="flex justify-end space-x-3 pt-4 border-t">
-            <Button variant="secondary" onClick={handleClose}>
-              Cancelar
-            </Button>
-            <Button
-              variant="error"
-              onClick={() => setAction('reject')}
-            >
-              Rechazar
-            </Button>
-            <Button
-              variant="primary"
-              onClick={() => setAction('approve')}
-            >
-              Aprobar
-            </Button>
-          </div>
-        </div>
-      </Modal>
-    );
-  }
-
-  // Vista de confirmación: Aprobar o Rechazar con justificación
   return (
-    <Modal
+    <DetailsModal
       isOpen={isOpen}
-      onClose={handleClose}
-      title={action === 'approve' ? 'Aprobar Solicitud' : 'Rechazar Solicitud'}
+      onClose={onClose}
+      title="Solicitud de Ampliación"
+      subtitle={solicitud.usuario?.nombre}
+      cancelLabel="Cerrar"
       size="md"
+      variant="info"
+      heroIcon={<SystemIcons.modal.document className={`${ICON_SIZES.md} text-blanco-una`} />}
     >
-      <div className="space-y-4">
-        {/* Mensaje de confirmación */}
-        <div className={`border rounded-corner p-4 ${
-          action === 'approve' 
-            ? 'bg-green-50 border-green-200' 
-            : 'bg-red-50 border-red-200'
-        }`}>
-          <p className={`text-sm font-medium ${
-            action === 'approve' ? 'text-green-900' : 'text-red-900'
-          }`}>
-            {action === 'approve' 
-              ? '¿Está seguro que desea aprobar esta solicitud?' 
-              : '¿Está seguro que desea rechazar esta solicitud?'}
-          </p>
-          {action === 'approve' && solicitud.evidencia_asignacion && (
-            <p className="text-xs text-green-700 mt-2">
-              La fecha límite se actualizará al{' '}
-              {new Date(solicitud.fecha_sugerida).toLocaleDateString('es-ES', {
-                day: '2-digit',
-                month: 'long',
-                year: 'numeric'
-              })}
-            </p>
-          )}
-        </div>
+      <div className="flex flex-col gap-5">
 
-        {/* Campo de justificación */}
+        {/* Solicitante */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Justificación {action === 'reject' && <span className="text-red-500">*</span>}
-          </label>
-          <Textarea
-            value={justificacion}
-            onChange={(e) => {
-              setJustificacion(e.target.value);
-              if (error) setError('');
-            }}
-            placeholder={
-              action === 'approve'
-                ? 'Opcionalmente, agregue una justificación para la aprobación'
-                : 'Explique las razones del rechazo (obligatorio, mín. 10 caracteres)'
-            }
-            rows={4}
-            disabled={isSubmitting}
-            className={error ? 'border-red-500' : ''}
-          />
-          {error && (
-            <p className="mt-1 text-sm text-red-600">{error}</p>
-          )}
-          <p className="mt-1 text-xs text-gray-500">
-            {justificacion.length}/500 caracteres
+          <SectionLabel label="Información del Solicitante" />
+          <div className="border border-gray-200 rounded-corner p-4 grid grid-cols-2 gap-x-6 gap-y-4">
+            <InfoCell label="Nombre">
+              <span className={cn(TYPOGRAPHY.table.cell, 'text-gris-una-2 font-semibold')}>
+                {solicitud.usuario?.nombre ?? '—'}
+              </span>
+            </InfoCell>
+            <InfoCell label="Email">
+              <span className={cn(TYPOGRAPHY.table.cell, 'text-gris-una-2')}>
+                {solicitud.usuario?.email ?? '—'}
+              </span>
+            </InfoCell>
+            <InfoCell label="Fecha de solicitud" className="col-span-2">
+              <span className={cn(TYPOGRAPHY.table.cell, 'text-gris-una-2')}>
+                {formatDate(solicitud.created_at, true)}
+              </span>
+            </InfoCell>
+          </div>
+        </div>
+
+        {/* Detalles */}
+        <div>
+          <SectionLabel label="Detalles de la Solicitud" />
+          <div className="border border-gray-200 rounded-corner p-4 flex flex-col gap-4">
+            <InfoCell label="Motivo">
+              <p className={cn(TYPOGRAPHY.modal.body, 'text-gris-una-2 whitespace-pre-wrap break-all')}>
+                {solicitud.motivo}
+              </p>
+            </InfoCell>
+            <div className="grid grid-cols-2 gap-x-6">
+              {solicitud.evidencia_asignacion && (
+                <InfoCell label="Fecha límite actual">
+                  <span className={cn(TYPOGRAPHY.table.cell, 'text-gris-una-2')}>
+                    {formatDate(solicitud.evidencia_asignacion.fecha_limite)}
+                  </span>
+                </InfoCell>
+              )}
+              <InfoCell label="Fecha nueva solicitada">
+                <span className={cn(TYPOGRAPHY.table.cell, 'text-info font-semibold')}>
+                  {formatDate(solicitud.fecha_sugerida)}
+                </span>
+              </InfoCell>
+            </div>
+          </div>
+        </div>
+
+        {/* Aviso */}
+        <div className="flex items-start gap-2.5 px-4 py-3 rounded-corner border bg-info/10 border-info/30">
+          <SystemIcons.interface.informationCircle className={cn(ICON_SIZES.sm, 'flex-shrink-0 text-info mt-0.5')} />
+          <p className={cn(TYPOGRAPHY.form.helper, 'text-info font-medium')}>
+            <strong>Importante:</strong> Una vez aprobada o rechazada, la decisión no podrá revertirse.
+            {solicitud.evidencia_asignacion && ' Si se aprueba, la fecha límite de la asignación se actualizará automáticamente.'}
           </p>
         </div>
 
-        {/* Botones de acción */}
-        <div className="flex justify-end space-x-3 pt-4 border-t">
-          <Button
-            variant="secondary"
-            onClick={() => {
-              setAction(null);
-              setJustificacion('');
-              setError('');
-            }}
-            disabled={isSubmitting}
-          >
-            Volver
-          </Button>
-          <Button
-            variant={action === 'approve' ? 'primary' : 'error'}
-            onClick={handleSubmit}
-            disabled={isSubmitting}
-          >
-            {isSubmitting 
-              ? 'Procesando...' 
-              : action === 'approve' 
-                ? 'Confirmar Aprobación' 
-                : 'Confirmar Rechazo'
-            }
-          </Button>
-        </div>
       </div>
-    </Modal>
+    </DetailsModal>
   );
 };

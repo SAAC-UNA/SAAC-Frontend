@@ -250,10 +250,10 @@ export const EvidenceDetailsModal: React.FC<EvidenceDetailsModalProps> = ({
         isOpen={isOpen}
         onClose={onClose}
         title="Detalles del Criterio"
-        itemName="Cargando..."
-        itemType="criterio"
         cancelLabel="Cerrar"
         size="lg"
+        variant="neutral"
+        heroIcon={<SystemIcons.modal.document className={`${ICON_SIZES.md} text-blanco-una`} />}
       >
         <div className={`flex items-center justify-center py-12 text-gris-una ${TYPOGRAPHY.modal.body}`}>
           Cargando información del criterio...
@@ -267,12 +267,10 @@ export const EvidenceDetailsModal: React.FC<EvidenceDetailsModalProps> = ({
       isOpen={isOpen}
       onClose={onClose}
       title="Detalles del Criterio"
-      itemName={criterio
-        ? `${criterio.criterio_nomenclatura} - ${criterio.criterio_descripcion}`
-        : 'Cargando...'}
-      itemType="criterio"
       cancelLabel="Cerrar"
       size="lg"
+      variant="neutral"
+      heroIcon={<SystemIcons.modal.document className={`${ICON_SIZES.md} text-blanco-una`} />}
     >
       {criterio && <BasicInfo criterio={criterio} evidenciasCount={evidencias.length} />}
       <Recursos

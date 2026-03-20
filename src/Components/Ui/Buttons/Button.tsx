@@ -30,23 +30,38 @@ const buttonVariants = cva(
         // ===== Variantes principales (filled) =====
         primary: [
           'bg-azul-una text-blanco-una border-0',
+          'shadow-[0_4px_14px_rgba(3,73,145,0.35)] hover:shadow-[0_4px_20px_rgba(3,73,145,0.50)]',
           'hover:bg-azul-una/90',
           'focus-visible:ring-azul-una',
           '[--ripple-color:rgba(255,255,255,0.30)]',
+          '[--shine-opacity:1]',
         ].join(' '),
 
         secondary: [
           'bg-rojo-una-2 text-blanco-una-2 border-0',
+          'shadow-[0_4px_14px_rgba(195,43,48,0.35)] hover:shadow-[0_4px_20px_rgba(195,43,48,0.50)]',
           'hover:bg-rojo-una-2/90',
           'focus-visible:ring-rojo-una-2',
           '[--ripple-color:rgba(255,255,255,0.30)]',
+          '[--shine-opacity:1]',
+        ].join(' '),
+
+        warning: [
+          'bg-warning text-blanco-una border-0',
+          'shadow-[0_4px_14px_rgba(245,158,11,0.35)] hover:shadow-[0_4px_20px_rgba(245,158,11,0.50)]',
+          'hover:bg-warning/90',
+          'focus-visible:ring-warning',
+          '[--ripple-color:rgba(255,255,255,0.30)]',
+          '[--shine-opacity:1]',
         ].join(' '),
 
         success: [
           'bg-verde text-blanco-una border-0',
+          'shadow-[0_4px_14px_rgba(16,185,129,0.35)] hover:shadow-[0_4px_20px_rgba(16,185,129,0.50)]',
           'hover:bg-verde/90',
           'focus-visible:ring-verde',
           '[--ripple-color:rgba(255,255,255,0.30)]',
+          '[--shine-opacity:1]',
         ].join(' '),
 
         // ===== Variantes de contorno (bordered) =====
@@ -92,47 +107,49 @@ const buttonVariants = cva(
           'bg-gradient-to-r from-azul-una via-azul-una-2 to-azul-una',
           '[background-size:200%_auto]',
           'animate-shimmer',
+          'shadow-[0_4px_14px_rgba(3,73,145,0.35)] hover:shadow-[0_4px_20px_rgba(3,73,145,0.50)]',
           'focus-visible:ring-azul-una',
           '[--ripple-color:rgba(255,255,255,0.30)]',
+          '[--shine-opacity:1]',
         ].join(' '),
 
         glow: [
           'bg-azul-una text-blanco-una border-0',
-          'shadow-[0_4px_20px_rgba(3,73,145,0.25)]',
-          'hover:bg-azul-una/90 hover:shadow-[0_4px_30px_rgba(3,73,145,0.45)]',
-          'transition-shadow',
+          'shadow-[0_4px_20px_rgba(3,73,145,0.35)] hover:shadow-[0_6px_28px_rgba(3,73,145,0.55)]',
+          'hover:bg-azul-una/90',
           'focus-visible:ring-azul-una',
           '[--ripple-color:rgba(255,255,255,0.30)]',
+          '[--shine-opacity:1]',
         ].join(' '),
 
         // ===== Variantes de tabla (sin ancho estándar ni estilos principales) =====
         tableView: [
           'bg-transparent text-info border-0 p-2',
-          'hover:bg-[var(--color-info-light)] hover:text-info transition-colors duration-200',
+          'hover:[filter:drop-shadow(0_0_6px_rgba(59,130,246,0.85))] transition-all duration-200',
           'disabled:opacity-50 disabled:cursor-not-allowed',
         ].join(' '),
 
         tableEdit: [
           'bg-transparent text-warning border-0 p-2',
-          'hover:bg-[var(--color-warning-light)] hover:text-warning transition-colors duration-200',
+          'hover:[filter:drop-shadow(0_0_6px_rgba(245,158,11,0.85))] transition-all duration-200',
           'disabled:opacity-50 disabled:cursor-not-allowed',
         ].join(' '),
 
         tableDelete: [
           'bg-transparent text-error border-0 p-2',
-          'hover:bg-[var(--color-error-light)] hover:text-error transition-colors duration-200',
+          'hover:[filter:drop-shadow(0_0_6px_rgba(239,68,68,0.85))] transition-all duration-200',
           'disabled:opacity-50 disabled:cursor-not-allowed',
         ].join(' '),
 
         tablePower: [
           'bg-transparent text-verde border-0 p-2',
-          'hover:bg-[var(--color-verde-light)] hover:text-verde transition-colors duration-200',
+          'hover:[filter:drop-shadow(0_0_6px_rgba(16,185,129,0.85))] transition-all duration-200',
           'disabled:opacity-50 disabled:cursor-not-allowed',
         ].join(' '),
 
         tablePowerInactive: [
           'bg-transparent text-gris-una border-0 p-2',
-          'hover:bg-[var(--color-gris-light)] hover:text-gris-una transition-colors duration-200',
+          'hover:[filter:drop-shadow(0_0_6px_rgba(107,114,128,0.75))] transition-all duration-200',
           'disabled:opacity-50 disabled:cursor-not-allowed',
         ].join(' '),
       },
@@ -232,6 +249,13 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(({
       onPointerDown={handlePointerDown}
       {...props}
     >
+      {/* Capa shine — solo en variantes filled (--shine-opacity:1) */}
+      <span
+        className="pointer-events-none absolute inset-0 rounded-[inherit] opacity-[var(--shine-opacity,0)]"
+        style={{ background: 'linear-gradient(to bottom, rgba(255,255,255,0.18), transparent 60%)' }}
+        aria-hidden="true"
+      />
+
       {/* Capa ripple — renderizada bajo el contenido */}
       {ripples.map(r => (
         <span

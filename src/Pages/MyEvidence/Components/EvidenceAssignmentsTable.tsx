@@ -31,6 +31,8 @@ interface EvidenceAssignmentsTableProps {
   onUploadFiles: (assignment: EvidenceAssignment) => void;
   /** HU-016: Callback al solicitar ampliación */
   onRequestExtension?: (assignment: EvidenceAssignment) => void;
+  /** Callback al cambiar estado (toggle completado / en_progreso) */
+  onStatusChange?: (assignment: EvidenceAssignment, newStatus: 'en_progreso' | 'completado') => void;
   /** Paginación */
   pagination?: {
     currentPage: number;
@@ -47,6 +49,7 @@ export const EvidenceAssignmentsTable: React.FC<EvidenceAssignmentsTableProps> =
   onViewDetails,
   onUploadFiles,
   onRequestExtension,
+  onStatusChange,
   pagination
 }) => {
   
@@ -140,6 +143,8 @@ export const EvidenceAssignmentsTable: React.FC<EvidenceAssignmentsTableProps> =
           tooltip = "No se puede solicitar ampliación";
         }
         
+        const isCompleted = assignment.estado === 'completado';
+
         return (
           <div className="flex items-center justify-center gap-2 pr-2">
             <TableActionButton
@@ -154,7 +159,7 @@ export const EvidenceAssignmentsTable: React.FC<EvidenceAssignmentsTableProps> =
               onClick={() => onUploadFiles(assignment)}
             />
             
-            {/* HU-016: Botón de solicitar ampliación */}
+            {/* Botón de solicitar ampliación */}
             {onRequestExtension && (
               <TableActionButton
                 action="clock"
@@ -163,6 +168,16 @@ export const EvidenceAssignmentsTable: React.FC<EvidenceAssignmentsTableProps> =
                 disabled={!canRequestExtension}
               />
             )}
+
+           {/* Toggle de estado: completado ↔ en_progreso */}
+            {onStatusChange && (
+              <TableActionButton
+                action={isCompleted ? 'markInProgress' : 'markComplete'}
+                tooltip={isCompleted ? 'Completado' : 'Marcar completado'}
+                onClick={() => onStatusChange(assignment, isCompleted ? 'en_progreso' : 'completado')}
+                disabled={isCompleted}
+              />
+            )} 
           </div>
         );
       }

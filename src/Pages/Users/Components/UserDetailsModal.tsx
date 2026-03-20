@@ -1,156 +1,149 @@
-/**
- * UserDetailsModal - Modal para mostrar los detalles completos de un usuario
- * 
- * Sigue el mismo patrón que PermissionsRoleModal para consistencia visual.
- * Muestra información detallada del usuario: datos personales, rol y permisos.
- */
-
 import React from 'react';
-import { DetailsModal } from '@/Components/Ui/Modals/DetailsModal';
+import { Modal } from '@/Components/Ui/Modals/Modal';
+import { Button } from '@/Components/Ui/Buttons/Button';
 import { SystemIcons } from '@/Components/Ui/Icons/SystemIcons';
+import { cn } from '@/Utils/ClassNames';
+import { TYPOGRAPHY } from '@/Constants/Typography';
+import { ICON_SIZES } from '@/Constants/Components';
 import type { User } from '@/Services/UserService';
 
+const getInitials = (name: string) =>
+  name.split(' ').slice(0, 2).map(n => n[0]?.toUpperCase() ?? '').join('');
+
+const formatDate = (date?: Date): string => {
+  if (!date) return '—';
+  return new Intl.DateTimeFormat('es-ES', {
+    day: 'numeric', month: 'short', year: 'numeric',
+  }).format(date);
+};
+
+
+const SectionLabel: React.FC<{ label: string }> = ({ label }) => (
+  <div className="flex items-center gap-2 mb-2.5">
+    <span className={cn('uppercase tracking-wider font-semibold text-gris-una-2', TYPOGRAPHY.table.header)}>
+      {label}
+    </span>
+  </div>
+);
+
+const InfoCell: React.FC<{ label: string; children: React.ReactNode; className?: string }> = ({
+  label, children, className,
+}) => (
+  <div className={cn('flex flex-col gap-1.5', className)}>
+    <span className={cn('uppercase tracking-wider font-semibold text-gris-una-2', TYPOGRAPHY.table.header)}>
+      {label}
+    </span>
+    <div>{children}</div>
+  </div>
+);
+
+
 interface UserDetailsModalProps {
-    isOpen: boolean;
-    onClose: () => void;
-    user: User | null;
+  isOpen: boolean;
+  onClose: () => void;
+  user: User | null;
 }
 
-interface UserInfoProps { user: User; formatDate: (date?: Date) => string; }
-
-const UserInfo: React.FC<UserInfoProps> = ({ user, formatDate }) => (
-    <div>
-            {/* Información personal */}
-            <div className="bg-white border border-gray-200 rounded-corner p-4 max-h-60 overflow-y-auto mb-6">
-                <div className="flex items-center space-x-2 mb-3">
-                    <SystemIcons.users.user className="w-5 h-5 text-gray-600" />
-                    <h3 className="font-sm text-gray-700">Información Personal</h3>
-                </div>
-                
-                <div className="space-y-2">
-                    <div>
-                        <span className="text-sm font-sm text-gray-800">Nombre:</span>
-                        <p className="text-sm text-gray-700">{user.name}</p>
-                    </div>
-                    <div>
-                        <span className="text-sm font-sm text-gray-800">Correo electrónico:</span>
-                        <p className="text-sm text-gray-700">{user.email}</p>
-                    </div>
-                    <div>
-                        <span className="text-sm font-sm text-gray-800">Estado:</span>
-                        <span className={`ml-2 inline-flex px-2 py-1 text-xs font-sm rounded-full ${
-                            user.status === 'active' 
-                                ? 'bg-green-100 text-green-800' 
-                                : 'bg-red-100 text-red-800'
-                        }`}>
-                            {user.status === 'active' ? 'Activo' : 'Inactivo'}
-                        </span>
-                    </div>
-                </div>
-            </div>
-
-            {/* Rol asignado */}
-            {user.role && (
-                <div className="mb-6">
-                    <div className="flex items-center space-x-2 mb-3">
-                        <SystemIcons.users.roles className="w-5 h-5 text-gray-600" />
-                        <h3 className="font-sm text-gray-800">Rol Asignado</h3>
-                    </div>
-                    
-                    <div className="bg-white border border-gray-200 rounded-corner p-4 max-h-60 overflow-y-auto">
-                        <span className="text-sm text-gray-700">
-                            {user.role}
-                        </span>
-                    </div>
-                </div>
-            )}
-
-            {/* Fechas */}
-            <div className="mb-6">
-                <div className="flex items-center space-x-2 mb-3">
-                    <SystemIcons.modal.document className="w-5 h-5 text-gray-600" />
-                    <h3 className="font-sm text-gray-800">Información de Registro</h3>
-                </div>
-                
-                <div className="bg-white border border-gray-200 rounded-corner p-4 max-h-60 overflow-y-auto">
-                    <div>
-                        <span className="text-sm text-gray-700">Fecha de creación:</span>
-                        <p className="text-sm text-gray-700">{formatDate(user.createdAt)}</p>
-                    </div>
-                    <div>
-                        <span className="text-sm text-gray-700">Última actualización:</span>
-                        <p className="text-sm text-gray-700">{formatDate(user.updatedAt)}</p>
-                    </div>
-                </div>
-            </div>
-        </div>
-);
-
-interface UserPermissionsProps { user: User; }
-
-const UserPermissions: React.FC<UserPermissionsProps> = ({ user }) => (
-    <div className="mb-6">
-            <div className="flex items-center space-x-2 mb-3">
-                <SystemIcons.modal.key className="w-5 h-5 text-gray-600" />
-                <h3 className="font-sm text-gray-800">Permisos Directos</h3>
-            </div>
-            
-            <div className="bg-white border border-gray-200 rounded-corner p-4 max-h-60 overflow-y-auto">
-                {user.allPermissions && user.allPermissions.length > 0 ? (
-                    <div className="space-y-2">
-                        {user.allPermissions.map((permission) => (
-                            <div key={permission.label} className="flex items-start space-x-2">
-                                <div className="w-2 h-2 bg-green-500 rounded-full mt-2 flex-shrink-0" />
-                                <span className="text-sm text-gray-700">
-                                    {permission.label}
-                                </span>
-                            </div>
-                        ))}
-                    </div>
-                ) : (
-                    <p className="text-sm text-gray-500 text-center py-4">
-                        Este usuario no tiene permisos directos asignados
-                    </p>
-                )}
-            </div>
-            
-            <div className="mt-3 text-xs text-gray-500">
-                Total: {user.allPermissions?.length || 0} permiso{(user.allPermissions?.length || 0) !== 1 ? 's' : ''}
-            </div>
-        </div>
-);
-
 export const UserDetailsModal: React.FC<UserDetailsModalProps> = ({
-    isOpen,
-    onClose,
-    user
+  isOpen, onClose, user,
 }) => {
-    if (!user) return null;
+  if (!user) return null;
 
-    const formatDate = (date?: Date): string => {
-        if (!date) return 'No disponible';
-        
-        return new Intl.DateTimeFormat('es-ES', {
-            year: 'numeric',
-            month: 'long',
-            day: 'numeric',
-            hour: '2-digit',
-            minute: '2-digit'
-        }).format(date);
-    };
+  const isActive = user.status === 'active';
+  const initials = getInitials(user.name);
 
-    return (
-        <DetailsModal
-            isOpen={isOpen}
-            onClose={onClose}
-            title="Detalles del Usuario"
-            itemName={user.name}
-            itemType="usuario"
-            cancelLabel="Cerrar"
-            size="lg"
-        >
-            <UserInfo user={user} formatDate={formatDate} />
-            <UserPermissions user={user} />
-        </DetailsModal>
-    );
+  return (
+    <Modal
+      isOpen={isOpen}
+      onClose={onClose}
+      title={user.name}
+      subtitle="Detalles del usuario"
+      heroBadge={isActive ? 'Activo' : 'Inactivo'}
+      heroIcon={
+        <div className="w-11 h-11 rounded-[10px] flex items-center justify-center bg-white/20 border border-white/35 text-white font-bold text-base select-none">
+          {initials}
+        </div>
+      }
+      variant="info"
+      size="md"
+      footerMeta={user.role ? `Rol: ${user.role}` : undefined}
+      footerButtons={
+        <Button variant="outline" standardWidth onClick={onClose}>
+          Cerrar
+        </Button>
+      }
+    >
+      <div className="flex flex-col gap-5">
+
+        {/* INFORMACIÓN PERSONAL */}
+        <div>
+          <SectionLabel  label="Información personal" />
+          <div className="border border-gray-200 rounded-corner p-4 grid grid-cols-2 gap-x-6 gap-y-4">
+            <InfoCell label="Nombre completo">
+              <span className={cn(TYPOGRAPHY.table.cell, 'text-gris-una-2 font-medium')}>{user.name}</span>
+            </InfoCell>
+            <InfoCell label="Estado">
+              <span className={cn(
+                'inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full font-semibold',
+                TYPOGRAPHY.badge,
+                isActive
+                  ? 'bg-verde-light text-verde-dark border border-verde-ring'
+                  : 'bg-error-light text-error-dark border border-error-ring',
+              )}>
+                <span className={cn('w-1.5 h-1.5 rounded-full flex-shrink-0', isActive ? 'bg-verde' : 'bg-error')} />
+                {isActive ? 'Activo' : 'Inactivo'}
+              </span>
+            </InfoCell>
+            {user.role && (
+              <InfoCell label="Rol asignado">
+                <span className={cn(
+                  'inline-flex px-2.5 py-1 rounded-full font-semibold bg-azul-una/10 border border-azul-una/20 text-azul-una',
+                  TYPOGRAPHY.badge,
+                )}>
+                  {user.role}
+                </span>
+              </InfoCell>
+            )}
+            <InfoCell label="Correo electrónico" className={user.role ? '' : 'col-span-2'}>
+              <span className={cn(TYPOGRAPHY.table.cell, 'text-gris-una-2')}>{user.email}</span>
+            </InfoCell>
+          </div>
+        </div>
+
+        {/* REGISTRO */}
+        <div>
+          <SectionLabel label="Registro" />
+          <div className="border border-gray-200 rounded-corner p-4 grid grid-cols-2 gap-x-6 gap-y-4">
+            <InfoCell label="Creación">
+              <span className={cn(TYPOGRAPHY.table.cell, 'text-gris-una-2')}>{formatDate(user.createdAt)}</span>
+            </InfoCell>
+            <InfoCell label="Última actualización">
+              <span className={cn(TYPOGRAPHY.table.cell, 'text-gris-una-2')}>{formatDate(user.updatedAt)}</span>
+            </InfoCell>
+          </div>
+        </div>
+
+        {/* PERMISOS DIRECTOS */}
+        {user.allPermissions && user.allPermissions.length > 0 && (
+          <div>
+            <SectionLabel label="Permisos directos" />
+            <div className="border border-gray-200 rounded-corner p-4 max-h-52 overflow-y-auto">
+              <div className="grid grid-cols-2 gap-x-4 gap-y-2">
+                {user.allPermissions.map(p => (
+                  <div key={p.label} className="flex items-center gap-2">
+                    <span className="w-1.5 h-1.5 rounded-full bg-verde flex-shrink-0" />
+                    <span className={cn(TYPOGRAPHY.table.cell, 'text-gris-una-2 truncate')}>{p.label}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+            <p className={cn('mt-1.5 text-gris-una-2', TYPOGRAPHY.badge)}>
+              Total: {user.allPermissions.length} permiso{user.allPermissions.length !== 1 ? 's' : ''}
+            </p>
+          </div>
+        )}
+
+      </div>
+    </Modal>
+  );
 };
