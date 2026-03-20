@@ -105,14 +105,14 @@ export const MultiSelect: React.FC<MultiSelectProps> = ({
     const isSelected = selectedOptions.some(selected => selected.value === option.value);
     
     if (isSelected) {
-      // Remover opción
+      // Remover opción (deseleccionar)
       newSelectedOptions = selectedOptions.filter(selected => selected.value !== option.value);
     } else {
       // Agregar opción
       newSelectedOptions = [...selectedOptions, option];
     }
     
-    setIsOpen(false);
+    // No cerrar el dropdown para que el usuario pueda seguir seleccionando/deseleccionando
     onChange?.(newSelectedOptions.map(opt => opt.value));
   };
 

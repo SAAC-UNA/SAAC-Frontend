@@ -102,8 +102,17 @@ export const CustomSelect: React.FC<CustomSelectProps> = ({
 
   const handleOptionSelect = (option: SelectOption) => {
     if (option.disabled) return;
-    
+
+    // Si la opción ya está seleccionada, deseleccionarla
+    if (selectedOption?.value === option.value) {
+      setIsOpen(false);
+      setSearchTerm('');
+      onChange?.('');
+      return;
+    }
+
     setIsOpen(false);
+    setSearchTerm('');
     onChange?.(option.value);
   };
 
