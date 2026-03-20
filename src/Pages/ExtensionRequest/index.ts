@@ -4,4 +4,3 @@
  */
 
 export { ManageExtensionRequestsPage } from './ManageExtensionRequestsPage';
-export { MyExtensionRequestsPage } from './MyExtensionRequestsPage';

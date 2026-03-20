@@ -17,7 +17,7 @@ import { TYPOGRAPHY } from '@/Constants/Typography';
 import { TABLE_TRUNCATE } from '@/Constants/TableTruncate';
 import { TABLE_PAGE_SIZE } from '@/Constants/TablePagination';
 import { truncateText } from '@/Utils';
-import { ExtensionRequestStatusBadge } from './ExtensionRequestStatusBadge';
+import { ExtensionRequestStatusBadge } from '../../MyExtensionRequest/Components/ExtensionRequestStatusBadge';
 import type { ExtensionRequest, ExtensionRequestStatus } from '@/Types/ExtensionRequestTypes';
 import { useFirstColumnConfig } from '@/Hooks/UseFirstColumnConfig';
 

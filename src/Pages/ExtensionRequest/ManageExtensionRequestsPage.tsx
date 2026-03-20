@@ -13,7 +13,7 @@ import { useAuth } from '@/Context/AuthContext';
 import { getContextualInfo } from '@/Constants/ModuleInfo';
 import { TABLE_PAGE_SIZE } from '@/Constants/TablePagination';
 import { ManageExtensionRequestsTable } from './Components/ManageExtensionRequestsTable';
-import { ReviewExtensionRequestModal } from '@/Components/Ui/Modals/ReviewExtensionRequestModal';
+import { ReviewExtensionRequestModal } from '@/Pages/ExtensionRequest/Components/ManageExtensionRequestDetailsModal';
 import { CreateConfirmationModal } from '@/Components/Ui/Modals/CreateConfirmationModal';
 import { DeleteConfirmationModal } from '@/Components/Ui/Modals/DeleteConfirmationModal';
 import type { 

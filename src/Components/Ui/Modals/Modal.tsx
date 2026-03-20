@@ -216,7 +216,7 @@ export const Modal: React.FC<ModalProps> = React.memo(({
             tabIndex={-1}
             className={cn(
               'relative flex flex-col w-full overflow-hidden',
-              'bg-blanco-una border border-gray-100 rounded-[18px]',
+              'bg-blanco-una border border-gris-light rounded-[18px]',
               'shadow-[0_32px_80px_rgba(0,0,0,0.13),0_8px_24px_rgba(0,0,0,0.08)]',
               'transition-all duration-300 ease-out sm:my-8',
               'data-closed:translate-y-4 data-closed:opacity-0 data-closed:sm:scale-95',

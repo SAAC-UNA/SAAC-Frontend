@@ -20,7 +20,7 @@ import {
   EvidenceAssignmentDetail,
   EvidenceAssignmentsTable
 } from './Components';
-import { CreateExtensionRequestModal } from '@/Components/Ui/Modals/CreateExtensionRequestModal';
+import { CreateExtensionRequestModal } from '@/Pages/MyEvidence/Components/CreateExtensionRequestModal';
 
 export const MyEvidenceAssignmentsPage: React.FC = () => {
   const { showToast } = useToast();

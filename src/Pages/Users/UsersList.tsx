@@ -6,10 +6,10 @@
  */
 
 import React, { useState, useEffect, useCallback, lazy, Suspense } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { UsersTable } from './Components/UsersTable';
 import { PageHeader, ScreenContainer } from '@/Components/Ui/Index';
 import { SearchInput } from '@/Components/Ui/Forms/SearchInput';
+import { UserEditModal } from './Components/UserEditModal';
 
 // Lazy load de modales para mejor rendimiento
 const UserDetailsModal = lazy(() => import('./Components/UserDetailsModal').then(m => ({ default: m.UserDetailsModal })));
@@ -22,7 +22,6 @@ import type { User } from '@/Services/UserService';
 const UsersRepository: React.FC = () => {
   // Obtener información del módulo desde ModuleInfo
   const moduleInfo = getContextualInfo('users', 'list');
-  const navigate = useNavigate();
 
   // Estado para búsqueda
   const [searchQuery, setSearchQuery] = useState('');
@@ -59,9 +58,15 @@ const UsersRepository: React.FC = () => {
     action: 'activate'
   });
 
+  // Estado para el modal de edición de usuario
+  const [userEditModalState, setUserEditModalState] = useState<{
+    isOpen: boolean;
+    user: User | null;
+  }>({ isOpen: false, user: null });
+
   const handleEditUser = useCallback((user: User) => {
-    navigate(`/usuarios/editar/${user.id}`);
-  }, [navigate]);
+    setUserEditModalState({ isOpen: true, user });
+  }, []);
 
   const handleViewUser = useCallback((user: User) => {
     setUserDetailsModalState({
@@ -222,6 +227,14 @@ const UsersRepository: React.FC = () => {
             }
           />
         </Suspense>
+
+        {/* Modal de edición de usuario */}
+        <UserEditModal
+          isOpen={userEditModalState.isOpen}
+          onClose={() => setUserEditModalState({ isOpen: false, user: null })}
+          user={userEditModalState.user}
+          onSuccess={() => { loadUsers(); setUserEditModalState({ isOpen: false, user: null }); }}
+        />
         </ScreenContainer>
   );
 };

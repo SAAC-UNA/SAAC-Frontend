@@ -56,15 +56,13 @@ export const UserDetailsModal: React.FC<UserDetailsModalProps> = ({
       onClose={onClose}
       title={user.name}
       subtitle="Detalles del usuario"
-      heroBadge={isActive ? 'Activo' : 'Inactivo'}
       heroIcon={
         <div className="w-11 h-11 rounded-[10px] flex items-center justify-center bg-white/20 border border-white/35 text-white font-bold text-base select-none">
           {initials}
         </div>
       }
       variant="info"
-      size="md"
-      footerMeta={user.role ? `Rol: ${user.role}` : undefined}
+      size="lg"
       footerButtons={
         <Button variant="outline" standardWidth onClick={onClose}>
           Cerrar
@@ -95,7 +93,7 @@ export const UserDetailsModal: React.FC<UserDetailsModalProps> = ({
             {user.role && (
               <InfoCell label="Rol asignado">
                 <span className={cn(
-                  'inline-flex px-2.5 py-1 rounded-full font-semibold bg-azul-una/10 border border-azul-una/20 text-azul-una',
+                  'inline-flex font-semibold text-azul-una',
                   TYPOGRAPHY.badge,
                 )}>
                   {user.role}
