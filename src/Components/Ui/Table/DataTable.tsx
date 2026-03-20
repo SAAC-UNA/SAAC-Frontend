@@ -15,6 +15,8 @@
 import React, { useState, useCallback } from 'react';
 import { cn } from '@/Utils/ClassNames';
 import { TYPOGRAPHY } from '@/Constants/Typography';
+import { ICON_SIZES } from '@/Constants/Components';
+import { SystemIcons } from '../Icons/SystemIcons';
 import { Button } from '../Buttons/Button';
 import { SearchInput } from '../Forms/SearchInput';
 import { LoadingSpinner } from '../Feedback/Loading';
@@ -73,6 +75,10 @@ export interface DataTableProps<T = unknown> {
   loading?: boolean;
   emptyMessage?: string | React.ReactNode;
   
+  // Filas expandibles
+  expandableRow?: (item: T) => React.ReactNode;
+  getRowKey?: (item: T, index: number) => string;
+
   // Estilos
   className?: string;
   unstyled?: boolean; // Para usar sin contenedor cuando está dentro de otro contenedor
@@ -93,14 +99,25 @@ export const DataTable = React.memo(<T extends Record<string, unknown>>({
   loading = false,
   emptyMessage = "No hay datos para mostrar",
   className,
-  unstyled = false
+  unstyled = false,
+  expandableRow,
+  getRowKey,
 }: DataTableProps<T>) => {
   const [searchQuery, setSearchQuery] = useState('');
+  const [expandedRows, setExpandedRows] = useState<Set<string>>(new Set());
 
   const handleSearch = useCallback((value: string) => {
     setSearchQuery(value);
     onSearch?.(value);
   }, [onSearch]);
+
+  const toggleRow = useCallback((key: string) => {
+    setExpandedRows(prev => {
+      const next = new Set(prev);
+      next.has(key) ? next.delete(key) : next.add(key);
+      return next;
+    });
+  }, []);
 
   const getCellValue = useCallback((item: T, column: DataTableColumn<T>) => {
     if (column.render) {
@@ -180,7 +197,7 @@ export const DataTable = React.memo(<T extends Record<string, unknown>>({
       )}
 
       {/* Tabla */}
-      <div className="pt-0 pb-6 px-0 overflow-x-auto lg:overflow-x-visible custom-scrollbar">
+      <div className="pt-0 pb-1 px-0 overflow-x-auto lg:overflow-x-visible custom-scrollbar">
         {loading ? (
           <div className="relative min-h-[200px]">
             <LoadingSpinner variant="loader" />
@@ -194,13 +211,16 @@ export const DataTable = React.memo(<T extends Record<string, unknown>>({
           <table className="w-full text-left table-fixed min-w-[600px] lg:min-w-0">
             <thead>
               <tr>
+                {expandableRow && (
+                  <th className="w-10 pl-4 pr-2 py-4 border-b border-blue-gray-100" />
+                )}
                 {columns.map((column, index) => (
                   <th 
                     key={column.key} 
                     style={column.width ? { width: column.width } : undefined}
                     className={cn(
                       "py-4 border-b border-blue-gray-100 text-center",
-                      index === 0 ? "pl-8 pr-4" : "px-4"
+                      index === 0 ? (expandableRow ? "px-4" : "pl-8 pr-4") : "px-4"
                     )}
                   >
                     <p className={`block font-sans antialiased font-semibold leading-none text-gris-una-2 opacity-70 ${TYPOGRAPHY.table.header}`}>
@@ -218,53 +238,81 @@ export const DataTable = React.memo(<T extends Record<string, unknown>>({
               </tr>
             </thead>
             <tbody>
-              {data.map((item, index) => (
-                <tr key={`${String((item as Record<string, unknown>).id ?? 'row')}-${index}`}>
-                  {columns.map((column, colIndex) => (
-                    <td 
-                      key={column.key} 
-                      className={cn(
-                        "py-4",
-                        colIndex === 0 ? "pl-8 pr-4" : "px-4", // Más padding en todas las columnas
-                        index === data.length - 1 ? "" : "border-b border-blue-gray-50"
-                      )}
+              {data.map((item, index) => {
+                const rowKey = getRowKey ? getRowKey(item, index) : String((item as Record<string, unknown>).id ?? index);
+                const isExpanded = expandableRow ? expandedRows.has(rowKey) : false;
+                const isLast = index === data.length - 1;
+                const totalCols = columns.length + (expandableRow ? 1 : 0) + (actions?.length ? 1 : 0);
+                return (
+                  <React.Fragment key={`${rowKey}-${index}`}>
+                    <tr
+                      className={cn(expandableRow && "cursor-pointer hover:bg-gray-50 transition-colors")}
+                      onClick={expandableRow ? () => toggleRow(rowKey) : undefined}
                     >
-                      <div className={cn(
-                        column.align === 'center' && "text-center",
-                        column.align === 'right' && "text-right"
-                      )}>
-                        {getCellValue(item, column) as React.ReactNode}
-                      </div>
-                    </td>
-                  ))}
-                  {actions && actions.length > 0 && (
-                    <td className={cn(
-                      "pl-4 pr-8 py-4", // Más padding en la columna de acciones
-                      index === data.length - 1 ? "" : "border-b border-blue-gray-50"
-                    )}>
-                      <div className="flex items-center gap-2">
-                        {actions.map((action) => (
-                          <button
-                            key={action.label}
+                      {expandableRow && (
+                        <td className={cn("pl-4 pr-2 py-4 w-10", !isLast && !isExpanded && "border-b border-blue-gray-50")}>
+                          <SystemIcons.interface.chevronDown
                             className={cn(
-                              "relative h-10 max-h-[40px] w-10 max-w-[40px] select-none rounded-corner text-center align-middle font-sans text-xs font-medium uppercase transition-all disabled:pointer-events-none disabled:opacity-50 disabled:shadow-none",
-                              action.className
+                              `text-gris-una transition-transform duration-200 ${ICON_SIZES.sm}`,
+                              isExpanded && 'rotate-180'
                             )}
-                            type="button"
-                            onClick={() => action.onClick(item)}
-                            disabled={action.disabled?.(item)}
-                            title={action.label}
-                          >
-                            <span className="absolute transform -translate-x-1/2 -translate-y-1/2 top-1/2 left-1/2">
-                              {action.icon}
-                            </span>
-                          </button>
-                        ))}
-                      </div>
-                    </td>
-                  )}
-                </tr>
-              ))}
+                          />
+                        </td>
+                      )}
+                      {columns.map((column, colIndex) => (
+                        <td
+                          key={column.key}
+                          className={cn(
+                            "py-4",
+                            colIndex === 0 ? (expandableRow ? "px-4" : "pl-8 pr-4") : "px-4",
+                            !isLast && !isExpanded && "border-b border-blue-gray-50"
+                          )}
+                        >
+                          <div className={cn(
+                            column.align === 'center' && "text-center",
+                            column.align === 'right' && "text-right"
+                          )}>
+                            {getCellValue(item, column) as React.ReactNode}
+                          </div>
+                        </td>
+                      ))}
+                      {actions && actions.length > 0 && (
+                        <td className={cn(
+                          "pl-4 pr-8 py-4",
+                          !isLast && !isExpanded && "border-b border-blue-gray-50"
+                        )}>
+                          <div className="flex items-center gap-2">
+                            {actions.map((action) => (
+                              <button
+                                key={action.label}
+                                className={cn(
+                                  "relative h-10 max-h-[40px] w-10 max-w-[40px] select-none rounded-corner text-center align-middle font-sans text-xs font-medium uppercase transition-all disabled:pointer-events-none disabled:opacity-50 disabled:shadow-none",
+                                  action.className
+                                )}
+                                type="button"
+                                onClick={(e) => { e.stopPropagation(); action.onClick(item); }}
+                                disabled={action.disabled?.(item)}
+                                title={action.label}
+                              >
+                                <span className="absolute transform -translate-x-1/2 -translate-y-1/2 top-1/2 left-1/2">
+                                  {action.icon}
+                                </span>
+                              </button>
+                            ))}
+                          </div>
+                        </td>
+                      )}
+                    </tr>
+                    {expandableRow && isExpanded && (
+                      <tr>
+                        <td colSpan={totalCols} className="px-8 pb-2 bg-white">
+                          {expandableRow(item)}
+                        </td>
+                      </tr>
+                    )}
+                  </React.Fragment>
+                );
+              })}
             </tbody>
           </table>
         )}

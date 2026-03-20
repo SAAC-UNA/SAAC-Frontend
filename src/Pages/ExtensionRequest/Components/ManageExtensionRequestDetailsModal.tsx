@@ -51,8 +51,7 @@ export const ReviewExtensionRequestModal: React.FC<ReviewExtensionRequestModalPr
       onClose={onClose}
       title="Solicitud de Ampliación"
       subtitle={solicitud.usuario?.nombre}
-      cancelLabel="Cerrar"
-      size="md"
+      size="lg"
       variant="info"
       heroIcon={<SystemIcons.modal.document className={`${ICON_SIZES.md} text-blanco-una`} />}
     >
@@ -79,6 +78,25 @@ export const ReviewExtensionRequestModal: React.FC<ReviewExtensionRequestModalPr
             </InfoCell>
           </div>
         </div>
+
+        {/* Evidencia */}
+        {solicitud.evidencia_asignacion?.evidencia && (
+          <div>
+            <SectionLabel label="Evidencia" />
+            <div className="border border-gray-200 rounded-corner p-4 flex flex-col gap-4">
+              <InfoCell label="Nomenclatura">
+                <span className={cn(TYPOGRAPHY.table.cell, 'text-gris-una-2')}>
+                  {solicitud.evidencia_asignacion.evidencia.nomenclatura}
+                </span>
+              </InfoCell>
+              <InfoCell label="Descripción">
+                <span className={cn(TYPOGRAPHY.table.cell, 'text-gris-una-2')}>
+                  {solicitud.evidencia_asignacion.evidencia.descripcion}
+                </span>
+              </InfoCell>
+            </div>
+          </div>
+        )}
 
         {/* Detalles */}
         <div>

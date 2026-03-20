@@ -1,6 +1,5 @@
 import React from 'react';
 import { Modal } from '@/Components/Ui/Modals/Modal';
-import { Button } from '@/Components/Ui/Buttons/Button';
 import { cn } from '@/Utils/ClassNames';
 import { TYPOGRAPHY } from '@/Constants/Typography';
 import type { User } from '@/Services/UserService';
@@ -63,11 +62,8 @@ export const UserDetailsModal: React.FC<UserDetailsModalProps> = ({
       }
       variant="info"
       size="lg"
-      footerButtons={
-        <Button variant="outline" standardWidth onClick={onClose}>
-          Cerrar
-        </Button>
-      }
+      showCancel={false}
+      showConfirm={false}
     >
       <div className="flex flex-col gap-5">
 
@@ -133,7 +129,7 @@ export const UserDetailsModal: React.FC<UserDetailsModalProps> = ({
                 ))}
               </div>
             </div>
-            <p className={cn('mt-1.5 text-gris-una-2', TYPOGRAPHY.badge)}>
+            <p className={cn('mt-1.5 text-gris-una-2', TYPOGRAPHY.form.helper)}>
               Total: {user.allPermissions.length} permiso{user.allPermissions.length !== 1 ? 's' : ''}
             </p>
           </div>

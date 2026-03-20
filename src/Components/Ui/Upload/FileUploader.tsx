@@ -1,7 +1,6 @@
 /**
- * FileUploader - Zona de selecci�n + lista de archivos pre-subida
- * Orquestra DropZone (UI) + validaci�n + lista editable de archivos seleccionados.
- * HU008 - Subida de Evidencias al Sistema
+ * FileUploader - Zona de selección + lista de archivos pre-subida
+ * Orquestra DropZone (UI) + validación + lista editable de archivos seleccionados.
  */
 
 import React from 'react';
@@ -18,7 +17,7 @@ import { TYPOGRAPHY } from '@/constants/Typography';
 import { DataTable, type DataTableColumn } from '@/Components/Ui/Table/DataTable';
 import { DropZone } from './DropZone';
 import { FileTypeIcon } from './FileTypeIcon';
-import { useFileUpload } from './useFileUpload';
+import { useFileUpload } from '../../../Hooks/useFileUpload';
 
 type SelectedRow = Record<string, unknown> & { _file: File; _index: number };
 

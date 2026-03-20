@@ -146,8 +146,7 @@ export const EvidenceAssignmentDetail: React.FC<EvidenceAssignmentDetailProps> =
       <DetailsModal
         isOpen={true}
         onClose={onClose}
-        title="Cargando..."
-        cancelLabel="Cerrar"
+        title="Detalles de la evidencia"
         size="lg"
         variant="neutral"
         heroIcon={<SystemIcons.work.myEvidences className={`${ICON_SIZES.md} text-blanco-una`} />}
@@ -188,7 +187,6 @@ export const EvidenceAssignmentDetail: React.FC<EvidenceAssignmentDetailProps> =
       onClose={onClose}
       title="Detalles de la evidencia"
       subtitle={itemName}
-      cancelLabel="Cerrar"
       size="lg"
       variant={modalVariant}
       heroIcon={modalHeroIcon}
@@ -198,21 +196,21 @@ export const EvidenceAssignmentDetail: React.FC<EvidenceAssignmentDetailProps> =
         {/* Alerta de urgencia */}
         <DeadlineWarning isOverdue={isOverdue} isNearDue={!!isNearDue} daysUntilDeadline={daysUntilDeadline} />
 
-        {/* Estado y fechas — grid 2 columnas */}
+        {/* Estado y fechas — grid 3 columnas */}
         <div>
           <SectionLabel label="Estado y fechas" />
-          <div className="border border-gray-200 rounded-corner p-4 grid grid-cols-2 gap-x-6 gap-y-4">
+          <div className="border border-gray-200 rounded-corner p-4 grid grid-cols-3 gap-x-6">
             <InfoCell label="Estado" inline>
               <AssignmentStatusBadge estado={assignment.estado} />
-            </InfoCell>
-            <InfoCell label="Fecha límite">
-              <span className={cn(TYPOGRAPHY.table.cell, deadlineColorClass)}>
-                {deadlineDateText}
-              </span>
             </InfoCell>
             <InfoCell label="Fecha de asignación">
               <span className={cn(TYPOGRAPHY.table.cell, 'text-gris-una-2')}>
                 {formatAssignmentDate(assignment.fecha_asignacion)}
+              </span>
+            </InfoCell>
+            <InfoCell label="Fecha límite">
+              <span className={cn(TYPOGRAPHY.table.cell, deadlineColorClass)}>
+                {deadlineDateText}
               </span>
             </InfoCell>
           </div>
@@ -222,7 +220,7 @@ export const EvidenceAssignmentDetail: React.FC<EvidenceAssignmentDetailProps> =
         {assignment.evidencia?.criterion && (
           <div>
             <SectionLabel label="Criterio" />
-            <div className="border border-gray-200 rounded-corner p-4 grid grid-cols-2 gap-x-6 gap-y-4">
+            <div className="border border-gray-200 rounded-corner p-4 flex flex-col gap-4">
               <InfoCell label="Nomenclatura">
                 <span className={cn(TYPOGRAPHY.table.cell, 'text-gris-una-2 font-semibold')}>
                   {assignment.evidencia.criterion.nomenclatura}

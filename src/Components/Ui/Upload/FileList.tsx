@@ -157,16 +157,14 @@ export const FileList: React.FC<FileListProps> = ({
         const file = item as unknown as FileModel;
         return (
           <div className="flex items-center justify-center gap-1">
-            {file.tipo === 'archivo' && (
-              <TableActionButton
-                action="custom"
-                customIcon={SystemIcons.actions.download({ className: TABLE_ACTION_BUTTON.icon })}
-                customVariant="tablePower"
-                tooltip="Descargar"
-                onClick={() => handleDownload(file)}
-                disabled={actionLoading === file.archivo_id}
-              />
-            )}
+            <TableActionButton
+              action="custom"
+              customIcon={SystemIcons.actions.download({ className: TABLE_ACTION_BUTTON.icon })}
+              customVariant="tablePower"
+              tooltip={file.tipo === 'archivo' ? 'Descargar' : 'No disponible para enlaces'}
+              onClick={() => handleDownload(file)}
+              disabled={actionLoading === file.archivo_id || file.tipo !== 'archivo'}
+            />
             {onDelete && (
               <TableActionButton
                 action="delete"

@@ -1,25 +1,27 @@
 /**
  * Accordion - Acordeón multinivel para recursos de evidencia
  *
- * Jerarquía flat (un solo contenedor, todos los niveles inline):
- *   ┌─ Evidencia 1 ──────────────────────── ▾ ─┐
- *   │  ↳ Responsable A (2 archivos)     ▾      │
- *   │    ↳ archivo1.pdf                         │
- *   │    ↳ archivo2.docx                        │
- *   │  ↳ Responsable B (1 enlace)       ▾      │
- *   ├─ Evidencia 2 ──────────────────────── ▾ ─┤
+ * Jerarquía:
+ *   ┌─ ˅  Evidencia 1 ─────────────────────────┐
+ *   │  ┌──────────┬──────────┬────────────────┐ │
+ *   │  │ Nombre   │ Archivos │ Acciones       │ │
+ *   │  ├──────────┼──────────┼────────────────┤ │
+ *   │  │ ˅ Resp A │ 2        │ ✎              │ │
+ *   │  │   archivo1.pdf  PDF  806 KB  ↓ 🗑    │ │
+ *   │  └──────────┴──────────┴────────────────┘ │
+ *   ├─ ˅  Evidencia 2 ─────────────────────────┤
  *   └───────────────────────────────────────────┘
  *
  * Modos:
- *  - Multi-entrada: prop `entries` (array de evidencias con sus grupos) — un solo contenedor
+ *  - Multi-entrada: prop `entries` — un solo contenedor con varias evidencias
  *  - Entrada única: props `evidencia` + `groups` — retrocompatible
  */
 
 import React, { useState } from 'react';
 import { cn } from '@/Utils/ClassNames';
 import { SystemIcons } from '@/Components/Ui/Icons/SystemIcons';
-import { Button } from '@/Components/Ui/Buttons/Button';
-import { Tooltip, TooltipTrigger, TooltipContent } from '@/Components/Ui/Feedback/Tooltip';
+import { TableActionButton } from '@/Components/Ui/Buttons/TableActionButton';
+import { DataTable, type DataTableColumn } from '@/Components/Ui/Table/DataTable';
 import { FileList } from './FileList';
 import type { FileModel } from '@/Types/FileTypes';
 import { TYPOGRAPHY } from '@/Constants/Typography';
@@ -33,6 +35,7 @@ export interface ResponsableGroup {
 }
 
 const EMPTY_GROUPS: ResponsableGroup[] = [];
+type GroupRow = ResponsableGroup & Record<string, unknown>;
 
 interface EvidenciaInfo {
   id: number;
@@ -56,15 +59,9 @@ interface AccordionProps {
   onUpload?: (evidenciaId: number, group: ResponsableGroup) => void;
 }
 
-// Helpers compartidos
-
 function countLabel(archivos: FileModel[]): string {
-  const n = archivos.filter(f => f.tipo === 'archivo').length;
-  const e = archivos.filter(f => f.tipo === 'enlace').length;
-  return [
-    n > 0 && `${n} archivo${n !== 1 ? 's' : ''}`,
-    e > 0 && `${e} enlace${e !== 1 ? 's' : ''}`,
-  ].filter(Boolean).join(' • ') || 'Sin recursos';
+  const total = archivos.length;
+  return total > 0 ? `${total} recurso${total !== 1 ? 's' : ''}` : 'Sin recursos';
 }
 
 interface EvidenciaRowProps {
@@ -77,105 +74,81 @@ const EvidenciaRow: React.FC<EvidenciaRowProps> = ({ ev, isExpanded, onToggle })
   <button
     type="button"
     onClick={() => onToggle(ev.id)}
-    className="w-full px-4 py-3 bg-blanco-una hover:bg-info-light transition-colors flex items-center justify-between"
+    className="w-full pl-4 pr-6 py-4 bg-blanco-una hover:bg-gray-50 transition-colors flex items-center gap-3"
   >
-    <div className="flex items-center gap-3">
-      <div className="w-8 h-8 bg-info-light rounded-corner flex items-center justify-center flex-shrink-0">
-        <SystemIcons.modal.document className={`text-azul-una ${ICON_SIZES.sm}`} />
-      </div>
-      <div className="text-left">
-        <p className={`text-gris-una-2 ${TYPOGRAPHY.table.caption}`}>
-          <span className={`text-gris-una-2 ${TYPOGRAPHY.table.cell} mr-2`}>
-            {ev.nomenclatura}
-          </span>
-          - {ev.descripcion}
-        </p>
-      </div>
-    </div>
     <SystemIcons.interface.chevronDown
       className={cn(
-        `text-gris-una transition-transform duration-200 ${ICON_SIZES.sm}`,
+        `text-gris-una transition-transform duration-200 flex-shrink-0 ${ICON_SIZES.sm}`,
         isExpanded && 'rotate-180'
       )}
     />
+    <p className={`text-left text-negro-una-2 flex-1 ${TYPOGRAPHY.table.cell}`}>
+      <span className="font-semibold mr-1">{ev.nomenclatura}</span>
+      <span className="text-gris-una"> - {ev.descripcion}</span>
+    </p>
   </button>
 );
 
-interface UserRowProps {
+interface GroupsTableProps {
   evId: number;
-  group: ResponsableGroup;
-  isExpanded: boolean;
-  onToggle: (evId: number, userId: number) => void;
+  groups: ResponsableGroup[];
   onUpload?: (evidenciaId: number, group: ResponsableGroup) => void;
   onDelete?: (fileId: number) => Promise<void>;
 }
 
-const UserRow: React.FC<UserRowProps> = ({ evId, group, isExpanded, onToggle, onUpload, onDelete }) => {
-  const key = `${evId}:${group.usuario_id}`;
+const GroupsTable: React.FC<GroupsTableProps> = ({ evId, groups, onUpload, onDelete }) => {
+  const columns: DataTableColumn<GroupRow>[] = [
+    {
+      key: 'nombre',
+      header: 'Nombre',
+      render: (_, item) => (
+        <span className={`font-semibold text-negro-una-2 ${TYPOGRAPHY.table.cell}`}>
+          {(item as unknown as ResponsableGroup).nombre}
+        </span>
+      ),
+    },
+    {
+      key: 'archivos',
+      header: 'Recursos',
+      align: 'center',
+      render: (_, item) => (
+        <span className={`text-gris-una-2 ${TYPOGRAPHY.table.caption}`}>
+          {countLabel((item as unknown as ResponsableGroup).archivos)}
+        </span>
+      ),
+    },
+    ...(onUpload ? [{
+      key: 'acciones',
+      header: 'Acciones',
+      align: 'center' as const,
+      render: (_: unknown, item: GroupRow) => (
+        <TableActionButton
+          action="edit"
+          customVariant="tableEdit"
+          tooltip="Editar recursos"
+          onClick={() => onUpload(evId, item as unknown as ResponsableGroup)}
+        />
+      ),
+    }] : []),
+  ];
+
   return (
-    <React.Fragment key={key}>
-      <div className="flex items-center">
-        {/* Área de toggle: info del responsable */}
-        <button
-          type="button"
-          onClick={() => onToggle(evId, group.usuario_id)}
-          className="flex-1 pl-12 pr-4 py-3 bg-blanco-una hover:bg-warning-light transition-colors flex items-center gap-3"
-        >            
-          <div className="w-7 h-7 bg-warning-light rounded-corner flex items-center justify-center flex-shrink-0">
-            <SystemIcons.users.user className={`text-warning ${ICON_SIZES.sm}`} />
-          </div>
-          <div className="text-left">
-            <p className={`font-semibold text-negro-una-2 ${TYPOGRAPHY.table.cell}`}>
-              {group.nombre}
-            </p>
-            <p className={`text-gris-una-2 ${TYPOGRAPHY.table.caption}`}>
-              {countLabel(group.archivos)}
-            </p>
-          </div>
-        </button>
-        {/* Botón de edición — a la izquierda del chevron */}
-        {onUpload && (
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Button
-                variant="ghost"
-                onClick={(e) => { e.stopPropagation(); onUpload(evId, group); }}
-                className="flex-shrink-0 hover:bg-warning-light rounded-none px-3 py-3 h-full"
-              >
-                <SystemIcons.actions.edit className={`text-warning ${ICON_SIZES.sm}`} />
-              </Button>
-            </TooltipTrigger>
-            <TooltipContent side="left">
-              Editar recursos
-            </TooltipContent>
-          </Tooltip>
-        )}
-        {/* Chevron — rightmost, también activa el toggle */}
-        <button
-          type="button"
-          onClick={() => onToggle(evId, group.usuario_id)}
-          className="flex-shrink-0 px-3 py-3 bg-blanco-una hover:bg-gris-una/10 transition-colors border-l border-gris-una/10"
-        >
-          <SystemIcons.interface.chevronDown
-            className={cn(
-              `text-gris-una transition-transform duration-200 ${ICON_SIZES.sm}`,
-              isExpanded && 'rotate-180'
-            )}
-          />
-        </button>
-      </div>
-      {isExpanded && (
-        <div className="pl-12 pr-4 pb-3 pt-2 bg-white">
-          <FileList
-            files={group.archivos}
-            loading={false}
-            onDelete={onDelete}
-            showActions={!!onDelete}
-            emptyMessage="Este responsable no ha subido archivos aún"
-          />
-        </div>
+    <DataTable<GroupRow>
+      title=""
+      searchable={false}
+      data={groups as GroupRow[]}
+      getRowKey={(item) => String((item as unknown as ResponsableGroup).usuario_id)}
+      columns={columns}
+      expandableRow={(item) => (
+        <FileList
+          files={(item as unknown as ResponsableGroup).archivos}
+          loading={false}
+          onDelete={onDelete}
+          showActions={!!onDelete}
+          emptyMessage="Este responsable no ha subido archivos aún"
+        />
       )}
-    </React.Fragment>
+    />
   );
 };
 
@@ -187,9 +160,7 @@ export const Accordion: React.FC<AccordionProps> = ({
   onDelete,
   onUpload,
 }) => {
-  // Estado expandido para evidencias (por id) y responsables (por usuario_id)
   const [expandedEvidencias, setExpandedEvidencias] = useState<Set<number>>(new Set());
-  const [expandedUsers, setExpandedUsers] = useState<Set<string>>(new Set());
 
   const toggleEvidencia = (id: number) =>
     setExpandedEvidencias(prev => {
@@ -198,23 +169,13 @@ export const Accordion: React.FC<AccordionProps> = ({
       return next;
     });
 
-  // Clave única combinando evidencia + usuario para evitar colisiones entre evidencias
-  const toggleUser = (evId: number, userId: number) => {
-    const key = `${evId}:${userId}`;
-    setExpandedUsers(prev => {
-      const next = new Set(prev);
-      next.has(key) ? next.delete(key) : next.add(key);
-      return next;
-    });
-  };
-
   // MODO MULTI-EVIDENCIA
   if (entries) {
     if (loading) {
       return (
         <div className="border border-gray-200 rounded-corner">
           <p className={`text-gris-una text-center py-6 ${TYPOGRAPHY.table.cell}`}>
-            Cargando archivos...
+            Cargando recursos...
           </p>
         </div>
       );
@@ -230,21 +191,18 @@ export const Accordion: React.FC<AccordionProps> = ({
               {isEvExpanded && (
                 entry.groups.length === 0
                   ? (
-                    <p className={`pl-12 py-3 text-gris-una ${TYPOGRAPHY.table.cell}`}>
+                    <p className={`pl-8 py-3 text-gris-una ${TYPOGRAPHY.table.cell}`}>
                       Sin recursos adjuntos
                     </p>
                   )
-                  : entry.groups.map(group => (
-                    <UserRow
-                      key={`${entry.evidencia.id}:${group.usuario_id}`}
+                  : (
+                    <GroupsTable
                       evId={entry.evidencia.id}
-                      group={group}
-                      isExpanded={expandedUsers.has(`${entry.evidencia.id}:${group.usuario_id}`)}
-                      onToggle={toggleUser}
+                      groups={entry.groups}
                       onUpload={onUpload}
                       onDelete={onDelete}
                     />
-                  ))
+                  )
               )}
             </React.Fragment>
           );
@@ -254,38 +212,35 @@ export const Accordion: React.FC<AccordionProps> = ({
   }
 
   // MODO ENTRADA ÚNICA (retrocompatible)
-  const singleId = 0; // id ficticio para entrada única
+  const singleId = 0;
   const isEvExpanded = expandedEvidencias.has(singleId);
 
-  const userRows = groups.length === 0
+  const groupsContent = groups.length === 0
     ? (
       <p className={`text-gris-una text-center py-4 px-4 ${TYPOGRAPHY.table.cell}`}>
         No hay recursos adjuntos
       </p>
     )
-    : groups.map(group => (
-      <UserRow
-        key={`${singleId}:${group.usuario_id}`}
+    : (
+      <GroupsTable
         evId={singleId}
-        group={group}
-        isExpanded={expandedUsers.has(`${singleId}:${group.usuario_id}`)}
-        onToggle={toggleUser}
+        groups={groups}
         onUpload={onUpload}
         onDelete={onDelete}
       />
-    ));
+    );
 
   if (!evidencia) {
     if (loading) {
       return (
         <div className="border border-gray-200 rounded-corner">
-          <p className={`text-gris-una text-center py-4 ${TYPOGRAPHY.table.cell}`}>Cargando archivos...</p>
+          <p className={`text-gris-una text-center py-4 ${TYPOGRAPHY.table.cell}`}>Cargando recursos...</p>
         </div>
       );
     }
     return (
-      <div className="border border-gray-200 rounded-corner overflow-hidden divide-y divide-gray-100">
-        {userRows}
+      <div className="border border-gray-200 rounded-corner overflow-hidden">
+        {groupsContent}
       </div>
     );
   }
@@ -295,8 +250,8 @@ export const Accordion: React.FC<AccordionProps> = ({
       <EvidenciaRow ev={{ id: singleId, ...evidencia }} isExpanded={isEvExpanded} onToggle={toggleEvidencia} />
       {isEvExpanded && (
         loading
-          ? <p className={`text-gris-una text-center py-4 ${TYPOGRAPHY.table.cell}`}>Cargando archivos...</p>
-          : <div className="divide-y divide-gray-100">{userRows}</div>
+          ? <p className={`text-gris-una text-center py-4 ${TYPOGRAPHY.table.cell}`}>Cargando recursos...</p>
+          : groupsContent
       )}
     </div>
   );

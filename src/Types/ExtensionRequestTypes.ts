@@ -26,6 +26,11 @@ export interface ExtensionRequest {
     evidencia_id: number;
     estado: string;
     fecha_limite: string;
+    evidencia?: {
+      evidencia_id: number;
+      nomenclatura: string;
+      descripcion: string;
+    };
   };
 
   usuario?: {

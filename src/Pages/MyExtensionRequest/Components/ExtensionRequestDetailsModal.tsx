@@ -52,7 +52,6 @@ export const ExtensionRequestDetailsModal: React.FC<ExtensionRequestDetailsModal
       onClose={onClose}
       title="Mi Solicitud de Ampliación"
       subtitle={`#${solicitud.solicitud_ampliacion_id}`}
-      cancelLabel="Cerrar"
       size="md"
       variant="info"
       heroIcon={<SystemIcons.modal.document className={`${ICON_SIZES.md} text-blanco-una`} />}
@@ -96,14 +95,14 @@ export const ExtensionRequestDetailsModal: React.FC<ExtensionRequestDetailsModal
             <SectionLabel label="Resolución" />
             <div className={cn(
               'border rounded-corner p-4 flex flex-col gap-3',
-              isApproved ? 'border-verde-ring bg-verde-light' : 'border-error-ring bg-error-light'
+              isApproved ? 'border-info-ring bg-info-light' : 'border-error-ring bg-error-light'
             )}>
               <div className="flex items-center gap-2">
                 {isApproved
-                  ? <SystemIcons.interface.checkCircle className={cn(ICON_SIZES.sm, 'text-verde flex-shrink-0')} />
+                  ? <SystemIcons.interface.checkCircle className={cn(ICON_SIZES.sm, 'text-info flex-shrink-0')} />
                   : <SystemIcons.interface.xCircle className={cn(ICON_SIZES.sm, 'text-error flex-shrink-0')} />
                 }
-                <span className={cn(TYPOGRAPHY.modal.body, 'font-semibold', isApproved ? 'text-verde' : 'text-error')}>
+                <span className={cn(TYPOGRAPHY.modal.body, 'font-semibold', isApproved ? 'text-info' : 'text-error')}>
                   {isApproved ? 'Solicitud aprobada' : 'Solicitud rechazada'}
                 </span>
               </div>
@@ -117,8 +116,8 @@ export const ExtensionRequestDetailsModal: React.FC<ExtensionRequestDetailsModal
               )}
 
               {solicitud.fecha_resolucion && (
-                <div className={cn('flex items-center gap-1.5 pt-2 border-t', isApproved ? 'border-verde-ring' : 'border-error-ring')}>
-                  <span className={cn(TYPOGRAPHY.form.helper, isApproved ? 'text-verde' : 'text-error')}>
+                <div className={cn('flex items-center gap-1.5 pt-2 border-t', isApproved ? 'border-info-ring' : 'border-error-ring')}>
+                  <span className={cn(TYPOGRAPHY.form.helper, isApproved ? 'text-info' : 'text-error')}>
                     Resuelta el {formatDate(solicitud.fecha_resolucion)}
                     {solicitud.resolutor?.nombre && <> por <strong>{solicitud.resolutor.nombre}</strong></>}
                   </span>

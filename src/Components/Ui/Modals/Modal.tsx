@@ -331,7 +331,7 @@ export const Modal: React.FC<ModalProps> = React.memo(({
                 {/* Meta izquierda */}
                 <span
                   className={cn(
-                    TYPOGRAPHY.badge,
+                    TYPOGRAPHY.form.helper,
                     'text-gris-una-2 truncate flex-1',
                     cfg?.metaColor,
                   )}

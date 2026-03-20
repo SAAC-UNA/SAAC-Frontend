@@ -1,27 +1,25 @@
 /**
  * EvidenceDetailsModal - Modal para mostrar los detalles completos de una evidencia
- * 
+ *
  * Muestra información detallada de la evidencia incluyendo:
- * - Información básica (criterio, descripción, estado)
- * - Lista completa de responsables con nombres y correos
+ * - Información básica (criterio, descripción, evidencias asociadas)
  * - Recursos disponibles (archivos y enlaces) agrupados por responsable
  * - Roles con acceso
  */
 
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { DetailsModal } from '@/Components/Ui/Modals/DetailsModal';
+import { Modal } from '@/Components/Ui/Modals/Modal';
 import { SystemIcons } from '@/Components/Ui/Icons/SystemIcons';
 import { Accordion, type EvidenciaEntry } from '@/Components/Ui/Upload/Accordion';
 import type { ResponsableGroup } from '@/Components/Ui/Upload/Accordion';
 import { fileService } from '@/Services/FileService';
 import { evidenceSearchService, mapBackendToFrontend } from '@/Services/EvidenceSearchService';
 import type { FileModel } from '@/Types/FileTypes';
-import { 
-  type EvidenceSearchResult 
-} from '@/Types/EvidenceSearchTypes';
+import { type EvidenceSearchResult } from '@/Types/EvidenceSearchTypes';
 import { TYPOGRAPHY } from '@/Constants/Typography';
 import { ICON_SIZES } from '@/Constants/Components';
+import { cn } from '@/Utils/ClassNames';
 
 interface EvidenceDetailsModalProps {
   isOpen: boolean;
@@ -37,105 +35,41 @@ interface FilesByUser {
   archivos: FileModel[];
 }
 
-interface BasicInfoProps {
-  criterio: EvidenceSearchResult;
-  evidenciasCount: number;
-}
+// ── Componentes locales de layout ────────────────────────────────────────────
 
-const BasicInfo: React.FC<BasicInfoProps> = ({ criterio, evidenciasCount }) => (
-  <div className="mb-6">
-    <div className="flex items-center space-x-2 mb-3">
-      <SystemIcons.modal.document className={`text-gris-una-2 ${ICON_SIZES.sm}`} />
-      <h3 className={`font-semibold text-negro-una-2 ${TYPOGRAPHY.modal.subtitle}`}>Información General</h3>
-    </div>
-    <div className="bg-white border border-gray-200 rounded-corner p-4 space-y-3">
-      <div>
-        <span className={`font-semibold text-negro-una-2 ${TYPOGRAPHY.modal.body}`}>Criterio:</span>
-        <p className={`text-gris-una-2 mt-1 ${TYPOGRAPHY.modal.body}`}>
-          {criterio.criterio_nomenclatura} - {criterio.criterio_descripcion}
-        </p>
-      </div>
-      <div>
-        <span className={`font-semibold text-negro-una-2 ${TYPOGRAPHY.modal.body}`}>Evidencias asociadas:</span>
-        <p className={`text-gris-una-2 mt-1 ${TYPOGRAPHY.modal.body}`}>{evidenciasCount}</p>
-      </div>
-    </div>
+const SectionLabel: React.FC<{ label: string }> = ({ label }) => (
+  <div className="flex items-center gap-2 mb-2.5">
+    <span className={cn('uppercase tracking-wider font-semibold text-gris-una-2', TYPOGRAPHY.table.header)}>
+      {label}
+    </span>
   </div>
 );
 
-interface RecursosProps {
-  evidencias: EvidenceSearchResult[];
-  filesByEvidencia: Map<number, FilesByUser[]>;
-  loadingFiles: boolean;
-  onDelete: (fileId: number) => Promise<void>;
-  onUpload: (evidenciaId: number, group: ResponsableGroup) => void;
-}
+const InfoCell: React.FC<{ label: string; children: React.ReactNode; className?: string }> = ({
+  label, children, className,
+}) => (
+  <div className={cn('flex flex-col gap-1.5', className)}>
+    <span className={cn('uppercase tracking-wider font-semibold text-gris-una-2', TYPOGRAPHY.table.header)}>
+      {label}
+    </span>
+    <div>{children}</div>
+  </div>
+);
 
-const Recursos: React.FC<RecursosProps> = ({ evidencias, filesByEvidencia, loadingFiles, onDelete, onUpload }) => {
-  const entries: EvidenciaEntry[] = evidencias.map(ev => ({
-    evidencia: {
-      id: ev.evidencia_id,
-      nomenclatura: ev.nomenclatura,
-      descripcion: ev.descripcion,
-    },
-    groups: filesByEvidencia.get(ev.evidencia_id) ?? [],
-  }));
-  return (
-    <div className="mb-6">
-      <div className="flex items-center space-x-2 mb-3">
-        <SystemIcons.interface.link className={`text-gris-una-2 ${ICON_SIZES.sm}`} />
-        <h3 className={`font-semibold text-negro-una-2 ${TYPOGRAPHY.modal.subtitle}`}>Responsables y Recursos</h3>
-      </div>
-      <Accordion
-        entries={entries}
-        loading={loadingFiles}
-        onDelete={onDelete}
-        onUpload={onUpload}
-      />
-    </div>
-  );
-};
-
-interface RolesAccesoProps { criterio: EvidenceSearchResult; }
-
-const RolesAcceso: React.FC<RolesAccesoProps> = ({ criterio }) => {
-  if (!criterio.roles_acceso || criterio.roles_acceso.length === 0) return null;
-  return (
-    <div className="mb-6">
-      <div className="flex items-center space-x-2 mb-3">
-        <SystemIcons.users.roles className={`text-gris-una-2 ${ICON_SIZES.sm}`} />
-        <h3 className={`font-semibold text-negro-una-2 ${TYPOGRAPHY.modal.subtitle}`}>Roles con Acceso</h3>
-      </div>
-      <div className="bg-white border border-gray-200 rounded-corner p-4">
-        <div className="flex flex-wrap gap-2">
-          {criterio.roles_acceso.map((rol) => (
-            <span
-              key={rol}
-              className={`inline-flex px-3 py-1 font-medium rounded-full bg-azul-una/10 text-azul-una ${TYPOGRAPHY.badge}`}
-            >
-              {rol}
-            </span>
-          ))}
-        </div>
-      </div>
-    </div>
-  );
-};
+// ─────────────────────────────────────────────────────────────────────────────
 
 export const EvidenceDetailsModal: React.FC<EvidenceDetailsModalProps> = ({
   isOpen,
   onClose,
-  criterioId
+  criterioId,
 }) => {
   const navigate = useNavigate();
   const [evidencias, setEvidencias] = useState<EvidenceSearchResult[]>([]);
-  // clave = evidencia_id, valor = grupos de responsables con archivos
   const [filesByEvidencia, setFilesByEvidencia] = useState<Map<number, FilesByUser[]>>(new Map());
   const [loadingFiles, setLoadingFiles] = useState(false);
 
   const criterio = evidencias[0] ?? null;
 
-  // Cuando se abre el modal, cargar todas las evidencias del criterio desde el backend
   useEffect(() => {
     if (isOpen && criterioId) {
       loadAll();
@@ -168,7 +102,6 @@ export const EvidenceDetailsModal: React.FC<EvidenceDetailsModalProps> = ({
 
   const handleDeleteFile = async (fileId: number) => {
     await fileService.deleteFile(fileId);
-    // Encontrar a qué evidencia pertenece el archivo y recargar sus archivos
     for (const [evId, groups] of filesByEvidencia.entries()) {
       const found = groups.some(g => g.archivos.some(f => f.archivo_id === fileId));
       if (found) {
@@ -195,23 +128,18 @@ export const EvidenceDetailsModal: React.FC<EvidenceDetailsModalProps> = ({
     if (!criterioId) return;
     setLoadingFiles(true);
     try {
-      // Traer TODAS las evidencias del criterio (sin límite de página)
       const response = await evidenceSearchService.search(
         { criterio: String(criterioId) },
         1,
-        100
+        100,
       );
       const mapped = response.data.map(mapBackendToFrontend);
       setEvidencias(mapped);
 
-      if (mapped.length === 0) {
-        setLoadingFiles(false);
-        return;
-      }
+      if (mapped.length === 0) return;
 
-      // Cargar archivos de todas en paralelo
       const results = await Promise.all(
-        mapped.map(ev => fileService.listFiles({ evidencia_id: ev.evidencia_id }))
+        mapped.map(ev => fileService.listFiles({ evidencia_id: ev.evidencia_id })),
       );
 
       const map = new Map<number, FilesByUser[]>();
@@ -223,7 +151,7 @@ export const EvidenceDetailsModal: React.FC<EvidenceDetailsModalProps> = ({
               usuario_id: f.usuario_id,
               nombre: f.usuario?.nombre_completo || `Usuario ${f.usuario_id}`,
               email: f.usuario?.email || '',
-              archivos: []
+              archivos: [],
             });
           }
           groupMap.get(f.usuario_id)!.archivos.push(f);
@@ -243,44 +171,94 @@ export const EvidenceDetailsModal: React.FC<EvidenceDetailsModalProps> = ({
 
   if (!criterioId) return null;
 
-  // Mientras cargan las evidencias del backend, mostrar estado de carga
-  if (loadingFiles && evidencias.length === 0) {
-    return (
-      <DetailsModal
-        isOpen={isOpen}
-        onClose={onClose}
-        title="Detalles del Criterio"
-        cancelLabel="Cerrar"
-        size="lg"
-        variant="neutral"
-        heroIcon={<SystemIcons.modal.document className={`${ICON_SIZES.md} text-blanco-una`} />}
-      >
-        <div className={`flex items-center justify-center py-12 text-gris-una ${TYPOGRAPHY.modal.body}`}>
-          Cargando información del criterio...
-        </div>
-      </DetailsModal>
-    );
-  }
+  const accordionEntries: EvidenciaEntry[] = evidencias.map(ev => ({
+    evidencia: {
+      id: ev.evidencia_id,
+      nomenclatura: ev.nomenclatura,
+      descripcion: ev.descripcion,
+    },
+    groups: filesByEvidencia.get(ev.evidencia_id) ?? [],
+  }));
 
   return (
-    <DetailsModal
+    <Modal
       isOpen={isOpen}
       onClose={onClose}
       title="Detalles del Criterio"
-      cancelLabel="Cerrar"
+      subtitle={criterio?.criterio_nomenclatura}
+      variant="info"
       size="lg"
-      variant="neutral"
       heroIcon={<SystemIcons.modal.document className={`${ICON_SIZES.md} text-blanco-una`} />}
+      showCancel={false}
+      showConfirm={false}
     >
-      {criterio && <BasicInfo criterio={criterio} evidenciasCount={evidencias.length} />}
-      <Recursos
-        evidencias={evidencias}
-        filesByEvidencia={filesByEvidencia}
-        loadingFiles={loadingFiles}
-        onDelete={handleDeleteFile}
-        onUpload={handleOpenUpload}
-      />
-      {criterio && <RolesAcceso criterio={criterio} />}
-    </DetailsModal>
+      {loadingFiles && evidencias.length === 0 ? (
+        <div className={cn('flex items-center justify-center py-12 text-gris-una', TYPOGRAPHY.modal.body)}>
+          Cargando información del criterio…
+        </div>
+      ) : (
+        <div className="flex flex-col gap-5">
+
+          {/* INFORMACIÓN DEL CRITERIO */}
+          {criterio && (
+            <div>
+              <SectionLabel label="Información del criterio" />
+              <div className="border border-gray-200 rounded-corner p-4 grid grid-cols-2 gap-x-6 gap-y-4">
+                <InfoCell label="Nomenclatura">
+                  <span className={cn(TYPOGRAPHY.table.cell, 'text-gris-una-2 font-medium')}>
+                    {criterio.criterio_nomenclatura}
+                  </span>
+                </InfoCell>
+                <InfoCell label="Evidencias asociadas">
+                  <span className={cn(TYPOGRAPHY.table.cell, 'text-gris-una-2')}>
+                    {evidencias.length}
+                  </span>
+                </InfoCell>
+                <InfoCell label="Descripción" className="col-span-2">
+                  <span className={cn(TYPOGRAPHY.table.cell, 'text-gris-una-2')}>
+                    {criterio.criterio_descripcion}
+                  </span>
+                </InfoCell>
+              </div>
+            </div>
+          )}
+
+          {/* RESPONSABLES Y RECURSOS */}
+          <div>
+            <SectionLabel label="Responsables y recursos" />
+            <Accordion
+              entries={accordionEntries}
+              loading={loadingFiles}
+              onDelete={handleDeleteFile}
+              onUpload={handleOpenUpload}
+            />
+          </div>
+
+          {/* ROLES CON ACCESO */}
+          {criterio && criterio.roles_acceso && criterio.roles_acceso.length > 0 && (
+            <div>
+              <SectionLabel label="Roles con acceso" />
+              <div className="border border-gray-200 rounded-corner p-4">
+                <div className="flex flex-wrap gap-2">
+                  {criterio.roles_acceso.map((rol) => (
+                    <span
+                      key={rol}
+                      className={cn(
+                        'inline-flex px-2.5 py-1 font-semibold rounded-full',
+                        'bg-azul-una/10 text-azul-una border border-azul-una/20',
+                        TYPOGRAPHY.badge,
+                      )}
+                    >
+                      {rol}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            </div>
+          )}
+
+        </div>
+      )}
+    </Modal>
   );
 };

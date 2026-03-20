@@ -12,7 +12,6 @@
 
 import React from 'react';
 import { Modal } from './Modal';
-import { Button } from '../Buttons/Button';
 import type { ModalVariant } from './Modal';
 
 interface DetailsModalProps {
@@ -20,7 +19,6 @@ interface DetailsModalProps {
   onClose: () => void;
   title?: string;
   subtitle?: string;
-  cancelLabel?: string;
   size?: 'sm' | 'md' | 'lg' | 'xl';
   variant?: ModalVariant;
   heroIcon?: React.ReactNode;
@@ -32,7 +30,6 @@ export const DetailsModal: React.FC<DetailsModalProps> = ({
   onClose,
   title = 'Detalles',
   subtitle,
-  cancelLabel = 'Cerrar',
   size = 'lg',
   variant,
   heroIcon,
@@ -47,11 +44,8 @@ export const DetailsModal: React.FC<DetailsModalProps> = ({
       size={size}
       variant={variant}
       heroIcon={heroIcon}
-      footerButtons={
-        <Button variant="outline" standardWidth onClick={onClose}>
-          {cancelLabel}
-        </Button>
-      }
+      showCancel={false}
+      showConfirm={false}
     >
       {children}
     </Modal>

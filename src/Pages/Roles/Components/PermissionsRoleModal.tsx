@@ -1,6 +1,5 @@
 import React from 'react';
 import { Modal } from '../../../Components/Ui/Modals/Modal';
-import { Button } from '../../../Components/Ui/Buttons/Button';
 import { SystemIcons } from '../../../Components/Ui/Icons/SystemIcons';
 import { cn } from '../../../Utils/ClassNames';
 import { TYPOGRAPHY } from '../../../Constants/Typography';
@@ -42,13 +41,10 @@ export const PermissionsModal: React.FC<PermissionsModalProps> = ({
         </div>
       }
       variant="info"
-      size="md"
+      size="lg"
       footerMeta={`Total: ${permissions.length} permiso${permissions.length !== 1 ? 's' : ''}`}
-      footerButtons={
-        <Button variant="outline" standardWidth onClick={onClose}>
-          Cerrar
-        </Button>
-      }
+      showCancel={false}
+      showConfirm={false}
     >
       <div className="flex flex-col gap-5">
         {/* Descripción del rol */}
