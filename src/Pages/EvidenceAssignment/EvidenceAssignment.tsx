@@ -241,7 +241,6 @@ const EvidenceAssignment: React.FC = () => {
       <PageHeader
           title={moduleInfo.title}
           description={moduleInfo.description}
-          forceLeftAlign={true}
           headerExtra={
             <div className="hidden md:block">
               <WizardProgress 

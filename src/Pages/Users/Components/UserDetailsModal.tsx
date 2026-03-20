@@ -1,10 +1,8 @@
 import React from 'react';
 import { Modal } from '@/Components/Ui/Modals/Modal';
 import { Button } from '@/Components/Ui/Buttons/Button';
-import { SystemIcons } from '@/Components/Ui/Icons/SystemIcons';
 import { cn } from '@/Utils/ClassNames';
 import { TYPOGRAPHY } from '@/Constants/Typography';
-import { ICON_SIZES } from '@/Constants/Components';
 import type { User } from '@/Services/UserService';
 
 const getInitials = (name: string) =>

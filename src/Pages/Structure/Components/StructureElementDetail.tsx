@@ -32,8 +32,6 @@ export const StructureElementDetail: React.FC<StructureElementDetailProps> = ({
       isOpen={isOpen}
       onClose={onClose}
       title="Detalles del Elemento"
-      itemName={element.name || element.nomenclature}
-      itemType="elemento"
       size="md"
     >
       <div className="space-y-6">
