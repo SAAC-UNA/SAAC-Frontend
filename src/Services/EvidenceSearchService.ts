@@ -49,6 +49,7 @@ interface BackendEvidenceResult {
     nombre?: string;
   };
   responsables?: BackendResponsable[];
+  roles_acceso?: string[];
   fecha_publicacion: string;
   created_at: string;
   updated_at: string;
@@ -247,7 +248,7 @@ export function mapBackendToFrontend(backendData: BackendEvidenceResult) {
     estado: ESTADO_ID_TO_FRONTEND[backendData.estado_evidencia_id ?? 0] || 'pendiente',
     archivos_count: backendData.archivos_count || 0,
     enlaces_count: backendData.enlaces_count || 0,
-    roles_acceso: [],  // Por ahora no viene del backend
+    roles_acceso: backendData.roles_acceso || [],
     created_at: backendData.created_at,
     updated_at: backendData.updated_at
   };

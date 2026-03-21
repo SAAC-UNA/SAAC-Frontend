@@ -29,7 +29,7 @@ export interface DropdownOption {
   /** Identificador único de la opción */
   id: string;
   /** Texto a mostrar */
-  label: string;
+  label: ReactNode;
   /** Ícono opcional a la izquierda del label */
   icon?: ReactNode;
   /** Callback al hacer click en la opción */
@@ -42,7 +42,7 @@ export interface DropdownOption {
 
 export interface DropdownButtonProps {
   /** Texto del botón */
-  label: string;
+  label: ReactNode;
   /** Ícono del botón (opcional) */
   icon?: ReactNode;
   /** Variante del botón */
@@ -147,7 +147,7 @@ export const DropdownButton: React.FC<DropdownButtonProps> = ({
           title={tooltip}
         >
           {icon && <span className="flex-shrink-0">{icon}</span>}
-          <span>{label}</span>
+          <span className={TYPOGRAPHY.button}>{label}</span>
           <SystemIcons.interface.chevronDown 
             className={cn(
               ICON_SIZES.button, "transition-transform duration-200",
@@ -161,7 +161,7 @@ export const DropdownButton: React.FC<DropdownButtonProps> = ({
       {isOpen && (
         <div 
           className={cn(
-            "absolute top-full mt-2 rounded-corner bg-blanco-una-2 shadow-lg border border-gris-una/5 overflow-hidden z-50",
+            "absolute top-full mt-2 rounded-corner bg-blanco-una-2 shadow-lg border border-gris-light overflow-hidden z-50",
             getMenuWidthClass(),
             dropdownPosition === 'left' ? 'left-0' : 'right-0'
           )}

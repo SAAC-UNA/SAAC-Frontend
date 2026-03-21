@@ -7,6 +7,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { PageHeader, ScreenContainer } from '@/Components/Ui/Index';
 import { BackendErrorAlert } from '@/Components/Ui/Feedback/BackendErrorAlert';
+import { SearchInput } from '@/Components/Ui/Forms/SearchInput';
 import { getModuleInfo } from '@/Constants/ModuleInfo';
 import { TABLE_PAGE_SIZE } from '@/Constants/TablePagination';
 import { useToast } from '@/Context/ToastContext';
@@ -16,7 +17,6 @@ import { extensionRequestService } from '@/Services/ExtensionRequestService';
 import type { EvidenceAssignment, AssignmentFilters } from '@/Types/EvidenceAssignmentTypes';
 import { filterAndSortAssignments } from '@/Types/EvidenceAssignmentTypes';
 import {
-  EvidenceAssignmentFilters,
   EvidenceAssignmentDetail,
   EvidenceAssignmentsTable
 } from './Components';
@@ -186,11 +186,10 @@ export const MyEvidenceAssignmentsPage: React.FC = () => {
         description={moduleInfo.description}
         headerExtra={
           !error && assignments.length > 0 ? (
-            <EvidenceAssignmentFilters
-              filters={filters}
-              onFiltersChange={handleFiltersChange}
-              totalCount={assignments.length}
-              filteredCount={filteredAssignments.length}
+            <SearchInput
+              placeholder="Buscar evidencias..."
+              value={filters.search || ''}
+              onChange={(value) => handleFiltersChange({ ...filters, search: value })}
             />
           ) : undefined
         }

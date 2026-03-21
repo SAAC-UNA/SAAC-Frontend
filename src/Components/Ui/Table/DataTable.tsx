@@ -223,7 +223,7 @@ export const DataTable = React.memo(<T extends Record<string, unknown>>({
                       index === 0 ? (expandableRow ? "px-4" : "pl-8 pr-4") : "px-4"
                     )}
                   >
-                    <p className={`block font-sans antialiased font-semibold leading-none text-gris-una-2 opacity-70 ${TYPOGRAPHY.table.header}`}>
+                    <p className={`block font-sans antialiased font-semibold leading-none text-negro-una-2 ${TYPOGRAPHY.table.header}`}>
                       {column.header}
                     </p>
                   </th>
