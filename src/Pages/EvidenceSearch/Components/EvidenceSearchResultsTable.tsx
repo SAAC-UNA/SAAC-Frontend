@@ -8,11 +8,8 @@ import { SystemIcons } from '@/Components/Ui/Icons/SystemIcons';
 import { DataTable, type DataTableColumn } from '@/Components/Ui/Table/DataTable';
 import { TYPOGRAPHY } from '@/Constants/Typography';
 import { TABLE_PAGE_SIZE } from '@/Constants/TablePagination';
-import { StatusBadge } from '@/Components/index';
 import { TableActionButton } from '@/Components/Ui/Buttons/TableActionButton';
 import { 
-  EVIDENCE_STATUS_LABELS, 
-  EVIDENCE_STATUS_BADGE,
   type EvidenceSearchResult 
 } from '@/Types/EvidenceSearchTypes';
 import { ICON_SIZES } from '@/Constants/Components';
@@ -135,17 +132,6 @@ export const EvidenceSearchResultsTable: React.FC<EvidenceSearchResultsTableProp
             <span className={`text-gris-una ${TYPOGRAPHY.table.cell}`}>Sin recursos</span>
           )}
         </div>
-      )
-    },
-    {
-      key: 'estado',
-      header: 'Estado',
-      align: 'center',
-      render: (_, item) => (
-        <StatusBadge
-          label={EVIDENCE_STATUS_LABELS[item.estado]}
-          colorClasses={EVIDENCE_STATUS_BADGE[item.estado]}
-        />
       )
     },
     {
