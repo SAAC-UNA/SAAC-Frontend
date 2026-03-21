@@ -11,12 +11,21 @@
  * - Mejor accesibilidad
  */
 
-import React, { useState, useRef, useEffect, useId } from 'react';
+import React, { useState, useRef, useEffect, useId, useCallback } from 'react';
+import { createPortal } from 'react-dom';
 import { cn } from '@/Utils/ClassNames';
 import { type ComponentSize } from '@/Constants/ComponentSizes';
 import { SystemIcons } from '../Icons/SystemIcons';
 import { TYPOGRAPHY } from '@/Constants/Typography';
 import { ICON_SIZES } from '@/Constants/Components';
+
+// React portals
+interface DropdownPosition {
+  top?: number;
+  bottom?: number;
+  left: number;
+  width: number;
+}
 
 export interface SelectOption {
   value: string;
@@ -68,24 +77,55 @@ export const CustomSelect: React.FC<CustomSelectProps> = ({
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
+  const [dropdownPosition, setDropdownPosition] = useState<DropdownPosition | null>(null);
   const selectedOption = value ? options.find(opt => opt.value === value) || null : null;
   const selectRef = useRef<HTMLDivElement>(null);
+  const triggerRef = useRef<HTMLButtonElement>(null);
+  const dropdownRef = useRef<HTMLDivElement>(null);
   const searchInputRef = useRef<HTMLInputElement>(null);
   const generatedId = useId();
   const selectId = id || generatedId;
 
+  const calculateDropdownPosition = useCallback(() => {
+    if (!triggerRef.current) return;
+    const rect = triggerRef.current.getBoundingClientRect();
+    const viewportHeight = window.innerHeight;
+    const estimatedHeight = 250;
+    const spaceBelow = viewportHeight - rect.bottom;
+    if (spaceBelow >= estimatedHeight || spaceBelow >= rect.top) {
+      setDropdownPosition({ top: rect.bottom + 4, left: rect.left, width: rect.width });
+    } else {
+      setDropdownPosition({ bottom: viewportHeight - rect.top + 4, left: rect.left, width: rect.width });
+    }
+  }, []);
+
   // Cerrar dropdown al hacer click fuera
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (selectRef.current && !selectRef.current.contains(event.target as Node)) {
+      if (
+        !selectRef.current?.contains(event.target as Node) &&
+        !dropdownRef.current?.contains(event.target as Node)
+      ) {
         setIsOpen(false);
-        setSearchTerm(''); // Limpiar búsqueda al cerrar
+        setSearchTerm('');
       }
     };
 
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
+
+  // Reposicionar si hay scroll o resize mientras está abierto
+  useEffect(() => {
+    if (!isOpen) return;
+    const handleScrollOrResize = () => calculateDropdownPosition();
+    window.addEventListener('scroll', handleScrollOrResize, true);
+    window.addEventListener('resize', handleScrollOrResize);
+    return () => {
+      window.removeEventListener('scroll', handleScrollOrResize, true);
+      window.removeEventListener('resize', handleScrollOrResize);
+    };
+  }, [isOpen, calculateDropdownPosition]);
 
   // Focus en el input de búsqueda cuando se abre el dropdown
   useEffect(() => {
@@ -157,6 +197,7 @@ export const CustomSelect: React.FC<CustomSelectProps> = ({
         <div className="relative">
           {/* Select Button */}
           <button
+            ref={triggerRef}
             type="button"
             id={selectId}
             className={cn(
@@ -178,7 +219,12 @@ export const CustomSelect: React.FC<CustomSelectProps> = ({
                 ? 'bg-gris-una/10 border-gris-una/5 text-gray-400'
                 : isOpen && !readonly && 'border-gris-una/20'
             )}
-            onClick={() => !disabled && setIsOpen(!isOpen)}
+            onClick={() => {
+              if (!disabled) {
+                if (!isOpen) calculateDropdownPosition();
+                setIsOpen(!isOpen);
+              }
+            }}
             disabled={disabled}
           >
             <span className={cn(
@@ -238,11 +284,19 @@ export const CustomSelect: React.FC<CustomSelectProps> = ({
           )}
         </div>
 
-        {/* Dropdown */}
-        {/* Allow showing dropdown in readonly mode (view-only) */}
-        {isOpen && !disabled && (
+        {/* Dropdown via portal para no ser cortado por overflow del modal */}
+        {isOpen && !disabled && dropdownPosition && createPortal(
           <div 
-            className="absolute z-50 w-full mt-1 bg-white border border-gray-300 rounded-corner shadow-lg overflow-hidden"
+            ref={dropdownRef}
+            style={{
+              position: 'fixed',
+              top: dropdownPosition.top,
+              bottom: dropdownPosition.bottom,
+              left: dropdownPosition.left,
+              width: dropdownPosition.width,
+              zIndex: 9999,
+            }}
+            className="bg-white border border-gray-300 rounded-corner shadow-lg overflow-hidden"
           >
             {/* Campo de búsqueda (si está habilitado y hay suficientes items) */}
             {showSearch && (
@@ -321,7 +375,8 @@ export const CustomSelect: React.FC<CustomSelectProps> = ({
                 ))}
               </div>
             </div>
-          </div>
+          </div>,
+          document.body
         )}
 
         {/* Error Message */}
@@ -351,6 +406,7 @@ export const CustomSelect: React.FC<CustomSelectProps> = ({
 
       {/* Select Button */}
       <button
+        ref={triggerRef}
         type="button"
         className={cn(
           // Base styles actualizados para consistencia con Input
@@ -369,7 +425,12 @@ export const CustomSelect: React.FC<CustomSelectProps> = ({
             : 'border-gris-una bg-blanco-una-2 hover:border-gris-una/50',
           isOpen && !disabled && !readonly && 'border-gris-una/20'
         )}
-        onClick={() => !disabled && !readonly && setIsOpen(!isOpen)}
+        onClick={() => {
+          if (!disabled && !readonly) {
+            if (!isOpen) calculateDropdownPosition();
+            setIsOpen(!isOpen);
+          }
+        }}
         disabled={disabled}
       >
         <span className={cn(
@@ -389,11 +450,20 @@ export const CustomSelect: React.FC<CustomSelectProps> = ({
         )}
       </button>
 
-      {/* Dropdown */}
+      {/* Dropdown via portal para no ser cortado por overflow del modal */}
       {/* Allow showing dropdown in readonly mode (view-only) */}
-      {isOpen && !disabled && (
+      {isOpen && !disabled && dropdownPosition && createPortal(
         <div 
-          className="absolute z-50 w-full mt-1 bg-white border border-gray-300 rounded-corner shadow-lg overflow-hidden"
+          ref={dropdownRef}
+          style={{
+            position: 'fixed',
+            top: dropdownPosition.top,
+            bottom: dropdownPosition.bottom,
+            left: dropdownPosition.left,
+            width: dropdownPosition.width,
+            zIndex: 9999,
+          }}
+          className="bg-white border border-gray-300 rounded-corner shadow-lg overflow-hidden"
         >
           {/* Campo de búsqueda (si está habilitado y hay suficientes items) */}
           {showSearch && (
@@ -472,7 +542,8 @@ export const CustomSelect: React.FC<CustomSelectProps> = ({
               ))}
             </div>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
 
       {/* Error Message */}

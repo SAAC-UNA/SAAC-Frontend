@@ -30,8 +30,7 @@ const buttonVariants = cva(
         // ===== Variantes principales (filled) =====
         primary: [
           'bg-azul-una text-blanco-una border-0',
-          'shadow-[0_4px_14px_rgba(3,73,145,0.35)] hover:shadow-[0_4px_20px_rgba(3,73,145,0.50)]',
-          'hover:bg-azul-una/90',
+          'shadow-[0_4px_14px_rgba(3,73,145,0.30)] hover:shadow-[0_4px_16px_rgba(3,73,145,0.38)]',
           'focus-visible:ring-azul-una',
           '[--ripple-color:rgba(255,255,255,0.30)]',
           '[--shine-opacity:1]',
@@ -39,8 +38,7 @@ const buttonVariants = cva(
 
         secondary: [
           'bg-rojo-una-2 text-blanco-una-2 border-0',
-          'shadow-[0_4px_14px_rgba(195,43,48,0.35)] hover:shadow-[0_4px_20px_rgba(195,43,48,0.50)]',
-          'hover:bg-rojo-una-2/90',
+          'shadow-[0_4px_14px_rgba(195,43,48,0.30)] hover:shadow-[0_4px_16px_rgba(195,43,48,0.38)]',   
           'focus-visible:ring-rojo-una-2',
           '[--ripple-color:rgba(255,255,255,0.30)]',
           '[--shine-opacity:1]',
@@ -48,8 +46,7 @@ const buttonVariants = cva(
 
         warning: [
           'bg-warning text-blanco-una border-0',
-          'shadow-[0_4px_14px_rgba(245,158,11,0.35)] hover:shadow-[0_4px_20px_rgba(245,158,11,0.50)]',
-          'hover:bg-warning/90',
+          'shadow-[0_4px_14px_rgba(245,158,11,0.30)] hover:shadow-[0_4px_16px_rgba(245,158,11,0.38)]',
           'focus-visible:ring-warning',
           '[--ripple-color:rgba(255,255,255,0.30)]',
           '[--shine-opacity:1]',
@@ -57,8 +54,7 @@ const buttonVariants = cva(
 
         success: [
           'bg-verde text-blanco-una border-0',
-          'shadow-[0_4px_14px_rgba(16,185,129,0.35)] hover:shadow-[0_4px_20px_rgba(16,185,129,0.50)]',
-          'hover:bg-verde/90',
+          'shadow-[0_4px_14px_rgba(16,185,129,0.30)] hover:shadow-[0_4px_16px_rgba(16,185,129,0.38)]',
           'focus-visible:ring-verde',
           '[--ripple-color:rgba(255,255,255,0.30)]',
           '[--shine-opacity:1]',
@@ -107,7 +103,7 @@ const buttonVariants = cva(
           'bg-gradient-to-r from-azul-una via-azul-una-2 to-azul-una',
           '[background-size:200%_auto]',
           'animate-shimmer',
-          'shadow-[0_4px_14px_rgba(3,73,145,0.35)] hover:shadow-[0_4px_20px_rgba(3,73,145,0.50)]',
+          'shadow-[0_4px_14px_rgba(3,73,145,0.30)] hover:shadow-[0_4px_16px_rgba(3,73,145,0.38)]',
           'focus-visible:ring-azul-una',
           '[--ripple-color:rgba(255,255,255,0.30)]',
           '[--shine-opacity:1]',
@@ -115,7 +111,7 @@ const buttonVariants = cva(
 
         glow: [
           'bg-azul-una text-blanco-una border-0',
-          'shadow-[0_4px_20px_rgba(3,73,145,0.35)] hover:shadow-[0_6px_28px_rgba(3,73,145,0.55)]',
+          'shadow-[0_4px_14px_rgba(3,73,145,0.30)] hover:shadow-[0_4px_16px_rgba(3,73,145,0.38)]',
           'hover:bg-azul-una/90',
           'focus-visible:ring-azul-una',
           '[--ripple-color:rgba(255,255,255,0.30)]',

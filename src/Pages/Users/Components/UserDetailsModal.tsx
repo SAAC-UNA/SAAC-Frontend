@@ -61,7 +61,7 @@ export const UserDetailsModal: React.FC<UserDetailsModalProps> = ({
         </div>
       }
       variant="info"
-      size="lg"
+      size="md"
       showCancel={false}
       showConfirm={false}
     >

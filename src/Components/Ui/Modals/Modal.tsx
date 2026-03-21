@@ -63,21 +63,21 @@ interface VariantConfig {
 const VARIANT_CONFIG: Record<ModalVariant, VariantConfig> = {
   info: {
     cardBg: 'bg-azul-una',
-    cardShadow: 'shadow-[0_8px_24px_rgba(3,73,145,0.35)]',
+    cardShadow: 'shadow-[0_4px_14px_rgba(3,73,145,0.28)]',
     cardBorder: 'border-[rgba(29,78,216,0.5)]',
     Icon: ({ className }) => <SystemIcons.interface.informationCircle className={className}/>,
     confirmVariant: 'primary',
   },
   success: {
     cardBg: 'bg-verde',
-    cardShadow: 'shadow-[0_8px_24px_rgba(16,185,129,0.35)]',
+    cardShadow: 'shadow-[0_4px_14px_rgba(16,185,129,0.28)]',
     cardBorder: 'border-[rgba(21,128,61,0.5)]',
     Icon: ({ className }) => <SystemIcons.interface.checkCircle className={className} />,
     confirmVariant: 'success',
   },
   danger: {
     cardBg: 'bg-error',
-    cardShadow: 'shadow-[0_8px_24px_rgba(239,68,68,0.35)]',
+    cardShadow: 'shadow-[0_4px_14px_rgba(239,68,68,0.28)]',
     cardBorder: 'border-[rgba(185,28,28,0.5)]',
     Icon: ({ className }) => <SystemIcons.structure.trashCan className={className} />,
     confirmVariant: 'secondary',
@@ -85,7 +85,7 @@ const VARIANT_CONFIG: Record<ModalVariant, VariantConfig> = {
   },
   warning: {
     cardBg: 'bg-warning',
-    cardShadow: 'shadow-[0_8px_24px_rgba(245,158,11,0.35)]',
+    cardShadow: 'shadow-[0_4px_14px_rgba(245,158,11,0.28)]',
     cardBorder: 'border-[rgba(180,83,9,0.5)]',
     Icon: ({ className }) => <SystemIcons.interface.alert className={className} />,
     confirmVariant: 'warning',
@@ -93,7 +93,7 @@ const VARIANT_CONFIG: Record<ModalVariant, VariantConfig> = {
   },
   neutral: {
     cardBg: 'bg-gris-una',
-    cardShadow: 'shadow-[0_8px_24px_rgba(107,114,128,0.30)]',
+    cardShadow: 'shadow-[0_4px_14px_rgba(107,114,128,0.22)]',
     cardBorder: 'border-[rgba(75,85,99,0.5)]',
     Icon: ({ className }) => <SystemIcons.actions.view className={className} />,
     confirmVariant: 'secondary',
@@ -217,7 +217,7 @@ export const Modal: React.FC<ModalProps> = React.memo(({
             className={cn(
               'relative flex flex-col w-full overflow-hidden',
               'bg-blanco-una border border-gris-light rounded-[18px]',
-              'shadow-[0_32px_80px_rgba(0,0,0,0.13),0_8px_24px_rgba(0,0,0,0.08)]',
+              'shadow-[0_6px_16px_rgba(0,0,0,0.10),0_2px_6px_rgba(0,0,0,0.06)]',
               'transition-all duration-300 ease-out sm:my-8',
               'data-closed:translate-y-4 data-closed:opacity-0 data-closed:sm:scale-95',
               sizeClasses[size],

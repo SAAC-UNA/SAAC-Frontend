@@ -10,11 +10,19 @@
  * - Estados disabled/readonly
  */
 
-import React, { useState, useRef, useEffect, useId } from 'react';
+import React, { useState, useRef, useEffect, useId, useCallback } from 'react';
+import { createPortal } from 'react-dom';
 import { cn } from '@/Utils/ClassNames';
 import { SystemIcons } from '@/Components/Ui/Icons/SystemIcons';
 import { TYPOGRAPHY } from '@/Constants/Typography';
 import { ICON_SIZES } from '@/Constants/Components';
+
+// React portals para el calendario, para evitar problemas de overflow en modales u otros contenedores
+interface DropdownPosition {
+  top?: number;
+  bottom?: number;
+  left: number;
+}
 
 export interface DatePickerProps {
   label?: string;
@@ -44,7 +52,6 @@ export const DatePicker: React.FC<DatePickerProps> = ({
   minDate,
   maxDate,
   id,
-  placement = 'bottom',
   onChange
 }) => {
   const [currentDate, setCurrentDate] = useState(() => {
@@ -72,14 +79,33 @@ export const DatePicker: React.FC<DatePickerProps> = ({
   }
   
   const [showPicker, setShowPicker] = useState(false);
+  const [dropdownPosition, setDropdownPosition] = useState<DropdownPosition | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
+  const triggerRef = useRef<HTMLButtonElement>(null);
+  const dropdownRef = useRef<HTMLDivElement>(null);
   const generatedId = useId();
   const inputId = id || generatedId;
+
+  const calculateDropdownPosition = useCallback(() => {
+    if (!triggerRef.current) return;
+    const rect = triggerRef.current.getBoundingClientRect();
+    const viewportHeight = window.innerHeight;
+    const estimatedHeight = 320; // altura aproximada del calendario
+    const spaceBelow = viewportHeight - rect.bottom;
+    if (spaceBelow >= estimatedHeight || spaceBelow >= rect.top) {
+      setDropdownPosition({ top: rect.bottom + 4, left: rect.left });
+    } else {
+      setDropdownPosition({ bottom: viewportHeight - rect.top + 4, left: rect.left });
+    }
+  }, []);
 
   // Cerrar calendario al hacer clic fuera
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (containerRef.current && !containerRef.current.contains(event.target as Node)) {
+      if (
+        !containerRef.current?.contains(event.target as Node) &&
+        !dropdownRef.current?.contains(event.target as Node)
+      ) {
         setShowPicker(false);
       }
     };
@@ -87,6 +113,18 @@ export const DatePicker: React.FC<DatePickerProps> = ({
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
+
+  // Reposicionar si hay scroll o resize mientras está abierto
+  useEffect(() => {
+    if (!showPicker) return;
+    const handleScrollOrResize = () => calculateDropdownPosition();
+    window.addEventListener('scroll', handleScrollOrResize, true);
+    window.addEventListener('resize', handleScrollOrResize);
+    return () => {
+      window.removeEventListener('scroll', handleScrollOrResize, true);
+      window.removeEventListener('resize', handleScrollOrResize);
+    };
+  }, [showPicker, calculateDropdownPosition]);
 
   // Actualizar fecha seleccionada cuando cambia el valor
   // (ahora se deriva directamente de value prop - ver selectedDate arriba)
@@ -260,9 +298,15 @@ export const DatePicker: React.FC<DatePickerProps> = ({
       {/* Input Container */}
       <div className="relative">
         <button
+          ref={triggerRef}
           id={inputId}
           type="button"
-          onClick={() => !disabled && setShowPicker(!showPicker)}
+          onClick={() => {
+            if (!disabled) {
+              if (!showPicker) calculateDropdownPosition();
+              setShowPicker(!showPicker);
+            }
+          }}
           disabled={disabled}
           className={inputClasses}
           aria-haspopup="dialog"
@@ -334,12 +378,19 @@ export const DatePicker: React.FC<DatePickerProps> = ({
           </label>
         )}
 
-        {/* Calendar Dropdown */}
-        {showPicker && (
-          <div className={cn(
-            "absolute left-0 right-0 bg-white border border-gris-una/30 rounded-corner shadow-lg p-3 z-50 max-w-xs",
-            placement === 'top' ? 'bottom-full mb-1' : 'top-full mt-1'
-          )}>
+        {/* Calendar via portal para no ser cortado por overflow del modal */}
+        {showPicker && dropdownPosition && createPortal(
+          <div
+            ref={dropdownRef}
+            style={{
+              position: 'fixed',
+              top: dropdownPosition.top,
+              bottom: dropdownPosition.bottom,
+              left: dropdownPosition.left,
+              zIndex: 9999,
+            }}
+            className="bg-white border border-gris-una/30 rounded-corner shadow-lg p-3 w-72"
+          >
             {/* Header with navigation and selectors */}
             <div className="flex items-center justify-between gap-2 mb-3">
               <button
@@ -431,7 +482,8 @@ export const DatePicker: React.FC<DatePickerProps> = ({
             >
               Cerrar
             </button>
-          </div>
+          </div>,
+          document.body
         )}
       </div>
 

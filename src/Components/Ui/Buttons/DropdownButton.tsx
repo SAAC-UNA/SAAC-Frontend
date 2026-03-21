@@ -17,7 +17,8 @@
  * - Cualquier botón que necesite múltiples opciones
  */
 
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useCallback } from 'react';
+import { createPortal } from 'react-dom';
 import type { ReactNode } from 'react';
 import { Button } from './Button';
 import { SystemIcons } from '../Icons/SystemIcons';
@@ -73,14 +74,31 @@ export const DropdownButton: React.FC<DropdownButtonProps> = ({
   menuWidth = 'auto'
 }) => {
   const [isOpen, setIsOpen] = useState(false);
-  const [dropdownPosition, setDropdownPosition] = useState<'left' | 'right'>('left');
+  const [dropdownCoords, setDropdownCoords] = useState<{ top: number; left?: number; right?: number } | null>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const buttonRef = useRef<HTMLDivElement>(null);
+  
+  // React portals
+  const calculatePosition = useCallback(() => {
+    if (!buttonRef.current) return;
+    const rect = buttonRef.current.getBoundingClientRect();
+    const menuW = getMenuWidth();
+    const viewportWidth = window.innerWidth;
+    const spaceOnRight = viewportWidth - rect.left;
+    if (spaceOnRight >= menuW) {
+      setDropdownCoords({ top: rect.bottom + 8, left: rect.left });
+    } else {
+      setDropdownCoords({ top: rect.bottom + 8, right: viewportWidth - rect.right });
+    }
+  }, [menuWidth]);
 
   // Cerrar dropdown al hacer click fuera
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+      if (
+        !buttonRef.current?.contains(event.target as Node) &&
+        !dropdownRef.current?.contains(event.target as Node)
+      ) {
         setIsOpen(false);
       }
     }
@@ -91,21 +109,17 @@ export const DropdownButton: React.FC<DropdownButtonProps> = ({
     }
   }, [isOpen]);
 
-  // Calcular posición del dropdown basado en espacio disponible
+  // Reposicionar si hay scroll o resize mientras está abierto
   useEffect(() => {
-    if (isOpen && buttonRef.current) {
-      const buttonRect = buttonRef.current.getBoundingClientRect();
-      const dropdownWidth = getMenuWidth();
-      const viewportWidth = window.innerWidth;
-      const spaceOnRight = viewportWidth - buttonRect.right;
-      
-      if (spaceOnRight < dropdownWidth && buttonRect.left > dropdownWidth) {
-        setDropdownPosition('right');
-      } else {
-        setDropdownPosition('left');
-      }
-    }
-  }, [isOpen, menuWidth]);
+    if (!isOpen) return;
+    const handleScrollOrResize = () => calculatePosition();
+    window.addEventListener('scroll', handleScrollOrResize, true);
+    window.addEventListener('resize', handleScrollOrResize);
+    return () => {
+      window.removeEventListener('scroll', handleScrollOrResize, true);
+      window.removeEventListener('resize', handleScrollOrResize);
+    };
+  }, [isOpen, calculatePosition]);
 
   const getMenuWidth = () => {
     const widths = {
@@ -141,7 +155,12 @@ export const DropdownButton: React.FC<DropdownButtonProps> = ({
         <Button
           variant={variant}
           size={size}
-          onClick={() => !disabled && setIsOpen(!isOpen)}
+          onClick={() => {
+            if (!disabled) {
+              if (!isOpen) calculatePosition();
+              setIsOpen(!isOpen);
+            }
+          }}
           disabled={disabled}
           className="flex items-center gap-2"
           title={tooltip}
@@ -157,13 +176,20 @@ export const DropdownButton: React.FC<DropdownButtonProps> = ({
         </Button>
       </div>
 
-      {/* Menú desplegable */}
-      {isOpen && (
-        <div 
+      {/* Menú desplegable via portal para evitar saltos de layout */}
+      {isOpen && dropdownCoords && createPortal(
+        <div
+          ref={dropdownRef}
+          style={{
+            position: 'fixed',
+            top: dropdownCoords.top,
+            left: dropdownCoords.left,
+            right: dropdownCoords.right,
+            zIndex: 9999,
+          }}
           className={cn(
-            "absolute top-full mt-2 rounded-corner bg-blanco-una-2 shadow-lg border border-gris-light overflow-hidden z-50",
+            "rounded-corner bg-blanco-una-2 shadow-lg border border-gris-light overflow-hidden",
             getMenuWidthClass(),
-            dropdownPosition === 'left' ? 'left-0' : 'right-0'
           )}
         >
           <div className="py-1 overflow-auto custom-scrollbar" style={{ maxHeight: '320px' }}>
@@ -197,7 +223,8 @@ export const DropdownButton: React.FC<DropdownButtonProps> = ({
               </button>
             ))}
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </div>
   );
