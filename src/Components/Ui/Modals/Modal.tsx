@@ -248,10 +248,28 @@ export const Modal: React.FC<ModalProps> = React.memo(({
                     style={{ background: 'radial-gradient(circle, rgba(255,255,255,0.13) 0%, transparent 70%)' }}
                   />
 
-                  {/* Fila superior: ícono + botón cerrar */}
-                  <div className="relative z-10 flex items-start justify-between mb-4">
-                    <div className="w-11 h-11 rounded-[10px] flex items-center justify-center bg-white/20 border border-white/35 flex-shrink-0">
-                      {heroIcon ?? <cfg.Icon className={`${ICON_SIZES.md} text-blanco-una`}/>}
+                  {/* Ícono + texto + botón cerrar en una sola fila */}
+                  <div className="relative z-10 flex items-center justify-between gap-3">
+                    <div className="flex items-center gap-3 min-w-0">
+                      <div className="w-11 h-11 rounded-[10px] flex items-center justify-center bg-white/20 border border-white/35 flex-shrink-0">
+                        {heroIcon ?? <cfg.Icon className={`${ICON_SIZES.md} text-blanco-una`}/>}
+                      </div>
+                      <div className="flex flex-col min-w-0">
+                        <p className={cn('font-bold text-white tracking-tight leading-snug', TYPOGRAPHY.modal.title)}>
+                          {title}
+                        </p>
+                        {subtitle && (
+                          <p className={cn('text-white/70 mt-0.5 leading-snug', TYPOGRAPHY.modal.subtitle)}>
+                            {subtitle}
+                          </p>
+                        )}
+                        {heroBadge && (
+                          <span className={cn('inline-flex items-center gap-1.5 mt-2 px-2.5 py-1 rounded-full bg-white/18 border border-white/35 text-white/95 font-semibold w-fit', TYPOGRAPHY.badge)}>
+                            <span className="w-1.5 h-1.5 rounded-full bg-white/90" />
+                            {heroBadge}
+                          </span>
+                        )}
+                      </div>
                     </div>
                     {closable && (
                       <button
@@ -259,28 +277,10 @@ export const Modal: React.FC<ModalProps> = React.memo(({
                         onClick={handleClose}
                         disabled={isPending}
                         aria-label="Cerrar modal"
-                        className="w-7 h-7 rounded-md flex items-center justify-center bg-white/15 border border-white/30 text-white/90 hover:bg-white/30 transition-colors duration-150 disabled:opacity-50"
+                        className="w-7 h-7 rounded-md flex items-center justify-center bg-white/15 border border-white/30 text-white/90 hover:bg-white/30 transition-colors duration-150 disabled:opacity-50 flex-shrink-0 self-start"
                       >
                         <SystemIcons.interface.closeCircle className={`${ICON_SIZES.md}`} />
                       </button>
-                    )}
-                  </div>
-
-                  {/* Título y subtítulo */}
-                  <div className="relative z-10">
-                    <p className={cn('font-bold text-white tracking-tight leading-snug', TYPOGRAPHY.modal.title)}>
-                      {title}
-                    </p>
-                    {subtitle && (
-                      <p className={cn('text-white/70 mt-0.5 leading-snug', TYPOGRAPHY.modal.subtitle)}>
-                        {subtitle}
-                      </p>
-                    )}
-                    {heroBadge && (
-                      <span className={cn('inline-flex items-center gap-1.5 mt-3 px-2.5 py-1 rounded-full bg-white/18 border border-white/35 text-white/95 font-semibold', TYPOGRAPHY.badge)}>
-                        <span className="w-1.5 h-1.5 rounded-full bg-white/90" />
-                        {heroBadge}
-                      </span>
                     )}
                   </div>
                 </div>

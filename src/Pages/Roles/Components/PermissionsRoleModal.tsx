@@ -41,8 +41,7 @@ export const PermissionsModal: React.FC<PermissionsModalProps> = ({
         </div>
       }
       variant="info"
-      size="lg"
-      footerMeta={`Total: ${permissions.length} permiso${permissions.length !== 1 ? 's' : ''}`}
+      size="md"
       showCancel={false}
       showConfirm={false}
     >
