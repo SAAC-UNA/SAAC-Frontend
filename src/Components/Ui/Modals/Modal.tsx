@@ -24,6 +24,8 @@ interface ModalProps {
 
   // ── Layout ──
   size?: 'sm' | 'md' | 'lg' | 'xl';
+  /** Altura máxima del modal. Por defecto crece con el contenido hasta el 90vh */
+  maxHeight?: 'sm' | 'md' | 'lg' | 'xl' | 'full' | 'auto';
   /** Si se puede cerrar haciendo clic fuera o con Escape */
   closable?: boolean;
   /** Texto pequeño alineado a la izquierda del footer (meta-información) */
@@ -108,6 +110,7 @@ export const Modal: React.FC<ModalProps> = React.memo(({
   heroBadge,
   heroIcon,
   size = 'md',
+  maxHeight = 'auto',
   closable = true,
   footerMeta,
   footerButtons,
@@ -132,6 +135,15 @@ export const Modal: React.FC<ModalProps> = React.memo(({
     md: 'sm:max-w-2xl',
     lg: 'sm:max-w-4xl',
     xl: 'sm:max-w-6xl',
+  };
+
+  const maxHeightClasses: Record<NonNullable<ModalProps['maxHeight']>, string> = {
+    sm:   'max-h-[40vh]',
+    md:   'max-h-[60vh]',
+    lg:   'max-h-[75vh]',
+    xl:   'max-h-[90vh]',
+    full: 'max-h-screen',
+    auto: '',
   };
 
   const cfg = variant ? VARIANT_CONFIG[variant] : null;
@@ -221,6 +233,7 @@ export const Modal: React.FC<ModalProps> = React.memo(({
               'transition-all duration-300 ease-out sm:my-8',
               'data-closed:translate-y-4 data-closed:opacity-0 data-closed:sm:scale-95',
               sizeClasses[size],
+              maxHeightClasses[maxHeight],
               className,
             )}
           >

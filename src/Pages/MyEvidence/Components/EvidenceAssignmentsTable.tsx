@@ -60,7 +60,7 @@ export const EvidenceAssignmentsTable: React.FC<EvidenceAssignmentsTableProps> =
     {
       key: 'evidencia',
       header: 'Evidencia',
-      align: 'left',
+      align: 'center',
       width: firstColumn.width,
       render: (_: unknown, assignment: EvidenceAssignment) => {
         const { evidencia } = assignment;
@@ -80,7 +80,7 @@ export const EvidenceAssignmentsTable: React.FC<EvidenceAssignmentsTableProps> =
               {truncateText(fullText, firstColumn.maxLength)}
             </p>
             <p 
-              className={`block font-sans antialiased font-normal leading-normal text-gris-una opacity-70 ${TYPOGRAPHY.table.cell}`}
+              className={`block font-sans antialiased font-normal leading-normal text-gris-una ${TYPOGRAPHY.table.cell}`}
               title={`Criterio: ${criterionText}`}
             >
               {truncateText(criterionText, firstColumn.maxLength)}
@@ -119,7 +119,11 @@ export const EvidenceAssignmentsTable: React.FC<EvidenceAssignmentsTableProps> =
       align: 'center',
       render: (_: unknown, assignment: EvidenceAssignment) => {
         const estado = isOverdue(assignment) ? 'vencido' : assignment.estado;
-        return <AssignmentStatusBadge estado={estado} />;
+        return (
+          <div className="flex justify-center">
+            <AssignmentStatusBadge estado={estado} />
+          </div>
+        );
       }
     },
     {
@@ -173,9 +177,8 @@ export const EvidenceAssignmentsTable: React.FC<EvidenceAssignmentsTableProps> =
             {onStatusChange && (
               <TableActionButton
                 action={isCompleted ? 'markInProgress' : 'markComplete'}
-                tooltip={isCompleted ? 'Completado' : 'Marcar completado'}
+                tooltip={isCompleted ? 'Revertir a en progreso' : 'Marcar completado'}
                 onClick={() => onStatusChange(assignment, isCompleted ? 'en_progreso' : 'completado')}
-                disabled={isCompleted}
               />
             )} 
           </div>

@@ -296,7 +296,7 @@ export const CustomSelect: React.FC<CustomSelectProps> = ({
               width: dropdownPosition.width,
               zIndex: 9999,
             }}
-            className="bg-white border border-gray-300 rounded-corner shadow-lg overflow-hidden"
+            className="bg-white border border-gris-light rounded-corner shadow-lg overflow-hidden"
           >
             {/* Campo de búsqueda (si está habilitado y hay suficientes items) */}
             {showSearch && (

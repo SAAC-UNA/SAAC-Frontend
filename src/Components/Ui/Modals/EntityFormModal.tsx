@@ -37,6 +37,8 @@ interface EntityFormModalProps {
   confirmDisabled?: boolean;
   isEditing?: boolean;
   size?: 'sm' | 'md' | 'lg' | 'xl';
+  /** Altura máxima del modal. Por defecto crece con el contenido hasta el 90vh */
+  maxHeight?: 'sm' | 'md' | 'lg' | 'xl' | 'full' | 'auto';
   heroIcon?: React.ReactNode;
   children: React.ReactNode;
 }
@@ -53,6 +55,7 @@ export const EntityFormModal: React.FC<EntityFormModalProps> = ({
   confirmDisabled = false,
   isEditing = false,
   size = 'lg',
+  maxHeight = 'auto',
   heroIcon,
   children,
 }) => {
@@ -95,6 +98,7 @@ export const EntityFormModal: React.FC<EntityFormModalProps> = ({
       subtitle={subtitle}
       variant={isEditing ? 'warning' : 'success'}
       size={size}
+      maxHeight={maxHeight}
       heroIcon={heroIcon ?? defaultIcon}
       footerButtons={footerButtons}
     >

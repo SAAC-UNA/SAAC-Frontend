@@ -114,7 +114,7 @@ export const CreateExtensionRequestModal: React.FC<CreateExtensionRequestModalPr
       footerButtons={
         <>
           <Button
-            variant="secondary"
+            variant="outline"
             onClick={handleClose}
             disabled={isSubmitting}
             standardWidth={true}
@@ -122,7 +122,7 @@ export const CreateExtensionRequestModal: React.FC<CreateExtensionRequestModalPr
             Cancelar
           </Button>
           <Button
-            variant="primary"
+            variant="warning"
             onClick={handleSubmit}
             disabled={isSubmitting}
             standardWidth={true}

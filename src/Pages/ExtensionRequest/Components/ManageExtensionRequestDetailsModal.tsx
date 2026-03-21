@@ -52,6 +52,7 @@ export const ReviewExtensionRequestModal: React.FC<ReviewExtensionRequestModalPr
       title="Solicitud de Ampliación"
       subtitle={solicitud.usuario?.nombre}
       size="lg"
+      maxHeight="lg"
       variant="info"
       heroIcon={<SystemIcons.modal.document className={`${ICON_SIZES.md} text-blanco-una`} />}
     >

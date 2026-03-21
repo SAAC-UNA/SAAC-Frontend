@@ -175,7 +175,7 @@ const UsersRepository: React.FC = () => {
             onConfirm={confirmStateChange}
             title="Confirmar activación de usuario"
             variant="success"
-            confirmLabel="Activar"
+            confirmLabel="Sí, activar"
             cancelLabel="Cancelar"
             confirmLoading={isLoading}
             showCancel
@@ -198,7 +198,7 @@ const UsersRepository: React.FC = () => {
             onConfirm={confirmStateChange}
             title="Confirmar inactivación de usuario"
             variant="info"
-            confirmLabel="Inactivar"
+            confirmLabel="Sí, inactivar"
             cancelLabel="Cancelar"
             confirmLoading={isLoading}
             showCancel

@@ -4,15 +4,14 @@
  */
 
 import React, { useState, useMemo, useCallback } from 'react';
-import { SystemIcons } from '@/Components/Ui/Icons/SystemIcons';
 import { DataTable, type DataTableColumn } from '@/Components/Ui/Table/DataTable';
 import { TYPOGRAPHY } from '@/Constants/Typography';
 import { TABLE_PAGE_SIZE } from '@/Constants/TablePagination';
 import { TableActionButton } from '@/Components/Ui/Buttons/TableActionButton';
+import { StatusBadge } from '@/Components/Ui/Feedback/StatusBadge';
 import { 
   type EvidenceSearchResult 
 } from '@/Types/EvidenceSearchTypes';
-import { ICON_SIZES } from '@/Constants/Components';
 import { useFirstColumnConfig } from '@/Hooks/UseFirstColumnConfig';
 
 export interface EvidenceSearchResultsTableProps {
@@ -115,21 +114,24 @@ export const EvidenceSearchResultsTable: React.FC<EvidenceSearchResultsTableProp
       header: 'Recursos',
       align: 'center',
       render: (_, item) => (
-        <div className={`flex items-center justify-center gap-3 text-negro-una-2 ${TYPOGRAPHY.table.cell}`}>
+        <div className="flex items-center justify-center gap-2">
           {item.archivos_count > 0 && (
-            <div className="flex items-center gap-1" title="Archivos adjuntos">
-              <SystemIcons.modal.document className={`text-gris-una ${ICON_SIZES.sm}`} />
-              <span>{item.archivos_count}</span>
-            </div>
+            <StatusBadge
+              label={`${item.archivos_count} ${item.archivos_count === 1 ? 'archivo' : 'archivos'}`}
+              colorClasses="bg-info-ring text-info-dark"
+            />
           )}
           {item.enlaces_count > 0 && (
-            <div className="flex items-center gap-1" title="Enlaces">
-              <SystemIcons.interface.link className={`text-gris-una ${ICON_SIZES.sm}`} />
-              <span>{item.enlaces_count}</span>
-            </div>
+            <StatusBadge
+              label={`${item.enlaces_count} ${item.enlaces_count === 1 ? 'enlace' : 'enlaces'}`}
+              colorClasses="bg-morado-ring text-morado-dark"
+            />
           )}
           {item.archivos_count === 0 && item.enlaces_count === 0 && (
-            <span className={`text-gris-una ${TYPOGRAPHY.table.cell}`}>Sin recursos</span>
+            <StatusBadge
+              label="Sin recursos"
+              colorClasses="bg-gris-light text-gris-una"
+            />
           )}
         </div>
       )

@@ -14,9 +14,9 @@ export interface ActionType {
  * Usuario que ejecutó la acción
  */
 export interface AuditLogUser {
-  usuario_id: number;
   nombre: string;
   email: string;
+  roles?: string[];
 }
 
 /**

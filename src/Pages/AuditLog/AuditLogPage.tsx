@@ -23,6 +23,9 @@ import { AuditLogDetailModal } from './Components/AuditLogDetailModal';
 import AuditLogService from '@/Services/AuditLogService';
 import type { AuditLog, AuditLogFilters as Filters, ExportFormat } from '@/Types/AuditLogTypes';
 import { useToast } from '@/Context/ToastContext';
+import { TYPOGRAPHY } from '@/Constants/Typography';
+import { ICON_SIZES } from '@/Constants/Components';
+import { TABLE_PAGE_SIZE } from '@/Constants/TablePagination';
 
 const AuditLogPage: React.FC = () => {
   // Hook de toast
@@ -35,7 +38,7 @@ const AuditLogPage: React.FC = () => {
   const error = logsState.error;
   const currentPage = logsState.currentPage;
   const totalPages = logsState.totalPages;
-  const perPage = 15;
+  const perPage = TABLE_PAGE_SIZE.standard;
 
   // Estado de filtros aplicados
   const [appliedFilters, setAppliedFilters] = useState<Filters>({});
@@ -211,15 +214,15 @@ const AuditLogPage: React.FC = () => {
   const exportOptions: DropdownOption[] = [
     {
       id: 'pdf',
-      label: 'Exportar a PDF',
-      icon: <SystemIcons.modal.pdf className="w-4 h-4" />,
+      label: <span className={TYPOGRAPHY.button}>Exportar a PDF</span>,
+      icon: <SystemIcons.modal.pdf className={`text-negro-una-2 ${ICON_SIZES.md}`} />,
       onClick: () => handleExport('pdf'),
       disabled: !appliedFilters.fecha_desde || !appliedFilters.fecha_hasta || logs.length === 0
     },
     {
       id: 'excel',
-      label: 'Exportar a Excel',
-      icon: <SystemIcons.modal.excel className="w-4 h-4" />,
+      label: <span className={TYPOGRAPHY.button}>Exportar a Excel</span>,
+      icon: <SystemIcons.modal.excel className={`text-negro-una-2 ${ICON_SIZES.md}`} />,
       onClick: () => handleExport('excel'),
       disabled: !appliedFilters.fecha_desde || !appliedFilters.fecha_hasta || logs.length === 0
     }
@@ -231,13 +234,27 @@ const AuditLogPage: React.FC = () => {
         title={moduleInfo.title}
         description={moduleInfo.description}
         headerExtra={
-          <div className="flex-1 max-w-md">
-            <SearchInput
-              placeholder="Buscar por usuario, módulo, acción, detalle..."
-              value={searchTerm}
-              onChange={handleSearchChange}
-              disabled={isLoading}
-            />
+          <div className="flex items-center gap-3">
+            <div className="flex-1 min-w-64">
+              <SearchInput
+                placeholder="Buscar por usuario, módulo, acción, detalle..."
+                value={searchTerm}
+                onChange={handleSearchChange}
+                disabled={isLoading}
+              />
+            </div>
+              <DropdownButton
+                label="Exportar"
+                icon={<SystemIcons.actions.export className="w-4 h-4" />}
+                variant="outline"
+                options={exportOptions}
+                disabled={isLoading || logs.length === 0}
+                tooltip={
+                  !appliedFilters.fecha_desde || !appliedFilters.fecha_hasta
+                    ? 'Debe seleccionar un rango de fechas para exportar'
+                    : 'Exportar registros de bitácora'
+                }
+              />
           </div>
         }
       >
@@ -248,39 +265,12 @@ const AuditLogPage: React.FC = () => {
         />
       </PageHeader>
 
-      {/* Botón de exportación con menú desplegable */}
-      <div className="flex justify-end mb-6">
-        <DropdownButton
-          label="Exportar"
-          icon={<SystemIcons.actions.export className="w-4 h-4" />}
-          variant="outline"
-          options={exportOptions}
-          disabled={isLoading || logs.length === 0}
-          tooltip={
-            !appliedFilters.fecha_desde || !appliedFilters.fecha_hasta
-              ? 'Debe seleccionar un rango de fechas para exportar'
-              : 'Exportar registros de bitácora'
-          }
-        />
-      </div>
-
       {/* Alerta de error */}
       {error && (
         <div className="mb-6">
           <BackendErrorAlert
             error={error}
           />
-        </div>
-      )}
-
-      {/* Información de registros */}
-      {!isLoading && !error && filteredLogs.length > 0 && (
-        <div className="mb-4 flex items-center gap-2 text-sm text-gray-600">
-          <SystemIcons.interface.informationCircle className="w-4 h-4" />
-          <span>
-            Mostrando {filteredLogs.length} registro(s) de la página {currentPage} de {totalPages}
-            {searchTerm && ` (filtrados de ${logs.length} total)`}
-          </span>
         </div>
       )}
 

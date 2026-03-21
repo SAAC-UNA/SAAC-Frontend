@@ -14,6 +14,7 @@ import { useToast } from '@/Context/ToastContext';
 import { useAuth } from '@/Context/AuthContext';
 import { evidenceAssignmentService } from '@/Services/EvidenceAssignmentService';
 import { extensionRequestService } from '@/Services/ExtensionRequestService';
+import { Modal } from '@/Components/Ui/Modals/Modal';
 import type { EvidenceAssignment, AssignmentFilters } from '@/Types/EvidenceAssignmentTypes';
 import { filterAndSortAssignments } from '@/Types/EvidenceAssignmentTypes';
 import {
@@ -42,13 +43,24 @@ export const MyEvidenceAssignmentsPage: React.FC = () => {
 
   // HU-016: modales de detalle y extensión
   const [modalState, setModalState] = useState<{ selectedAssignment: EvidenceAssignment | null; showExtensionModal: boolean; selectedAssignmentForExtension: EvidenceAssignment | null }>({ selectedAssignment: null, showExtensionModal: false, selectedAssignmentForExtension: null });
+
+  // Modal de confirmación para revertir estado completado → en_progreso
+  const [revertConfirmState, setRevertConfirmState] = useState<{ open: boolean; assignment: EvidenceAssignment | null; loading: boolean }>({ open: false, assignment: null, loading: false });
   const selectedAssignment = modalState.selectedAssignment;
   const showExtensionModal = modalState.showExtensionModal;
   const selectedAssignmentForExtension = modalState.selectedAssignmentForExtension;
 
-  // Cargar asignaciones al montar
+  // Cargar asignaciones al montar y al volver a la pestaña
   useEffect(() => {
     loadAssignments();
+
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible') {
+        loadAssignments();
+      }
+    };
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
   }, [user]);
 
   const loadAssignments = async () => {
@@ -151,6 +163,15 @@ export const MyEvidenceAssignmentsPage: React.FC = () => {
   };
 
   const handleTableStatusChange = async (assignment: EvidenceAssignment, newStatus: 'en_progreso' | 'completado') => {
+    // Si se está revirtiendo a en_progreso, pedir confirmación primero
+    if (newStatus === 'en_progreso') {
+      setRevertConfirmState({ open: true, assignment, loading: false });
+      return;
+    }
+    await applyStatusChange(assignment, newStatus);
+  };
+
+  const applyStatusChange = async (assignment: EvidenceAssignment, newStatus: 'en_progreso' | 'completado') => {
     try {
       const updated = await evidenceAssignmentService.updateStatus(assignment.evidencia_asignacion_id, { estado: newStatus });
       handleStatusUpdate(updated);
@@ -162,6 +183,14 @@ export const MyEvidenceAssignmentsPage: React.FC = () => {
     } catch {
       showToast({ type: 'error', title: 'Error', message: 'No se pudo actualizar el estado' });
     }
+  };
+
+  const handleConfirmRevert = async () => {
+    if (!revertConfirmState.assignment) return;
+    const assignment = revertConfirmState.assignment;
+    setRevertConfirmState(prev => ({ ...prev, loading: true }));
+    await applyStatusChange(assignment, 'en_progreso');
+    setRevertConfirmState({ open: false, assignment: null, loading: false });
   };
 
   const handleFiltersChange = (newFilters: AssignmentFilters) => {
@@ -232,7 +261,7 @@ export const MyEvidenceAssignmentsPage: React.FC = () => {
         />
       )}
 
-      {/* HU-016: Modal para solicitar ampliación */}
+      {/* Modal para solicitar ampliación */}
       {showExtensionModal && selectedAssignmentForExtension && (
         <CreateExtensionRequestModal
           isOpen={showExtensionModal}
@@ -242,6 +271,28 @@ export const MyEvidenceAssignmentsPage: React.FC = () => {
           fechaLimiteActual={selectedAssignmentForExtension.fecha_limite || undefined}
         />
       )}
+
+      {/* Modal de confirmación para revertir estado completado → en_progreso */}
+      <Modal
+        isOpen={revertConfirmState.open}
+        onClose={() => setRevertConfirmState({ open: false, assignment: null, loading: false })}
+        onConfirm={handleConfirmRevert}
+        title="Revertir estado de evidencia"
+        variant="info"
+        confirmLabel="Sí, revertir"
+        cancelLabel="Cancelar"
+        confirmLoading={revertConfirmState.loading}
+        showCancel
+        showConfirm
+        footerMeta="Esta acción puede volver a completarse posteriormente"
+      >
+        <p className="text-sm text-gris-una-2 leading-relaxed">
+          ¿Está seguro de que desea marcar esta evidencia como <strong>en progreso</strong>?
+        </p>
+        <p className="mt-2 text-sm text-gris-una-2">
+          La evidencia dejará de estar marcada como completada.
+        </p>
+      </Modal>
     </ScreenContainer>
   );
 };

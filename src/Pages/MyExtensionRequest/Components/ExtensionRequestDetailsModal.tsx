@@ -52,7 +52,8 @@ export const ExtensionRequestDetailsModal: React.FC<ExtensionRequestDetailsModal
       onClose={onClose}
       title="Mi Solicitud de Ampliación"
       subtitle={`#${solicitud.solicitud_ampliacion_id}`}
-      size="md"
+      size="lg"
+      maxHeight="lg"
       variant="info"
       heroIcon={<SystemIcons.modal.document className={`${ICON_SIZES.md} text-blanco-una`} />}
     >

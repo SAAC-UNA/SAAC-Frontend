@@ -188,6 +188,7 @@ export const EvidenceAssignmentDetail: React.FC<EvidenceAssignmentDetailProps> =
       title="Detalles de la evidencia"
       subtitle={itemName}
       size="lg"
+      maxHeight="lg"
       variant={modalVariant}
       heroIcon={modalHeroIcon}
     >

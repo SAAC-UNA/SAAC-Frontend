@@ -187,7 +187,8 @@ export const EvidenceDetailsModal: React.FC<EvidenceDetailsModalProps> = ({
       title="Detalles del Criterio"
       subtitle={criterio?.criterio_nomenclatura}
       variant="info"
-      size="lg"
+      size="xl"
+      maxHeight="xl"
       heroIcon={<SystemIcons.modal.document className={`${ICON_SIZES.md} text-blanco-una`} />}
       showCancel={false}
       showConfirm={false}

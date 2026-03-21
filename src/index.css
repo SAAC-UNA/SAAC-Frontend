@@ -172,17 +172,26 @@
   --color-warning-dark: #92400e;   /* Texto amarillo oscuro para advertencias */
   --color-error-dark: #ee4343;      /* Texto rojo oscuro para errores */
   --color-info-dark: #1e40af;      /* Texto azul oscuro para información */
+  --color-morado-dark: #a21caf;    /* Texto morado oscuro para información */
+  --color-teal-dark: #0f766e;      /* Texto teal oscuro para información */
+  --color-indigo-dark: #4338ca;
 
   --color-verde-light: #f0fdf4;     /* Fondo verde claro para éxito */
   --color-warning-light: #fffbeb;     /* Fondo amarillo claro para advertencias */
   --color-error-light: #fef2f2;       /* Fondo rojo claro para errores */
   --color-info-light: #eff6ff;        /* Fondo azul claro para información */
   --color-gris-light: #e7e8ea;   /* Fondo gris claro para inactivo */
+  --color-morado-light: #f5d0fe; /* Fondo morado claro para información */
+  --color-teal-light: #ccfbf1;   /* Fondo teal claro para información */
+  --color-indigo-light: #c7d2fe;  /* Fondo indigo claro para información */
 
   --color-verde-ring: #bbf7d0; /* Borde verde para éxito */
   --color-warning-ring: #fde68a; /* Borde amarillo para advertencias */
   --color-error-ring: #fecaca;   /* Borde rojo para errores */
   --color-info-ring: #bfdbfe;    /* Borde azul para información */
+  --color-morado-ring: #f0abfc;  /* Borde morado para información */
+  --color-teal-ring: #5eead4;    /* Borde teal para información */
+  --color-indigo-ring: #a5b4fc;  /* Borde indigo para información */
 
   --font-poppins: 'Poppins', sans-serif;
 

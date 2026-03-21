@@ -96,6 +96,7 @@ export const UserEditModal: React.FC<UserEditModalProps> = ({
         confirmDisabled={!hasChanges}
         confirmLoading={isSubmitting}
         size="lg"
+        maxHeight="lg"
       >
         <EditUserForm
           user={user}

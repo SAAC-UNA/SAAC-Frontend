@@ -311,11 +311,11 @@ export const MultiSelect: React.FC<MultiSelectProps> = ({
               width: dropdownPosition.width,
               zIndex: 9999,
             }}
-            className="bg-white border border-gray-300 rounded-corner shadow-lg overflow-hidden"
+            className="bg-white border border-gris-light rounded-corner shadow-lg overflow-hidden"
           >
             {/* Campo de búsqueda (si está habilitado y hay suficientes items) */}
             {showSearch && (
-              <div className="p-2 border-b border-gray-200 bg-gray-50/50 sticky top-0 z-10">
+              <div className="p-2 border-b border-gris-light bg-blanco-una-2 sticky top-0 z-10">
                 <div className="relative">
                   <SystemIcons.interface.search className={`absolute left-3 top-1/2 -translate-y-1/2 text-gris-una ${ICON_SIZES.sm}`} />
                   <input

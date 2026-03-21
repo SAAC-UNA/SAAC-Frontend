@@ -20,6 +20,8 @@ interface DetailsModalProps {
   title?: string;
   subtitle?: string;
   size?: 'sm' | 'md' | 'lg' | 'xl';
+  /** Altura máxima del modal. Por defecto crece con el contenido hasta el 90vh */
+  maxHeight?: 'sm' | 'md' | 'lg' | 'xl' | 'full' | 'auto';
   variant?: ModalVariant;
   heroIcon?: React.ReactNode;
   children: React.ReactNode;
@@ -31,6 +33,7 @@ export const DetailsModal: React.FC<DetailsModalProps> = ({
   title = 'Detalles',
   subtitle,
   size = 'lg',
+  maxHeight = 'auto',
   variant,
   heroIcon,
   children
@@ -42,6 +45,7 @@ export const DetailsModal: React.FC<DetailsModalProps> = ({
       title={title}
       subtitle={subtitle}
       size={size}
+      maxHeight={maxHeight}
       variant={variant}
       heroIcon={heroIcon}
       showCancel={false}

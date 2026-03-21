@@ -69,7 +69,7 @@ const buttonVariants = cva(
         ].join(' '),
 
         outline: [
-          'border border-gris-una/50 bg-transparent text-negro-una',
+          'border border-gris-una bg-transparent text-negro-una',
           'hover:bg-gris-una/10',
           'focus-visible:ring-gris-una',
           '[--ripple-color:rgba(0,0,0,0.08)]',

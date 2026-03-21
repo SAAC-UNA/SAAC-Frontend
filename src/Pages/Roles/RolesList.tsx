@@ -160,7 +160,7 @@ const RolesRepository: React.FC = () => {
             onConfirm={confirmDeleteRole}
             title="Confirmar Eliminación"
             itemName={deleteModalState.role?.name}
-            confirmLabel="Eliminar"
+            confirmLabel="Sí, eliminar"
             cancelLabel="Cancelar"
             variant="danger"
           />
