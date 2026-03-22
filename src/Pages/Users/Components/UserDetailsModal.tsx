@@ -102,8 +102,8 @@ export const UserDetailsModal: React.FC<UserDetailsModalProps> = ({
             </InfoCell>
           </div>
         </div>
-
-        {/* REGISTRO */}
+{/** 
+        {/* REGISTRO *}
         <div>
           <SectionLabel label="Registro" />
           <div className="border border-gray-200 rounded-corner p-4 grid grid-cols-2 gap-x-6 gap-y-4">
@@ -115,7 +115,7 @@ export const UserDetailsModal: React.FC<UserDetailsModalProps> = ({
             </InfoCell>
           </div>
         </div>
-
+*/}
         {/* PERMISOS DIRECTOS */}
         {user.allPermissions && user.allPermissions.length > 0 && (
           <div>
