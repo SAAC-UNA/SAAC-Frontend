@@ -141,8 +141,8 @@ export const DataTable = React.memo(<T extends Record<string, unknown>>({
 
   return (
     <div className={cn(
-      "relative flex flex-col w-full h-full text-gris-light",
-      !unstyled && "bg-transparent rounded-corner", // Fondo transparente de la tabla
+      "relative flex flex-col w-full h-full text-gris-light", // Header de la tabla
+      !unstyled && "bg-transparent rounded-corner", // Cuerpo de la tabla
       className
     )}>
       {/* Header */}
