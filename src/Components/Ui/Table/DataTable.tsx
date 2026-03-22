@@ -45,16 +45,16 @@ export interface DataTableProps<T = unknown> {
   data: T[];
   columns: DataTableColumn<T>[];
   actions?: DataTableAction<T>[];
-  
+
   // Header
   title: string;
   description?: string;
-  
+
   // Búsqueda
   searchable?: boolean;
   searchPlaceholder?: string;
   onSearch?: (query: string) => void;
-  
+
   customFilters?: React.ReactNode;
 
   // Botón principal
@@ -63,18 +63,18 @@ export interface DataTableProps<T = unknown> {
     icon: React.ReactNode;
     onClick: () => void;
   };
-  
+
   // Paginación
   pagination?: {
     currentPage: number;
     totalPages: number;
     onPageChange: (page: number) => void;
   };
-  
+
   // Estados
   loading?: boolean;
   emptyMessage?: string | React.ReactNode;
-  
+
   // Filas expandibles
   expandableRow?: (item: T) => React.ReactNode;
   getRowKey?: (item: T, index: number) => string;
@@ -122,27 +122,27 @@ export const DataTable = React.memo(<T extends Record<string, unknown>>({
   const getCellValue = useCallback((item: T, column: DataTableColumn<T>) => {
     if (column.render) {
       const accessor = column.accessor;
-      const value = typeof accessor === 'function' 
-        ? accessor(item) 
-        : accessor 
+      const value = typeof accessor === 'function'
+        ? accessor(item)
+        : accessor
           ? item[accessor]
           : item[column.key];
       return column.render(value, item, 0);
     }
-    
+
     if (column.accessor) {
-      return typeof column.accessor === 'function' 
+      return typeof column.accessor === 'function'
         ? column.accessor(item)
         : item[column.accessor];
     }
-    
+
     return item[column.key];
   }, []);
 
   return (
     <div className={cn(
       "relative flex flex-col w-full h-full text-gris-light",
-      !unstyled && "bg-transparent rounded-corner overflow-hidden", // Fondo transparente de la tabla
+      !unstyled && "bg-transparent rounded-corner", // Fondo transparente de la tabla
       className
     )}>
       {/* Header */}
@@ -171,7 +171,7 @@ export const DataTable = React.memo(<T extends Record<string, unknown>>({
                   {customFilters}
                 </div>
               )}
-              
+
               {searchable && (
                 <SearchInput
                   placeholder={searchPlaceholder}
@@ -212,15 +212,19 @@ export const DataTable = React.memo(<T extends Record<string, unknown>>({
             <thead>
               <tr>
                 {expandableRow && (
-                  <th className="w-10 pl-4 pr-2 py-4 border-b border-blue-gray-100 bg-gris-light" />
+                  <th className="w-10 pl-4 pr-2 py-4 border-b border-blue-gray-100 bg-gris-light rounded-tl-corner" />
                 )}
                 {columns.map((column, index) => (
-                  <th 
-                    key={column.key} 
+                  <th
+                    key={column.key}
                     style={column.width ? { width: column.width } : undefined}
                     className={cn(
                       "py-4 border-b bg-gris-light border-blue-gray-100 text-center",
-                      index === 0 ? (expandableRow ? "px-4" : "pl-8 pr-4") : "px-4"
+                      index === 0 ? (expandableRow ? "px-4" : "pl-8 pr-4") : "px-4",
+                      // Esquina superior izquierda si no hay expandable y es la primera columna
+                      index === 0 && !expandableRow && "rounded-tl-corner",
+                      // Esquina superior derecha si es la última columna y no hay acciones
+                      index === columns.length - 1 && (!actions || actions.length === 0) && "rounded-tr-corner"
                     )}
                   >
                     <p className={`block font-sans antialiased font-semibold leading-none text-negro-una-2 ${TYPOGRAPHY.table.header}`}>
@@ -229,7 +233,7 @@ export const DataTable = React.memo(<T extends Record<string, unknown>>({
                   </th>
                 ))}
                 {actions && actions.length > 0 && (
-                  <th className="pl-4 pr-8 py-4 border-b border-blue-gray-100 text-center">
+                  <th className="pl-4 pr-8 py-4 border-b border-blue-gray-100 text-center rounded-tr-corner">
                     <p className="block font-sans text-sm antialiased font-normal leading-none text-gris-una-2 opacity-70">
                       {/* Columna de acciones vacía */}
                     </p>
