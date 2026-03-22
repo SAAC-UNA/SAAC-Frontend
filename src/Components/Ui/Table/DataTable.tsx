@@ -142,7 +142,7 @@ export const DataTable = React.memo(<T extends Record<string, unknown>>({
   return (
     <div className={cn(
       "relative flex flex-col w-full h-full text-gris-light",
-      !unstyled && "bg-transparent", // Fondo transparente de la tabla
+      !unstyled && "bg-transparent rounded-corner overflow-hidden", // Fondo transparente de la tabla
       className
     )}>
       {/* Header */}
@@ -212,14 +212,14 @@ export const DataTable = React.memo(<T extends Record<string, unknown>>({
             <thead>
               <tr>
                 {expandableRow && (
-                  <th className="w-10 pl-4 pr-2 py-4 border-b border-blue-gray-100" />
+                  <th className="w-10 pl-4 pr-2 py-4 border-b border-blue-gray-100 bg-gris-light" />
                 )}
                 {columns.map((column, index) => (
                   <th 
                     key={column.key} 
                     style={column.width ? { width: column.width } : undefined}
                     className={cn(
-                      "py-4 border-b border-blue-gray-100 text-center",
+                      "py-4 border-b bg-gris-light border-blue-gray-100 text-center",
                       index === 0 ? (expandableRow ? "px-4" : "pl-8 pr-4") : "px-4"
                     )}
                   >
