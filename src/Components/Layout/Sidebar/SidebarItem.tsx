@@ -1,12 +1,12 @@
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useContext, useEffect, useRef, useState } from 'react';
+import { motion } from 'framer-motion';
 import type { NavItem } from '@/Types/CommonTypes';
 import { cn } from '@/Utils/ClassNames';
 import { useNavigationItems } from '@/Hooks/UseNavigation';
-import { SidebarButton } from './SidebarButton';
-import { SidebarIcon } from './SidebarIcon';
-import { SidebarLabel } from './SidebarLabel';
-import { SidebarChevron } from './SidebarChevron';
-import { SidebarFlyoutMenu } from './SidebarFlyoutMenu';
+import { getIconByName } from '@/Components/Ui/Icons/SystemIcons';
+import { SidebarNavContext } from './SidebarNavContext';
+import { SIDEBAR_ITEM } from '@/Constants/Components';
+import { TYPOGRAPHY } from '@/Constants/Typography';
 
 interface SidebarItemProps {
   item: NavItem;
@@ -14,41 +14,26 @@ interface SidebarItemProps {
   isCollapsed?: boolean;
 }
 
-/**
- * SidebarItem — compositor
- * Responsabilidad: lógica de estado (activo/expandido) y composición de sub-componentes.
- * No contiene estilos visuales directos — eso lo delega a cada hijo.
- *
- *  SidebarItem
- *  └─ [SidebarFlyoutMenu]   (wrapper hover — solo para items con hijos)
- *     └─ SidebarButton      (forma, altura fija, colores, curvas decorativas)
- *        ├─ <span>           (contenedor ícono + label)
- *        │  ├─ SidebarIcon   (tamaño del ícono, escala en hover)
- *        │  └─ SidebarLabel  (tipografía, truncado)
- *        └─ SidebarChevron   (flecha derecha — indica que tiene submenú)
- */
 const SidebarItemComponent: React.FC<SidebarItemProps> = ({
   item,
   isSubItem = false,
   isCollapsed = false,
 }) => {
   const { handleItemClick, isItemActive } = useNavigationItems();
+  const { setHoveredItem, selectedItemId } = useContext(SidebarNavContext);
+  const triggerRef = useRef<HTMLDivElement>(null);
 
-  // El padre se muestra activo si él mismo o alguno de sus hijos está activo.
-  // Necesario porque los hijos ya no viven en el sidebar (usan flyout).
   const isActive = isItemActive(item.id) ||
     Boolean(item.isExpandable && item.children?.some(child => isItemActive(child.id)));
 
-  // Estado visual: el botón se ilumina si la ruta está activa, el flyout está abierto,
-  // o el cursor está encima (hover). Click sigue siendo necesario para navegar.
-  const [flyoutOpen, setFlyoutOpen] = useState(false);
-  const [hovered, setHovered] = useState(false);
-  const isVisuallyActive = isActive || flyoutOpen || hovered;
+  // Visualmente activo cuando la ruta coincide O cuando su panel está abierto
+  const isExpandable = Boolean(item.isExpandable && item.children?.length);
+  const isFlyoutOpen = isExpandable && selectedItemId === item.id;
+  const isVisuallyActive = isActive || isFlyoutOpen;
 
   /**
-   * layoutCollapsed: versión retrasada de isCollapsed para el layout visual del botón.
-   * Al colapsar espera a que el sidebar termine su animación antes de cambiar el padding,
-   * así el contenido queda clippeado por overflow:hidden.
+   * layoutCollapsed: versión retrasada de isCollapsed.
+   * Al colapsar espera a que el sidebar termine su animación antes de cambiar el padding.
    * Al expandir aplica inmediatamente.
    */
   const [layoutCollapsed, setLayoutCollapsed] = useState(() => isCollapsed);
@@ -58,52 +43,61 @@ const SidebarItemComponent: React.FC<SidebarItemProps> = ({
   }, [isCollapsed]);
 
   const handleClick = useCallback(() => {
-    if (item.onClick) {
-      item.onClick();
-      return;
-    }
-    // Items con hijos no navegan al hacer click — el flyout maneja la navegación
-    if (!item.isExpandable) {
-      handleItemClick(item.id, item.href, false);
-    }
-  }, [item.onClick, item.id, item.href, item.isExpandable, handleItemClick]);
+    if (item.onClick) { item.onClick(); return; }
+    if (!item.isExpandable) handleItemClick(item.id, item.href, false);
+  }, [item, handleItemClick]);
 
-  const button = (
-    <div
-      className={cn('relative', !layoutCollapsed && (isSubItem ? 'ml-3' : 'ml-1'))}
-      onMouseEnter={() => setHovered(true)}
-      onMouseLeave={() => setHovered(false)}
-    >
-      <SidebarButton isActive={isVisuallyActive} isCollapsed={layoutCollapsed} onClick={handleClick}>
-
-        <span className={cn(
-          'flex items-center flex-1 min-w-0 h-full relative z-10',
-          layoutCollapsed ? 'gap-1 justify-center' : 'gap-3',
-        )}>
-          {item.icon && (
-            <SidebarIcon icon={item.icon} isActive={isVisuallyActive} />
-          )}
-          <SidebarLabel label={item.label} isCollapsed={isCollapsed} isActive={isVisuallyActive} />
-        </span>
-
-        {/* Flecha derecha — indica que el ítem abre un submenú flotante */}
-        {item.isExpandable && (
-          <SidebarChevron isActive={isVisuallyActive} isCollapsed={isCollapsed} />
-        )}
-
-      </SidebarButton>
-    </div>
-  );
-
-  // Items con hijos → flyout en hover (reemplaza tooltip y acordeón)
-  // Items sin hijos → botón directo
-  const content = (item.isExpandable && item.children?.length)
-    ? <SidebarFlyoutMenu item={item} isCollapsed={isCollapsed} onOpenChange={setFlyoutOpen}>{button}</SidebarFlyoutMenu>
-    : button;
+  const iconName = item.icon?.replace('system-icon:', '');
 
   return (
     <div className={cn(isSubItem && isCollapsed && 'hidden')}>
-      {content}
+      <div
+        ref={triggerRef}
+        className={cn('relative', !layoutCollapsed && isSubItem && 'ml-3')}
+        onMouseEnter={() => isExpandable && setHoveredItem(item, triggerRef.current)}
+        onMouseLeave={() => isExpandable && setHoveredItem(null)}
+      >
+        <button
+          onClick={handleClick}
+          className={cn(
+            'group/btn flex items-center text-left rounded-lg font-medium cursor-pointer',
+            'transition-colors duration-200',
+            layoutCollapsed
+              ? 'w-[var(--sidebar-width-icon)] h-sidebar-item px-2 justify-center'
+              : `w-full ${SIDEBAR_ITEM.button} gap-3 justify-start`,
+            isVisuallyActive
+              ? 'bg-blanco-una/20 text-blanco-una'
+              : 'text-blanco-una-2 hover:bg-blanco-una/10 hover:text-blanco-una',
+          )}
+        >
+          {iconName && (
+            <span className={cn('flex-shrink-0 flex items-center justify-center', SIDEBAR_ITEM.icon)}>
+              {getIconByName(iconName, 'md')}
+            </span>
+          )}
+
+          <motion.span
+            animate={{
+              display: layoutCollapsed ? 'none' : 'inline-block',
+              opacity: layoutCollapsed ? 0 : 1,
+            }}
+            transition={{ duration: 0.2, ease: 'easeInOut' }}
+            className={cn('flex-1 truncate whitespace-pre', TYPOGRAPHY.sidebarItem)}
+          >
+            {item.label}
+          </motion.span>
+
+          {isExpandable && !layoutCollapsed && (
+            <motion.span
+              animate={{ rotate: isFlyoutOpen ? 0 : 90 }}
+              transition={{ duration: 0.2, ease: 'easeInOut' }}
+              className="flex-shrink-0 ml-auto w-4 h-4 opacity-60 flex items-center justify-center"
+            >
+              {getIconByName('chevron-right', 'sm')}
+            </motion.span>
+          )}
+        </button>
+      </div>
     </div>
   );
 };

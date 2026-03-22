@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useSidebar } from '@/Context/SidebarContext';
 import { SidebarItem } from './SidebarItem';
 import { getNavigationItems } from '@/Navigation';
+import { SidebarNavProvider } from './SidebarNavProvider';
 import { cn } from '@/Utils/ClassNames';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from '@/Components/Ui/Layout/Sheet';
 import { TooltipProvider } from '@/Components/Ui/Feedback/Tooltip';
@@ -62,15 +63,17 @@ export const ModernSidebar: React.FC<SidebarProps> = ({
 
       {/* Navigation Menu */}
       <nav className="flex-1 py-2 overflow-hidden">
-        <div className="space-y-2 flex flex-col">
-          {getNavigationItems(user?.roles?.map(r => r.name)).map((item) => (
-            <SidebarItem 
-              key={item.id} 
-              item={item}
-              isCollapsed={isItemCollapsed}
-            />
-          ))}
-        </div>
+        <SidebarNavProvider isCollapsed={isItemCollapsed}>
+          <div className="space-y-2 flex flex-col">
+            {getNavigationItems(user?.roles?.map(r => r.name)).map((item) => (
+              <SidebarItem 
+                key={item.id} 
+                item={item}
+                isCollapsed={isItemCollapsed}
+              />
+            ))}
+          </div>
+        </SidebarNavProvider>
       </nav>
     </div>
   );
