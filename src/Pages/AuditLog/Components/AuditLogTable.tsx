@@ -18,6 +18,7 @@ import { TYPOGRAPHY } from '@/Constants/Typography';
 import { truncateText } from '@/Utils';
 import type { DataTableColumn } from '@/Components/Ui/Table/DataTable';
 import type { AuditLog } from '@/Types/AuditLogTypes';
+import { formatAuditDate } from '@/Types/AuditLogTypes';
 import { useFirstColumnConfig } from '@/Hooks/UseFirstColumnConfig';
 
 interface AuditLogTableProps {
@@ -37,21 +38,7 @@ export const AuditLogTable: React.FC<AuditLogTableProps> = ({
   onPageChange,
   onViewDetail,
 }) => {
-  /**
-   * Formatea una fecha ISO a formato legible
-   */
-  const formatDate = (dateString: string): string => {
-    const date = new Date(dateString);
-    return new Intl.DateTimeFormat('es-ES', {
-      year: 'numeric',
-      month: '2-digit',
-      day: '2-digit',
-      hour: '2-digit',
-      minute: '2-digit',
-      second: '2-digit',
-      hour12: false,
-    }).format(date);
-  };
+  const firstColumn = useFirstColumnConfig();
 
   /**
    * Obtiene el badge de color según el tipo de acción
@@ -75,7 +62,6 @@ export const AuditLogTable: React.FC<AuditLogTableProps> = ({
     return actionMap[actionType.toLowerCase()] ?? 'bg-gray-100 text-gray-800';
   };
 
-  const firstColumn = useFirstColumnConfig();
   /**
    * Definición de columnas de la tabla
    */
@@ -133,9 +119,9 @@ export const AuditLogTable: React.FC<AuditLogTableProps> = ({
         render: (_, log) => (
           <div className="flex flex-col">
             <p className={`block font-sans antialiased font-normal leading-normal text-negro-una-2 ${TYPOGRAPHY.table.cell}`}>
-              {formatDate(log.fecha_hora).split(', ')[0]}
+              {formatAuditDate(log.fecha_hora).split(', ')[0]}
             </p>
-            <p className={`block font-sans antialiased font-normal leading-normal text-gray-500 ${TYPOGRAPHY.badge}`}>{formatDate(log.fecha_hora).split(', ')[1]}</p>
+            <p className={`block font-sans antialiased font-normal leading-normal text-gray-500 ${TYPOGRAPHY.badge}`}>{formatAuditDate(log.fecha_hora).split(', ')[1]}</p>
           </div>
         ),
       },

@@ -137,7 +137,7 @@ export const MyEvidenceAssignmentsPage: React.FC = () => {
       // Recargar asignaciones para actualizar estados
       loadAssignments();
     } catch (error: any) {
-      // HU-016: Manejo específico para solicitud duplicada
+      // Manejo específico para solicitud duplicada
       const isDuplicate = error.message?.includes('Ya existe una solicitud pendiente');
       
       showToast({

@@ -168,3 +168,44 @@ export const EVIDENCE_STATUS_BADGE: Record<EvidencePublicationStatus, string> = 
 };
 
 // Mantener compatibilidad con código existente (deprecated - usar EVIDENCE_STATUS_BADGE)
+
+/**
+ * Filtra localmente los resultados de búsqueda según un término de texto.
+ * Cubre todos los campos visibles en la tabla.
+ */
+export function filterEvidenceResults(
+  results: EvidenceSearchResult[],
+  searchTerm: string
+): EvidenceSearchResult[] {
+  if (!searchTerm.trim()) return results;
+
+  const term = searchTerm.toLowerCase();
+
+  return results.filter((item) => {
+    const fechaFormateada = new Date(item.fecha_publicacion).toLocaleDateString('es-CR', {
+      year: 'numeric', month: '2-digit', day: '2-digit'
+    });
+    const archivosText = item.archivos_count > 0
+      ? `${item.archivos_count} ${item.archivos_count === 1 ? 'archivo' : 'archivos'}`
+      : '';
+    const enlacesText = item.enlaces_count > 0
+      ? `${item.enlaces_count} ${item.enlaces_count === 1 ? 'enlace' : 'enlaces'}`
+      : '';
+    const sinRecursos = item.archivos_count === 0 && item.enlaces_count === 0 ? 'sin recursos' : '';
+
+    return (
+      item.descripcion.toLowerCase().includes(term) ||
+      item.nomenclatura.toLowerCase().includes(term) ||
+      item.criterio_nomenclatura.toLowerCase().includes(term) ||
+      item.criterio_descripcion.toLowerCase().includes(term) ||
+      item.estado.toLowerCase().includes(term) ||
+      fechaFormateada.includes(term) ||
+      archivosText.includes(term) ||
+      enlacesText.includes(term) ||
+      sinRecursos.includes(term) ||
+      item.responsables.some(r => r.nombre.toLowerCase().includes(term)) ||
+      item.responsables.some(r => r.email.toLowerCase().includes(term)) ||
+      item.roles_acceso.some(r => r.toLowerCase().includes(term))
+    );
+  });
+}

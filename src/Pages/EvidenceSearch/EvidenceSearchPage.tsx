@@ -24,6 +24,7 @@ import type {
   EvidenceSearchResult,
   ExportFormat
 } from '@/Types/EvidenceSearchTypes';
+import { filterEvidenceResults } from '@/Types/EvidenceSearchTypes';
 import { ICON_SIZES } from '@/Constants/Components';
 import { TABLE_PAGE_SIZE } from '@/Constants/TablePagination';
 import { TYPOGRAPHY } from '@/Constants/Typography';
@@ -62,20 +63,7 @@ export const EvidenceSearchPage: React.FC = () => {
       return;
     }
 
-    const term = searchTerm.toLowerCase();
-    const filtered = filteredResults.filter(
-      (item) =>
-        item.descripcion.toLowerCase().includes(term) ||
-        item.nomenclatura.toLowerCase().includes(term) ||
-        item.criterio_nomenclatura.toLowerCase().includes(term) ||
-        item.criterio_descripcion.toLowerCase().includes(term) ||
-        item.estado.toLowerCase().includes(term) ||
-        item.fecha_publicacion.toLowerCase().includes(term) ||
-        item.responsables.some(r => r.nombre.toLowerCase().includes(term)) ||
-        item.responsables.some(r => r.email.toLowerCase().includes(term)) ||
-        item.roles_acceso.some(r => r.toLowerCase().includes(term))
-    );
-
+    const filtered = filterEvidenceResults(filteredResults, searchTerm);
     setSearchState(prev => ({ ...prev, displayedResults: filtered }));
   }, [filteredResults, searchTerm]);
 

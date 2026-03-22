@@ -16,6 +16,7 @@ import { TYPOGRAPHY } from '@/Constants/Typography';
 import { TABLE_PAGE_SIZE } from '@/Constants/TablePagination';
 import { ExtensionRequestStatusBadge } from './ExtensionRequestStatusBadge';
 import type { ExtensionRequest, ExtensionRequestStatus } from '@/Types/ExtensionRequestTypes';
+import { filterExtensionRequests, formatExtensionDate } from '@/Types/ExtensionRequestTypes';
 import { useFirstColumnConfig } from '@/Hooks/UseFirstColumnConfig';
 
 const EMPTY_REQUESTS: ExtensionRequest[] = [];
@@ -59,29 +60,9 @@ export const ExtensionRequestsTable: React.FC<ExtensionRequestsTableProps> = ({
   }, []);
 
   // Filtrar solicitudes
-  const filteredRequests = useMemo(() => {
-    let filtered = requests;
-
-    // Filtrar por estado
-    if (filterEstado !== 'todos') {
-      filtered = filtered.filter(req => req.estado === filterEstado);
-    }
-
-    // Filtrar por búsqueda
-    if (searchQuery.trim()) {
-      const q = searchQuery.toLowerCase();
-      filtered = filtered.filter(req =>
-        req.motivo.toLowerCase().includes(q) ||
-        req.solicitud_ampliacion_id.toString().includes(q) ||
-        req.usuario?.nombre?.toLowerCase().includes(q) ||
-        req.usuario?.email?.toLowerCase().includes(q) ||
-        new Date(req.fecha_sugerida).toLocaleDateString('es-ES').includes(q) ||
-        new Date(req.created_at).toLocaleDateString('es-ES').includes(q)
-      );
-    }
-
-    return filtered;
-  }, [requests, filterEstado, searchQuery]);
+  const filteredRequests = useMemo(() =>
+    filterExtensionRequests(requests, searchQuery, filterEstado)
+  , [requests, filterEstado, searchQuery]);
 
   // Calcular paginación
   const { totalPages, paginatedData } = useMemo(() => {
@@ -124,7 +105,7 @@ export const ExtensionRequestsTable: React.FC<ExtensionRequestsTableProps> = ({
       align: 'center',
       render: (_: unknown, item: ExtensionRequest) => (
         <span className={`block font-sans antialiased leading-normal text-negro-una-2 ${TYPOGRAPHY.table.cell}`}>
-          {new Date(item.created_at).toLocaleDateString('es-ES')}
+          {formatExtensionDate(item.created_at)}
         </span>
       )
     },
@@ -134,7 +115,7 @@ export const ExtensionRequestsTable: React.FC<ExtensionRequestsTableProps> = ({
       align: 'center',
       render: (_: unknown, item: ExtensionRequest) => (
         <span className={`block font-sans antialiased leading-normal text-negro-una-2 ${TYPOGRAPHY.table.cell}`}>
-          {new Date(item.fecha_sugerida).toLocaleDateString('es-ES')}
+          {formatExtensionDate(item.fecha_sugerida)}
         </span>
       )
     },

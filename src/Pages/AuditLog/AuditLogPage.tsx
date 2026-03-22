@@ -9,7 +9,7 @@
  * - Acceso restringido solo a Superusuario
  */
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { PageHeader, ScreenContainer, Tooltip, TooltipTrigger } from '@/Components/Ui/Index';
 import { BackendErrorAlert } from '@/Components/Ui/Feedback/BackendErrorAlert';
 import { SystemIcons } from '@/Components/Ui/Icons/SystemIcons';
@@ -46,9 +46,9 @@ const AuditLogPage: React.FC = () => {
   const [appliedFilters, setAppliedFilters] = useState<Filters>({});
   
   // Estado de búsqueda
-  const [searchState, setSearchState] = useState<{ searchTerm: string; filteredLogs: AuditLog[] }>({ searchTerm: '', filteredLogs: [] });
-  const searchTerm = searchState.searchTerm;
-  const filteredLogs = searchState.filteredLogs;
+  const [searchTerm, setSearchTerm] = useState('');
+  const appliedFiltersRef = useRef(appliedFilters);
+  const isInitialMount = useRef(true);
 
   // Estado del panel de filtros
   const [showFilters, setShowFilters] = useState(false);
@@ -76,7 +76,6 @@ const AuditLogPage: React.FC = () => {
       });
 
       setLogsState(prev => ({ ...prev, logs: response.data, isLoading: false, currentPage: response.current_page, totalPages: response.last_page }));
-      setSearchState(prev => ({ ...prev, filteredLogs: response.data }));
     } catch (err: any) {
       console.error('Error cargando registros de bitácora:', err);
       setLogsState(prev => ({ ...prev, isLoading: false, error: err.message || 'Error al cargar los registros de bitácora', logs: [] }));
@@ -91,57 +90,48 @@ const AuditLogPage: React.FC = () => {
   }, [loadAuditLogs]);
 
   /**
-   * Filtrar logs localmente según el término de búsqueda
+   * Sincronizar la ref de filtros para usarla dentro del debounce de búsqueda
    */
   useEffect(() => {
-    if (!searchTerm.trim()) {
-      setSearchState(prev => ({ ...prev, filteredLogs: logs }));
+    appliedFiltersRef.current = appliedFilters;
+  }, [appliedFilters]);
+
+  /**
+   * Buscar en el backend cuando cambia el término de búsqueda (debounced 300 ms).
+   * Se omite la primera ejecución al montar (ya la maneja el useEffect inicial).
+   */
+  useEffect(() => {
+    if (isInitialMount.current) {
+      isInitialMount.current = false;
       return;
     }
-
-    const term = searchTerm.toLowerCase();
-    const filtered = logs.filter(log => {
-      const usuario = log.usuario?.nombre?.toLowerCase() || '';
-      const email = log.usuario?.email?.toLowerCase() || '';
-      const modulo = log.modulo?.toLowerCase() || '';
-      const accion = log.tipo_accion?.descripcion?.toLowerCase() || '';
-      const detalle = log.detalle?.toLowerCase() || '';
-      const fecha = log.fecha_hora?.toLowerCase() || '';
-
-      return (
-        usuario.includes(term) ||
-        email.includes(term) ||
-        modulo.includes(term) ||
-        accion.includes(term) ||
-        detalle.includes(term) ||
-        fecha.includes(term)
-      );
-    });
-
-    setSearchState(prev => ({ ...prev, filteredLogs: filtered }));
-  }, [logs, searchTerm]);
+    const timer = setTimeout(() => {
+      loadAuditLogs({ ...appliedFiltersRef.current, search: searchTerm || undefined }, 1);
+    }, 300);
+    return () => clearTimeout(timer);
+  }, [searchTerm, loadAuditLogs]);
 
   /**
    * Aplicar filtros
    */
   const handleApplyFilters = useCallback((filters: Filters) => {
     setAppliedFilters(filters);
-    loadAuditLogs(filters, 1);
-  }, [loadAuditLogs]);
+    loadAuditLogs({ ...filters, search: searchTerm || undefined }, 1);
+  }, [loadAuditLogs, searchTerm]);
 
   /**
    * Manejar cambio en el buscador
    */
   const handleSearchChange = useCallback((term: string) => {
-    setSearchState(prev => ({ ...prev, searchTerm: term }));
+    setSearchTerm(term);
   }, []);
 
   /**
    * Cambiar página
    */
   const handlePageChange = useCallback((page: number) => {
-    loadAuditLogs(appliedFilters, page);
-  }, [appliedFilters, loadAuditLogs]);
+    loadAuditLogs({ ...appliedFilters, search: searchTerm || undefined }, page);
+  }, [appliedFilters, searchTerm, loadAuditLogs]);
 
   /**
    * Ver detalle de un registro
@@ -245,7 +235,6 @@ const AuditLogPage: React.FC = () => {
                 placeholder="Buscar por usuario, módulo, acción, detalle..."
                 value={searchTerm}
                 onChange={handleSearchChange}
-                disabled={isLoading}
               />
             </div>
               <DropdownButton
@@ -298,7 +287,7 @@ const AuditLogPage: React.FC = () => {
 
       {/* Tabla de registros */}
       <AuditLogTable
-        logs={filteredLogs}
+        logs={logs}
         isLoading={isLoading}
         currentPage={currentPage}
         totalPages={totalPages}

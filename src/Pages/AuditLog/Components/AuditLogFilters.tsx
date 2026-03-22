@@ -8,7 +8,10 @@
  */
 
 import React, { useState, useEffect, useMemo } from 'react';
-import { TYPOGRAPHY } from '@/Constants/Typography';
+import { Tooltip, TooltipTrigger, TooltipContent } from '@/Components/Ui/Index';
+import { Button } from '@/Components/Ui/Buttons/Button';
+import { SystemIcons } from '@/Components/Ui/Icons/SystemIcons';
+import { ICON_SIZES } from '@/Constants/Components';
 import { CustomSelect } from '@/Components/Ui/Forms/SingleSelect';
 import { DatePicker } from '@/Components/Ui/Calendar/DatePicker';
 import type { SelectOption } from '@/Components/Ui/Forms/SingleSelect';
@@ -133,94 +136,102 @@ export const AuditLogFilters: React.FC<AuditLogFiltersProps> = ({
 
   return (
     <div>
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 mb-4">
-        {/* Filtro por Usuario */}
-        <div>
-          <CustomSelect
-            label="Usuario"
-            value={filters.usuario_id?.toString() || ''}
-            options={userOptions}
-            placeholder="Todos los usuarios"
-            onChange={(value) => handleInputChange('usuario_id', value ? parseInt(value) : '')}
-            disabled={isLoading || loadingCatalogs}
-            searchable={true}
-            searchPlaceholder="Buscar usuario..."
-            minItemsForSearch={3}
-            variant="floating"
-          />
+      <div className="flex items-end gap-4 mb-4">
+        <div className="flex-1 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+          {/* Filtro por Usuario */}
+          <div>
+            <CustomSelect
+              label="Usuario"
+              value={filters.usuario_id?.toString() || ''}
+              options={userOptions}
+              placeholder="Todos los usuarios"
+              onChange={(value) => handleInputChange('usuario_id', value ? parseInt(value) : '')}
+              disabled={isLoading || loadingCatalogs}
+              searchable={true}
+              searchPlaceholder="Buscar usuario..."
+              minItemsForSearch={3}
+              variant="floating"
+            />
+          </div>
+
+          {/* Filtro por Módulo */}
+          <div>
+            <CustomSelect
+              label="Módulo del Sistema"
+              value={filters.modulo || ''}
+              options={moduleOptions}
+              placeholder="Todos los módulos"
+              onChange={(value) => handleInputChange('modulo', value)}
+              disabled={isLoading || loadingCatalogs}
+              searchable={true}
+              searchPlaceholder="Buscar módulo..."
+              minItemsForSearch={10}
+              variant="floating"
+            />
+          </div>
+
+          {/* Filtro por Tipo de Acción */}
+          <div>
+            <CustomSelect
+              label="Tipo de Acción"
+              value={filters.tipo_accion || ''}
+              options={actionTypeOptions}
+              placeholder="Todas las acciones"
+              onChange={(value) => handleInputChange('tipo_accion', value)}
+              disabled={isLoading || loadingCatalogs}
+              searchable={true}
+              searchPlaceholder="Buscar acción..."
+              minItemsForSearch={10}
+              variant="floating"
+            />
+          </div>
+
+          {/* Filtro por Fecha Desde */}
+          <div>
+            <DatePicker
+              id="fecha_desde"
+              label="Fecha inicio"
+              value={filters.fecha_desde || ''}
+              onChange={(date) => handleInputChange('fecha_desde', date)}
+              disabled={isLoading}
+              placeholder="Seleccione fecha inicio"
+              maxDate={filters.fecha_hasta || undefined}
+            />
+          </div>
+
+          {/* Filtro por Fecha Hasta */}
+          <div>
+            <DatePicker
+              id="fecha_hasta"
+              label="Fecha fin"
+              value={filters.fecha_hasta || ''}
+              onChange={(date) => handleInputChange('fecha_hasta', date)}
+              disabled={isLoading}
+              minDate={filters.fecha_desde || undefined}
+              placeholder="Seleccione fecha fin"
+            />
+          </div>
         </div>
 
-        {/* Filtro por Módulo */}
-        <div>
-          <CustomSelect
-            label="Módulo del Sistema"
-            value={filters.modulo || ''}
-            options={moduleOptions}
-            placeholder="Todos los módulos"
-            onChange={(value) => handleInputChange('modulo', value)}
-            disabled={isLoading || loadingCatalogs}
-            searchable={true}
-            searchPlaceholder="Buscar módulo..."
-            minItemsForSearch={10}
-            variant="floating"
-          />
-        </div>
-
-        {/* Filtro por Tipo de Acción */}
-        <div>
-          <CustomSelect
-            label="Tipo de Acción"
-            value={filters.tipo_accion || ''}
-            options={actionTypeOptions}
-            placeholder="Todas las acciones"
-            onChange={(value) => handleInputChange('tipo_accion', value)}
-            disabled={isLoading || loadingCatalogs}
-            searchable={true}
-            searchPlaceholder="Buscar acción..."
-            minItemsForSearch={10}
-            variant="floating"
-          />
-        </div>
-
-        {/* Filtro por Fecha Desde */}
-        <div>
-          <DatePicker
-            id="fecha_desde"
-            label="Fecha inicio"
-            value={filters.fecha_desde || ''}
-            onChange={(date) => handleInputChange('fecha_desde', date)}
-            disabled={isLoading}
-            placeholder="Seleccione fecha inicio"
-            maxDate={filters.fecha_hasta || undefined}
-          />
-        </div>
-
-        {/* Filtro por Fecha Hasta */}
-        <div>
-          <DatePicker
-            id="fecha_hasta"
-            label="Fecha fin"
-            value={filters.fecha_hasta || ''}
-            onChange={(date) => handleInputChange('fecha_hasta', date)}
-            disabled={isLoading}
-            minDate={filters.fecha_desde || undefined}
-            placeholder="Seleccione fecha fin"
-          />
-        </div>
+        {/* Botón para limpiar filtros */}
+        {hasActiveFilters && (
+          <Tooltip>
+            <TooltipTrigger>
+              <Button
+                type="button"
+                variant="ghost"
+                onClick={handleClearFilters}
+                disabled={isLoading}
+              >
+                <SystemIcons.interface.refresh className={ICON_SIZES.md} />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent side="top">
+              <p>Limpiar filtros</p>
+            </TooltipContent>
+          </Tooltip>
+        )}
       </div>
-      {/* Botón para limpiar filtros */}
-      {hasActiveFilters && (
-        <div className="flex justify-end">
-          <button
-            type="button"
-            onClick={handleClearFilters}
-            disabled={isLoading}
-            className={`${TYPOGRAPHY.button} text-blue-600 hover:text-blue-800 font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed`}
-          >
-            Limpiar filtros
-          </button>
-        </div>
-      )}
     </div>
   );
 };
