@@ -125,6 +125,7 @@ export const ManageExtensionRequestsTable: React.FC<ManageExtensionRequestsTable
     {
       key: 'motivo',
       header: 'Motivo',
+      align: 'center',
       render: (_: unknown, item: ExtensionRequest) => (
         <div className="flex flex-col">
           <p className={`block font-sans antialiased leading-normal text-negro-una-2 ${TYPOGRAPHY.table.cell}`} title={item.motivo}>

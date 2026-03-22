@@ -84,6 +84,7 @@ export const AuditLogTable: React.FC<AuditLogTableProps> = ({
       {
         key: 'usuario',
         header: 'Usuario',
+        align: 'left',
         width: firstColumn.width,
         accessor: (log) => log.usuario?.nombre || 'Sistema',
         render: (_, log) => (
@@ -141,6 +142,7 @@ export const AuditLogTable: React.FC<AuditLogTableProps> = ({
       {
         key: 'actions',
         header: 'Acciones',
+        align: 'center',
         accessor: () => '',
         render: (_, log) => (
           <div className="flex gap-2 justify-center">

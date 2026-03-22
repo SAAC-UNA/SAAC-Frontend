@@ -60,7 +60,7 @@ export const EvidenceAssignmentsTable: React.FC<EvidenceAssignmentsTableProps> =
     {
       key: 'evidencia',
       header: 'Evidencia',
-      align: 'center',
+      align: 'left',
       width: firstColumn.width,
       render: (_: unknown, assignment: EvidenceAssignment) => {
         const { evidencia } = assignment;
