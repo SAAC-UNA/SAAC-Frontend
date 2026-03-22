@@ -28,7 +28,6 @@ export const SidebarNavProvider: React.FC<SidebarNavProviderProps> = ({ children
   const [selectedItem, setSelectedItem] = useState<NavItem | null>(null);
   const [dir, setDir] = useState<'up' | 'down' | null>(null);
   const [panelPos, setPanelPos] = useState({ top: 0, left: 0 });
-  const [nubTop, setNubTop] = useState(0);
 
   // Refs para no incluir como dependencias en callbacks
   const selectedItemRef = useRef<NavItem | null>(null);
@@ -101,12 +100,11 @@ export const SidebarNavProvider: React.FC<SidebarNavProviderProps> = ({ children
       }
       lastItemYRef.current = centerY;
 
-      const estimatedHeight = (item.children?.length ?? 0) * 44 + 24;
-      const clampedTop = Math.min(rect.top, window.innerHeight - estimatedHeight - 8);
-      const finalTop = Math.max(clampedTop, 8);
+      // 48px por ítem + 4px space-y-1 entre cada par + 16px padding (py-2)
+      const estimatedHalfH = ((item.children?.length ?? 0) * 48 + Math.max(0, (item.children?.length ?? 1) - 1) * 4 + 16) / 2;
+      const clampedTop = Math.min(Math.max(centerY, estimatedHalfH + 8), window.innerHeight - estimatedHalfH - 8);
 
-      setPanelPos({ top: finalTop, left: rect.right + 8 });
-      setNubTop(Math.max(16, centerY - finalTop));
+      setPanelPos({ top: clampedTop, left: rect.right + 8 });
     }
 
     selectedItemRef.current = item;
@@ -138,11 +136,9 @@ export const SidebarNavProvider: React.FC<SidebarNavProviderProps> = ({ children
           const rect = pending.triggerEl.getBoundingClientRect();
           const centerY = rect.top + rect.height / 2;
           lastItemYRef.current = centerY;
-          const estimatedHeight = (pending.item.children?.length ?? 0) * 44 + 24;
-          const clampedTop = Math.min(rect.top, window.innerHeight - estimatedHeight - 8);
-          const finalTop = Math.max(clampedTop, 8);
-          setPanelPos({ top: finalTop, left: rect.right + 8 });
-          setNubTop(Math.max(16, centerY - finalTop));
+          const estimatedHalfH = ((pending.item.children?.length ?? 0) * 48 + Math.max(0, (pending.item.children?.length ?? 1) - 1) * 4 + 16) / 2;
+          const clampedTop = Math.min(Math.max(centerY, estimatedHalfH + 8), window.innerHeight - estimatedHalfH - 8);
+          setPanelPos({ top: clampedTop, left: rect.right + 8 });
           setDir(null);
           selectedItemRef.current = pending.item;
           setSelectedItem(pending.item);
@@ -170,9 +166,9 @@ export const SidebarNavProvider: React.FC<SidebarNavProviderProps> = ({ children
         <AnimatePresence>
           {selectedItem && (
             <motion.div
-              initial={{ x: -8, opacity: 0, top: panelPos.top }}
-              animate={{ x: 0, opacity: 1, top: panelPos.top }}
-              exit={{ x: -8, opacity: 0 }}
+              initial={{ x: -8, y: '-50%', opacity: 0, top: panelPos.top }}
+              animate={{ x: 0, y: '-50%', opacity: 1, top: panelPos.top }}
+              exit={{ x: -8, y: '-50%', opacity: 0 }}
               transition={{
                 x:       { duration: 0.15, ease: 'easeOut' },
                 opacity: { duration: 0.15, ease: 'easeOut' },
@@ -191,12 +187,7 @@ export const SidebarNavProvider: React.FC<SidebarNavProviderProps> = ({ children
                * initial={{ top: nubTop }}: arranca en la posición correcta (sin animación de entrada).
                * animate={{ top: nubTop }}: se desliza al nuevo trigger cuando se cambia de ítem.
                */}
-              <motion.span
-                initial={{ top: nubTop }}
-                animate={{ top: nubTop }}
-                transition={{ duration: 0.25, ease: 'easeInOut' }}
-                className="absolute left-0 h-4 w-4 -translate-x-1/2 -translate-y-1/2 rotate-45 bg-rojo-una-2 shadow-sm"
-              />
+              <span className="absolute left-0 top-1/2 h-4 w-4 -translate-x-1/2 -translate-y-1/2 rotate-45 bg-rojo-una-2" />
 
               {/*
                * Contenido — "key" cambia al cambiar de ítem, lo que remonta el motion.div
@@ -214,7 +205,7 @@ export const SidebarNavProvider: React.FC<SidebarNavProviderProps> = ({ children
                   }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.25, ease: 'easeInOut' }}
-                  className="py-1 px-1"
+                  className="py-2 px-2 space-y-1"
                 >
                   {selectedItem.children?.map(child => {
                     const isActive = isItemActive(child.id);
@@ -229,11 +220,11 @@ export const SidebarNavProvider: React.FC<SidebarNavProviderProps> = ({ children
                           handleItemClick(child.id, child.href, false);
                         }}
                         className={cn(
-                          'w-full flex items-center gap-3 px-3 py-2.5 text-left cursor-pointer',
+                          'w-full flex items-center gap-3 px-sidebar-item h-sidebar-item text-left cursor-pointer',
                           'transition-colors duration-150 rounded-lg',
                           isActive
-                            ? 'bg-blanco-una/20 text-blanco-una font-semibold'
-                            : 'text-blanco-una-2 hover:bg-blanco-una/10 hover:text-blanco-una',
+                            ? 'bg-negro-una/20 text-blanco-una font-semibold'
+                            : 'text-blanco-una-2 hover:bg-negro-una/20 hover:text-blanco-una',
                           TYPOGRAPHY.sidebarItem,
                         )}
                       >

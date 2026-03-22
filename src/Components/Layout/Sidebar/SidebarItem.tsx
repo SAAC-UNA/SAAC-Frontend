@@ -64,10 +64,10 @@ const SidebarItemComponent: React.FC<SidebarItemProps> = ({
             'transition-colors duration-200',
             layoutCollapsed
               ? 'w-[var(--sidebar-width-icon)] h-sidebar-item px-2 justify-center'
-              : `w-full ${SIDEBAR_ITEM.button} gap-3 justify-start`,
+              : `w-full ${SIDEBAR_ITEM.button} gap-1 justify-start`,
             isVisuallyActive
-              ? 'bg-blanco-una/20 text-blanco-una'
-              : 'text-blanco-una-2 hover:bg-blanco-una/10 hover:text-blanco-una',
+              ? 'bg-negro-una/20 text-blanco-una'
+              : 'text-blanco-una-2 hover:bg-negro-una/20 hover:text-blanco-una',
           )}
         >
           {iconName && (

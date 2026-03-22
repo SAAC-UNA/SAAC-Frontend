@@ -223,10 +223,10 @@
   --text-tooltip: 0.75rem;         /* 12px - Texto de tooltips */
 
   /* SIDEBAR */
-  --sidebar-width: 14rem;            /* 224px - Ancho expandido */
+  --sidebar-width: 13rem;            /* 208px - Ancho expandido */
   --sidebar-width-mobile: 18rem;     /* 288px - Ancho en móvil */
   --sidebar-width-icon: 3.50rem;     /* 56px - Ancho colapsado (solo íconos) */
-  --height-sidebar-item: 3.25rem;    /* 52px - Altura fija del botón */
+  --height-sidebar-item: 3rem;    /* 48px - Altura fija del botón */
   --padding-sidebar-x: 1rem;         /* 16px - Padding horizontal del botón */
   --size-sidebar-icon: 2rem;         /* 32px - Tamaño del ícono */
   --radius-sm: 0.5rem;               /* 8px - Inputs, badges y elementos compactos */
