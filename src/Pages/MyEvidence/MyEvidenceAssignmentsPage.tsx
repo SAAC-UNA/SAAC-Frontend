@@ -7,20 +7,21 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { PageHeader, ScreenContainer } from '@/Components/Ui/Index';
 import { BackendErrorAlert } from '@/Components/Ui/Feedback/BackendErrorAlert';
+import { SearchInput } from '@/Components/Ui/Forms/SearchInput';
 import { getModuleInfo } from '@/Constants/ModuleInfo';
 import { TABLE_PAGE_SIZE } from '@/Constants/TablePagination';
 import { useToast } from '@/Context/ToastContext';
 import { useAuth } from '@/Context/AuthContext';
 import { evidenceAssignmentService } from '@/Services/EvidenceAssignmentService';
 import { extensionRequestService } from '@/Services/ExtensionRequestService';
+import { Modal } from '@/Components/Ui/Modals/Modal';
 import type { EvidenceAssignment, AssignmentFilters } from '@/Types/EvidenceAssignmentTypes';
 import { filterAndSortAssignments } from '@/Types/EvidenceAssignmentTypes';
 import {
-  EvidenceAssignmentFilters,
   EvidenceAssignmentDetail,
   EvidenceAssignmentsTable
 } from './Components';
-import { CreateExtensionRequestModal } from '@/Components/Ui/Modals/CreateExtensionRequestModal';
+import { CreateExtensionRequestModal } from '@/Pages/MyEvidence/Components/CreateExtensionRequestModal';
 
 export const MyEvidenceAssignmentsPage: React.FC = () => {
   const { showToast } = useToast();
@@ -42,13 +43,24 @@ export const MyEvidenceAssignmentsPage: React.FC = () => {
 
   // HU-016: modales de detalle y extensión
   const [modalState, setModalState] = useState<{ selectedAssignment: EvidenceAssignment | null; showExtensionModal: boolean; selectedAssignmentForExtension: EvidenceAssignment | null }>({ selectedAssignment: null, showExtensionModal: false, selectedAssignmentForExtension: null });
+
+  // Modal de confirmación para revertir estado completado → en_progreso
+  const [revertConfirmState, setRevertConfirmState] = useState<{ open: boolean; assignment: EvidenceAssignment | null; loading: boolean }>({ open: false, assignment: null, loading: false });
   const selectedAssignment = modalState.selectedAssignment;
   const showExtensionModal = modalState.showExtensionModal;
   const selectedAssignmentForExtension = modalState.selectedAssignmentForExtension;
 
-  // Cargar asignaciones al montar
+  // Cargar asignaciones al montar y al volver a la pestaña
   useEffect(() => {
     loadAssignments();
+
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible') {
+        loadAssignments();
+      }
+    };
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
   }, [user]);
 
   const loadAssignments = async () => {
@@ -125,7 +137,7 @@ export const MyEvidenceAssignmentsPage: React.FC = () => {
       // Recargar asignaciones para actualizar estados
       loadAssignments();
     } catch (error: any) {
-      // HU-016: Manejo específico para solicitud duplicada
+      // Manejo específico para solicitud duplicada
       const isDuplicate = error.message?.includes('Ya existe una solicitud pendiente');
       
       showToast({
@@ -150,6 +162,37 @@ export const MyEvidenceAssignmentsPage: React.FC = () => {
     setModalState(prev => ({...prev, showExtensionModal: false, selectedAssignmentForExtension: null}));
   };
 
+  const handleTableStatusChange = async (assignment: EvidenceAssignment, newStatus: 'en_progreso' | 'completado') => {
+    // Si se está revirtiendo a en_progreso, pedir confirmación primero
+    if (newStatus === 'en_progreso') {
+      setRevertConfirmState({ open: true, assignment, loading: false });
+      return;
+    }
+    await applyStatusChange(assignment, newStatus);
+  };
+
+  const applyStatusChange = async (assignment: EvidenceAssignment, newStatus: 'en_progreso' | 'completado') => {
+    try {
+      const updated = await evidenceAssignmentService.updateStatus(assignment.evidencia_asignacion_id, { estado: newStatus });
+      handleStatusUpdate(updated);
+      showToast({
+        type: 'success',
+        title: 'Estado actualizado',
+        message: `Evidencia marcada como ${newStatus === 'completado' ? 'completada' : 'en progreso'}`
+      });
+    } catch {
+      showToast({ type: 'error', title: 'Error', message: 'No se pudo actualizar el estado' });
+    }
+  };
+
+  const handleConfirmRevert = async () => {
+    if (!revertConfirmState.assignment) return;
+    const assignment = revertConfirmState.assignment;
+    setRevertConfirmState(prev => ({ ...prev, loading: true }));
+    await applyStatusChange(assignment, 'en_progreso');
+    setRevertConfirmState({ open: false, assignment: null, loading: false });
+  };
+
   const handleFiltersChange = (newFilters: AssignmentFilters) => {
     setFilters(newFilters);
     setCurrentPage(1);
@@ -172,11 +215,10 @@ export const MyEvidenceAssignmentsPage: React.FC = () => {
         description={moduleInfo.description}
         headerExtra={
           !error && assignments.length > 0 ? (
-            <EvidenceAssignmentFilters
-              filters={filters}
-              onFiltersChange={handleFiltersChange}
-              totalCount={assignments.length}
-              filteredCount={filteredAssignments.length}
+            <SearchInput
+              placeholder="Buscar evidencias..."
+              value={filters.search || ''}
+              onChange={(value) => handleFiltersChange({ ...filters, search: value })}
             />
           ) : undefined
         }
@@ -199,6 +241,7 @@ export const MyEvidenceAssignmentsPage: React.FC = () => {
             loading={loading}
             onViewDetails={handleViewDetails}
             onUploadFiles={handleUploadFiles}
+            onStatusChange={handleTableStatusChange}
             onRequestExtension={handleRequestExtension}
             hasFilters={filters.estado !== 'todos' || filters.search !== ''}
             pagination={totalPages > 1 ? {
@@ -215,12 +258,10 @@ export const MyEvidenceAssignmentsPage: React.FC = () => {
         <EvidenceAssignmentDetail
           assignmentId={selectedAssignment.evidencia_asignacion_id}
           onClose={handleCloseDetail}
-          onStatusUpdate={handleStatusUpdate}
-          onUploadFiles={handleUploadFiles}
         />
       )}
 
-      {/* HU-016: Modal para solicitar ampliación */}
+      {/* Modal para solicitar ampliación */}
       {showExtensionModal && selectedAssignmentForExtension && (
         <CreateExtensionRequestModal
           isOpen={showExtensionModal}
@@ -230,6 +271,28 @@ export const MyEvidenceAssignmentsPage: React.FC = () => {
           fechaLimiteActual={selectedAssignmentForExtension.fecha_limite || undefined}
         />
       )}
+
+      {/* Modal de confirmación para revertir estado completado → en_progreso */}
+      <Modal
+        isOpen={revertConfirmState.open}
+        onClose={() => setRevertConfirmState({ open: false, assignment: null, loading: false })}
+        onConfirm={handleConfirmRevert}
+        title="Revertir estado de evidencia"
+        variant="info"
+        confirmLabel="Sí, revertir"
+        cancelLabel="Cancelar"
+        confirmLoading={revertConfirmState.loading}
+        showCancel
+        showConfirm
+        footerMeta="Esta acción puede volver a completarse posteriormente"
+      >
+        <p className="text-sm text-gris-una-2 leading-relaxed">
+          ¿Está seguro de que desea marcar esta evidencia como <strong>en progreso</strong>?
+        </p>
+        <p className="mt-2 text-sm text-gris-una-2">
+          La evidencia dejará de estar marcada como completada.
+        </p>
+      </Modal>
     </ScreenContainer>
   );
 };

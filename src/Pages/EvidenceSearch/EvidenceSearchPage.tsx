@@ -13,10 +13,9 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { PageHeader, ScreenContainer } from '@/Components/Ui/Index';
 import { SearchInput } from '@/Components/Ui/Forms/SearchInput';
 import { DropdownButton } from '@/Components/Ui/Buttons/DropdownButton';
-import { Tooltip, TooltipTrigger, TooltipContent } from '@/Components/Ui/Feedback/Tooltip';
 import type { DropdownOption } from '@/Components/Ui/Buttons/DropdownButton';
 import { SystemIcons } from '@/Components/Ui/Icons/SystemIcons';
-import { EvidenceSearchResultsTable, EvidenceSearchFilters, EvidenceDetailsModal } from './Components';
+import { EvidenceSearchResultsTable, EvidenceDetailsModal } from './Components';
 import { useToast } from '@/Context/ToastContext';
 import { getModuleInfo } from '@/Constants/ModuleInfo';
 import { evidenceSearchService, mapBackendToFrontend } from '@/Services/EvidenceSearchService';
@@ -25,8 +24,10 @@ import type {
   EvidenceSearchResult,
   ExportFormat
 } from '@/Types/EvidenceSearchTypes';
+import { filterEvidenceResults } from '@/Types/EvidenceSearchTypes';
 import { ICON_SIZES } from '@/Constants/Components';
 import { TABLE_PAGE_SIZE } from '@/Constants/TablePagination';
+import { TYPOGRAPHY } from '@/Constants/Typography';
 
 export const EvidenceSearchPage: React.FC = () => {
   const { showToast } = useToast();
@@ -41,8 +42,6 @@ export const EvidenceSearchPage: React.FC = () => {
   const searchTerm = searchState.searchTerm;
   const currentPage = searchState.currentPage;
   const currentFilters = searchState.currentFilters;
-  const [showFilters, setShowFilters] = useState(false);
-  
   // Paginación
   const itemsPerPage = TABLE_PAGE_SIZE.standard;
 
@@ -64,15 +63,7 @@ export const EvidenceSearchPage: React.FC = () => {
       return;
     }
 
-    const term = searchTerm.toLowerCase();
-    const filtered = filteredResults.filter(
-      (item) =>
-        item.descripcion.toLowerCase().includes(term) ||
-        item.criterio_nomenclatura.toLowerCase().includes(term) ||
-        item.criterio_descripcion.toLowerCase().includes(term) ||
-        item.responsables.some(r => r.nombre.toLowerCase().includes(term))
-    );
-
+    const filtered = filterEvidenceResults(filteredResults, searchTerm);
     setSearchState(prev => ({ ...prev, displayedResults: filtered }));
   }, [filteredResults, searchTerm]);
 
@@ -166,14 +157,14 @@ export const EvidenceSearchPage: React.FC = () => {
   const exportOptions: DropdownOption[] = [
     {
       id: 'pdf',
-      label: 'Exportar a PDF',
+      label: <span className={TYPOGRAPHY.button}>Exportar a PDF</span>,
       icon: <SystemIcons.modal.pdf className={`text-negro-una-2 ${ICON_SIZES.md}`} />,
       onClick: () => handleExport('pdf'),
       disabled: displayedResults.length === 0
     },
     {
       id: 'excel',
-      label: 'Exportar a Excel',
+      label: <span className={TYPOGRAPHY.button}>Exportar a Excel</span>,
       icon: <SystemIcons.modal.excel className={`text-negro-una-2 ${ICON_SIZES.md}`} />,
       onClick: () => handleExport('excel'),
       disabled: displayedResults.length === 0
@@ -186,63 +177,28 @@ export const EvidenceSearchPage: React.FC = () => {
         title={moduleInfo.title}
         description={moduleInfo.description}
         headerExtra={
-          <div className="flex-1 max-w-md">
-            <SearchInput
-              placeholder="Buscar por descripción, criterio o responsable..."
-              value={searchTerm}
-              onChange={handleSearchChange}
-              disabled={loading}
+          <div className="flex items-center gap-3">
+            <div className="flex-1 min-w-64">
+              <SearchInput
+                placeholder="Buscar por descripción, criterio o responsable..."
+                value={searchTerm}
+                onChange={handleSearchChange}
+                disabled={loading}
+              />
+            </div>
+            <DropdownButton
+              label={<span className={TYPOGRAPHY.button}>Exportar</span>}
+              icon={<SystemIcons.actions.export className={`text-negro-una-2 ${ICON_SIZES.button}`} />}
+              variant="outline"
+              options={exportOptions}
+              disabled={loading || displayedResults.length === 0}
             />
           </div>
         }
       />
-      {/* Header con botones de acción */}
-      <div className="mb-6 flex justify-end items-center gap-3">
-        <DropdownButton
-            label="Exportar"
-            icon={<SystemIcons.actions.export className={`text-negro-una-2 ${ICON_SIZES.button}`} />}
-            variant="outline"
-            options={exportOptions}
-            disabled={loading || displayedResults.length === 0}
-          />
-      {/** TODO: hacer un componente para este botón desplegable. Ya existe filterbutton pero es un dropdown, este hace aparecer multiples opciones singleselect 
-       * Revisar si evidenceSearchFilter es el que lo maneja (no recuerdo) y si sí, hacerlo componente
-      */}
-        <Tooltip>
-          <TooltipTrigger>
-            <button
-              type="button"
-              onClick={() => setShowFilters(!showFilters)}
-              className={
-                `p-2 rounded-corner border transition-colors
-                border-blanco-una-2 bg-blanco-una-2
-                hover:bg-gris-una/20
-                ${showFilters ? 'bg-azul-una/10' : ''}`
-              }
-            >
-              <div className="text-gris-una">
-                <SystemIcons.interface.filter size="md" color="currentColor" />
-              </div>
-            </button>
-          </TooltipTrigger>
-          <TooltipContent side="top">
-            {showFilters ? 'Ocultar filtros' : 'Mostrar filtros'}
-          </TooltipContent>
-        </Tooltip>
-      </div>
-
-      {/* Panel de filtros */}
-      {showFilters && (
-        <div>
-          <EvidenceSearchFilters
-            onApplyFilters={applyFilters}
-            isLoading={loading}
-          />
-        </div>
-      )}
 
       {/* Tabla de resultados */}
-      <div>
+      <div className="rounded-corner overflow-hidden">
         <EvidenceSearchResultsTable
           results={displayedResults}
           loading={loading}

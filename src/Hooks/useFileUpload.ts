@@ -1,6 +1,5 @@
 /**
  * useFileUpload - Hook para gestionar la selección y validación de archivos pre-subida
- * HU008 - Subida de Evidencias al Sistema
  */
 
 import { useState, useCallback } from 'react';

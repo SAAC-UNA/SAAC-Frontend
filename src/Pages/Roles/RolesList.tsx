@@ -6,31 +6,34 @@
  */
 
 import React, { useState, useEffect, lazy, Suspense } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { RolesTable } from './Components/RolesTable';
 import { PageHeader, ScreenContainer } from '@/Components/Ui/Index';
 import { SearchInput } from '@/Components/Ui/Forms/SearchInput';
 import { Button } from '@/Components/Ui/Buttons/Button';
-import { SystemIcons } from '@/Components/Ui/Icons/SystemIcons';
+import { RoleFormModal } from './Components/RoleFormModal';
 import { useRoles } from '@/Hooks/UseRoles';
 import { getContextualInfo } from '@/Constants/ModuleInfo';
 import type { Role } from '@/Services/RoleService';
-import { ICON_SIZES } from '@/Constants/Components';
 
 // Lazy load de modales
 const DeleteConfirmationModal = lazy(() => import('@/Components/Ui/Modals/DeleteConfirmationModal').then(m => ({ default: m.DeleteConfirmationModal })));
-const PermissionsModal = lazy(() => import('@/Components/Ui/Modals/PermissionsRoleModal').then(m => ({ default: m.PermissionsModal })));
+const PermissionsModal = lazy(() => import('@/Pages/Roles/Components/PermissionsRoleModal').then(m => ({ default: m.PermissionsModal })));
 const SuccessModal = lazy(() => import('@/Components/Ui/Modals/SuccessModal').then(m => ({ default: m.SuccessModal })));
 
 const RolesRepository: React.FC = () => {
   const { deleteRole, roles, loadRoles, isLoading, error } = useRoles();
-  const navigate = useNavigate();
   
   // Obtener información del módulo desde ModuleInfo
   const moduleInfo = getContextualInfo('roles', 'list');
   
   // Estado para búsqueda
   const [searchQuery, setSearchQuery] = useState('');
+
+  // Estado para el modal de creación/edición de rol
+  const [roleFormModalState, setRoleFormModalState] = useState<{
+    isOpen: boolean;
+    role: Role | null;
+  }>({ isOpen: false, role: null });
   
   // Estado para el modal de confirmación de eliminación
   const [deleteModalState, setDeleteModalState] = useState<{
@@ -50,7 +53,7 @@ const RolesRepository: React.FC = () => {
     role: null
   });
 
-  // Estado para el modal de éxito
+  // Estado para el modal de éxito (eliminación)
   const [successModalState, setSuccessModalState] = useState<{
     isOpen: boolean;
     roleName: string;
@@ -59,46 +62,39 @@ const RolesRepository: React.FC = () => {
     roleName: ''
   });
 
-  /**
-   * Maneja el cierre del modal de éxito y redirecciona
-   */
   const handleSuccessModalClose = () => {
     setSuccessModalState({ isOpen: false, roleName: '' });
-    navigate('/roles/listar');
   };
 
   const handleEditRole = (role: Role) => {
-    window.location.href = `/roles/editar/${role.id}`;
+    setRoleFormModalState({ isOpen: true, role });
+  };
+
+  const handleCreateRole = () => {
+    setRoleFormModalState({ isOpen: true, role: null });
+  };
+
+  const handleRoleFormSuccess = () => {
+    loadRoles();
+    setRoleFormModalState({ isOpen: false, role: null });
   };
 
   const handleViewPermissions = (role: Role) => {
-    setPermissionsModalState({
-      isOpen: true,
-      role
-    });
+    setPermissionsModalState({ isOpen: true, role });
   };
 
   const handleDeleteRole = (role: Role) => {
-    setDeleteModalState({
-      isOpen: true,
-      role
-    });
+    setDeleteModalState({ isOpen: true, role });
   };
 
   const confirmDeleteRole = async () => {
     if (deleteModalState.role) {
       try {
         const result = await deleteRole(deleteModalState.role.id);
-        
         if (result) {
           const roleName = deleteModalState.role.name;
           setDeleteModalState({ isOpen: false, role: null });
-          
-          // Mostrar modal de éxito
-          setSuccessModalState({
-            isOpen: true,
-            roleName: roleName
-          });
+          setSuccessModalState({ isOpen: true, roleName });
         }
       } catch (error) {
         console.error('Error al eliminar rol:', error);
@@ -112,10 +108,6 @@ const RolesRepository: React.FC = () => {
 
   const closePermissionsModal = () => {
     setPermissionsModalState({ isOpen: false, role: null });
-  };
-
-  const handleCreateRole = () => {
-    window.location.href = '/roles/crear';
   };
 
   // Cargar roles al montar el componente
@@ -142,7 +134,6 @@ const RolesRepository: React.FC = () => {
                 variant="secondary"
                 className="gap-2"
               >
-                <SystemIcons.actions.add className= {`${ICON_SIZES.button}`} />
                 Crear
               </Button>
             </div>
@@ -169,7 +160,7 @@ const RolesRepository: React.FC = () => {
             onConfirm={confirmDeleteRole}
             title="Confirmar Eliminación"
             itemName={deleteModalState.role?.name}
-            confirmLabel="Eliminar"
+            confirmLabel="Sí, eliminar"
             cancelLabel="Cancelar"
             variant="danger"
           />
@@ -187,7 +178,7 @@ const RolesRepository: React.FC = () => {
             />
           </Suspense>
         )}
-        {/* Modal de éxito */}
+        {/* Modal de éxito (eliminación) */}
         <Suspense fallback={null}>
           <SuccessModal
             isOpen={successModalState.isOpen}
@@ -197,6 +188,14 @@ const RolesRepository: React.FC = () => {
             autoClose={true}
           />
         </Suspense>
+
+        {/* Modal de creación / edición de rol */}
+        <RoleFormModal
+          isOpen={roleFormModalState.isOpen}
+          onClose={() => setRoleFormModalState({ isOpen: false, role: null })}
+          initialData={roleFormModalState.role ?? undefined}
+          onSuccess={handleRoleFormSuccess}
+        />
     </>
   );
 };

@@ -1,6 +1,5 @@
 import React from 'react';
 import { cn } from '@/Utils/ClassNames';
-import { useSidebar } from '@/context/SidebarContext';
 import { useBreakpoint } from '@/hooks/UseBreakpoint';
 import { TYPOGRAPHY } from '@/Constants/Typography';
 
@@ -11,7 +10,6 @@ interface PageHeaderProps {
   className?: string;
   children?: React.ReactNode; // Para botones de acción, breadcrumbs, etc.
   headerExtra?: React.ReactNode; // Para contenido adicional al lado del título
-  forceLeftAlign?: boolean; // Para forzar alineación a la izquierda
 }
 
 export const PageHeader: React.FC<PageHeaderProps> = ({
@@ -21,18 +19,12 @@ export const PageHeader: React.FC<PageHeaderProps> = ({
   className,
   children,
   headerExtra,
-  forceLeftAlign = false
 }) => {
-  const { isCollapsed } = useSidebar();
-  const { isDesktop, isMobile } = useBreakpoint();
-
-  // Determinar si debemos centrar el contenido
-  const shouldCenterContent = !forceLeftAlign && isCollapsed && isDesktop;
+  const { isMobile } = useBreakpoint();
 
   return (
     <div className={cn(
-      'mb-8 transition-all duration-300',
-      shouldCenterContent ? 'text-center w-full max-w-4xl' : 'text-left w-full',
+      'mb-8 w-full text-left transition-all duration-300',
       className
     )}>
       {/* Contenedor flex para título y headerExtra */}
@@ -80,7 +72,7 @@ export const PageHeader: React.FC<PageHeaderProps> = ({
       {children && (
         <div className={cn(
           'flex items-center gap-4',
-          shouldCenterContent ? 'justify-center' : 'justify-start',
+          'justify-start',
           isMobile ? 'flex-col' : 'flex-row'
         )}>
           {children}

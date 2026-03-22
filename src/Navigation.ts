@@ -107,7 +107,7 @@ export const getNavigationItems = (userRoles?: string | string[]): NavItem[] => 
       },
       {
         id: 'busquedaEvidencias',
-        label: 'Búsqueda de Evidencias',
+        label: 'Búsqueda de Criterios',
         icon: searchEvidenceIcon,
         href: '/evidencias/busqueda-avanzada',
         isActive: false,

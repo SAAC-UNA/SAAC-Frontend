@@ -133,18 +133,12 @@ export const RolesTable: React.FC<RolesTableProps> = ({
             accessor: 'permissions',
             align: 'center',
             render: (_: unknown, role: Role) => (
-                <StatusBadge
-                    label={`${Array.isArray(role.permissions) ? role.permissions.length : 0} permisos`}
-                    colorClasses="text-negro-una-2 bg-gris-light"
-                />
-            )
-        },
-        {
-            key: 'status',
-            header: 'Estado',
-            align: 'center',
-            render: (_: unknown) => (
-                <StatusBadge label="Activo (no hay sección de estado)" colorClasses="text-verde-dark bg-verde-ring" />
+                <div className="flex justify-center">
+                    <StatusBadge
+                        label={`${Array.isArray(role.permissions) ? role.permissions.length : 0} permisos`}
+                        colorClasses="text-negro-una-2 bg-gris-light"
+                    />
+                </div>
             )
         },
         {

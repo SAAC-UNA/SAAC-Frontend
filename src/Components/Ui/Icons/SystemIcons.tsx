@@ -114,7 +114,28 @@ export const SystemIcons = {
         <path fillRule="evenodd" d="M7.345 4.017a42.253 42.253 0 0 1 9.31 0c1.713.192 3.095 1.541 3.296 3.26a40.66 40.66 0 0 1 0 9.445 3.734 3.734 0 0 1-3.296 3.26 42.123 42.123 0 0 1-9.31 0 3.734 3.734 0 0 1-3.296-3.26 40.652 40.652 0 0 1 0-9.444 3.734 3.734 0 0 1 3.295-3.26ZM12 7.007a.75.75 0 0 1 .75.75v3.493h3.493a.75.75 0 1 1 0 1.5H12.75v3.493a.75.75 0 0 1-1.5 0V12.75H7.757a.75.75 0 0 1 0-1.5h3.493V7.757a.75.75 0 0 1 .75-.75Z" clipRule="evenodd" />
       </svg>
     ),
-
+/*
+    addSquare: ({ className, size, color }: IconProps) => (
+      <svg
+        className={`${getSizeClasses(size)} ${className || ''}`}
+        viewBox="0 0 24 24"
+        fill={color || "currentColor"}
+      >
+        <g clipPath="url(#clip0_4418_4944)">
+          <path
+            opacity={0.4}
+            d="M16.19 2H7.81C4.17 2 2 4.17 2 7.81V16.18C2 19.83 4.17 22 7.81 22H16.18C19.82 22 21.99 19.83 21.99 16.19V7.81C22 4.17 19.83 2 16.19 2Z"
+          />
+          <path d="M16 11.25H12.75V8C12.75 7.59 12.41 7.25 12 7.25C11.59 7.25 11.25 7.59 11.25 8V11.25H8C7.59 11.25 7.25 11.59 7.25 12C7.25 12.41 7.59 12.75 8 12.75H11.25V16C11.25 16.41 11.59 16.75 12 16.75C12.41 16.75 12.75 16.41 12.75 16V12.75H16C16.41 12.75 16.75 12.41 16.75 12C16.75 11.59 16.41 11.25 16 11.25Z" />
+        </g>
+        <defs>
+          <clipPath id="clip0_4418_4944">
+            <rect width="24" height="24" fill="white" />
+          </clipPath>
+        </defs>
+      </svg>
+    ),
+*/
     save: ({ className, size, color = 'var(--color-verde)' }: IconProps) => (
       <svg
         className={`${getSizeClasses(size)} ${className || ''}`}
@@ -496,6 +517,25 @@ export const SystemIcons = {
       </svg>
     ),
 
+    /** Ciclo/reinicio - Para marcar como en progreso */
+    inProgress: ({ className, size, color }: IconProps) => (
+      <svg
+        className={`${getSizeClasses(size)} ${className || ''}`}
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke={color || "currentColor"}
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth="2"
+        xmlns="http://www.w3.org/2000/svg"
+      >
+        <path d="M12 7.5V12" />
+        <path d="M15.9 14.25 12 12" />
+        <path d="M6.731 9.348h-3.75v-3.75" />
+        <path d="M6.169 17.831a8.25 8.25 0 1 0 0-11.662L2.98 9.347" />
+      </svg>
+    ),
+
     /** Chevron down - Para dropdowns y secciones colapsables */
     chevronDown: ({ className, size, color }: IconProps) => (
       <svg
@@ -578,11 +618,11 @@ export const SystemIcons = {
     // ===== ICONOS ESPECÍFICOS PARA MODALES =====
     
     /** Círculo de información - Para mensajes informativos */
-    informationCircle: ({ className, size, color = 'var(--color-info)' }: IconProps) => (
+    informationCircle: ({ className, size }: IconProps) => (
       <svg
         className={`${getSizeClasses(size)} ${className || ''}`}
         viewBox="0 0 24 24"
-        fill={color}
+        fill="currentColor"
       >
         <path
           fillRule="evenodd"
@@ -683,9 +723,15 @@ export const SystemIcons = {
         <svg
           className={`${getSizeClasses(size)} ${className || ''}`}
           viewBox="0 0 24 24"
-          fill={color || "currentColor"}
+          fill="none"
+          stroke={color || "currentColor"}
+          strokeWidth={1.5}
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          xmlns="http://www.w3.org/2000/svg"
         >
-          <path fillRule="evenodd" d="M14.03 7.47a.75.75 0 0 1 0 1.06L10.56 12l3.47 3.47a.75.75 0 1 1-1.06 1.06l-4-4a.75.75 0 0 1 0-1.06l4-4a.75.75 0 0 1 1.06 0Z" clipRule="evenodd" />
+          <path d="M20.25 12H3.75" />
+          <path d="M10.5 5.25 3.75 12l6.75 6.75" />
         </svg>
       ),
 
@@ -1033,6 +1079,7 @@ export const getIconByName = (iconName: string, size: IconProps['size'] = 'md'):
     'collapse': () => SystemIcons.interface.collapse({ size }),
     'calendar': () => SystemIcons.interface.calendar({ size }),
     'chevron-down': () => SystemIcons.interface.chevronDown({ size }),
+    'chevron-right': () => SystemIcons.interface.chevronRight({ size }),
     'cloud': () => SystemIcons.interface.cloud({ size }),
     'upload-arrow': () => SystemIcons.interface.uploadArrow({ size }),
     'clock': () => SystemIcons.interface.clock({ size }),

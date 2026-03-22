@@ -586,14 +586,15 @@ const FinalReports: React.FC = () => {
         title="Generar Enlaces Públicos"
         size="md"
         variant="warning"
-        message="¿Está seguro que desea generar enlaces públicos para TODAS las evidencias de los criterios aprobados? Esta acción puede tardar un momento."
         showConfirm={true}
         confirmLabel="Generar"
         onConfirm={confirmGenerateAllLinks}
         confirmLoading={isGeneratingLinks}
         showCancel={true}
         cancelLabel="Cancelar"
-      />
+      >
+        ¿Está seguro que desea generar enlaces públicos para TODAS las evidencias de los criterios aprobados? Esta acción puede tardar un momento.
+      </Modal>
       
       {/* Modal para gestionar enlaces públicos */}
       <PublicLinkModal

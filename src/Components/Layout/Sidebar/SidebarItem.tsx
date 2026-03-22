@@ -1,12 +1,12 @@
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useContext, useEffect, useRef, useState } from 'react';
+import { motion } from 'framer-motion';
 import type { NavItem } from '@/Types/CommonTypes';
 import { cn } from '@/Utils/ClassNames';
 import { useNavigationItems } from '@/Hooks/UseNavigation';
-import { Tooltip, TooltipContent, TooltipTrigger } from '@/Components/Ui/Feedback/Tooltip';
-import { SidebarButton } from './SidebarButton';
-import { SidebarIcon } from './SidebarIcon';
-import { SidebarLabel } from './SidebarLabel';
-import { SidebarChevron } from './SidebarChevron';
+import { getIconByName } from '@/Components/Ui/Icons/SystemIcons';
+import { SidebarNavContext } from './SidebarNavContext';
+import { SIDEBAR_ITEM } from '@/Constants/Components';
+import { TYPOGRAPHY } from '@/Constants/Typography';
 
 interface SidebarItemProps {
   item: NavItem;
@@ -14,34 +14,27 @@ interface SidebarItemProps {
   isCollapsed?: boolean;
 }
 
-/**
- * SidebarItem — compositor
- * Responsabilidad: lógica de estado (activo/expandido) y composición de sub-componentes.
- * No contiene estilos visuales directos — eso lo delega a cada hijo.
- *
- *  SidebarItem
- *  └─ SidebarButton     (forma, altura fija, colores, curvas decorativas)
- *     ├─ <span>          (contenedor ícono + label, siempre juntos)
- *     │  ├─ SidebarIcon  (tamaño del ícono, escala en hover)
- *     │  └─ SidebarLabel (tipografía, truncado)
- *     └─ SidebarChevron  (flecha animada, solo en expandibles)
- */
 const SidebarItemComponent: React.FC<SidebarItemProps> = ({
   item,
   isSubItem = false,
   isCollapsed = false,
 }) => {
-  const { handleItemClick, isItemActive, isItemExpanded } = useNavigationItems();
+  const { handleItemClick, isItemActive } = useNavigationItems();
+  const { setHoveredItem, selectedItemId } = useContext(SidebarNavContext);
+  const triggerRef = useRef<HTMLDivElement>(null);
 
-  const isActive   = isItemActive(item.id);
-  const isExpanded = isItemExpanded(item.id);
+  const isActive = isItemActive(item.id) ||
+    Boolean(item.isExpandable && item.children?.some(child => isItemActive(child.id)));
+
+  // Visualmente activo cuando la ruta coincide O cuando su panel está abierto
+  const isExpandable = Boolean(item.isExpandable && item.children?.length);
+  const isFlyoutOpen = isExpandable && selectedItemId === item.id;
+  const isVisuallyActive = isActive || isFlyoutOpen;
 
   /**
-   * layoutCollapsed: versión retrasada de isCollapsed para el layout visual del botón.
-   * - Al colapsar: espera 300ms (duración de la animación del sidebar) antes de cambiar
-   *   el padding/gap/márgenes, así el contenido queda clippeado por overflow:hidden en vez
-   *   de encogerse antes que el contenedor.
-   * - Al expandir: aplica inmediatamente para que el botón se expanda junto con el sidebar.
+   * layoutCollapsed: versión retrasada de isCollapsed.
+   * Al colapsar espera a que el sidebar termine su animación antes de cambiar el padding.
+   * Al expandir aplica inmediatamente.
    */
   const [layoutCollapsed, setLayoutCollapsed] = useState(() => isCollapsed);
   useEffect(() => {
@@ -50,71 +43,61 @@ const SidebarItemComponent: React.FC<SidebarItemProps> = ({
   }, [isCollapsed]);
 
   const handleClick = useCallback(() => {
-    if (item.onClick) {
-      item.onClick();
-      return;
-    }
-    handleItemClick(item.id, item.href, item.isExpandable);
-  }, [item.onClick, item.id, item.href, item.isExpandable, handleItemClick]);
+    if (item.onClick) { item.onClick(); return; }
+    if (!item.isExpandable) handleItemClick(item.id, item.href, false);
+  }, [item, handleItemClick]);
 
-  const buttonContent = (
-    // ml-3 para padres, ml-6 para hijos; sin margen cuando colapsado (modo ícono)
-    <div className={cn('relative', !layoutCollapsed && (isSubItem ? 'ml-3' : 'ml-1'), layoutCollapsed && 'mx-1')}>
-      <SidebarButton isActive={isActive} isCollapsed={layoutCollapsed} onClick={handleClick}>
-
-        {/* Ícono + Label siempre juntos — gap se elimina cuando colapsado para no inflar el ancho */}
-        <span className={cn('flex items-center flex-1 min-w-0 h-full relative z-10 transition-transform duration-300 ease-out', !layoutCollapsed && 'group-hover/btn:translate-x-1.5', layoutCollapsed ? 'gap-1' : 'gap-3')}>
-          {item.icon && (
-            <SidebarIcon icon={item.icon} isActive={isActive} />
-          )}
-          <SidebarLabel label={item.label} isCollapsed={isCollapsed} isActive={isActive} />
-        </span>
-
-        {/* Flecha solo en expandibles: también en z-[1] para estar sobre el fondo */}
-        {item.isExpandable && (
-          <SidebarChevron isExpanded={isExpanded} isActive={isActive} isCollapsed={isCollapsed} />
-        )}
-
-      </SidebarButton>
-    </div>
-  );
-
-  // Tooltip cuando el sidebar está colapsado
-  const button = isCollapsed && !isSubItem ? (
-    <Tooltip>
-      <TooltipTrigger asChild>
-        {buttonContent}
-      </TooltipTrigger>
-      <TooltipContent side="right" align="center">
-        {item.label}
-      </TooltipContent>
-    </Tooltip>
-  ) : buttonContent;
+  const iconName = item.icon?.replace('system-icon:', '');
 
   return (
     <div className={cn(isSubItem && isCollapsed && 'hidden')}>
-      {button}
+      <div
+        ref={triggerRef}
+        className={cn('relative', !layoutCollapsed && isSubItem && 'ml-3')}
+        onMouseEnter={() => isExpandable && setHoveredItem(item, triggerRef.current)}
+        onMouseLeave={() => isExpandable && setHoveredItem(null)}
+      >
+        <button
+          onClick={handleClick}
+          className={cn(
+            'group/btn flex items-center text-left rounded-lg font-medium cursor-pointer',
+            'transition-colors duration-200',
+            layoutCollapsed
+              ? 'w-[var(--sidebar-width-icon)] h-sidebar-item px-2 justify-center'
+              : `w-full ${SIDEBAR_ITEM.button} gap-1 justify-start`,
+            isVisuallyActive
+              ? 'bg-negro-una/20 text-blanco-una'
+              : 'text-blanco-una-2 hover:bg-negro-una/20 hover:text-blanco-una',
+          )}
+        >
+          {iconName && (
+            <span className={cn('flex-shrink-0 flex items-center justify-center', SIDEBAR_ITEM.icon)}>
+              {getIconByName(iconName, 'md')}
+            </span>
+          )}
 
-      {/* Submenu */}
-      {item.isExpandable && item.children && !isCollapsed && (
-        <div className={cn(
-          'transition-all duration-300 ease-in-out',
-          isExpanded
-            ? 'max-h-96 opacity-100 overflow-visible'
-            : 'max-h-0 opacity-0 overflow-hidden',
-        )}>
-          <div className="py-2 space-y-1">
-            {item.children.map(child => (
-              <SidebarItem
-                key={child.id}
-                item={child}
-                isSubItem
-                isCollapsed={isCollapsed}
-              />
-            ))}
-          </div>
-        </div>
-      )}
+          <motion.span
+            animate={{
+              display: layoutCollapsed ? 'none' : 'inline-block',
+              opacity: layoutCollapsed ? 0 : 1,
+            }}
+            transition={{ duration: 0.2, ease: 'easeInOut' }}
+            className={cn('flex-1 truncate whitespace-pre', TYPOGRAPHY.sidebarItem)}
+          >
+            {item.label}
+          </motion.span>
+
+          {isExpandable && !layoutCollapsed && (
+            <motion.span
+              animate={{ rotate: isFlyoutOpen ? 0 : 90 }}
+              transition={{ duration: 0.2, ease: 'easeInOut' }}
+              className="flex-shrink-0 ml-auto w-4 h-4 opacity-60 flex items-center justify-center"
+            >
+              {getIconByName('chevron-right', 'sm')}
+            </motion.span>
+          )}
+        </button>
+      </div>
     </div>
   );
 };

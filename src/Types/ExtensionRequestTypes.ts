@@ -26,6 +26,11 @@ export interface ExtensionRequest {
     evidencia_id: number;
     estado: string;
     fecha_limite: string;
+    evidencia?: {
+      evidencia_id: number;
+      nomenclatura: string;
+      descripcion: string;
+    };
   };
 
   usuario?: {
@@ -99,4 +104,46 @@ export interface ExtensionRequestFormData {
 // Estado del formulario para aprobar/rechazar
 export interface ReviewFormData {
   justificacion: string;
+}
+
+/**
+ * Formatea una fecha ISO a dd/mm/yyyy (estándar del proyecto)
+ */
+export function formatExtensionDate(isoDate: string): string {
+  return new Date(isoDate).toLocaleDateString('es-CR', {
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+  });
+}
+
+/**
+ * Filtra solicitudes de ampliación por estado y término de búsqueda.
+ * Cubre todos los campos visibles en la tabla.
+ */
+export function filterExtensionRequests(
+  requests: ExtensionRequest[],
+  searchQuery: string,
+  filterEstado: ExtensionRequestStatus | 'todos'
+): ExtensionRequest[] {
+  let filtered = requests;
+
+  if (filterEstado !== 'todos') {
+    filtered = filtered.filter(req => req.estado === filterEstado);
+  }
+
+  if (searchQuery.trim()) {
+    const q = searchQuery.toLowerCase();
+    filtered = filtered.filter(req =>
+      req.motivo.toLowerCase().includes(q) ||
+      req.solicitud_ampliacion_id.toString().includes(q) ||
+      req.usuario?.nombre?.toLowerCase().includes(q) ||
+      req.usuario?.email?.toLowerCase().includes(q) ||
+      req.estado.toLowerCase().includes(q) ||
+      formatExtensionDate(req.fecha_sugerida).includes(q) ||
+      formatExtensionDate(req.created_at).includes(q)
+    );
+  }
+
+  return filtered;
 }

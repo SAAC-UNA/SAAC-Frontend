@@ -1,4 +1,4 @@
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { Modal } from './Modal';
 import React from 'react';
 
@@ -26,23 +26,46 @@ describe('Modal', () => {
     expect(defaultProps.onClose).toHaveBeenCalled();
   });
 
-  it('renderiza el mensaje y el icono en modo avanzado', () => {
-    render(<Modal {...defaultProps} variant="danger" message="¿Está seguro?" />);
+  it('renderiza el hero card con variante y el ícono SVG', () => {
+    render(<Modal {...defaultProps} variant="danger">¿Está seguro?</Modal>);
     expect(screen.getByText('¿Está seguro?')).toBeInTheDocument();
-    // Verificar que el contenedor del icono existe (el div con clases de icono)
-    const container = screen.getByText('¿Está seguro?').closest('.sm\\:flex');
-    expect(container).toBeInTheDocument();
-    // Verificar que hay un SVG en el documento (el icono)
+    // Verificar que hay SVGs en el documento (ícono en hero card + botón cerrar)
     const svgs = document.querySelectorAll('svg');
     expect(svgs.length).toBeGreaterThan(0);
   });
 
   it('llama onConfirm al hacer click en el botón de confirmar', () => {
     const onConfirm = jest.fn();
-    render(<Modal {...defaultProps} variant="danger" message="¿Está seguro?" onConfirm={onConfirm} />);
+    render(<Modal {...defaultProps} variant="danger" onConfirm={onConfirm}>¿Está seguro?</Modal>);
     const confirmBtn = screen.getByText('Confirmar');
     fireEvent.click(confirmBtn);
     expect(onConfirm).toHaveBeenCalled();
+  });
+
+  it('bloquea la confirmación mientras espera una operación asíncrona', async () => {
+    let resolveConfirm: (() => void) | undefined;
+    const onConfirm = jest.fn(
+      () => new Promise<void>((resolve) => {
+        resolveConfirm = resolve;
+      })
+    );
+
+    render(<Modal {...defaultProps} variant="danger" onConfirm={onConfirm}>¿Está seguro?</Modal>);
+
+    const confirmBtn = screen.getByRole('button', { name: 'Confirmar' });
+    fireEvent.click(confirmBtn);
+
+    await waitFor(() => {
+      expect(screen.getByRole('status', { name: 'Procesando' })).toBeInTheDocument();
+    });
+
+    const processingButton = screen.getAllByRole('button').find((button) => button.getAttribute('aria-busy') === 'true');
+    expect(processingButton).toBeDisabled();
+
+    fireEvent.click(processingButton!);
+    expect(onConfirm).toHaveBeenCalledTimes(1);
+
+    resolveConfirm?.();
   });
 
   it('no renderiza nada si isOpen es false', () => {

@@ -424,14 +424,13 @@ export const CreateRoleForm: React.FC<CreateRoleFormProps> = ({
                     <Button
                       type="submit"
                       variant="primary"
+                      isLoading={isLoading}
+                      loadingText={isEditing ? 'Guardando' : 'Creando'}
                       disabled={isLoading || !hasChanges}
                       standardWidth={true}
                       size="sm"
                     >
-                      {isLoading 
-                        ? (isEditing ? 'Guardando...' : 'Creando...') 
-                        : (isEditing ? 'Guardar' : 'Crear')
-                      }
+                      {isEditing ? 'Guardar' : 'Crear'}
                     </Button>
                   </div>
                 )}
@@ -510,14 +509,13 @@ export const CreateRoleForm: React.FC<CreateRoleFormProps> = ({
                 <Button
                   type="submit"
                   variant="primary"
+                  isLoading={isLoading}
+                  loadingText={isEditing ? 'Guardando' : 'Creando'}
                   disabled={isLoading || !hasChanges}
                   standardWidth={true}
                   size="sm"
                 >
-                  {isLoading 
-                    ? (isEditing ? 'Guardando...' : 'Creando...') 
-                    : (isEditing ? 'Guardar' : 'Crear')
-                  }
+                  {isEditing ? 'Guardar' : 'Crear'}
                 </Button>
             </div>
           )}

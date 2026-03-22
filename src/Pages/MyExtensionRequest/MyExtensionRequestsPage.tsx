@@ -11,8 +11,8 @@ import { extensionRequestService } from '@/Services/ExtensionRequestService';
 import { useToast } from '@/Context/ToastContext';
 import { getContextualInfo } from '@/Constants/ModuleInfo';
 import { TABLE_PAGE_SIZE } from '@/Constants/TablePagination';
-import { ExtensionRequestsTable } from './Components/ExtensionRequestsTable';
-import { ExtensionRequestDetailsModal } from './Components/ExtensionRequestDetailsModal';
+import { ExtensionRequestsTable } from '../MyExtensionRequest/Components/ExtensionRequestsTable';
+import { ExtensionRequestDetailsModal } from '../MyExtensionRequest/Components/ExtensionRequestDetailsModal';
 import type { 
   ExtensionRequest, 
   ExtensionRequestStatus 

@@ -25,12 +25,21 @@ interface EditUserFormProps {
   user: User;
   onSubmit?: (userData: { userId: number; roleName: string; userName: string }) => void;
   onCancel?: () => void;
+  /** Ref para que el padre dispare el submit externamente */
+  submitRef?: React.MutableRefObject<(() => void) | null>;
+  /** Ocultar los botones internos (cuando se usa dentro de un modal) */
+  hideButtons?: boolean;
+  /** Notifica al padre si hay cambios pendientes */
+  onHasChangesChange?: (hasChanges: boolean) => void;
 }
 
 export const EditUserForm: React.FC<EditUserFormProps> = ({
   user,
   onSubmit,
-  onCancel
+  onCancel,
+  submitRef,
+  hideButtons = false,
+  onHasChangesChange,
 }) => {
   
   // Estados para roles
@@ -65,7 +74,15 @@ export const EditUserForm: React.FC<EditUserFormProps> = ({
   useEffect(() => {
     const roleHasChanged = selectedRole !== '' && selectedRole !== user.role;
     setFormState(prev => ({...prev, hasChanges: roleHasChanged}));
+    onHasChangesChange?.(roleHasChanged);
   }, [selectedRole, user.role]);
+
+  // Exponer handleSubmit via ref para que el padre lo dispare
+  useEffect(() => {
+    if (submitRef) {
+      submitRef.current = () => handleSubmit();
+    }
+  });
 
   /**
    * Cargar roles disponibles
@@ -189,7 +206,7 @@ export const EditUserForm: React.FC<EditUserFormProps> = ({
               {previewPermissions.length > 0 && (
                 <div>
                   <CustomSelect
-                    label={`Permisos que tendrá el usuario (${previewPermissions.length} permisos)`}
+                    label={`Permisos del rol (${previewPermissions.length})`}
                     options={previewPermissions.map((permission, index) => ({
                       value: index.toString(),
                       label: typeof permission === 'string' ? permission : permission.label,
@@ -198,6 +215,9 @@ export const EditUserForm: React.FC<EditUserFormProps> = ({
                     readonly={true}
                     className="w-full"
                   />
+                  <p className={`mt-2 ${TYPOGRAPHY.form.helper} text-warning`}>
+                    Los permisos son propios del rol y no pueden modificarse desde aquí.
+                  </p>
                 </div>
               )}
             </div>
@@ -242,34 +262,33 @@ export const EditUserForm: React.FC<EditUserFormProps> = ({
         </div>
       </div>
 
-      {/* Línea divisoria inferior */}
-      <hr className="border-0 border-t border-gris-light mx-6 mt-6 mb-6" />
-
       {/* Botones de acción */}
-      <div className="px-4 sm:px-5 lg:px-6 pb-4 sm:pb-5 lg:pb-6">
-        <div className="flex justify-end gap-4">
-          <Button
-            type="button"
-            variant="secondary"
-            onClick={onCancel}
-            disabled={isSaving}
-            standardWidth={true}
-            size="sm"
-          >
-            Cancelar
-          </Button>
-          <Button
-            type="button"
-            variant="primary"
-            onClick={handleSubmit}
-            disabled={isSaving || !selectedRole || !hasChanges}
-            standardWidth={true}
-            size="sm"
-          >
-            {isSaving ? 'Guardando...' : 'Guardar'}
-          </Button>
+      {!hideButtons && (
+        <div className="px-4 sm:px-5 lg:px-6 pb-4 sm:pb-5 lg:pb-6">
+          <div className="flex justify-end gap-4">
+            <Button
+              type="button"
+              variant="secondary"
+              onClick={onCancel}
+              disabled={isSaving}
+              standardWidth={true}
+              size="sm"
+            >
+              Cancelar
+            </Button>
+            <Button
+              type="button"
+              variant="primary"
+              onClick={handleSubmit}
+              disabled={isSaving || !selectedRole || !hasChanges}
+              standardWidth={true}
+              size="sm"
+            >
+              {isSaving ? 'Guardando...' : 'Guardar'}
+            </Button>
+          </div>
         </div>
-      </div>
+      )}
     </div>
   );
 };

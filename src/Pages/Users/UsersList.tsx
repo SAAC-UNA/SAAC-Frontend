@@ -6,15 +6,15 @@
  */
 
 import React, { useState, useEffect, useCallback, lazy, Suspense } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { UsersTable } from './Components/UsersTable';
 import { PageHeader, ScreenContainer } from '@/Components/Ui/Index';
 import { SearchInput } from '@/Components/Ui/Forms/SearchInput';
+import { UserEditModal } from './Components/UserEditModal';
 
 // Lazy load de modales para mejor rendimiento
 const UserDetailsModal = lazy(() => import('./Components/UserDetailsModal').then(m => ({ default: m.UserDetailsModal })));
-const DeleteConfirmationModal = lazy(() => import('@/Components/Ui/Modals/DeleteConfirmationModal').then(m => ({ default: m.DeleteConfirmationModal })));
 const SuccessModal = lazy(() => import('@/Components/Ui/Modals/SuccessModal').then(m => ({ default: m.SuccessModal })));
+import { Modal } from '@/Components/Ui/Modals/Modal';
 import { getContextualInfo } from '@/Constants/ModuleInfo';
 import { useUsers } from '@/Hooks/UseUsers';
 import type { User } from '@/Services/UserService';
@@ -22,7 +22,6 @@ import type { User } from '@/Services/UserService';
 const UsersRepository: React.FC = () => {
   // Obtener información del módulo desde ModuleInfo
   const moduleInfo = getContextualInfo('users', 'list');
-  const navigate = useNavigate();
 
   // Estado para búsqueda
   const [searchQuery, setSearchQuery] = useState('');
@@ -59,9 +58,15 @@ const UsersRepository: React.FC = () => {
     action: 'activate'
   });
 
+  // Estado para el modal de edición de usuario
+  const [userEditModalState, setUserEditModalState] = useState<{
+    isOpen: boolean;
+    user: User | null;
+  }>({ isOpen: false, user: null });
+
   const handleEditUser = useCallback((user: User) => {
-    navigate(`/usuarios/editar/${user.id}`);
-  }, [navigate]);
+    setUserEditModalState({ isOpen: true, user });
+  }, []);
 
   const handleViewUser = useCallback((user: User) => {
     setUserDetailsModalState({
@@ -164,47 +169,49 @@ const UsersRepository: React.FC = () => {
 
         {/* Modal de confirmación para activación */}
         {stateChangeModalState.user?.status === 'inactive' && (
-          <Suspense fallback={null}>
-            <DeleteConfirmationModal
+          <Modal
             isOpen={stateChangeModalState.isOpen}
             onClose={closeStateChangeModal}
             onConfirm={confirmStateChange}
             title="Confirmar activación de usuario"
-            message={
-              <>
-                ¿Está seguro de que desea activar al usuario <strong>"{stateChangeModalState.user?.name}"</strong>?
-              </>
-            }
-            confirmLabel="Activar"
+            variant="success"
+            confirmLabel="Sí, activar"
             cancelLabel="Cancelar"
-            variant="warning"
-            isLoading={isLoading}
-            description="Al activar este usuario, podrá acceder al sistema con sus credenciales."
-          />
-          </Suspense>
+            confirmLoading={isLoading}
+            showCancel
+            showConfirm
+          >
+            <p className="text-sm text-gris-una-2 leading-relaxed">
+              ¿Está seguro de que desea activar al usuario <strong>"{stateChangeModalState.user?.name}"</strong>?
+            </p>
+            <p className="mt-2 text-sm text-gris-una-2">
+              Al activar este usuario, podrá acceder al sistema con sus credenciales.
+            </p>
+          </Modal>
         )}
 
         {/* Modal de confirmación para inactivación */}
         {stateChangeModalState.user?.status === 'active' && (
-          <Suspense fallback={null}>
-            <DeleteConfirmationModal
+          <Modal
             isOpen={stateChangeModalState.isOpen}
             onClose={closeStateChangeModal}
             onConfirm={confirmStateChange}
             title="Confirmar inactivación de usuario"
-            message={
-              <>
-                ¿Está seguro de que desea inactivar al usuario <strong>"{stateChangeModalState.user?.name}"</strong>?
-              </>
-            }
-            confirmLabel="Inactivar"
+            variant="info"
+            confirmLabel="Sí, inactivar"
             cancelLabel="Cancelar"
-            variant="danger"
-            hideDefaultDangerMessage={true}
-            isLoading={isLoading}
-            description="Al inactivar este usuario, se revocará su acceso al sistema. Esta acción puede ser revertida en el futuro."
-          />
-          </Suspense>
+            confirmLoading={isLoading}
+            showCancel
+            showConfirm
+            footerMeta="Esta acción puede ser revertida en el futuro"
+          >
+            <p className="text-sm text-gris-una-2 leading-relaxed">
+              ¿Está seguro de que desea inactivar al usuario <strong>"{stateChangeModalState.user?.name}"</strong>?
+            </p>
+            <p className="mt-2 text-sm text-gris-una-2">
+              Al inactivar este usuario, se revocará su acceso al sistema.
+            </p>
+          </Modal>
         )}
 
         {/* Modal de éxito */}
@@ -220,6 +227,14 @@ const UsersRepository: React.FC = () => {
             }
           />
         </Suspense>
+
+        {/* Modal de edición de usuario */}
+        <UserEditModal
+          isOpen={userEditModalState.isOpen}
+          onClose={() => setUserEditModalState({ isOpen: false, user: null })}
+          user={userEditModalState.user}
+          onSuccess={() => { loadUsers(); setUserEditModalState({ isOpen: false, user: null }); }}
+        />
         </ScreenContainer>
   );
 };

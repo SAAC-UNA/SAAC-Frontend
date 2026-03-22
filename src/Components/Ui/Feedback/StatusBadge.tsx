@@ -7,10 +7,8 @@ interface StatusBadgeProps {
     badgeClassName?: string;
 }
 
-export const StatusBadge: React.FC<StatusBadgeProps> = ({ label, colorClasses, badgeClassName = '' }) => (
-    <div className="w-max mx-auto">
-        <div className={`relative grid items-center px-2 py-1 font-sans font-bold rounded-corner select-none whitespace-nowrap ${TYPOGRAPHY.badge} ${colorClasses} ${badgeClassName}`}>
-            <span>{label}</span>
-        </div>
+export const StatusBadge: React.FC<StatusBadgeProps> = ({ label, colorClasses }) => (
+    <div className={`relative grid items-center w-max px-2 py-1 font-sans font-bold rounded-corner select-none whitespace-nowrap ${TYPOGRAPHY.badge} ${colorClasses}`}>
+        <span>{label}</span>
     </div>
 );

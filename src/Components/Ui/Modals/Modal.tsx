@@ -1,149 +1,154 @@
-import React, { useEffect, useRef } from 'react';
-import { Dialog, DialogBackdrop, DialogPanel, DialogTitle } from '@headlessui/react';
+import React, { useEffect, useRef, useState } from 'react';
+import { Dialog, DialogBackdrop, DialogPanel } from '@headlessui/react';
 import { SystemIcons } from '@/Components/Ui/Icons/SystemIcons';
 import { cn } from '@/Utils/ClassNames';
 import { Button } from '../Buttons/Button';
+import { TYPOGRAPHY } from '@/Constants/Typography';
+import { ICON_SIZES } from '@/Constants/Components';
 
-/**
- * Props para el componente Modal Unificado
- * Combina funcionalidad básica y avanzada en un solo componente
- */
-interface UnifiedModalProps {
-  /** Controla si el modal está visible */
+export type ModalVariant = 'info' | 'success' | 'danger' | 'warning' | 'neutral';
+
+interface ModalProps {
   isOpen: boolean;
-  
-  /** Función para cerrar el modal */
   onClose: () => void;
-  
-  /** Título del modal */
-  title: string;
-  
-  /** Tamaño del modal */
-  size?: 'sm' | 'md' | 'lg' | 'xl';
-  
-  /** Si se puede cerrar haciendo clic fuera del modal o con Escape */
-  closable?: boolean;
-  
-  /** Clases CSS adicionales para el contenedor */
-  className?: string;
 
-  /** Clases CSS adicionales para el contenido */
-  contentClassName?: string;
-  
-  // ===== MODO BÁSICO (como Modal.tsx) =====
-  /** Contenido personalizado del modal */
-  children?: React.ReactNode;
-  
-  /** Botones personalizados del footer */
+  // ── Hero card ──
+  /** Título visible en la tarjeta de color */
+  title: string;
+  /** Subtítulo/descripción debajo del título */
+  subtitle?: string;
+  /** Badge de estado en la parte inferior de la tarjeta (ej: "Activo", "Pendiente") */
+  heroBadge?: string;
+  /** Nodo personalizado para el ícono/avatar de la tarjeta (si no se pasa, se usa el ícono por variante) */
+  heroIcon?: React.ReactNode;
+
+  // ── Layout ──
+  size?: 'sm' | 'md' | 'lg' | 'xl';
+  /** Altura máxima del modal. Por defecto crece con el contenido hasta el 90vh */
+  maxHeight?: 'sm' | 'md' | 'lg' | 'xl' | 'full' | 'auto';
+  /** Si se puede cerrar haciendo clic fuera o con Escape */
+  closable?: boolean;
+  /** Texto pequeño alineado a la izquierda del footer (meta-información) */
+  footerMeta?: string;
+  /** Botones del footer. Si se omite y se pasa onConfirm, se generan automáticamente */
   footerButtons?: React.ReactNode;
-  
-  // ===== MODO AVANZADO (como UniversalModal.tsx) =====
-  /** Variante del modal con iconos automáticos */
-  variant?: 'danger' | 'warning' | 'info' | 'success';
-  
-  /** Ocultar el mensaje automático de peligro para acciones irreversibles */
-  hideDefaultDangerMessage?: boolean;
-  
-  /** Mensaje principal (modo confirmación) */
-  message?: string | React.ReactNode;
-  
-  /** Mostrar botón de confirmación */
+
+  // ── Acciones automáticas ──
+  variant?: ModalVariant;
   showConfirm?: boolean;
-  
-  /** Label del botón de confirmación */
   confirmLabel?: string;
-  
-  /** Función al confirmar */
-  onConfirm?: () => void;
-  
-  /** Estado de carga del botón de confirmación */
+  onConfirm?: () => void | Promise<void>;
   confirmLoading?: boolean;
-  
-  /** Mostrar botón de cancelar */
   showCancel?: boolean;
-  
-  /** Label del botón de cancelar */
   cancelLabel?: string;
+
+  /** Clases CSS extra para el DialogPanel */
+  className?: string;
+  children?: React.ReactNode;
 }
 
-export const Modal: React.FC<UnifiedModalProps> = React.memo(({
+interface VariantConfig {
+  /** Clases Tailwind para el fondo de la tarjeta hero */
+  cardBg: string;
+  /** Sombra de color de la tarjeta */
+  cardShadow: string;
+  /** Borde de la tarjeta */
+  cardBorder: string;
+  /** Ícono por defecto */
+  Icon: React.FC<{ className?: string }>;
+  /** Variante del botón de confirmar */
+  confirmVariant: 'primary' | 'secondary' | 'success' | 'error' | 'warning';
+  /** Color del texto del footerMeta cuando es una advertencia */
+  metaColor?: string;
+}
+
+const VARIANT_CONFIG: Record<ModalVariant, VariantConfig> = {
+  info: {
+    cardBg: 'bg-azul-una',
+    cardShadow: 'shadow-[0_4px_14px_rgba(3,73,145,0.28)]',
+    cardBorder: 'border-[rgba(29,78,216,0.5)]',
+    Icon: ({ className }) => <SystemIcons.interface.informationCircle className={className}/>,
+    confirmVariant: 'primary',
+  },
+  success: {
+    cardBg: 'bg-verde',
+    cardShadow: 'shadow-[0_4px_14px_rgba(16,185,129,0.28)]',
+    cardBorder: 'border-[rgba(21,128,61,0.5)]',
+    Icon: ({ className }) => <SystemIcons.interface.checkCircle className={className} />,
+    confirmVariant: 'success',
+  },
+  danger: {
+    cardBg: 'bg-error',
+    cardShadow: 'shadow-[0_4px_14px_rgba(239,68,68,0.28)]',
+    cardBorder: 'border-[rgba(185,28,28,0.5)]',
+    Icon: ({ className }) => <SystemIcons.structure.trashCan className={className} />,
+    confirmVariant: 'secondary',
+    metaColor: 'text-error',
+  },
+  warning: {
+    cardBg: 'bg-warning',
+    cardShadow: 'shadow-[0_4px_14px_rgba(245,158,11,0.28)]',
+    cardBorder: 'border-[rgba(180,83,9,0.5)]',
+    Icon: ({ className }) => <SystemIcons.interface.alert className={className} />,
+    confirmVariant: 'warning',
+    metaColor: 'text-warning',
+  },
+  neutral: {
+    cardBg: 'bg-gris-una',
+    cardShadow: 'shadow-[0_4px_14px_rgba(107,114,128,0.22)]',
+    cardBorder: 'border-[rgba(75,85,99,0.5)]',
+    Icon: ({ className }) => <SystemIcons.actions.view className={className} />,
+    confirmVariant: 'secondary',
+  },
+};
+
+export const Modal: React.FC<ModalProps> = React.memo(({
   isOpen,
   onClose,
   title,
+  subtitle,
+  heroBadge,
+  heroIcon,
   size = 'md',
+  maxHeight = 'auto',
   closable = true,
-  className,
-  contentClassName,
-  
-  // Modo básico
-  children,
+  footerMeta,
   footerButtons,
-  
-  // Modo avanzado
   variant,
-  hideDefaultDangerMessage = false,
-  message,
   showConfirm = true,
   confirmLabel = 'Confirmar',
   onConfirm,
   confirmLoading = false,
   showCancel = true,
-  cancelLabel = 'Cancelar'
+  cancelLabel = 'Cancelar',
+  className,
+  children,
 }) => {
   const modalRef = useRef<HTMLDivElement>(null);
   const previousFocusRef = useRef<HTMLElement | null>(null);
-  
-  // Determinar si estamos en modo básico o avanzado
-  const isAdvancedMode = variant || message || onConfirm;
-  const isBasicMode = children || footerButtons;
-  
-  // Configuración de tamaños
-  const sizeClasses = {
+  const confirmGuardRef = useRef(false);
+  const [internalLoading, setInternalLoading] = useState(false);
+  const isPending = confirmLoading || internalLoading;
+
+  const sizeClasses: Record<NonNullable<ModalProps['size']>, string> = {
     sm: 'sm:max-w-md',
     md: 'sm:max-w-2xl',
     lg: 'sm:max-w-4xl',
-    xl: 'sm:max-w-6xl'
+    xl: 'sm:max-w-6xl',
   };
-  
-  // Configuración de variantes
-  const getVariantConfig = () => {
-    switch (variant) {
-      case 'danger':
-        return {
-          icon: SystemIcons.interface.alert,
-          iconBg: 'bg-red-100',
-          iconColor: 'text-red-600',
-          confirmClasses: 'bg-red-600 hover:bg-red-500 text-white'
-        };
-      case 'warning':
-        return {
-          icon: SystemIcons.interface.alert,
-          iconBg: 'bg-yellow-100',
-          iconColor: 'text-yellow-600',
-          confirmClasses: 'bg-yellow-600 hover:bg-yellow-500 text-white'
-        };
-      case 'success':
-        return {
-          icon: SystemIcons.interface.checkCircle,
-          iconBg: 'bg-green-100',
-          iconColor: 'text-green-600',
-          confirmClasses: 'bg-green-600 hover:bg-green-500 text-white'
-        };
-      case 'info':
-      default:
-        return {
-          icon: SystemIcons.interface.informationCircle,
-          iconBg: 'bg-blue-100',
-          iconColor: 'text-blue-600',
-          confirmClasses: 'bg-blue-600 hover:bg-blue-500 text-white'
-        };
-    }
+
+  const maxHeightClasses: Record<NonNullable<ModalProps['maxHeight']>, string> = {
+    sm:   'max-h-[40vh]',
+    md:   'max-h-[60vh]',
+    lg:   'max-h-[75vh]',
+    xl:   'max-h-[90vh]',
+    full: 'max-h-screen',
+    auto: '',
   };
-  
-  const config = getVariantConfig();
-  const IconComponent = config.icon;
-  
-  // Manejo de foco y scroll
+
+  const cfg = variant ? VARIANT_CONFIG[variant] : null;
+
+  // Foco y scroll
   useEffect(() => {
     if (isOpen) {
       previousFocusRef.current = document.activeElement as HTMLElement;
@@ -151,175 +156,233 @@ export const Modal: React.FC<UnifiedModalProps> = React.memo(({
       document.body.style.overflow = 'hidden';
     } else {
       document.body.style.overflow = 'unset';
-      if (previousFocusRef.current) {
-        previousFocusRef.current.focus();
-      }
+      previousFocusRef.current?.focus();
     }
-    
-    return () => {
-      document.body.style.overflow = 'unset';
-    };
+    return () => { document.body.style.overflow = 'unset'; };
   }, [isOpen]);
-  
-  // Manejo de tecla Escape
+
   useEffect(() => {
-    const handleEscapeKey = (event: KeyboardEvent) => {
-      if (event.key === 'Escape' && closable && !confirmLoading) {
-        onClose();
-      }
+    if (!isOpen) {
+      confirmGuardRef.current = false;
+      setInternalLoading(false);
+    }
+  }, [isOpen]);
+
+  // Escape
+  useEffect(() => {
+    if (!isOpen) return;
+    const handler = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && closable && !isPending) onClose();
     };
-    
-    if (isOpen) {
-      document.addEventListener('keydown', handleEscapeKey);
-      return () => document.removeEventListener('keydown', handleEscapeKey);
-    }
-  }, [isOpen, closable, confirmLoading, onClose]);
-  
-  // Handlers
-  const handleOverlayClick = (event: React.MouseEvent<HTMLDivElement>) => {
-    if (event.target === event.currentTarget && closable && !confirmLoading) {
-      onClose();
+    document.addEventListener('keydown', handler);
+    return () => document.removeEventListener('keydown', handler);
+  }, [isOpen, closable, isPending, onClose]);
+
+  const handleClose = () => { if (!isPending) onClose(); };
+
+  const isPromiseLike = (v: unknown): v is Promise<void> =>
+    typeof v === 'object' && v !== null && 'then' in v;
+
+  const handleConfirm = async () => {
+    if (!onConfirm || isPending || confirmGuardRef.current) return;
+    confirmGuardRef.current = true;
+    try {
+      const result = onConfirm();
+      if (isPromiseLike(result)) {
+        setInternalLoading(true);
+        await result;
+      }
+    } finally {
+      confirmGuardRef.current = false;
+      setInternalLoading(false);
     }
   };
-  
-  const handleConfirm = () => {
-    onConfirm?.();
-  };
-  
-  const handleClose = () => {
-    if (!confirmLoading) {
-      onClose();
-    }
-  };
-  
+
+  // Determinar si renderizar footer
+  const hasFooter = !!(footerButtons || onConfirm || showCancel || footerMeta);
+
   if (!isOpen) return null;
-  
+
   return (
-    <Dialog 
-      open={isOpen} 
-      onClose={closable ? handleClose : () => {}} 
+    <Dialog
+      open={isOpen}
+      onClose={closable ? handleClose : () => {}}
       className="relative z-50"
     >
       <DialogBackdrop
         transition
-        className="fixed inset-0 bg-gradient-to-br from-black/60 via-black/50 to-black/60 backdrop-blur-md transition-all duration-300 data-closed:opacity-0"
+        className="fixed inset-0 bg-[rgba(10,15,35,0.55)] backdrop-blur-[6px] transition-all duration-300 data-closed:opacity-0"
       />
 
       <div className="fixed inset-0 z-10 w-screen overflow-y-auto">
-        <div 
+        <div
           className="flex min-h-full items-center justify-center p-4"
           role="presentation"
-          onClick={handleOverlayClick}
+          onClick={(e) => {
+            if (e.target === e.currentTarget && closable && !isPending) onClose();
+          }}
         >
           <DialogPanel
             ref={modalRef}
             transition
+            tabIndex={-1}
             className={cn(
-              'relative transform overflow-hidden rounded-corner bg-white text-left shadow-2xl border border-gray-100 transition-all duration-300 ease-out sm:my-8 sm:w-full',
+              'relative flex flex-col w-full overflow-hidden',
+              'bg-blanco-una border border-gris-light rounded-[18px]',
+              'shadow-[0_6px_16px_rgba(0,0,0,0.10),0_2px_6px_rgba(0,0,0,0.06)]',
+              'transition-all duration-300 ease-out sm:my-8',
               'data-closed:translate-y-4 data-closed:opacity-0 data-closed:sm:scale-95',
               sizeClasses[size],
-              className
+              maxHeightClasses[maxHeight],
+              className,
             )}
-            tabIndex={-1}
           >
-            {/* Header */}
-            <div className="flex items-center justify-between border-b border-gray-100 bg-gradient-to-r from-gray-50 to-white px-8 py-6">
-              <DialogTitle className="text-xl font-bold leading-6 text-gray-800 tracking-tight">
-                {title}
-              </DialogTitle>
-              
-              {closable && (
-                <button
-                  type="button"
-                  className="rounded-full bg-gray-100 p-2 text-gray-500 hover:bg-gray-200 hover:text-gray-700 focus:outline-none transition-all duration-200"
-                  onClick={handleClose}
-                  disabled={confirmLoading}
-                  aria-label="Cerrar modal"
+            {/* ════════════════════════════════════
+                HÉRO CARD — tarjeta de color interna
+            ════════════════════════════════════ */}
+            {cfg && (
+              <div className="px-3.5 pt-3.5 pb-0 bg-blanco-una flex-shrink-0">
+                <div
+                  className={cn(
+                    'relative rounded-xl px-5 py-5 overflow-hidden border',
+                    cfg.cardBg,
+                    cfg.cardShadow,
+                    cfg.cardBorder,
+                  )}
                 >
-                  <SystemIcons.interface.closeCircle className="h-5 w-5" />
-                </button>
-              )}
-            </div>
+                  {/* Brillo superior */}
+                  <div
+                    className="pointer-events-none absolute inset-x-0 top-0 h-1/2 rounded-t-xl"
+                    style={{ background: 'linear-gradient(to bottom, rgba(255,255,255,0.12), transparent)' }}
+                  />
+                  {/* Círculo decorativo */}
+                  <div
+                    className="pointer-events-none absolute -top-10 -right-10 w-40 h-40 rounded-full"
+                    style={{ background: 'radial-gradient(circle, rgba(255,255,255,0.13) 0%, transparent 70%)' }}
+                  />
 
-            {/* Content */}
-            <div className={cn(
-              'bg-white px-8 py-6 max-h-[60vh] overflow-y-auto',
-              contentClassName
-            )}>
-              {isAdvancedMode && variant && (
-                <div className="sm:flex sm:items-start">
-                  {/* Icono para modo avanzado */}
-                  <div className={cn(
-                    'mx-auto flex size-16 shrink-0 items-center justify-center rounded-full shadow-sm',
-                    'sm:mx-0 sm:size-12',
-                    config.iconBg
-                  )}>
-                    <IconComponent data-testid="icon" className={cn('size-8 sm:size-6', config.iconColor)} />
-                  </div>
-                  
-                  {/* Contenido avanzado */}
-                  <div className="mt-4 text-center sm:mt-0 sm:ml-6 sm:text-left flex-1">
-                    {message && (
-                      <p className="text-base text-gray-700 leading-relaxed">
-                        {message}
-                      </p>
-                    )}
-                    
-                    {variant === 'danger' && !hideDefaultDangerMessage && (
-                      <div className="mt-4 p-3 bg-[var(--color-error-light)] border border-[var(--color-error-ring)] rounded-corner">
-                        <p className="text-sm text-state-error font-medium">
-                          Esta acción no se puede deshacer.
+                  {/* Ícono + texto + botón cerrar en una sola fila */}
+                  <div className="relative z-10 flex items-center justify-between gap-3">
+                    <div className="flex items-center gap-3 min-w-0">
+                      <div className="w-11 h-11 rounded-[10px] flex items-center justify-center bg-white/20 border border-white/35 flex-shrink-0">
+                        {heroIcon ?? <cfg.Icon className={`${ICON_SIZES.md} text-blanco-una`}/>}
+                      </div>
+                      <div className="flex flex-col min-w-0">
+                        <p className={cn('font-bold text-white tracking-tight leading-snug', TYPOGRAPHY.modal.title)}>
+                          {title}
                         </p>
+                        {subtitle && (
+                          <p className={cn('text-white/70 mt-0.5 leading-snug', TYPOGRAPHY.modal.subtitle)}>
+                            {subtitle}
+                          </p>
+                        )}
+                        {heroBadge && (
+                          <span className={cn('inline-flex items-center gap-1.5 mt-2 px-2.5 py-1 rounded-full bg-white/18 border border-white/35 text-white/95 font-semibold w-fit', TYPOGRAPHY.badge)}>
+                            <span className="w-1.5 h-1.5 rounded-full bg-white/90" />
+                            {heroBadge}
+                          </span>
+                        )}
                       </div>
-                    )}
-                    
-                    {children && (
-                      <div className="mt-4">
-                        {children}
-                      </div>
+                    </div>
+                    {closable && (
+                      <button
+                        type="button"
+                        onClick={handleClose}
+                        disabled={isPending}
+                        aria-label="Cerrar modal"
+                        className="w-7 h-7 rounded-md flex items-center justify-center bg-white/15 border border-white/30 text-white/90 hover:bg-white/30 transition-colors duration-150 disabled:opacity-50 flex-shrink-0 self-start"
+                      >
+                        <SystemIcons.interface.closeCircle className={`${ICON_SIZES.md}`} />
+                      </button>
                     )}
                   </div>
                 </div>
-              )}
-              
-              {isBasicMode && !isAdvancedMode && (
-                // Contenido básico (sin icono)
-                children
-              )}
-            </div>
+              </div>
+            )}
 
-            {/* Footer */}
-            {(footerButtons || isAdvancedMode) && (
-              <div className="flex justify-end space-x-4 border-t border-gray-100 bg-gradient-to-r from-gray-50 to-white px-8 py-6">
-                {footerButtons ? (
-                  // Footer personalizado para modo básico
-                  footerButtons
-                ) : (
-                  // Footer automático para modo avanzado
-                  <>
-                    {showCancel && (
-                      <Button
-                        variant="secondary"
-                        onClick={handleClose}
-                        disabled={confirmLoading}
-                        standardWidth={true}
-                      >
-                        {cancelLabel}
-                      </Button>
-                    )}
-                    
-                    {showConfirm && (
-                      <Button
-                        variant="primary"
-                        onClick={handleConfirm}
-                        disabled={confirmLoading}
-                        standardWidth={true}
-                      >
-                        {confirmLoading ? 'Procesando...' : confirmLabel}
-                      </Button>
-                    )}
-                  </>
+            {/* ════════════════════════════════════
+                HEADER sin hero (modo sin variante)
+            ════════════════════════════════════ */}
+            {!cfg && (
+              <div className="flex items-center justify-between border-b border-gray-100 bg-gradient-to-r from-gray-50 to-white px-6 py-5 flex-shrink-0">
+                <p className={cn('font-bold text-negro-una-2 tracking-tight', TYPOGRAPHY.modal.title)}>
+                  {title}
+                </p>
+                {closable && (
+                  <button
+                    type="button"
+                    onClick={handleClose}
+                    disabled={isPending}
+                    aria-label="Cerrar modal"
+                    className="rounded-full bg-gray-100 p-1.5 text-gray-500 hover:bg-gray-200 hover:text-gray-700 transition-colors duration-150 disabled:opacity-50"
+                  >
+                    <SystemIcons.interface.closeCircle className="w-5 h-5" />
+                  </button>
                 )}
+              </div>
+            )}
+
+            {/* ════════════════════════════════════
+                BODY
+            ════════════════════════════════════ */}
+            {children && (
+              <div
+                className={cn(
+                  'flex-1 overflow-y-auto px-5 py-5',
+                  'scrollbar-thin scrollbar-color-[var(--color-gris-una)/30]',
+                )}
+              >
+                {children}
+              </div>
+            )}
+
+            {/* ════════════════════════════════════
+                FOOTER
+            ════════════════════════════════════ */}
+            {hasFooter && (
+              <div className="flex items-center justify-between gap-3 px-5 py-4 border-t border-gray-100 bg-gray-50/60 flex-shrink-0">
+                {/* Meta izquierda */}
+                <span
+                  className={cn(
+                    TYPOGRAPHY.form.helper,
+                    'text-gris-una-2 truncate flex-1',
+                    cfg?.metaColor,
+                  )}
+                >
+                  {footerMeta ?? ''}
+                </span>
+
+                {/* Acciones derecha */}
+                <div className="flex items-center gap-2.5 flex-shrink-0">
+                  {footerButtons ? (
+                    footerButtons
+                  ) : (
+                    <>
+                      {showCancel && (
+                        <Button
+                          variant="outline"
+                          onClick={handleClose}
+                          disabled={isPending}
+                          standardWidth
+                        >
+                          {cancelLabel}
+                        </Button>
+                      )}
+                      {onConfirm && showConfirm && (
+                        <Button
+                          variant={cfg?.confirmVariant ?? 'primary'}
+                          onClick={handleConfirm}
+                          disabled={isPending}
+                          isLoading={isPending}
+                          loadingText="Procesando"
+                          standardWidth
+                        >
+                          {confirmLabel}
+                        </Button>
+                      )}
+                    </>
+                  )}
+                </div>
               </div>
             )}
           </DialogPanel>

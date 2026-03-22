@@ -9,12 +9,13 @@
  * - Acceso restringido solo a Superusuario
  */
 
-import React, { useState, useEffect, useCallback } from 'react';
-import { PageHeader, ScreenContainer } from '@/Components/Ui/Index';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
+import { PageHeader, ScreenContainer, Tooltip, TooltipTrigger } from '@/Components/Ui/Index';
 import { BackendErrorAlert } from '@/Components/Ui/Feedback/BackendErrorAlert';
 import { SystemIcons } from '@/Components/Ui/Icons/SystemIcons';
 import { SearchInput } from '@/Components/Ui/Forms/SearchInput';
 import { DropdownButton } from '@/Components/Ui/Buttons/DropdownButton';
+import { Button } from '@/Components/Ui/Buttons/Button';
 import type { DropdownOption } from '@/Components/Ui/Buttons/DropdownButton';
 import { getModuleInfo } from '@/Constants/ModuleInfo';
 import { AuditLogFilters } from './Components/AuditLogFilters';
@@ -23,6 +24,10 @@ import { AuditLogDetailModal } from './Components/AuditLogDetailModal';
 import AuditLogService from '@/Services/AuditLogService';
 import type { AuditLog, AuditLogFilters as Filters, ExportFormat } from '@/Types/AuditLogTypes';
 import { useToast } from '@/Context/ToastContext';
+import { TYPOGRAPHY } from '@/Constants/Typography';
+import { ICON_SIZES } from '@/Constants/Components';
+import { TABLE_PAGE_SIZE } from '@/Constants/TablePagination';
+import { TooltipContent } from '@/Components/Ui/Index';
 
 const AuditLogPage: React.FC = () => {
   // Hook de toast
@@ -35,15 +40,18 @@ const AuditLogPage: React.FC = () => {
   const error = logsState.error;
   const currentPage = logsState.currentPage;
   const totalPages = logsState.totalPages;
-  const perPage = 15;
+  const perPage = TABLE_PAGE_SIZE.standard;
 
   // Estado de filtros aplicados
   const [appliedFilters, setAppliedFilters] = useState<Filters>({});
   
   // Estado de búsqueda
-  const [searchState, setSearchState] = useState<{ searchTerm: string; filteredLogs: AuditLog[] }>({ searchTerm: '', filteredLogs: [] });
-  const searchTerm = searchState.searchTerm;
-  const filteredLogs = searchState.filteredLogs;
+  const [searchTerm, setSearchTerm] = useState('');
+  const appliedFiltersRef = useRef(appliedFilters);
+  const isInitialMount = useRef(true);
+
+  // Estado del panel de filtros
+  const [showFilters, setShowFilters] = useState(false);
 
   // Estado del modal de detalle
   const [detailModal, setDetailModal] = useState<{
@@ -68,7 +76,6 @@ const AuditLogPage: React.FC = () => {
       });
 
       setLogsState(prev => ({ ...prev, logs: response.data, isLoading: false, currentPage: response.current_page, totalPages: response.last_page }));
-      setSearchState(prev => ({ ...prev, filteredLogs: response.data }));
     } catch (err: any) {
       console.error('Error cargando registros de bitácora:', err);
       setLogsState(prev => ({ ...prev, isLoading: false, error: err.message || 'Error al cargar los registros de bitácora', logs: [] }));
@@ -83,57 +90,48 @@ const AuditLogPage: React.FC = () => {
   }, [loadAuditLogs]);
 
   /**
-   * Filtrar logs localmente según el término de búsqueda
+   * Sincronizar la ref de filtros para usarla dentro del debounce de búsqueda
    */
   useEffect(() => {
-    if (!searchTerm.trim()) {
-      setSearchState(prev => ({ ...prev, filteredLogs: logs }));
+    appliedFiltersRef.current = appliedFilters;
+  }, [appliedFilters]);
+
+  /**
+   * Buscar en el backend cuando cambia el término de búsqueda (debounced 300 ms).
+   * Se omite la primera ejecución al montar (ya la maneja el useEffect inicial).
+   */
+  useEffect(() => {
+    if (isInitialMount.current) {
+      isInitialMount.current = false;
       return;
     }
-
-    const term = searchTerm.toLowerCase();
-    const filtered = logs.filter(log => {
-      const usuario = log.usuario?.nombre?.toLowerCase() || '';
-      const email = log.usuario?.email?.toLowerCase() || '';
-      const modulo = log.modulo?.toLowerCase() || '';
-      const accion = log.tipo_accion?.descripcion?.toLowerCase() || '';
-      const detalle = log.detalle?.toLowerCase() || '';
-      const fecha = log.fecha_hora?.toLowerCase() || '';
-
-      return (
-        usuario.includes(term) ||
-        email.includes(term) ||
-        modulo.includes(term) ||
-        accion.includes(term) ||
-        detalle.includes(term) ||
-        fecha.includes(term)
-      );
-    });
-
-    setSearchState(prev => ({ ...prev, filteredLogs: filtered }));
-  }, [logs, searchTerm]);
+    const timer = setTimeout(() => {
+      loadAuditLogs({ ...appliedFiltersRef.current, search: searchTerm || undefined }, 1);
+    }, 300);
+    return () => clearTimeout(timer);
+  }, [searchTerm, loadAuditLogs]);
 
   /**
    * Aplicar filtros
    */
   const handleApplyFilters = useCallback((filters: Filters) => {
     setAppliedFilters(filters);
-    loadAuditLogs(filters, 1);
-  }, [loadAuditLogs]);
+    loadAuditLogs({ ...filters, search: searchTerm || undefined }, 1);
+  }, [loadAuditLogs, searchTerm]);
 
   /**
    * Manejar cambio en el buscador
    */
   const handleSearchChange = useCallback((term: string) => {
-    setSearchState(prev => ({ ...prev, searchTerm: term }));
+    setSearchTerm(term);
   }, []);
 
   /**
    * Cambiar página
    */
   const handlePageChange = useCallback((page: number) => {
-    loadAuditLogs(appliedFilters, page);
-  }, [appliedFilters, loadAuditLogs]);
+    loadAuditLogs({ ...appliedFilters, search: searchTerm || undefined }, page);
+  }, [appliedFilters, searchTerm, loadAuditLogs]);
 
   /**
    * Ver detalle de un registro
@@ -211,15 +209,15 @@ const AuditLogPage: React.FC = () => {
   const exportOptions: DropdownOption[] = [
     {
       id: 'pdf',
-      label: 'Exportar a PDF',
-      icon: <SystemIcons.modal.pdf className="w-4 h-4" />,
+      label: <span className={TYPOGRAPHY.button}>Exportar a PDF</span>,
+      icon: <SystemIcons.modal.pdf className={`text-negro-una-2 ${ICON_SIZES.md}`} />,
       onClick: () => handleExport('pdf'),
       disabled: !appliedFilters.fecha_desde || !appliedFilters.fecha_hasta || logs.length === 0
     },
     {
       id: 'excel',
-      label: 'Exportar a Excel',
-      icon: <SystemIcons.modal.excel className="w-4 h-4" />,
+      label: <span className={TYPOGRAPHY.button}>Exportar a Excel</span>,
+      icon: <SystemIcons.modal.excel className={`text-negro-una-2 ${ICON_SIZES.md}`} />,
       onClick: () => handleExport('excel'),
       disabled: !appliedFilters.fecha_desde || !appliedFilters.fecha_hasta || logs.length === 0
     }
@@ -231,38 +229,52 @@ const AuditLogPage: React.FC = () => {
         title={moduleInfo.title}
         description={moduleInfo.description}
         headerExtra={
-          <div className="flex-1 max-w-md">
-            <SearchInput
-              placeholder="Buscar por usuario, módulo, acción, detalle..."
-              value={searchTerm}
-              onChange={handleSearchChange}
-              disabled={isLoading}
-            />
+          <div className="flex items-center gap-3">
+            <div className="flex-1 min-w-64">
+              <SearchInput
+                placeholder="Buscar por usuario, módulo, acción, detalle..."
+                value={searchTerm}
+                onChange={handleSearchChange}
+              />
+            </div>
+              <DropdownButton
+                label="Exportar"
+                icon={<SystemIcons.actions.export className="w-4 h-4" />}
+                variant="outline"
+                options={exportOptions}
+                disabled={isLoading || logs.length === 0}
+                tooltip={
+                  !appliedFilters.fecha_desde || !appliedFilters.fecha_hasta
+                    ? 'Debe seleccionar un rango de fechas para exportar'
+                    : 'Exportar registros de bitácora'
+                }
+              />
+              <Tooltip>
+                <TooltipTrigger>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    onClick={() => setShowFilters(prev => !prev)}
+                  >
+                    <SystemIcons.interface.filter className={ICON_SIZES.md} color="currentColor" />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent side="top">
+                  <p>Filtros</p>
+                </TooltipContent>
+              </Tooltip>
           </div>
         }
       >
         {/* Componente de filtros como children del header */}
-        <AuditLogFilters
-          onApplyFilters={handleApplyFilters}
-          isLoading={isLoading}
-        />
+        {/* Panel de filtros colapsable */}
+        {showFilters && (
+          <AuditLogFilters
+            onApplyFilters={handleApplyFilters}
+            isLoading={isLoading}
+          />
+        )}
       </PageHeader>
-
-      {/* Botón de exportación con menú desplegable */}
-      <div className="flex justify-end mb-6">
-        <DropdownButton
-          label="Exportar"
-          icon={<SystemIcons.actions.export className="w-4 h-4" />}
-          variant="outline"
-          options={exportOptions}
-          disabled={isLoading || logs.length === 0}
-          tooltip={
-            !appliedFilters.fecha_desde || !appliedFilters.fecha_hasta
-              ? 'Debe seleccionar un rango de fechas para exportar'
-              : 'Exportar registros de bitácora'
-          }
-        />
-      </div>
 
       {/* Alerta de error */}
       {error && (
@@ -273,20 +285,9 @@ const AuditLogPage: React.FC = () => {
         </div>
       )}
 
-      {/* Información de registros */}
-      {!isLoading && !error && filteredLogs.length > 0 && (
-        <div className="mb-4 flex items-center gap-2 text-sm text-gray-600">
-          <SystemIcons.interface.informationCircle className="w-4 h-4" />
-          <span>
-            Mostrando {filteredLogs.length} registro(s) de la página {currentPage} de {totalPages}
-            {searchTerm && ` (filtrados de ${logs.length} total)`}
-          </span>
-        </div>
-      )}
-
       {/* Tabla de registros */}
       <AuditLogTable
-        logs={filteredLogs}
+        logs={logs}
         isLoading={isLoading}
         currentPage={currentPage}
         totalPages={totalPages}

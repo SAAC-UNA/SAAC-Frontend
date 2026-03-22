@@ -5,7 +5,7 @@
 
 import { renderHook, act } from '@testing-library/react';
 import React from 'react';
-import { useFileUpload } from './useFileUpload';
+import { useFileUpload } from '../Components/Ui/Upload/useFileUpload';
 import { MAX_FILES_PER_UPLOAD, MAX_FILE_SIZE } from '@/Types/FileTypes';
 
 // Mock del ToastContext para no necesitar el provider real

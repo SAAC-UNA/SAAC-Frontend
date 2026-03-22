@@ -31,7 +31,7 @@ const FinalReports = lazy(() => import('./Pages/ReportManagement').then(m => ({ 
 
 // HU-016: Páginas de solicitudes de ampliación
 const ManageExtensionRequestsPage = lazy(() => import('./Pages/ExtensionRequest').then(m => ({ default: m.ManageExtensionRequestsPage })));
-const MyExtensionRequestsPage = lazy(() => import('./Pages/ExtensionRequest').then(m => ({ default: m.MyExtensionRequestsPage })));
+const MyExtensionRequestsPage = lazy(() => import('./Pages/MyExtensionRequest/MyExtensionRequestsPage').then(m => ({ default: m.MyExtensionRequestsPage })));
 
 // Componente de loading para Suspense
 const PageLoader = () => (

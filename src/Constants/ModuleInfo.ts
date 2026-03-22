@@ -164,7 +164,7 @@ const MODULE_INFO: Record<string, ModuleInfo> = {
   auditlog: {
     title: 'Bitácora del Sistema',
     subtitle: 'Registro de Auditoría',
-    description: 'Consulte todos los registros de acciones realizadas en el sistema para garantizar trazabilidad y seguridad',
+    description: 'Consulte todos los registros de acciones realizadas en el sistema',
     shortDescription: 'Ver bitácora del sistema'
   },
 

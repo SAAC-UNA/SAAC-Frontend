@@ -1,4 +1,13 @@
-import React, { useState, useRef, useEffect, useId } from 'react';
+import React, { useState, useRef, useEffect, useId, useCallback } from 'react';
+import { createPortal } from 'react-dom';
+
+// React portals
+interface DropdownPosition {
+  top?: number;
+  bottom?: number;
+  left: number;
+  width: number;
+}
 import { cn } from '@/Utils/ClassNames';
 import { SystemIcons } from '../Icons/SystemIcons';
 import { TYPOGRAPHY } from '@/Constants/Typography';
@@ -57,12 +66,28 @@ export const MultiSelect: React.FC<MultiSelectProps> = ({
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
+  const [dropdownPosition, setDropdownPosition] = useState<DropdownPosition | null>(null);
   // Derived state: la selección es completamente controlada por el prop value
   const selectedOptions = value ? options.filter(opt => value.includes(opt.value)) : [];
   const selectRef = useRef<HTMLDivElement>(null);
+  const triggerRef = useRef<HTMLButtonElement>(null);
+  const dropdownRef = useRef<HTMLDivElement>(null);
   const searchInputRef = useRef<HTMLInputElement>(null);
   const generatedId = useId();
   const selectId = id || generatedId;
+
+  const calculateDropdownPosition = useCallback(() => {
+    if (!triggerRef.current) return;
+    const rect = triggerRef.current.getBoundingClientRect();
+    const viewportHeight = window.innerHeight;
+    const estimatedHeight = 280;
+    const spaceBelow = viewportHeight - rect.bottom;
+    if (spaceBelow >= estimatedHeight || spaceBelow >= rect.top) {
+      setDropdownPosition({ top: rect.bottom + 4, left: rect.left, width: rect.width });
+    } else {
+      setDropdownPosition({ bottom: viewportHeight - rect.top + 4, left: rect.left, width: rect.width });
+    }
+  }, []);
 
   // Calcular altura máxima basada en el número de items visibles
   // Cada item tiene aproximadamente 46px de altura (incluyendo padding y border)
@@ -75,15 +100,30 @@ export const MultiSelect: React.FC<MultiSelectProps> = ({
   // Cerrar dropdown al hacer click fuera
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (selectRef.current && !selectRef.current.contains(event.target as Node)) {
+      if (
+        !selectRef.current?.contains(event.target as Node) &&
+        !dropdownRef.current?.contains(event.target as Node)
+      ) {
         setIsOpen(false);
-        setSearchTerm(''); // Limpiar búsqueda al cerrar
+        setSearchTerm('');
       }
     };
 
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
+
+  // Reposicionar si hay scroll o resize mientras está abierto
+  useEffect(() => {
+    if (!isOpen) return;
+    const handleScrollOrResize = () => calculateDropdownPosition();
+    window.addEventListener('scroll', handleScrollOrResize, true);
+    window.addEventListener('resize', handleScrollOrResize);
+    return () => {
+      window.removeEventListener('scroll', handleScrollOrResize, true);
+      window.removeEventListener('resize', handleScrollOrResize);
+    };
+  }, [isOpen, calculateDropdownPosition]);
 
   // Focus en el input de búsqueda cuando se abre el dropdown
   useEffect(() => {
@@ -105,14 +145,14 @@ export const MultiSelect: React.FC<MultiSelectProps> = ({
     const isSelected = selectedOptions.some(selected => selected.value === option.value);
     
     if (isSelected) {
-      // Remover opción
+      // Remover opción (deseleccionar)
       newSelectedOptions = selectedOptions.filter(selected => selected.value !== option.value);
     } else {
       // Agregar opción
       newSelectedOptions = [...selectedOptions, option];
     }
     
-    setIsOpen(false);
+    // No cerrar el dropdown para que el usuario pueda seguir seleccionando/deseleccionando
     onChange?.(newSelectedOptions.map(opt => opt.value));
   };
 
@@ -175,6 +215,7 @@ export const MultiSelect: React.FC<MultiSelectProps> = ({
         <div className="relative">
           {/* Select Button */}
           <button
+            ref={triggerRef}
             type="button"
             id={selectId}
             className={cn(
@@ -193,7 +234,12 @@ export const MultiSelect: React.FC<MultiSelectProps> = ({
                 ? 'bg-gris-una/10 border-gris-una/5 text-gray-400'
                 : isOpen && 'border-gris-una/20'
             )}
-            onClick={() => !disabled && setIsOpen(!isOpen)}
+            onClick={() => {
+              if (!disabled) {
+                if (!isOpen) calculateDropdownPosition();
+                setIsOpen(!isOpen);
+              }
+            }}
             disabled={disabled}
           >
             <span className={cn(
@@ -253,14 +299,23 @@ export const MultiSelect: React.FC<MultiSelectProps> = ({
           )}
         </div>
 
-        {/* Dropdown */}
-        {isOpen && !disabled && (
+        {/* Dropdown via portal para no ser cortado por overflow del modal */}
+        {isOpen && !disabled && dropdownPosition && createPortal(
           <div 
-            className="absolute z-50 w-full mt-1 bg-white border border-gray-300 rounded-corner shadow-lg overflow-hidden"
+            ref={dropdownRef}
+            style={{
+              position: 'fixed',
+              top: dropdownPosition.top,
+              bottom: dropdownPosition.bottom,
+              left: dropdownPosition.left,
+              width: dropdownPosition.width,
+              zIndex: 9999,
+            }}
+            className="bg-white border border-gris-light rounded-corner shadow-lg overflow-hidden"
           >
             {/* Campo de búsqueda (si está habilitado y hay suficientes items) */}
             {showSearch && (
-              <div className="p-2 border-b border-gray-200 bg-gray-50/50 sticky top-0 z-10">
+              <div className="p-2 border-b border-gris-light bg-blanco-una-2 sticky top-0 z-10">
                 <div className="relative">
                   <SystemIcons.interface.search className={`absolute left-3 top-1/2 -translate-y-1/2 text-gris-una ${ICON_SIZES.sm}`} />
                   <input
@@ -357,7 +412,8 @@ export const MultiSelect: React.FC<MultiSelectProps> = ({
                 })}
               </div>
             </div>
-          </div>
+          </div>,
+          document.body
         )}
 
           {/* Error Message */}
@@ -387,6 +443,7 @@ export const MultiSelect: React.FC<MultiSelectProps> = ({
 
         {/* Select Button */}
         <button
+          ref={triggerRef}
           type="button"
           className={cn(
             // Base styles actualizados para consistencia con Input
@@ -402,7 +459,12 @@ export const MultiSelect: React.FC<MultiSelectProps> = ({
               : 'border-gris-una bg-blanco-una-2 hover:border-gris-una-2',
             isOpen && !disabled && 'border-gris-una-3'
           )}
-          onClick={() => !disabled && setIsOpen(!isOpen)}
+          onClick={() => {
+            if (!disabled) {
+              if (!isOpen) calculateDropdownPosition();
+              setIsOpen(!isOpen);
+            }
+          }}
           disabled={disabled}
         >
           <span className={cn(
@@ -420,10 +482,19 @@ export const MultiSelect: React.FC<MultiSelectProps> = ({
           </span>
         </button>
 
-        {/* Dropdown */}
-        {isOpen && !disabled && (
+        {/* Dropdown via portal para no ser cortado por overflow del modal */}
+        {isOpen && !disabled && dropdownPosition && createPortal(
           <div 
-            className="absolute z-50 w-full mt-1 bg-blanco-una-2 border border-gris-una rounded-corner shadow-lg overflow-hidden"
+            ref={dropdownRef}
+            style={{
+              position: 'fixed',
+              top: dropdownPosition.top,
+              bottom: dropdownPosition.bottom,
+              left: dropdownPosition.left,
+              width: dropdownPosition.width,
+              zIndex: 9999,
+            }}
+            className="bg-blanco-una-2 border border-gris-una rounded-corner shadow-lg overflow-hidden"
           >
             {/* Campo de búsqueda (si está habilitado y hay suficientes items) */}
             {showSearch && (
@@ -524,7 +595,8 @@ export const MultiSelect: React.FC<MultiSelectProps> = ({
                 })}
               </div>
             </div>
-          </div>
+          </div>,
+          document.body
         )}
 
           {/* Error Message */}

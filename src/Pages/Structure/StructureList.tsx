@@ -240,19 +240,16 @@ const StructureList: React.FC = () => {
           onClose={cancelToggleActive}
           onConfirm={confirmToggleActive}
           variant={toggleActiveModalState.element.active ? 'warning' : 'info'}
-          hideDefaultDangerMessage={!toggleActiveModalState.element.active}
           title={toggleActiveModalState.element.active ? 'Confirmar inactivación' : 'Confirmar activación'}
-          message={
-            <>
-              ¿Está seguro de que desea {toggleActiveModalState.element.active ? 'inactivar' : 'activar'} "<span className="font-bold">{truncateText(toggleActiveModalState.element.name || toggleActiveModalState.element.nomenclature || '')}</span>"?
-            </>
-          }
           confirmLabel={toggleActiveModalState.element.active ? 'Inactivar' : 'Activar'}
           cancelLabel="Cancelar"
           confirmLoading={isLoading}
           showCancel={true}
           showConfirm={true}
         >
+          <p>
+            ¿Está seguro de que desea {toggleActiveModalState.element.active ? 'inactivar' : 'activar'} "<span className="font-bold">{truncateText(toggleActiveModalState.element.name || toggleActiveModalState.element.nomenclature || '')}</span>"?
+          </p>
           {toggleActiveModalState.element.active ? (
             <div className="mt-4 p-3 bg-[var(--color-warning-light)] border border-[var(--color-warning-ring)] rounded-corner">
               <p className="text-sm text-warning-dark">

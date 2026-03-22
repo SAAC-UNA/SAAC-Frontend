@@ -212,14 +212,6 @@ export const ReviewStep: React.FC<ReviewStepProps> = ({
 
   return (
     <div className="space-y-6">
-      <div>
-        <h2 className="text-lg font-semibold text-negro-una mb-3">
-          Revisar Asignación
-        </h2>
-        <p className="text-gris-una">
-          Revise todos los detalles antes de confirmar la asignación de evidencias
-        </p>
-      </div>
 
       {loading ? (
         <div className="relative py-12 min-h-[400px]">

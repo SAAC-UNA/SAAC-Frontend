@@ -1,7 +1,8 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useSidebar } from '@/Context/SidebarContext';
 import { SidebarItem } from './SidebarItem';
 import { getNavigationItems } from '@/Navigation';
+import { SidebarNavProvider } from './SidebarNavProvider';
 import { cn } from '@/Utils/ClassNames';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from '@/Components/Ui/Layout/Sheet';
 import { TooltipProvider } from '@/Components/Ui/Feedback/Tooltip';
@@ -27,6 +28,11 @@ export const ModernSidebar: React.FC<SidebarProps> = ({
   const { isMobile, state, openMobile, setOpenMobile } = useSidebar();
   const isCollapsed = state === 'collapsed' && !isMobile;
 
+  // Hover: expande visualmente cuando está colapsado, sin afectar el layout del MainContent
+  const [isHovered, setIsHovered] = useState(false);
+  const isVisuallyExpanded = !isCollapsed || isHovered;
+  const isItemCollapsed = isCollapsed && !isHovered;
+
   const { user } = useAuth();
 
   const sidebarContent = (
@@ -40,7 +46,7 @@ export const ModernSidebar: React.FC<SidebarProps> = ({
           rel="noopener noreferrer"
           className={cn(
             'transition-opacity duration-300 ease-in-out',
-            isCollapsed ? 'opacity-0 pointer-events-none' : 'opacity-100'
+            isItemCollapsed ? 'opacity-0 pointer-events-none' : 'opacity-100'
           )}
         >
           <h1 className={`${TYPOGRAPHY.pageTitle} text-blanco-una font-semibold`}>
@@ -57,16 +63,18 @@ export const ModernSidebar: React.FC<SidebarProps> = ({
       </div>
 
       {/* Navigation Menu */}
-      <nav className="flex-1 py-2 overflow-y-auto overflow-x-hidden sidebar-scrollbar">
-        <div className="space-y-2 flex flex-col">
-          {getNavigationItems(user?.roles?.map(r => r.name)).map((item) => (
-            <SidebarItem 
-              key={item.id} 
-              item={item}
-              isCollapsed={isCollapsed}
-            />
-          ))}
-        </div>
+      <nav className="flex-1 py-2 overflow-hidden">
+        <SidebarNavProvider isCollapsed={isItemCollapsed}>
+          <div className="space-y-2 flex flex-col">
+            {getNavigationItems(user?.roles?.map(r => r.name)).map((item) => (
+              <SidebarItem 
+                key={item.id} 
+                item={item}
+                isCollapsed={isItemCollapsed}
+              />
+            ))}
+          </div>
+        </SidebarNavProvider>
       </nav>
 
       {/* Usuario autenticado al final del sidebar */}
@@ -129,36 +137,41 @@ export const ModernSidebar: React.FC<SidebarProps> = ({
         data-collapsible={state === 'collapsed' ? collapsible : ''}
         data-variant={variant}
         data-side={side}
+        onMouseEnter={() => setIsHovered(true)}
+        onMouseLeave={() => setIsHovered(false)}
       >
-        {/* Gap del sidebar en desktop — ancho del sidebar + margen izquierdo (left-3 = 0.75rem) */}
+        {/* Gap del sidebar en desktop — se expande con el estado visual (hover + toggle) */}
         <div
           className={cn(
             'relative bg-transparent transition-[width] duration-300 ease-in-out',
-            'w-[calc(var(--sidebar-width)+0.75rem)]',
-            'group-data-[state=collapsed]:w-[calc(var(--sidebar-width-icon)+0.75rem)]',
-            collapsible === 'offcanvas' && 'group-data-[state=collapsed]:w-0'
+            side === 'left'
+              ? (isVisuallyExpanded ? 'w-[var(--sidebar-width)]' : 'w-[var(--sidebar-width-icon)]')
+              : (isVisuallyExpanded ? 'w-[calc(var(--sidebar-width)+0.75rem)]' : 'w-[calc(var(--sidebar-width-icon)+0.75rem)]'),
+            collapsible === 'offcanvas' && !isVisuallyExpanded && 'w-0'
           )}
         />
         
-        {/* Container del sidebar — margen vertical para que el redondeo sea visible */}
+        {/* Container del sidebar */}
         <div
           className={cn(
-            'fixed inset-y-3 z-10 hidden transition-[left,right,width] duration-300 ease-in-out md:flex',
+            'fixed z-10 hidden transition-[left,right,width,top,bottom] duration-300 ease-in-out md:flex',
             'w-[var(--sidebar-width)]',
-            side === 'left' ? 'left-3' : 'right-3',
+            side === 'left' ? 'inset-y-0 left-0' : 'inset-y-3 right-3',
             state === 'collapsed' && collapsible === 'offcanvas' && (
               side === 'left'
                 ? '-left-[var(--sidebar-width)]'
                 : '-right-[var(--sidebar-width)]'
             ),
-            state === 'collapsed' && collapsible === 'icon' && 'w-[var(--sidebar-width-icon)]',
+            !isVisuallyExpanded && collapsible === 'icon' && 'w-[var(--sidebar-width-icon)]',
             className
           )}
         >
           <div
             className={cn(
               'bg-rojo-una-2 flex h-full w-full flex-col overflow-hidden',
-              'rounded-corner',
+              side === 'left'
+                ? 'rounded-l-none [border-top-right-radius:var(--radius-lg)] [border-bottom-right-radius:var(--radius-lg)]'
+                : 'rounded-corner-lg',
               {/** shadow-2xl */}
             )}
           >

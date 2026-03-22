@@ -107,7 +107,7 @@ export const UsersTable: React.FC<UsersTableProps> = ({
                     <p className={`block font-sans antialiased font-bold leading-normal text-negro-una-2 ${TYPOGRAPHY.table.cell}`} title={String(value)}>
                         {truncateText(String(value), firstColumn.maxLength)}
                     </p>
-                    <p className={`block font-sans antialiased font-normal leading-normal text-gris-una opacity-70 ${TYPOGRAPHY.table.cell}`} title={user.email}>
+                    <p className={`block font-sans antialiased font-normal leading-normal text-gris-una ${TYPOGRAPHY.table.cell}`} title={user.email}>
                         {truncateText(user.email, firstColumn.maxLength)}
                     </p>
                 </div>
@@ -131,10 +131,12 @@ export const UsersTable: React.FC<UsersTableProps> = ({
             header: 'Estado',
             align: 'center',
             render: (_, user) => (
-                <StatusBadge
-                    label={user.status === 'active' ? 'Activo' : 'Inactivo'}
-                    colorClasses={user.status === 'active' ? 'text-verde-dark bg-verde-ring' : 'text-error-dark bg-error-ring'}
-                />
+                <div className="flex justify-center">
+                    <StatusBadge
+                        label={user.status === 'active' ? 'Activo' : 'Inactivo'}
+                        colorClasses={user.status === 'active' ? 'text-verde-dark bg-verde-ring' : 'text-error-dark bg-error-ring'}
+                    />
+                </div>
             )
         },
         {

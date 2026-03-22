@@ -6,7 +6,7 @@ import React from 'react';
 describe('Button', () => {
   it('renderiza el texto del botón', () => {
     render(<Button>Crear Rol</Button>);
-    expect(screen.getByText('Crear Rol')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Crear Rol' })).toBeInTheDocument();
   });
 
   it('aplica la variante primary por defecto', () => {
@@ -30,20 +30,20 @@ describe('Button', () => {
   it('llama onClick cuando se hace click', () => {
     const handleClick = jest.fn();
     render(<Button onClick={handleClick}>Click</Button>);
-    fireEvent.click(screen.getByText('Click'));
+    fireEvent.click(screen.getByRole('button', { name: 'Click' }));
     expect(handleClick).toHaveBeenCalled();
   });
 
   describe('estado de loading mejorado', () => {
-    it('no debe mostrar spinner cuando isLoading es true', () => {
-      render(<Button isLoading>Cargando</Button>);
-      
-      // Verificar que no hay spinner (no debe existir role="status")
-      expect(screen.queryByRole('status')).not.toBeInTheDocument();
-      
-      // Verificar que el botón está deshabilitado
+    it('debe mostrar spinner cuando isLoading es true', () => {
+      render(<Button isLoading loadingText="Cargando">Guardar</Button>);
+
+      expect(screen.getByRole('status', { name: 'Cargando' })).toBeInTheDocument();
+      expect(screen.getByText('Cargando')).toBeInTheDocument();
+
       const button = screen.getByRole('button');
       expect(button).toBeDisabled();
+      expect(button).toHaveAttribute('aria-busy', 'true');
     });
 
     it('debe deshabilitar el botón cuando isLoading es true', () => {
@@ -71,10 +71,10 @@ describe('Button', () => {
 
     it('debe permitir cambio de texto durante loading', () => {
       const { rerender } = render(<Button isLoading={false}>Guardar</Button>);
-      expect(screen.getByText('Guardar')).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: 'Guardar' })).toBeInTheDocument();
       
-      rerender(<Button isLoading={true}>Guardando...</Button>);
-      expect(screen.getByText('Guardando...')).toBeInTheDocument();
+      rerender(<Button isLoading={true} loadingText="Guardando">Guardar</Button>);
+      expect(screen.getByText('Guardando')).toBeInTheDocument();
       
       const button = screen.getByRole('button');
       expect(button).toBeDisabled();
@@ -86,7 +86,8 @@ describe('Button', () => {
       
       const button = screen.getByRole('button');
       expect(button).not.toBeDisabled();
-      expect(button.className).not.toMatch(/opacity-50/);
+      // disabled:opacity-50 es un prefijo Tailwind que siempre aparece en className
+      // pero solo se aplica visualmente cuando el elemento está deshabilitado
       
       fireEvent.click(button);
       expect(handleClick).toHaveBeenCalled();
@@ -97,7 +98,8 @@ describe('Button', () => {
     it('debe aplicar variante secondary correctamente', () => {
       render(<Button variant="secondary">Secondary</Button>);
       const button = screen.getByRole('button');
-      expect(button.className).toMatch(/border-2/);
+      // secondary es ahora un botón filled (rojo-una-2 sólido)
+      expect(button.className).toMatch(/bg-rojo-una-2/);
     });
 
     it('debe aplicar tamaño grande correctamente', () => {
@@ -129,7 +131,7 @@ describe('Button', () => {
         
         return (
           <Button isLoading={loading} onClick={handleSave}>
-            {loading ? 'Guardando...' : 'Guardar'}
+            {loading ? 'Guardando' : 'Guardar'}
           </Button>
         );
       };
@@ -138,7 +140,7 @@ describe('Button', () => {
       
       // Estado inicial
       const button = screen.getByRole('button');
-      expect(screen.getByText('Guardar')).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: 'Guardar' })).toBeInTheDocument();
       expect(button).not.toBeDisabled();
       
       // Simular click (esto activaría loading en un caso real)
@@ -155,12 +157,11 @@ describe('Button', () => {
       
       let button = screen.getByRole('button');
       expect(button).not.toBeDisabled();
-      expect(button.className).not.toMatch(/opacity-50/);
       
       // Cambiar a loading
       rerender(
         <Button disabled={false} isLoading={true}>
-          Procesando...
+          Procesando
         </Button>
       );
       

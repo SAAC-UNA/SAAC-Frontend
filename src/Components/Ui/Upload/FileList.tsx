@@ -7,6 +7,8 @@ import React, { useState } from 'react';
 import type { FileModel } from '@/Types/FileTypes';
 import { formatFileSize } from '@/Types/FileTypes';
 import { TYPOGRAPHY } from '@/Constants/Typography';
+import { useFirstColumnConfig } from '@/Hooks/UseFirstColumnConfig';
+import { truncateText } from '@/Utils';
 import { DeleteConfirmationModal } from '@/Components/Ui/Modals/DeleteConfirmationModal';
 import { SystemIcons } from '@/Components/Ui/Icons/SystemIcons';
 import { TableActionButton } from '@/Components/Ui/Buttons/TableActionButton';
@@ -62,6 +64,7 @@ export const FileList: React.FC<FileListProps> = ({
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [actionLoading, setActionLoading] = useState<number | null>(null);
   const { showToast } = useToast();
+  const firstColumn = useFirstColumnConfig();
 
   const handleDownload = async (file: FileModel) => {
     if (file.tipo === 'enlace') {
@@ -116,13 +119,14 @@ export const FileList: React.FC<FileListProps> = ({
     {
       key: 'nombre_original',
       header: 'Nombre',
+      width: firstColumn.width,
       render: (_, item) => {
         const file = item as unknown as FileModel;
         return (
           <div className="flex items-center gap-2">
             <FileTypeIcon filename={file.nombre_original} isLink={file.tipo === 'enlace'} size="sm" />
-            <span className={`font-medium text-negro-una-2 truncate max-w-xs ${TYPOGRAPHY.table.cell}`} title={file.nombre_original}>
-              {file.nombre_original}
+            <span className={`font-medium text-negro-una-2 ${TYPOGRAPHY.table.cell}`} title={file.nombre_original}>
+              {truncateText(file.nombre_original, firstColumn.maxLength)}
             </span>
           </div>
         );
@@ -153,16 +157,14 @@ export const FileList: React.FC<FileListProps> = ({
         const file = item as unknown as FileModel;
         return (
           <div className="flex items-center justify-center gap-1">
-            {file.tipo === 'archivo' && (
-              <TableActionButton
-                action="custom"
-                customIcon={SystemIcons.actions.download({ className: TABLE_ACTION_BUTTON.icon })}
-                customVariant="tablePower"
-                tooltip="Descargar"
-                onClick={() => handleDownload(file)}
-                disabled={actionLoading === file.archivo_id}
-              />
-            )}
+            <TableActionButton
+              action="custom"
+              customIcon={SystemIcons.actions.download({ className: TABLE_ACTION_BUTTON.icon })}
+              customVariant="tablePower"
+              tooltip={file.tipo === 'archivo' ? 'Descargar' : 'No disponible para enlaces'}
+              onClick={() => handleDownload(file)}
+              disabled={actionLoading === file.archivo_id || file.tipo !== 'archivo'}
+            />
             {onDelete && (
               <TableActionButton
                 action="delete"

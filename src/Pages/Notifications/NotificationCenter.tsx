@@ -110,7 +110,6 @@ const NotificationCenter: React.FC<NotificationCenterModalProps> = ({ isOpen, on
       title="Centro de Notificaciones"
       size="xl"
       className="min-h-[72vh]"
-      contentClassName="max-h-[62vh]"
     >
       <div className="space-y-4">
         {/* Contador */}

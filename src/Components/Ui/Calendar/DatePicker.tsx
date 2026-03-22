@@ -10,11 +10,20 @@
  * - Estados disabled/readonly
  */
 
-import React, { useState, useRef, useEffect, useId } from 'react';
+import React, { useState, useRef, useEffect, useId, useCallback } from 'react';
+import { createPortal } from 'react-dom';
 import { cn } from '@/Utils/ClassNames';
 import { SystemIcons } from '@/Components/Ui/Icons/SystemIcons';
 import { TYPOGRAPHY } from '@/Constants/Typography';
 import { ICON_SIZES } from '@/Constants/Components';
+import { Button } from '@/Components/Ui/Buttons/Button';
+
+// React portals para el calendario, para evitar problemas de overflow en modales u otros contenedores
+interface DropdownPosition {
+  top?: number;
+  bottom?: number;
+  left: number;
+}
 
 export interface DatePickerProps {
   label?: string;
@@ -44,7 +53,6 @@ export const DatePicker: React.FC<DatePickerProps> = ({
   minDate,
   maxDate,
   id,
-  placement = 'bottom',
   onChange
 }) => {
   const [currentDate, setCurrentDate] = useState(() => {
@@ -72,14 +80,33 @@ export const DatePicker: React.FC<DatePickerProps> = ({
   }
   
   const [showPicker, setShowPicker] = useState(false);
+  const [dropdownPosition, setDropdownPosition] = useState<DropdownPosition | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
+  const triggerRef = useRef<HTMLButtonElement>(null);
+  const dropdownRef = useRef<HTMLDivElement>(null);
   const generatedId = useId();
   const inputId = id || generatedId;
+
+  const calculateDropdownPosition = useCallback(() => {
+    if (!triggerRef.current) return;
+    const rect = triggerRef.current.getBoundingClientRect();
+    const viewportHeight = window.innerHeight;
+    const estimatedHeight = 320; // altura aproximada del calendario
+    const spaceBelow = viewportHeight - rect.bottom;
+    if (spaceBelow >= estimatedHeight || spaceBelow >= rect.top) {
+      setDropdownPosition({ top: rect.bottom + 4, left: rect.left });
+    } else {
+      setDropdownPosition({ bottom: viewportHeight - rect.top + 4, left: rect.left });
+    }
+  }, []);
 
   // Cerrar calendario al hacer clic fuera
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (containerRef.current && !containerRef.current.contains(event.target as Node)) {
+      if (
+        !containerRef.current?.contains(event.target as Node) &&
+        !dropdownRef.current?.contains(event.target as Node)
+      ) {
         setShowPicker(false);
       }
     };
@@ -87,6 +114,18 @@ export const DatePicker: React.FC<DatePickerProps> = ({
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
+
+  // Reposicionar si hay scroll o resize mientras está abierto
+  useEffect(() => {
+    if (!showPicker) return;
+    const handleScrollOrResize = () => calculateDropdownPosition();
+    window.addEventListener('scroll', handleScrollOrResize, true);
+    window.addEventListener('resize', handleScrollOrResize);
+    return () => {
+      window.removeEventListener('scroll', handleScrollOrResize, true);
+      window.removeEventListener('resize', handleScrollOrResize);
+    };
+  }, [showPicker, calculateDropdownPosition]);
 
   // Actualizar fecha seleccionada cuando cambia el valor
   // (ahora se deriva directamente de value prop - ver selectedDate arriba)
@@ -260,9 +299,15 @@ export const DatePicker: React.FC<DatePickerProps> = ({
       {/* Input Container */}
       <div className="relative">
         <button
+          ref={triggerRef}
           id={inputId}
           type="button"
-          onClick={() => !disabled && setShowPicker(!showPicker)}
+          onClick={() => {
+            if (!disabled) {
+              if (!showPicker) calculateDropdownPosition();
+              setShowPicker(!showPicker);
+            }
+          }}
           disabled={disabled}
           className={inputClasses}
           aria-haspopup="dialog"
@@ -334,29 +379,36 @@ export const DatePicker: React.FC<DatePickerProps> = ({
           </label>
         )}
 
-        {/* Calendar Dropdown */}
-        {showPicker && (
-          <div className={cn(
-            "absolute left-0 right-0 bg-white border border-gris-una/30 rounded-corner shadow-lg p-3 z-50 max-w-xs",
-            placement === 'top' ? 'bottom-full mb-1' : 'top-full mt-1'
-          )}>
+        {/* Calendar via portal para no ser cortado por overflow del modal */}
+        {showPicker && dropdownPosition && createPortal(
+          <div
+            ref={dropdownRef}
+            style={{
+              position: 'fixed',
+              top: dropdownPosition.top,
+              bottom: dropdownPosition.bottom,
+              left: dropdownPosition.left,
+              zIndex: 9999,
+            }}
+            className="bg-blanco-una border border-gris-light rounded-corner shadow-lg p-3 w-72"
+          >
             {/* Header with navigation and selectors */}
             <div className="flex items-center justify-between gap-2 mb-3">
-              <button
+              <Button
                 type="button"
+                variant="ghost"
                 onClick={handlePrevMonth}
-                className="p-1 hover:bg-gris-una/10 rounded transition-colors flex-shrink-0"
                 aria-label="Mes anterior"
               >
                 <SystemIcons.navigation.arrow.left className={`${ICON_SIZES.sm} text-gris-una`} />
-              </button>
+              </Button>
               
               <div className="flex items-center gap-2 flex-1 justify-center">
                 {/* Selector de Mes */}
                 <select
                   value={currentDate.getMonth()}
                   onChange={(e) => handleMonthChange(parseInt(e.target.value))}
-                  className={`${TYPOGRAPHY.form.input} font-semibold text-negro-una bg-white border border-gris-una/20 rounded px-2 py-1 hover:border-gris-una/40 focus:outline-none focus:ring-1 focus:ring-azul-una/30 cursor-pointer`}
+                  className={`${TYPOGRAPHY.form.input} font-semibold text-negro-una bg-blanco-una border border-gris-light rounded-corner-sm px-2 py-1 hover:border-gris-una-2 focus:outline-none cursor-pointer`}
                   aria-label="Seleccionar mes"
                 >
                   {monthNames.map((month) => (
@@ -370,7 +422,7 @@ export const DatePicker: React.FC<DatePickerProps> = ({
                 <select
                   value={currentDate.getFullYear()}
                   onChange={(e) => handleYearChange(parseInt(e.target.value))}
-                  className={`${TYPOGRAPHY.form.input} font-semibold text-negro-una bg-white border border-gris-una/20 rounded px-2 py-1 hover:border-gris-una/40 focus:outline-none focus:ring-1 focus:ring-azul-una/30 cursor-pointer`}
+                  className={`${TYPOGRAPHY.form.input} font-semibold text-negro-una bg-blanco-una border border-gris-light rounded-corner-sm px-2 py-1 hover:border-gris-una-2 focus:outline-none cursor-pointer`}
                   aria-label="Seleccionar año"
                 >
                   {yearRange.map((year) => (
@@ -381,14 +433,14 @@ export const DatePicker: React.FC<DatePickerProps> = ({
                 </select>
               </div>
               
-              <button
+              <Button
                 type="button"
+                variant="ghost"
                 onClick={handleNextMonth}
-                className="p-1 hover:bg-gris-una/10 rounded transition-colors flex-shrink-0"
                 aria-label="Mes siguiente"
               >
                 <SystemIcons.navigation.arrow.right className={`${ICON_SIZES.sm} text-gris-una`} />
-              </button>
+              </Button>
             </div>
 
             {/* Day names header */}
@@ -413,8 +465,8 @@ export const DatePicker: React.FC<DatePickerProps> = ({
                     !day && 'opacity-0 cursor-default',
                     day && isDateDisabled(day) && 'opacity-30 cursor-not-allowed text-gris-una',
                     day && !isDateDisabled(day) && 'cursor-pointer',
-                    isSelected(day) && 'bg-azul-una text-white shadow-sm',
-                    isToday(day) && !isSelected(day) && 'bg-azul-una/10 text-azul-una border border-azul-una/30',
+                    isSelected(day) && 'bg-error text-blanco-una shadow-sm',
+                    isToday(day) && !isSelected(day) && 'bg-error-light text-error border border-error-ring',
                     day && !isSelected(day) && !isToday(day) && !isDateDisabled(day) && 'hover:bg-gris-una/10 text-negro-una'
                   )}
                 >
@@ -424,14 +476,16 @@ export const DatePicker: React.FC<DatePickerProps> = ({
             </div>
 
             {/* Close button */}
-            <button
+            <Button
               type="button"
+              variant="outline"
+              fullWidth
               onClick={() => setShowPicker(false)}
-              className={`w-full px-3 py-1.5 bg-gris-una/10 text-negro-una rounded ${TYPOGRAPHY.button} font-medium hover:bg-gris-una/20 transition-colors`}
             >
               Cerrar
-            </button>
-          </div>
+            </Button>
+          </div>,
+          document.body
         )}
       </div>
 

@@ -7,6 +7,8 @@
 
 import React from 'react';
 import { Modal } from './Modal';
+import { TYPOGRAPHY } from '@/Constants/Typography';
+import { cn } from '@/Utils/ClassNames';
 
 interface EditConfirmationModalProps {
     isOpen: boolean;
@@ -54,18 +56,16 @@ export const EditConfirmationModal: React.FC<EditConfirmationModalProps> = ({
             onConfirm={onConfirm}
             variant={variant}
             title={title}
-            message={finalMessage}
             confirmLabel={confirmLabel}
             cancelLabel={cancelLabel}
             confirmLoading={isLoading}
-            showCancel={true}
-            showConfirm={true}
+            showCancel
+            showConfirm
         >
+            <p className={cn(TYPOGRAPHY.modal.body, 'text-gris-una-2 leading-relaxed')}>{finalMessage}</p>
             {description && (
-                <div className="mt-4 p-3 bg-[var(--color-info-light)] border border-[var(--color-info-ring)] rounded-corner">
-                    <p className="text-sm text-info-dark font-medium">
-                        {description}
-                    </p>
+                <div className="mt-3 p-3 bg-[var(--color-info-light)] border border-[var(--color-info-ring)] rounded-corner">
+                    <p className={cn(TYPOGRAPHY.modal.body, 'text-info-dark')}>{description}</p>
                 </div>
             )}
         </Modal>
