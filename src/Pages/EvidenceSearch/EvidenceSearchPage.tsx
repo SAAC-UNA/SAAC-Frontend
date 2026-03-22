@@ -210,7 +210,7 @@ export const EvidenceSearchPage: React.FC = () => {
       />
 
       {/* Tabla de resultados */}
-      <div>
+      <div className="rounded-corner overflow-hidden">
         <EvidenceSearchResultsTable
           results={displayedResults}
           loading={loading}

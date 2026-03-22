@@ -10,11 +10,12 @@
  */
 
 import React, { useState, useEffect, useCallback } from 'react';
-import { PageHeader, ScreenContainer } from '@/Components/Ui/Index';
+import { PageHeader, ScreenContainer, Tooltip, TooltipTrigger } from '@/Components/Ui/Index';
 import { BackendErrorAlert } from '@/Components/Ui/Feedback/BackendErrorAlert';
 import { SystemIcons } from '@/Components/Ui/Icons/SystemIcons';
 import { SearchInput } from '@/Components/Ui/Forms/SearchInput';
 import { DropdownButton } from '@/Components/Ui/Buttons/DropdownButton';
+import { Button } from '@/Components/Ui/Buttons/Button';
 import type { DropdownOption } from '@/Components/Ui/Buttons/DropdownButton';
 import { getModuleInfo } from '@/Constants/ModuleInfo';
 import { AuditLogFilters } from './Components/AuditLogFilters';
@@ -26,6 +27,7 @@ import { useToast } from '@/Context/ToastContext';
 import { TYPOGRAPHY } from '@/Constants/Typography';
 import { ICON_SIZES } from '@/Constants/Components';
 import { TABLE_PAGE_SIZE } from '@/Constants/TablePagination';
+import { TooltipContent } from '@/Components/Ui/Index';
 
 const AuditLogPage: React.FC = () => {
   // Hook de toast
@@ -47,6 +49,9 @@ const AuditLogPage: React.FC = () => {
   const [searchState, setSearchState] = useState<{ searchTerm: string; filteredLogs: AuditLog[] }>({ searchTerm: '', filteredLogs: [] });
   const searchTerm = searchState.searchTerm;
   const filteredLogs = searchState.filteredLogs;
+
+  // Estado del panel de filtros
+  const [showFilters, setShowFilters] = useState(false);
 
   // Estado del modal de detalle
   const [detailModal, setDetailModal] = useState<{
@@ -255,14 +260,31 @@ const AuditLogPage: React.FC = () => {
                     : 'Exportar registros de bitácora'
                 }
               />
+              <Tooltip>
+                <TooltipTrigger>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    onClick={() => setShowFilters(prev => !prev)}
+                  >
+                    <SystemIcons.interface.filter className={ICON_SIZES.md} color="currentColor" />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent side="top">
+                  <p>Filtros</p>
+                </TooltipContent>
+              </Tooltip>
           </div>
         }
       >
         {/* Componente de filtros como children del header */}
-        <AuditLogFilters
-          onApplyFilters={handleApplyFilters}
-          isLoading={isLoading}
-        />
+        {/* Panel de filtros colapsable */}
+        {showFilters && (
+          <AuditLogFilters
+            onApplyFilters={handleApplyFilters}
+            isLoading={isLoading}
+          />
+        )}
       </PageHeader>
 
       {/* Alerta de error */}

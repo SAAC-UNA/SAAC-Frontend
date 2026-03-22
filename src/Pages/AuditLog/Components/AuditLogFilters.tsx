@@ -208,7 +208,6 @@ export const AuditLogFilters: React.FC<AuditLogFiltersProps> = ({
           />
         </div>
       </div>
-
       {/* Botón para limpiar filtros */}
       {hasActiveFilters && (
         <div className="flex justify-end">

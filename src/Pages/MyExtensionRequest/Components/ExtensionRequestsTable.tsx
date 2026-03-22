@@ -142,7 +142,10 @@ export const ExtensionRequestsTable: React.FC<ExtensionRequestsTableProps> = ({
       key: 'estado',
       header: 'Estado',
       align: 'center',
-      render: (_: unknown, item: ExtensionRequest) => <ExtensionRequestStatusBadge estado={item.estado} />
+      render: (_: unknown, item: ExtensionRequest) => 
+        <div className="flex justify-center">
+          <ExtensionRequestStatusBadge estado={item.estado} />
+        </div>
     },
     {
       key: 'actions',
