@@ -20,11 +20,25 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { createPortal } from 'react-dom';
 import type { ReactNode } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from './Button';
 import { SystemIcons } from '../Icons/SystemIcons';
 import { cn } from '@/Utils/ClassNames';
 import { TYPOGRAPHY } from '@/Constants/Typography';
 import { ICON_SIZES } from '@/Constants/Components';
+
+// Variantes de animación para el dropdown
+const dropdownVariants = {
+  hidden: { opacity: 0, y: -8, scale: 0.96, transformOrigin: 'top center' },
+  visible: {
+    opacity: 1, y: 0, scale: 1, transformOrigin: 'top center',
+    transition: { type: 'spring' as const, damping: 30, stiffness: 400, mass: 0.8 },
+  },
+  exit: {
+    opacity: 0, y: -6, scale: 0.97, transformOrigin: 'top center',
+    transition: { duration: 0.15, ease: [0.32, 0, 0.67, 0] as [number, number, number, number] },
+  },
+};
 
 export interface DropdownOption {
   /** Identificador único de la opción */
@@ -167,63 +181,73 @@ export const DropdownButton: React.FC<DropdownButtonProps> = ({
         >
           {icon && <span className="flex-shrink-0">{icon}</span>}
           <span className={TYPOGRAPHY.button}>{label}</span>
-          <SystemIcons.interface.chevronDown 
-            className={cn(
-              ICON_SIZES.button, "transition-transform duration-200",
-              isOpen && "rotate-180"
-            )}
-          />
+          <motion.span
+            animate={{ rotate: isOpen ? 180 : 0 }}
+            transition={{ type: 'spring', damping: 25, stiffness: 300, mass: 0.6 }}
+            style={{ display: 'flex' }}
+          >
+            <SystemIcons.interface.chevronDown className={ICON_SIZES.button} />
+          </motion.span>
         </Button>
       </div>
 
       {/* Menú desplegable via portal para evitar saltos de layout */}
-      {isOpen && dropdownCoords && createPortal(
-        <div
-          ref={dropdownRef}
-          style={{
-            position: 'fixed',
-            top: dropdownCoords.top,
-            left: dropdownCoords.left,
-            right: dropdownCoords.right,
-            zIndex: 9999,
-          }}
-          className={cn(
-            "rounded-corner bg-blanco-una-2 shadow-lg border border-gris-light overflow-hidden",
-            getMenuWidthClass(),
+      {!disabled && dropdownCoords && createPortal(
+        <AnimatePresence>
+          {isOpen && (
+            <motion.div
+              key="dropdown-button-menu"
+              variants={dropdownVariants}
+              initial="hidden"
+              animate="visible"
+              exit="exit"
+              ref={dropdownRef}
+              style={{
+                position: 'fixed',
+                top: dropdownCoords.top,
+                left: dropdownCoords.left,
+                right: dropdownCoords.right,
+                zIndex: 9999,
+              }}
+              className={cn(
+                "rounded-corner bg-blanco-una shadow-lg border border-gris-light overflow-hidden",
+                getMenuWidthClass(),
+              )}
+            >
+              <div className="py-1 overflow-auto custom-scrollbar" style={{ maxHeight: '320px' }}>
+                {options.map((option) => (
+                  <button
+                    key={option.id}
+                    type="button"
+                    onClick={() => handleOptionClick(option)}
+                    disabled={option.disabled}
+                    className={cn(
+                      `relative w-full text-left px-4 py-2.5 ${TYPOGRAPHY.button}`,
+                      "hover:bg-gris-light/60 focus:bg-gris-light/60 focus:outline-none",
+                      "transition-colors duration-150",
+                      "flex items-center gap-3",
+                      option.disabled 
+                        ? "opacity-50 cursor-not-allowed text-gris-una" 
+                        : "cursor-pointer text-negro-una-2 hover:text-negro-una",
+                      option.className
+                    )}
+                    role="menuitem"
+                  >
+                    {/* Ícono de la opción */}
+                    {option.icon && (
+                      <span className="flex-shrink-0 w-5 h-5 flex items-center justify-center">
+                        {option.icon}
+                      </span>
+                    )}
+                    
+                    {/* Label de la opción */}
+                    <span className="flex-1">{option.label}</span>
+                  </button>
+                ))}
+              </div>
+            </motion.div>
           )}
-        >
-          <div className="py-1 overflow-auto custom-scrollbar" style={{ maxHeight: '320px' }}>
-            {options.map((option) => (
-              <button
-                key={option.id}
-                type="button"
-                onClick={() => handleOptionClick(option)}
-                disabled={option.disabled}
-                className={cn(
-                  `relative w-full text-left px-4 py-2.5 ${TYPOGRAPHY.button}`,
-                  "hover:bg-gray-100 focus:bg-gray-100 focus:outline-none",
-                  "transition-colors duration-150",
-                  "flex items-center gap-3",
-                  option.disabled 
-                    ? "opacity-50 cursor-not-allowed" 
-                    : "cursor-pointer text-gray-900",
-                  option.className
-                )}
-                role="menuitem"
-              >
-                {/* Ícono de la opción */}
-                {option.icon && (
-                  <span className="flex-shrink-0 w-5 h-5 flex items-center justify-center">
-                    {option.icon}
-                  </span>
-                )}
-                
-                {/* Label de la opción */}
-                <span className="flex-1">{option.label}</span>
-              </button>
-            ))}
-          </div>
-        </div>,
+        </AnimatePresence>,
         document.body
       )}
     </div>
