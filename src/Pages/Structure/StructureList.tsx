@@ -8,6 +8,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { StructureTable } from './Components/StructureTable';
+import { StructureEditModal } from './Components/StructureEditModal';
 import { ScreenContainer } from '@/Components/Ui/Layout/ScreenContainer';
 import { PageHeader } from '@/Components/Ui/Index';
 import { Modal } from '@/Components/Ui/Modals/Modal';
@@ -18,7 +19,6 @@ import { DeleteConfirmationModal } from '@/Components/Ui/Modals/DeleteConfirmati
 import { SuccessModal } from '@/Components/Ui/Modals/SuccessModal';
 import { SearchInput } from '@/Components/Ui/Forms/SearchInput';
 import { Button } from '@/Components/Ui/Buttons/Button';
-import { SystemIcons } from '@/Components/Ui/Icons/SystemIcons';
 import { truncateText } from '@/Utils';
 
 const StructureList: React.FC = () => {
@@ -69,11 +69,17 @@ const StructureList: React.FC = () => {
     action: 'activate'
   });
 
+  // Estado para el modal de edición
+  const [editModalState, setEditModalState] = useState<{
+    isOpen: boolean;
+    element: StructureElement | null;
+  }>({ isOpen: false, element: null });
+
   // Estado para búsqueda
   const [searchQuery, setSearchQuery] = useState('');
 
   const handleEditElement = (element: StructureElement) => {
-    navigate(`/estructura/editar/formulario?id=${element.id}&type=${element.type}`);
+    setEditModalState({ isOpen: true, element });
   };
 
   const handleDeleteElement = (element: StructureElement) => {
@@ -203,9 +209,7 @@ const StructureList: React.FC = () => {
               <Button
                 onClick={handleCreateElement}
                 variant="secondary"
-                className="gap-2"
               >
-                <SystemIcons.actions.add className="w-4 h-4" size="sm" />
                 Crear
               </Button>
             </div>
@@ -233,49 +237,75 @@ const StructureList: React.FC = () => {
       isLoading={isLoading}
     />
 
-      {/* Modal de confirmación para activar/inactivar */}
-      {toggleActiveModalState.isOpen && toggleActiveModalState.element && (
+      {/* Modal de confirmación para activar */}
+      {toggleActiveModalState.element && !toggleActiveModalState.element.active && (
         <Modal
-          isOpen={true}
+          isOpen={toggleActiveModalState.isOpen}
           onClose={cancelToggleActive}
           onConfirm={confirmToggleActive}
-          variant={toggleActiveModalState.element.active ? 'warning' : 'info'}
-          title={toggleActiveModalState.element.active ? 'Confirmar inactivación' : 'Confirmar activación'}
-          confirmLabel={toggleActiveModalState.element.active ? 'Inactivar' : 'Activar'}
+          variant="success"
+          title="Confirmar activación"
+          confirmLabel="Sí, activar"
           cancelLabel="Cancelar"
           confirmLoading={isLoading}
-          showCancel={true}
-          showConfirm={true}
+          showCancel
+          showConfirm
         >
-          <p>
-            ¿Está seguro de que desea {toggleActiveModalState.element.active ? 'inactivar' : 'activar'} "<span className="font-bold">{truncateText(toggleActiveModalState.element.name || toggleActiveModalState.element.nomenclature || '')}</span>"?
+          <p className="text-sm text-gris-una-2 leading-relaxed">
+            ¿Está seguro de que desea activar "<strong>{truncateText(toggleActiveModalState.element.name || toggleActiveModalState.element.nomenclature || '')}</strong>"?
           </p>
-          {toggleActiveModalState.element.active ? (
-            <div className="mt-4 p-3 bg-[var(--color-warning-light)] border border-[var(--color-warning-ring)] rounded-corner">
-              <p className="text-sm text-warning-dark">
-                Al inactivar este elemento, dejará de estar disponible en el sistema. Esta acción es reversible.
-              </p>
-              {hasChildren(toggleActiveModalState.element) && (
-                <p className="text-xs text-warning-dark mt-2">
-                  <strong>Importante:</strong> Todos los elementos dependientes (hijos) se inactivarán automáticamente en cascada.
-                </p>
-              )}
-            </div>
-          ) : (
-            <div className="mt-4 p-3 bg-[var(--color-info-light)] border border-[var(--color-info-ring)] rounded-corner">
+          <p className="mt-2 text-sm text-gris-una-2">
+            Al activar este elemento, volverá a estar disponible para su uso en el sistema.
+          </p>
+          {hasChildren(toggleActiveModalState.element) && (
+            <div className="mt-3 p-3 bg-[var(--color-info-light)] border border-[var(--color-info-ring)] rounded-corner">
               <p className="text-sm text-info-dark">
-                Al activar este elemento, volverá a estar disponible para su uso en el sistema.
+                <strong>Cascada automática:</strong> Todos los elementos dependientes (hijos) se activarán automáticamente.
               </p>
-              {hasChildren(toggleActiveModalState.element) && (
-                <p className="text-xs text-info-dark mt-2">
-                  <strong>Cascada automática:</strong> Todos los elementos dependientes (hijos) se activarán automáticamente en cascada.
-                </p>
-              )}
             </div>
           )}
         </Modal>
       )}
-            {/* Modal de éxito */}
+
+      {/* Modal de confirmación para inactivar */}
+      {toggleActiveModalState.element && toggleActiveModalState.element.active && (
+        <Modal
+          isOpen={toggleActiveModalState.isOpen}
+          onClose={cancelToggleActive}
+          onConfirm={confirmToggleActive}
+          variant="info"
+          title="Confirmar inactivación"
+          confirmLabel="Sí, inactivar"
+          cancelLabel="Cancelar"
+          confirmLoading={isLoading}
+          showCancel
+          showConfirm
+          footerMeta="Esta acción puede ser revertida en el futuro"
+        >
+          <p className="text-sm text-gris-una-2 leading-relaxed">
+            ¿Está seguro de que desea inactivar "<strong>{truncateText(toggleActiveModalState.element.name || toggleActiveModalState.element.nomenclature || '')}</strong>"?
+          </p>
+          <p className="mt-2 text-sm text-gris-una-2">
+            Al inactivar este elemento, dejará de estar disponible en el sistema.
+          </p>
+          {hasChildren(toggleActiveModalState.element) && (
+            <div className="mt-3 p-3 bg-[var(--color-warning-light)] border border-[var(--color-warning-ring)] rounded-corner">
+              <p className="text-sm text-warning-dark">
+                <strong>Importante:</strong> Todos los elementos dependientes (hijos) se inactivarán automáticamente en cascada.
+              </p>
+            </div>
+          )}
+        </Modal>
+      )}
+      {/* Modal de edición */}
+      <StructureEditModal
+        isOpen={editModalState.isOpen}
+        onClose={() => setEditModalState({ isOpen: false, element: null })}
+        element={editModalState.element}
+        onSuccess={() => { loadTree(); setEditModalState({ isOpen: false, element: null }); }}
+      />
+
+      {/* Modal de éxito */}
       <SuccessModal
         isOpen={successModalState.isOpen}
         onClose={closeSuccessModal}

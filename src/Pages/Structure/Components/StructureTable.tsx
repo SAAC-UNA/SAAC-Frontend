@@ -192,7 +192,7 @@ export const StructureTable: React.FC<StructureTableProps> = ({
             key: 'type',
             header: 'Tipo',
             align: 'left',
-            width: firstColumn.width,
+            width: '14%',
             render: (_, element) => (
                 <p className={`block font-sans antialiased font-bold leading-normal text-negro-una-2 ${TYPOGRAPHY.table.cell}`}>
                     {ELEMENT_TYPE_LABELS[element.type]}
@@ -213,6 +213,7 @@ export const StructureTable: React.FC<StructureTableProps> = ({
             key: 'name',
             header: 'Nombre',
             align: 'left',
+            width: firstColumn.width,
             render: (_, element) => (
                 <p
                     className={`block font-sans antialiased font-normal leading-normal text-negro-una-2 ${TYPOGRAPHY.table.cell} ${
@@ -242,11 +243,13 @@ export const StructureTable: React.FC<StructureTableProps> = ({
             header: 'Estado',
             align: 'center',
             render: (_, element) => (
-                <StatusBadge
-                    label={element.active ? 'Activo' : 'Inactivo'}
-                    colorClasses={element.active ? 'text-verde-dark bg-verde-ring' : 'text-error-dark bg-error-ring'}
-                    badgeClassName="min-w-[76px] justify-center text-center"
-                />
+                <div className="flex justify-center">
+                    <StatusBadge
+                        label={element.active ? 'Activo' : 'Inactivo'}
+                        colorClasses={element.active ? 'text-verde-dark bg-verde-ring' : 'text-error-dark bg-error-ring'}
+                        badgeClassName="min-w-[76px] justify-center text-center"
+                    />
+                </div>
             )
         },
         {

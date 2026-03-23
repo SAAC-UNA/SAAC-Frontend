@@ -80,16 +80,16 @@ export const ModernSidebar: React.FC<SidebarProps> = ({
       {/* Usuario autenticado al final del sidebar */}
       <div className={cn(
         'flex-shrink-0 h-20 flex items-center',
-        isCollapsed ? 'px-0 justify-center' : 'px-3 justify-start'
+        isItemCollapsed ? 'px-0 justify-center' : 'px-3 justify-start'
       )}>
         <UserProfileHeader
           className={cn(
             'pr-0',
-            isCollapsed ? 'w-auto justify-center px-0' : 'w-full justify-start px-0'
+            isItemCollapsed ? 'w-auto justify-center px-0' : 'w-full justify-start px-0'
           )}
           showUserMenu={true}
           showNotifications={false}
-          showInlineIdentity={!isCollapsed}
+          showInlineIdentity={isVisuallyExpanded}
           useSidebarAvatarStyle={true}
         />
       </div>
