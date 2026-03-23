@@ -251,7 +251,7 @@ export const DataTable = React.memo(<T extends Record<string, unknown>>({
                 return (
                   <React.Fragment key={`${rowKey}-${index}`}>
                     <tr
-                      className={cn(expandableRow && "cursor-pointer hover:bg-gray-50 transition-colors")}
+                      className={cn(expandableRow && "cursor-pointer transition-colors")}
                       onClick={expandableRow ? () => toggleRow(rowKey) : undefined}
                     >
                       {expandableRow && (
@@ -318,7 +318,7 @@ export const DataTable = React.memo(<T extends Record<string, unknown>>({
                     </tr>
                     <AnimatePresence initial={false}>
                       {expandableRow && isExpanded && (
-                        <tr className="bg-blanco-una hover:bg-blanco-una">
+                        <tr className="bg-blanco-una">
                           <td colSpan={totalCols} className="p-0 border-0">
                             <motion.div
                               initial={{ height: 0, opacity: 0 }}
@@ -327,7 +327,7 @@ export const DataTable = React.memo(<T extends Record<string, unknown>>({
                               transition={{ type: 'spring', damping: 25, stiffness: 300, mass: 0.8 }}
                               className="overflow-hidden"
                             >
-                              <div className="px-8 pb-4 pt-2">
+                              <div className="pl-8 pr-0 pb-4 pt-2">
                                 {expandableRow(item)}
                               </div>
                             </motion.div>

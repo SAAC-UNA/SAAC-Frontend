@@ -8,7 +8,6 @@
  */
 
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { Modal } from '@/Components/Ui/Modals/Modal';
 import { SystemIcons } from '@/Components/Ui/Icons/SystemIcons';
 import { Accordion, type EvidenciaEntry } from '@/Components/Ui/Upload/Accordion';
@@ -17,6 +16,8 @@ import { fileService } from '@/Services/FileService';
 import { evidenceSearchService, mapBackendToFrontend } from '@/Services/EvidenceSearchService';
 import type { FileModel } from '@/Types/FileTypes';
 import { type EvidenceSearchResult } from '@/Types/EvidenceSearchTypes';
+import { useAuth } from '@/Context/AuthContext';
+import { AdminFileUploadModal } from './AdminFileUploadModal';
 import { TYPOGRAPHY } from '@/Constants/Typography';
 import { ICON_SIZES } from '@/Constants/Components';
 import { cn } from '@/Utils/ClassNames';
@@ -35,7 +36,7 @@ interface FilesByUser {
   archivos: FileModel[];
 }
 
-// ── Componentes locales de layout ────────────────────────────────────────────
+// Componentes locales de layout
 
 const SectionLabel: React.FC<{ label: string }> = ({ label }) => (
   <div className="flex items-center gap-2 mb-2.5">
@@ -56,17 +57,20 @@ const InfoCell: React.FC<{ label: string; children: React.ReactNode; className?:
   </div>
 );
 
-// ─────────────────────────────────────────────────────────────────────────────
-
 export const EvidenceDetailsModal: React.FC<EvidenceDetailsModalProps> = ({
   isOpen,
   onClose,
   criterioId,
 }) => {
-  const navigate = useNavigate();
+  const { isSuperUser, isAdmin } = useAuth();
+  const isPrivileged = isSuperUser() || isAdmin();
+
   const [evidencias, setEvidencias] = useState<EvidenceSearchResult[]>([]);
   const [filesByEvidencia, setFilesByEvidencia] = useState<Map<number, FilesByUser[]>>(new Map());
   const [loadingFiles, setLoadingFiles] = useState(false);
+  const [adminUpload, setAdminUpload] = useState<{ isOpen: boolean; evidenciaId: number; procesoId: number }>({
+    isOpen: false, evidenciaId: 0, procesoId: 0,
+  });
 
   const criterio = evidencias[0] ?? null;
 
@@ -112,16 +116,8 @@ export const EvidenceDetailsModal: React.FC<EvidenceDetailsModalProps> = ({
   };
 
   const handleOpenUpload = (evidenciaId: number, group: ResponsableGroup) => {
-    const ev = evidencias.find(e => e.evidencia_id === evidenciaId);
-    const nombre = ev ? `${ev.nomenclatura} - ${ev.descripcion}` : 'Evidencia';
     const procesoId = group.archivos.find(f => f.proceso_id)?.proceso_id ?? 0;
-    const params = new URLSearchParams({
-      evidenciaId: String(evidenciaId),
-      procesoId: String(procesoId),
-      nombre,
-    });
-    onClose();
-    navigate(`/evidencias/subir?${params.toString()}`);
+    setAdminUpload({ isOpen: true, evidenciaId, procesoId });
   };
 
   const loadAll = async () => {
@@ -136,34 +132,31 @@ export const EvidenceDetailsModal: React.FC<EvidenceDetailsModalProps> = ({
       const mapped = response.data.map(mapBackendToFrontend);
       setEvidencias(mapped);
 
-      if (mapped.length === 0) return;
-
-      const results = await Promise.all(
-        mapped.map(ev => fileService.listFiles({ evidencia_id: ev.evidencia_id })),
-      );
-
-      const map = new Map<number, FilesByUser[]>();
-      mapped.forEach((ev, idx) => {
-        const groupMap = new Map<number, FilesByUser>();
-        results[idx].forEach((f: FileModel) => {
-          if (!groupMap.has(f.usuario_id)) {
-            groupMap.set(f.usuario_id, {
-              usuario_id: f.usuario_id,
-              nombre: f.usuario?.nombre_completo || `Usuario ${f.usuario_id}`,
-              email: f.usuario?.email || '',
-              archivos: [],
-            });
-          }
-          groupMap.get(f.usuario_id)!.archivos.push(f);
+      if (mapped.length > 0 && isPrivileged) {
+        const results = await Promise.all(
+          mapped.map(ev => fileService.listFiles({ evidencia_id: ev.evidencia_id })),
+        );
+        const map = new Map<number, FilesByUser[]>();
+        mapped.forEach((ev, idx) => {
+          const groupMap = new Map<number, FilesByUser>();
+          results[idx].forEach((f: FileModel) => {
+            if (!groupMap.has(f.usuario_id)) {
+              groupMap.set(f.usuario_id, {
+                usuario_id: f.usuario_id,
+                nombre: f.usuario?.nombre_completo || `Usuario ${f.usuario_id}`,
+                email: f.usuario?.email || '',
+                archivos: [],
+              });
+            }
+            groupMap.get(f.usuario_id)!.archivos.push(f);
+          });
+          map.set(ev.evidencia_id, Array.from(groupMap.values()));
         });
-        map.set(ev.evidencia_id, Array.from(groupMap.values()));
-      });
-
-      setFilesByEvidencia(map);
+        setFilesByEvidencia(map);
+      }
     } catch (error) {
       console.error('Error al cargar datos del criterio:', error);
       setEvidencias([]);
-      setFilesByEvidencia(new Map());
     } finally {
       setLoadingFiles(false);
     }
@@ -181,6 +174,7 @@ export const EvidenceDetailsModal: React.FC<EvidenceDetailsModalProps> = ({
   }));
 
   return (
+    <>
     <Modal
       isOpen={isOpen}
       onClose={onClose}
@@ -224,17 +218,6 @@ export const EvidenceDetailsModal: React.FC<EvidenceDetailsModalProps> = ({
             </div>
           )}
 
-          {/* RESPONSABLES Y RECURSOS */}
-          <div>
-            <SectionLabel label="Responsables y recursos" />
-            <Accordion
-              entries={accordionEntries}
-              loading={loadingFiles}
-              onDelete={handleDeleteFile}
-              onUpload={handleOpenUpload}
-            />
-          </div>
-
           {/* ROLES CON ACCESO */}
           {criterio && criterio.roles_acceso && criterio.roles_acceso.length > 0 && (
             <div>
@@ -258,8 +241,32 @@ export const EvidenceDetailsModal: React.FC<EvidenceDetailsModalProps> = ({
             </div>
           )}
 
+          {/* GESTIÓN DE RECURSOS (solo Superusuario / Administrador) */}
+          {isPrivileged && (
+            <div>
+              <SectionLabel label="Gestión de recursos" />
+              <Accordion
+                entries={accordionEntries}
+                loading={loadingFiles}
+                onDelete={handleDeleteFile}
+                onUpload={handleOpenUpload}
+              />
+            </div>
+          )}
+
         </div>
       )}
     </Modal>
+
+    {isPrivileged && (
+      <AdminFileUploadModal
+        isOpen={adminUpload.isOpen}
+        onClose={() => setAdminUpload(prev => ({ ...prev, isOpen: false }))}
+        evidenciaId={adminUpload.evidenciaId}
+        procesoId={adminUpload.procesoId}
+        onSuccess={() => reloadFilesForEvidencia(adminUpload.evidenciaId)}
+      />
+    )}
+  </>
   );
 };

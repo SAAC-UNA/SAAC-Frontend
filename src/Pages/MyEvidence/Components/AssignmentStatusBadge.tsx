@@ -6,19 +6,13 @@
 import React from 'react';
 import { StatusBadge } from '@/Components/Ui/Feedback/StatusBadge';
 import type { AssignmentStatus } from '@/Types/EvidenceAssignmentTypes';
-
-const STATUS_BADGE_CLASSES: Record<AssignmentStatus, { label: string; colorClasses: string }> = {
-  pendiente:   { label: 'Pendiente',   colorClasses: 'text-warning-dark bg-warning-ring' },
-  en_progreso: { label: 'En Progreso', colorClasses: 'text-info-dark bg-info-ring' },
-  completado:  { label: 'Completado',  colorClasses: 'text-verde-dark bg-verde-ring' },
-  vencido:     { label: 'Vencido',     colorClasses: 'text-error-dark bg-error-ring' },
-};
+import { ASSIGNMENT_STATUS_BADGE } from '@/Constants/StatusBadges';
 
 interface AssignmentStatusBadgeProps {
   estado: AssignmentStatus;
 }
 
 export const AssignmentStatusBadge: React.FC<AssignmentStatusBadgeProps> = ({ estado }) => {
-  const config = STATUS_BADGE_CLASSES[estado] ?? { label: estado, colorClasses: 'text-gray-600 bg-gray-100' };
+  const config = ASSIGNMENT_STATUS_BADGE[estado] ?? { label: estado, colorClasses: 'text-gray-600 bg-gray-100' };
   return <StatusBadge label={config.label} colorClasses={config.colorClasses} />;
 };

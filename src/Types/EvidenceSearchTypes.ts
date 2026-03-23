@@ -146,30 +146,6 @@ export interface EvidenceSearchState {
 }
 
 /**
- * Helpers para trabajar con estados de evidencias
- */
-export const EVIDENCE_STATUS_LABELS: Record<EvidencePublicationStatus, string> = {
-  pendiente: 'Pendiente',
-  en_proceso: 'En Proceso',
-  aprobado: 'Aprobado',
-  rechazado: 'Rechazado',
-  completado: 'Completado',
-  vencido: 'Vencido'
-};
-
-// Clases badge usando las variables CSS definidas en index.css
-export const EVIDENCE_STATUS_BADGE: Record<EvidencePublicationStatus, string> = {
-  pendiente: 'bg-[var(--color-gris-light)] text-gris-una',
-  en_proceso: 'bg-[var(--color-warning-ring)] text-warning-dark',
-  aprobado: 'bg-[var(--color-verde-ring)] text-verde-dark',
-  rechazado: 'bg-[var(--color-error-ring)] text-error-dark',
-  completado: 'bg-[var(--color-info-ring)] text-info-dark',
-  vencido: 'bg-[var(--color-error-ring)] text-error'
-};
-
-// Mantener compatibilidad con código existente (deprecated - usar EVIDENCE_STATUS_BADGE)
-
-/**
  * Filtra localmente los resultados de búsqueda según un término de texto.
  * Cubre todos los campos visibles en la tabla.
  */
