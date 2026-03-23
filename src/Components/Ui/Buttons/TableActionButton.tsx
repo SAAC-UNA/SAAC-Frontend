@@ -16,7 +16,7 @@ import { SystemIcons } from '@/Components/Ui/Icons/SystemIcons';
 import { ButtonWithTooltip } from './ButtonWithTooltip';
 import { TABLE_ACTION_BUTTON } from '@/Constants/Components';
 
-export type TableActionType = 'view' | 'edit' | 'delete' | 'power' | 'add' | 'upload' | 'uploadArrow' | 'search' | 'roles' | 'users' | 'clock' | 'markComplete' | 'markInProgress' | 'approveRequest' | 'rejectRequest' | 'custom';
+export type TableActionType = 'view' | 'edit' | 'delete' | 'power' | 'add' | 'upload' | 'uploadArrow' | 'search' | 'roles' | 'users' | 'clock' | 'markComplete' | 'markInProgress' | 'approveRequest' | 'rejectRequest' | 'custom' | 'list';
 
 interface TableActionButtonProps extends Omit<React.ButtonHTMLAttributes<HTMLButtonElement>, 'onClick'> {
   /**
@@ -47,7 +47,7 @@ interface TableActionButtonProps extends Omit<React.ButtonHTMLAttributes<HTMLBut
   /**
    * Variante personalizada del botón. Si se proporciona, anula la variante predefinida
    */
-  customVariant?: 'primary' | 'secondary' | 'tertiary' | 'outline' | 'ghost' | 'transparent' | 'success' | 'tableView' | 'tableEdit' | 'tableDelete' | 'tablePower' | 'tablePowerInactive';
+  customVariant?: 'primary' | 'secondary' | 'tertiary' | 'outline' | 'ghost' | 'transparent' | 'success' | 'tableView' | 'tableEdit' | 'tableDelete' | 'tablePower' | 'tablePowerInactive' | 'tableList';
   
   /**
    * Clases CSS adicionales
@@ -128,6 +128,10 @@ const actionConfig: Record<TableActionType, {
   },  custom: {
     icon: null,
     variant: 'tableView'
+  },
+  list: {
+    icon: <SystemIcons.actions.list className={TABLE_ACTION_BUTTON.icon} />,
+    variant: 'tableList'
   }
 };
 

@@ -198,7 +198,7 @@ export const EvidenceSearchPage: React.FC = () => {
       />
 
       {/* Tabla de resultados */}
-      <div className="rounded-corner overflow-hidden">
+      <div className="rounded-corner">
         <EvidenceSearchResultsTable
           results={displayedResults}
           loading={loading}

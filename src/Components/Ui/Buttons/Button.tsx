@@ -148,6 +148,12 @@ const buttonVariants = cva(
           'hover:[filter:drop-shadow(0_0_6px_rgba(107,114,128,0.75))] transition-all duration-200',
           'disabled:opacity-50 disabled:cursor-not-allowed',
         ].join(' '),
+
+        tableList: [
+          'bg-transparent text-morado-dark border-0 p-2',
+          'hover:[filter:drop-shadow(0_0_6px_rgba(162,28,175,0.85))] transition-all duration-200',
+          'disabled:opacity-50 disabled:cursor-not-allowed',
+        ].join(' '),
       },
 
       size: {
@@ -168,7 +174,7 @@ export type ButtonVariant = NonNullable<VariantProps<typeof buttonVariants>['var
 
 // Variantes que no reciben ancho estándar automático
 const TABLE_VARIANTS: ButtonVariant[] = [
-  'tableView', 'tableEdit', 'tableDelete', 'tablePower', 'tablePowerInactive', 'ghost',
+  'tableView', 'tableEdit', 'tableDelete', 'tablePower', 'tablePowerInactive', 'tableList', 'ghost',
 ];
 
 export interface ButtonProps

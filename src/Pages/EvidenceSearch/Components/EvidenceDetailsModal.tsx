@@ -10,16 +10,22 @@
 import React, { useState, useEffect } from 'react';
 import { Modal } from '@/Components/Ui/Modals/Modal';
 import { SystemIcons } from '@/Components/Ui/Icons/SystemIcons';
-import { Accordion, type EvidenciaEntry } from '@/Components/Ui/Upload/Accordion';
-import type { ResponsableGroup } from '@/Components/Ui/Upload/Accordion';
+import { DataTable, type DataTableColumn } from '@/Components/Ui/Table/DataTable';
+import { StatusBadge } from '@/Components/Ui/Feedback/StatusBadge';
+import { FileList } from '@/Components/Ui/Upload/FileList';
 import { fileService } from '@/Services/FileService';
 import { evidenceSearchService, mapBackendToFrontend } from '@/Services/EvidenceSearchService';
+import { evidenceAssignmentService } from '@/Services/EvidenceAssignmentService';
+import { TableActionButton } from '@/Components/Ui/Buttons/TableActionButton';
 import type { FileModel } from '@/Types/FileTypes';
+import type { AssignmentStatus } from '@/Types/EvidenceAssignmentTypes';
 import { type EvidenceSearchResult } from '@/Types/EvidenceSearchTypes';
 import { useAuth } from '@/Context/AuthContext';
 import { AdminFileUploadModal } from './AdminFileUploadModal';
 import { TYPOGRAPHY } from '@/Constants/Typography';
 import { ICON_SIZES } from '@/Constants/Components';
+import { ASSIGNMENT_STATUS_BADGE, EVIDENCE_STATUS_BADGE } from '@/Constants/StatusBadges';
+import { useFirstColumnConfig } from '@/Hooks/UseFirstColumnConfig';
 import { cn } from '@/Utils/ClassNames';
 
 interface EvidenceDetailsModalProps {
@@ -29,12 +35,128 @@ interface EvidenceDetailsModalProps {
   criterioId: number | null;
 }
 
-interface FilesByUser {
+interface FilesByUser extends Record<string, unknown> {
   usuario_id: number;
   nombre: string;
   email: string;
   archivos: FileModel[];
+  fecha_asignacion: string | null;
+  fecha_limite: string | null;
+  estado_asignacion: AssignmentStatus | null;
 }
+
+const formatDate = (iso: string | null): string => {
+  if (!iso) return '—';
+  return new Date(iso).toLocaleDateString('es-CR', {
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+  });
+};
+
+interface EvidenciaResponsablesPanelAdminProps {
+  evidenciaId: number;
+  groups: FilesByUser[];
+  loading: boolean;
+  onDelete: (fileId: number) => Promise<void>;
+  onUpload: (group: FilesByUser) => void;
+}
+
+const EvidenciaResponsablesPanelAdmin: React.FC<EvidenciaResponsablesPanelAdminProps> = ({
+  groups,
+  loading,
+  onDelete,
+  onUpload,
+}) => {
+  const firstColumn = useFirstColumnConfig();
+
+  const responsablesColumns: DataTableColumn<FilesByUser>[] = [
+    {
+      key: 'nombre',
+      header: 'Responsable',
+      align: 'left',
+      width: firstColumn.width,
+      render: (_, item) => (
+        <span className={`font-semibold text-negro-una-2 ${TYPOGRAPHY.table.cell}`}>
+          {item.nombre as string}
+        </span>
+      ),
+    },
+    {
+      key: 'fecha_asignacion',
+      header: 'Fecha Asignación',
+      align: 'center',
+      render: (_, item) => (
+        <span className={`text-gris-una-2 ${TYPOGRAPHY.table.cell}`}>
+          {formatDate(item.fecha_asignacion as string | null)}
+        </span>
+      ),
+    },
+    {
+      key: 'fecha_limite',
+      header: 'Fecha Límite',
+      align: 'center',
+      render: (_, item) => (
+        <span className={`text-gris-una-2 ${TYPOGRAPHY.table.cell}`}>
+          {formatDate(item.fecha_limite as string | null)}
+        </span>
+      ),
+    },
+    {
+      key: 'estado_asignacion',
+      header: 'Estado',
+      align: 'center',
+      render: (_, item) => {
+        const estado = item.estado_asignacion as AssignmentStatus | null;
+        if (!estado) return <span className={`text-gris-una-2 ${TYPOGRAPHY.table.cell}`}>—</span>;
+        return (
+          <div className="flex items-center justify-center">
+            <StatusBadge
+              label={ASSIGNMENT_STATUS_BADGE[estado].label}
+              colorClasses={ASSIGNMENT_STATUS_BADGE[estado].colorClasses}
+            />
+          </div>
+        );
+      },
+    },
+    {
+      key: 'acciones',
+      header: 'Acciones',
+      align: 'center',
+      render: (_, item) => (
+        <div className="flex items-center justify-center">
+          <TableActionButton
+            action="uploadArrow"
+            tooltip="Subir archivo"
+            onClick={() => onUpload(item)}
+          />
+        </div>
+      ),
+    },
+  ];
+
+  return (
+    <DataTable<FilesByUser>
+      title=""
+      searchable={false}
+      loading={loading}
+      data={groups}
+      columns={responsablesColumns}
+      getRowKey={(item) => String(item.usuario_id)}
+      emptyMessage="Sin responsables asignados"
+      unstyled
+      expandableRow={(group) => (
+        <FileList
+          files={group.archivos as FileModel[]}
+          loading={false}
+          onDelete={onDelete}
+          showActions={true}
+          emptyMessage="Sin archivos"
+        />
+      )}
+    />
+  );
+};
 
 // Componentes locales de layout
 
@@ -64,6 +186,7 @@ export const EvidenceDetailsModal: React.FC<EvidenceDetailsModalProps> = ({
 }) => {
   const { isSuperUser, isAdmin } = useAuth();
   const isPrivileged = isSuperUser() || isAdmin();
+  const firstColumn = useFirstColumnConfig();
 
   const [evidencias, setEvidencias] = useState<EvidenceSearchResult[]>([]);
   const [filesByEvidencia, setFilesByEvidencia] = useState<Map<number, FilesByUser[]>>(new Map());
@@ -73,6 +196,62 @@ export const EvidenceDetailsModal: React.FC<EvidenceDetailsModalProps> = ({
   });
 
   const criterio = evidencias[0] ?? null;
+
+  const evidenceColumns: DataTableColumn<EvidenceSearchResult>[] = [
+    {
+      key: 'evidencia',
+      header: 'Evidencia',
+      align: 'left',
+      width: firstColumn.width,
+      render: (_, item) => (
+        <div className="flex flex-col pl-2">
+          <span className={`font-bold text-negro-una-2 ${TYPOGRAPHY.table.cell}`}>
+            {item.nomenclatura}
+          </span>
+          <span className={`text-gris-una-2 ${TYPOGRAPHY.table.cell}`}>
+            {item.descripcion}
+          </span>
+        </div>
+      ),
+    },
+    {
+      key: 'recursos',
+      header: 'Recursos',
+      align: 'center',
+      render: (_, item) => (
+        <div className="flex items-center justify-center gap-2">
+          {item.archivos_count > 0 && (
+            <StatusBadge
+              label={`${item.archivos_count} ${item.archivos_count === 1 ? 'archivo' : 'archivos'}`}
+              colorClasses="bg-info-ring text-info-dark"
+            />
+          )}
+          {item.enlaces_count > 0 && (
+            <StatusBadge
+              label={`${item.enlaces_count} ${item.enlaces_count === 1 ? 'enlace' : 'enlaces'}`}
+              colorClasses="bg-morado-ring text-morado-dark"
+            />
+          )}
+          {item.archivos_count === 0 && item.enlaces_count === 0 && (
+            <StatusBadge label="Sin recursos" colorClasses="bg-gris-light text-gris-una" />
+          )}
+        </div>
+      ),
+    },
+    {
+      key: 'estado',
+      header: 'Estado',
+      align: 'center',
+      render: (_, item) => (
+        <div className="flex items-center justify-center">
+          <StatusBadge
+            label={EVIDENCE_STATUS_BADGE[item.estado].label}
+            colorClasses={EVIDENCE_STATUS_BADGE[item.estado].colorClasses}
+          />
+        </div>
+      ),
+    },
+  ];
 
   useEffect(() => {
     if (isOpen && criterioId) {
@@ -84,21 +263,48 @@ export const EvidenceDetailsModal: React.FC<EvidenceDetailsModalProps> = ({
   }, [isOpen, criterioId]);
 
   const reloadFilesForEvidencia = async (evidenciaId: number) => {
-    const files = await fileService.listFiles({ evidencia_id: evidenciaId });
+    const [files, assignments] = await Promise.all([
+      fileService.listFiles({ evidencia_id: evidenciaId }),
+      evidenceAssignmentService.getAssignmentsByEvidence(evidenciaId).catch(() => []),
+    ]);
+    const assignmentMap = new Map(
+      assignments.map(a => [a.usuario_id, {
+        fecha_asignacion: a.fecha_asignacion,
+        fecha_limite: a.fecha_limite ?? null,
+        estado: a.estado,
+      }])
+    );
+    const groupMap = new Map<number, FilesByUser>();
+    files.forEach((f: FileModel) => {
+      if (!groupMap.has(f.usuario_id)) {
+        const asig = assignmentMap.get(f.usuario_id);
+        groupMap.set(f.usuario_id, {
+          usuario_id: f.usuario_id,
+          nombre: f.usuario?.nombre_completo || `Usuario ${f.usuario_id}`,
+          email: f.usuario?.email || '',
+          archivos: [],
+          fecha_asignacion: asig?.fecha_asignacion ?? null,
+          fecha_limite: asig?.fecha_limite ?? null,
+          estado_asignacion: asig?.estado ?? null,
+        });
+      }
+      groupMap.get(f.usuario_id)!.archivos.push(f);
+    });
+    assignments.forEach(a => {
+      if (!groupMap.has(a.usuario_id)) {
+        groupMap.set(a.usuario_id, {
+          usuario_id: a.usuario_id,
+          nombre: a.usuario?.nombre ?? `Usuario ${a.usuario_id}`,
+          email: a.usuario?.email ?? '',
+          archivos: [],
+          fecha_asignacion: a.fecha_asignacion,
+          fecha_limite: a.fecha_limite ?? null,
+          estado_asignacion: a.estado,
+        });
+      }
+    });
     setFilesByEvidencia(prev => {
       const next = new Map(prev);
-      const groupMap = new Map<number, FilesByUser>();
-      files.forEach((f: FileModel) => {
-        if (!groupMap.has(f.usuario_id)) {
-          groupMap.set(f.usuario_id, {
-            usuario_id: f.usuario_id,
-            nombre: f.usuario?.nombre_completo || `Usuario ${f.usuario_id}`,
-            email: f.usuario?.email || '',
-            archivos: [],
-          });
-        }
-        groupMap.get(f.usuario_id)!.archivos.push(f);
-      });
       next.set(evidenciaId, Array.from(groupMap.values()));
       return next;
     });
@@ -115,7 +321,7 @@ export const EvidenceDetailsModal: React.FC<EvidenceDetailsModalProps> = ({
     }
   };
 
-  const handleOpenUpload = (evidenciaId: number, group: ResponsableGroup) => {
+  const handleOpenUpload = (evidenciaId: number, group: FilesByUser) => {
     const procesoId = group.archivos.find(f => f.proceso_id)?.proceso_id ?? 0;
     setAdminUpload({ isOpen: true, evidenciaId, procesoId });
   };
@@ -133,22 +339,49 @@ export const EvidenceDetailsModal: React.FC<EvidenceDetailsModalProps> = ({
       setEvidencias(mapped);
 
       if (mapped.length > 0 && isPrivileged) {
-        const results = await Promise.all(
-          mapped.map(ev => fileService.listFiles({ evidencia_id: ev.evidencia_id })),
-        );
+        const [filesResults, assignmentsResults] = await Promise.all([
+          Promise.all(mapped.map(ev => fileService.listFiles({ evidencia_id: ev.evidencia_id }))),
+          Promise.all(mapped.map(ev => evidenceAssignmentService.getAssignmentsByEvidence(ev.evidencia_id).catch(() => []))),
+        ]);
         const map = new Map<number, FilesByUser[]>();
         mapped.forEach((ev, idx) => {
+          const files = filesResults[idx];
+          const assignments = assignmentsResults[idx];
+          const assignmentMap = new Map(
+            assignments.map(a => [a.usuario_id, {
+              fecha_asignacion: a.fecha_asignacion,
+              fecha_limite: a.fecha_limite ?? null,
+              estado: a.estado,
+            }])
+          );
           const groupMap = new Map<number, FilesByUser>();
-          results[idx].forEach((f: FileModel) => {
+          files.forEach((f: FileModel) => {
             if (!groupMap.has(f.usuario_id)) {
+              const asig = assignmentMap.get(f.usuario_id);
               groupMap.set(f.usuario_id, {
                 usuario_id: f.usuario_id,
                 nombre: f.usuario?.nombre_completo || `Usuario ${f.usuario_id}`,
                 email: f.usuario?.email || '',
                 archivos: [],
+                fecha_asignacion: asig?.fecha_asignacion ?? null,
+                fecha_limite: asig?.fecha_limite ?? null,
+                estado_asignacion: asig?.estado ?? null,
               });
             }
             groupMap.get(f.usuario_id)!.archivos.push(f);
+          });
+          assignments.forEach(a => {
+            if (!groupMap.has(a.usuario_id)) {
+              groupMap.set(a.usuario_id, {
+                usuario_id: a.usuario_id,
+                nombre: a.usuario?.nombre ?? `Usuario ${a.usuario_id}`,
+                email: a.usuario?.email ?? '',
+                archivos: [],
+                fecha_asignacion: a.fecha_asignacion,
+                fecha_limite: a.fecha_limite ?? null,
+                estado_asignacion: a.estado,
+              });
+            }
           });
           map.set(ev.evidencia_id, Array.from(groupMap.values()));
         });
@@ -163,15 +396,6 @@ export const EvidenceDetailsModal: React.FC<EvidenceDetailsModalProps> = ({
   };
 
   if (!criterioId) return null;
-
-  const accordionEntries: EvidenciaEntry[] = evidencias.map(ev => ({
-    evidencia: {
-      id: ev.evidencia_id,
-      nomenclatura: ev.nomenclatura,
-      descripcion: ev.descripcion,
-    },
-    groups: filesByEvidencia.get(ev.evidencia_id) ?? [],
-  }));
 
   return (
     <>
@@ -245,12 +469,27 @@ export const EvidenceDetailsModal: React.FC<EvidenceDetailsModalProps> = ({
           {isPrivileged && (
             <div>
               <SectionLabel label="Gestión de recursos" />
-              <Accordion
-                entries={accordionEntries}
-                loading={loadingFiles}
-                onDelete={handleDeleteFile}
-                onUpload={handleOpenUpload}
-              />
+              <div className="px-1 py-2">
+                <DataTable
+                  title=""
+                  searchable={false}
+                  loading={loadingFiles}
+                  data={evidencias as any}
+                  columns={evidenceColumns as any}
+                  getRowKey={(item: any) => String(item.evidencia_id)}
+                  emptyMessage="No hay evidencias para este criterio"
+                  unstyled
+                  expandableRow={(ev: any) => (
+                    <EvidenciaResponsablesPanelAdmin
+                      evidenciaId={ev.evidencia_id}
+                      groups={filesByEvidencia.get(ev.evidencia_id) ?? []}
+                      loading={false}
+                      onDelete={handleDeleteFile}
+                      onUpload={(group) => handleOpenUpload(ev.evidencia_id, group)}
+                    />
+                  )}
+                />
+              </div>
             </div>
           )}
 
