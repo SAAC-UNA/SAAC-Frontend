@@ -498,11 +498,11 @@ export const DatePicker: React.FC<DatePickerProps> = ({
                       onClick={() => day && !isDateDisabled(day) && handleSelectDate(day)}
                       disabled={!day || isDateDisabled(day)}
                       className={cn(
-                        `p-1.5 ${TYPOGRAPHY.form.helper} rounded font-medium transition-all min-h-[1.75rem] flex items-center justify-center`,
+                        `p-1.5 ${TYPOGRAPHY.form.helper} rounded-corner font-medium transition-all min-h-[1.75rem] flex items-center justify-center`,
                         !day && 'opacity-0 cursor-default',
                         day && isDateDisabled(day) && 'opacity-30 cursor-not-allowed text-gris-una',
                         day && !isDateDisabled(day) && 'cursor-pointer',
-                        isSelected(day) && 'bg-error-light text-error shadow-sm',
+                        isSelected(day) && 'bg-info-light text-info shadow-sm',
                         isToday(day) && !isSelected(day) && 'bg-error-light text-error border border-error-ring',
                         day && !isSelected(day) && !isToday(day) && !isDateDisabled(day) && 'hover:bg-gris-una/10 text-negro-una'
                       )}

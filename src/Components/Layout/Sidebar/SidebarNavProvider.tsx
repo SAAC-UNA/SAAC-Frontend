@@ -26,6 +26,7 @@ interface SidebarNavProviderProps {
  */
 export const SidebarNavProvider: React.FC<SidebarNavProviderProps> = ({ children, isCollapsed }) => {
   const [selectedItem, setSelectedItem] = useState<NavItem | null>(null);
+  const [hoveredChildId, setHoveredChildId] = useState<string | null>(null);
   const [dir, setDir] = useState<'up' | 'down' | null>(null);
   const [panelPos, setPanelPos] = useState({ top: 0, left: 0 });
 
@@ -205,7 +206,8 @@ export const SidebarNavProvider: React.FC<SidebarNavProviderProps> = ({ children
                   }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.25, ease: 'easeInOut' }}
-                  className="py-2 px-2 space-y-1"
+                  className="py-2 px-2 space-y-1 relative"
+                  onMouseLeave={() => setHoveredChildId(null)}
                 >
                   {selectedItem.children?.map(child => {
                     const isActive = isItemActive(child.id);
@@ -219,15 +221,26 @@ export const SidebarNavProvider: React.FC<SidebarNavProviderProps> = ({ children
                           lastItemYRef.current = null;
                           handleItemClick(child.id, child.href, false);
                         }}
+                        onMouseEnter={() => setHoveredChildId(child.id)}
                         className={cn(
-                          'w-full flex items-center gap-3 px-sidebar-item h-sidebar-item text-left cursor-pointer',
-                          'transition-colors duration-150 rounded-lg',
+                          'relative w-full flex items-center gap-3 px-sidebar-item h-sidebar-item text-left cursor-pointer z-10',
+                          'transition-colors duration-150 rounded-lg focus:outline-none',
                           isActive
                             ? 'bg-negro-una/20 text-blanco-una font-semibold'
-                            : 'text-blanco-una-2 hover:bg-negro-una/20 hover:text-blanco-una',
+                            : 'text-blanco-una-2 hover:text-blanco-una',
                           TYPOGRAPHY.sidebarItem,
                         )}
                       >
+                        {hoveredChildId === child.id && !isActive && (
+                          <motion.div
+                            layoutId="sidebar-child-hover-indicator"
+                            className="absolute inset-0 bg-negro-una/20 rounded-lg -z-10"
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            exit={{ opacity: 0 }}
+                            transition={{ type: 'spring', stiffness: 400, damping: 30, mass: 0.8 }}
+                          />
+                        )}
                         {iconName && (
                           <span className={cn('flex-shrink-0 flex items-center justify-center', ICON_SIZES.sm)}>
                             {getIconByName(iconName, 'sm')}

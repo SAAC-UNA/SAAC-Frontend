@@ -17,7 +17,7 @@
  * - Cualquier botón que necesite múltiples opciones
  */
 
-import { useState, useRef, useEffect, useCallback } from 'react';
+import { useState, useRef, useEffect, useCallback, useId } from 'react';
 import { createPortal } from 'react-dom';
 import type { ReactNode } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -89,8 +89,10 @@ export const DropdownButton: React.FC<DropdownButtonProps> = ({
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [dropdownCoords, setDropdownCoords] = useState<{ top: number; left?: number; right?: number } | null>(null);
+  const [hoveredOptionId, setHoveredOptionId] = useState<string | null>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const buttonRef = useRef<HTMLDivElement>(null);
+  const dropdownId = useId();
   
   // React portals
   const calculatePosition = useCallback(() => {
@@ -214,25 +216,47 @@ export const DropdownButton: React.FC<DropdownButtonProps> = ({
                 getMenuWidthClass(),
               )}
             >
-              <div className="py-1 overflow-auto custom-scrollbar" style={{ maxHeight: '320px' }}>
+              <div 
+                className="py-1 overflow-auto custom-scrollbar flex flex-col" 
+                style={{ maxHeight: '320px' }}
+                onMouseLeave={() => setHoveredOptionId(null)}
+              >
                 {options.map((option) => (
                   <button
                     key={option.id}
                     type="button"
                     onClick={() => handleOptionClick(option)}
+                    onMouseEnter={() => setHoveredOptionId(option.id)}
                     disabled={option.disabled}
                     className={cn(
-                      `relative w-full text-left px-4 py-2.5 ${TYPOGRAPHY.button}`,
-                      "hover:bg-gris-light/60 focus:bg-gris-light/60 focus:outline-none",
+                      `relative w-full text-left px-4 py-2.5 ${TYPOGRAPHY.button} z-10`,
+                      "focus:outline-none", // Eliminado hover rígido
                       "transition-colors duration-150",
                       "flex items-center gap-3",
                       option.disabled 
                         ? "opacity-50 cursor-not-allowed text-gris-una" 
-                        : "cursor-pointer text-negro-una-2 hover:text-negro-una",
+                        : "cursor-pointer text-negro-una-2",
                       option.className
                     )}
                     role="menuitem"
                   >
+                    {/* Fondo deslizable animado */}
+                    {hoveredOptionId === option.id && !option.disabled && (
+                      <motion.div
+                        layoutId={`dropdown-hover-${dropdownId}`}
+                        className="absolute inset-x-1 inset-y-0.5 bg-gris-light/60 rounded-sm -z-10"
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        transition={{
+                          type: 'spring',
+                          stiffness: 400,
+                          damping: 30,
+                          mass: 0.8
+                        }}
+                      />
+                    )}
+
                     {/* Ícono de la opción */}
                     {option.icon && (
                       <span className="flex-shrink-0 w-5 h-5 flex items-center justify-center">
