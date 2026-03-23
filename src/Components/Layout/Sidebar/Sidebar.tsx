@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useSidebar } from '@/Context/SidebarContext';
+import IsotipoSAAC from '@/Assets/IsotipoSAAC.svg?react';
 import { SidebarItem } from './SidebarItem';
 import { getNavigationItems } from '@/Navigation';
 import { SidebarNavProvider } from './SidebarNavProvider';
@@ -37,27 +38,29 @@ export const ModernSidebar: React.FC<SidebarProps> = ({
   const sidebarContent = (
     <div className="flex flex-col h-full">
       {/* Logo Section — altura fija para que los ítems no se muevan al colapsar */}
-      {/** h-20 para cuando se use imagen */}
-      <div className="flex-shrink-0 h-20 flex justify-center items-center overflow-hidden">
+      <div className="flex-shrink-0 h-20 flex justify-center items-center overflow-hidden px-3">
         <a
           href="https://www.una.ac.cr/"
           target="_blank"
           rel="noopener noreferrer"
-          className={cn(
-            'transition-opacity duration-300 ease-in-out',
-            isItemCollapsed ? 'opacity-0 pointer-events-none' : 'opacity-100'
-          )}
+          className="flex items-center gap-2 min-w-0"
         >
-          <h1 className={`${TYPOGRAPHY.pageTitle} text-blanco-una font-semibold`}>
-              {title}
+          {/* Ícono: siempre visible */}
+          <IsotipoSAAC
+            aria-label="Universidad Nacional de Costa Rica"
+            className="flex-shrink-0 size-icon-logo cursor-pointer text-blanco-una"
+          />
+
+          {/* Texto: solo visible cuando está expandido */}
+          <h1
+            className={cn(
+              `${TYPOGRAPHY.pageTitle} text-blanco-una font-semibold whitespace-nowrap`,
+              'transition-all duration-300 ease-in-out overflow-hidden',
+              isItemCollapsed ? 'w-0 opacity-0' : 'w-auto opacity-100'
+            )}
+          >
+            {title}
           </h1>
-          {/**
-          <img
-            src="/Images/UNAHorizontal-Blanco.png"
-            alt="Universidad Nacional de Costa Rica"
-            className="w-auto h-10 object-contain cursor-pointer"
-          /> 
-          */}
         </a>
       </div>
 
