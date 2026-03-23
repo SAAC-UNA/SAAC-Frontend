@@ -6,9 +6,9 @@
  */
 
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { StructureTable } from './Components/StructureTable';
 import { StructureEditModal } from './Components/StructureEditModal';
+import { StructureCreateModal } from './Components/StructureCreateModal';
 import { ScreenContainer } from '@/Components/Ui/Layout/ScreenContainer';
 import { PageHeader } from '@/Components/Ui/Index';
 import { Modal } from '@/Components/Ui/Modals/Modal';
@@ -25,7 +25,6 @@ const StructureList: React.FC = () => {
   
   // Obtener información del módulo desde ModuleInfo
   const moduleInfo = getModuleInfo('structure_list');
-  const navigate = useNavigate();
 
   const { 
   isLoading, 
@@ -68,6 +67,9 @@ const StructureList: React.FC = () => {
     elementName: '',
     action: 'activate'
   });
+
+  // Estado para el modal de creación
+  const [createModalOpen, setCreateModalOpen] = useState(false);
 
   // Estado para el modal de edición
   const [editModalState, setEditModalState] = useState<{
@@ -185,7 +187,7 @@ const StructureList: React.FC = () => {
   };
 
   const handleCreateElement = () => {
-    navigate('/estructura/crear');
+    setCreateModalOpen(true);
   };
 
   const closeSuccessModal = () => {
@@ -297,6 +299,13 @@ const StructureList: React.FC = () => {
           )}
         </Modal>
       )}
+      {/* Modal de creación */}
+      <StructureCreateModal
+        isOpen={createModalOpen}
+        onClose={() => setCreateModalOpen(false)}
+        onSuccess={() => { loadTree(); setCreateModalOpen(false); }}
+      />
+
       {/* Modal de edición */}
       <StructureEditModal
         isOpen={editModalState.isOpen}

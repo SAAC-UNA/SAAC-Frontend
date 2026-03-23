@@ -28,7 +28,6 @@ import type { DataTableColumn} from '@/Components/Ui/Table/DataTable';
 import type { StructureElement, ElementType } from '@/Types/StructureTypes';
 import { TableActionButton } from '@/Components/Ui/Buttons/TableActionButton';
 import { StatusBadge } from '@/Components/Ui/Feedback/StatusBadge';
-import { useFirstColumnConfig } from '@/Hooks/UseFirstColumnConfig';
 
 
 interface StructureTableProps {
@@ -83,8 +82,6 @@ export const StructureTable: React.FC<StructureTableProps> = ({
         };
         return flattenTree(treeData);
     }, [treeData]);
-
-    const firstColumn = useFirstColumnConfig();
 
     const normalizeSearchText = (value?: string | null): string => {
         if (!value) return '';
@@ -192,7 +189,7 @@ export const StructureTable: React.FC<StructureTableProps> = ({
             key: 'type',
             header: 'Tipo',
             align: 'left',
-            width: '14%',
+            width: '18%',
             render: (_, element) => (
                 <p className={`block font-sans antialiased font-bold leading-normal text-negro-una-2 ${TYPOGRAPHY.table.cell}`}>
                     {ELEMENT_TYPE_LABELS[element.type]}
@@ -213,7 +210,7 @@ export const StructureTable: React.FC<StructureTableProps> = ({
             key: 'name',
             header: 'Nombre',
             align: 'left',
-            width: firstColumn.width,
+            width: '20%',
             render: (_, element) => (
                 <p
                     className={`block font-sans antialiased font-normal leading-normal text-negro-una-2 ${TYPOGRAPHY.table.cell} ${
@@ -228,8 +225,8 @@ export const StructureTable: React.FC<StructureTableProps> = ({
         {
             key: 'description',
             header: 'Descripción',
-
             align: 'left',
+            width: '20%',
             render: (_, element) => (
                 <p className={`block font-sans antialiased font-normal leading-normal text-negro-una-2 ${TYPOGRAPHY.table.cell} ${
                     !element.description ? 'text-center' : 'text-left'
@@ -242,6 +239,7 @@ export const StructureTable: React.FC<StructureTableProps> = ({
             key: 'status',
             header: 'Estado',
             align: 'center',
+            width: '10%',
             render: (_, element) => (
                 <div className="flex justify-center">
                     <StatusBadge
@@ -256,13 +254,14 @@ export const StructureTable: React.FC<StructureTableProps> = ({
         key: 'actions',
         header: 'Acciones',
         align: 'center',
+        width: '14%',
         render: (_, element) => {
             // Lógica para bloquear botones
             const canDelete = !element.hasChildren; // Solo puede eliminar si NO tiene hijos
             const canActivate = element.active || !element.parentElement || element.parentElement.active; // Puede activar si ya está activo, o si no tiene padre, o si el padre está activo
             
             return (
-                <div className="flex items-center justify-center gap-2 pr-2">
+                <div className="flex items-center justify-center gap-2">
                     <TableActionButton
                         action="view"
                         tooltip="Ver detalles"

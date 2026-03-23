@@ -15,9 +15,6 @@ const RolesRepository = lazy(() => import('./Pages/Roles').then(m => ({ default:
 const UsersRepository = lazy(() => import('./Pages/Users').then(m => ({ default: m.UsersRepository })));
 const EditUserPage = lazy(() => import('./Pages/Users').then(m => ({ default: m.EditUserPage })));
 const StructureList = lazy(() => import('@/Pages/Structure/StructureList'));
-const StructureCreation = lazy(() => import('@/Pages/Structure/StructureCreation').then(m => ({ default: m.StructureCreation })));
-const StructureEditForm = lazy(() => import('@/Pages/Structure/StructureEditForm'));
-const StructureEditList = lazy(() => import('./Pages/Structure/StructureEditList'));
 const EvidenceAssignment = lazy(() => import('./Pages/EvidenceAssignment').then(m => ({ default: m.EvidenceAssignment })));
 const EvidenceUploadPage = lazy(() => import('./Pages/EvidenceUpload').then(m => ({ default: m.EvidenceUploadPage })));
 const EvidenceSearchPage = lazy(() => import('./Pages/EvidenceSearch').then(m => ({ default: m.EvidenceSearchPage })));
@@ -121,30 +118,6 @@ function App() {
                           element={
                             <ProtectedRoute>
                               <StructureList />
-                            </ProtectedRoute>
-                          }
-                        />
-                        <Route
-                          path="/estructura/crear"
-                          element={
-                            <ProtectedRoute>
-                              <StructureCreation />
-                            </ProtectedRoute>
-                          }
-                        />
-                        <Route
-                          path="/estructura/editar"
-                          element={
-                            <ProtectedRoute>
-                              <StructureEditList />
-                            </ProtectedRoute>
-                          }
-                        />
-                        <Route
-                          path="/estructura/editar/formulario"
-                          element={
-                            <ProtectedRoute>
-                              <StructureEditForm />
                             </ProtectedRoute>
                           }
                         />
