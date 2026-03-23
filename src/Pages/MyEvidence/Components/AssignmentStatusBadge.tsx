@@ -19,6 +19,6 @@ interface AssignmentStatusBadgeProps {
 }
 
 export const AssignmentStatusBadge: React.FC<AssignmentStatusBadgeProps> = ({ estado }) => {
-  const { label, colorClasses } = STATUS_BADGE_CLASSES[estado];
-  return <StatusBadge label={label} colorClasses={colorClasses} />;
+  const config = STATUS_BADGE_CLASSES[estado] ?? { label: estado, colorClasses: 'text-gray-600 bg-gray-100' };
+  return <StatusBadge label={config.label} colorClasses={config.colorClasses} />;
 };

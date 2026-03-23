@@ -1,18 +1,20 @@
 /**
  * CustomSelect - Componente de selección principal
- * 
+ *
  * Este es el componente recomendado para todas las selecciones.
  * Proporciona una mejor UX que el select nativo con diseño consistente.
- * 
+ *
  * Features:
  * - Floating labels por defecto
  * - Búsqueda/filtrado (puede expandirse)
  * - Diseño consistente con el sistema
  * - Mejor accesibilidad
+ * - Animaciones fluidas con framer-motion (spring physics)
  */
 
 import React, { useState, useRef, useEffect, useId, useCallback } from 'react';
 import { createPortal } from 'react-dom';
+import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '@/Utils/ClassNames';
 import { type ComponentSize } from '@/Constants/ComponentSizes';
 import { SystemIcons } from '../Icons/SystemIcons';
@@ -51,18 +53,291 @@ export interface CustomSelectProps {
   // Número máximo de items visibles en el dropdown (por defecto 3)
   maxVisibleItems?: number;
   // Búsqueda/Filtrado
-  searchable?: boolean; // Habilitar búsqueda en el dropdown
-  searchPlaceholder?: string; // Placeholder del campo de búsqueda
-  minItemsForSearch?: number; // Número mínimo de items para mostrar búsqueda (default: 5)
+  searchable?: boolean;
+  searchPlaceholder?: string;
+  minItemsForSearch?: number;
 }
+
+// Variantes de animación
+
+const dropdownVariants = {
+  hidden: {
+    opacity: 0,
+    y: -8,
+    scale: 0.96,
+    transformOrigin: 'top center',
+  },
+  visible: {
+    opacity: 1,
+    y: 0,
+    scale: 1,
+    transformOrigin: 'top center',
+    transition: {
+      type: 'spring' as const,
+      damping: 30,
+      stiffness: 400,
+      mass: 0.8,
+    },
+  },
+  exit: {
+    opacity: 0,
+    y: -6,
+    scale: 0.97,
+    transformOrigin: 'top center',
+    transition: {
+      duration: 0.15,
+      ease: [0.32, 0, 0.67, 0] as [number, number, number, number],
+    },
+  },
+};
+
+// Para dropdown que abre hacia arriba
+const dropdownVariantsUp = {
+  hidden: {
+    opacity: 0,
+    y: 8,
+    scale: 0.96,
+    transformOrigin: 'bottom center',
+  },
+  visible: {
+    opacity: 1,
+    y: 0,
+    scale: 1,
+    transformOrigin: 'bottom center',
+    transition: {
+      type: 'spring' as const,
+      damping: 30,
+      stiffness: 400,
+      mass: 0.8,
+    },
+  },
+  exit: {
+    opacity: 0,
+    y: 6,
+    scale: 0.97,
+    transformOrigin: 'bottom center',
+    transition: {
+      duration: 0.15,
+      ease: [0.32, 0, 0.67, 0] as [number, number, number, number],
+    },
+  },
+};
+
+const itemVariants = {
+  hidden: { opacity: 0, x: 6 },
+  visible: (i: number) => ({
+    opacity: 1,
+    x: 0,
+    transition: {
+      delay: i * 0.018,
+      duration: 0.18,
+      ease: [0.23, 1, 0.32, 1] as [number, number, number, number],
+    },
+  }),
+};
+
+// DropdownContent
+// Separado para poder usar layoutId correctamente dentro del portal
+
+interface DropdownContentProps {
+  dropdownRef: React.RefObject<HTMLDivElement | null>;
+  dropdownPosition: DropdownPosition;
+  showSearch: boolean;
+  searchTerm: string;
+  setSearchTerm: (v: string) => void;
+  searchInputRef: React.RefObject<HTMLInputElement | null>;
+  searchPlaceholder: string;
+  filteredOptions: SelectOption[];
+  selectedOption: SelectOption | null;
+  readonly: boolean;
+  maxHeight: string;
+  dropdownSizeClasses: string;
+  handleOptionSelect: (option: SelectOption) => void;
+  openDirection: 'down' | 'up';
+  uniqueId: string;
+}
+
+const DropdownContent: React.FC<DropdownContentProps> = ({
+  dropdownRef,
+  dropdownPosition,
+  showSearch,
+  searchTerm,
+  setSearchTerm,
+  searchInputRef,
+  searchPlaceholder,
+  filteredOptions,
+  selectedOption,
+  readonly,
+  maxHeight,
+  dropdownSizeClasses,
+  handleOptionSelect,
+  openDirection,
+  uniqueId,
+}) => {
+  const [hoveredItem, setHoveredItem] = useState<string | null>(null);
+  const variants = openDirection === 'up' ? dropdownVariantsUp : dropdownVariants;
+
+  return (
+    <motion.div
+      ref={dropdownRef}
+      style={{
+        position: 'fixed',
+        top: dropdownPosition.top,
+        bottom: dropdownPosition.bottom,
+        left: dropdownPosition.left,
+        width: dropdownPosition.width,
+        zIndex: 9999,
+      }}
+      variants={variants}
+      initial="hidden"
+      animate="visible"
+      exit="exit"
+      className="bg-blanco-una border border-gris-light rounded-corner shadow-lg overflow-hidden"
+    >
+      {/* Campo de búsqueda */}
+      {showSearch && (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.05, duration: 0.15 }}
+          className="p-2 border-b border-gris-light bg-blanco-una-2/80 sticky top-0 z-10"
+        >
+          <div className="relative">
+            <SystemIcons.interface.search
+              className={`absolute left-3 top-1/2 -translate-y-1/2 text-gris-una ${ICON_SIZES.sm}`}
+            />
+            <input
+              ref={searchInputRef}
+              type="text"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              placeholder={searchPlaceholder}
+              className={`w-full pl-9 pr-3 py-2 ${TYPOGRAPHY.form.input} border border-gris-light rounded-corner focus:outline-none focus:border-info-ring focus:ring-1 focus:ring-info`}
+              onClick={(e) => e.stopPropagation()}
+            />
+            {searchTerm && (
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setSearchTerm('');
+                  searchInputRef.current?.focus();
+                }}
+                className="absolute right-2 top-1/2 -translate-y-1/2 text-gris-una hover:text-negro-una p-1"
+              >
+                <SystemIcons.actions.cancel className={ICON_SIZES.sm} />
+              </button>
+            )}
+          </div>
+        </motion.div>
+      )}
+
+      <div
+        className="overflow-auto custom-scrollbar"
+        style={{ maxHeight }}
+      >
+        <div className={cn('py-1', dropdownSizeClasses)}>
+          {/* No results */}
+          {filteredOptions.length === 0 && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              className="px-4 py-8 text-center text-gris-una"
+            >
+              <SystemIcons.interface.search
+                className={`${ICON_SIZES.lg} mx-auto mb-2 opacity-50`}
+              />
+              <p className={TYPOGRAPHY.form.input}>No se encontraron resultados</p>
+              {searchTerm && (
+                <p className={`${TYPOGRAPHY.form.helper} mt-1`}>
+                  Intenta con otro término de búsqueda
+                </p>
+              )}
+            </motion.div>
+          )}
+
+          {filteredOptions.map((option, index) => {
+            const isSelected = selectedOption?.value === option.value;
+            const isHovered = hoveredItem === option.value;
+            const showIndicator = hoveredItem ? isHovered : isSelected;
+
+            return (
+              <motion.button
+                key={option.value}
+                type="button"
+                custom={index}
+                variants={itemVariants}
+                initial="hidden"
+                animate="visible"
+                className={cn(
+                  'relative w-full text-left px-4 py-2 focus:outline-none',
+                  'flex items-center',
+                  option.disabled
+                    ? 'text-gris-una cursor-not-allowed'
+                    : readonly
+                      ? 'text-negro-una-2 cursor-default'
+                      : 'cursor-pointer',
+                  // Color base según estado
+                  isSelected
+                    ? 'text-negro-una font-medium'
+                    : 'text-gris-una-3 hover:text-negro-una',
+                  option.disabled && 'opacity-50'
+                )}
+                onClick={() => !readonly && handleOptionSelect(option)}
+                disabled={option.disabled}
+                onMouseEnter={() => setHoveredItem(option.value)}
+                onMouseLeave={() => setHoveredItem(null)}
+              >
+                {/* Fondo deslizante animado (hover/activo) */}
+                {showIndicator && !option.disabled && (
+                  <motion.div
+                    layoutId={`${uniqueId}-indicator`}
+                    className="absolute inset-0 bg-gris-light/60 rounded-sm"
+                    transition={{
+                      type: 'spring',
+                      damping: 30,
+                      stiffness: 520,
+                      mass: 0.8,
+                    }}
+                  />
+                )}
+
+                {/* Barra izquierda de acento para el ítem seleccionado */}
+                {isSelected && (
+                  <motion.div
+                    layoutId={`${uniqueId}-leftbar`}
+                    className="absolute left-0 top-0 bottom-0 my-auto w-[3px] h-5 rounded-full bg-info"
+                    transition={{
+                      type: 'spring',
+                      damping: 30,
+                      stiffness: 520,
+                      mass: 0.8,
+                    }}
+                  />
+                )}
+
+                {/* Label */}
+                <span className="relative z-10 block truncate">{option.label}</span>
+
+
+              </motion.button>
+            );
+          })}
+        </div>
+      </div>
+    </motion.div>
+  );
+};
+
+// CustomSelect
 
 export const CustomSelect: React.FC<CustomSelectProps> = ({
   label,
   value,
   placeholder = 'Seleccionar...',
   options,
-  variant = 'floating', // Default a floating para consistencia
-  size = 'sm', // Cambiar default a sm para consistencia con otros formularios
+  variant = 'floating',
+  size = 'sm',
   disabled = false,
   error,
   className,
@@ -71,20 +346,22 @@ export const CustomSelect: React.FC<CustomSelectProps> = ({
   onChange,
   readonly = false,
   maxVisibleItems = 5,
-  searchable = true, // Habilitado por defecto
+  searchable = true,
   searchPlaceholder = 'Buscar...',
-  minItemsForSearch = 5 // Mostrar búsqueda si hay 5 o más items
+  minItemsForSearch = 5,
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [dropdownPosition, setDropdownPosition] = useState<DropdownPosition | null>(null);
-  const selectedOption = value ? options.find(opt => opt.value === value) || null : null;
+  const [openDirection, setOpenDirection] = useState<'down' | 'up'>('down');
+  const selectedOption = value ? options.find((opt) => opt.value === value) || null : null;
   const selectRef = useRef<HTMLDivElement>(null);
   const triggerRef = useRef<HTMLButtonElement>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const searchInputRef = useRef<HTMLInputElement>(null);
   const generatedId = useId();
   const selectId = id || generatedId;
+  const uniqueId = `select-${selectId}`;
 
   const calculateDropdownPosition = useCallback(() => {
     if (!triggerRef.current) return;
@@ -94,12 +371,13 @@ export const CustomSelect: React.FC<CustomSelectProps> = ({
     const spaceBelow = viewportHeight - rect.bottom;
     if (spaceBelow >= estimatedHeight || spaceBelow >= rect.top) {
       setDropdownPosition({ top: rect.bottom + 4, left: rect.left, width: rect.width });
+      setOpenDirection('down');
     } else {
       setDropdownPosition({ bottom: viewportHeight - rect.top + 4, left: rect.left, width: rect.width });
+      setOpenDirection('up');
     }
   }, []);
 
-  // Cerrar dropdown al hacer click fuera
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (
@@ -110,12 +388,10 @@ export const CustomSelect: React.FC<CustomSelectProps> = ({
         setSearchTerm('');
       }
     };
-
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  // Reposicionar si hay scroll o resize mientras está abierto
   useEffect(() => {
     if (!isOpen) return;
     const handleScrollOrResize = () => calculateDropdownPosition();
@@ -127,30 +403,22 @@ export const CustomSelect: React.FC<CustomSelectProps> = ({
     };
   }, [isOpen, calculateDropdownPosition]);
 
-  // Focus en el input de búsqueda cuando se abre el dropdown
   useEffect(() => {
     if (isOpen && searchable && options.length >= minItemsForSearch && searchInputRef.current) {
-      // Pequeño delay para asegurar que el dropdown esté renderizado
       setTimeout(() => {
         searchInputRef.current?.focus();
       }, 100);
     }
   }, [isOpen, searchable, options.length, minItemsForSearch]);
 
-  // Actualizar opción seleccionada cuando cambia el value prop
-  // (ahora se deriva directamente en render - ver selectedOption arriba)
-
   const handleOptionSelect = (option: SelectOption) => {
     if (option.disabled) return;
-
-    // Si la opción ya está seleccionada, deseleccionarla
     if (selectedOption?.value === option.value) {
       setIsOpen(false);
       setSearchTerm('');
       onChange?.('');
       return;
     }
-
     setIsOpen(false);
     setSearchTerm('');
     onChange?.(option.value);
@@ -158,38 +426,49 @@ export const CustomSelect: React.FC<CustomSelectProps> = ({
 
   const getDropdownSizeClasses = () => {
     switch (size) {
-      case 'sm':
-        return `py-1 ${TYPOGRAPHY.form.input}`;
-      case 'lg':
-        return `py-2 ${TYPOGRAPHY.form.input}`;
-      default:
-        return `py-1 ${TYPOGRAPHY.form.input}`;
+      case 'sm': return `py-1 ${TYPOGRAPHY.form.input}`;
+      case 'lg': return `py-2 ${TYPOGRAPHY.form.input}`;
+      default: return `py-1 ${TYPOGRAPHY.form.input}`;
     }
   };
 
-  // Calcular altura máxima del dropdown basada en maxVisibleItems
   const getMaxHeight = () => {
-    const itemHeight = 40; // Altura aproximada de cada item en px
+    const itemHeight = 40;
     return `${itemHeight * maxVisibleItems}px`;
   };
 
-  // Filtrar opciones según el término de búsqueda
   const filteredOptions = React.useMemo(() => {
     if (!searchTerm.trim()) return options;
-    
     const searchLower = searchTerm.toLowerCase().trim();
-    return options.filter(option => 
-      option.label.toLowerCase().includes(searchLower) ||
-      option.value.toLowerCase().includes(searchLower)
+    return options.filter(
+      (option) =>
+        option.label.toLowerCase().includes(searchLower) ||
+        option.value.toLowerCase().includes(searchLower)
     );
   }, [options, searchTerm]);
 
-  // Determinar si se debe mostrar el campo de búsqueda
   const showSearch = searchable && options.length >= minItemsForSearch;
 
-  // Floating label variant (nuevo diseño por defecto)
+  // Props comunes para el DropdownContent
+  const dropdownProps = {
+    dropdownRef,
+    showSearch,
+    searchTerm,
+    setSearchTerm,
+    searchInputRef,
+    searchPlaceholder,
+    filteredOptions,
+    selectedOption,
+    readonly,
+    maxHeight: getMaxHeight(),
+    dropdownSizeClasses: getDropdownSizeClasses(),
+    handleOptionSelect,
+    openDirection,
+    uniqueId,
+  };
+
+  // Variante floating (default)
   if (variant === 'floating') {
-    // Detectar si tiene contenido seleccionado
     const hasValue = Boolean(selectedOption);
 
     return (
@@ -201,20 +480,14 @@ export const CustomSelect: React.FC<CustomSelectProps> = ({
             type="button"
             id={selectId}
             className={cn(
-              // Base styles - Similar al Input actualizado
               `relative w-full h-10 px-4 ${TYPOGRAPHY.form.input} border rounded-corner text-left cursor-pointer transition-all duration-300`,
               'focus:outline-none focus:border-gris-una',
               'disabled:bg-gris-una/10 disabled:cursor-not-allowed',
-              'peer', // Para usar peer selectors de Tailwind
-              
-              // Readonly styles - comportamiento de solo lectura
+              'peer',
               readonly && 'cursor-default',
-              
-              // State variants - mismo estilo que Input
               error
-                ? 'border-rojo-una-2' 
+                ? 'border-rojo-una-2'
                 : 'border-gris-una bg-blanco-una-2',
-              
               disabled
                 ? 'bg-gris-una/10 border-gris-una/5 text-gray-400'
                 : isOpen && !readonly && 'border-gris-una/20'
@@ -227,54 +500,44 @@ export const CustomSelect: React.FC<CustomSelectProps> = ({
             }}
             disabled={disabled}
           >
-            <span className={cn(
-              'block truncate',
-              !selectedOption && 'text-transparent' // Ocultar cuando no hay selección para que no choque con label
-            )}>
+            <span className={cn('block truncate', !selectedOption && 'text-transparent')}>
               {selectedOption ? selectedOption.label : placeholder}
             </span>
-            
-            {/* Arrow Icon */}
+
+            {/* Chevron animado */}
             <span className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
-              <SystemIcons.interface.chevronDown
-                className={cn(`${ICON_SIZES.sm} text-gris-una transition-transform duration-200`, isOpen && 'rotate-180')}
-              />
+              <motion.span
+                animate={{ rotate: isOpen ? 180 : 0 }}
+                transition={{ type: 'spring', damping: 25, stiffness: 300, mass: 0.6 }}
+                style={{ display: 'flex' }}
+              >
+                <SystemIcons.interface.chevronDown
+                  className={`${ICON_SIZES.sm} text-gris-una`}
+                />
+              </motion.span>
             </span>
           </button>
 
           {/* Floating Label */}
           {label && (
-            <label 
+            <label
               htmlFor={selectId}
               className={cn(
-                // Base floating label styles - Igual al Input
                 'absolute left-4 transition-all duration-300 pointer-events-none',
                 'transform',
-                
-                // Tamaño del texto del label (más pequeño)
                 TYPOGRAPHY.form.label,
-                
-                // Posicionamiento dinámico basado en focus o contenido
                 hasValue || isOpen
-                  ? 'top-0 scale-75 -translate-y-1/2' // Label arriba cuando hay contenido o está abierto
-                  : 'top-1/2 scale-100 -translate-y-1/2', // Label centrado cuando está vacío
-                
-                // Comportamiento con focus (peer selectors como fallback)
+                  ? 'top-0 scale-75 -translate-y-1/2'
+                  : 'top-1/2 scale-100 -translate-y-1/2',
                 'peer-focus:top-0 peer-focus:scale-75 peer-focus:-translate-y-1/2',
-                
-                // Fondo condicional: blanco solo cuando está arriba (igual al Input)
                 hasValue || isOpen
-                  ? 'bg-blanco-una-2 px-2' // Fondo blanco cuando tiene contenido (label arriba)
-                  : 'bg-transparent px-1', // Transparente cuando está centrado
-                
-                // Fondo blanco también con focus (peer selectors)
+                  ? 'bg-blanco-una-2 px-2'
+                  : 'bg-transparent px-1',
                 'peer-focus:bg-blanco-una-2 peer-focus:px-2',
-                
-                // Colors - igual al Input
                 error
                   ? 'text-rojo-una-2'
                   : hasValue || isOpen
-                    ? 'text-gris-una font-semibold'  // Color activo cuando tiene contenido
+                    ? 'text-gris-una font-semibold'
                     : 'text-gris-una peer-focus:text-gris-una peer-focus:font-semibold',
               )}
             >
@@ -284,105 +547,25 @@ export const CustomSelect: React.FC<CustomSelectProps> = ({
           )}
         </div>
 
-        {/* Dropdown via portal para no ser cortado por overflow del modal */}
-        {isOpen && !disabled && dropdownPosition && createPortal(
-          <div 
-            ref={dropdownRef}
-            style={{
-              position: 'fixed',
-              top: dropdownPosition.top,
-              bottom: dropdownPosition.bottom,
-              left: dropdownPosition.left,
-              width: dropdownPosition.width,
-              zIndex: 9999,
-            }}
-            className="bg-white border border-gris-light rounded-corner shadow-lg overflow-hidden"
-          >
-            {/* Campo de búsqueda (si está habilitado y hay suficientes items) */}
-            {showSearch && (
-              <div className="p-2 border-b border-gray-200 bg-gray-50/50 sticky top-0 z-10">
-                <div className="relative">
-                  <SystemIcons.interface.search className={`absolute left-3 top-1/2 -translate-y-1/2 text-gris-una ${ICON_SIZES.sm}`} />
-                  <input
-                    ref={searchInputRef}
-                    type="text"
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    placeholder={searchPlaceholder}
-                    className={`w-full pl-9 pr-3 py-2 ${TYPOGRAPHY.form.input} border border-gray-300 rounded-corner focus:outline-none focus:border-azul-una focus:ring-1 focus:ring-azul-una`}
-                    onClick={(e) => e.stopPropagation()} // Evitar que cierre el dropdown
-                  />
-                  {searchTerm && (
-                    <button
-                      type="button"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setSearchTerm('');
-                        searchInputRef.current?.focus();
-                      }}
-                      className="absolute right-2 top-1/2 -translate-y-1/2 text-gris-una hover:text-negro-una p-1"
-                    >
-                      <SystemIcons.actions.cancel className={ICON_SIZES.sm} />
-                    </button>
-                  )}
-                </div>
-              </div>
+        {/* Dropdown via portal con AnimatePresence */}
+        {!disabled && dropdownPosition && createPortal(
+          <AnimatePresence>
+            {isOpen && (
+              <DropdownContent
+                {...dropdownProps}
+                dropdownPosition={dropdownPosition}
+              />
             )}
-
-            <div 
-              className="overflow-auto custom-scrollbar"
-              style={{ maxHeight: getMaxHeight() }}
-            >
-              <div className={cn('py-1', getDropdownSizeClasses())}>
-                {/* Mensaje cuando no hay resultados */}
-                {filteredOptions.length === 0 && (
-                  <div className="px-4 py-8 text-center text-gris-una">
-                    <SystemIcons.interface.search className={`${ICON_SIZES.lg} mx-auto mb-2 opacity-50`} />
-                    <p className={TYPOGRAPHY.form.input}>No se encontraron resultados</p>
-                    {searchTerm && (
-                      <p className={`${TYPOGRAPHY.form.helper} mt-1`}>
-                        Intenta con otro término de búsqueda
-                      </p>
-                    )}
-                  </div>
-                )}
-
-                {filteredOptions.map((option) => (
-                  <button
-                    key={option.value}
-                    type="button"
-                    className={cn(
-                      'relative w-full text-left px-4 py-2 hover:bg-gray-100 focus:bg-gray-100 focus:outline-none transition-colors duration-150',
-                      option.disabled
-                        ? 'text-gray-400 cursor-not-allowed'
-                        : readonly
-                          ? 'text-gray-900 cursor-default'
-                          : 'text-gray-900 cursor-pointer',
-                      selectedOption?.value === option.value && 'bg-blue-50 text-blue-900 font-medium'
-                    )}
-                    onClick={() => !readonly && handleOptionSelect(option)}
-                    disabled={option.disabled}
-                  >
-                    {option.label}
-                    
-                    {/* Check icon for selected option */}
-                    {selectedOption?.value === option.value && (
-                      <span className="absolute inset-y-0 right-0 flex items-center pr-3 text-blue-600">
-                        <SystemIcons.interface.check className={ICON_SIZES.sm} />
-                      </span>
-                    )}
-                  </button>
-                ))}
-              </div>
-            </div>
-          </div>,
+          </AnimatePresence>,
           document.body
         )}
 
         {/* Error Message */}
         {error && (
           <p className={`text-rojo-una-2 ${TYPOGRAPHY.form.helper} flex items-center gap-2`}>
-            <SystemIcons.interface.alert className={`${ICON_SIZES.sm} flex-shrink-0 text-rojo-una-2`} />
+            <SystemIcons.interface.alert
+              className={`${ICON_SIZES.sm} flex-shrink-0 text-rojo-una-2`}
+            />
             {error}
           </p>
         )}
@@ -390,39 +573,34 @@ export const CustomSelect: React.FC<CustomSelectProps> = ({
     );
   }
 
-  // Variante tradicional (para compatibilidad)
+  // Variante tradicional (compatibilidad)
   return (
     <div className={cn('relative w-full', className)} ref={selectRef}>
-      {/* Label - Solo renderizar si hay label */}
       {label && (
-        <label className={cn(
+        <label
+          className={cn(
             `block font-medium ${TYPOGRAPHY.form.label} mb-2`,
-          disabled ? 'text-gray-400' : 'text-negro-una'
-        )}>
+            disabled ? 'text-gray-400' : 'text-negro-una'
+          )}
+        >
           {label}
           {required && <span className="text-rojo-una-2 ml-1">*</span>}
         </label>
       )}
 
-      {/* Select Button */}
       <button
         ref={triggerRef}
         type="button"
         className={cn(
-          // Base styles actualizados para consistencia con Input
           `relative w-full border rounded-corner text-left cursor-pointer transition-all duration-300 px-4 py-3 ${TYPOGRAPHY.form.input}`,
           'focus:outline-none focus:border-gris-una',
           'disabled:bg-gris-una/10 disabled:cursor-not-allowed',
-          
-          // Readonly styles
           readonly && 'cursor-default',
-          
-          // State variants - actualizados para consistencia con Input
           disabled
             ? 'bg-gris-una/10 border-gris-una/5 text-gray-400'
             : error
-            ? 'border-rojo-una-2' 
-            : 'border-gris-una bg-blanco-una-2 hover:border-gris-una/50',
+              ? 'border-rojo-una-2'
+              : 'border-gris-una bg-blanco-una-2 hover:border-gris-una/50',
           isOpen && !disabled && !readonly && 'border-gris-una/20'
         )}
         onClick={() => {
@@ -433,123 +611,44 @@ export const CustomSelect: React.FC<CustomSelectProps> = ({
         }}
         disabled={disabled}
       >
-        <span className={cn(
-          'block truncate',
-          !selectedOption && 'text-gris-una/60'
-        )}>
+        <span className={cn('block truncate', !selectedOption && 'text-gris-una/60')}>
           {selectedOption ? selectedOption.label : placeholder}
         </span>
-        
-        {/* Arrow Icon */}
+
         {!readonly && (
           <span className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
-            <SystemIcons.interface.chevronDown
-              className={cn(`${ICON_SIZES.sm} text-gris-una transition-transform duration-200`, isOpen && 'rotate-180')}
-            />
+            <motion.span
+              animate={{ rotate: isOpen ? 180 : 0 }}
+              transition={{ type: 'spring', damping: 25, stiffness: 300, mass: 0.6 }}
+              style={{ display: 'flex' }}
+            >
+              <SystemIcons.interface.chevronDown
+                className={`${ICON_SIZES.sm} text-gris-una`}
+              />
+            </motion.span>
           </span>
         )}
       </button>
 
-      {/* Dropdown via portal para no ser cortado por overflow del modal */}
-      {/* Allow showing dropdown in readonly mode (view-only) */}
-      {isOpen && !disabled && dropdownPosition && createPortal(
-        <div 
-          ref={dropdownRef}
-          style={{
-            position: 'fixed',
-            top: dropdownPosition.top,
-            bottom: dropdownPosition.bottom,
-            left: dropdownPosition.left,
-            width: dropdownPosition.width,
-            zIndex: 9999,
-          }}
-          className="bg-white border border-gray-300 rounded-corner shadow-lg overflow-hidden"
-        >
-          {/* Campo de búsqueda (si está habilitado y hay suficientes items) */}
-          {showSearch && (
-            <div className="p-2 border-b border-gray-200 bg-gray-50/50 sticky top-0 z-10">
-              <div className="relative">
-                <SystemIcons.interface.search className={`absolute left-3 top-1/2 -translate-y-1/2 text-gris-una ${ICON_SIZES.sm}`} />
-                <input
-                  ref={searchInputRef}
-                  type="text"
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  placeholder={searchPlaceholder}
-                  className={`w-full pl-9 pr-3 py-2 ${TYPOGRAPHY.form.input} border border-gray-300 rounded-corner focus:outline-none focus:border-azul-una focus:ring-1 focus:ring-azul-una`}
-                  onClick={(e) => e.stopPropagation()} // Evitar que cierre el dropdown
-                />
-                {searchTerm && (
-                  <button
-                    type="button"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setSearchTerm('');
-                      searchInputRef.current?.focus();
-                    }}
-                    className="absolute right-2 top-1/2 -translate-y-1/2 text-gris-una hover:text-negro-una p-1"
-                  >
-                    <SystemIcons.actions.cancel className={ICON_SIZES.sm} />
-                  </button>
-                )}
-              </div>
-            </div>
+      {/* Dropdown via portal con AnimatePresence */}
+      {!disabled && dropdownPosition && createPortal(
+        <AnimatePresence>
+          {isOpen && (
+            <DropdownContent
+              {...dropdownProps}
+              dropdownPosition={dropdownPosition}
+            />
           )}
-
-          <div 
-            className="overflow-auto custom-scrollbar"
-            style={{ maxHeight: getMaxHeight() }}
-          >
-            <div className={cn('py-1', getDropdownSizeClasses())}>
-              {/* Mensaje cuando no hay resultados */}
-              {filteredOptions.length === 0 && (
-                <div className="px-4 py-8 text-center text-gris-una">
-                  <SystemIcons.interface.search className={`${ICON_SIZES.lg} mx-auto mb-2 opacity-50`} />
-                  <p className={TYPOGRAPHY.form.input}>No se encontraron resultados</p>
-                  {searchTerm && (
-                    <p className={`${TYPOGRAPHY.form.helper} mt-1`}>
-                      Intenta con otro término de búsqueda
-                    </p>
-                  )}
-                </div>
-              )}
-
-              {filteredOptions.map((option) => (
-                <button
-                  key={option.value}
-                  type="button"
-                  className={cn(
-                    'relative w-full text-left px-4 py-2 hover:bg-gray-100 focus:bg-gray-100 focus:outline-none transition-colors duration-150',
-                    option.disabled
-                      ? 'text-gray-400 cursor-not-allowed'
-                      : readonly
-                        ? 'text-gray-900 cursor-default'
-                        : 'text-gray-900 cursor-pointer',
-                    selectedOption?.value === option.value && 'bg-blue-50 text-blue-900 font-medium'
-                  )}
-                  onClick={() => !readonly && handleOptionSelect(option)}
-                  disabled={option.disabled}
-                >
-                  {option.label}
-                  
-                  {/* Check icon for selected option */}
-                  {selectedOption?.value === option.value && (
-                    <span className="absolute inset-y-0 right-0 flex items-center pr-3 text-blue-600">
-                      <SystemIcons.interface.check className={ICON_SIZES.sm} />
-                    </span>
-                  )}
-                </button>
-              ))}
-            </div>
-          </div>
-        </div>,
+        </AnimatePresence>,
         document.body
       )}
 
       {/* Error Message */}
       {error && (
         <p className={`text-rojo-una-2 ${TYPOGRAPHY.form.helper} flex items-center gap-2`}>
-          <SystemIcons.interface.alert className={`${ICON_SIZES.sm} flex-shrink-0 text-rojo-una-2`} />
+          <SystemIcons.interface.alert
+            className={`${ICON_SIZES.sm} flex-shrink-0 text-rojo-una-2`}
+          />
           {error}
         </p>
       )}

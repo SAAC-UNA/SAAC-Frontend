@@ -42,6 +42,7 @@ class AuditLogService {
         if (filters.fecha_hasta) params.append('fecha_hasta', filters.fecha_hasta);
         if (filters.page) params.append('page', filters.page.toString());
         if (filters.per_page) params.append('per_page', filters.per_page.toString());
+        if (filters.search) params.append('search', filters.search);
       }
 
       const queryString = params.toString();

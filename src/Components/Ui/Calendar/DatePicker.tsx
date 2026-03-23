@@ -12,11 +12,37 @@
 
 import React, { useState, useRef, useEffect, useId, useCallback } from 'react';
 import { createPortal } from 'react-dom';
+import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '@/Utils/ClassNames';
 import { SystemIcons } from '@/Components/Ui/Icons/SystemIcons';
 import { TYPOGRAPHY } from '@/Constants/Typography';
 import { ICON_SIZES } from '@/Constants/Components';
 import { Button } from '@/Components/Ui/Buttons/Button';
+
+// Variantes de animación para el dropdown
+const dropdownVariants = {
+  hidden: { opacity: 0, y: -8, scale: 0.96, transformOrigin: 'top center' },
+  visible: {
+    opacity: 1, y: 0, scale: 1, transformOrigin: 'top center',
+    transition: { type: 'spring' as const, damping: 30, stiffness: 400, mass: 0.8 },
+  },
+  exit: {
+    opacity: 0, y: -6, scale: 0.97, transformOrigin: 'top center',
+    transition: { duration: 0.15, ease: [0.32, 0, 0.67, 0] as [number, number, number, number] },
+  },
+};
+
+const dropdownVariantsUp = {
+  hidden: { opacity: 0, y: 8, scale: 0.96, transformOrigin: 'bottom center' },
+  visible: {
+    opacity: 1, y: 0, scale: 1, transformOrigin: 'bottom center',
+    transition: { type: 'spring' as const, damping: 30, stiffness: 400, mass: 0.8 },
+  },
+  exit: {
+    opacity: 0, y: 6, scale: 0.97, transformOrigin: 'bottom center',
+    transition: { duration: 0.15, ease: [0.32, 0, 0.67, 0] as [number, number, number, number] },
+  },
+};
 
 // React portals para el calendario, para evitar problemas de overflow en modales u otros contenedores
 interface DropdownPosition {
@@ -62,7 +88,7 @@ export const DatePicker: React.FC<DatePickerProps> = ({
     }
     return new Date();
   });
-  
+
   // selectedDate se deriva del prop value (componente controlado)
   const selectedDate: Date | null = value ? (() => {
     const dateParts = value.split('-');
@@ -78,7 +104,7 @@ export const DatePicker: React.FC<DatePickerProps> = ({
       setCurrentDate(new Date(parseInt(dateParts[0]), parseInt(dateParts[1]) - 1, parseInt(dateParts[2])));
     }
   }
-  
+
   const [showPicker, setShowPicker] = useState(false);
   const [dropdownPosition, setDropdownPosition] = useState<DropdownPosition | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -165,24 +191,24 @@ export const DatePicker: React.FC<DatePickerProps> = ({
   const currentYear = new Date().getFullYear();
   const minYear = minDate ? new Date(minDate + 'T00:00:00').getFullYear() : currentYear - 10;
   const maxYear = maxDate ? new Date(maxDate + 'T00:00:00').getFullYear() : currentYear + 10;
-  
+
   const yearRange = Array.from(
-    { length: maxYear - minYear + 1 }, 
+    { length: maxYear - minYear + 1 },
     (_, i) => minYear + i
   );
 
   const handleSelectDate = (day: number) => {
     const selected = new Date(currentDate.getFullYear(), currentDate.getMonth(), day);
-    
+
     // Si se hace clic en el mismo día ya seleccionado, des-seleccionar
     if (isSelected(day)) {
       handleClearDate();
       return;
     }
-    
+
     // Crear fechas locales para comparación (sin conversión UTC)
     const selectedDateOnly = new Date(selected.getFullYear(), selected.getMonth(), selected.getDate());
-    
+
     // Validar fecha mínima
     if (minDate) {
       const minDateObj = new Date(minDate + 'T00:00:00');
@@ -191,7 +217,7 @@ export const DatePicker: React.FC<DatePickerProps> = ({
         return;
       }
     }
-    
+
     // Validar fecha máxima
     if (maxDate) {
       const maxDateObj = new Date(maxDate + 'T00:00:00');
@@ -200,7 +226,7 @@ export const DatePicker: React.FC<DatePickerProps> = ({
         return;
       }
     }
-    
+
     // Formatear fecha en zona local para evitar desfase
     const year = selected.getFullYear();
     const month = String(selected.getMonth() + 1).padStart(2, '0');
@@ -227,20 +253,20 @@ export const DatePicker: React.FC<DatePickerProps> = ({
   const isDateDisabled = (day: number) => {
     const date = new Date(currentDate.getFullYear(), currentDate.getMonth(), day);
     const dateOnly = new Date(date.getFullYear(), date.getMonth(), date.getDate());
-    
+
     // Comparar solo fechas, sin horas
     if (minDate) {
       const minDateObj = new Date(minDate + 'T00:00:00');
       const minDateOnly = new Date(minDateObj.getFullYear(), minDateObj.getMonth(), minDateObj.getDate());
       if (dateOnly < minDateOnly) return true;
     }
-    
+
     if (maxDate) {
       const maxDateObj = new Date(maxDate + 'T00:00:00');
       const maxDateOnly = new Date(maxDateObj.getFullYear(), maxDateObj.getMonth(), maxDateObj.getDate());
       if (dateOnly > maxDateOnly) return true;
     }
-    
+
     return false;
   };
 
@@ -287,8 +313,8 @@ export const DatePicker: React.FC<DatePickerProps> = ({
     disabled
       ? 'bg-gris-una/10 border-gris-una/5 text-gray-400 cursor-not-allowed'
       : error
-      ? 'border-rojo-una-2 bg-blanco-una-2'
-      : 'border-gris-una bg-blanco-una-2 hover:border-gris-una/50',
+        ? 'border-rojo-una-2 bg-blanco-una-2'
+        : 'border-gris-una bg-blanco-una-2 hover:border-gris-una/50',
     showPicker && !disabled && 'border-gris-una',
     className
   );
@@ -321,7 +347,7 @@ export const DatePicker: React.FC<DatePickerProps> = ({
           )}>
             {formatDate(selectedDate)}
           </span>
-          
+
           <div className="flex items-center gap-1">
             {/* Botón para limpiar la fecha */}
             {selectedDate && !disabled && (
@@ -345,7 +371,7 @@ export const DatePicker: React.FC<DatePickerProps> = ({
                 <SystemIcons.actions.cancel className={`${ICON_SIZES.sm} text-gris-una`} />
               </div>
             )}
-            
+
             <SystemIcons.interface.calendar className={`${ICON_SIZES.sm} text-gris-una`} />
           </div>
         </button>
@@ -380,111 +406,124 @@ export const DatePicker: React.FC<DatePickerProps> = ({
         )}
 
         {/* Calendar via portal para no ser cortado por overflow del modal */}
-        {showPicker && dropdownPosition && createPortal(
-          <div
-            ref={dropdownRef}
-            style={{
-              position: 'fixed',
-              top: dropdownPosition.top,
-              bottom: dropdownPosition.bottom,
-              left: dropdownPosition.left,
-              zIndex: 9999,
-            }}
-            className="bg-blanco-una border border-gris-light rounded-corner shadow-lg p-3 w-72"
-          >
-            {/* Header with navigation and selectors */}
-            <div className="flex items-center justify-between gap-2 mb-3">
-              <Button
-                type="button"
-                variant="ghost"
-                onClick={handlePrevMonth}
-                aria-label="Mes anterior"
+        {!disabled && dropdownPosition && createPortal(
+          <AnimatePresence>
+            {showPicker && (
+              <motion.div
+                key="datepicker-dropdown"
+                variants={
+                  dropdownPosition.top !== undefined
+                    ? dropdownVariants
+                    : dropdownVariantsUp
+                }
+                initial="hidden"
+                animate="visible"
+                exit="exit"
+                ref={dropdownRef}
+                style={{
+                  position: 'fixed',
+                  ...(dropdownPosition.top !== undefined ? { top: dropdownPosition.top } : {}),
+                  ...(dropdownPosition.bottom !== undefined ? { bottom: dropdownPosition.bottom } : {}),
+                  left: dropdownPosition.left,
+                  zIndex: 9999,
+                }}
+                className="bg-blanco-una border border-gris-light rounded-corner shadow-lg p-3 w-72"
               >
-                <SystemIcons.navigation.arrow.left className={`${ICON_SIZES.sm} text-gris-una`} />
-              </Button>
-              
-              <div className="flex items-center gap-2 flex-1 justify-center">
-                {/* Selector de Mes */}
-                <select
-                  value={currentDate.getMonth()}
-                  onChange={(e) => handleMonthChange(parseInt(e.target.value))}
-                  className={`${TYPOGRAPHY.form.input} font-semibold text-negro-una bg-blanco-una border border-gris-light rounded-corner-sm px-2 py-1 hover:border-gris-una-2 focus:outline-none cursor-pointer`}
-                  aria-label="Seleccionar mes"
-                >
-                  {monthNames.map((month) => (
-                    <option key={month} value={monthNames.indexOf(month)}>
-                      {month}
-                    </option>
-                  ))}
-                </select>
+                {/* Header with navigation and selectors */}
+                <div className="flex items-center justify-between gap-2 mb-3">
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    onClick={handlePrevMonth}
+                    aria-label="Mes anterior"
+                  >
+                    <SystemIcons.navigation.arrow.left className={`${ICON_SIZES.sm} text-gris-una`} />
+                  </Button>
 
-                {/* Selector de Año */}
-                <select
-                  value={currentDate.getFullYear()}
-                  onChange={(e) => handleYearChange(parseInt(e.target.value))}
-                  className={`${TYPOGRAPHY.form.input} font-semibold text-negro-una bg-blanco-una border border-gris-light rounded-corner-sm px-2 py-1 hover:border-gris-una-2 focus:outline-none cursor-pointer`}
-                  aria-label="Seleccionar año"
-                >
-                  {yearRange.map((year) => (
-                    <option key={year} value={year}>
-                      {year}
-                    </option>
-                  ))}
-                </select>
-              </div>
-              
-              <Button
-                type="button"
-                variant="ghost"
-                onClick={handleNextMonth}
-                aria-label="Mes siguiente"
-              >
-                <SystemIcons.navigation.arrow.right className={`${ICON_SIZES.sm} text-gris-una`} />
-              </Button>
-            </div>
+                  <div className="flex items-center gap-2 flex-1 justify-center">
+                    {/* Selector de Mes */}
+                    <select
+                      value={currentDate.getMonth()}
+                      onChange={(e) => handleMonthChange(parseInt(e.target.value))}
+                      className={`${TYPOGRAPHY.form.input} font-semibold text-negro-una bg-blanco-una border border-gris-light rounded-corner-sm px-2 py-1 hover:border-gris-una-2 focus:outline-none cursor-pointer`}
+                      aria-label="Seleccionar mes"
+                    >
+                      {monthNames.map((month) => (
+                        <option key={month} value={monthNames.indexOf(month)}>
+                          {month}
+                        </option>
+                      ))}
+                    </select>
 
-            {/* Day names header */}
-            <div className="grid grid-cols-7 gap-1 mb-2">
-              {dayNames.map((day) => (
-                <div key={day} className={`text-center ${TYPOGRAPHY.form.helper} font-medium text-gris-una py-1`}>
-                  {day}
+                    {/* Selector de Año */}
+                    <select
+                      value={currentDate.getFullYear()}
+                      onChange={(e) => handleYearChange(parseInt(e.target.value))}
+                      className={`${TYPOGRAPHY.form.input} font-semibold text-negro-una bg-blanco-una border border-gris-light rounded-corner-sm px-2 py-1 hover:border-gris-una-2 focus:outline-none cursor-pointer`}
+                      aria-label="Seleccionar año"
+                    >
+                      {yearRange.map((year) => (
+                        <option key={year} value={year}>
+                          {year}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    onClick={handleNextMonth}
+                    aria-label="Mes siguiente"
+                  >
+                    <SystemIcons.navigation.arrow.right className={`${ICON_SIZES.sm} text-gris-una`} />
+                  </Button>
                 </div>
-              ))}
-            </div>
 
-            {/* Calendar grid */}
-            <div className="grid grid-cols-7 gap-1 mb-3">
-              {days.map((day, idx) => (
-                <button
-                  key={day ? day.toString() : `empty-${idx}`}
+                {/* Day names header */}
+                <div className="grid grid-cols-7 gap-1 mb-2">
+                  {dayNames.map((day) => (
+                    <div key={day} className={`text-center ${TYPOGRAPHY.form.helper} font-medium text-gris-una py-1`}>
+                      {day}
+                    </div>
+                  ))}
+                </div>
+
+                {/* Calendar grid */}
+                <div className="grid grid-cols-7 gap-1 mb-3">
+                  {days.map((day, idx) => (
+                    <button
+                      key={day ? day.toString() : `empty-${idx}`}
+                      type="button"
+                      onClick={() => day && !isDateDisabled(day) && handleSelectDate(day)}
+                      disabled={!day || isDateDisabled(day)}
+                      className={cn(
+                        `p-1.5 ${TYPOGRAPHY.form.helper} rounded-corner font-medium transition-all min-h-[1.75rem] flex items-center justify-center`,
+                        !day && 'opacity-0 cursor-default',
+                        day && isDateDisabled(day) && 'opacity-30 cursor-not-allowed text-gris-una',
+                        day && !isDateDisabled(day) && 'cursor-pointer',
+                        isSelected(day) && 'bg-info-light text-info shadow-sm',
+                        isToday(day) && !isSelected(day) && 'bg-error-light text-error border border-error-ring',
+                        day && !isSelected(day) && !isToday(day) && !isDateDisabled(day) && 'hover:bg-gris-una/10 text-negro-una'
+                      )}
+                    >
+                      {day}
+                    </button>
+                  ))}
+                </div>
+
+                {/* Close button */}
+                <Button
                   type="button"
-                  onClick={() => day && !isDateDisabled(day) && handleSelectDate(day)}
-                  disabled={!day || isDateDisabled(day)}
-                  className={cn(
-                    `p-1.5 ${TYPOGRAPHY.form.helper} rounded font-medium transition-all min-h-[1.75rem] flex items-center justify-center`,
-                    !day && 'opacity-0 cursor-default',
-                    day && isDateDisabled(day) && 'opacity-30 cursor-not-allowed text-gris-una',
-                    day && !isDateDisabled(day) && 'cursor-pointer',
-                    isSelected(day) && 'bg-error text-blanco-una shadow-sm',
-                    isToday(day) && !isSelected(day) && 'bg-error-light text-error border border-error-ring',
-                    day && !isSelected(day) && !isToday(day) && !isDateDisabled(day) && 'hover:bg-gris-una/10 text-negro-una'
-                  )}
+                  variant="outline"
+                  fullWidth
+                  onClick={() => setShowPicker(false)}
                 >
-                  {day}
-                </button>
-              ))}
-            </div>
-
-            {/* Close button */}
-            <Button
-              type="button"
-              variant="outline"
-              fullWidth
-              onClick={() => setShowPicker(false)}
-            >
-              Cerrar
-            </Button>
-          </div>,
+                  Cerrar
+                </Button>
+              </motion.div>
+            )}
+          </AnimatePresence>,
           document.body
         )}
       </div>

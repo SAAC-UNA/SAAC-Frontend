@@ -19,6 +19,7 @@ import { TABLE_PAGE_SIZE } from '@/Constants/TablePagination';
 import { truncateText } from '@/Utils';
 import { ExtensionRequestStatusBadge } from '../../MyExtensionRequest/Components/ExtensionRequestStatusBadge';
 import type { ExtensionRequest, ExtensionRequestStatus } from '@/Types/ExtensionRequestTypes';
+import { filterExtensionRequests, formatExtensionDate } from '@/Types/ExtensionRequestTypes';
 import { useFirstColumnConfig } from '@/Hooks/UseFirstColumnConfig';
 
 const EMPTY_REQUESTS: ExtensionRequest[] = [];
@@ -60,29 +61,9 @@ export const ManageExtensionRequestsTable: React.FC<ManageExtensionRequestsTable
   }
 
   // Filtrar solicitudes
-  const filteredRequests = useMemo(() => {
-    let filtered = requests;
-
-    // Filtrar por estado
-    if (filterEstado !== 'todos') {
-      filtered = filtered.filter(req => req.estado === filterEstado);
-    }
-
-    // Filtrar por búsqueda
-    if (searchQuery.trim()) {
-      const q = searchQuery.toLowerCase();
-      filtered = filtered.filter(req =>
-        req.motivo.toLowerCase().includes(q) ||
-        req.solicitud_ampliacion_id.toString().includes(q) ||
-        req.usuario?.nombre?.toLowerCase().includes(q) ||
-        req.usuario?.email?.toLowerCase().includes(q) ||
-        new Date(req.fecha_sugerida).toLocaleDateString('es-ES').includes(q) ||
-        new Date(req.created_at).toLocaleDateString('es-ES').includes(q)
-      );
-    }
-
-    return filtered;
-  }, [requests, filterEstado, searchQuery]);
+  const filteredRequests = useMemo(() =>
+    filterExtensionRequests(requests, searchQuery, filterEstado)
+  , [requests, filterEstado, searchQuery]);
 
   // Calcular paginación
   const { totalPages, paginatedData } = useMemo(() => {
@@ -125,6 +106,7 @@ export const ManageExtensionRequestsTable: React.FC<ManageExtensionRequestsTable
     {
       key: 'motivo',
       header: 'Motivo',
+      align: 'center',
       render: (_: unknown, item: ExtensionRequest) => (
         <div className="flex flex-col">
           <p className={`block font-sans antialiased leading-normal text-negro-una-2 ${TYPOGRAPHY.table.cell}`} title={item.motivo}>
@@ -139,7 +121,7 @@ export const ManageExtensionRequestsTable: React.FC<ManageExtensionRequestsTable
       align: 'center',
       render: (_: unknown, item: ExtensionRequest) => (
         <span className={`block font-sans antialiased leading-normal text-negro-una-2 ${TYPOGRAPHY.table.cell}`}>
-          {new Date(item.created_at).toLocaleDateString('es-ES')}
+          {formatExtensionDate(item.created_at)}
         </span>
       )
     },
@@ -149,7 +131,7 @@ export const ManageExtensionRequestsTable: React.FC<ManageExtensionRequestsTable
       align: 'center',
       render: (_: unknown, item: ExtensionRequest) => (
         <span className={`block font-sans antialiased leading-normal text-negro-una-2 ${TYPOGRAPHY.table.cell}`}>
-          {new Date(item.fecha_sugerida).toLocaleDateString('es-ES')}
+          {formatExtensionDate(item.fecha_sugerida)}
         </span>
       )
     },
@@ -157,7 +139,10 @@ export const ManageExtensionRequestsTable: React.FC<ManageExtensionRequestsTable
       key: 'estado',
       header: 'Estado',
       align: 'center',
-      render: (_: unknown, item: ExtensionRequest) => <ExtensionRequestStatusBadge estado={item.estado} />
+      render: (_: unknown, item: ExtensionRequest) => 
+        <div className="flex justify-center">
+          <ExtensionRequestStatusBadge estado={item.estado} />
+        </div>
     },
     {
       key: 'acciones',

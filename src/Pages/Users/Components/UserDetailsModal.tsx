@@ -7,12 +7,14 @@ import type { User } from '@/Services/UserService';
 const getInitials = (name: string) =>
   name.split(' ').slice(0, 2).map(n => n[0]?.toUpperCase() ?? '').join('');
 
+/*
 const formatDate = (date?: Date): string => {
   if (!date) return '—';
   return new Intl.DateTimeFormat('es-ES', {
     day: 'numeric', month: 'short', year: 'numeric',
   }).format(date);
 };
+*/
 
 
 const SectionLabel: React.FC<{ label: string }> = ({ label }) => (
@@ -102,8 +104,8 @@ export const UserDetailsModal: React.FC<UserDetailsModalProps> = ({
             </InfoCell>
           </div>
         </div>
-
-        {/* REGISTRO */}
+{/** 
+        {/* REGISTRO *}
         <div>
           <SectionLabel label="Registro" />
           <div className="border border-gray-200 rounded-corner p-4 grid grid-cols-2 gap-x-6 gap-y-4">
@@ -115,7 +117,7 @@ export const UserDetailsModal: React.FC<UserDetailsModalProps> = ({
             </InfoCell>
           </div>
         </div>
-
+*/}
         {/* PERMISOS DIRECTOS */}
         {user.allPermissions && user.allPermissions.length > 0 && (
           <div>

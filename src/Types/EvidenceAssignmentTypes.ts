@@ -160,7 +160,7 @@ export function formatDeadline(fechaLimite: string | null): string {
 export function formatDate(isoDate: string): string {
   return new Intl.DateTimeFormat('es-CR', {
     day: '2-digit',
-    month: 'short',
+    month: '2-digit',
     year: 'numeric'
   }).format(new Date(isoDate));
 }
@@ -190,10 +190,31 @@ export function filterAndSortAssignments(
   // Filtrar por búsqueda
   if (filters.search && filters.search.trim()) {
     const searchTerm = filters.search.toLowerCase().trim();
-    filtered = filtered.filter(a => 
-      a.evidencia?.nomenclatura.toLowerCase().includes(searchTerm) ||
-      a.evidencia?.descripcion.toLowerCase().includes(searchTerm)
-    );
+
+    // Mapa de etiquetas legibles de estado para búsqueda
+    const estadoLabels: Record<string, string> = {
+      pendiente: 'pendiente',
+      en_progreso: 'en progreso',
+      completado: 'completado',
+      vencido: 'vencido',
+    };
+
+    filtered = filtered.filter(a => {
+      // Estado efectivo (considera vencido dinámicamente)
+      const estadoEfectivo = isOverdue(a) ? 'vencido' : a.estado;
+      const estadoLabel = estadoLabels[estadoEfectivo] || estadoEfectivo;
+
+      return (
+        a.evidencia?.nomenclatura?.toLowerCase().includes(searchTerm) ||
+        a.evidencia?.descripcion?.toLowerCase().includes(searchTerm) ||
+        a.evidencia?.criterion?.nomenclatura?.toLowerCase().includes(searchTerm) ||
+        a.evidencia?.criterion?.descripcion?.toLowerCase().includes(searchTerm) ||
+        estadoLabel.includes(searchTerm) ||
+        estadoEfectivo.includes(searchTerm) ||
+        (a.fecha_asignacion && formatDate(a.fecha_asignacion).includes(searchTerm)) ||
+        (a.fecha_limite && formatDate(a.fecha_limite).includes(searchTerm))
+      );
+    });
   }
   
   // Ordenar
