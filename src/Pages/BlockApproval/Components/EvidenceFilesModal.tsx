@@ -30,15 +30,18 @@ export const EvidenceFilesModal: React.FC<EvidenceFilesModalProps> = ({
     <Modal
       isOpen={isOpen}
       onClose={onClose}
-      title="Archivos asociados a esta evidencia"
+      title="Archivos de la evidencia"
+      subtitle={evidencia.nomenclatura}
       size="md"
-      closable
+      variant="info"
+      heroIcon={<SystemIcons.modal.document className="h-5 w-5 text-blanco-una" />}
+      showCancel
+      cancelLabel="Cerrar"
     >
       <div className="space-y-4">
         {/* Información de la evidencia */}
         <div className="bg-gray-50 p-3 rounded-md">
-          <div className="text-sm font-medium text-gray-900">{evidencia.nomenclatura}</div>
-          <div className="text-sm text-gray-500 mt-1">{evidencia.descripcion}</div>
+          <div className="text-sm text-gray-500">{evidencia.descripcion}</div>
         </div>
 
         {/* Lista de archivos - Por ahora vacío */}

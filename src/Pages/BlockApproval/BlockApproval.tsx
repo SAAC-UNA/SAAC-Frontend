@@ -9,11 +9,14 @@ import { ApprovalModal } from './Components/ApprovalModal';
 import { EvidenceFilesModal } from './Components/EvidenceFilesModal';
 import { SuccessModal } from '@/Components/Ui/Modals/SuccessModal';
 import { CustomSelect } from '@/Components/Ui/Forms/SingleSelect';
-import { Pagination } from '@/Components/Ui/Table/Pagination';
 import { FilterButton, type FilterOption } from '@/Components/Ui/Buttons/FilterButton';
 import { ButtonWithTooltip } from '@/Components/Ui/Buttons/ButtonWithTooltip';
 import { TYPOGRAPHY } from '@/Constants/Typography';
 import { TABLE_PAGE_SIZE } from '@/Constants/TablePagination';
+import { DataTable } from '@/components/index';
+import type { DataTableColumn } from '@/Components/Ui/Table/DataTable';
+import { TABLE_ACTION_BUTTON } from '@/Constants/Components';
+import { StatusBadge } from '@/Components/Ui/Feedback/StatusBadge';
 
 type ApprovalStatus = 'pendiente' | 'aprobado' | 'rechazado';
 
@@ -58,11 +61,10 @@ const BlockApproval: React.FC = () => {
   const evidences = dataState.evidences;
   const processes = dataState.processes;
   // Estado para filtros y UI
-  const [filterState, setFilterState] = useState<{ selectedProcesoId: number | null; currentPage: number; approvalFilter: ApprovalStatus | 'todos'; expandedCriteria: Set<number> }>({ selectedProcesoId: null, currentPage: 1, approvalFilter: 'pendiente', expandedCriteria: new Set() });
+  const [filterState, setFilterState] = useState<{ selectedProcesoId: number | null; currentPage: number; approvalFilter: ApprovalStatus | 'todos' }>({ selectedProcesoId: null, currentPage: 1, approvalFilter: 'pendiente' });
   const selectedProcesoId = filterState.selectedProcesoId;
   const currentPage = filterState.currentPage;
   const approvalFilter = filterState.approvalFilter;
-  const expandedCriteria = filterState.expandedCriteria;
   const itemsPerPage = TABLE_PAGE_SIZE.standard;
 
   // Estado para modales de aprobación y éxito
@@ -81,7 +83,8 @@ const BlockApproval: React.FC = () => {
   const filtroOptions: FilterOption<ApprovalStatus | 'todos'>[] = [
     { value: 'pendiente', label: 'Pendientes' },
     { value: 'aprobado', label: 'Aprobados' },
-    { value: 'rechazado', label: 'Rechazados' }
+    { value: 'rechazado', label: 'Rechazados' },
+    { value: 'todos', label: 'Todos' },
   ];
 
 
@@ -144,17 +147,6 @@ const BlockApproval: React.FC = () => {
   const getEvidencesByCriterion = (criterionId: number) => {
     return evidences.filter(ev => ev.criterio_id === criterionId);
   };
-  
-  const toggleEvidences = (criterionId: number) => {
-    setFilterState(prev => {
-      const newSet = new Set<number>();
-      // Si el criterio ya está expandido, ciérralo. Si no, ábrelo y cierra los demás
-      if (!prev.expandedCriteria.has(criterionId)) {
-        newSet.add(criterionId);
-      }
-      return {...prev, expandedCriteria: newSet};
-    });
-  };
 
   const handleViewFiles = (evidencia: Evidencia) => {
     setFilesModal({ open: true, evidencia });
@@ -177,6 +169,88 @@ const BlockApproval: React.FC = () => {
   useEffect(() => {
     setFilterState(prev => ({...prev, currentPage: 1}));
   }, [filteredCriteria.length]);
+
+  const APPROVAL_STATUS_COLORS: Record<string, string> = {
+    pendiente:  'text-warning-dark bg-warning-ring',
+    aprobado:   'text-verde-dark bg-verde-ring',
+    rechazado:  'text-error-dark bg-error-ring',
+  };
+  const APPROVAL_STATUS_LABELS: Record<string, string> = {
+    pendiente: 'Pendiente',
+    aprobado:  'Aprobado',
+    rechazado: 'Rechazado',
+  };
+
+  const criteriaColumns: DataTableColumn<Criterio>[] = [
+    {
+      key: 'nomenclatura',
+      header: 'Criterio',
+      width: '140px',
+      render: (_, item) => (
+        <p className={`block font-sans antialiased font-bold leading-normal text-negro-una-2 ${TYPOGRAPHY.table.cell}`}>
+          {item.nomenclatura}
+        </p>
+      ),
+    },
+    {
+      key: 'descripcion',
+      header: 'Descripción',
+      align: 'left',
+      render: (_, item) => (
+        <p className={`block font-sans antialiased font-normal leading-normal text-gris-una max-w-2xl truncate ${TYPOGRAPHY.table.cell}`}
+          title={item.descripcion}>
+          {item.descripcion}
+        </p>
+      ),
+    },
+    {
+      key: 'estado_aprobacion',
+      header: 'Estado',
+      align: 'center',
+      width: '130px',
+      render: (_, item) => (
+        <div className="flex justify-center">
+          <StatusBadge
+            label={APPROVAL_STATUS_LABELS[item.estado_aprobacion ?? 'pendiente'] ?? 'Pendiente'}
+            colorClasses={APPROVAL_STATUS_COLORS[item.estado_aprobacion ?? 'pendiente'] ?? APPROVAL_STATUS_COLORS['pendiente']}
+          />
+        </div>
+      ),
+    },
+    {
+      key: 'actions',
+      header: 'Acciones',
+      align: 'center',
+      width: '110px',
+      render: (_, item) => {
+        const isPending = item.estado_aprobacion === 'pendiente';
+        return (
+          <div className="flex gap-1 justify-center" onClick={e => e.stopPropagation()}>
+            <ButtonWithTooltip
+              variant="tablePower"
+              size="sm"
+              tooltip={isPending ? 'Aprobar criterio' : 'Ya procesado'}
+              onClick={isPending ? () => handleAprobar(item) : undefined}
+              disabled={!isPending}
+              className={TABLE_ACTION_BUTTON.button}
+            >
+              <SystemIcons.interface.checkCircle className={TABLE_ACTION_BUTTON.icon} />
+            </ButtonWithTooltip>
+            <ButtonWithTooltip
+              variant="tableDelete"
+              size="sm"
+              tooltip={isPending ? 'Rechazar criterio' : 'Ya procesado'}
+              onClick={isPending ? () => handleRechazar(item) : undefined}
+              disabled={!isPending}
+              className={TABLE_ACTION_BUTTON.button}
+            >
+              <SystemIcons.interface.xCircle className={TABLE_ACTION_BUTTON.icon} />
+            </ButtonWithTooltip>
+          </div>
+        );
+      },
+    },
+  ];
 
   const handleAprobar = (criterio: Criterio) => {
     setApprovalState(prev => ({ ...prev, isOpen: true, action: 'aprobar', criterion: criterio }));
@@ -272,165 +346,54 @@ const BlockApproval: React.FC = () => {
               </div>
             </div>
           ) : (
-            <>
-              <table className="min-w-full bg-white shadow-md rounded-lg overflow-hidden">
-                <thead>
-                  <tr>
-                    <th className="py-4 border-b border-gray-100 text-left pl-8 pr-4">
-                        <p className={`block font-sans antialiased font-normal leading-none text-gris-una opacity-70 ${TYPOGRAPHY.table.header}`}>
-                          Criterio
-                        </p>
-                      </th>
-                      <th className="px-4 py-4 border-b border-gray-100 text-center">
-                        <p className={`block font-sans antialiased font-normal leading-none text-gris-una opacity-70 ${TYPOGRAPHY.table.header}`}>
-                          Descripción
-                        </p>
-                      </th>
-                      <th className="px-4 py-4 border-b border-gray-100 text-center">
-                        <p className={`block font-sans antialiased font-normal leading-none text-gris-una opacity-70 ${TYPOGRAPHY.table.header}`}>
-                          Evidencias
-                        </p>
-                      </th>
-                      <th className="pl-4 pr-8 py-4 border-b border-gray-100 text-center">
-                        <p className={`block font-sans antialiased font-normal leading-none text-gris-una opacity-70 ${TYPOGRAPHY.table.header}`}>
-                          Acciones
-                        </p>
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {paginatedCriteria.length === 0 ? (
-                      <tr>
-                        <td colSpan={4} className="px-4 py-8 text-center">
-                          <p className="text-sm text-gris-una">No hay criterios disponibles para el filtro seleccionado</p>
-                        </td>
-                      </tr>
-                    ) : (
-                      paginatedCriteria.map((criterio) => {
-                        const criterionEvidences = getEvidencesByCriterion(criterio.id);
-                        const totalEvidencias = criterionEvidences.length;
-                        const isExpanded = expandedCriteria.has(criterio.id);
-                        
-                        return (
-                          <React.Fragment key={criterio.id}>
-                            <tr className={isExpanded ? '' : 'border-b border-gray-100'}>
-                              <td className="pl-8 pr-4 py-4">
-                                <p className={`block font-sans antialiased font-bold leading-normal text-negro-una-2 ${TYPOGRAPHY.table.cell}`}>
-                                  {criterio.nomenclatura}
-                                </p>
-                              </td>
-                              <td className="px-4 py-4">
-                                <p className={`block font-sans antialiased font-normal leading-normal text-gris-una ${TYPOGRAPHY.table.cell}`}>
-                                  {criterio.descripcion}
-                                </p>
-                              </td>
-                              <td className="px-4 py-4 text-center">
-                                {totalEvidencias > 0 ? (
-                                  <button
-                                    onClick={() => toggleEvidences(criterio.id)}
-                                    className="inline-flex items-center gap-2 px-3 py-1.5 text-xs font-medium text-gray-700 bg-gray-50 hover:bg-gray-100 rounded-md transition-colors"
-                                  >
-                                    <span>{totalEvidencias} evidencia{totalEvidencias !== 1 ? 's' : ''}</span>
-                                    <svg 
-                                      className={`w-4 h-4 transition-transform ${isExpanded ? 'rotate-180' : ''}`} 
-                                      fill="none" 
-                                      stroke="currentColor" 
-                                      viewBox="0 0 24 24"
-                                    >
-                                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                                    </svg>
-                                  </button>
-                                ) : (
-                                  <p className={`block font-sans antialiased font-normal leading-normal text-gris-una ${TYPOGRAPHY.table.cell}`}>-</p>
-                                )}
-                              </td>
-                              <td className="pl-4 pr-8 py-4">
-                                {approvalFilter === 'pendiente' ? (
-                                  <div className="flex gap-1.5 justify-center items-center">
-                                    <ButtonWithTooltip
-                                      variant="primary"
-                                      size="sm"
-                                      tooltip="Aprobar criterio"
-                                      onClick={() => handleAprobar(criterio)}
-                                      className="relative h-8 w-8 max-h-[32px] max-w-[32px] rounded-lg"
-                                    >
-                                      <SystemIcons.interface.checkCircle className="h-4 w-4" />
-                                    </ButtonWithTooltip>
-                                    <ButtonWithTooltip
-                                      variant="secondary"
-                                      size="sm"
-                                      tooltip="Rechazar criterio"
-                                      onClick={() => handleRechazar(criterio)}
-                                      className="relative h-8 w-8 max-h-[32px] max-w-[32px] rounded-lg"
-                                    >
-                                      <SystemIcons.interface.xCircle className="h-4 w-4" />
-                                    </ButtonWithTooltip>
-                                  </div>
-                                ) : (
-                                  <div className="flex justify-center">
-                                    <p className={`block font-sans antialiased font-normal leading-normal text-gris-una ${TYPOGRAPHY.table.cell}`}>
-                                      {approvalFilter === 'aprobado' ? 'Aprobado' : 'Rechazado'}
-                                    </p>
-                                  </div>
-                                )}
-                              </td>
-                            </tr>
-                            
-                            {/* Fila expandida con evidencias */}
-                            {isExpanded && totalEvidencias > 0 && (
-                              <tr className="border-b border-gray-100">
-                                <td colSpan={4} className="px-8 py-3 bg-gray-50">
-                                  <div className="space-y-2">
-                                    <h4 className={`font-medium text-gray-700 mb-2 ${TYPOGRAPHY.table.cell}`}>
-                                      Evidencias del Criterio:
-                                    </h4>
-                                    <div className="border border-gray-200 rounded-md overflow-hidden bg-white">
-                                      {criterionEvidences.map((evidencia: Evidencia) => (
-                                        <div
-                                          key={evidencia.id}
-                                          className="flex items-center justify-between px-4 py-2 border-b border-gray-100 last:border-b-0 hover:bg-gray-50"
-                                        >
-                                          <div className="flex-1 min-w-0">
-                                            <p className={`text-gray-700 truncate ${TYPOGRAPHY.table.cell}`}>
-                                              <span className="font-medium text-gray-900">{evidencia.nomenclatura}</span>
-                                              <span className="text-gray-500"> - {evidencia.descripcion}</span>
-                                            </p>
-                                          </div>
-                                          <ButtonWithTooltip
-                                            variant="tableView"
-                                            size="sm"
-                                            tooltip="Ver archivos asociados"
-                                            tooltipPosition="left"
-                                            onClick={() => handleViewFiles(evidencia)}
-                                            className="ml-3 relative h-9 w-9 max-h-[36px] max-w-[36px]"
-                                          >
-                                            <SystemIcons.actions.view className="h-5 w-5" />
-                                          </ButtonWithTooltip>
-                                        </div>
-                                      ))}
-                                    </div>
-                                  </div>
-                                </td>
-                              </tr>
-                            )}
-                          </React.Fragment>
-                        );
-                      })
-                    )}
-                  </tbody>
-              </table>
-
-              {/* Paginación */}
-              {totalPages > 1 && (
-                <div className="flex items-center justify-center p-4">
-                  <Pagination
-                    currentPage={currentPage}
-                    totalPages={totalPages}
-                    onPageChange={(value) => setFilterState(prev => ({...prev, currentPage: value}))}
-                  />
-                </div>
-              )}
-            </>
+            <DataTable
+              data={paginatedCriteria as any}
+              columns={criteriaColumns as any}
+              title=""
+              searchable={false}
+              loading={false}
+              emptyMessage="No hay criterios disponibles para el filtro seleccionado"
+              pagination={
+                totalPages > 1
+                  ? { currentPage, totalPages, onPageChange: (value) => setFilterState(prev => ({ ...prev, currentPage: value })) }
+                  : undefined
+              }
+              getRowKey={(item) => String(item.id)}
+              expandableRow={(criterio: any) => {
+                const criterionEvidences = getEvidencesByCriterion(criterio.id);
+                if (criterionEvidences.length === 0) {
+                  return <p className="text-sm text-gris-una py-2">No hay evidencias para este criterio.</p>;
+                }
+                return (
+                  <div className="space-y-1.5 py-2">
+                    {criterionEvidences.map((evidencia) => (
+                      <div
+                        key={evidencia.id}
+                        className="flex items-center justify-between px-3 py-2 bg-gray-50 rounded-md border border-gray-200"
+                        onClick={e => e.stopPropagation()}
+                      >
+                        <div className="flex-1 min-w-0">
+                          <p className={`truncate ${TYPOGRAPHY.table.cell}`}>
+                            <span className="font-medium text-negro-una">{evidencia.nomenclatura}</span>
+                            <span className="text-gris-una"> — {evidencia.descripcion}</span>
+                          </p>
+                        </div>
+                        <ButtonWithTooltip
+                          variant="tableView"
+                          size="sm"
+                          tooltip="Ver archivos asociados"
+                          tooltipPosition="left"
+                          onClick={(e) => { e.stopPropagation(); handleViewFiles(evidencia); }}
+                          className={TABLE_ACTION_BUTTON.button}
+                        >
+                          <SystemIcons.actions.view className={TABLE_ACTION_BUTTON.icon} />
+                        </ButtonWithTooltip>
+                      </div>
+                    ))}
+                  </div>
+                );
+              }}
+            />
           )}
         </>
       )}
