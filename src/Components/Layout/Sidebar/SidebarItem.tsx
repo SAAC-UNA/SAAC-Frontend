@@ -29,7 +29,6 @@ const SidebarItemComponent: React.FC<SidebarItemProps> = ({
   // Visualmente activo cuando la ruta coincide O cuando su panel está abierto
   const isExpandable = Boolean(item.isExpandable && item.children?.length);
   const isFlyoutOpen = isExpandable && selectedItemId === item.id;
-  const isVisuallyActive = isActive || isFlyoutOpen;
 
   /**
    * layoutCollapsed: versión retrasada de isCollapsed.
@@ -42,6 +41,8 @@ const SidebarItemComponent: React.FC<SidebarItemProps> = ({
     return () => clearTimeout(timer);
   }, [isCollapsed]);
 
+  const [isHovered, setIsHovered] = useState(false);
+
   const handleClick = useCallback(() => {
     if (item.onClick) { item.onClick(); return; }
     if (!item.isExpandable) handleItemClick(item.id, item.href, false);
@@ -49,27 +50,54 @@ const SidebarItemComponent: React.FC<SidebarItemProps> = ({
 
   const iconName = item.icon?.replace('system-icon:', '');
 
+  const showAnimatedBackground = isHovered || isFlyoutOpen;
+
   return (
     <div className={cn(isSubItem && isCollapsed && 'hidden')}>
       <div
         ref={triggerRef}
         className={cn('relative', !layoutCollapsed && isSubItem && 'ml-3')}
-        onMouseEnter={() => isExpandable && setHoveredItem(item, triggerRef.current)}
-        onMouseLeave={() => isExpandable && setHoveredItem(null)}
+        onMouseEnter={() => {
+          setIsHovered(true);
+          if (isExpandable) setHoveredItem(item, triggerRef.current);
+        }}
+        onMouseLeave={() => {
+          setIsHovered(false);
+          if (isExpandable) setHoveredItem(null);
+        }}
       >
         <button
           onClick={handleClick}
           className={cn(
-            'group/btn flex items-center text-left rounded-lg font-medium cursor-pointer',
+            'group/btn flex items-center text-left rounded-lg font-medium cursor-pointer relative z-10',
             'transition-colors duration-200',
             layoutCollapsed
               ? 'w-[var(--sidebar-width-icon)] h-sidebar-item px-2 justify-center'
               : `w-full ${SIDEBAR_ITEM.button} gap-1 justify-start`,
-            isVisuallyActive
+            // Fondo estático SOLO si está activo (ruta elegida) y NO se está interactuando con él (hover ni flyout abierto)
+            (isActive && !showAnimatedBackground)
               ? 'bg-negro-una/20 text-blanco-una'
-              : 'text-blanco-una-2 hover:bg-negro-una/20 hover:text-blanco-una',
+              : (isActive || showAnimatedBackground)
+                ? 'text-blanco-una'
+                : 'text-blanco-una-2 hover:text-blanco-una'
           )}
         >
+          {/* Fondo deslizable animado */}
+          {showAnimatedBackground && (
+            <motion.div
+              layoutId="sidebar-hover-indicator"
+              className="absolute inset-0 bg-negro-una/20 rounded-lg -z-10"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{
+                type: 'spring',
+                stiffness: 400,
+                damping: 30,
+                mass: 0.8
+              }}
+            />
+          )}
           {iconName && (
             <span className={cn('flex-shrink-0 flex items-center justify-center', SIDEBAR_ITEM.icon)}>
               {getIconByName(iconName, 'md')}

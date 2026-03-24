@@ -7,12 +7,14 @@ import type { User } from '@/Services/UserService';
 const getInitials = (name: string) =>
   name.split(' ').slice(0, 2).map(n => n[0]?.toUpperCase() ?? '').join('');
 
+/*
 const formatDate = (date?: Date): string => {
   if (!date) return '—';
   return new Intl.DateTimeFormat('es-ES', {
     day: 'numeric', month: 'short', year: 'numeric',
   }).format(date);
 };
+*/
 
 
 const SectionLabel: React.FC<{ label: string }> = ({ label }) => (

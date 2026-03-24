@@ -131,7 +131,7 @@ export const EvidenceAssignmentsTable: React.FC<EvidenceAssignmentsTableProps> =
       header: 'Acciones',
       align: 'center',
       render: (_: unknown, assignment: EvidenceAssignment) => {
-        // HU-016: Determinar si puede solicitar ampliación
+        // Determinar si puede solicitar ampliación
         // No puede solicitar si:
         // 1. Ya tiene una solicitud pendiente
         // 2. El estado no es pendiente o en_progreso

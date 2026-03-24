@@ -9,10 +9,11 @@ import { TYPOGRAPHY } from '@/Constants/Typography';
 import { TABLE_PAGE_SIZE } from '@/Constants/TablePagination';
 import { TableActionButton } from '@/Components/Ui/Buttons/TableActionButton';
 import { StatusBadge } from '@/Components/Ui/Feedback/StatusBadge';
-import { 
-  type EvidenceSearchResult 
-} from '@/Types/EvidenceSearchTypes';
+import type { EvidenceSearchResult } from '@/Types/EvidenceSearchTypes';
 import { useFirstColumnConfig } from '@/Hooks/UseFirstColumnConfig';
+import { EVIDENCE_STATUS_BADGE } from '@/Constants/StatusBadges';
+import { EvidenceResourcesModal } from './EvidenceResourcesModal';
+
 
 export interface EvidenceSearchResultsTableProps {
   results: EvidenceSearchResult[];
@@ -28,6 +29,16 @@ export const EvidenceSearchResultsTable: React.FC<EvidenceSearchResultsTableProp
   itemsPerPage = TABLE_PAGE_SIZE.standard
 }) => {
   const [currentPage, setCurrentPage] = useState(1);
+  const [resourcesModal, setResourcesModal] = useState<{ criterioNomenclatura: string; evidencias: EvidenceSearchResult[] } | null>(null);
+
+  const openResourcesModal = useCallback((item: EvidenceSearchResult) => {
+    const evidenciasDelCriterio = results.filter(r => r.criterio_id === item.criterio_id);
+    setResourcesModal({ criterioNomenclatura: item.criterio_nomenclatura, evidencias: evidenciasDelCriterio });
+  }, [results]);
+
+  const closeResourcesModal = useCallback(() => {
+    setResourcesModal(null);
+  }, []);
   
   // Función para truncar texto
   const truncateText = useCallback((text: string, maxLength: number = 20): string => {
@@ -137,6 +148,19 @@ export const EvidenceSearchResultsTable: React.FC<EvidenceSearchResultsTableProp
       )
     },
     {
+      key: 'estado',
+      header: 'Estado',
+      align: 'center',
+      render: (_, item) => (
+        <div className="flex items-center justify-center">
+          <StatusBadge
+            label={EVIDENCE_STATUS_BADGE[item.estado].label}
+            colorClasses={EVIDENCE_STATUS_BADGE[item.estado].colorClasses}
+          />
+        </div>
+      )
+    },
+    {
       key: 'actions',
       header: 'Acciones',
       align: 'center',
@@ -147,26 +171,39 @@ export const EvidenceSearchResultsTable: React.FC<EvidenceSearchResultsTableProp
             tooltip="Ver detalles"
             onClick={() => onViewDetails(item.evidencia_id)}
           />
+            <TableActionButton
+              action="list"
+              tooltip="Ver recursos del criterio"
+              onClick={() => openResourcesModal(item)}
+            />
         </div>
       )
-    }
-  ], [onViewDetails]);
+    },
+  ], [onViewDetails, openResourcesModal, results]);
 
   return (
-    <DataTable
-      data={paginatedData as any}
-      columns={columns as any}
-      title=""
-      searchable={false}
-      loading={loading}
-      emptyMessage="No existen evidencias que cumplan con los filtros aplicados. Intenta ajustar los criterios de búsqueda."
-      pagination={totalPages > 1 ? {
-        currentPage,
-        totalPages,
-        onPageChange: handlePageChange
-      } : undefined}
-      unstyled={true}
-    />
+    <>
+      <DataTable
+        data={paginatedData as any}
+        columns={columns as any}
+        title=""
+        searchable={false}
+        loading={loading}
+        emptyMessage="No existen evidencias que cumplan con los filtros aplicados. Intenta ajustar los criterios de búsqueda."
+        pagination={totalPages > 1 ? {
+          currentPage,
+          totalPages,
+          onPageChange: handlePageChange
+        } : undefined}
+        unstyled={true}
+      />
+      <EvidenceResourcesModal
+        isOpen={resourcesModal !== null}
+        onClose={closeResourcesModal}
+        evidencias={resourcesModal?.evidencias ?? []}
+        criterioNomenclatura={resourcesModal?.criterioNomenclatura}
+      />
+    </>
   );
 };
 
