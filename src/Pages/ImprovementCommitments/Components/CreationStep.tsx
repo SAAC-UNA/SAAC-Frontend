@@ -318,14 +318,6 @@ export const CreationStep: React.FC<CreationStepProps> = ({
           </div>
         </div>
 
-        {/* Error de validación */}
-        {errors.criterios && (
-          <div className="p-2.5 bg-red-50 border border-red-200 rounded-lg flex items-center gap-2">
-            <SystemIcons.interface.alert size="sm" className="text-red-600" />
-            <span className="text-sm text-red-800">{errors.criterios}</span>
-          </div>
-        )}
-
         {/* Tabla de Criterios o Mensaje de Sin Ciclo */}
         {!formData.ciclo_acreditacion_id ? (
           <div className="bg-white rounded-lg border border-gray-200 py-16">
