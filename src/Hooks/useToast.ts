@@ -1,4 +1,4 @@
-import { showCustomToast } from '@/Components/Ui/Toast';
+import { showCustomToast } from '@/Components/Ui/Feedback/Toast';
 
 export const useToast = () => ({
   error:   (message: string) => showCustomToast('error', message),

@@ -1,6 +1,6 @@
 /**
  * AssignmentStatusBadge - Badge para mostrar el estado de una asignación
- * HU-029 - Mis Evidencias Asignadas
+ * Mis Evidencias Asignadas
  */
 
 import React from 'react';
@@ -13,6 +13,6 @@ interface AssignmentStatusBadgeProps {
 }
 
 export const AssignmentStatusBadge: React.FC<AssignmentStatusBadgeProps> = ({ estado }) => {
-  const config = ASSIGNMENT_STATUS_BADGE[estado] ?? { label: estado, colorClasses: 'text-gray-600 bg-gray-100' };
+  const config = ASSIGNMENT_STATUS_BADGE[estado] ?? { label: estado, colorClasses: 'text-gris-una bg-gris-light' };
   return <StatusBadge label={config.label} colorClasses={config.colorClasses} />;
 };

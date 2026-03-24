@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useCallback } from 'react';
 import toast from 'react-hot-toast';
-import { showCustomToast } from '@/Components/Ui/Toast';
+import { showCustomToast } from '@/Components/Ui/Feedback/Toast';
 
 export interface Toast {
   id: string;
