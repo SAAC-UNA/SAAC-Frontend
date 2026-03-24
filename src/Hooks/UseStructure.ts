@@ -76,28 +76,40 @@ let _loaded = false;
 let _inflight: Promise<void> | null = null;
 const _subs = new Set<() => void>();
 
-function updateActiveRecursively(
+/**
+ * Recoge el ID del elemento objetivo y el de todos sus descendientes
+ * en la lista plana, siguiendo relaciones parentElementId.
+ */
+function collectDescendantIds(
   elements: StructureElement[],
-  elementType: ElementType,
+  targetId: string
+): Set<string> {
+  const ids = new Set<string>([targetId]);
+  // Iterar hasta que no se añadan más ids (BFS con conjunto creciente)
+  let changed = true;
+  while (changed) {
+    changed = false;
+    for (const el of elements) {
+      if (!ids.has(el.id) && el.parentElementId && ids.has(el.parentElementId)) {
+        ids.add(el.id);
+        changed = true;
+      }
+    }
+  }
+  return ids;
+}
+
+/**
+ * Actualiza `active` en el elemento objetivo y en todos sus descendientes
+ * dentro de la lista plana (los datos en _st.data no tienen childElements poblados).
+ */
+function updateActiveWithDescendants(
+  elements: StructureElement[],
   elementId: string,
   active: boolean
 ): StructureElement[] {
-  return elements.map(element => {
-    const isTarget = element.type === elementType && element.id === elementId;
-    const nextChildren = element.childElements
-      ? updateActiveRecursively(element.childElements, elementType, elementId, active)
-      : element.childElements;
-
-    if (!isTarget && nextChildren === element.childElements) {
-      return element;
-    }
-
-    return {
-      ...element,
-      active: isTarget ? active : element.active,
-      childElements: nextChildren,
-    };
-  });
+  const affectedIds = collectDescendantIds(elements, elementId);
+  return elements.map(el => affectedIds.has(el.id) ? { ...el, active } : el);
 }
 
 function getOverrideKey(type: ElementType, id: string): string {
@@ -387,7 +399,7 @@ export const useStructure = (): UseStructureReturn => {
     async (elementType: ElementType, elementId: string): Promise<boolean> => {
       setMutating(true);
       const previousData = _st.data;
-      _set({ data: updateActiveRecursively(_st.data, elementType, elementId, true) });
+      _set({ data: updateActiveWithDescendants(_st.data, elementId, true) });
 
       try {
         await structureService.setActive(elementType, elementId, true);
@@ -422,7 +434,7 @@ export const useStructure = (): UseStructureReturn => {
     async (elementType: ElementType, elementId: string): Promise<boolean> => {
       setMutating(true);
       const previousData = _st.data;
-      _set({ data: updateActiveRecursively(_st.data, elementType, elementId, false) });
+      _set({ data: updateActiveWithDescendants(_st.data, elementId, false) });
 
       try {
         await structureService.setActive(elementType, elementId, false);

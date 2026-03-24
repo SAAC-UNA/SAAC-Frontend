@@ -269,15 +269,9 @@ const StructureList: React.FC = () => {
             ¿Está seguro de que desea activar "<strong>{truncateText(toggleActiveModalState.element.name || toggleActiveModalState.element.nomenclature || '')}</strong>"?
           </p>
           <p className="mt-2 text-sm text-gris-una-2">
-            Al activar este elemento, volverá a estar disponible para su uso en el sistema.
+            Al activar este elemento, volverá a estar disponible para su uso en el sistema
+            {hasChildren(toggleActiveModalState.element) && ' y se activarán los elementos conectados a este'}.
           </p>
-          {hasChildren(toggleActiveModalState.element) && (
-            <div className="mt-3 p-3 bg-[var(--color-info-light)] border border-[var(--color-info-ring)] rounded-corner">
-              <p className="text-sm text-info-dark">
-                <strong>Cascada automática:</strong> Todos los elementos dependientes (hijos) se activarán automáticamente.
-              </p>
-            </div>
-          )}
         </Modal>
       )}
 
@@ -300,15 +294,9 @@ const StructureList: React.FC = () => {
             ¿Está seguro de que desea inactivar "<strong>{truncateText(toggleActiveModalState.element.name || toggleActiveModalState.element.nomenclature || '')}</strong>"?
           </p>
           <p className="mt-2 text-sm text-gris-una-2">
-            Al inactivar este elemento, dejará de estar disponible en el sistema.
+            Al inactivar este elemento, dejará de estar disponible en el sistema
+            {hasChildren(toggleActiveModalState.element) && ' y se inactivarán los elementos conectados a este'}.
           </p>
-          {hasChildren(toggleActiveModalState.element) && (
-            <div className="mt-3 p-3 bg-[var(--color-warning-light)] border border-[var(--color-warning-ring)] rounded-corner">
-              <p className="text-sm text-warning-dark">
-                <strong>Importante:</strong> Todos los elementos dependientes (hijos) se inactivarán automáticamente en cascada.
-              </p>
-            </div>
-          )}
         </Modal>
       )}
       {/* Modal de creación */}
