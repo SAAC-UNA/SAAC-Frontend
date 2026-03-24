@@ -531,8 +531,7 @@ export const MultiSelect: React.FC<MultiSelectProps> = ({
                   ? 'top-0 scale-75 -translate-y-1/2'
                   : 'top-1/2 scale-100 -translate-y-1/2',
                 'peer-focus:top-0 peer-focus:scale-75 peer-focus:-translate-y-1/2',
-                hasValue || isOpen ? 'bg-blanco-una-2 px-2' : 'bg-transparent px-1',
-                'peer-focus:bg-blanco-una-2 peer-focus:px-2',
+                'bg-transparent px-1 floating-label-halo',
                 error
                   ? 'text-rojo-una-2'
                   : hasValue || isOpen

@@ -400,6 +400,21 @@
   .size-toast { font-size: var(--text-toast); }
   .size-toast-message { font-size: var(--text-toast-message); }
 
+  /*! ===== FLOATING LABEL HALO ===== 24-03-2026 */
+  /* Simula fondo en el label flotante con text-shadow en 8 direcciones,
+   * evitando el recuadro sólido que aparece al usar background-color sobre el borde del input */
+  .floating-label-halo {
+    text-shadow:
+      -1px -1px 0 var(--color-blanco-una-2),
+       1px -1px 0 var(--color-blanco-una-2),
+      -1px  1px 0 var(--color-blanco-una-2),
+       1px  1px 0 var(--color-blanco-una-2),
+      -2px  0   0 var(--color-blanco-una-2),
+       2px  0   0 var(--color-blanco-una-2),
+       0   -2px 0 var(--color-blanco-una-2),
+       0    2px 0 var(--color-blanco-una-2);
+  }
+
   /*! ==== TAMAÑO DE BOTONES PRINCIPALES ===== 04-03-2026 */
   .w-button-standard {
     min-width: var(--width-button);
