@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Toaster, toast } from 'react-hot-toast';
 import { SystemIcons } from '@/Components/Ui/Icons/SystemIcons';
+import { TYPOGRAPHY } from '@/Constants/Typography';
 
 export type ToastVariant = 'success' | 'error' | 'warning' | 'info';
 
@@ -59,8 +60,8 @@ const CustomToast: React.FC<CustomToastProps> = ({ id, variant, title, message, 
       <div style={{ padding: '10px 14px', display: 'flex', alignItems: 'center', gap: '10px' }}>
         {ICONS[variant]}
         <div style={{ flex: 1, minWidth: 0 }}>
-          <p className="size-toast" style={{ margin: 0, lineHeight: 1.3 }}>{title}</p>
-          {message && <p className="size-toast-message" style={{ margin: '2px 0 0', opacity: 0.75, fontWeight: '400', lineHeight: 1.3 }}>{message}</p>}
+          <p className={TYPOGRAPHY.toast.title} style={{ margin: 0, lineHeight: 1.3 }}>{title}</p>
+          {message && <p className={TYPOGRAPHY.toast.message} style={{ margin: '2px 0 0', opacity: 0.75, fontWeight: '400', lineHeight: 1.3 }}>{message}</p>}
         </div>
       </div>
       <div ref={barRef} style={{ height: '3px', backgroundColor: 'var(--toast-bar)', width: '100%' }} />
