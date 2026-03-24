@@ -55,34 +55,6 @@ async function createSystemComment(): Promise<number> {
   }
 }
 
-/**
- * Obtener o crear un estado de evidencia por defecto
- * Necesario para crear evidencias
- */
-async function ensureEvidenceState(): Promise<number> {
-  try {
-    // Intentar obtener estados existentes
-    const response = await axiosInstance.get('/estructura/estados-evidencia');
-    const data = response.data;
-    const estados = Array.isArray(data) ? data : (data.data || []);
-    
-    if (estados.length > 0) {
-      // Usar el primer estado disponible
-      return estados[0].estado_evidencia_id;
-    }
-
-    // Si no existe ninguno, crear uno por defecto
-    const createResponse = await axiosInstance.post('/estructura/estados-evidencia', {
-      nombre: 'Pendiente'
-    });
-
-    return createResponse.data.estado_evidencia_id || createResponse.data.data?.estado_evidencia_id;
-  } catch (error: any) {
-    console.error('Error obteniendo/creando estado de evidencia:', error);
-    throw new Error(error.response?.data?.message || 'No se pudo obtener un estado de evidencia válido');
-  }
-}
-
 // Tree-level cache and deduplication are now handled in UseStructure.ts.
 
 /**
@@ -191,8 +163,8 @@ class StructureService {
       }
 
       if (elementData.type === 'evidence') {
-        const estadoId = await ensureEvidenceState();
-        payload.estado_evidencia_id = estadoId;
+        // El backend usa estado = 'Pendiente' por defecto (enum en EVIDENCIA);
+        // no se requiere enviar estado_evidencia_id
       }
 
       console.log('📤 PAYLOAD FINAL A ENVIAR:', payload);

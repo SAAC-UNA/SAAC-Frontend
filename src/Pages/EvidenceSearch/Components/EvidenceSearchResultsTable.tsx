@@ -171,11 +171,11 @@ export const EvidenceSearchResultsTable: React.FC<EvidenceSearchResultsTableProp
             tooltip="Ver detalles"
             onClick={() => onViewDetails(item.evidencia_id)}
           />
-            <TableActionButton
-              action="list"
-              tooltip="Ver recursos del criterio"
-              onClick={() => openResourcesModal(item)}
-            />
+          <TableActionButton
+            action="list"
+            tooltip="Ver recursos del criterio"
+            onClick={() => openResourcesModal(item)}
+          />
         </div>
       )
     },

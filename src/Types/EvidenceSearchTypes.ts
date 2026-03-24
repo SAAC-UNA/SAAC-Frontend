@@ -3,15 +3,16 @@
  * Definiciones para filtros, resultados y exportación
  */
 
-// Estados posibles de una evidencia (deben coincidir con ESTADO_EVIDENCIA del backend)
-// Pendiente, En proceso, Aprobado, Rechazado, Completado, Vencido
-export type EvidencePublicationStatus = 
-  | 'pendiente' 
-  | 'en_proceso' 
-  | 'aprobado' 
-  | 'rechazado' 
-  | 'completado' 
-  | 'vencido';
+// Estados posibles de una evidencia — enum PascalCase en EVIDENCIA.estado (migración 037/041)
+export type EvidencePublicationStatus =
+  | 'Pendiente'
+  | 'En Proceso'
+  | 'Completado'
+  | 'Vencido'
+  | 'Aprobado'
+  | 'Rechazado'
+  | 'Observada'
+  | 'Validada';
 
 // Tipos de ordenamiento disponibles
 export type SortField = 'fecha_publicacion' | 'criterio' | 'responsable' | 'estado';

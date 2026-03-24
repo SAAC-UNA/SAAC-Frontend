@@ -8,6 +8,7 @@ export interface Criterion {
   comentario_id?: number;
   descripcion: string;
   nomenclatura: string;
+  estado?: string;
   activo?: boolean;
   created_at?: string;
   updated_at?: string;
@@ -16,7 +17,7 @@ export interface Criterion {
 export interface Evidence {
   evidencia_id: number;
   criterio_id: number;
-  estado_evidencia_id: number;
+  estado: string;
   descripcion: string;
   nomenclatura: string;
   activo?: boolean;

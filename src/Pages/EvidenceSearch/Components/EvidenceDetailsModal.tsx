@@ -22,6 +22,8 @@ import type { AssignmentStatus } from '@/Types/EvidenceAssignmentTypes';
 import { type EvidenceSearchResult } from '@/Types/EvidenceSearchTypes';
 import { useAuth } from '@/Context/AuthContext';
 import { AdminFileUploadModal } from './AdminFileUploadModal';
+import { FeedbackModal } from './FeedbackModal';
+import { type FeedbackEstado } from '@/Services/FeedbackService';
 import { TYPOGRAPHY } from '@/Constants/Typography';
 import { ICON_SIZES } from '@/Constants/Components';
 import { ASSIGNMENT_STATUS_BADGE, EVIDENCE_STATUS_BADGE } from '@/Constants/StatusBadges';
@@ -184,8 +186,11 @@ export const EvidenceDetailsModal: React.FC<EvidenceDetailsModalProps> = ({
   onClose,
   criterioId,
 }) => {
-  const { isSuperUser, isAdmin } = useAuth();
+  const { isSuperUser, isAdmin, user } = useAuth();
   const isPrivileged = isSuperUser() || isAdmin();
+  const canRetroalimentar = user?.roles?.some(r =>
+    ['Encargado de Acreditación', 'Administrador', 'Superusuario'].includes(r.name)
+  ) ?? false;
   const firstColumn = useFirstColumnConfig();
 
   const [evidencias, setEvidencias] = useState<EvidenceSearchResult[]>([]);
@@ -193,6 +198,9 @@ export const EvidenceDetailsModal: React.FC<EvidenceDetailsModalProps> = ({
   const [loadingFiles, setLoadingFiles] = useState(false);
   const [adminUpload, setAdminUpload] = useState<{ isOpen: boolean; evidenciaId: number; procesoId: number }>({
     isOpen: false, evidenciaId: 0, procesoId: 0,
+  });
+  const [retroState, setRetroState] = useState<{ isOpen: boolean; evidence: EvidenceSearchResult | null }>({
+    isOpen: false, evidence: null,
   });
 
   const criterio = evidencias[0] ?? null;
@@ -251,6 +259,21 @@ export const EvidenceDetailsModal: React.FC<EvidenceDetailsModalProps> = ({
         </div>
       ),
     },
+    ...(canRetroalimentar ? [{
+      key: 'acciones_retro',
+      header: 'Retroalimentación',
+      align: 'center' as const,
+      render: (_: unknown, item: EvidenceSearchResult) => (
+        <div className="flex items-center justify-center">
+          <TableActionButton
+            action="comment"
+            tooltip={item.estado === 'Pendiente' ? 'Sin recursos para retroalimentar' : 'Retroalimentar evidencia'}
+            disabled={item.estado === 'Pendiente'}
+            onClick={() => setRetroState({ isOpen: true, evidence: item })}
+          />
+        </div>
+      ),
+    }] : []),
   ];
 
   useEffect(() => {
@@ -324,6 +347,12 @@ export const EvidenceDetailsModal: React.FC<EvidenceDetailsModalProps> = ({
   const handleOpenUpload = (evidenciaId: number, group: FilesByUser) => {
     const procesoId = group.archivos.find(f => f.proceso_id)?.proceso_id ?? 0;
     setAdminUpload({ isOpen: true, evidenciaId, procesoId });
+  };
+
+  const handleFeedbackSuccess = (evidenciaId: number, nuevoEstado: FeedbackEstado) => {
+    setEvidencias(prev =>
+      prev.map(e => e.evidencia_id === evidenciaId ? { ...e, estado: nuevoEstado } : e)
+    );
   };
 
   const loadAll = async () => {
@@ -504,6 +533,15 @@ export const EvidenceDetailsModal: React.FC<EvidenceDetailsModalProps> = ({
         evidenciaId={adminUpload.evidenciaId}
         procesoId={adminUpload.procesoId}
         onSuccess={() => reloadFilesForEvidencia(adminUpload.evidenciaId)}
+      />
+    )}
+
+    {canRetroalimentar && (
+      <FeedbackModal
+        isOpen={retroState.isOpen}
+        onClose={() => setRetroState({ isOpen: false, evidence: null })}
+        evidence={retroState.evidence}
+        onSuccess={handleFeedbackSuccess}
       />
     )}
   </>

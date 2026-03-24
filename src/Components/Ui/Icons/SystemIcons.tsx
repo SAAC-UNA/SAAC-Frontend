@@ -245,6 +245,20 @@ export const SystemIcons = {
         <path d="M3.75 12h1.5" />
         <path d="M3.75 18h1.5" />
       </svg>
+    ),
+
+    comment: ({ className, size, color }: IconProps) => (
+      <svg
+        className={`${getSizeClasses(size)} ${className || ''}`}
+            viewBox="0 0 24 24"
+            fill="currentColor"
+            stroke={color || "currentColor"}
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth="2"
+      >
+        <path d="M20.25 4.5H3.75A1.5 1.5 0 0 0 2.25 6v14.887a1.472 1.472 0 0 0 .872 1.36 1.5 1.5 0 0 0 1.594-.206l2.972-2.503L20.25 19.5a1.5 1.5 0 0 0 1.5-1.5V6a1.5 1.5 0 0 0-1.5-1.5Z" />
+      </svg>
     )
   },
 
@@ -1073,6 +1087,7 @@ export const getIconByName = (iconName: string, size: IconProps['size'] = 'md'):
     'eye': () => SystemIcons.actions.view({ size }),
     'power': () => SystemIcons.actions.power({ size }),
     'list': () => SystemIcons.actions.list({ size }),
+    'comment': () => SystemIcons.actions.comment({ size }),
 
     // Users
     'user': () => SystemIcons.users.user({ size }),

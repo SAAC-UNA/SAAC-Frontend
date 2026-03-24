@@ -31,7 +31,7 @@ export interface EvidenceAssignment {
   evidencia?: {
     evidencia_id: number;
     criterio_id: number;
-    estado_evidencia_id: number;
+    estado: string; // PascalCase — valor del enum EVIDENCIA.estado
     descripcion: string;
     nomenclatura: string;
     activo: number;
@@ -45,6 +45,13 @@ export interface EvidenceAssignment {
       nomenclatura: string;
       activo: number;
     };
+    comentarios?: Array<{
+      id: number;
+      texto: string;
+      usuario_id: number;
+      autor: string | null;
+      fecha: string;
+    }>;
   };
   
   usuario?: {

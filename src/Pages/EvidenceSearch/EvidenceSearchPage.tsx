@@ -17,6 +17,7 @@ import type { DropdownOption } from '@/Components/Ui/Buttons/DropdownButton';
 import { SystemIcons } from '@/Components/Ui/Icons/SystemIcons';
 import { EvidenceSearchResultsTable, EvidenceDetailsModal } from './Components';
 import { useToast } from '@/Context/ToastContext';
+import { useAuth } from '@/Context/AuthContext';
 import { getModuleInfo } from '@/Constants/ModuleInfo';
 import { evidenceSearchService, mapBackendToFrontend } from '@/Services/EvidenceSearchService';
 import type {
@@ -31,6 +32,7 @@ import { TYPOGRAPHY } from '@/Constants/Typography';
 
 export const EvidenceSearchPage: React.FC = () => {
   const { showToast } = useToast();
+  const { user: _user } = useAuth();
 
   // Estado de resultados y búsqueda
   const [searchState, setSearchState] = useState<{ filteredResults: EvidenceSearchResult[]; displayedResults: EvidenceSearchResult[]; loading: boolean; searchTerm: string; currentPage: number; currentFilters: EvidenceFilters }>({
@@ -49,6 +51,8 @@ export const EvidenceSearchPage: React.FC = () => {
   const [modalState, setModalState] = useState<{ isOpen: boolean; selectedCriterioId: number | null }>({ isOpen: false, selectedCriterioId: null });
   const isModalOpen = modalState.isOpen;
   const selectedCriterioId = modalState.selectedCriterioId;
+
+  // Modal de retroalimentación movido a EvidenceDetailsModal
 
   // Cargar datos iniciales
   useEffect(() => {
@@ -144,6 +148,8 @@ export const EvidenceSearchPage: React.FC = () => {
   const handleCloseModal = () => {
     setModalState({ isOpen: false, selectedCriterioId: null });
   };
+
+  // Handlers de retroalimentación movidos a EvidenceDetailsModal
 
   const moduleInfo = getModuleInfo('evidence_search');
 

@@ -138,7 +138,7 @@ class EvidenceAssignmentService {
       return rawEvidences.map((item: any) => ({
         evidencia_id: item.id || item.evidencia_id,
         criterio_id: item.criterio_id,
-        estado_evidencia_id: item.estado_evidencia_id,
+        estado: item.estado,
         descripcion: item.descripcion,
         nomenclatura: item.nomenclatura,
         activo: item.activo,

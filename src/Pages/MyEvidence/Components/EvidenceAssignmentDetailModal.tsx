@@ -248,6 +248,37 @@ export const EvidenceAssignmentDetail: React.FC<EvidenceAssignmentDetailProps> =
           </div>
         )}
 
+        {/* Retroalimentación recibida */}
+        <div>
+          <SectionLabel label="Retroalimentación recibida" />
+          {assignment.evidencia?.comentarios && assignment.evidencia.comentarios.length > 0 ? (
+            <div className="flex flex-col gap-3">
+              {assignment.evidencia.comentarios.map((comentario) => (
+                <div key={comentario.id} className="border border-gray-200 rounded-corner p-4">
+                  <div className="flex items-center justify-between mb-2">
+                    <span className={cn(TYPOGRAPHY.table.header, 'font-semibold text-gris-una-1')}>
+                      {comentario.autor ?? 'Encargado'}
+                    </span>
+                    <span className={cn(TYPOGRAPHY.table.cell, 'text-gris-una-2')}>
+                      {new Intl.DateTimeFormat('es-CR', { day: '2-digit', month: 'short', year: 'numeric' }).format(new Date(comentario.fecha))}
+                    </span>
+                  </div>
+                  <p className={cn(TYPOGRAPHY.modal.body, 'text-gris-una-2 whitespace-pre-wrap')}>
+                    {comentario.texto}
+                  </p>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="border border-gray-200 rounded-corner p-4 flex items-center gap-3">
+              <SystemIcons.actions.comment className={cn(ICON_SIZES.sm, 'text-gris-una-2 flex-shrink-0')} />
+              <p className={cn(TYPOGRAPHY.modal.body, 'text-gris-una-2')}>
+                No hay retroalimentación aún
+              </p>
+            </div>
+          )}
+        </div>
+
         {/* Archivos subidos */}
         <div>
           <SectionLabel label="Archivos subidos" />
