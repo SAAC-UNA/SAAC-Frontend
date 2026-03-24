@@ -12,6 +12,11 @@ import type { DropdownOption } from '@/Components/Ui/Buttons/DropdownButton';
 import { usePdfExport } from '@/Hooks/usePdfExport';
 import { Modal } from '@/Components/Ui/Modals/Modal';
 import { useToast } from '@/Context/ToastContext';
+import { DataTable } from '@/Components/Ui/Table/DataTable';
+import type { DataTableColumn } from '@/Components/Ui/Table/DataTable';
+import { StatusBadge } from '@/Components/Ui/Feedback/StatusBadge';
+import { TYPOGRAPHY } from '@/Constants/Typography';
+import { TABLE_ACTION_BUTTON } from '@/Constants/Components';
 
 type ApprovalStatus = 'pendiente' | 'aprobado' | 'rechazado';
 
@@ -58,6 +63,141 @@ interface Proceso {
 
 type ExportFormat = 'pdf' | 'excel';
 
+// ---------- Expandable row component ----------
+interface EvidenceExpansionProps {
+  criterio: Criterio;
+  evidences: Evidencia[];
+  loadingFiles: Set<number>;
+  onLoadFile: (id: number) => void;
+  onOpenLink: (evidencia: Evidencia) => void;
+}
+
+const EvidenceExpansionRow: React.FC<EvidenceExpansionProps> = ({
+  criterio,
+  evidences,
+  loadingFiles,
+  onLoadFile,
+  onOpenLink,
+}) => {
+  const criterionEvidences = evidences.filter((e) => e.criterio_id === criterio.id);
+  const [noFilesModal, setNoFilesModal] = useState<{ open: boolean; evidencia: Evidencia | null }>({ open: false, evidencia: null });
+
+  useEffect(() => {
+    criterionEvidences.forEach((ev) => {
+      if (!ev.archivos) onLoadFile(ev.id);
+    });
+    // Only run on mount for this criterio
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [criterio.id]);
+
+  if (criterionEvidences.length === 0) {
+    return <p className="px-4 py-3 text-sm text-gris-una">Sin evidencias</p>;
+  }
+
+  return (
+    <>
+      <div className="p-4 bg-gray-50 space-y-3">
+        <h4 className="text-sm font-medium text-gray-700">Evidencias del Criterio:</h4>
+        <div className="space-y-1.5">
+          {criterionEvidences.map((evidencia) => {
+            const tieneArchivos = (evidencia.archivos?.length || 0) > 0;
+            const tieneEnlace = (evidencia.archivos || []).some(
+              (archivo) => archivo.is_publico && archivo.token_publico
+            );
+            const isLoadingFile = loadingFiles.has(evidencia.id);
+
+            return (
+              <div
+                key={evidencia.id}
+                className="flex items-center justify-between px-3 py-2 bg-gray-50 rounded-md border border-gray-200"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <div className="flex-1 min-w-0">
+                  <p className={`truncate ${TYPOGRAPHY.table.cell}`}>
+                    <span className="font-medium text-negro-una">{evidencia.nomenclatura}</span>
+                    <span className="text-gris-una"> — {evidencia.descripcion}</span>
+                  </p>
+                </div>
+                <div className="flex items-center gap-1.5 ml-3 shrink-0">
+                  {isLoadingFile ? (
+                    <span className="text-xs text-gris-una px-2">Cargando...</span>
+                  ) : tieneEnlace ? (
+                    <>
+                      <StatusBadge label="Enlace listo" colorClasses="text-verde-dark bg-verde-ring" />
+                      <ButtonWithTooltip
+                        variant="tableView"
+                        size="sm"
+                        tooltip="Abrir enlace público"
+                        tooltipPosition="left"
+                        onClick={() => onOpenLink(evidencia)}
+                        className={TABLE_ACTION_BUTTON.button}
+                      >
+                        <SystemIcons.actions.linkIcon className={TABLE_ACTION_BUTTON.icon} />
+                      </ButtonWithTooltip>
+                    </>
+                  ) : tieneArchivos ? (
+                    <>
+                      <StatusBadge label="Sin enlace" colorClasses="text-warning-dark bg-warning-ring" />
+                      <ButtonWithTooltip
+                        variant="tableView"
+                        size="sm"
+                        tooltip="Abrir enlace público"
+                        tooltipPosition="left"
+                        onClick={() => onOpenLink(evidencia)}
+                        className={TABLE_ACTION_BUTTON.button}
+                      >
+                        <SystemIcons.actions.linkIcon className={TABLE_ACTION_BUTTON.icon} />
+                      </ButtonWithTooltip>
+                    </>
+                  ) : (
+                    <ButtonWithTooltip
+                      variant="tableView"
+                      size="sm"
+                      tooltip="Ver archivos asociados"
+                      tooltipPosition="left"
+                      onClick={() => setNoFilesModal({ open: true, evidencia })}
+                      className={TABLE_ACTION_BUTTON.button}
+                    >
+                      <SystemIcons.actions.view className={TABLE_ACTION_BUTTON.icon} />
+                    </ButtonWithTooltip>
+                  )}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* Modal sin archivos */}
+      <Modal
+        isOpen={noFilesModal.open}
+        onClose={() => setNoFilesModal({ open: false, evidencia: null })}
+        title="Archivos de la evidencia"
+        subtitle={noFilesModal.evidencia?.nomenclatura ?? ''}
+        size="md"
+        variant="info"
+        heroIcon={<SystemIcons.modal.document className="h-5 w-5 text-blanco-una" />}
+        showCancel
+        cancelLabel="Cerrar"
+      >
+        <div className="space-y-4">
+          <div className="bg-gray-50 p-3 rounded-md">
+            <div className="text-sm text-gray-500">{noFilesModal.evidencia?.descripcion}</div>
+          </div>
+          <div className="border border-gray-200 rounded-md p-8">
+            <div className="text-center">
+              <SystemIcons.modal.document className="mx-auto h-12 w-12 text-gray-400" />
+              <h3 className="mt-2 text-sm font-medium text-gray-900">No hay archivos asociados</h3>
+              <p className="mt-1 text-sm text-gray-500">Esta evidencia aún no tiene archivos adjuntos.</p>
+            </div>
+          </div>
+        </div>
+      </Modal>
+    </>
+  );
+};
+// ---------- End EvidenceExpansionRow ----------
+
 const FinalReports: React.FC = () => {
   const moduleInfo = getModuleInfo('final_reports');
   const { exportToPdf: generatePdfReport } = usePdfExport();
@@ -68,11 +208,13 @@ const FinalReports: React.FC = () => {
   const criteria = dataState.criteria;
   const evidences = dataState.evidences;
   const processes = dataState.processes;
-  const [uiState, setUiState] = useState<{ selectedProcesoId: number | null; expandedCriteria: Set<number>; loadingFiles: Set<number> }>({ selectedProcesoId: null, expandedCriteria: new Set(), loadingFiles: new Set() });
+  const [uiState, setUiState] = useState<{ selectedProcesoId: number | null; loadingFiles: Set<number> }>({ selectedProcesoId: null, loadingFiles: new Set() });
   const selectedProcesoId = uiState.selectedProcesoId;
-  const expandedCriteria = uiState.expandedCriteria;
   const loadingFiles = uiState.loadingFiles;
   
+  // Modal de detalle de criterio
+  const [detailModal, setDetailModal] = useState<{ open: boolean; criterio: Criterio | null }>({ open: false, criterio: null });
+
   // Modal de enlaces públicos
   const [publicLinkModal, setPublicLinkModal] = useState<{ open: boolean; archivo: Archivo | null; evidencia: Evidencia | null }>({ open: false, archivo: null, evidencia: null });
   const publicLinkModalOpen = publicLinkModal.open;
@@ -141,28 +283,6 @@ const FinalReports: React.FC = () => {
 
   const getEvidenciasPorCriterio = (criterioId: number) => {
     return evidences.filter(ev => ev.criterio_id === criterioId);
-  };
-  
-  const toggleEvidencias = async (criterioId: number) => {
-    const isExpanding = !expandedCriteria.has(criterioId);
-    
-    setUiState(prev => {
-      const newSet = new Set(prev.expandedCriteria);
-      if (newSet.has(criterioId)) {
-        newSet.delete(criterioId);
-      } else {
-        newSet.add(criterioId);
-      }
-      return {...prev, expandedCriteria: newSet};
-    });
-    
-    // Si estamos expandiendo, cargar los archivos de las evidencias
-    if (isExpanding) {
-      const evidenciasCriterio = getEvidenciasPorCriterio(criterioId);
-      await Promise.all(
-        evidenciasCriterio.map(evidencia => loadEvidenceFiles(evidencia.id))
-      );
-    }
   };
 
   const loadEvidenceFiles = async (evidenciaId: number) => {
@@ -272,13 +392,9 @@ const FinalReports: React.FC = () => {
         title: `Se generaron ${todosLosArchivos.length} enlaces públicos exitosamente` 
       });
       
-      // Reload all expanded evidences
-      for (const criterioId of Array.from(expandedCriteria)) {
-        const evidenciasCriterio = getEvidenciasPorCriterio(criterioId);
-        await Promise.all(
-          evidenciasCriterio.map(ev => loadEvidenceFiles(ev.id))
-        );
-      }
+      // Reload all evidences that have been previously loaded
+      const evidencesWithFiles = evidences.filter(ev => ev.archivos !== undefined);
+      await Promise.all(evidencesWithFiles.map(ev => loadEvidenceFiles(ev.id)));
     } catch (error: any) {
       console.error('Error generando enlaces masivos:', error);
       showToast({ 
@@ -429,161 +545,103 @@ const FinalReports: React.FC = () => {
           </div>
 
           {/* Lista de criterios aprobados */}
-          {selectedProcesoId && (
+          {!selectedProcesoId ? (
+            <div className="bg-white rounded-lg border border-gray-200 py-16">
+              <div className="text-center">
+                <SystemIcons.modal.document size="lg" className="mx-auto text-gray-400 mb-3" />
+                <p className="text-sm font-medium text-negro-una mb-1">No hay datos disponibles</p>
+                <p className="text-sm text-gris-una">Seleccione un proceso para continuar</p>
+              </div>
+            </div>
+          ) : (
             <>
               {criteria.length === 0 ? (
                 <div className="flex flex-col items-center justify-center py-16">
                   <div className="flex flex-col items-center">
                     <SystemIcons.modal.document className="h-24 w-24 text-gris-una mb-4" />
-                    <p className="text-sm font-medium text-negro-una mb-1">No hay datos disponibles</p>
-                    <p className="text-sm text-gris-una">Seleccione un proceso para continuar</p>
+                    <p className="text-sm font-medium text-negro-una mb-1">No hay criterios aprobados</p>
+                    <p className="text-sm text-gris-una">No se encontraron criterios aprobados para este proceso</p>
                   </div>
                 </div>
               ) : (
-                <div className="bg-white shadow overflow-hidden sm:rounded-lg">
-                  <table className="min-w-full divide-y divide-gray-200">
-                    <thead className="bg-gray-50">
-                      <tr>
-                        <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">
-                          Criterio
-                        </th>
-                        <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">
-                          Descripción
-                        </th>
-                        <th className="px-4 py-2 text-center text-xs font-medium text-gray-500 uppercase">
-                          Evidencias
-                        </th>
-                      </tr>
-                    </thead>
-                    <tbody className="bg-white divide-y divide-gray-200">
-                      {criteria.map((criterio: Criterio) => {
-                        const evidenciasCriterio = getEvidenciasPorCriterio(criterio.id);
-                        const totalEvidencias = evidenciasCriterio.length;
-                        const isExpanded = expandedCriteria.has(criterio.id);
-                        
-                        return (
-                          <React.Fragment key={criterio.id}>
-                            <tr>
-                              <td className="px-4 py-3 whitespace-nowrap text-sm font-medium text-gray-900">
-                                {criterio.nomenclatura}
-                              </td>
-                              <td className="px-4 py-3 text-sm text-gray-500">
-                                {criterio.descripcion}
-                              </td>
-                              <td className="px-4 py-3 text-center">
-                                {totalEvidencias > 0 ? (
-                                  <button
-                                    onClick={() => toggleEvidencias(criterio.id)}
-                                    className="inline-flex items-center gap-2 px-2.5 py-1 text-xs font-medium text-gray-700 bg-gray-50 hover:bg-gray-100 rounded-md transition-colors whitespace-nowrap"
-                                  >
-                                    <span>{totalEvidencias} evidencia{totalEvidencias !== 1 ? 's' : ''}</span>
-                                    <svg 
-                                      className={`w-4 h-4 transition-transform ${isExpanded ? 'rotate-180' : ''}`} 
-                                      fill="none" 
-                                      stroke="currentColor" 
-                                      viewBox="0 0 24 24"
-                                    >
-                                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                                    </svg>
-                                  </button>
-                                ) : (
-                                  <span className="text-sm text-gray-400">Sin evidencias</span>
-                                )}
-                              </td>
-                            </tr>
-                            
-                            {/* Fila expandida con evidencias y archivos */}
-                            {isExpanded && totalEvidencias > 0 && (
-                              <tr>
-                                <td colSpan={3} className="px-4 py-4 bg-gray-50">
-                                  <div className="space-y-3">
-                                    <h4 className="text-sm font-medium text-gray-700 mb-2">
-                                      Evidencias del Criterio:
-                                    </h4>
-                                    <div className="border border-gray-200 rounded-md overflow-hidden bg-white">
-                                      {evidenciasCriterio.map((evidencia) => {
-                                        const tieneArchivos = (evidencia.archivos?.length || 0) > 0;
-                                        const tieneEnlace = (evidencia.archivos || []).some(
-                                          (archivo) => archivo.is_publico && archivo.token_publico
-                                        );
-                                        const isLoading = loadingFiles.has(evidencia.id);
-
-                                        return (
-                                          <div
-                                            key={evidencia.id}
-                                            className="flex items-center justify-between px-3 py-2 border-b border-gray-100 last:border-b-0 hover:bg-gray-50"
-                                          >
-                                            <div className="flex-1 min-w-0">
-                                              <div className="text-xs text-gray-700 truncate">
-                                                <span className="font-medium text-gray-900">{evidencia.nomenclatura}</span>
-                                                <span className="text-gray-500"> - {evidencia.descripcion}</span>
-                                              </div>
-                                            </div>
-                                            <div className="flex items-center gap-2">
-                                              <span
-                                                className={`inline-flex items-center gap-1.5 text-[11px] font-medium px-2 py-0.5 rounded-full border ${
-                                                  isLoading
-                                                    ? 'border-gray-200 bg-gray-50 text-gray-600'
-                                                    : tieneEnlace
-                                                    ? 'border-green-200 bg-green-50 text-green-700'
-                                                    : tieneArchivos
-                                                    ? 'border-amber-200 bg-amber-50 text-amber-700'
-                                                    : 'border-gray-200 bg-gray-50 text-gray-600'
-                                                }`}
-                                              >
-                                                <span
-                                                  className={`inline-block h-1.5 w-1.5 rounded-full ${
-                                                    isLoading
-                                                      ? 'bg-gray-400'
-                                                      : tieneEnlace
-                                                      ? 'bg-green-500'
-                                                      : tieneArchivos
-                                                      ? 'bg-amber-500'
-                                                      : 'bg-gray-400'
-                                                  }`}
-                                                />
-                                                {isLoading
-                                                  ? 'Cargando...'
-                                                  : tieneEnlace
-                                                  ? 'Enlace listo'
-                                                  : tieneArchivos
-                                                  ? 'Sin enlace'
-                                                  : 'Sin archivos'}
-                                              </span>
-                                              <button
-                                                type="button"
-                                                onClick={() => handleAbrirEnlaceEvidencia(evidencia)}
-                                                disabled={isLoading || !tieneArchivos}
-                                                className="ml-1 p-1.5 text-gray-600 hover:text-gray-800 transition-colors rounded-md hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
-                                                title={
-                                                  !tieneArchivos
-                                                    ? 'No hay archivos adjuntos'
-                                                    : 'Abrir enlace público'
-                                                }
-                                              >
-                                                <SystemIcons.actions.linkIcon className="w-5 h-5" />
-                                              </button>
-                                            </div>
-                                          </div>
-                                        );
-                                      })}
-                                    </div>
-                                  </div>
-                                </td>
-                              </tr>
-                            )}
-                          </React.Fragment>
-                        );
-                      })}
-                    </tbody>
-                  </table>
-                </div>
+<DataTable
+                  data={criteria as any}
+                  columns={([
+                    {
+                      key: 'nomenclatura',
+                      header: 'Criterio',
+                      width: '140px',
+                      render: (_: any, item: any) => (
+                        <p className={`block font-sans antialiased font-bold leading-normal text-negro-una-2 ${TYPOGRAPHY.table.cell}`}>
+                          {item.nomenclatura}
+                        </p>
+                      ),
+                    },
+                    {
+                      key: 'descripcion',
+                      header: 'Descripción',
+                      render: (_: any, item: any) => (
+                        <p
+                          className={`block font-sans antialiased font-normal leading-normal text-gris-una max-w-2xl truncate ${TYPOGRAPHY.table.cell}`}
+                          title={item.descripcion}
+                        >
+                          {item.descripcion}
+                        </p>
+                      ),
+                    },
+                    {
+                      key: 'actions',
+                      header: 'Acciones',
+                      align: 'center',
+                      width: '90px',
+                      render: (_: any, item: any) => (
+                        <div className="flex gap-1 justify-center" onClick={(e) => e.stopPropagation()}>
+                          <ButtonWithTooltip
+                            variant="tableView"
+                            size="sm"
+                            tooltip="Ver detalles"
+                            onClick={() => setDetailModal({ open: true, criterio: item })}
+                            className={TABLE_ACTION_BUTTON.button}
+                          >
+                            <SystemIcons.actions.view className={TABLE_ACTION_BUTTON.icon} />
+                          </ButtonWithTooltip>
+                        </div>
+                      ),
+                    },
+                  ] as DataTableColumn[]) as any}
+                  getRowKey={(item: any) => item.id.toString()}
+                  expandableRow={(item: any) => (
+                    <EvidenceExpansionRow
+                      criterio={item}
+                      evidences={evidences}
+                      loadingFiles={loadingFiles}
+                      onLoadFile={loadEvidenceFiles}
+                      onOpenLink={handleAbrirEnlaceEvidencia}
+                    />
+                  )}
+                  searchable={false}
+                />
               )}
             </>
           )}
         </>
       )}
       
+      {/* Modal de detalle de criterio */}
+      <Modal
+        isOpen={detailModal.open}
+        onClose={() => setDetailModal({ open: false, criterio: null })}
+        title={detailModal.criterio?.nomenclatura ?? ''}
+        subtitle="Descripción completa del criterio"
+        size="md"
+        variant="info"
+        heroIcon={<SystemIcons.modal.document className="h-5 w-5 text-blanco-una" />}
+        showCancel
+        cancelLabel="Cerrar"
+      >
+        <p className="text-sm text-gris-una leading-relaxed">{detailModal.criterio?.descripcion}</p>
+      </Modal>
+
       {/* Modal de confirmación para generar todos los enlaces */}
       <Modal
         isOpen={showConfirmModal}

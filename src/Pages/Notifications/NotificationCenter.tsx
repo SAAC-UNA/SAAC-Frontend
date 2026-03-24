@@ -43,6 +43,15 @@ const NotificationCenter: React.FC<NotificationCenterModalProps> = ({ isOpen, on
 
   const [currentFilters, setCurrentFilters] = useState<NotificationFilters>({});
   const [isMarkingAll, setIsMarkingAll] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+
+  const filteredNotifications = useMemo(() => {
+    if (!searchQuery.trim()) return notifications;
+    const q = searchQuery.toLowerCase();
+    return notifications.filter(
+      (n) => n.titulo.toLowerCase().includes(q) || n.mensaje.toLowerCase().includes(q)
+    );
+  }, [notifications, searchQuery]);
 
   const groupedNotifications = useMemo(() => {
     const groups = new Map<string, typeof notifications>();
@@ -54,7 +63,7 @@ const NotificationCenter: React.FC<NotificationCenterModalProps> = ({ isOpen, on
       return format(date, 'dd MMM yyyy', { locale: es });
     };
 
-    notifications.forEach((notification) => {
+    filteredNotifications.forEach((notification) => {
       const label = getLabel(notification.created_at);
       const list = groups.get(label) || [];
       list.push(notification);
@@ -62,7 +71,7 @@ const NotificationCenter: React.FC<NotificationCenterModalProps> = ({ isOpen, on
     });
 
     return Array.from(groups.entries());
-  }, [notifications]);
+  }, [filteredNotifications]);
 
   // Aplicar filtros
   const handleFilterChange = (filters: NotificationFilters) => {
@@ -108,13 +117,17 @@ const NotificationCenter: React.FC<NotificationCenterModalProps> = ({ isOpen, on
       isOpen={isOpen}
       onClose={onClose}
       title="Centro de Notificaciones"
+      subtitle="Gestione y filtre sus notificaciones"
       size="xl"
-      className="min-h-[72vh]"
+      variant="info"
+      heroIcon={<SystemIcons.interface.bell className="h-5 w-5 text-blanco-una" />}
+      showCancel
+      cancelLabel="Cerrar"
     >
       <div className="space-y-4">
         {/* Contador */}
         <div className="text-sm text-gray-600 pb-2 border-b border-gray-200">
-          <span className="font-semibold text-gray-900">{notifications.length}</span> notificaciones
+          <span className="font-semibold text-gray-900">{filteredNotifications.length}</span> notificaciones
           {unreadCount > 0 && (
             <>
               {' • '}
@@ -130,6 +143,7 @@ const NotificationCenter: React.FC<NotificationCenterModalProps> = ({ isOpen, on
             <NotificationFiltersComponent
               onFilterChange={handleFilterChange}
               initialFilters={currentFilters}
+              onSearchChange={setSearchQuery}
             />
           </div>
 
@@ -187,13 +201,13 @@ const NotificationCenter: React.FC<NotificationCenterModalProps> = ({ isOpen, on
                 Reintentar
               </Button>
             </div>
-          ) : notifications.length === 0 ? (
+          ) : filteredNotifications.length === 0 ? (
             <div className="bg-gray-50 rounded-lg p-8 h-full">
               <div className="min-h-[340px] h-full flex flex-col items-center justify-center text-center pt-6">
                 <SystemIcons.interface.bell className="h-12 w-12 text-gray-300" />
                 <h3 className="mt-2 text-sm font-medium text-gray-900">No hay notificaciones</h3>
                 <p className="mt-1 text-sm text-gray-500">
-                  {Object.keys(currentFilters).length > 0
+                  {Object.keys(currentFilters).length > 0 || searchQuery
                     ? 'No se encontraron notificaciones con los filtros aplicados.'
                     : 'No tienes notificaciones en este momento.'}
                 </p>
