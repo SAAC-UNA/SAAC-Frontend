@@ -79,7 +79,7 @@ const EvidenciaResponsablesPanelAdmin: React.FC<EvidenciaResponsablesPanelAdminP
       align: 'left',
       width: firstColumn.width,
       render: (_, item) => (
-        <span className={`font-semibold text-negro-una-2 ${TYPOGRAPHY.table.cell}`}>
+        <span className={`font-semibold text-negro-una-2 ${TYPOGRAPHY.modal.body}`}>
           {item.nombre as string}
         </span>
       ),
@@ -89,7 +89,7 @@ const EvidenciaResponsablesPanelAdmin: React.FC<EvidenciaResponsablesPanelAdminP
       header: 'Fecha Asignación',
       align: 'center',
       render: (_, item) => (
-        <span className={`text-gris-una-2 ${TYPOGRAPHY.table.cell}`}>
+        <span className={`text-gris-una-2 ${TYPOGRAPHY.modal.body}`}>
           {formatDate(item.fecha_asignacion as string | null)}
         </span>
       ),
@@ -99,7 +99,7 @@ const EvidenciaResponsablesPanelAdmin: React.FC<EvidenciaResponsablesPanelAdminP
       header: 'Fecha Límite',
       align: 'center',
       render: (_, item) => (
-        <span className={`text-gris-una-2 ${TYPOGRAPHY.table.cell}`}>
+        <span className={`text-gris-una-2 ${TYPOGRAPHY.modal.body}`}>
           {formatDate(item.fecha_limite as string | null)}
         </span>
       ),
@@ -110,7 +110,7 @@ const EvidenciaResponsablesPanelAdmin: React.FC<EvidenciaResponsablesPanelAdminP
       align: 'center',
       render: (_, item) => {
         const estado = item.estado_asignacion as AssignmentStatus | null;
-        if (!estado) return <span className={`text-gris-una-2 ${TYPOGRAPHY.table.cell}`}>—</span>;
+        if (!estado) return <span className={`text-gris-una-2 ${TYPOGRAPHY.modal.body}`}>—</span>;
         return (
           <div className="flex items-center justify-center">
             <StatusBadge
@@ -164,7 +164,7 @@ const EvidenciaResponsablesPanelAdmin: React.FC<EvidenciaResponsablesPanelAdminP
 
 const SectionLabel: React.FC<{ label: string }> = ({ label }) => (
   <div className="flex items-center gap-2 mb-2.5">
-    <span className={cn('uppercase tracking-wider font-semibold text-gris-una-2', TYPOGRAPHY.table.header)}>
+    <span className={cn('uppercase tracking-wider font-semibold text-gris-una-2', TYPOGRAPHY.modal.subtitle)}>
       {label}
     </span>
   </div>
@@ -174,7 +174,7 @@ const InfoCell: React.FC<{ label: string; children: React.ReactNode; className?:
   label, children, className,
 }) => (
   <div className={cn('flex flex-col gap-1.5', className)}>
-    <span className={cn('uppercase tracking-wider font-semibold text-gris-una-2', TYPOGRAPHY.table.header)}>
+    <span className={cn('uppercase tracking-wider font-semibold text-gris-una-2', TYPOGRAPHY.modal.subtitle)}>
       {label}
     </span>
     <div>{children}</div>
@@ -213,10 +213,10 @@ export const EvidenceDetailsModal: React.FC<EvidenceDetailsModalProps> = ({
       width: firstColumn.width,
       render: (_, item) => (
         <div className="flex flex-col pl-2">
-          <span className={`font-bold text-negro-una-2 ${TYPOGRAPHY.table.cell}`}>
+          <span className={`font-bold text-negro-una-2 ${TYPOGRAPHY.modal.body}`}>
             {item.nomenclatura}
           </span>
-          <span className={`text-gris-una-2 ${TYPOGRAPHY.table.cell}`}>
+          <span className={`text-gris-una-2 ${TYPOGRAPHY.modal.body}`}>
             {item.descripcion}
           </span>
         </div>
@@ -453,17 +453,17 @@ export const EvidenceDetailsModal: React.FC<EvidenceDetailsModalProps> = ({
               <SectionLabel label="Información del criterio" />
               <div className="border border-gray-200 rounded-corner p-4 grid grid-cols-2 gap-x-6 gap-y-4">
                 <InfoCell label="Nomenclatura">
-                  <span className={cn(TYPOGRAPHY.table.cell, 'text-gris-una-2 font-medium')}>
+                  <span className={cn(TYPOGRAPHY.modal.body, 'text-gris-una-2 font-medium')}>
                     {criterio.criterio_nomenclatura}
                   </span>
                 </InfoCell>
                 <InfoCell label="Evidencias asociadas">
-                  <span className={cn(TYPOGRAPHY.table.cell, 'text-gris-una-2')}>
+                  <span className={cn(TYPOGRAPHY.modal.body, 'text-gris-una-2')}>
                     {evidencias.length}
                   </span>
                 </InfoCell>
                 <InfoCell label="Descripción" className="col-span-2">
-                  <span className={cn(TYPOGRAPHY.table.cell, 'text-gris-una-2')}>
+                  <span className={cn(TYPOGRAPHY.modal.body, 'text-gris-una-2')}>
                     {criterio.criterio_descripcion}
                   </span>
                 </InfoCell>

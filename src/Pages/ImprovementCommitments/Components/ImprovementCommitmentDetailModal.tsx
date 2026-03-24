@@ -216,7 +216,7 @@ export const ImprovementCommitmentDetailModal: React.FC<Props> = ({ id, isOpen, 
       align: 'center',
       width: '150px',
       render: (_, item) => (
-        <p className={`block font-sans antialiased font-medium leading-normal text-negro-una ${TYPOGRAPHY.table.cell}`}>
+        <p className={`block font-sans antialiased font-medium leading-normal text-negro-una ${TYPOGRAPHY.modal.body}`}>
           {item.criterio?.nomenclatura || 'Criterio'}
         </p>
       ),
@@ -227,7 +227,7 @@ export const ImprovementCommitmentDetailModal: React.FC<Props> = ({ id, isOpen, 
       align: 'left',
       render: (_, item) => (
         <p
-          className={`block font-sans antialiased font-normal leading-normal text-gris-una max-w-2xl truncate ${TYPOGRAPHY.table.cell}`}
+          className={`block font-sans antialiased font-normal leading-normal text-gris-una max-w-2xl truncate ${TYPOGRAPHY.modal.body}`}
           title={item.criterio?.descripcion || 'Sin descripción'}
         >
           {item.criterio?.descripcion || 'Sin descripción'}

@@ -22,7 +22,7 @@ interface EvidenceAssignmentDetailProps {
 }
 
 const SectionLabel: React.FC<{ label: string }> = ({ label }) => (
-  <span className={cn('uppercase tracking-wider font-semibold text-gris-una-2 mb-2.5 block', TYPOGRAPHY.table.header)}>
+  <span className={cn('uppercase tracking-wider font-semibold text-gris-una-2 mb-2.5 block', TYPOGRAPHY.modal.subtitle)}>
     {label}
   </span>
 );
@@ -31,7 +31,7 @@ const InfoCell: React.FC<{ label: string; children: React.ReactNode; className?:
   label, children, className, inline = false,
 }) => (
   <div className={cn(inline ? 'flex items-center gap-2.5 flex-wrap' : 'flex flex-col gap-1', className)}>
-    <span className={cn('uppercase tracking-wider font-semibold text-gris-una-2', inline && 'shrink-0', TYPOGRAPHY.table.header)}>
+    <span className={cn('uppercase tracking-wider font-semibold text-gris-una-2', inline && 'shrink-0', TYPOGRAPHY.modal.subtitle)}>
       {label}
     </span>
     <div>{children}</div>
@@ -205,12 +205,12 @@ export const EvidenceAssignmentDetail: React.FC<EvidenceAssignmentDetailProps> =
               <AssignmentStatusBadge estado={assignment.estado} />
             </InfoCell>
             <InfoCell label="Fecha de asignación">
-              <span className={cn(TYPOGRAPHY.table.cell, 'text-gris-una-2')}>
+              <span className={cn(TYPOGRAPHY.modal.body, 'text-gris-una-2')}>
                 {formatAssignmentDate(assignment.fecha_asignacion)}
               </span>
             </InfoCell>
             <InfoCell label="Fecha límite">
-              <span className={cn(TYPOGRAPHY.table.cell, deadlineColorClass)}>
+              <span className={cn(TYPOGRAPHY.modal.body, deadlineColorClass)}>
                 {deadlineDateText}
               </span>
             </InfoCell>
@@ -223,12 +223,12 @@ export const EvidenceAssignmentDetail: React.FC<EvidenceAssignmentDetailProps> =
             <SectionLabel label="Criterio" />
             <div className="border border-gray-200 rounded-corner p-4 flex flex-col gap-4">
               <InfoCell label="Nomenclatura">
-                <span className={cn(TYPOGRAPHY.table.cell, 'text-gris-una-2 font-semibold')}>
+                <span className={cn(TYPOGRAPHY.modal.body, 'text-gris-una-2 font-semibold')}>
                   {assignment.evidencia.criterion.nomenclatura}
                 </span>
               </InfoCell>
               <InfoCell label="Descripción">
-                <span className={cn(TYPOGRAPHY.table.cell, 'text-gris-una-2')}>
+                <span className={cn(TYPOGRAPHY.modal.body, 'text-gris-una-2')}>
                   {assignment.evidencia.criterion.descripcion}
                 </span>
               </InfoCell>
@@ -256,10 +256,10 @@ export const EvidenceAssignmentDetail: React.FC<EvidenceAssignmentDetailProps> =
               {assignment.evidencia.comentarios.map((comentario) => (
                 <div key={comentario.id} className="border border-gray-200 rounded-corner p-4">
                   <div className="flex items-center justify-between mb-2">
-                    <span className={cn(TYPOGRAPHY.table.header, 'font-semibold text-gris-una-1')}>
+                    <span className={cn(TYPOGRAPHY.modal.subtitle, 'font-semibold text-gris-una-1')}>
                       {comentario.autor ?? 'Encargado'}
                     </span>
-                    <span className={cn(TYPOGRAPHY.table.cell, 'text-gris-una-2')}>
+                    <span className={cn(TYPOGRAPHY.modal.body, 'text-gris-una-2')}>
                       {new Intl.DateTimeFormat('es-CR', { day: '2-digit', month: 'short', year: 'numeric' }).format(new Date(comentario.fecha))}
                     </span>
                   </div>

@@ -58,7 +58,7 @@ const EvidenciaResponsablesPanel: React.FC<{ evidenciaId: number }> = ({ evidenc
       align: 'left',
       width: firstColumn.width,
       render: (_, item) => (
-        <span className={`font-semibold text-negro-una-2 ${TYPOGRAPHY.table.cell}`}>
+        <span className={`font-semibold text-negro-una-2 ${TYPOGRAPHY.modal.body}`}>
           {item.nombre as string}
         </span>
       ),
@@ -68,7 +68,7 @@ const EvidenciaResponsablesPanel: React.FC<{ evidenciaId: number }> = ({ evidenc
       header: 'Fecha Asignación',
       align: 'center',
       render: (_, item) => (
-        <span className={`text-gris-una-2 ${TYPOGRAPHY.table.cell}`}>
+        <span className={`text-gris-una-2 ${TYPOGRAPHY.modal.body}`}>
           {formatDate(item.fecha_asignacion as string | null)}
         </span>
       ),
@@ -78,7 +78,7 @@ const EvidenciaResponsablesPanel: React.FC<{ evidenciaId: number }> = ({ evidenc
       header: 'Fecha Límite',
       align: 'center',
       render: (_, item) => (
-        <span className={`text-gris-una-2 ${TYPOGRAPHY.table.cell}`}>
+        <span className={`text-gris-una-2 ${TYPOGRAPHY.modal.body}`}>
           {formatDate(item.fecha_limite as string | null)}
         </span>
       ),
@@ -89,7 +89,7 @@ const EvidenciaResponsablesPanel: React.FC<{ evidenciaId: number }> = ({ evidenc
       align: 'center',
       render: (_, item) => {
         const estado = item.estado_asignacion as AssignmentStatus | null;
-        if (!estado) return <span className={`text-gris-una-2 ${TYPOGRAPHY.table.cell}`}>—</span>;
+        if (!estado) return <span className={`text-gris-una-2 ${TYPOGRAPHY.modal.body}`}>—</span>;
         return (
           <div className="flex items-center justify-center">
             <StatusBadge
@@ -189,10 +189,10 @@ export const EvidenceResourcesModal: React.FC<EvidenceResourcesModalProps> = ({
       width: firstColumn.width,
       render: (_, item) => (
         <div className="flex flex-col pl-2">
-          <span className={`font-bold text-negro-una-2 ${TYPOGRAPHY.table.cell}`}>
+          <span className={`font-bold text-negro-una-2 ${TYPOGRAPHY.modal.body}`}>
             {item.nomenclatura}
           </span>
-          <span className={`text-gris-una-2 ${TYPOGRAPHY.table.cell}`}>
+          <span className={`text-gris-una-2 ${TYPOGRAPHY.modal.body}`}>
             {item.descripcion}
           </span>
         </div>

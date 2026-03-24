@@ -30,7 +30,7 @@ interface AuditLogDetailModalProps {
 }
 
 const SectionLabel: React.FC<{ label: string }> = ({ label }) => (
-  <span className={cn('uppercase tracking-wider font-semibold text-gris-una-2 mb-2.5 block', TYPOGRAPHY.table.header)}>
+  <span className={cn('uppercase tracking-wider font-semibold text-gris-una-2 mb-2.5 block', TYPOGRAPHY.modal.subtitle)}>
     {label}
   </span>
 );
@@ -39,7 +39,7 @@ const InfoCell: React.FC<{ label: string; children: React.ReactNode; className?:
   label, children, className,
 }) => (
   <div className={cn('flex flex-col gap-1', className)}>
-    <span className={cn('uppercase tracking-wider font-semibold text-gris-una-2', TYPOGRAPHY.table.header)}>
+    <span className={cn('uppercase tracking-wider font-semibold text-gris-una-2', TYPOGRAPHY.modal.subtitle)}>
       {label}
     </span>
     {children}
@@ -86,12 +86,12 @@ export const AuditLogDetailModal: React.FC<AuditLogDetailModalProps> = ({
             {log.usuario ? (
               <div className="grid grid-cols-2 gap-4">
                 <InfoCell label="Nombre">
-                  <span className={cn(TYPOGRAPHY.table.cell, 'text-gris-una-2 font-normal')}>
+                  <span className={cn(TYPOGRAPHY.modal.body, 'text-gris-una-2 font-normal')}>
                     {log.usuario.nombre}
                   </span>
                 </InfoCell>
                 <InfoCell label="Correo electrónico">
-                  <span className={cn(TYPOGRAPHY.table.cell, 'text-gris-una-2')}>
+                  <span className={cn(TYPOGRAPHY.modal.body, 'text-gris-una-2')}>
                     {log.usuario.email}
                   </span>
                 </InfoCell>
@@ -110,7 +110,7 @@ export const AuditLogDetailModal: React.FC<AuditLogDetailModalProps> = ({
                 )}
               </div>
             ) : (
-              <span className={cn(TYPOGRAPHY.table.cell, 'text-gris-una-2 italic')}>
+              <span className={cn(TYPOGRAPHY.modal.body, 'text-gris-una-2 italic')}>
                 Usuario desconocido
               </span>
             )}
@@ -130,7 +130,7 @@ export const AuditLogDetailModal: React.FC<AuditLogDetailModalProps> = ({
               </InfoCell>
               {log.modulo && (
                 <InfoCell label="Módulo">
-                  <span className={cn(TYPOGRAPHY.table.cell, 'text-gris-una-2')}>
+                  <span className={cn(TYPOGRAPHY.modal.body, 'text-gris-una-2')}>
                     {log.modulo}
                   </span>
                 </InfoCell>
@@ -143,7 +143,7 @@ export const AuditLogDetailModal: React.FC<AuditLogDetailModalProps> = ({
         <div>
           <SectionLabel label="Detalle" />
           <div className="border border-gray-200 rounded-corner p-4">
-            <span className={cn(TYPOGRAPHY.table.cell, 'text-gris-una-2 leading-relaxed whitespace-pre-wrap')}>
+            <span className={cn(TYPOGRAPHY.modal.body, 'text-gris-una-2 leading-relaxed whitespace-pre-wrap')}>
               {log.detalle || <span className="italic">Sin detalle adicional</span>}
             </span>
           </div>
@@ -154,12 +154,12 @@ export const AuditLogDetailModal: React.FC<AuditLogDetailModalProps> = ({
           <SectionLabel label="Información de tiempo" />
           <div className="border border-gray-200 rounded-corner p-4 grid grid-cols-2 gap-4">
             <InfoCell label="Fecha y hora">
-              <span className={cn(TYPOGRAPHY.table.cell, 'text-gris-una-2 capitalize')}>
+              <span className={cn(TYPOGRAPHY.modal.body, 'text-gris-una-2 capitalize')}>
                 {formatDateFull(log.fecha_hora)}
               </span>
             </InfoCell>
             <InfoCell label="Registrado el">
-              <span className={cn(TYPOGRAPHY.table.cell, 'text-gris-una-2 capitalize')}>
+              <span className={cn(TYPOGRAPHY.modal.body, 'text-gris-una-2 capitalize')}>
                 {formatDateFull(log.created_at)}
               </span>
             </InfoCell>

@@ -13,7 +13,7 @@ interface ExtensionRequestDetailsModalProps {
 }
 
 const SectionLabel: React.FC<{ label: string }> = ({ label }) => (
-  <span className={cn('uppercase tracking-wider font-semibold text-gris-una-2 mb-2.5 block', TYPOGRAPHY.table.header)}>
+  <span className={cn('uppercase tracking-wider font-semibold text-gris-una-2 mb-2.5 block', TYPOGRAPHY.modal.subtitle)}>
     {label}
   </span>
 );
@@ -22,7 +22,7 @@ const InfoCell: React.FC<{ label: string; children: React.ReactNode; className?:
   label, children, className,
 }) => (
   <div className={cn('flex flex-col gap-1', className)}>
-    <span className={cn('uppercase tracking-wider font-semibold text-gris-una-2', TYPOGRAPHY.table.header)}>
+    <span className={cn('uppercase tracking-wider font-semibold text-gris-una-2', TYPOGRAPHY.modal.subtitle)}>
       {label}
     </span>
     <div>{children}</div>
@@ -70,19 +70,19 @@ export const ExtensionRequestDetailsModal: React.FC<ExtensionRequestDetailsModal
             </InfoCell>
             <div className="grid grid-cols-2 gap-x-6">
               <InfoCell label="Fecha de solicitud">
-                <span className={cn(TYPOGRAPHY.table.cell, 'text-gris-una-2')}>
+              <span className={cn(TYPOGRAPHY.modal.body, 'text-gris-una-2')}>
                   {formatDate(solicitud.created_at, true)}
                 </span>
               </InfoCell>
               <InfoCell label="Fecha nueva solicitada">
-                <span className={cn(TYPOGRAPHY.table.cell, 'text-gris-una-2')}>
+              <span className={cn(TYPOGRAPHY.modal.body, 'text-gris-una-2')}>
                   {formatDate(solicitud.fecha_sugerida)}
                 </span>
               </InfoCell>
             </div>
             {solicitud.evidencia_asignacion && (
               <InfoCell label="Fecha límite actual">
-                <span className={cn(TYPOGRAPHY.table.cell, 'text-info font-semibold')}>
+                <span className={cn(TYPOGRAPHY.modal.body, 'text-info font-semibold')}>
                   {formatDate(solicitud.evidencia_asignacion.fecha_limite)}
                 </span>
               </InfoCell>

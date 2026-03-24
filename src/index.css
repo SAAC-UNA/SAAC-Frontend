@@ -197,29 +197,29 @@
 
   /* Tamaños de tipografía estandarizados por tipo de elemento */
   /* Fórmula: rem × 16 = px | Ejemplo: 0.875rem × 16 = 14px */
-  --text-header: 0.875rem;             /* 8px - Texto principal en headers */
-  --text-body: 0.875rem;            /* 14px - Texto general/contenido */
+  --text-header: 12.8px;             /* 8px - Texto principal en headers */
+  --text-body: 12.8px;            /* 14px - Texto general/contenido */
   --text-page-title: 1.25rem;        /* 24px - Título principal de página */
   --text-page-subtitle: 1rem;       /* 16px - Subtítulo/descripción de página */
-  --text-button: 0.875rem;          /* 12px - Todos los botones */
-  --text-sidebar: 0.875rem;         /* 14px - Items de navegación */
-  --text-form-input: 0.875rem;      /* 14px - Inputs, selects, textareas */
-  --text-form-label: 0.875rem;      /* 14px - Labels de formularios */
+  --text-button: 12.8px;          /* 12px - Todos los botones */
+  --text-sidebar: 13px;         /* 14px - Items de navegación */
+  --text-form-input: 12.8px;      /* 14px - Inputs, selects, textareas */
+  --text-form-label: 12.8px;      /* 14px - Labels de formularios */
   --text-form-helper: 0.75rem;      /* 12px - Textos de ayuda y validación */
-  --text-table-header: 0.875rem;     /* 14px - Headers de tabla */
-  --text-table-cell: 0.875rem;      /* 12px - Contenido de celdas */
-  --text-table-caption: 0.875rem;   /* 14px - Título de tabla */
-  --text-badge: 0.875rem;            /* 12px - Badges, chips, pills de acción (en tablas) */
-  --text-alert-title: 0.875rem;     /* 14px - Título de alertas */
-  --text-alert-message: 0.875rem;   /* 14px - Mensaje de alertas */
+  --text-table-header: 12.8px;     /* 14px - Headers de tabla */
+  --text-table-cell: 12.8px;      /* 12px - Contenido de celdas */
+  --text-table-caption: 12.8px;   /* 14px - Título de tabla */
+  --text-badge: 12.8px;            /* 12px - Badges, chips, pills de acción (en tablas) */
+  --text-alert-title: 12.8px;     /* 14px - Título de alertas */
+  --text-alert-message: 12.8px;   /* 14px - Mensaje de alertas */
   --text-empty-title: 1.125rem;     /* 18px - Título de estados vacíos */
-  --text-empty-desc: 0.875rem;      /* 14px - Descripción de estados vacíos */
+  --text-empty-desc: 12.8px;      /* 14px - Descripción de estados vacíos */
   --text-empty-title-compact: 1rem; /* 16px - Título compacto */
   --text-empty-desc-compact: 0.75rem; /* 12px - Descripción compacta */
   --text-modal-title: 1.25rem;      /* 20px - Título de modales */
-  --text-modal-subtitle: 0.875rem;  /* 14px - Subtítulo de modales */
-  --text-modal-body: 0.875rem;      /* 14px - Contenido de modales */
-  --text-pagination: 0.875rem;      /* 14px - Paginación */
+  --text-modal-subtitle: 12.8px;  /* 14px - Subtítulo de modales */
+  --text-modal-body: 12.8px;      /* 14px - Contenido de modales */
+  --text-pagination: 12.8px;      /* 14px - Paginación */
   --text-tooltip: 0.75rem;         /* 12px - Texto de tooltips */
   --text-toast: 0.75rem;           /* 12px - Título del toast */
   --text-toast-message: 0.6875rem; /* 11px - Mensaje del toast */

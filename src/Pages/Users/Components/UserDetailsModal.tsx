@@ -19,7 +19,7 @@ const formatDate = (date?: Date): string => {
 
 const SectionLabel: React.FC<{ label: string }> = ({ label }) => (
   <div className="flex items-center gap-2 mb-2.5">
-    <span className={cn('uppercase tracking-wider font-semibold text-gris-una-2', TYPOGRAPHY.table.header)}>
+    <span className={cn('uppercase tracking-wider font-semibold text-gris-una-2', TYPOGRAPHY.modal.subtitle)}>
       {label}
     </span>
   </div>
@@ -29,7 +29,7 @@ const InfoCell: React.FC<{ label: string; children: React.ReactNode; className?:
   label, children, className,
 }) => (
   <div className={cn('flex flex-col gap-1.5', className)}>
-    <span className={cn('uppercase tracking-wider font-semibold text-gris-una-2', TYPOGRAPHY.table.header)}>
+    <span className={cn('uppercase tracking-wider font-semibold text-gris-una-2', TYPOGRAPHY.modal.subtitle)}>
       {label}
     </span>
     <div>{children}</div>
@@ -75,7 +75,7 @@ export const UserDetailsModal: React.FC<UserDetailsModalProps> = ({
           <SectionLabel  label="Información personal" />
           <div className="border border-gray-200 rounded-corner p-4 grid grid-cols-2 gap-x-6 gap-y-4">
             <InfoCell label="Nombre completo">
-              <span className={cn(TYPOGRAPHY.table.cell, 'text-gris-una-2 font-medium')}>{user.name}</span>
+              <span className={cn(TYPOGRAPHY.modal.body, 'text-gris-una-2 font-medium')}>{user.name}</span>
             </InfoCell>
             <InfoCell label="Estado">
               <span className={cn(
@@ -100,7 +100,7 @@ export const UserDetailsModal: React.FC<UserDetailsModalProps> = ({
               </InfoCell>
             )}
             <InfoCell label="Correo electrónico" className={user.role ? '' : 'col-span-2'}>
-              <span className={cn(TYPOGRAPHY.table.cell, 'text-gris-una-2')}>{user.email}</span>
+              <span className={cn(TYPOGRAPHY.modal.body, 'text-gris-una-2')}>{user.email}</span>
             </InfoCell>
           </div>
         </div>
@@ -127,7 +127,7 @@ export const UserDetailsModal: React.FC<UserDetailsModalProps> = ({
                 {user.allPermissions.map(p => (
                   <div key={p.label} className="flex items-center gap-2">
                     <span className="w-1.5 h-1.5 rounded-full bg-verde flex-shrink-0" />
-                    <span className={cn(TYPOGRAPHY.table.cell, 'text-gris-una-2 truncate')}>{p.label}</span>
+                    <span className={cn(TYPOGRAPHY.modal.body, 'text-gris-una-2 truncate')}>{p.label}</span>
                   </div>
                 ))}
               </div>
