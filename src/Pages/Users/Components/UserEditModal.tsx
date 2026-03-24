@@ -14,6 +14,7 @@ import { SuccessModal } from '@/Components/Ui/Modals/SuccessModal';
 import { EditUserForm } from './EditUserForm';
 import { userService } from '@/Services/UserService';
 import type { User } from '@/Services/UserService';
+import { useToast } from '@/Context/ToastContext';
 
 interface UserEditModalProps {
   isOpen: boolean;
@@ -31,6 +32,7 @@ export const UserEditModal: React.FC<UserEditModalProps> = ({
   user,
   onSuccess,
 }) => {
+  const { showToast } = useToast();
   const [hasChanges, setHasChanges] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -65,6 +67,11 @@ export const UserEditModal: React.FC<UserEditModalProps> = ({
       setSuccessState({ isOpen: true, userName });
     } catch (error) {
       console.error('Error al actualizar usuario:', error);
+      showToast({
+        type: 'error',
+        title: 'Error al actualizar usuario',
+        message: error instanceof Error ? error.message : 'No se pudo asignar el rol al usuario'
+      });
       setConfirmState({ isOpen: false, userData: null });
     } finally {
       setIsSubmitting(false);

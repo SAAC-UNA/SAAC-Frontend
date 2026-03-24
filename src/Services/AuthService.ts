@@ -5,6 +5,15 @@
 
 import { config } from '@/Config/app.config';
 
+export class ValidationError extends Error {
+  messages: string[];
+  constructor(messages: string[]) {
+    super(messages[0]);
+    this.name = 'ValidationError';
+    this.messages = messages;
+  }
+}
+
 export interface Role {
   id: number;
   name: string;
@@ -71,11 +80,14 @@ export const authService = {
         
         try {
           const errorData = await response.json();
-          if (errorData.message) {
-            // Mostrar mensaje específico del backend si existe
+          if (errorData.errors) {
+            const messages = Object.values(errorData.errors as Record<string, string[]>).flat();
+            throw new ValidationError(messages);
+          } else if (errorData.message) {
             errorMessage = errorData.message;
           }
-        } catch {
+        } catch (parseError) {
+          if (parseError instanceof ValidationError) throw parseError;
           // Si no se puede parsear el JSON, usar mensaje genérico
         }
         

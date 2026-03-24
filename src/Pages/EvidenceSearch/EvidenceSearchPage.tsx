@@ -89,25 +89,20 @@ export const EvidenceSearchPage: React.FC = () => {
       
       setSearchState(prev => ({ ...prev, filteredResults: mappedResults, displayedResults: mappedResults, loading: false }));
 
-      // TODO: Implementar componente de toast y descomentar
-      // if (mappedResults.length === 0) {
-      //   showToast({
-      //     type: 'info',
-      //     title: 'No se encontraron evidencias con los filtros aplicados'
-      //   });
-      // } else {
-      //   showToast({
-      //     type: 'success',
-      //     title: `Se encontraron ${response.meta.total} evidencia(s)`
-      //   });
-      // }
+      if (mappedResults.length === 0) {
+        showToast({
+          type: 'info',
+          title: 'Sin resultados',
+          message: 'No se encontraron evidencias con los filtros aplicados'
+        });
+      }
     } catch (error) {
       setSearchState(prev => ({ ...prev, loading: false, filteredResults: [], displayedResults: [] }));
-      // TODO: Implementar componente de toast y descomentar
-      // showToast({
-      //   type: 'error',
-      //   title: 'Error al buscar evidencias. Intente nuevamente.'
-      // });
+      showToast({
+        type: 'error',
+        title: 'Error al buscar evidencias',
+        message: 'Intente nuevamente'
+      });
       console.error('Error en búsqueda:', error);
     }
   }, [showToast, currentPage, itemsPerPage]);
@@ -123,18 +118,17 @@ export const EvidenceSearchPage: React.FC = () => {
       }
 
       setSearchState(prev => ({ ...prev, loading: false }));
-      // TODO: Implementar componente de toast y descomentar
-      // showToast({
-      //   type: 'success',
-      //   title: 'Archivo descargado exitosamente'
-      // });
+      showToast({
+        type: 'success',
+        title: 'Archivo descargado exitosamente'
+      });
     } catch (error) {
       setSearchState(prev => ({ ...prev, loading: false }));
-      // TODO: Implementar componente de toast y descomentar
-      // showToast({
-      //   type: 'error',
-      //   title: 'Error al exportar. Intente nuevamente.'
-      // });
+      showToast({
+        type: 'error',
+        title: 'Error al exportar',
+        message: 'Intente nuevamente'
+      });
       console.error('Error en exportación:', error);
     }
   };

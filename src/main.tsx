@@ -1,7 +1,7 @@
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import { TooltipProvider } from '@/Components/Ui/Index'
-import { ToastContainer } from '@/Components/Ui/Toast/Toast'
+import { ToastContainer } from '@/Components/Ui/Toast'
 import './index.css'
 import App from './App.tsx'
 

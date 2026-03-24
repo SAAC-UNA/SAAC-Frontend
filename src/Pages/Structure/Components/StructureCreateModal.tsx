@@ -13,6 +13,7 @@ import { Input } from '@/Components/Ui/Forms/Input';
 import { Textarea } from '@/Components/Ui/Forms/Textarea';
 import { CustomSelect } from '@/Components/Ui/Forms/SingleSelect';
 import { useStructure } from '@/Hooks/UseStructure';
+import { useToast } from '@/Context/ToastContext';
 import type { StructureElement, CreateElementForm, SelectOption } from '@/Types/StructureTypes';
 import { ElementType } from '@/Types/StructureTypes';
 import {
@@ -52,6 +53,7 @@ export const StructureCreateModal: React.FC<StructureCreateModalProps> = ({
   onSuccess,
 }) => {
   const { createElement, treeData, loadTree, isLoading } = useStructure();
+  const { showToast } = useToast();
 
   const [formData, setFormData] = useState<CreateElementForm>(EMPTY_FORM);
   const [errors, setErrors] = useState<FormErrors>({});
@@ -235,7 +237,12 @@ export const StructureCreateModal: React.FC<StructureCreateModalProps> = ({
             formData.name || formData.nomenclature || formData.description || 'elemento',
         });
       }
-    } catch {
+    } catch (error) {
+      showToast({
+        type: 'error',
+        title: 'Error al crear elemento',
+        message: error instanceof Error ? error.message : 'No se pudo crear el elemento'
+      });
       setConfirmOpen(false);
     }
   };

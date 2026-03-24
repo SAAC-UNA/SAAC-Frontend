@@ -127,8 +127,13 @@ const FinalReports: React.FC = () => {
       );
       
       setDataState(prev => ({ ...prev, criteria: approvedCriteria, evidences: evidencesArray, processes: processesArray }));
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error:', error);
+      showToast({
+        type: 'error',
+        title: 'Error al cargar informe',
+        message: error?.response?.data?.message || error?.message || 'No se pudieron cargar los datos del informe'
+      });
     } finally {
       setDataState(prev => ({ ...prev, isLoading: false }));
     }

@@ -1,10 +1,8 @@
-import { showToast } from '@/Components/Ui/Toast/Toast';
+import { showCustomToast } from '@/Components/Ui/Toast';
 
-export const useToast = () => {
-  return {
-    error: (message: string) => showToast(message, 'error'),
-    success: (message: string) => showToast(message, 'success'),
-    info: (message: string) => showToast(message, 'info'),
-    warning: (message: string) => showToast(message, 'warning'),
-  };
-};
+export const useToast = () => ({
+  error:   (message: string) => showCustomToast('error', message),
+  success: (message: string) => showCustomToast('success', message),
+  info:    (message: string) => showCustomToast('info', message),
+  warning: (message: string) => showCustomToast('warning', message),
+});

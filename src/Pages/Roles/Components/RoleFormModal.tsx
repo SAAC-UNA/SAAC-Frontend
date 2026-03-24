@@ -19,6 +19,7 @@ import { EditConfirmationModal } from '@/Components/Ui/Modals/EditConfirmationMo
 import { SuccessModal } from '@/Components/Ui/Modals/SuccessModal';
 import { RoleFormContent } from './RoleFormContent';
 import { useRoles } from '@/Hooks/UseRoles';
+import { useToast } from '@/Context/ToastContext';
 import type { CreateRoleData, Role } from '@/Services/RoleService';
 
 interface RoleFormModalProps {
@@ -41,6 +42,7 @@ export const RoleFormModal: React.FC<RoleFormModalProps> = ({
 }) => {
   const isEditing = !!initialData;
   const { createRole, editRole } = useRoles();
+  const { showToast } = useToast();
 
   const [hasChanges, setHasChanges] = useState(!isEditing);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -82,7 +84,12 @@ export const RoleFormModal: React.FC<RoleFormModalProps> = ({
         setConfirmState({ isOpen: false, roleData: null });
         setSuccessState({ isOpen: true, roleName: confirmState.roleData.name });
       }
-    } catch {
+    } catch (error) {
+      showToast({
+        type: 'error',
+        title: isEditing ? 'Error al editar rol' : 'Error al crear rol',
+        message: error instanceof Error ? error.message : 'No se pudo guardar el rol'
+      });
       setConfirmState({ isOpen: false, roleData: null });
     } finally {
       setIsSubmitting(false);

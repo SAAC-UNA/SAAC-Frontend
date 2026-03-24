@@ -21,10 +21,12 @@ import { userService } from '@/Services/UserService';
 import type { User } from '@/Services/UserService';
 import { getModuleInfoWithDynamicTitle } from '@/Constants/ModuleInfo';
 import { LAYOUT } from '@/Constants/Layout';
+import { useToast } from '@/Context/ToastContext';
 
 const EditUserPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const { showToast } = useToast();
 
   // Estados para el usuario
   const [userState, setUserState] = useState<{ user: User | null; isLoadingUser: boolean; loadError: string | null }>({ user: null, isLoadingUser: true, loadError: null });
@@ -126,6 +128,11 @@ const EditUserPage: React.FC = () => {
         });
       } catch (error) {
         console.error('Error al actualizar usuario:', error);
+        showToast({
+          type: 'error',
+          title: 'Error al actualizar usuario',
+          message: error instanceof Error ? error.message : 'No se pudo asignar el rol al usuario'
+        });
         // Cerrar modal de confirmación incluso si hay error
         setConfirmModalState({ isOpen: false, userData: null });
       }

@@ -205,6 +205,26 @@ function findElementByTypeAndId(
   return null;
 }
 
+/**
+ * Extracts the most user-readable error message from an unknown error.
+ * Prioritises the backend's `response.data.message` (Axios errors) over the
+ * generic JS `Error.message`.
+ */
+function extractBackendError(err: unknown, fallback: string): string {
+  if (err && typeof err === 'object') {
+    const e = err as Record<string, unknown>;
+    if (e.response && typeof e.response === 'object') {
+      const resp = e.response as Record<string, unknown>;
+      if (resp.data && typeof resp.data === 'object') {
+        const data = resp.data as Record<string, unknown>;
+        if (typeof data.message === 'string' && data.message) return data.message;
+      }
+    }
+    if (typeof e.message === 'string') return e.message;
+  }
+  return fallback;
+}
+
 function _set(patch: Partial<StoreState>): void {
   _st = { ..._st, ...patch };
   _subs.forEach(fn => fn());
@@ -308,8 +328,9 @@ export const useStructure = (): UseStructureReturn => {
           // Si la recarga falla, se usa el flujo de error normal.
         }
 
-        _set({ error: `Error al crear elemento: ${err instanceof Error ? err.message : 'Error desconocido'}` });
-        return null;
+        const msg = extractBackendError(err, 'No se pudo crear el elemento');
+        _set({ error: msg });
+        throw new Error(msg);
       } finally {
         setMutating(false);
       }
@@ -333,8 +354,9 @@ export const useStructure = (): UseStructureReturn => {
         }
         throw new Error('No se recibieron datos del servidor');
       } catch (err) {
-        _set({ error: `Error al editar elemento: ${err instanceof Error ? err.message : 'Error desconocido'}` });
-        return null;
+        const msg = extractBackendError(err, 'No se pudo editar el elemento');
+        _set({ error: msg });
+        throw new Error(msg);
       } finally {
         setMutating(false);
       }
@@ -351,8 +373,9 @@ export const useStructure = (): UseStructureReturn => {
         await _load();
         return true;
       } catch (err) {
-        _set({ error: `Error al eliminar elemento: ${err instanceof Error ? err.message : 'Error desconocido'}` });
-        return false;
+        const msg = extractBackendError(err, 'No se pudo eliminar el elemento');
+        _set({ error: msg });
+        throw new Error(msg);
       } finally {
         setMutating(false);
       }
@@ -385,11 +408,9 @@ export const useStructure = (): UseStructureReturn => {
         }
 
         removeActiveOverride(elementType, elementId);
-        _set({
-          data: previousData,
-          error: err instanceof Error ? err.message : 'Error al activar elemento'
-        });
-        return false;
+        const msg = extractBackendError(err, 'No se pudo activar el elemento');
+        _set({ data: previousData, error: msg });
+        throw new Error(msg);
       } finally {
         setMutating(false);
       }
@@ -422,11 +443,9 @@ export const useStructure = (): UseStructureReturn => {
         }
 
         removeActiveOverride(elementType, elementId);
-        _set({
-          data: previousData,
-          error: err instanceof Error ? err.message : 'Error al desactivar elemento'
-        });
-        return false;
+        const msg = extractBackendError(err, 'No se pudo desactivar el elemento');
+        _set({ data: previousData, error: msg });
+        throw new Error(msg);
       } finally {
         setMutating(false);
       }

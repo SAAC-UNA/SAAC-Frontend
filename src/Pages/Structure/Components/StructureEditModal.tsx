@@ -12,6 +12,7 @@ import { SuccessModal } from '@/Components/Ui/Modals/SuccessModal';
 import { Input } from '@/Components/Ui/Forms/Input';
 import { Textarea } from '@/Components/Ui/Forms/Textarea';
 import { useStructure } from '@/Hooks/UseStructure';
+import { useToast } from '@/Context/ToastContext';
 import type { StructureElement } from '@/Types/StructureTypes';
 import {
   FORM_CONFIG,
@@ -35,6 +36,7 @@ export const StructureEditModal: React.FC<StructureEditModalProps> = ({
   onSuccess,
 }) => {
   const { editElement, treeData, isLoading } = useStructure();
+  const { showToast } = useToast();
 
   const [formData, setFormData] = useState({ nomenclature: '', name: '', description: '' });
   const [hasChanges, setHasChanges] = useState(false);
@@ -175,7 +177,12 @@ export const StructureEditModal: React.FC<StructureEditModalProps> = ({
           elementName: formData.name || formData.nomenclature || formData.description || 'elemento',
         });
       }
-    } catch {
+    } catch (error) {
+      showToast({
+        type: 'error',
+        title: 'Error al editar elemento',
+        message: error instanceof Error ? error.message : 'No se pudo editar el elemento'
+      });
       setConfirmOpen(false);
     }
   };

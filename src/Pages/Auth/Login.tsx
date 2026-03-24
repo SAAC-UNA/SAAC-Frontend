@@ -10,6 +10,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/Context/AuthContext';
 import { SystemIcons } from '@/Components/Ui/Icons/SystemIcons';
 import { useToast } from '@/Hooks/useToast';
+import { ValidationError } from '@/Services/AuthService';
 import styles from './Login.module.css';
 
 export const Login = () => {
@@ -34,7 +35,11 @@ export const Login = () => {
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Error al iniciar sesión';
       setFormState(prev => ({ ...prev, error: errorMessage, loading: false }));
-      toast.error(errorMessage);
+      if (err instanceof ValidationError) {
+        err.messages.forEach(msg => toast.error(msg));
+      } else {
+        toast.error(errorMessage);
+      }
       return;
     }
     setFormState(prev => ({ ...prev, loading: false }));

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { ScreenContainer, PageHeader } from '@/Components/Ui/Index';
 import { LoadingSpinner } from '@/Components/Ui/Index';
+import { useToast } from '@/Context/ToastContext';
 import { getModuleInfo } from '@/Constants/ModuleInfo';
 import { SystemIcons } from '@/Components/Ui/Icons/SystemIcons';
 import { axiosInstance } from '@/Config/axios';
@@ -50,6 +51,7 @@ interface Proceso {
 
 const BlockApproval: React.FC = () => {
   const moduleInfo = getModuleInfo('block_approval');
+  const { showToast } = useToast();
   const [dataState, setDataState] = useState<{ isLoading: boolean; criteria: Criterio[]; evidences: Evidencia[]; processes: Proceso[] }>({ isLoading: true, criteria: [], evidences: [], processes: [] });
   const isLoading = dataState.isLoading;
   const criteria = dataState.criteria;
@@ -128,8 +130,13 @@ const BlockApproval: React.FC = () => {
         processes: processesArray,
         isLoading: false
       }));
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error:', error);
+      showToast({
+        type: 'error',
+        title: 'Error al cargar datos',
+        message: error?.response?.data?.message || error?.message || 'No se pudieron cargar los criterios'
+      });
       setDataState(prev => ({ ...prev, isLoading: false }));
     }
   };
@@ -201,11 +208,12 @@ const BlockApproval: React.FC = () => {
       await fetchData();
     } catch (error: any) {
       console.error('Error completo:', error);
-      console.error('Respuesta del error:', error.response?.data);
       
-      // Mostrar el mensaje de error del backend
-      const errorMessage = error.response?.data?.message || 'Error al procesar la solicitud';
-      alert(errorMessage);
+      showToast({
+        type: 'error',
+        title: 'Error al procesar la solicitud',
+        message: error.response?.data?.message || 'Ocurrió un error inesperado'
+      });
       
       // Cerrar modal de confirmación
       setApprovalState(prev => ({ ...prev, isOpen: false, criterion: null }));

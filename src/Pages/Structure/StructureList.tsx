@@ -20,11 +20,14 @@ import { SuccessModal } from '@/Components/Ui/Modals/SuccessModal';
 import { SearchInput } from '@/Components/Ui/Forms/SearchInput';
 import { Button } from '@/Components/Ui/Buttons/Button';
 import { truncateText } from '@/Utils';
+import { useToast } from '@/Context/ToastContext';
 
 const StructureList: React.FC = () => {
   
   // Obtener información del módulo desde ModuleInfo
   const moduleInfo = getModuleInfo('structure_list');
+
+  const { showToast } = useToast();
 
   const { 
   isLoading, 
@@ -136,7 +139,12 @@ const StructureList: React.FC = () => {
           });
         }
       } catch (error) {
-        console.error('Error al eliminar elemento:', error);
+        showToast({
+          type: 'error',
+          title: 'Error al eliminar elemento',
+          message: error instanceof Error ? error.message : 'No se pudo eliminar el elemento'
+        });
+        setDeleteModalState({ isOpen: false, element: null });
       }
     }
   };
@@ -177,7 +185,11 @@ const StructureList: React.FC = () => {
       });
       
     } catch (error) {
-      console.error('Error al cambiar estado del elemento:', error);
+      showToast({
+        type: 'error',
+        title: 'Error al cambiar estado',
+        message: error instanceof Error ? error.message : 'No se pudo cambiar el estado del elemento'
+      });
       setToggleActiveModalState({ isOpen: false, element: null });
     }
   };
