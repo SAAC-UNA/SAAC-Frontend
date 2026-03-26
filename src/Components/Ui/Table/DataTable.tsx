@@ -213,7 +213,7 @@ export const DataTable = React.memo(<T extends Record<string, unknown>>({
             <thead>
               <tr>
                 {expandableRow && (
-                  <th className="w-10 pl-4 pr-2 py-4 border-b border-blue-gray-100 bg-gris-light rounded-tl-corner" />
+                  <th className="w-10 pl-4 pr-2 py-4 border-b border-blue-gray-100 bg-gris-light/50 rounded-tl-corner" />
                 )}
                 {columns.map((column, index) => (
                   <th
