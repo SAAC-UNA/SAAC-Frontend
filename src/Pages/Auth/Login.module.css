@@ -130,9 +130,8 @@
 }
 
 .login-logo-image {
-  width: 100%;
-  max-width: 150px;
-  height: auto;
+  width: auto;
+  height: calc(var(--size-icon-logo) * 2);
   margin: 0 auto 10px auto;
   display: block;
   filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.15));

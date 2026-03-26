@@ -105,7 +105,7 @@ export const SidebarNavProvider: React.FC<SidebarNavProviderProps> = ({ children
       const estimatedHalfH = ((item.children?.length ?? 0) * 48 + Math.max(0, (item.children?.length ?? 1) - 1) * 4 + 16) / 2;
       const clampedTop = Math.min(Math.max(centerY, estimatedHalfH + 8), window.innerHeight - estimatedHalfH - 8);
 
-      setPanelPos({ top: clampedTop, left: rect.right + 8 });
+      setPanelPos({ top: clampedTop, left: rect.right + 16 });
     }
 
     selectedItemRef.current = item;
@@ -139,7 +139,7 @@ export const SidebarNavProvider: React.FC<SidebarNavProviderProps> = ({ children
           lastItemYRef.current = centerY;
           const estimatedHalfH = ((pending.item.children?.length ?? 0) * 48 + Math.max(0, (pending.item.children?.length ?? 1) - 1) * 4 + 16) / 2;
           const clampedTop = Math.min(Math.max(centerY, estimatedHalfH + 8), window.innerHeight - estimatedHalfH - 8);
-          setPanelPos({ top: clampedTop, left: rect.right + 8 });
+          setPanelPos({ top: clampedTop, left: rect.right + 16 });
           setDir(null);
           selectedItemRef.current = pending.item;
           setSelectedItem(pending.item);
@@ -198,6 +198,12 @@ export const SidebarNavProvider: React.FC<SidebarNavProviderProps> = ({ children
                */}
               {/* relative z-10 pone el contenido por encima del Nub (z:auto) */}
               <div className="overflow-hidden rounded-lg relative z-10">
+                {/* Encabezado de categoría */}
+                <div className="px-3 pt-3 pb-1">
+                  <p className={cn(TYPOGRAPHY.sidebarItem, 'text-negro-una font-semibold uppercase tracking-wider text-[11px]')}>
+                    {selectedItem.label}
+                  </p>
+                </div>
                 <motion.div
                   key={selectedItem.id}
                   initial={{
@@ -224,7 +230,7 @@ export const SidebarNavProvider: React.FC<SidebarNavProviderProps> = ({ children
                         onMouseEnter={() => setHoveredChildId(child.id)}
                         className={cn(
                           'relative w-full flex items-center gap-3 px-sidebar-item h-sidebar-item text-left cursor-pointer z-10',
-                          'transition-colors duration-150 rounded-lg focus:outline-none',
+                          'transition-colors duration-150 rounded-corner focus:outline-none',
                           isActive
                             ? 'bg-rojo-una-2 text-blanco-una font-semibold'
                             : 'text-negro-una-2 hover:text-blanco-una-2',
@@ -234,7 +240,7 @@ export const SidebarNavProvider: React.FC<SidebarNavProviderProps> = ({ children
                         {hoveredChildId === child.id && !isActive && (
                           <motion.div
                             layoutId="sidebar-child-hover-indicator"
-                            className="absolute inset-0 bg-rojo-una-2 rounded-lg -z-10"
+                            className="absolute inset-0 bg-rojo-una-2 rounded-corner -z-10"
                             initial={{ opacity: 0 }}
                             animate={{ opacity: 1 }}
                             exit={{ opacity: 0 }}

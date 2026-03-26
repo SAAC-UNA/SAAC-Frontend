@@ -376,6 +376,7 @@
   /* ===== SIDEBAR ITEM DIMENSIONS ===== */
   /* Altura y padding del botón son independientes del texto y del ícono */
   .h-sidebar-item { height: var(--height-sidebar-item); }
+  .size-sidebar-item { width: var(--height-sidebar-item); height: var(--height-sidebar-item); }
   .px-sidebar-item { padding-left: var(--padding-sidebar-x); padding-right: var(--padding-sidebar-x); }
   .size-sidebar-icon { width: var(--size-sidebar-icon); height: var(--size-sidebar-icon); }
   .rounded-l-sidebar-item { border-top-left-radius: var(--radius-sidebar-item); border-bottom-left-radius: var(--radius-sidebar-item); }

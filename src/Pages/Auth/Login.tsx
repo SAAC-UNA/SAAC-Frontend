@@ -83,7 +83,7 @@ export const Login = () => {
       <div className={styles['login-form-section']}>
         <div className={styles['login-form-wrapper']}>
           <img 
-            src="/Images/Logo-SAAC.png" 
+            src="src/assets/IsotipoSAAC.svg" 
             alt="SAAC Logo" 
             className={styles['login-logo-image']}
           />
