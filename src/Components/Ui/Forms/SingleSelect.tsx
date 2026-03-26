@@ -20,6 +20,7 @@ import { type ComponentSize } from '@/Constants/ComponentSizes';
 import { SystemIcons } from '../Icons/SystemIcons';
 import { TYPOGRAPHY } from '@/Constants/Typography';
 import { ICON_SIZES } from '@/Constants/Components';
+import { DROPDOWN_VARIANTS, DROPDOWN_VARIANTS_UP, ITEM_VARIANTS, SPRING_HOVER, SPRING_CHEVRON } from '@/Constants/Animations';
 
 // React portals
 interface DropdownPosition {
@@ -60,81 +61,7 @@ export interface CustomSelectProps {
 
 // Variantes de animación
 
-const dropdownVariants = {
-  hidden: {
-    opacity: 0,
-    y: -8,
-    scale: 0.96,
-    transformOrigin: 'top center',
-  },
-  visible: {
-    opacity: 1,
-    y: 0,
-    scale: 1,
-    transformOrigin: 'top center',
-    transition: {
-      type: 'spring' as const,
-      damping: 30,
-      stiffness: 400,
-      mass: 0.8,
-    },
-  },
-  exit: {
-    opacity: 0,
-    y: -6,
-    scale: 0.97,
-    transformOrigin: 'top center',
-    transition: {
-      duration: 0.15,
-      ease: [0.32, 0, 0.67, 0] as [number, number, number, number],
-    },
-  },
-};
-
-// Para dropdown que abre hacia arriba
-const dropdownVariantsUp = {
-  hidden: {
-    opacity: 0,
-    y: 8,
-    scale: 0.96,
-    transformOrigin: 'bottom center',
-  },
-  visible: {
-    opacity: 1,
-    y: 0,
-    scale: 1,
-    transformOrigin: 'bottom center',
-    transition: {
-      type: 'spring' as const,
-      damping: 30,
-      stiffness: 400,
-      mass: 0.8,
-    },
-  },
-  exit: {
-    opacity: 0,
-    y: 6,
-    scale: 0.97,
-    transformOrigin: 'bottom center',
-    transition: {
-      duration: 0.15,
-      ease: [0.32, 0, 0.67, 0] as [number, number, number, number],
-    },
-  },
-};
-
-const itemVariants = {
-  hidden: { opacity: 0, x: 6 },
-  visible: (i: number) => ({
-    opacity: 1,
-    x: 0,
-    transition: {
-      delay: i * 0.018,
-      duration: 0.18,
-      ease: [0.23, 1, 0.32, 1] as [number, number, number, number],
-    },
-  }),
-};
+// (centralizadas en @/Constants/Animations)
 
 // DropdownContent
 // Separado para poder usar layoutId correctamente dentro del portal
@@ -175,7 +102,7 @@ const DropdownContent: React.FC<DropdownContentProps> = ({
   uniqueId,
 }) => {
   const [hoveredItem, setHoveredItem] = useState<string | null>(null);
-  const variants = openDirection === 'up' ? dropdownVariantsUp : dropdownVariants;
+  const variants = openDirection === 'up' ? DROPDOWN_VARIANTS_UP : DROPDOWN_VARIANTS;
 
   return (
     <motion.div
@@ -266,7 +193,7 @@ const DropdownContent: React.FC<DropdownContentProps> = ({
                 key={option.value}
                 type="button"
                 custom={index}
-                variants={itemVariants}
+                variants={ITEM_VARIANTS}
                 initial="hidden"
                 animate="visible"
                 className={cn(
@@ -293,12 +220,7 @@ const DropdownContent: React.FC<DropdownContentProps> = ({
                   <motion.div
                     layoutId={`${uniqueId}-indicator`}
                     className="absolute inset-0 bg-gris-light/60 rounded-sm"
-                    transition={{
-                      type: 'spring',
-                      damping: 30,
-                      stiffness: 520,
-                      mass: 0.8,
-                    }}
+                    transition={SPRING_HOVER}
                   />
                 )}
 
@@ -307,12 +229,7 @@ const DropdownContent: React.FC<DropdownContentProps> = ({
                   <motion.div
                     layoutId={`${uniqueId}-leftbar`}
                     className="absolute left-0 top-0 bottom-0 my-auto w-[3px] h-5 rounded-full bg-info"
-                    transition={{
-                      type: 'spring',
-                      damping: 30,
-                      stiffness: 520,
-                      mass: 0.8,
-                    }}
+                    transition={SPRING_HOVER}
                   />
                 )}
 
@@ -508,7 +425,7 @@ export const CustomSelect: React.FC<CustomSelectProps> = ({
             <span className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
               <motion.span
                 animate={{ rotate: isOpen ? 180 : 0 }}
-                transition={{ type: 'spring', damping: 25, stiffness: 300, mass: 0.6 }}
+                transition={SPRING_CHEVRON}
                 style={{ display: 'flex' }}
               >
                 <SystemIcons.interface.chevronDown
@@ -616,7 +533,7 @@ export const CustomSelect: React.FC<CustomSelectProps> = ({
           <span className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
             <motion.span
               animate={{ rotate: isOpen ? 180 : 0 }}
-              transition={{ type: 'spring', damping: 25, stiffness: 300, mass: 0.6 }}
+              transition={SPRING_CHEVRON}
               style={{ display: 'flex' }}
             >
               <SystemIcons.interface.chevronDown

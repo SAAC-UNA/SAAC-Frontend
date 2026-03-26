@@ -26,19 +26,7 @@ import { SystemIcons } from '../Icons/SystemIcons';
 import { cn } from '@/Utils/ClassNames';
 import { TYPOGRAPHY } from '@/Constants/Typography';
 import { ICON_SIZES } from '@/Constants/Components';
-
-// Variantes de animación para el dropdown
-const dropdownVariants = {
-  hidden: { opacity: 0, y: -8, scale: 0.96, transformOrigin: 'top center' },
-  visible: {
-    opacity: 1, y: 0, scale: 1, transformOrigin: 'top center',
-    transition: { type: 'spring' as const, damping: 30, stiffness: 400, mass: 0.8 },
-  },
-  exit: {
-    opacity: 0, y: -6, scale: 0.97, transformOrigin: 'top center',
-    transition: { duration: 0.15, ease: [0.32, 0, 0.67, 0] as [number, number, number, number] },
-  },
-};
+import { DROPDOWN_VARIANTS, SPRING_CHEVRON } from '@/Constants/Animations';
 
 export interface DropdownOption {
   /** Identificador único de la opción */
@@ -185,7 +173,7 @@ export const DropdownButton: React.FC<DropdownButtonProps> = ({
           <span className={TYPOGRAPHY.button}>{label}</span>
           <motion.span
             animate={{ rotate: isOpen ? 180 : 0 }}
-            transition={{ type: 'spring', damping: 25, stiffness: 300, mass: 0.6 }}
+            transition={SPRING_CHEVRON}
             style={{ display: 'flex' }}
           >
             <SystemIcons.interface.chevronDown className={ICON_SIZES.button} />
@@ -199,7 +187,7 @@ export const DropdownButton: React.FC<DropdownButtonProps> = ({
           {isOpen && (
             <motion.div
               key="dropdown-button-menu"
-              variants={dropdownVariants}
+              variants={DROPDOWN_VARIANTS}
               initial="hidden"
               animate="visible"
               exit="exit"
