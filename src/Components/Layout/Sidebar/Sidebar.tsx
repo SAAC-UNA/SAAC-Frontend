@@ -91,7 +91,7 @@ export const ModernSidebar: React.FC<SidebarProps> = ({
       {/* Navegación — siempre colapsada */}
       <nav className="flex-1 py-2 overflow-hidden">
         <SidebarNavProvider isCollapsed={true}>
-          <div className="space-y-2 flex flex-col px-2">
+          <div className="space-y-2 flex flex-col items-center">
             {navItems.map((item) => (
               <SidebarItem key={item.id} item={item} isCollapsed={true} />
             ))}

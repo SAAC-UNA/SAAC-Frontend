@@ -32,7 +32,7 @@ interface LayoutProps {
 export const Layout: React.FC<LayoutProps> = ({ children }) => {
   return (
 <SidebarProvider>
-      <div className="flex min-h-screen w-full bg-blanco-una-2">
+      <div className="flex min-h-screen w-full bg-transparent">
         <ModernSidebar />
         <MainContent>
           <AppHeader rightContent={<UserProfileHeader showUserMenu={true} showNotifications={true} showInlineIdentity={true} />} />
