@@ -147,9 +147,10 @@ export const ModernSidebar: React.FC<SidebarProps> = ({
         <div
           className={cn(
             'relative bg-transparent transition-[width] duration-300 ease-in-out',
-            side === 'left'
-              ? (isVisuallyExpanded ? 'w-[var(--sidebar-width)]' : 'w-[var(--sidebar-width-icon)]')
-              : (isVisuallyExpanded ? 'w-[calc(var(--sidebar-width)+0.75rem)]' : 'w-[calc(var(--sidebar-width-icon)+0.75rem)]'),
+            // side === 'left'
+            //   ? (isVisuallyExpanded ? 'w-[var(--sidebar-width)]' : 'w-[var(--sidebar-width-icon)]')
+            //   : (isVisuallyExpanded ? 'w-[calc(var(--sidebar-width)+0.75rem)]' : 'w-[calc(var(--sidebar-width-icon)+0.75rem)]'),
+            isVisuallyExpanded ? 'w-[calc(var(--sidebar-width)+0.75rem)]' : 'w-[calc(var(--sidebar-width-icon)+0.75rem)]',
             collapsible === 'offcanvas' && !isVisuallyExpanded && 'w-0'
           )}
         />
@@ -159,7 +160,8 @@ export const ModernSidebar: React.FC<SidebarProps> = ({
           className={cn(
             'fixed z-10 hidden transition-[left,right,width,top,bottom] duration-300 ease-in-out md:flex',
             'w-[var(--sidebar-width)]',
-            side === 'left' ? 'inset-y-0 left-0' : 'inset-y-3 right-3',
+            // side === 'left' ? 'inset-y-0 left-0' : 'inset-y-3 right-3',
+            side === 'left' ? 'inset-y-3 left-3' : 'inset-y-3 right-3',
             state === 'collapsed' && collapsible === 'offcanvas' && (
               side === 'left'
                 ? '-left-[var(--sidebar-width)]'
@@ -171,10 +173,11 @@ export const ModernSidebar: React.FC<SidebarProps> = ({
         >
           <div
             className={cn(
-              'bg-blanco-una-2 flex h-full w-full flex-col overflow-hidden shadow-xl/20 inset-shadow-sm',
-              side === 'left'
-                ? 'rounded-l-none [border-top-right-radius:var(--radius-lg)] [border-bottom-right-radius:var(--radius-lg)]'
-                : 'rounded-corner-lg',
+              'bg-blanco-una-2 flex h-full w-full flex-col overflow-hidden shadow-xl/20',
+              // side === 'left'
+              //   ? 'rounded-l-none [border-top-right-radius:var(--radius-lg)] [border-bottom-right-radius:var(--radius-lg)]'
+              //   : 'rounded-corner-lg',
+              'rounded-lg',
               {/** shadow-2xl */}
             )}
           >
