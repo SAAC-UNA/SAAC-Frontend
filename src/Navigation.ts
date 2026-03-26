@@ -26,6 +26,7 @@ export const getNavigationItems = (userRoles?: string | string[]): NavItem[] => 
   const roles = Array.isArray(userRoles) ? userRoles : userRoles ? [userRoles] : [];
 
   const isSuperUser = roles.includes('Superusuario');
+  const isAdmin = roles.includes('Administrador');
   const isEncargado = roles.includes('Encargado de Acreditación');
 
   const items: NavItem[] = [
@@ -83,21 +84,20 @@ export const getNavigationItems = (userRoles?: string | string[]): NavItem[] => 
   }
 
   // ── 3. Evidencias ──────────────────────────────────────────────────────
-  items.push({
-    id: 'evidencias',
-    label: 'Evidencias',
-    icon: evidenceIcon,
-    href: '#',
-    isActive: false,
-    isExpandable: true,
-    children: [
-      {
+  {
+    const evidenciaChildren: NavItem[] = [];
+
+    if (isAdmin || isEncargado || isSuperUser) {
+      evidenciaChildren.push({
         id: 'evidenciasAsignar',
         label: 'Asignar Evidencias',
         icon: evidenceIcon,
         href: '/evidencias/asignar',
         isActive: false,
-      },
+      });
+    }
+
+    evidenciaChildren.push(
       {
         id: 'misEvidenciasAsignadas',
         label: 'Mis Evidencias',
@@ -112,8 +112,18 @@ export const getNavigationItems = (userRoles?: string | string[]): NavItem[] => 
         href: '/evidencias/busqueda-avanzada',
         isActive: false,
       },
-    ],
-  });
+    );
+
+    items.push({
+      id: 'evidencias',
+      label: 'Evidencias',
+      icon: evidenceIcon,
+      href: '#',
+      isActive: false,
+      isExpandable: true,
+      children: evidenciaChildren,
+    });
+  }
 
   // ── 4. Solicitudes de Ampliación ───────────────────────────────────────
   {

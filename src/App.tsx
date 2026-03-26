@@ -61,7 +61,7 @@ function App() {
                         <Route
                           path="/roles/listar"
                           element={
-                            <ProtectedRoute requireRole="Superusuario">
+                            <ProtectedRoute requireRoles={['Superusuario']}>
                               <RolesRepository />
                             </ProtectedRoute>
                           }
@@ -69,7 +69,7 @@ function App() {
                         <Route
                           path="/roles/crear"
                           element={
-                            <ProtectedRoute requireRole="Superusuario">
+                            <ProtectedRoute requireRoles={['Superusuario']}>
                               <RoleForm />
                             </ProtectedRoute>
                           }
@@ -77,7 +77,7 @@ function App() {
                         <Route
                           path="/roles/editar/:id"
                           element={
-                            <ProtectedRoute requireRole="Superusuario">
+                            <ProtectedRoute requireRoles={['Superusuario']}>
                               <RoleForm />
                             </ProtectedRoute>
                           }
@@ -87,7 +87,7 @@ function App() {
                         <Route
                           path="/bitacora"
                           element={
-                            <ProtectedRoute requireRole="Superusuario">
+                            <ProtectedRoute requireRoles={['Superusuario']}>
                               <AuditLogPage />
                             </ProtectedRoute>
                           }
@@ -125,7 +125,7 @@ function App() {
                         <Route
                           path="/evidencias/asignar"
                           element={
-                            <ProtectedRoute>
+                            <ProtectedRoute requireRoles={['Administrador', 'Encargado de Acreditación']}>
                               <EvidenceAssignment />
                             </ProtectedRoute>
                           }
@@ -159,7 +159,7 @@ function App() {
                         <Route
                           path="/solicitudes-ampliacion/gestionar"
                           element={
-                            <ProtectedRoute requireRole="Encargado de Acreditación">
+                            <ProtectedRoute requireRoles={['Encargado de Acreditación']}>
                               <ManageExtensionRequestsPage />
                             </ProtectedRoute>
                           }
