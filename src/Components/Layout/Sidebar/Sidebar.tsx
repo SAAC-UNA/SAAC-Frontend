@@ -49,13 +49,13 @@ export const ModernSidebar: React.FC<SidebarProps> = ({
           {/* Ícono: siempre visible */}
           <IsotipoSAAC
             aria-label="Universidad Nacional de Costa Rica"
-            className="flex-shrink-0 size-icon-logo cursor-pointer text-blanco-una"
+            className="flex-shrink-0 size-icon-logo cursor-pointer text-rojo-una-2"
           />
 
           {/* Texto: solo visible cuando está expandido */}
           <h1
             className={cn(
-              `${TYPOGRAPHY.pageTitle} text-blanco-una font-semibold whitespace-nowrap`,
+              `${TYPOGRAPHY.pageTitle} text-rojo-una-2 font-semibold whitespace-nowrap`,
               'transition-all duration-300 ease-in-out overflow-hidden',
               isItemCollapsed ? 'w-0 opacity-0' : 'w-auto opacity-100'
             )}
@@ -66,9 +66,9 @@ export const ModernSidebar: React.FC<SidebarProps> = ({
       </div>
 
       {/* Navigation Menu */}
-      <nav className="flex-1 py-2 overflow-hidden">
+      <nav className="flex-1 py-15 overflow-hidden">
         <SidebarNavProvider isCollapsed={isItemCollapsed}>
-          <div className="space-y-2 flex flex-col">
+          <div className="space-y-2 flex flex-col px-2">
             {getNavigationItems(user?.roles?.map(r => r.name)).map((item) => (
               <SidebarItem 
                 key={item.id} 
@@ -171,7 +171,7 @@ export const ModernSidebar: React.FC<SidebarProps> = ({
         >
           <div
             className={cn(
-              'bg-rojo-una-2 flex h-full w-full flex-col overflow-hidden',
+              'bg-blanco-una-2 flex h-full w-full flex-col overflow-hidden shadow-xl/20 inset-shadow-sm',
               side === 'left'
                 ? 'rounded-l-none [border-top-right-radius:var(--radius-lg)] [border-bottom-right-radius:var(--radius-lg)]'
                 : 'rounded-corner-lg',

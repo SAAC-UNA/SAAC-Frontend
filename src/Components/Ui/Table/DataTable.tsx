@@ -219,8 +219,9 @@ export const DataTable = React.memo(<T extends Record<string, unknown>>({
                   <th
                     key={column.key}
                     style={column.width ? { width: column.width } : undefined}
+                    // Color del header de las tablas
                     className={cn(
-                      "py-4 border-b bg-gris-light border-blue-gray-100 text-center",
+                      "py-4 border-b bg-gris-light/50 border-blue-gray-100 text-center",
                       index === 0 ? (expandableRow ? "px-4" : "pl-8 pr-4") : "px-4",
                       // Esquina superior izquierda si no hay expandable y es la primera columna
                       index === 0 && !expandableRow && "rounded-tl-corner",
@@ -228,7 +229,7 @@ export const DataTable = React.memo(<T extends Record<string, unknown>>({
                       index === columns.length - 1 && (!actions || actions.length === 0) && "rounded-tr-corner"
                     )}
                   >
-                    <p className={`block font-sans antialiased font-semibold leading-none text-negro-una-2 ${TYPOGRAPHY.table.header}`}>
+                    <p className={`block font-sans antialiased font-bold leading-none text-negro-una-2 ${TYPOGRAPHY.table.header}`}>
                       {column.header}
                     </p>
                   </th>

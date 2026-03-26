@@ -97,15 +97,15 @@ export const UserProfileHeader: React.FC<UserProfileHeaderProps> = ({
                 ? 'bg-blanco-una/10 border border-blanco-una/40'
                 : 'bg-blanco-una-2 border-2 border-gris-una'
             )}>
-              <SystemIcons.users.user className={`${APP_HEADER_BUTTON.icon} ${(showInlineIdentity || useSidebarAvatarStyle) ? 'text-blanco-una' : 'text-gris-una'}`} />
+              <SystemIcons.users.user className={`${APP_HEADER_BUTTON.icon} ${(showInlineIdentity || useSidebarAvatarStyle) ? 'text-negro-una-2' : 'text-gris-una'}`} />
             </div>
 
             {showInlineIdentity && (
               <div className="min-w-0 pr-1 w-[150px] max-w-[150px]">
-                <p className="block w-full truncate text-blanco-una font-semibold leading-tight text-xs" title={user.name}>
+                <p className="block w-full truncate text-negro-una-2 font-semibold leading-tight text-xs" title={user.name}>
                   {user.name}
                 </p>
-                <p className="block w-full truncate text-blanco-una/80 leading-tight text-[11px]" title={user.roles[0]?.name || ''}>
+                <p className="block w-full truncate text-negro-una-2/80 leading-tight text-[11px]" title={user.roles[0]?.name || ''}>
                   {user.roles[0]?.name || 'Sin rol'}
                 </p>
               </div>

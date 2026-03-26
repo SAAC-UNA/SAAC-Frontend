@@ -178,7 +178,7 @@ export const SidebarNavProvider: React.FC<SidebarNavProviderProps> = ({ children
               onMouseEnter={clearClose}
               onMouseLeave={scheduleClose}
               style={{ left: panelPos.left }}
-              className="fixed z-50 min-w-[200px] max-w-[260px] rounded-lg bg-rojo-una-2 shadow-2xl overflow-visible"
+              className="fixed z-50 min-w-[200px] max-w-[260px] rounded-lg bg-blanco-una-2 shadow-2xl overflow-visible"
             >
               {/* Bridge: área invisible que cubre el hueco entre trigger y panel */}
               <div className="absolute -left-[16px] top-0 h-full w-[16px]" />
@@ -188,7 +188,7 @@ export const SidebarNavProvider: React.FC<SidebarNavProviderProps> = ({ children
                * initial={{ top: nubTop }}: arranca en la posición correcta (sin animación de entrada).
                * animate={{ top: nubTop }}: se desliza al nuevo trigger cuando se cambia de ítem.
                */}
-              <span className="absolute left-0 top-1/2 h-4 w-4 -translate-x-1/2 -translate-y-1/2 rotate-45 bg-rojo-una-2" />
+              <span className="absolute left-0 top-1/2 h-4 w-4 -translate-x-1/2 -translate-y-1/2 rotate-45 bg-blanco-una-2" />
 
               {/*
                * Contenido — "key" cambia al cambiar de ítem, lo que remonta el motion.div
@@ -226,15 +226,15 @@ export const SidebarNavProvider: React.FC<SidebarNavProviderProps> = ({ children
                           'relative w-full flex items-center gap-3 px-sidebar-item h-sidebar-item text-left cursor-pointer z-10',
                           'transition-colors duration-150 rounded-lg focus:outline-none',
                           isActive
-                            ? 'bg-negro-una/20 text-blanco-una font-semibold'
-                            : 'text-blanco-una-2 hover:text-blanco-una',
+                            ? 'bg-rojo-una-2 text-blanco-una font-semibold'
+                            : 'text-negro-una-2 hover:text-blanco-una-2',
                           TYPOGRAPHY.sidebarItem,
                         )}
                       >
                         {hoveredChildId === child.id && !isActive && (
                           <motion.div
                             layoutId="sidebar-child-hover-indicator"
-                            className="absolute inset-0 bg-negro-una/20 rounded-lg -z-10"
+                            className="absolute inset-0 bg-rojo-una-2 rounded-lg -z-10"
                             initial={{ opacity: 0 }}
                             animate={{ opacity: 1 }}
                             exit={{ opacity: 0 }}
