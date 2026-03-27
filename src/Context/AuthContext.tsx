@@ -3,9 +3,10 @@
  * Maneja el estado del usuario autenticado y sus permisos
  */
 
-import { createContext, useContext, useState } from 'react';
-import type { ReactNode } from 'react';
-import { authService, type User, type Career } from '@/Services/AuthService';
+import { createContext, useContext, useState, useEffect } from "react";
+import type { ReactNode } from "react";
+import { authService, type User, type Career } from "@/Services/AuthService";
+import { useSessionWatcher } from "@/Hooks/useSessionWatcher";
 
 interface LoginCredentials {
   cedula: string;
@@ -14,7 +15,8 @@ interface LoginCredentials {
 
 interface AuthContextType {
   user: User | null;
-  loading: boolean;
+  loading: boolean; // Para el login/logout
+  authChecked: boolean; // Para la verificación inicial
   isAuthenticated: boolean;
   isSuperUser: () => boolean;
   isAdmin: () => boolean;
@@ -32,41 +34,59 @@ interface AuthProviderProps {
 }
 
 export const AuthProvider = ({ children }: AuthProviderProps) => {
-  const [user, setUser] = useState<User | null>(() => authService.getCurrentUser());
-  const loading = false;
+  const [user, setUser] = useState<User | null>(null);
+  const [loading, setLoading] = useState(false); // Carga de login/logout
+  const [authChecked, setAuthChecked] = useState(false); // Carga inicial
   const [error, setError] = useState<string | null>(null);
+  useSessionWatcher();
+
+  // Verificación de sesión al montar el provider
+  useEffect(() => {
+    const checkSession = async () => {
+      const sessionUser = await authService.checkAuthStatus();
+      setUser(sessionUser);
+      setAuthChecked(true); // Marcamos que la verificación inicial terminó
+    };
+    checkSession();
+  }, []);
 
   const login = async (credentials: LoginCredentials): Promise<void> => {
+    setLoading(true);
     try {
       const { user } = await authService.loginWithCedula(
         credentials.cedula,
-        credentials.password
+        credentials.password,
       );
       setUser(user);
       setError(null);
     } catch (e) {
-      setError(e instanceof Error ? e.message : 'Error al iniciar sesión');
+      setError(e instanceof Error ? e.message : "Error al iniciar sesión");
       throw e;
+    } finally {
+      setLoading(false);
     }
   };
 
   const logout = async (): Promise<void> => {
+    setLoading(true);
     try {
-      authService.logout();
+      await authService.logout();
       setUser(null);
       setError(null);
     } catch (e) {
-      setError(e instanceof Error ? e.message : 'Error al cerrar sesión');
+      setError(e instanceof Error ? e.message : "Error al cerrar sesión");
       throw e;
+    } finally {
+      setLoading(false);
     }
   };
 
   const isSuperUser = (): boolean => {
-    return user?.roles?.some(r => r.name === 'Superusuario') || false;
+    return user?.roles?.some((r) => r.name === "Superusuario") || false;
   };
 
   const isAdmin = (): boolean => {
-    return user?.roles?.some(r => r.name === 'Administrador') || false;
+    return user?.roles?.some((r) => r.name === "Administrador") || false;
   };
 
   /**
@@ -77,11 +97,14 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
    * - Administrador (Coordinador de Carrera)
    */
   const canMakeFilesPublic = (): boolean => {
-    return user?.roles?.some(r => 
-      r.name === 'Superusuario' || 
-      r.name === 'Vicerrectoría de Docencia' || 
-      r.name === 'Administrador'
-    ) || false;
+    return (
+      user?.roles?.some(
+        (r) =>
+          r.name === "Superusuario" ||
+          r.name === "Vicerrectoría de Docencia" ||
+          r.name === "Administrador",
+      ) || false
+    );
   };
 
   const getUserCareer = () => {
@@ -91,6 +114,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
   const value: AuthContextType = {
     user,
     loading,
+    authChecked,
     error,
     isAuthenticated: !!user,
     isSuperUser,
@@ -98,34 +122,17 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
     canMakeFilesPublic,
     getUserCareer,
     login,
-    logout
+    logout,
   };
 
-  if (loading) {
-    return (
-      <div style={{ 
-        display: 'flex', 
-        justifyContent: 'center', 
-        alignItems: 'center', 
-        height: '100vh' 
-      }}>
-        Cargando...
-      </div>
-    );
-  }
-
-  return (
-    <AuthContext.Provider value={value}>
-      {children}
-    </AuthContext.Provider>
-  );
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };
 
 // Hook personalizado para usar el contexto
 export const useAuth = () => {
   const context = useContext(AuthContext);
   if (!context) {
-    throw new Error('useAuth debe usarse dentro de AuthProvider');
+    throw new Error("useAuth debe usarse dentro de AuthProvider");
   }
   return context;
 };
