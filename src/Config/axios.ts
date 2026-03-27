@@ -30,6 +30,9 @@ axiosInstance.interceptors.response.use(
       if (!window.location.href.includes("/login")) {
         authService.logoutAndRedirect();
       }
+
+      // Evita que la vista actual pinte errores transitorios antes del modal.
+      return new Promise(() => {});
     }
     return Promise.reject(error);
   },

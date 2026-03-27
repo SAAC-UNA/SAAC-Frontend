@@ -1,31 +1,17 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import logo from "@/assets/IsotipoSAAC.svg";
+import { Button } from "@/Components/Ui/Buttons/Button";
 
-const REDIRECT_SECONDS = 4;
-
-const overlayStyle: React.CSSProperties = {
-  position: "fixed",
-  inset: 0,
-  background: "rgba(15, 23, 42, 0.45)",
-  display: "flex",
-  alignItems: "center",
-  justifyContent: "center",
-  padding: "16px",
-};
-
-const modalStyle: React.CSSProperties = {
-  width: "100%",
-  maxWidth: "480px",
-  borderRadius: "16px",
-  background: "#ffffff",
-  boxShadow: "0 24px 60px rgba(15, 23, 42, 0.2)",
-  border: "1px solid #e2e8f0",
-  padding: "24px",
-};
+const REDIRECT_SECONDS = 5;
 
 export const SessionExpired = () => {
   const navigate = useNavigate();
   const [secondsLeft, setSecondsLeft] = useState(REDIRECT_SECONDS);
+
+  const goToLoginNow = () => {
+    navigate("/login", { replace: true });
+  };
 
   useEffect(() => {
     const timer = window.setInterval(() => {
@@ -44,29 +30,32 @@ export const SessionExpired = () => {
 
   return (
     <div
-      style={overlayStyle}
+      className="fixed inset-0 flex items-center justify-center bg-slate-900/45 px-4"
       role="dialog"
       aria-modal="true"
       aria-labelledby="session-expired-title"
     >
-      <div style={modalStyle}>
+      <div className="w-full max-w-[500px] rounded-2xl border border-slate-200 bg-white p-7 text-center shadow-[0_24px_60px_rgba(15,23,42,0.22)]">
+        <img
+          src={logo}
+          alt="Logo SAAC"
+          className="mx-auto mb-3 block h-[72px] w-[72px] object-contain"
+        />
         <h2
           id="session-expired-title"
-          style={{ margin: 0, fontSize: "1.25rem", color: "#0f172a" }}
+          className="m-0 text-[1.35rem] font-extrabold uppercase tracking-wide text-slate-900"
         >
-          Sesion expirada
+          SESIÓN EXPIRADA
         </h2>
-        <p
-          style={{
-            marginTop: "12px",
-            marginBottom: 0,
-            color: "#334155",
-            lineHeight: 1.5,
-          }}
-        >
-          Tu sesion ha expirado. Seras redirigido al inicio de sesion en{" "}
+        <p className="mx-auto mb-5 mt-3 max-w-[40ch] font-bold uppercase leading-relaxed tracking-[0.01em] text-slate-700">
+          Tu sesión ha expirado. Se te redirigirá al inicio de sesión en{" "}
           {secondsLeft} segundo{secondsLeft === 1 ? "" : "s"}.
         </p>
+        <div className="flex justify-center">
+          <Button variant="secondary" size="md" onClick={goToLoginNow}>
+            Iniciar sesión
+          </Button>
+        </div>
       </div>
     </div>
   );
