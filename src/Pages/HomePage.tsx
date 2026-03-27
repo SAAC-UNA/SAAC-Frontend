@@ -1,6 +1,7 @@
 import React from 'react';
-import { ScreenContainer } from '@/Components/Ui/Index';
-import { motion, type Variants } from 'framer-motion';
+import { ScreenContainer, FlipWords } from '@/Components/Ui/Index';
+import { motion } from 'framer-motion';
+import { OSS_HERO_CONTAINER, OSS_HERO_ITEM } from '@/Constants/Animations';
 
 const CodeIcon = ({ className }: { className?: string }) => (
   <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className={className}>
@@ -46,43 +47,23 @@ const developers = [
   { name: 'Naydelin Jirón Castellón', role: 'Desarrolladora', icon: <SparkleIcon className="w-6 h-6 text-verde" /> },
 ];
 
-const containerVariants: Variants = {
-  hidden: { opacity: 0 },
-  visible: {
-    opacity: 1,
-    transition: { staggerChildren: 0.1 },
-  },
-};
-
-const itemVariants: Variants = {
-  hidden: { opacity: 0, scale: 0.9, y: 15 },
-  visible: {
-    opacity: 1,
-    scale: 1,
-    y: 0,
-    transition: { type: "spring", stiffness: 350, damping: 25 }
-  },
-};
-
 const HomePage: React.FC = () => {
 
   return (
     <ScreenContainer>
-      <div className="relative flex flex-col items-center justify-center w-full min-h-[75vh] p-4">
+      <motion.div
+        variants={OSS_HERO_CONTAINER}
+        initial="initial"
+        animate="animate"
+        className="relative flex flex-col items-center justify-center w-full min-h-[75vh] p-4"
+      >
 
-        {/* Main Content (No extra glass box needed, since ScreenContainer handles it) */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, ease: "easeOut" }}
-          className="relative z-10 flex flex-col items-center justify-center w-full mx-auto"
-        >
+        {/* Main Content */}
+        <div className="relative z-10 flex flex-col items-center justify-center w-full mx-auto">
           {/* Hero Header */}
           <div className="text-center mb-10 flex flex-col items-center w-full">
             <motion.div
-              initial={{ scale: 0.8, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              transition={{ delay: 0.2, type: "spring" }}
+              variants={OSS_HERO_ITEM}
               className="mb-8 relative"
             >
               <div className="absolute inset-0 bg-rojo-una/30 blur-2xl rounded-full scale-150" />
@@ -92,18 +73,14 @@ const HomePage: React.FC = () => {
             </motion.div>
 
             <motion.h1
-              initial={{ opacity: 0, y: 15 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.3 }}
+              variants={OSS_HERO_ITEM}
               className="text-3xl md:text-4xl lg:text-4xl font-extrabold text-transparent bg-clip-text bg-gradient-to-br from-gray-900 via-gray-700 to-gray-900 tracking-tight leading-[1.1] mb-8 max-w-4xl"
             >
               Sistema de Acreditación y Autoevaluación de Carreras
             </motion.h1>
 
             <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 0.4 }}
+              variants={OSS_HERO_ITEM}
               className="flex flex-wrap items-center justify-center gap-4 mb-8"
             >
               <span className="px-6 py-2.5 rounded-full backdrop-blur-md bg-white/50 text-rojo-una font-black text-sm tracking-[0.2em] uppercase border border-rojo-una/20 shadow-sm">
@@ -115,20 +92,28 @@ const HomePage: React.FC = () => {
             </motion.div>
 
             <motion.p
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 0.5 }}
+              variants={OSS_HERO_ITEM}
               className="text-lg md:text-xl font-medium text-gray-500 max-w-2xl"
             >
               Sección Regional Central Occidente, Campus Alajuela
+            </motion.p>
+
+            <motion.p
+              variants={OSS_HERO_ITEM}
+              className="mt-4 text-base font-medium text-gray-400"
+            >
+              Gestión de{' '}
+              <FlipWords
+                words={['Acreditaciones', 'Evidencias', 'Carreras', 'Compromisos', 'Reportes']}
+                duration={2800}
+                className="font-bold text-azul-una"
+              />
             </motion.p>
           </div>
 
           {/* Developers Section */}
           <motion.div
-            variants={containerVariants}
-            initial="hidden"
-            animate="visible"
+            variants={OSS_HERO_ITEM}
             className="w-full mt-1"
           >
             <div className="text-center mb-8">
@@ -138,10 +123,12 @@ const HomePage: React.FC = () => {
             </div>
 
             <div className="flex flex-wrap justify-center gap-5 max-w-4xl mx-auto">
-              {developers.map((dev) => (
+              {developers.map((dev, i) => (
                 <motion.div
                   key={dev.name}
-                  variants={itemVariants}
+                  initial={{ opacity: 0, y: 16, filter: 'blur(4px)' }}
+                  animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
+                  transition={{ type: 'spring', stiffness: 350, damping: 25, delay: 0.35 + i * 0.07 }}
                   whileHover={{ y: -6, scale: 1.05 }}
                   whileTap={{ scale: 0.96 }}
                   className="group relative flex items-center pr-8 pl-3 py-3 rounded-full bg-white/70 border border-white/80 shadow-[0_4px_24px_-8px_rgba(0,0,0,0.1)] backdrop-blur-xl hover:bg-white hover:shadow-xl transition-all duration-300"
@@ -162,8 +149,8 @@ const HomePage: React.FC = () => {
             </div>
           </motion.div>
 
-        </motion.div>
-      </div>
+        </div>
+      </motion.div>
     </ScreenContainer>
   );
 };

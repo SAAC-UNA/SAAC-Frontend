@@ -1,6 +1,9 @@
 import React from 'react';
+import { useLocation } from 'react-router-dom';
+import { motion, AnimatePresence } from 'framer-motion';
 import { SidebarProvider } from '@/Context/SidebarContext';
 import { ModernSidebar, MainContent, AppHeader, UserProfileHeader } from './Sidebar/Index';
+import { PAGE_TRANSITION_VARIANTS } from '@/Constants/Animations';
 
 /**
  * COMPONENTE DE LAYOUT BASE
@@ -30,8 +33,10 @@ interface LayoutProps {
 }
 
 export const Layout: React.FC<LayoutProps> = ({ children }) => {
+  const location = useLocation();
+
   return (
-<SidebarProvider>
+    <SidebarProvider>
       <div className="flex min-h-screen w-full bg-transparent">
         <ModernSidebar />
         <MainContent>
@@ -40,7 +45,17 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
             <div className="px-4 pt-4 pb-8"
               style={{ ['--app-header-height' as any]: '64px' }}
             >
-              {children}
+              <AnimatePresence mode="wait" initial={false}>
+                <motion.div
+                  key={location.pathname}
+                  variants={PAGE_TRANSITION_VARIANTS}
+                  initial="initial"
+                  animate="animate"
+                  exit="exit"
+                >
+                  {children}
+                </motion.div>
+              </AnimatePresence>
             </div>
           </div>
         </MainContent>

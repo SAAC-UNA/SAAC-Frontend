@@ -5,14 +5,15 @@
  * TODO - hay que estandarizar los estilos del login con lo que ya tenemos en el index general. Si se necesitan nuevos estilos para este caso particular, se pueden añadir en index, pero el global
  */
 
-import { useState, useEffect } from "react";
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/Context/AuthContext";
-import { useSessionWatcher } from "@/Hooks/useSessionWatcher";
 import { SystemIcons } from "@/Components/Ui/Icons/SystemIcons";
 import { useToast } from "@/Hooks/useToast";
 import { ValidationError } from "@/Services/AuthService";
 import styles from "./Login.module.css";
+import { FlipWords } from "@/Components/Ui/Index";
+import { motion } from "framer-motion";
 
 export const Login = () => {
   const [formState, setFormState] = useState({
@@ -118,7 +119,25 @@ export const Login = () => {
           <p className={styles["login-form-subtitle"]}>
             Ingrese con sus credenciales institucionales
           </p>
-
+          <motion.p
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.3, duration: 0.5, ease: "easeOut" }}
+            className="mt-3 mb-5 text-sm font-medium text-gray-400 text-center w-full"
+          >
+            Gestión de{" "}
+            <FlipWords
+              words={[
+                "Acreditaciones",
+                "Evidencias",
+                "Carreras",
+                "Compromisos",
+                "Reportes",
+              ]}
+              duration={2800}
+              className="font-bold text-azul-una"
+            />
+          </motion.p>
           <form onSubmit={handleSubmit} className={styles["login-form"]}>
             <div
               className={`${styles["login-input-field"]} ${error ? styles["error"] : ""}`}
