@@ -3,10 +3,11 @@
  * Muestra todos los compromisos con filtros y acciones
  */
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ScreenContainer } from '@/Components/Ui/Layout/ScreenContainer';
 import { Button, LoadingSpinner, PageHeader } from '@/Components/Ui/Index';
+import { SearchInput } from '@/Components/Ui/Forms/SearchInput';
 import { getModuleInfo } from '@/Constants/ModuleInfo';
 import { SystemIcons } from '@/Components/Ui/Icons/SystemIcons';
 import { improvementCommitmentService } from '@/Services/ImprovementCommitmentService';
@@ -30,6 +31,7 @@ export const ImprovementCommitmentsList: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [detailId, setDetailId] = useState<number | null>(null);
+  const [searchQuery, setSearchQuery] = useState('');
 
   useEffect(() => {
     fetchCompromisos();
@@ -65,17 +67,37 @@ export const ImprovementCommitmentsList: React.FC = () => {
     }
   };
 
-  const filteredCommitments = commitments;
+  const filteredCommitments = useMemo(() => {
+    const term = searchQuery.trim().toLowerCase();
+    if (!term) return commitments;
+
+    return commitments.filter((compromiso) => {
+      const searchableText = [
+        compromiso.descripcion || '',
+        compromiso.fecha_inicio || '',
+        compromiso.fecha_fin || '',
+        compromiso.is_overdue ? 'vencido' : 'activo',
+        String(compromiso.selecciones?.length || 0),
+        String(compromiso.assignedEvidences?.length || 0)
+      ].join(' ').toLowerCase();
+
+      return searchableText.includes(term);
+    });
+  }, [commitments, searchQuery]);
   
   // Paginación
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = TABLE_PAGE_SIZE.standard;
   const totalPages = Math.ceil(filteredCommitments.length / itemsPerPage);
-  const paginatedData = React.useMemo(() => {
+  const paginatedData = useMemo(() => {
     const start = (currentPage - 1) * itemsPerPage;
     const end = start + itemsPerPage;
     return filteredCommitments.slice(start, end);
   }, [filteredCommitments, currentPage]);
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchQuery]);
   
   const formatDate = (fecha: string) => {
     return new Date(fecha).toLocaleDateString('es-CR', {
@@ -188,7 +210,13 @@ export const ImprovementCommitmentsList: React.FC = () => {
         title={moduleInfo.title} 
         description={moduleInfo.description}
         headerExtra={
-          <div className="flex items-center gap-3">
+          <div className="flex flex-col sm:flex-row w-full gap-2 shrink-0 lg:w-auto">
+            <SearchInput
+              placeholder="Buscar compromisos..."
+              value={searchQuery}
+              onChange={setSearchQuery}
+              className="w-full sm:w-72"
+            />
             <Button
               onClick={() => navigate('/compromisos/crear')}
               variant="secondary"
