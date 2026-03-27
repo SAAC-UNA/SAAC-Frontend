@@ -5,11 +5,12 @@
  * TODO - hay que estandarizar los estilos del login con lo que ya tenemos en el index general. Si se necesitan nuevos estilos para este caso particular, se pueden añadir en index, pero el global
  */
 
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { useAuth } from "@/Context/AuthContext";
 import { SystemIcons } from "@/Components/Ui/Icons/SystemIcons";
 import { useToast } from "@/Hooks/useToast";
+import { useSessionWatcher } from "@/Hooks/useSessionWatcher";
 import { ValidationError } from "@/Services/AuthService";
 import styles from "./Login.module.css";
 import { FlipWords } from "@/Components/Ui/Index";
@@ -22,10 +23,7 @@ export const Login = () => {
     error: "",
     loading: false,
   });
-  const cedula = formState.cedula;
-  const password = formState.password;
-  const error = formState.error;
-  const loading = formState.loading;
+  const { cedula, password, error, loading } = formState;
   const [showPassword, setShowPassword] = useState(false);
 
   const { login } = useAuth();
