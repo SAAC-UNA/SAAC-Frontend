@@ -19,9 +19,10 @@ axiosInstance.interceptors.response.use(
   (error) => {
     // Códigos 401 (No autorizado) o 419 (Token CSRF expirado) indican sesión inválida
     if (error.response && [401, 419].includes(error.response.status)) {
-      // Usar el servicio de autenticación para desloguear
-      // El servicio se encargará de limpiar el estado y redirigir
-      authService.logoutAndRedirect();
+      // Prevenir llamadas repetitivas si ya se está redirigiendo
+      if (!window.location.href.includes("/login")) {
+        authService.logoutAndRedirect();
+      }
     }
     return Promise.reject(error);
   },
