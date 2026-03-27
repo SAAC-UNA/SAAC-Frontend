@@ -3,15 +3,16 @@
  * Definiciones para filtros, resultados y exportación
  */
 
-// Estados posibles de una evidencia (deben coincidir con ESTADO_EVIDENCIA del backend)
-// Pendiente, En proceso, Aprobado, Rechazado, Completado, Vencido
-export type EvidencePublicationStatus = 
-  | 'pendiente' 
-  | 'en_proceso' 
-  | 'aprobado' 
-  | 'rechazado' 
-  | 'completado' 
-  | 'vencido';
+// Estados posibles de una evidencia — enum PascalCase en EVIDENCIA.estado (migración 037/041)
+export type EvidencePublicationStatus =
+  | 'Pendiente'
+  | 'En Proceso'
+  | 'Completado'
+  | 'Vencido'
+  | 'Aprobado'
+  | 'Rechazado'
+  | 'Observada'
+  | 'Validada';
 
 // Tipos de ordenamiento disponibles
 export type SortField = 'fecha_publicacion' | 'criterio' | 'responsable' | 'estado';
@@ -144,30 +145,6 @@ export interface EvidenceSearchState {
   currentPage: number;
   totalPages: number;
 }
-
-/**
- * Helpers para trabajar con estados de evidencias
- */
-export const EVIDENCE_STATUS_LABELS: Record<EvidencePublicationStatus, string> = {
-  pendiente: 'Pendiente',
-  en_proceso: 'En Proceso',
-  aprobado: 'Aprobado',
-  rechazado: 'Rechazado',
-  completado: 'Completado',
-  vencido: 'Vencido'
-};
-
-// Clases badge usando las variables CSS definidas en index.css
-export const EVIDENCE_STATUS_BADGE: Record<EvidencePublicationStatus, string> = {
-  pendiente: 'bg-[var(--color-gris-light)] text-gris-una',
-  en_proceso: 'bg-[var(--color-warning-ring)] text-warning-dark',
-  aprobado: 'bg-[var(--color-verde-ring)] text-verde-dark',
-  rechazado: 'bg-[var(--color-error-ring)] text-error-dark',
-  completado: 'bg-[var(--color-info-ring)] text-info-dark',
-  vencido: 'bg-[var(--color-error-ring)] text-error'
-};
-
-// Mantener compatibilidad con código existente (deprecated - usar EVIDENCE_STATUS_BADGE)
 
 /**
  * Filtra localmente los resultados de búsqueda según un término de texto.

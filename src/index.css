@@ -197,30 +197,32 @@
 
   /* Tamaños de tipografía estandarizados por tipo de elemento */
   /* Fórmula: rem × 16 = px | Ejemplo: 0.875rem × 16 = 14px */
-  --text-header: 0.875rem;             /* 8px - Texto principal en headers */
-  --text-body: 0.875rem;            /* 14px - Texto general/contenido */
+  --text-header: 12.8px;             /* 8px - Texto principal en headers */
+  --text-body: 12.8px;            /* 14px - Texto general/contenido */
   --text-page-title: 1.25rem;        /* 24px - Título principal de página */
   --text-page-subtitle: 1rem;       /* 16px - Subtítulo/descripción de página */
-  --text-button: 0.875rem;          /* 12px - Todos los botones */
-  --text-sidebar: 0.875rem;         /* 14px - Items de navegación */
-  --text-form-input: 0.875rem;      /* 14px - Inputs, selects, textareas */
-  --text-form-label: 0.875rem;      /* 14px - Labels de formularios */
+  --text-button: 12.8px;          /* 12px - Todos los botones */
+  --text-sidebar: 13px;         /* 14px - Items de navegación */
+  --text-form-input: 12.8px;      /* 14px - Inputs, selects, textareas */
+  --text-form-label: 12.8px;      /* 14px - Labels de formularios */
   --text-form-helper: 0.75rem;      /* 12px - Textos de ayuda y validación */
-  --text-table-header: 0.875rem;     /* 14px - Headers de tabla */
-  --text-table-cell: 0.875rem;      /* 12px - Contenido de celdas */
-  --text-table-caption: 0.875rem;   /* 14px - Título de tabla */
-  --text-badge: 0.875rem;            /* 12px - Badges, chips, pills de acción (en tablas) */
-  --text-alert-title: 0.875rem;     /* 14px - Título de alertas */
-  --text-alert-message: 0.875rem;   /* 14px - Mensaje de alertas */
+  --text-table-header: 12.8px;     /* 14px - Headers de tabla */
+  --text-table-cell: 12.8px;      /* 12px - Contenido de celdas */
+  --text-table-caption: 12.8px;   /* 14px - Título de tabla */
+  --text-badge: 12.8px;            /* 12px - Badges, chips, pills de acción (en tablas) */
+  --text-alert-title: 12.8px;     /* 14px - Título de alertas */
+  --text-alert-message: 12.8px;   /* 14px - Mensaje de alertas */
   --text-empty-title: 1.125rem;     /* 18px - Título de estados vacíos */
-  --text-empty-desc: 0.875rem;      /* 14px - Descripción de estados vacíos */
+  --text-empty-desc: 12.8px;      /* 14px - Descripción de estados vacíos */
   --text-empty-title-compact: 1rem; /* 16px - Título compacto */
   --text-empty-desc-compact: 0.75rem; /* 12px - Descripción compacta */
   --text-modal-title: 1.25rem;      /* 20px - Título de modales */
-  --text-modal-subtitle: 0.875rem;  /* 14px - Subtítulo de modales */
-  --text-modal-body: 0.875rem;      /* 14px - Contenido de modales */
-  --text-pagination: 0.875rem;      /* 14px - Paginación */
+  --text-modal-subtitle: 12.8px;  /* 14px - Subtítulo de modales */
+  --text-modal-body: 12.8px;      /* 14px - Contenido de modales */
+  --text-pagination: 12.8px;      /* 14px - Paginación */
   --text-tooltip: 0.75rem;         /* 12px - Texto de tooltips */
+  --text-toast: 0.75rem;           /* 12px - Título del toast */
+  --text-toast-message: 0.6875rem; /* 11px - Mensaje del toast */
 
   /* SIDEBAR */
   --sidebar-width: 13rem;            /* 208px - Ancho expandido */
@@ -244,6 +246,7 @@
   --size-icon-sm: 1rem;              /* 16px - Ícono pequeño */
   --size-icon-md: 1.25rem;           /* 20px - Ícono mediano */
   --size-icon-lg: 1.5rem;            /* 24px - Ícono grande */
+  --size-icon-logo: 2rem;            /* 32px - Isotipo/logo de la aplicación */
 
   /* Tamaños para botones de acción en tablas */
   --size-table-action-button: 2rem; /* 32px - Tamaño del botón (h-8 w-8) */
@@ -301,102 +304,40 @@
 
 @layer components {
 
-  /* ===== TOAST STYLES ===== */
-  /* Clases para toasts - variables de estado */
+  /* ! ===== TOAST STYLES ===== 24-03-2026*/
+  /* Clases para el componente CustomToast (Toast.tsx)
+   * Cada variante expone --toast-bar para el color de la barra de progreso */
 
   .toast-success {
-    background-color: color-mix(in srgb, var(--color-success) 10%, white);
-    border-left-color: var(--color-success);
-    color: color-mix(in srgb, var(--color-success) 80%, black);
+    background: color-mix(in srgb, var(--color-verde-light) 60%, transparent);
+    border: 1px solid var(--color-verde-ring);
+    color: var(--color-verde-dark);
+    box-shadow: 0 4px 14px -2px color-mix(in srgb, var(--color-verde) 30%, transparent);
+    --toast-bar: var(--color-verde);
   }
 
   .toast-error {
-    background-color: color-mix(in srgb, var(--color-error) 10%, white);
-    border-left-color: var(--color-error);
-    color: color-mix(in srgb, var(--color-error) 80%, black);
+    background: color-mix(in srgb, var(--color-error-light) 60%, transparent);
+    border: 1px solid var(--color-error-ring);
+    color: var(--color-error-dark);
+    box-shadow: 0 4px 14px -2px color-mix(in srgb, var(--color-error) 30%, transparent);
+    --toast-bar: var(--color-error);
   }
 
   .toast-warning {
-    background-color: color-mix(in srgb, var(--color-warning) 10%, white);
-    border-left-color: var(--color-warning);
-    color: color-mix(in srgb, var(--color-warning) 80%, black);
+    background: color-mix(in srgb, var(--color-warning-light) 60%, transparent);
+    border: 1px solid var(--color-warning-ring);
+    color: var(--color-warning-dark);
+    box-shadow: 0 4px 14px -2px color-mix(in srgb, var(--color-warning) 30%, transparent);
+    --toast-bar: var(--color-warning);
   }
 
   .toast-info {
-    background-color: color-mix(in srgb, var(--color-info) 10%, white);
-    border-left-color: var(--color-info);
-    color: color-mix(in srgb, var(--color-info) 80%, black);
-  }
-
-  /* ===== MESSAGE STYLES ===== */
-  /* Clases para mensajes de estado en formularios */
-  .message-success {
-    background-color: color-mix(in srgb, var(--color-success) 8%, white);
-    border-color: color-mix(in srgb, var(--color-success) 30%, white);
-    color: color-mix(in srgb, var(--color-success) 70%, black);
-  }
-
-  .message-error {
-    background-color: color-mix(in srgb, var(--color-error) 8%, white);
-    border-color: color-mix(in srgb, var(--color-error) 30%, white);
-    color: color-mix(in srgb, var(--color-error) 70%, black);
-  }
-
-  .message-warning {
-    background-color: color-mix(in srgb, var(--color-warning) 8%, white);
-    border-color: color-mix(in srgb, var(--color-warning) 30%, white);
-    color: color-mix(in srgb, var(--color-warning) 70%, black);
-  }
-
-  .message-info {
-    background-color: color-mix(in srgb, var(--color-info) 8%, white);
-    border-color: color-mix(in srgb, var(--color-info) 30%, white);
-    color: color-mix(in srgb, var(--color-info) 70%, black);
-  }
-
-  /* ===== BADGE STYLES ===== */
-  /* Clases para badges/estados usando variables */
-  .badge-success {
-    background-color: color-mix(in srgb, var(--color-success) 20%, white);
-    color: color-mix(in srgb, var(--color-success) 80%, black);
-  }
-
-  .badge-error {
-    background-color: color-mix(in srgb, var(--color-error) 20%, white);
-    color: color-mix(in srgb, var(--color-error) 80%, black);
-  }
-
-  .badge-warning {
-    background-color: color-mix(in srgb, var(--color-warning) 20%, white);
-    color: color-mix(in srgb, var(--color-warning) 80%, black);
-  }
-
-  .badge-info {
-    background-color: color-mix(in srgb, var(--color-info) 20%, white);
-    color: color-mix(in srgb, var(--color-info) 80%, black);
-  }
-
-  /* ===== BUTTON STYLES ===== */
-  /* Clases para botones usando variables de estado */
-
-  .btn-success {
-    background-color: transparent;
-    color: var(--color-success);
-    border: 2px solid var(--color-success);
-  }
-
-  .btn-success:hover {
-    background-color: color-mix(in srgb, var(--color-success) 5%, transparent);
-  }
-
-  .btn-error {
-    background-color: transparent;
-    color: var(--color-error);
-    border: 2px solid var(--color-error);
-  }
-
-  .btn-error:hover {
-    background-color: color-mix(in srgb, var(--color-error) 5%, transparent);
+    background: color-mix(in srgb, var(--color-info-light) 60%, transparent);
+    border: 1px solid var(--color-info-ring);
+    color: var(--color-info-dark);
+    box-shadow: 0 4px 14px -2px color-mix(in srgb, var(--color-info) 30%, transparent);
+    --toast-bar: var(--color-info);
   }
 }
 
@@ -435,6 +376,7 @@
   /* ===== SIDEBAR ITEM DIMENSIONS ===== */
   /* Altura y padding del botón son independientes del texto y del ícono */
   .h-sidebar-item { height: var(--height-sidebar-item); }
+  .size-sidebar-item { width: var(--height-sidebar-item); height: var(--height-sidebar-item); }
   .px-sidebar-item { padding-left: var(--padding-sidebar-x); padding-right: var(--padding-sidebar-x); }
   .size-sidebar-icon { width: var(--size-sidebar-icon); height: var(--size-sidebar-icon); }
   .rounded-l-sidebar-item { border-top-left-radius: var(--radius-sidebar-item); border-bottom-left-radius: var(--radius-sidebar-item); }
@@ -456,6 +398,23 @@
   .size-badge { font-size: var(--text-badge); }
   .size-pagination { font-size: var(--text-pagination); }
   .size-tooltip { font-size: var(--text-tooltip); }
+  .size-toast { font-size: var(--text-toast); }
+  .size-toast-message { font-size: var(--text-toast-message); }
+
+  /*! ===== FLOATING LABEL HALO ===== 24-03-2026 */
+  /* Simula fondo en el label flotante con text-shadow en 8 direcciones,
+   * evitando el recuadro sólido que aparece al usar background-color sobre el borde del input */
+  .floating-label-halo {
+    text-shadow:
+      -1px -1px 0 var(--color-blanco-una-2),
+       1px -1px 0 var(--color-blanco-una-2),
+      -1px  1px 0 var(--color-blanco-una-2),
+       1px  1px 0 var(--color-blanco-una-2),
+      -2px  0   0 var(--color-blanco-una-2),
+       2px  0   0 var(--color-blanco-una-2),
+       0   -2px 0 var(--color-blanco-una-2),
+       0    2px 0 var(--color-blanco-una-2);
+  }
 
   /*! ==== TAMAÑO DE BOTONES PRINCIPALES ===== 04-03-2026 */
   .w-button-standard {
@@ -468,6 +427,7 @@
   .size-icon-sm     { width: var(--size-icon-sm);     height: var(--size-icon-sm); }
   .size-icon-md     { width: var(--size-icon-md);     height: var(--size-icon-md); }
   .size-icon-lg     { width: var(--size-icon-lg);     height: var(--size-icon-lg); }
+  .size-icon-logo   { width: auto;                    height: var(--size-icon-logo); }
 
   /*! ===== TAMAÑOS DE BOTONES DE TABLA ===== 14-02-2026 */
   .size-table-action-button { 
@@ -560,6 +520,22 @@
 
   .custom-scrollbar::-webkit-scrollbar-thumb:hover {
     background: rgba(167, 167, 169, 0.6);
+  }
+
+  /* Scrollbar sutil para navegación del sidebar */
+  .sidebar-scrollbar {
+    scrollbar-width: none; /* Firefox */
+    -ms-overflow-style: none; /* IE/Edge legacy */
+  }
+
+  .sidebar-scrollbar::-webkit-scrollbar {
+    width: 0;
+    height: 0;
+  }
+
+  .sidebar-scrollbar::-webkit-scrollbar-track,
+  .sidebar-scrollbar::-webkit-scrollbar-thumb {
+    background: transparent;
   }
 
   /*===== Mínima altura del Layout para el screenContainer =====*/

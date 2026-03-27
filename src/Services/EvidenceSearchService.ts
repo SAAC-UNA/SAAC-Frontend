@@ -15,7 +15,7 @@ interface SearchParams {
   responsable_id?: number;
   fecha_desde?: string; // YYYY-MM-DD
   fecha_hasta?: string; // YYYY-MM-DD
-  estado_evidencia_id?: number;
+  estado?: string; // PascalCase — valor del enum EVIDENCIA.estado
   rol_id?: number;
   
   // Ordenamiento
@@ -38,15 +38,13 @@ interface BackendEvidenceResult {
   criterio_id?: number;
   nomenclatura: string;
   descripcion: string;
-  // El backend devuelve estado_evidencia_id como campo de primer nivel (EvidenceResource)
-  estado_evidencia_id?: number;
+  // El backend devuelve estado como string PascalCase (EVIDENCIA.estado enum)
+  estado?: string;
   criterion?: {  // Backend usa 'criterion' no 'criterio'
     id: number;
     nomenclatura: string;
     descripcion: string;
-  };
-  estado_evidencia?: {
-    nombre?: string;
+    estado?: string; // Estado del criterio (Pendiente/En Proceso/Completado)
   };
   responsables?: BackendResponsable[];
   roles_acceso?: string[];
@@ -76,25 +74,11 @@ interface PaginatedResponse {
   };
 }
 
-// Mapeo de IDs de estado del backend a strings del frontend
-const ESTADO_ID_TO_FRONTEND: Record<number, EvidencePublicationStatus> = {
-  1: 'pendiente',
-  2: 'en_proceso',
-  3: 'aprobado',
-  4: 'rechazado',
-  5: 'completado',
-  6: 'vencido'
-};
-
-// Mapeo de estados del frontend a IDs del backend
-const ESTADO_FRONTEND_TO_ID: Record<EvidencePublicationStatus, number> = {
-  'pendiente': 1,
-  'en_proceso': 2,
-  'aprobado': 3,
-  'rechazado': 4,
-  'completado': 5,
-  'vencido': 6
-};
+// Valores válidos del enum EVIDENCIA.estado (PascalCase)
+const ESTADOS_VALIDOS = new Set<string>([
+  'Pendiente', 'En Proceso', 'Completado', 'Vencido',
+  'Aprobado', 'Rechazado', 'Observada', 'Validada'
+]);
 
 export const evidenceSearchService = {
   /**
@@ -129,7 +113,7 @@ export const evidenceSearchService = {
     }
 
     if (filters.estado && filters.estado !== 'todos') {
-      params.estado_evidencia_id = ESTADO_FRONTEND_TO_ID[filters.estado];
+      params.estado = filters.estado;
     }
 
     if (filters.rol_id) {
@@ -166,7 +150,7 @@ export const evidenceSearchService = {
       params.fecha_hasta = filters.fecha_publicacion_hasta;
     }
     if (filters.estado && filters.estado !== 'todos') {
-      params.estado_evidencia_id = ESTADO_FRONTEND_TO_ID[filters.estado];
+      params.estado = filters.estado;
     }
     if (filters.rol_id) {
       params.rol_id = filters.rol_id;
@@ -209,7 +193,7 @@ export const evidenceSearchService = {
       params.fecha_hasta = filters.fecha_publicacion_hasta;
     }
     if (filters.estado && filters.estado !== 'todos') {
-      params.estado_evidencia_id = ESTADO_FRONTEND_TO_ID[filters.estado];
+      params.estado = filters.estado;
     }
     if (filters.rol_id) {
       params.rol_id = filters.rol_id;
@@ -244,8 +228,10 @@ export function mapBackendToFrontend(backendData: BackendEvidenceResult) {
     descripcion: backendData.descripcion,
     responsables: backendData.responsables || [], // Array completo de responsables
     fecha_publicacion: backendData.created_at || backendData.fecha_publicacion,
-    // estado_evidencia_id viene como campo de primer nivel en EvidenceResource
-    estado: ESTADO_ID_TO_FRONTEND[backendData.estado_evidencia_id ?? 0] || 'pendiente',
+    // estado viene como string PascalCase del enum EVIDENCIA.estado
+    estado: (backendData.estado && ESTADOS_VALIDOS.has(backendData.estado)
+      ? backendData.estado
+      : 'Pendiente') as EvidencePublicationStatus,
     archivos_count: backendData.archivos_count || 0,
     enlaces_count: backendData.enlaces_count || 0,
     roles_acceso: backendData.roles_acceso || [],
@@ -331,27 +317,18 @@ export const evidenceSearchFiltersService = {
   },
 
   /**
-   * Obtener lista de estados de evidencia
+   * Obtener lista de estados de evidencia — valores estáticos del enum EVIDENCIA.estado
    */
-  async getEstados(): Promise<Array<{ value: string; label: string }>> {
-    try {
-      const response = await axiosInstance.get('/estructura/estados-evidencia');
-      const data = response.data.data || response.data || [];
-      
-      if (!Array.isArray(data)) {
-        return [];
-      }
-      
-      return data
-        .filter((estado: any) => estado && estado.estado_evidencia_id)
-        .map((estado: any) => ({
-          value: ESTADO_ID_TO_FRONTEND[estado.estado_evidencia_id] || '',
-          label: estado.nombre || 'Sin nombre',
-        }))
-        .filter((estado: any) => estado.value); // Filtrar estados sin mapeo
-    } catch (error) {
-      console.error('❌ Error al cargar estados:', error);
-      return [];
-    }
+  getEstados(): Array<{ value: string; label: string }> {
+    return [
+      { value: 'Pendiente',   label: 'Pendiente' },
+      { value: 'En Proceso',  label: 'En proceso' },
+      { value: 'Completado',  label: 'Completado' },
+      { value: 'Vencido',     label: 'Vencido' },
+      { value: 'Aprobado',    label: 'Aprobado' },
+      { value: 'Rechazado',   label: 'Rechazado' },
+      { value: 'Observada',   label: 'Observada' },
+      { value: 'Validada',    label: 'Validada' },
+    ];
   }
 };

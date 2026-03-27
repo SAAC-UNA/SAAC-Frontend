@@ -6,7 +6,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ScreenContainer } from '@/Components/Ui/Layout/ScreenContainer';
-import { Button, LoadingSpinner, PageHeader, Tooltip, TooltipContent, TooltipTrigger } from '@/Components/Ui/Index';
+import { Button, LoadingSpinner, PageHeader } from '@/Components/Ui/Index';
 import { getModuleInfo } from '@/Constants/ModuleInfo';
 import { SystemIcons } from '@/Components/Ui/Icons/SystemIcons';
 import { improvementCommitmentService } from '@/Services/ImprovementCommitmentService';
@@ -20,6 +20,7 @@ import { StatusBadge } from '@/Components/Ui/Feedback/StatusBadge';
 import { TABLE_PAGE_SIZE } from '@/Constants/TablePagination';
 import { truncateText } from '@/Utils';
 import { useFirstColumnConfig } from '@/Hooks/UseFirstColumnConfig';
+import { ImprovementCommitmentDetailModal } from './Components/ImprovementCommitmentDetailModal';
 
 export const ImprovementCommitmentsList: React.FC = () => {
   const moduleInfo = getModuleInfo('improvement_commitments');
@@ -28,6 +29,7 @@ export const ImprovementCommitmentsList: React.FC = () => {
   const [commitments, setCommitments] = useState<CompromisoMejora[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [detailId, setDetailId] = useState<number | null>(null);
 
   useEffect(() => {
     fetchCompromisos();
@@ -84,7 +86,7 @@ export const ImprovementCommitmentsList: React.FC = () => {
   };
 
   const handleViewDetail = (id: number) => {
-    navigate(`/compromisos/ver/${id}`);
+    setDetailId(id);
   };
 
   const firstColumn = useFirstColumnConfig();
@@ -152,10 +154,12 @@ export const ImprovementCommitmentsList: React.FC = () => {
       header: 'Estado',
       align: 'center',
       render: (_, compromiso) => (
-        <StatusBadge
-          label={compromiso.is_overdue ? 'Vencido' : 'Activo'}
-          colorClasses={compromiso.is_overdue ? 'text-error-dark bg-error-ring' : 'text-verde-dark bg-verde-ring'}
-        />
+        <div className="flex justify-center">
+          <StatusBadge
+            label={compromiso.is_overdue ? 'Vencido' : 'Activo'}
+            colorClasses={compromiso.is_overdue ? 'text-error-dark bg-error-ring' : 'text-verde-dark bg-verde-ring'}
+          />
+        </div>
       )
     },
     {
@@ -185,38 +189,10 @@ export const ImprovementCommitmentsList: React.FC = () => {
         description={moduleInfo.description}
         headerExtra={
           <div className="flex items-center gap-3">
-            {/* Stats compactas */}
-            {!loading && filteredCommitments.length > 0 && (
-              <div className="inline-flex items-center gap-2 text-xs">
-                <span className="inline-flex items-center gap-1 px-2 py-1 rounded-md bg-gray-50 border border-gray-200 text-gray-700">
-                  <SystemIcons.modal.document size="xs" className="w-3 h-3" />
-                  {filteredCommitments.length}
-                </span>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <span className={`inline-flex items-center gap-1 px-2 py-1 rounded-md border cursor-default ${
-                      filteredCommitments.filter((c) => c.is_overdue).length > 0
-                        ? 'bg-red-50 border-red-200 text-red-700'
-                        : 'bg-green-50 border-green-200 text-green-700'
-                    }`}>
-                      <SystemIcons.interface.clock size="xs" className="w-3 h-3" />
-                      {filteredCommitments.filter((c) => c.is_overdue).length} vencidos
-                    </span>
-                  </TooltipTrigger>
-                  <TooltipContent>
-                    {filteredCommitments.filter((c) => c.is_overdue).length === 0
-                      ? 'No hay compromisos vencidos'
-                      : `${filteredCommitments.filter((c) => c.is_overdue).length} compromiso${filteredCommitments.filter((c) => c.is_overdue).length > 1 ? 's' : ''} ha${filteredCommitments.filter((c) => c.is_overdue).length > 1 ? 'n' : ''} superado su fecha límite`}
-                  </TooltipContent>
-                </Tooltip>
-              </div>
-            )}
             <Button
               onClick={() => navigate('/compromisos/crear')}
               variant="secondary"
-              className="gap-2"
             >
-              <SystemIcons.actions.add size="sm" />
               Crear
             </Button>
           </div>
@@ -274,10 +250,15 @@ export const ImprovementCommitmentsList: React.FC = () => {
             } : undefined}
             loading={loading}
             emptyMessage="No hay compromisos registrados. Utilice el botón 'Crear' para registrar un nuevo compromiso de mejora"
-            unstyled={true}
           />
         )}
       </div>
+
+      <ImprovementCommitmentDetailModal
+        id={detailId}
+        isOpen={detailId !== null}
+        onClose={() => setDetailId(null)}
+      />
     </ScreenContainer>
   );
 };

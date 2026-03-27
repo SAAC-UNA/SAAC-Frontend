@@ -1,50 +1,38 @@
 /**
  * NotificationFilters - Filtros para notificaciones
  * HU-018 - Notificaciones automáticas
- * 
+ *
  * Permite filtrar notificaciones por:
  * - Estado (leída/no leída/todas)
- * - Tipo de evento
+ * - Búsqueda por texto (título o contenido)
  */
 
 import React, { useState } from 'react';
 import { CustomSelect } from '@/Components/Ui/Forms/SingleSelect';
-import { TIPO_EVENTO_LABELS } from '@/Types/NotificationTypes';
-import type { NotificationFilters, TipoEvento } from '@/Types/NotificationTypes';
+import { SystemIcons } from '@/Components/Ui/Icons/SystemIcons';
+import type { NotificationFilters } from '@/Types/NotificationTypes';
 
 const EMPTY_FILTERS: NotificationFilters = {};
 
 interface NotificationFiltersProps {
   onFilterChange: (filters: NotificationFilters) => void;
   initialFilters?: NotificationFilters;
+  onSearchChange?: (search: string) => void;
 }
 
 export const NotificationFiltersComponent: React.FC<NotificationFiltersProps> = ({
   onFilterChange,
   initialFilters = EMPTY_FILTERS,
+  onSearchChange,
 }) => {
   const [filters, setFilters] = useState<NotificationFilters>(() => initialFilters);
-
-  const handleFilterChange = (key: keyof NotificationFilters, value: any) => {
-    const newFilters = { ...filters, [key]: value };
-    setFilters(newFilters);
-    onFilterChange(newFilters);
-  };
+  const [search, setSearch] = useState('');
 
   // Opciones para el filtro de estado
   const estadoOptions = [
     { value: '', label: 'Todas' },
     { value: 'false', label: 'No leídas' },
     { value: 'true', label: 'Leídas' },
-  ];
-
-  // Opciones para el filtro de tipo de evento
-  const tipoEventoOptions = [
-    { value: '', label: 'Todos los tipos' },
-    ...Object.entries(TIPO_EVENTO_LABELS).map(([value, label]) => ({
-      value,
-      label,
-    })),
   ];
 
   return (
@@ -60,7 +48,9 @@ export const NotificationFiltersComponent: React.FC<NotificationFiltersProps> = 
               setFilters(rest);
               onFilterChange(rest);
             } else {
-              handleFilterChange('leida', value === 'true');
+              const newFilters = { ...filters, leida: value === 'true' };
+              setFilters(newFilters);
+              onFilterChange(newFilters);
             }
           }}
           options={estadoOptions}
@@ -69,23 +59,18 @@ export const NotificationFiltersComponent: React.FC<NotificationFiltersProps> = 
         />
       </div>
 
-      {/* Filtro por tipo de evento */}
-      <div className="w-48">
-        <CustomSelect
-          label="Tipo de Evento"
-          value={filters.tipo_evento || ''}
-          onChange={(value) => {
-            if (value === '') {
-              const { tipo_evento, ...rest } = filters;
-              setFilters(rest);
-              onFilterChange(rest);
-            } else {
-              handleFilterChange('tipo_evento', value as TipoEvento);
-            }
+      {/* Búsqueda por texto */}
+      <div className="relative">
+        <SystemIcons.interface.search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400 pointer-events-none" />
+        <input
+          type="text"
+          value={search}
+          onChange={(e) => {
+            setSearch(e.target.value);
+            onSearchChange?.(e.target.value);
           }}
-          options={tipoEventoOptions}
-          size="sm"
-          placeholder="Seleccionar tipo"
+          placeholder="Buscar notificación..."
+          className="pl-8 pr-3 py-1.5 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-azul-una w-56"
         />
       </div>
     </div>

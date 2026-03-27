@@ -10,23 +10,23 @@ import type { ReactNode } from 'react';
 
 interface ProtectedRouteProps {
   children: ReactNode;
-  requireRole?: 'Superusuario' | 'Administrador' | 'Encargado de Acreditación';
+  requireRoles?: string[];
 }
 
-export const ProtectedRoute = ({ children, requireRole }: ProtectedRouteProps) => {
+export const ProtectedRoute = ({ children, requireRoles }: ProtectedRouteProps) => {
   const { isAuthenticated, user } = useAuth();
 
   // Si no está autenticado, redirigir a login
   if (!isAuthenticated) {
     return <Navigate to="/login" replace />;
   }
-// TODO cambiar o eliminar este diseño
-  // Si requiere un rol específico, validar
-  if (requireRole) {
+
+  // Si requiere roles específicos, validar
+  if (requireRoles && requireRoles.length > 0) {
     // Superusuario tiene acceso a todo
     const isSuperUser = user?.roles?.some(r => r.name === 'Superusuario');
-    const hasRole = user?.roles?.some(r => r.name === requireRole);
-    
+    const hasRole = user?.roles?.some(r => requireRoles.includes(r.name));
+
     if (!isSuperUser && !hasRole) {
       return (
         <div style={{ 

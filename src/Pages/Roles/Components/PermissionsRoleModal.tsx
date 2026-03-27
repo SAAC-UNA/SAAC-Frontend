@@ -50,12 +50,12 @@ export const PermissionsModal: React.FC<PermissionsModalProps> = ({
         {roleDescription && (
           <div>
             <div className="flex items-center gap-2 mb-2.5">
-              <span className={cn('uppercase tracking-wider font-semibold text-gris-una-2', TYPOGRAPHY.table.header)}>
+              <span className={cn('uppercase tracking-wider font-semibold text-gris-una-2', TYPOGRAPHY.modal.subtitle)}>
                 Descripción del rol
               </span>
             </div>
             <div className="border border-gray-200 rounded-corner p-4">
-              <p className={cn(TYPOGRAPHY.table.cell, 'text-gris-una-2 leading-relaxed')}>{roleDescription}</p>
+              <p className={cn(TYPOGRAPHY.modal.body, 'text-gris-una-2 leading-relaxed')}>{roleDescription}</p>
             </div>
           </div>
         )}
@@ -63,7 +63,7 @@ export const PermissionsModal: React.FC<PermissionsModalProps> = ({
         {/* Lista de permisos */}
         <div>
           <div className="flex items-center gap-2 mb-2.5">
-            <span className={cn('uppercase tracking-wider font-semibold text-gris-una-2', TYPOGRAPHY.table.header)}>
+              <span className={cn('uppercase tracking-wider font-semibold text-gris-una-2', TYPOGRAPHY.modal.subtitle)}>
               Permisos asignados
             </span>
           </div>
@@ -80,7 +80,7 @@ export const PermissionsModal: React.FC<PermissionsModalProps> = ({
                   return (
                     <div key={key} className="flex items-center gap-2">
                       <span className="w-1.5 h-1.5 rounded-full bg-verde flex-shrink-0" />
-                      <span className={cn(TYPOGRAPHY.table.cell, 'text-gris-una-2 truncate')}>{label}</span>
+                      <span className={cn(TYPOGRAPHY.modal.body, 'text-gris-una-2 truncate')}>{label}</span>
                     </div>
                   );
                 })}
@@ -88,7 +88,7 @@ export const PermissionsModal: React.FC<PermissionsModalProps> = ({
             </div>
           ) : (
             <div className="border border-gray-200 rounded-corner p-6 text-center">
-              <p className={cn(TYPOGRAPHY.table.cell, 'text-gris-una-2')}>Este rol no tiene permisos asignados</p>
+              <p className={cn(TYPOGRAPHY.modal.body, 'text-gris-una-2')}>Este rol no tiene permisos asignados</p>
             </div>
           )}
         </div>

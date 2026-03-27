@@ -1,4 +1,6 @@
-import React, { createContext, useContext, useState, useCallback } from 'react';
+import React, { createContext, useContext, useCallback } from 'react';
+import toast from 'react-hot-toast';
+import { showCustomToast } from '@/Components/Ui/Feedback/Toast';
 
 export interface Toast {
   id: string;
@@ -10,8 +12,7 @@ export interface Toast {
 }
 
 interface ToastContextType {
-  toasts: Toast[];
-  showToast: (toast: Omit<Toast, 'id' | 'isVisible'>) => void;
+  showToast: (toastData: Omit<Toast, 'id' | 'isVisible'>) => void;
   hideToast: (id: string) => void;
   clearAllToasts: () => void;
 }
@@ -19,43 +20,21 @@ interface ToastContextType {
 const ToastContext = createContext<ToastContextType | undefined>(undefined);
 
 export const ToastProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [toasts, setToasts] = useState<Toast[]>([]);
-
   const showToast = useCallback((toastData: Omit<Toast, 'id' | 'isVisible'>) => {
-    const id = `toast-${Date.now()}-${Math.random()}`;
-    const newToast: Toast = {
-      ...toastData,
-      id,
-      isVisible: true,
-      duration: toastData.duration || 5000
-    };
-
-    setToasts(prev => [...prev, newToast]);
-
-    // Auto-hide después del duration especificado
-    const duration = newToast.duration || 5000;
-    if (duration > 0) {
-      setTimeout(() => {
-        hideToast(id);
-      }, duration);
-    }
+    const { type, title, message, duration = 5000 } = toastData;
+    showCustomToast(type, title, message, duration);
   }, []);
 
   const hideToast = useCallback((id: string) => {
-    setToasts(prev => prev.filter(toast => toast.id !== id));
+    toast.dismiss(id);
   }, []);
 
   const clearAllToasts = useCallback(() => {
-    setToasts([]);
+    toast.dismiss();
   }, []);
 
   return (
-    <ToastContext.Provider value={{
-      toasts,
-      showToast,
-      hideToast,
-      clearAllToasts
-    }}>
+    <ToastContext.Provider value={{ showToast, hideToast, clearAllToasts }}>
       {children}
     </ToastContext.Provider>
   );
@@ -63,8 +42,6 @@ export const ToastProvider: React.FC<{ children: React.ReactNode }> = ({ childre
 
 export const useToast = () => {
   const context = useContext(ToastContext);
-  if (!context) {
-    throw new Error('useToast must be used within ToastProvider');
-  }
+  if (!context) throw new Error('useToast must be used within ToastProvider');
   return context;
 };

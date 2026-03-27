@@ -4,6 +4,25 @@ import type { CreateRoleData, Role, ApiResponse } from '@/Services/RoleService';
 import type { PermissionOption } from '@/types/RoleTypes';
 
 /**
+ * Extracts the most user-readable error message from an unknown error.
+ * Prioritises backend `response.data.message` (Axios) over generic message.
+ */
+function extractBackendError(err: unknown, fallback: string): string {
+  if (err && typeof err === 'object') {
+    const e = err as Record<string, unknown>;
+    if (e.response && typeof e.response === 'object') {
+      const resp = e.response as Record<string, unknown>;
+      if (resp.data && typeof resp.data === 'object') {
+        const data = resp.data as Record<string, unknown>;
+        if (typeof data.message === 'string' && data.message) return data.message;
+      }
+    }
+    if (typeof e.message === 'string') return e.message;
+  }
+  return fallback;
+}
+
+/**
  * HOOK DE GESTIÓN DE ROLES
  * 
  * Hook centralizado para todas las operaciones CRUD de roles y permisos.
@@ -65,9 +84,8 @@ export const useRoles = (): UseRolesReturn => {
       
       throw new Error('No se recibieron datos del servidor');
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Error desconocido';
-      setError(`Error al crear rol: ${errorMessage}`);
-      return null;
+      const msg = extractBackendError(err, 'No se pudo crear el rol');
+      throw new Error(msg);
     } finally {
       setIsLoading(false);
     }
@@ -95,9 +113,8 @@ export const useRoles = (): UseRolesReturn => {
       
       throw new Error('No se recibieron datos del servidor');
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Error desconocido';
-      setError(`Error al editar rol: ${errorMessage}`);
-      return null;
+      const msg = extractBackendError(err, 'No se pudo editar el rol');
+      throw new Error(msg);
     } finally {
       setIsLoading(false);
     }
@@ -117,9 +134,8 @@ export const useRoles = (): UseRolesReturn => {
       setRoles(prevRoles => prevRoles.filter(role => role.id !== roleId));
       return true;
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Error desconocido';
-      setError(`Error al eliminar rol: ${errorMessage}`);
-      return false;
+      const msg = extractBackendError(err, 'No se pudo eliminar el rol');
+      throw new Error(msg);
     } finally {
       setIsLoading(false);
     }

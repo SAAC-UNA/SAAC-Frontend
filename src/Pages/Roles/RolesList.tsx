@@ -12,6 +12,7 @@ import { SearchInput } from '@/Components/Ui/Forms/SearchInput';
 import { Button } from '@/Components/Ui/Buttons/Button';
 import { RoleFormModal } from './Components/RoleFormModal';
 import { useRoles } from '@/Hooks/UseRoles';
+import { useToast } from '@/Context/ToastContext';
 import { getContextualInfo } from '@/Constants/ModuleInfo';
 import type { Role } from '@/Services/RoleService';
 
@@ -22,6 +23,7 @@ const SuccessModal = lazy(() => import('@/Components/Ui/Modals/SuccessModal').th
 
 const RolesRepository: React.FC = () => {
   const { deleteRole, roles, loadRoles, isLoading, error } = useRoles();
+  const { showToast } = useToast();
   
   // Obtener información del módulo desde ModuleInfo
   const moduleInfo = getContextualInfo('roles', 'list');
@@ -97,7 +99,12 @@ const RolesRepository: React.FC = () => {
           setSuccessModalState({ isOpen: true, roleName });
         }
       } catch (error) {
-        console.error('Error al eliminar rol:', error);
+        showToast({
+          type: 'error',
+          title: 'Error al eliminar rol',
+          message: error instanceof Error ? error.message : 'No se pudo eliminar el rol'
+        });
+        setDeleteModalState({ isOpen: false, role: null });
       }
     }
   };

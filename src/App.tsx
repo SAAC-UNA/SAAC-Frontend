@@ -7,7 +7,7 @@ import { ProtectedRoute } from "@/Components/Ui/ProtectedRoute";
 import { Layout } from "./Components/Layout/Index";
 import { LoadingSpinner } from "@/Components/Ui/Feedback/Loading";
 
-// Lazy load de páginas para code splitting y mejor rendimiento
+// Lazy load de paginas para code splitting y mejor rendimiento
 import { Login } from "@/Pages/Auth/Login";
 const HomePage = lazy(() =>
   import("./Pages/Index").then((m) => ({ default: m.HomePage })),
@@ -23,17 +23,6 @@ const EditUserPage = lazy(() =>
   import("./Pages/Users").then((m) => ({ default: m.EditUserPage })),
 );
 const StructureList = lazy(() => import("@/Pages/Structure/StructureList"));
-const StructureCreation = lazy(() =>
-  import("@/Pages/Structure/StructureCreation").then((m) => ({
-    default: m.StructureCreation,
-  })),
-);
-const StructureEditForm = lazy(
-  () => import("@/Pages/Structure/StructureEditForm"),
-);
-const StructureEditList = lazy(
-  () => import("./Pages/Structure/StructureEditList"),
-);
 const EvidenceAssignment = lazy(() =>
   import("./Pages/EvidenceAssignment").then((m) => ({
     default: m.EvidenceAssignment,
@@ -68,17 +57,12 @@ const ImprovementCommitmentDetail = lazy(() =>
     (m) => ({ default: m.ImprovementCommitmentDetail }),
   ),
 );
-const AccreditationProcessList = lazy(() =>
-  import("./Pages/AccreditationProcess").then((m) => ({
-    default: m.AccreditationProcessList,
-  })),
-);
 const BlockApproval = lazy(() => import("./Pages/BlockApproval/BlockApproval"));
 const FinalReports = lazy(() =>
   import("./Pages/ReportManagement").then((m) => ({ default: m.FinalReports })),
 );
 
-// HU-016: Páginas de solicitudes de ampliación
+// HU-016: Paginas de solicitudes de ampliacion
 const ManageExtensionRequestsPage = lazy(() =>
   import("./Pages/ExtensionRequest").then((m) => ({
     default: m.ManageExtensionRequestsPage,
@@ -104,7 +88,7 @@ function App() {
         <ToastProvider>
           <NavigationProvider>
             <Routes>
-              {/* Rutas públicas */}
+              {/* Rutas publicas */}
               <Route path="/login" element={<Login />} />
 
               {/* Rutas protegidas con Layout */}
@@ -115,14 +99,14 @@ function App() {
                     <Layout>
                       <Suspense fallback={<PageLoader />}>
                         <Routes>
-                          {/* Página de inicio */}
+                          {/* Pagina de inicio */}
                           <Route path="/" element={<HomePage />} />
 
                           {/* Roles - Solo Superusuario */}
                           <Route
                             path="/roles/listar"
                             element={
-                              <ProtectedRoute requireRole="Superusuario">
+                              <ProtectedRoute requireRoles={["Superusuario"]}>
                                 <RolesRepository />
                               </ProtectedRoute>
                             }
@@ -130,7 +114,7 @@ function App() {
                           <Route
                             path="/roles/crear"
                             element={
-                              <ProtectedRoute requireRole="Superusuario">
+                              <ProtectedRoute requireRoles={["Superusuario"]}>
                                 <RoleForm />
                               </ProtectedRoute>
                             }
@@ -138,17 +122,17 @@ function App() {
                           <Route
                             path="/roles/editar/:id"
                             element={
-                              <ProtectedRoute requireRole="Superusuario">
+                              <ProtectedRoute requireRoles={["Superusuario"]}>
                                 <RoleForm />
                               </ProtectedRoute>
                             }
                           />
 
-                          {/* Bitácora del Sistema - Solo Superusuario */}
+                          {/* Bitacora del Sistema - Solo Superusuario */}
                           <Route
                             path="/bitacora"
                             element={
-                              <ProtectedRoute requireRole="Superusuario">
+                              <ProtectedRoute requireRoles={["Superusuario"]}>
                                 <AuditLogPage />
                               </ProtectedRoute>
                             }
@@ -181,36 +165,16 @@ function App() {
                               </ProtectedRoute>
                             }
                           />
-                          <Route
-                            path="/estructura/crear"
-                            element={
-                              <ProtectedRoute>
-                                <StructureCreation />
-                              </ProtectedRoute>
-                            }
-                          />
-                          <Route
-                            path="/estructura/editar"
-                            element={
-                              <ProtectedRoute>
-                                <StructureEditList />
-                              </ProtectedRoute>
-                            }
-                          />
-                          <Route
-                            path="/estructura/editar/formulario"
-                            element={
-                              <ProtectedRoute>
-                                <StructureEditForm />
-                              </ProtectedRoute>
-                            }
-                          />
-
                           {/* Evidencias */}
                           <Route
                             path="/evidencias/asignar"
                             element={
-                              <ProtectedRoute>
+                              <ProtectedRoute
+                                requireRoles={[
+                                  "Administrador",
+                                  "Encargado de Acreditaci\u00f3n",
+                                ]}
+                              >
                                 <EvidenceAssignment />
                               </ProtectedRoute>
                             }
@@ -240,11 +204,15 @@ function App() {
                             }
                           />
 
-                          {/* HU-016: Solicitudes de Ampliación */}
+                          {/* HU-016: Solicitudes de Ampliacion */}
                           <Route
                             path="/solicitudes-ampliacion/gestionar"
                             element={
-                              <ProtectedRoute requireRole="Encargado de Acreditación">
+                              <ProtectedRoute
+                                requireRoles={[
+                                  "Encargado de Acreditaci\u00f3n",
+                                ]}
+                              >
                                 <ManageExtensionRequestsPage />
                               </ProtectedRoute>
                             }
@@ -292,17 +260,7 @@ function App() {
                             }
                           />
 
-                          {/* Procesos de Acreditación - Todos los autenticados */}
-                          <Route
-                            path="/procesos-acreditacion/listar"
-                            element={
-                              <ProtectedRoute>
-                                <AccreditationProcessList />
-                              </ProtectedRoute>
-                            }
-                          />
-
-                          {/* Aprobación de Bloques - Todos los autenticados */}
+                          {/* Aprobacion de Bloques - Todos los autenticados */}
                           <Route
                             path="/aprobacion-bloques"
                             element={
@@ -312,7 +270,7 @@ function App() {
                             }
                           />
 
-                          {/* Gestión de Informes - Todos los autenticados */}
+                          {/* Gestion de Informes - Todos los autenticados */}
                           <Route
                             path="/gestion-informes"
                             element={

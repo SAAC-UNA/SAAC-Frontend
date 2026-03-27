@@ -10,6 +10,7 @@ import { validateUrl } from '@/Hooks/useUrlValidation';
 import { MAX_LINKS_PER_UPLOAD } from '@/Types/FileTypes';
 import { SystemIcons } from '@/Components/Ui/Icons/SystemIcons';
 import { TYPOGRAPHY } from '@/Constants/Typography';
+import { useToast } from '@/Context/ToastContext';
 
 interface LinkInputProps {
   onLinksChange: (links: string[]) => void;
@@ -26,7 +27,7 @@ export const LinkInput: React.FC<LinkInputProps> = ({
 }) => {
   const [links, setLinks] = useState<string[]>([]);
   const [currentInput, setCurrentInput] = useState('');
-  const [errors, setErrors] = useState<{ [key: number]: string }>({});
+  const { showToast } = useToast();
 
   const handleAddLink = () => {
     const trimmedUrl = currentInput.trim();
@@ -35,14 +36,14 @@ export const LinkInput: React.FC<LinkInputProps> = ({
 
     // Validar límite de enlaces
     if (links.length >= maxLinks) {
-      alert(`Solo puede agregar hasta ${maxLinks} enlaces`);
+      showToast({ type: 'warning', title: 'Límite alcanzado', message: `Solo puede agregar hasta ${maxLinks} enlaces` });
       return;
     }
 
     // Validar URL
     const validation = validateUrl(trimmedUrl);
     if (!validation.isValid) {
-      setErrors({ ...errors, [links.length]: validation.error || 'URL inválida' });
+      showToast({ type: 'error', title: 'URL inválida', message: validation.error || 'La URL no es válida' });
       return;
     }
 
@@ -51,18 +52,12 @@ export const LinkInput: React.FC<LinkInputProps> = ({
     setLinks(newLinks);
     onLinksChange(newLinks);
     setCurrentInput('');
-    setErrors({});
   };
 
   const handleRemoveLink = (index: number) => {
     const newLinks = links.filter((_, i) => i !== index);
     setLinks(newLinks);
     onLinksChange(newLinks);
-    
-    // Limpiar errores
-    const newErrors = { ...errors };
-    delete newErrors[index];
-    setErrors(newErrors);
   };
 
   const handleKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
@@ -108,11 +103,11 @@ export const LinkInput: React.FC<LinkInputProps> = ({
       }
       
       if (validUrls.length > remainingSlots) {
-        alert(`Solo se agregaron ${urlsToAdd.length} enlaces. Límite: ${maxLinks}`);
+        showToast({ type: 'warning', title: 'Límite alcanzado', message: `Solo se agregaron ${urlsToAdd.length} de ${validUrls.length} enlaces. Límite: ${maxLinks}` });
       }
       
       if (invalidUrls.length > 0) {
-        alert(`${invalidUrls.length} URL(s) inválidas fueron ignoradas`);
+        showToast({ type: 'error', title: 'URLs inválidas', message: `${invalidUrls.length} URL(s) inválidas fueron ignoradas` });
       }
       
       setCurrentInput('');
@@ -198,14 +193,7 @@ export const LinkInput: React.FC<LinkInputProps> = ({
         </div>
       )}
 
-      {/* Mensajes de error */}
-      {Object.keys(errors).length > 0 && (
-        <div className="p-3 bg-red-50 border border-red-200 rounded-corner">
-          <p className={`${TYPOGRAPHY.form.helper} text-red-600`}>
-            {Object.values(errors)[0]}
-          </p>
-        </div>
-      )}
+
     </div>
   );
 };

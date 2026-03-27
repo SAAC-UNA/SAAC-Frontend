@@ -1,7 +1,6 @@
 import React from 'react';
 import { SidebarProvider } from '@/Context/SidebarContext';
 import { ModernSidebar, MainContent, AppHeader, UserProfileHeader } from './Sidebar/Index';
-import { ToastContainer } from '@/Components/Ui/Toast';
 
 /**
  * COMPONENTE DE LAYOUT BASE
@@ -33,10 +32,10 @@ interface LayoutProps {
 export const Layout: React.FC<LayoutProps> = ({ children }) => {
   return (
 <SidebarProvider>
-      <div className="flex min-h-screen w-full">
+      <div className="flex min-h-screen w-full bg-transparent">
         <ModernSidebar />
         <MainContent>
-          <AppHeader rightContent={<UserProfileHeader />} />
+          <AppHeader rightContent={<UserProfileHeader showUserMenu={true} showNotifications={true} showInlineIdentity={true} />} />
           <div className="flex-1">
             <div className="px-4 pt-4 pb-8"
               style={{ ['--app-header-height' as any]: '64px' }}
@@ -46,9 +45,6 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
           </div>
         </MainContent>
       </div>
-      
-      {/* Container de toasts */}
-      <ToastContainer />
     </SidebarProvider>
   );
 };

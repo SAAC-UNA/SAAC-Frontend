@@ -5,6 +5,15 @@
 
 import { config } from '@/Config/app.config';
 
+export class ValidationError extends Error {
+  messages: string[];
+  constructor(messages: string[]) {
+    super(messages[0]);
+    this.name = 'ValidationError';
+    this.messages = messages;
+  }
+}
+
 export interface Role {
   id: number;
   name: string;
@@ -71,11 +80,14 @@ export const authService = {
         
         try {
           const errorData = await response.json();
-          if (errorData.message) {
-            // Mostrar mensaje específico del backend si existe
+          if (errorData.errors) {
+            const messages = Object.values(errorData.errors as Record<string, string[]>).flat();
+            throw new ValidationError(messages);
+          } else if (errorData.message) {
             errorMessage = errorData.message;
           }
-        } catch {
+        } catch (parseError) {
+          if (parseError instanceof ValidationError) throw parseError;
           // Si no se puede parsear el JSON, usar mensaje genérico
         }
         
@@ -89,8 +101,8 @@ export const authService = {
         throw new Error('Respuesta inválida del servidor');
       }
 
-      // Guardar SOLO usuario en localStorage (el token está en httpOnly cookie)
-      localStorage.setItem(USER_DATA_KEY, JSON.stringify(data.user));
+      // Persistencia por pestaña: sobrevive refresh, pero no una pestaña nueva.
+      sessionStorage.setItem(USER_DATA_KEY, JSON.stringify(data.user));
 
       return {
         user: data.user,
@@ -118,23 +130,25 @@ export const authService = {
     } catch (error) {
       console.error('Error en logout:', error);
     } finally {
-      // Limpiar localStorage
+      // Limpiar almacenamiento de sesión/local heredado
+      sessionStorage.removeItem(AUTH_TOKEN_KEY);
+      sessionStorage.removeItem(USER_DATA_KEY);
       localStorage.removeItem(AUTH_TOKEN_KEY);
       localStorage.removeItem(USER_DATA_KEY);
     }
   },
 
   getCurrentUser: (): User | null => {
-    const userData = localStorage.getItem(USER_DATA_KEY);
+    const userData = sessionStorage.getItem(USER_DATA_KEY);
     return userData ? JSON.parse(userData) : null;
   },
 
   getAuthToken: (): string | null => {
-    return localStorage.getItem(AUTH_TOKEN_KEY);
+    return sessionStorage.getItem(AUTH_TOKEN_KEY);
   },
 
   isAuthenticated: (): boolean => {
-    const user = localStorage.getItem(USER_DATA_KEY);
+    const user = sessionStorage.getItem(USER_DATA_KEY);
     // El token está en httpOnly cookie, solo verificamos el usuario
     return !!user;
   }

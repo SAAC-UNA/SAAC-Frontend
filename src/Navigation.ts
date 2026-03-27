@@ -18,7 +18,7 @@ const reportsIcon = "system-icon:document-text";
 const lightIcon = "system-icon:lightbulb";
 
 /**
- * Obtener items de navegación filtrados por rol
+ * Obtener items de navegacion filtrados por rol
  * @param userRoles - Array de roles del usuario autenticado o un solo rol como string
  */
 export const getNavigationItems = (
@@ -32,10 +32,10 @@ export const getNavigationItems = (
       : [];
 
   const isSuperUser = roles.includes("Superusuario");
-  const isEncargado = roles.includes("Encargado de Acreditación");
+  const isAdmin = roles.includes("Administrador");
+  const isEncargado = roles.includes("Encargado de Acreditaci\u00f3n");
 
   const items: NavItem[] = [
-    // ── 1. Inicio ──────────────────────────────────────────────────────────
     {
       id: "inicio",
       label: "Inicio",
@@ -45,7 +45,6 @@ export const getNavigationItems = (
     },
   ];
 
-  // ── 2. Administración (SuperUsuario ve Roles + Bitácora; todos ven Usuarios) ──
   {
     const adminChildren: NavItem[] = [];
 
@@ -70,7 +69,7 @@ export const getNavigationItems = (
     if (isSuperUser) {
       adminChildren.push({
         id: "bitacora",
-        label: "Bitácora del Sistema",
+        label: "Bitacora del Sistema",
         icon: auditLogIcon,
         href: "/bitacora",
         isActive: false,
@@ -79,7 +78,7 @@ export const getNavigationItems = (
 
     items.push({
       id: "administracion",
-      label: "Administración",
+      label: "Administracion",
       icon: lightIcon,
       href: "#",
       isActive: false,
@@ -88,22 +87,20 @@ export const getNavigationItems = (
     });
   }
 
-  // ── 3. Evidencias ──────────────────────────────────────────────────────
-  items.push({
-    id: "evidencias",
-    label: "Evidencias",
-    icon: evidenceIcon,
-    href: "#",
-    isActive: false,
-    isExpandable: true,
-    children: [
-      {
+  {
+    const evidenciaChildren: NavItem[] = [];
+
+    if (isAdmin || isEncargado || isSuperUser) {
+      evidenciaChildren.push({
         id: "evidenciasAsignar",
         label: "Asignar Evidencias",
         icon: evidenceIcon,
         href: "/evidencias/asignar",
         isActive: false,
-      },
+      });
+    }
+
+    evidenciaChildren.push(
       {
         id: "misEvidenciasAsignadas",
         label: "Mis Evidencias",
@@ -113,15 +110,24 @@ export const getNavigationItems = (
       },
       {
         id: "busquedaEvidencias",
-        label: "Búsqueda de Criterios",
+        label: "Busqueda de Criterios",
         icon: searchEvidenceIcon,
         href: "/evidencias/busqueda-avanzada",
         isActive: false,
       },
-    ],
-  });
+    );
 
-  // ── 4. Solicitudes de Ampliación ───────────────────────────────────────
+    items.push({
+      id: "evidencias",
+      label: "Evidencias",
+      icon: evidenceIcon,
+      href: "#",
+      isActive: false,
+      isExpandable: true,
+      children: evidenciaChildren,
+    });
+  }
+
   {
     const solicitudChildren: NavItem[] = [];
 
@@ -145,7 +151,7 @@ export const getNavigationItems = (
 
     items.push({
       id: "solicitudesAmpliacion",
-      label: "Ampliación",
+      label: "Ampliacion",
       icon: calendarIcon,
       href: "#",
       isActive: false,
@@ -154,10 +160,9 @@ export const getNavigationItems = (
     });
   }
 
-  // ── 5. Acreditación ────────────────────────────────────────────────────
   items.push({
     id: "acreditacion",
-    label: "Acreditación",
+    label: "Acreditacion",
     icon: processIcon,
     href: "#",
     isActive: false,
@@ -165,14 +170,14 @@ export const getNavigationItems = (
     children: [
       {
         id: "procesos-acreditacion",
-        label: "Procesos de Acreditación",
+        label: "Procesos de Acreditacion",
         icon: processIcon,
         href: "/procesos-acreditacion/listar",
         isActive: false,
       },
       {
         id: "estructura",
-        label: "Gestión de Estructura",
+        label: "Gestion de Estructura",
         icon: nutIcon,
         href: "/estructura/listar",
         isActive: false,
@@ -186,14 +191,14 @@ export const getNavigationItems = (
       },
       {
         id: "aprobacion-bloques",
-        label: "Aprobación de Bloques",
+        label: "Aprobacion de Bloques",
         icon: approvalIcon,
         href: "/aprobacion-bloques",
         isActive: false,
       },
       {
         id: "gestion-informes",
-        label: "Gestión de Informes",
+        label: "Gestion de Informes",
         icon: reportsIcon,
         href: "/gestion-informes",
         isActive: false,

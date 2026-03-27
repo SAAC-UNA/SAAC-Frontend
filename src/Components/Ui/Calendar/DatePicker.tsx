@@ -18,31 +18,7 @@ import { SystemIcons } from '@/Components/Ui/Icons/SystemIcons';
 import { TYPOGRAPHY } from '@/Constants/Typography';
 import { ICON_SIZES } from '@/Constants/Components';
 import { Button } from '@/Components/Ui/Buttons/Button';
-
-// Variantes de animación para el dropdown
-const dropdownVariants = {
-  hidden: { opacity: 0, y: -8, scale: 0.96, transformOrigin: 'top center' },
-  visible: {
-    opacity: 1, y: 0, scale: 1, transformOrigin: 'top center',
-    transition: { type: 'spring' as const, damping: 30, stiffness: 400, mass: 0.8 },
-  },
-  exit: {
-    opacity: 0, y: -6, scale: 0.97, transformOrigin: 'top center',
-    transition: { duration: 0.15, ease: [0.32, 0, 0.67, 0] as [number, number, number, number] },
-  },
-};
-
-const dropdownVariantsUp = {
-  hidden: { opacity: 0, y: 8, scale: 0.96, transformOrigin: 'bottom center' },
-  visible: {
-    opacity: 1, y: 0, scale: 1, transformOrigin: 'bottom center',
-    transition: { type: 'spring' as const, damping: 30, stiffness: 400, mass: 0.8 },
-  },
-  exit: {
-    opacity: 0, y: 6, scale: 0.97, transformOrigin: 'bottom center',
-    transition: { duration: 0.15, ease: [0.32, 0, 0.67, 0] as [number, number, number, number] },
-  },
-};
+import { DROPDOWN_VARIANTS, DROPDOWN_VARIANTS_UP } from '@/Constants/Animations';
 
 // React portals para el calendario, para evitar problemas de overflow en modales u otros contenedores
 interface DropdownPosition {
@@ -413,8 +389,8 @@ export const DatePicker: React.FC<DatePickerProps> = ({
                 key="datepicker-dropdown"
                 variants={
                   dropdownPosition.top !== undefined
-                    ? dropdownVariants
-                    : dropdownVariantsUp
+                    ? DROPDOWN_VARIANTS
+                    : DROPDOWN_VARIANTS_UP
                 }
                 initial="hidden"
                 animate="visible"

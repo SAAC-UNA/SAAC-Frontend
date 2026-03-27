@@ -4,6 +4,7 @@ import { TYPOGRAPHY } from '@/Constants/Typography';
 interface StatusBadgeProps {
     label: string;
     colorClasses: string;
+    badgeClassName?: string;
 }
 
 export const StatusBadge: React.FC<StatusBadgeProps> = ({ label, colorClasses }) => (

@@ -64,7 +64,13 @@ export const TYPOGRAPHY = {
   
   // ===== PAGINACIÓN =====
   pagination: 'size-pagination',             // 14px - Números y texto de paginación
-  
+
+  // ===== TOASTS =====
+  toast: {
+    title: 'size-toast',                     // 12px - Título del toast
+    message: 'size-toast-message',           // 11px - Mensaje secundario del toast
+  },
+
 } as const;
 
 /**

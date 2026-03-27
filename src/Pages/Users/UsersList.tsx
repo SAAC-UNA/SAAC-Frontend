@@ -17,11 +17,13 @@ const SuccessModal = lazy(() => import('@/Components/Ui/Modals/SuccessModal').th
 import { Modal } from '@/Components/Ui/Modals/Modal';
 import { getContextualInfo } from '@/Constants/ModuleInfo';
 import { useUsers } from '@/Hooks/UseUsers';
+import { useToast } from '@/Context/ToastContext';
 import type { User } from '@/Services/UserService';
 
 const UsersRepository: React.FC = () => {
   // Obtener información del módulo desde ModuleInfo
   const moduleInfo = getContextualInfo('users', 'list');
+  const { showToast } = useToast();
 
   // Estado para búsqueda
   const [searchQuery, setSearchQuery] = useState('');
@@ -109,7 +111,11 @@ const UsersRepository: React.FC = () => {
         action: isActivating ? 'activate' : 'deactivate'
       });
     } catch (error) {
-      console.error('Error cambiando estado del usuario:', error);
+      showToast({
+        type: 'error',
+        title: 'Error al cambiar estado',
+        message: error instanceof Error ? error.message : 'No se pudo cambiar el estado del usuario'
+      });
       // En caso de error, solo cerrar el modal de confirmación
       setStateChangeModalState({ isOpen: false, user: null });
     }

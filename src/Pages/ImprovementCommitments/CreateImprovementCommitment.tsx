@@ -102,9 +102,9 @@ const CreateImprovementCommitment: React.FC = () => {
   };
 
   /**
-   * Validar el paso actual
+   * Validar el paso actual — retorna los errores encontrados, o null si no hay errores.
    */
-  const validateStep = (step: number): boolean => {
+  const validateStep = (step: number): ValidationErrors | null => {
     const newErrors: ValidationErrors = {};
     
     switch (step) {
@@ -132,18 +132,20 @@ const CreateImprovementCommitment: React.FC = () => {
     }
     
     setSubmitState(prev => ({...prev, errors: newErrors}));
-    return Object.keys(newErrors).length === 0;
+    return Object.keys(newErrors).length === 0 ? null : newErrors;
   };
 
   /**
    * Avanzar al siguiente paso
    */
   const handleNext = () => {
-    if (validateStep(currentStep)) {
+    const errs = validateStep(currentStep);
+    if (!errs) {
       setCurrentStep(prev => Math.min(prev + 1, steps.length));
       setSubmitState(prev => ({...prev, errors: {}}));
     } else {
-      showToast({ type: 'error', title: 'Por favor, complete todos los campos obligatorios' });
+      const firstMsg = Object.values(errs)[0];
+      showToast({ type: 'error', title: firstMsg || 'Por favor, complete todos los campos obligatorios' });
     }
   };
 
@@ -151,7 +153,7 @@ const CreateImprovementCommitment: React.FC = () => {
    * Enviar el formulario al backend
    */
   const handleSubmit = async () => {
-    if (!validateStep(2)) {
+    if (validateStep(2)) {
       showToast({ type: 'error', title: 'Hay errores en el formulario' });
       return;
     }
@@ -195,15 +197,21 @@ const CreateImprovementCommitment: React.FC = () => {
 
         const allowedFields = new Set([
           'ciclo_acreditacion_id',
+          'proceso_id',
           'descripcion',
           'fecha_inicio',
           'fecha_fin',
-          'criterios'
+          'criterios',
+          'evidencias_asignar',
+          'selecciones'
         ]);
 
         Object.entries(backendErrors).forEach(([field, messages]) => {
           const message = messages?.[0] || '';
-          if (allowedFields.has(field)) {
+          // ciclo_acreditacion_id errors go only to toast, not to inline state
+          if (field === 'ciclo_acreditacion_id' || field === 'proceso_id') {
+            if (!mappedErrors.general) mappedErrors.general = message;
+          } else if (allowedFields.has(field)) {
             (mappedErrors as any)[field] = message;
           } else if (!mappedErrors.general) {
             mappedErrors.general = message;
@@ -214,13 +222,39 @@ const CreateImprovementCommitment: React.FC = () => {
           mappedErrors.general = Object.values(backendErrors).flat().join(', ');
         }
 
+        // Si el backend devuelve error del ciclo/proceso, llevar al paso 1 para corregir rápido.
+        if ((backendErrors as any).ciclo_acreditacion_id || (backendErrors as any).proceso_id) {
+          setCurrentStep(1);
+        }
+
         setSubmitState(prev => ({...prev, errors: mappedErrors}));
+
+        const isDuplicateCycle = !!(backendErrors as any).ciclo_acreditacion_id || !!(backendErrors as any).proceso_id;
+        showToast({
+          type: 'error',
+          title: isDuplicateCycle ? 'Ya existe un compromiso para este ciclo' : 'Error al crear el compromiso',
+          message: mappedErrors.general || error.response?.data?.message || 'Error de validación'
+        });
+      } else {
+        const status = error.response?.status;
+        let toastTitle = 'Error al crear el compromiso';
+        let toastMessage: string;
+
+        if (status === 409) {
+          toastTitle = 'Conflicto al crear el compromiso';
+          toastMessage = error.response?.data?.message || 'Ya existe un registro con los mismos datos.';
+        } else if (status === 500) {
+          toastMessage = 'Es posible que ya exista un compromiso de mejora para este ciclo. Verifique la lista antes de intentarlo nuevamente.';
+        } else if (status === 403) {
+          toastTitle = 'Sin permisos';
+          toastMessage = 'No tiene permisos para crear compromisos de mejora.';
+        } else {
+          toastMessage = error.response?.data?.message || error.message || 'Error inesperado. Intente nuevamente.';
+        }
+
+        showToast({ type: 'error', title: toastTitle, message: toastMessage });
       }
-      
-      showToast({
-        type: 'error',
-        title: error.response?.data?.message || error.message || 'Error al crear el compromiso'
-      });
+
       setModals(prev => ({...prev, showConfirmModal: false}));
     } finally {
       setSubmitState(prev => ({...prev, isSubmitting: false}));
@@ -231,7 +265,7 @@ const CreateImprovementCommitment: React.FC = () => {
    * Mostrar modal de confirmación
    */
   const handleConfirmCreate = () => {
-    if (!validateStep(2)) {
+    if (validateStep(2)) {
       showToast({ type: 'error', title: 'Hay errores en el formulario' });
       return;
     }
@@ -307,20 +341,30 @@ const CreateImprovementCommitment: React.FC = () => {
 
           {/* Navigation */}
           <div className="flex justify-between items-center mt-2">
-            <Button
-              variant="error"
-              onClick={() => {
-                if (currentStep === 2) {
+            {currentStep === 2 ? (
+              <Button
+                variant="secondary"
+                onClick={() => {
                   setCurrentStep(1);
                   setSubmitState(prev => ({...prev, errors: {}}));
-                } else {
-                  navigate('/compromisos/listar');
-                }
-              }}
-              disabled={isSubmitting}
-            >
-              {currentStep === 2 ? 'Volver' : 'Cancelar'}
-            </Button>
+                }}
+                disabled={isSubmitting}
+                standardWidth
+                size="sm"
+              >
+                Anterior
+              </Button>
+            ) : (
+              <Button
+                variant="secondary"
+                onClick={() => navigate('/compromisos/listar')}
+                disabled={isSubmitting}
+                standardWidth
+                size="sm"
+              >
+                Regresar
+              </Button>
+            )}
 
             {currentStep < steps.length ? (
               <Button

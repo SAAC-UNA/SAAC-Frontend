@@ -23,6 +23,7 @@ import { useRoles } from '@/hooks/UseRoles';
 import { getModuleInfoWithDynamicTitle } from '@/Constants/ModuleInfo';
 import { LAYOUT } from '@/Constants/Layout';
 import type { CreateRoleData, Role } from '@/Services/RoleService';
+import { useToast } from '@/Context/ToastContext';
 
 /**
  * Función auxiliar para truncar texto y agregar puntos suspensivos
@@ -37,6 +38,7 @@ const truncateText = (text: string, maxLength: number = 25): string => {
 const RoleForm: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const { showToast } = useToast();
   const { createRole, getRoleById, editRole } = useRoles();
   
   // Determinar el modo basado en la presencia del ID
@@ -135,7 +137,11 @@ const RoleForm: React.FC = () => {
         }
       } catch (error) {
         // TODO: Mostrar error al usuario
-        console.error(`Error al ${isEditing ? 'editar' : 'crear'} rol:`, error);
+        showToast({
+          type: 'error',
+          title: `Error al ${isEditing ? 'editar' : 'crear'} rol`,
+          message: error instanceof Error ? error.message : 'Ocurrió un error inesperado'
+        });
         // Cerrar modal de confirmación incluso si hay error
         setConfirmModalState({ isOpen: false, roleData: null });
       }

@@ -226,6 +226,39 @@ export const SystemIcons = {
         <path d="m12.421 5.746.9-.91a4.134 4.134 0 0 1 5.841 5.841l-2.84 2.832a4.116 4.116 0 0 1-5.832 0" />
         <path d="m11.578 18.255-.9.909a4.135 4.135 0 0 1-5.84-5.84l2.84-2.832a4.115 4.115 0 0 1 5.831 0" />
       </svg>
+    ),
+
+    list: ({ className, size, color }: IconProps) => (
+      <svg
+        className={`${getSizeClasses(size)} ${className || ''}`}
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke={color || "currentColor"}
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth="2"
+      >
+        <path d="M9 6h11.25" />
+        <path d="M9 12h11.25" />
+        <path d="M9 18h11.25" />
+        <path d="M3.75 6h1.5" />
+        <path d="M3.75 12h1.5" />
+        <path d="M3.75 18h1.5" />
+      </svg>
+    ),
+
+    comment: ({ className, size, color }: IconProps) => (
+      <svg
+        className={`${getSizeClasses(size)} ${className || ''}`}
+            viewBox="0 0 24 24"
+            fill="currentColor"
+            stroke={color || "currentColor"}
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth="2"
+      >
+        <path d="M20.25 4.5H3.75A1.5 1.5 0 0 0 2.25 6v14.887a1.472 1.472 0 0 0 .872 1.36 1.5 1.5 0 0 0 1.594-.206l2.972-2.503L20.25 19.5a1.5 1.5 0 0 0 1.5-1.5V6a1.5 1.5 0 0 0-1.5-1.5Z" />
+      </svg>
     )
   },
 
@@ -284,31 +317,6 @@ export const SystemIcons = {
         strokeLinejoin="round"
       >
         <path d="M14.857 17.082a23.848 23.848 0 0 0 5.454-1.31A8.967 8.967 0 0 1 18 9.75V9A6 6 0 0 0 6 9v.75a8.967 8.967 0 0 1-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 0 1-5.714 0m5.714 0a3 3 0 1 1-5.714 0M3.124 7.5A8.969 8.969 0 0 1 5.292 3m13.416 0a8.969 8.969 0 0 1 2.168 4.5" />
-      </svg>
-    ),
-// ! Ver si eliminar, este está repetido pero con relleno
-    eye: ({ className, size }: IconProps) => (
-      <svg
-        className={`${getSizeClasses(size)} ${className || ''}`}
-        fill="none"
-        viewBox="0 0 24 24"
-        strokeWidth={1.5}
-        stroke="currentColor"
-      >
-        <path strokeLinecap="round" strokeLinejoin="round" d="M2.036 12.322a1.012 1.012 0 0 1 0-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178Z" />
-        <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
-      </svg>
-    ),
-// ! Ver si eliminar, este está repetido pero con relleno
-    eyeSlash: ({ className, size }: IconProps) => (
-      <svg
-        className={`${getSizeClasses(size)} ${className || ''}`}
-        fill="none"
-        viewBox="0 0 24 24"
-        strokeWidth={1.5}
-        stroke="currentColor"
-      >
-        <path strokeLinecap="round" strokeLinejoin="round" d="M3.98 8.223A10.477 10.477 0 0 0 1.934 12C3.226 16.338 7.244 19.5 12 19.5c.993 0 1.953-.138 2.863-.395M6.228 6.228A10.451 10.451 0 0 1 12 4.5c4.756 0 8.773 3.162 10.065 7.498a10.522 10.522 0 0 1-4.293 5.774M6.228 6.228 3 3m3.228 3.228 3.65 3.65m7.894 7.894L21 21m-3.228-3.228-3.65-3.65m0 0a3 3 0 1 0-4.243-4.243m4.242 4.242L9.88 9.88" />
       </svg>
     ),
 
@@ -1036,6 +1044,31 @@ export const SystemIcons = {
       </svg>
     ),
   },
+
+  // ===== TOASTS =====
+  // Íconos circulares con color de fondo para las notificaciones toast
+  toasts: {
+    success: ({ className }: IconProps) => (
+      <div style={{ width: 20, height: 20, borderRadius: '50%', background: '#16a34a', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }} className={className}>
+        <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2 6l3 3 5-5" stroke="white" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/></svg>
+      </div>
+    ),
+    error: ({ className }: IconProps) => (
+      <div style={{ width: 20, height: 20, borderRadius: '50%', background: '#dc2626', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }} className={className}>
+        <svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M2 2l6 6M8 2l-6 6" stroke="white" strokeWidth="1.8" strokeLinecap="round"/></svg>
+      </div>
+    ),
+    warning: ({ className }: IconProps) => (
+      <div style={{ width: 20, height: 20, borderRadius: '50%', background: '#f59e0b', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }} className={className}>
+        <span style={{ color: 'white', fontSize: '13px', fontWeight: 'bold', lineHeight: 1 }}>!</span>
+      </div>
+    ),
+    info: ({ className }: IconProps) => (
+      <div style={{ width: 20, height: 20, borderRadius: '50%', background: '#3b82f6', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }} className={className}>
+        <span style={{ color: 'white', fontSize: '12px', fontWeight: 'bold', lineHeight: 1 }}>i</span>
+      </div>
+    ),
+  },
 };
 
 // Función auxiliar para obtener iconos por nombre (usado en navegación)
@@ -1053,6 +1086,8 @@ export const getIconByName = (iconName: string, size: IconProps['size'] = 'md'):
     'trash': () => SystemIcons.actions.delete({ size }),
     'eye': () => SystemIcons.actions.view({ size }),
     'power': () => SystemIcons.actions.power({ size }),
+    'list': () => SystemIcons.actions.list({ size }),
+    'comment': () => SystemIcons.actions.comment({ size }),
 
     // Users
     'user': () => SystemIcons.users.user({ size }),

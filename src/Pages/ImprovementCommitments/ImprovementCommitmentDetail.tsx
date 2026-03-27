@@ -119,6 +119,69 @@ export const ImprovementCommitmentDetail: React.FC = () => {
 
   const criterionId = criterionDetail?.criterio?.criterio_id;
   const criterionAssignments = criterionId ? getAssignmentsByCriterion(criterionId) : [];
+  const groupedByEvidence = useMemo(() => {
+    const groups = new Map<number, {
+      evidenciaId: number;
+      nomenclatura: string;
+      descripcion: string;
+      fechaLimite: string | undefined;
+      estado: string;
+      comentario: string | undefined;
+      usuarios: string[];
+      roles: string[];
+      totalAsignaciones: number;
+    }>();
+
+    for (const assignment of criterionAssignments as any[]) {
+      const evidenciaId = assignment.evidencia_id;
+      const evidence = assignment.evidence || evidenceDetails[evidenciaId];
+      const userName = assignment.user?.nombre;
+      const roleNamesFromUser = Array.isArray(assignment.user?.roles)
+        ? assignment.user.roles
+            .map((role: any) => role?.name)
+            .filter((name: unknown): name is string => typeof name === 'string' && name.trim().length > 0)
+        : [];
+      const roleNameFromAssignment = typeof assignment.role?.name === 'string' && assignment.role.name.trim().length > 0
+        ? assignment.role.name
+        : null;
+
+      if (!groups.has(evidenciaId)) {
+        groups.set(evidenciaId, {
+          evidenciaId,
+          nomenclatura: evidence?.nomenclatura || `Evidencia ${evidenciaId}`,
+          descripcion: evidence?.descripcion || 'Sin descripcion',
+          fechaLimite: assignment.fecha_limite,
+          estado: assignment.estado || 'Pendiente',
+          comentario: assignment.comentario,
+          usuarios: userName ? [userName] : [],
+          roles: [
+            ...roleNamesFromUser,
+            ...(roleNameFromAssignment ? [roleNameFromAssignment] : []),
+          ],
+          totalAsignaciones: 1,
+        });
+      } else {
+        const current = groups.get(evidenciaId)!;
+        if (userName && !current.usuarios.includes(userName)) {
+          current.usuarios.push(userName);
+        }
+        for (const roleName of roleNamesFromUser) {
+          if (!current.roles.includes(roleName)) {
+            current.roles.push(roleName);
+          }
+        }
+        if (roleNameFromAssignment && !current.roles.includes(roleNameFromAssignment)) {
+          current.roles.push(roleNameFromAssignment);
+        }
+        current.totalAsignaciones += 1;
+        if (!current.fechaLimite && assignment.fecha_limite) {
+          current.fechaLimite = assignment.fecha_limite;
+        }
+      }
+    }
+
+    return Array.from(groups.values());
+  }, [criterionAssignments, evidenceDetails]);
   const criterionStatus = criterionId ? getCriterionStatus(criterionId) : 'Pendiente';
 
   const estadoBadge = (estado?: CompromisoEstado) => {
@@ -396,39 +459,42 @@ export const ImprovementCommitmentDetail: React.FC = () => {
             <div>
               <div className="flex items-center justify-between mb-3">
                 <p className="text-xs font-medium text-gris-una">
-                  Evidencias asignadas ({criterionAssignments.length})
+                  Evidencias asignadas ({groupedByEvidence.length})
                 </p>
               </div>
 
-              {criterionAssignments.length === 0 ? (
+              {groupedByEvidence.length === 0 ? (
                 <p className="text-sm text-gris-una">No hay asignaciones para este criterio.</p>
               ) : (
                 <div className="grid gap-3">
-                  {criterionAssignments.map((assignment: any) => (
-                    <div key={assignment.evidencia_asignacion_id || assignment.evidencia_id} className="border border-gray-200 rounded-lg p-3">
+                  {groupedByEvidence.map((item) => (
+                    <div key={item.evidenciaId} className="border border-gray-200 rounded-lg p-3">
                       <div className="flex items-start justify-between">
                         <div className="space-y-1">
                           <p className="text-sm font-semibold text-negro-una">
-                            {(assignment.evidence || evidenceDetails[assignment.evidencia_id])?.nomenclatura || `Evidencia ${assignment.evidencia_id}`}
+                            {item.nomenclatura}
                           </p>
                           <p className="text-sm text-gris-una">
-                            {(assignment.evidence || evidenceDetails[assignment.evidencia_id])?.descripcion || 'Sin descripcion'}
+                            {item.descripcion}
                           </p>
                           <p className="text-xs text-gris-una">
-                            Encargado: {assignment.user?.nombre || 'Sin usuario'}
+                            {item.usuarios.length} usuario(s)
+                          </p>
+                          <p className="text-xs text-gris-una">
+                            {item.roles.length} rol(es)
                           </p>
                         </div>
                         <div className="text-right">
                           <p className="text-xs text-gris-una">Fecha limite</p>
                           <p className="text-sm text-negro-una">
-                            {formatDate(assignment.fecha_limite)}
+                            {formatDate(item.fechaLimite)}
                           </p>
                           <p className="text-xs text-gris-una mt-2">Estado</p>
-                          <p className="text-sm text-negro-una">{assignment.estado || 'Pendiente'}</p>
+                          <p className="text-sm text-negro-una">{item.estado}</p>
                         </div>
                       </div>
-                      {assignment.comentario && (
-                        <p className="text-xs text-gris-una mt-2">Comentario: {assignment.comentario}</p>
+                      {item.comentario && (
+                        <p className="text-xs text-gris-una mt-2">Comentario: {item.comentario}</p>
                       )}
                     </div>
                   ))}

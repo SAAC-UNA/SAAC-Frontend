@@ -8,6 +8,7 @@ import { Modal } from '@/Components/Ui/Modals/Modal';
 import { Button } from '@/Components/Ui/Index';
 import { SystemIcons } from '@/Components/Ui/Icons/SystemIcons';
 import { axiosInstance } from '@/Config/axios';
+import { useToast } from '@/Context/ToastContext';
 
 interface Archivo {
   archivo_id: number;
@@ -39,6 +40,7 @@ export const PublicLinkModal: React.FC<PublicLinkModalProps> = ({
   evidencia,
   onSuccess
 }) => {
+  const { showToast } = useToast();
   const [isGenerating, setIsGenerating] = useState(false);
   const [isRevoking, setIsRevoking] = useState(false);
   const [copiedToClipboard, setCopiedToClipboard] = useState(false);
@@ -62,7 +64,11 @@ export const PublicLinkModal: React.FC<PublicLinkModalProps> = ({
       onSuccess();
     } catch (error: any) {
       console.error('Error generando enlace:', error);
-      alert(error.response?.data?.message || 'Error al generar enlace público');
+      showToast({
+        type: 'error',
+        title: 'Error al generar enlace',
+        message: error.response?.data?.message || 'No se pudo generar el enlace público'
+      });
     } finally {
       setIsGenerating(false);
     }
@@ -78,7 +84,11 @@ export const PublicLinkModal: React.FC<PublicLinkModalProps> = ({
       onSuccess();
     } catch (error: any) {
       console.error('Error revocando enlace:', error);
-      alert(error.response?.data?.message || 'Error al revocar enlace público');
+      showToast({
+        type: 'error',
+        title: 'Error al revocar enlace',
+        message: error.response?.data?.message || 'No se pudo revocar el enlace público'
+      });
     } finally {
       setIsRevoking(false);
     }
@@ -91,7 +101,11 @@ export const PublicLinkModal: React.FC<PublicLinkModalProps> = ({
       setTimeout(() => setCopiedToClipboard(false), 2000);
     } catch (error) {
       console.error('Error copiando al portapapeles:', error);
-      alert('No se pudo copiar el enlace');
+      showToast({
+        type: 'error',
+        title: 'Error al copiar',
+        message: 'No se pudo copiar el enlace al portapapeles'
+      });
     }
   };
 

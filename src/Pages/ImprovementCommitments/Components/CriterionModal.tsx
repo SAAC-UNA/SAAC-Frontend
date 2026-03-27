@@ -5,12 +5,14 @@
 
 import React, { useState, useEffect, useMemo } from 'react';
 import { Modal } from '@/Components/Ui/Modals/Modal';
-import { Button, LoadingSpinner, MultiSelect } from '@/Components/Ui/Index';
+import { LoadingSpinner, MultiSelect } from '@/Components/Ui/Index';
 import { DatePicker } from '@/Components/Ui/Calendar/DatePicker';
 import { Textarea } from '@/Components/Ui/Forms/Textarea';
 import { SystemIcons } from '@/Components/Ui/Icons/SystemIcons';
+import { ICON_SIZES } from '@/Constants/Components';
 import { improvementCommitmentService } from '@/Services/ImprovementCommitmentService';
 import { userService, type User } from '@/Services/UserService';
+import { roleService, type Role } from '@/Services/RoleService';
 import type { Criterio, Evidencia, CriterioSeleccionado } from '@/Types/ImprovementCommitmentTypes';
 import type { MultiSelectOption } from '@/Components/Ui/Forms/MultiSelect';
 
@@ -31,20 +33,36 @@ export const CriterionModal: React.FC<CriterionModalProps> = ({
   onGuardar,
   modoEdicion
 }) => {
-  const [catalogState, setCatalogState] = useState<{ loading: boolean; evidencias: Evidencia[]; usuarios: User[] }>({ loading: true, evidencias: [], usuarios: [] });
+  const [catalogState, setCatalogState] = useState<{
+    loading: boolean;
+    evidencias: Evidencia[];
+    usuarios: User[];
+    roles: Role[];
+    userCountByRole: Record<number, number>;
+  }>({ loading: true, evidencias: [], usuarios: [], roles: [], userCountByRole: {} });
   const loading = catalogState.loading;
   const evidencias = catalogState.evidencias;
   const usuarios = catalogState.usuarios;
+  const roles = catalogState.roles;
+  const userCountByRole = catalogState.userCountByRole;
   
   // Form state
-  const [formState, setFormState] = useState<{ selectedEvidences: number[]; assignedUsers: number[]; fechaLimite: string; comentario: string }>({
+  const [formState, setFormState] = useState<{
+    selectedEvidences: number[];
+    assignedUsers: number[];
+    assignedRoles: number[];
+    fechaLimite: string;
+    comentario: string;
+  }>({
     selectedEvidences: configuracionExistente?.evidencias_seleccionadas || [],
     assignedUsers: configuracionExistente?.encargados_usuarios || [],
+    assignedRoles: configuracionExistente?.encargados_roles || [],
     fechaLimite: configuracionExistente?.fecha_limite || '',
     comentario: configuracionExistente?.comentario || ''
   });
   const selectedEvidences = formState.selectedEvidences;
   const assignedUsers = formState.assignedUsers;
+  const assignedRoles = formState.assignedRoles;
   const fechaLimite = formState.fechaLimite;
   const comentario = formState.comentario;
 
@@ -63,9 +81,10 @@ export const CriterionModal: React.FC<CriterionModalProps> = ({
         return;
       }
 
-      const [evidenciasData, usuariosData] = await Promise.all([
+      const [evidenciasData, usuariosData, rolesData] = await Promise.all([
         improvementCommitmentService.obtenerEvidenciasPorCriterio(criterio.criterio_id),
-        userService.listUsers()
+        userService.listUsers(),
+        roleService.listarRoles()
       ]);
 
       setCatalogState(prev => ({...prev, evidencias: evidenciasData}));
@@ -77,7 +96,24 @@ export const CriterionModal: React.FC<CriterionModalProps> = ({
         status: user.status === 'active' ? 'active' : 'inactive',
         role: user.roles?.[0]?.name
       }));
-      setCatalogState(prev => ({...prev, usuarios: transformedUsers}));
+
+      const roleCountMap: Record<number, number> = {};
+      usuariosData.forEach(user => {
+        if (user.roles && user.roles.length > 0) {
+          user.roles.forEach(role => {
+            if (role.id) {
+              roleCountMap[role.id] = (roleCountMap[role.id] || 0) + 1;
+            }
+          });
+        }
+      });
+
+      setCatalogState(prev => ({
+        ...prev,
+        usuarios: transformedUsers,
+        roles: rolesData.data || [],
+        userCountByRole: roleCountMap
+      }));
     } catch (error) {
       console.error('Error cargando datos:', error);
     } finally {
@@ -105,6 +141,15 @@ export const CriterionModal: React.FC<CriterionModalProps> = ({
       }));
   }, [usuarios]);
 
+  const roleOptions = useMemo(() => {
+    return roles.map(role => ({
+      id: role.id,
+      label: role.name,
+      value: role.id.toString(),
+      metadata: `${userCountByRole[role.id] || 0} ${(userCountByRole[role.id] || 0) === 1 ? 'usuario' : 'usuarios'}`
+    }));
+  }, [roles, userCountByRole]);
+
   const handleSelectAllEvidences = () => {
     if (selectedEvidences.length === evidencias.length) {
       setFormState(prev => ({...prev, selectedEvidences: []}));
@@ -120,8 +165,12 @@ export const CriterionModal: React.FC<CriterionModalProps> = ({
       newErrors.evidencias = 'Debe seleccionar al menos una evidencia';
     }
 
-    if (assignedUsers.length === 0) {
-      newErrors.encargados = 'Debe seleccionar al menos un usuario';
+    if (assignedUsers.length === 0 && assignedRoles.length === 0) {
+      newErrors.encargados = 'Debe seleccionar al menos un usuario o un rol';
+    }
+
+    if (!fechaLimite) {
+      newErrors.fechaLimite = 'La fecha límite es obligatoria';
     }
 
     if (comentario && comentario.length > 500) {
@@ -142,7 +191,7 @@ export const CriterionModal: React.FC<CriterionModalProps> = ({
       criterio: criterio,
       evidencias_seleccionadas: selectedEvidences,
       encargados_usuarios: assignedUsers,
-      encargados_roles: [],
+      encargados_roles: assignedRoles,
       fecha_limite: fechaLimite || undefined,
       comentario: comentario || undefined
     };
@@ -160,6 +209,16 @@ export const CriterionModal: React.FC<CriterionModalProps> = ({
       onClose={onClose}
       title={modoEdicion ? `Editar Criterio: ${criterio.nomenclatura}` : `Configurar Criterio: ${criterio.nomenclatura}`}
       size="lg"
+      variant={modoEdicion ? 'warning' : 'info'}
+      heroIcon={modoEdicion
+        ? <SystemIcons.actions.edit className={`${ICON_SIZES.md} text-blanco-una`} />
+        : <SystemIcons.actions.add className={`${ICON_SIZES.md} text-blanco-una`} />
+      }
+      showConfirm
+      confirmLabel={modoEdicion ? 'Actualizar' : 'Agregar'}
+      onConfirm={handleGuardar}
+      showCancel
+      cancelLabel="Cancelar"
     >
       {loading ? (
         <div className="relative py-12 min-h-[300px]">
@@ -207,30 +266,48 @@ export const CriterionModal: React.FC<CriterionModalProps> = ({
             </p>
           </div>
 
-          {/* Encargados - Usuarios */}
+          {/* Encargados */}
           <div>
             <p className="block text-sm font-medium text-negro-una mb-2">
-              Usuarios encargados <span className="text-red-500">*</span>
+              Encargados <span className="text-red-500">*</span>
             </p>
-            <MultiSelect
-              label=""
-              options={usuarioOptions}
-              value={assignedUsers.map(id => id.toString())}
-              onChange={(values) => setFormState(prev => ({...prev, assignedUsers: values.map(v => Number(v))}))}
-              placeholder="Seleccione usuarios..."
-              selectAllText="Seleccionar todos"
-              deselectAllText="Deseleccionar todos"
-              showSelectAll={true}
-              required
-            />
-            
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <MultiSelect
+                  label="Usuarios"
+                  options={usuarioOptions}
+                  value={assignedUsers.map(id => id.toString())}
+                  onChange={(values) => setFormState(prev => ({ ...prev, assignedUsers: values.map(v => Number(v)) }))}
+                  placeholder="Seleccione usuarios..."
+                  selectAllText="Seleccionar todos"
+                  deselectAllText="Deseleccionar todos"
+                  showSelectAll={true}
+                />
+                <p className="mt-1 text-xs text-gris-una">
+                  {assignedUsers.length} usuario(s) seleccionado(s)
+                </p>
+              </div>
+
+              <div>
+                <MultiSelect
+                  label="Roles"
+                  options={roleOptions}
+                  value={assignedRoles.map(id => id.toString())}
+                  onChange={(values) => setFormState(prev => ({ ...prev, assignedRoles: values.map(v => Number(v)) }))}
+                  placeholder="Seleccione roles..."
+                  selectAllText="Seleccionar todos"
+                  deselectAllText="Deseleccionar todos"
+                  showSelectAll={true}
+                />
+                <p className="mt-1 text-xs text-gris-una">
+                  {assignedRoles.length} rol(es) seleccionado(s)
+                </p>
+              </div>
+            </div>
+
             {errors.encargados && (
               <p className="mt-1 text-sm text-red-600">{errors.encargados}</p>
             )}
-            
-            <p className="mt-1 text-xs text-gris-una">
-              {assignedUsers.length} usuario(s) seleccionado(s)
-            </p>
           </div>
 
           {/* Fecha Límite */}
@@ -241,7 +318,9 @@ export const CriterionModal: React.FC<CriterionModalProps> = ({
               onChange={(val) => setFormState(prev => ({...prev, fechaLimite: val}))}
               placeholder="Seleccione una fecha límite..."
               minDate={new Date().toISOString().split('T')[0]}
-              helperText="Fecha límite para completar este criterio"
+              required
+              error={errors.fechaLimite}
+              helperText={!fechaLimite ? "Fecha límite para completar este criterio" : undefined}
             />
           </div>
 
@@ -260,21 +339,6 @@ export const CriterionModal: React.FC<CriterionModalProps> = ({
             />
           </div>
 
-          {/* Botones */}
-          <div className="flex justify-end gap-3 pt-4 border-t border-gray-200">
-            <Button
-              variant="error"
-              onClick={onClose}
-            >
-              Cancelar
-            </Button>
-            <Button
-              variant="primary"
-              onClick={handleGuardar}
-            >
-              {modoEdicion ? 'Actualizar' : 'Agregar'}
-            </Button>
-          </div>
         </div>
       )}
     </Modal>

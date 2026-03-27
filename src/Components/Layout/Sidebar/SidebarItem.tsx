@@ -69,24 +69,24 @@ const SidebarItemComponent: React.FC<SidebarItemProps> = ({
         <button
           onClick={handleClick}
           className={cn(
-            'group/btn flex items-center text-left rounded-lg font-medium cursor-pointer relative z-10',
+            'group/btn flex items-center text-left rounded-corner font-medium cursor-pointer relative z-10',
             'transition-colors duration-200',
             layoutCollapsed
-              ? 'w-[var(--sidebar-width-icon)] h-sidebar-item px-2 justify-center'
+              ? 'size-sidebar-item justify-center'
               : `w-full ${SIDEBAR_ITEM.button} gap-1 justify-start`,
             // Fondo estático SOLO si está activo (ruta elegida) y NO se está interactuando con él (hover ni flyout abierto)
             (isActive && !showAnimatedBackground)
-              ? 'bg-negro-una/20 text-blanco-una'
+              ? 'bg-rojo-una-2 text-blanco-una shadow-md'
               : (isActive || showAnimatedBackground)
                 ? 'text-blanco-una'
-                : 'text-blanco-una-2 hover:text-blanco-una'
+                : 'bg-blanco-una text-negro-una-2 shadow-md'
           )}
         >
           {/* Fondo deslizable animado */}
           {showAnimatedBackground && (
             <motion.div
               layoutId="sidebar-hover-indicator"
-              className="absolute inset-0 bg-negro-una/20 rounded-lg -z-10"
+              className="absolute inset-0 bg-rojo-una-2 rounded-corner -z-10"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}

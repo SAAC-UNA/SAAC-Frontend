@@ -126,14 +126,8 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(({
                 'peer-focus:top-0 peer-focus:scale-75 peer-focus:-translate-y-1/2',
                 'peer-[:not(:placeholder-shown)]:top-0 peer-[:not(:placeholder-shown)]:scale-75 peer-[:not(:placeholder-shown)]:-translate-y-1/2',
                 
-                // Fondo condicional: blanco solo cuando está arriba (para cortar la línea del border)
-                hasValue 
-                  ? 'bg-blanco-una-2 px-2' // Fondo blanco cuando tiene contenido (label arriba)
-                  : 'bg-transparent px-1', // Transparente cuando está centrado
-                
-                // Fondo blanco también con focus (peer selectors)
-                'peer-focus:bg-blanco-una-2 peer-focus:px-2',
-                'peer-[:not(:placeholder-shown)]:bg-blanco-una-2 peer-[:not(:placeholder-shown)]:px-2',
+                // Halo de texto: simula fondo sin recuadro sólido sobre el borde del input
+                'bg-transparent px-1 floating-label-halo',
                 
                 // Colors
                 error

@@ -61,7 +61,7 @@ export const ReviewStep: React.FC<ReviewStepProps> = ({
       align: 'center',
       render: (_, item) => (
         <p className={`block font-sans antialiased font-normal leading-normal text-negro-una ${TYPOGRAPHY.table.cell}`}>
-          {item.encargados_usuarios.length}
+          {item.encargados_usuarios.length + item.encargados_roles.length}
         </p>
       )
     },
@@ -138,7 +138,7 @@ export const ReviewStep: React.FC<ReviewStepProps> = ({
                 minDate={new Date().toISOString().split('T')[0]}
                 error={errors.fecha_inicio}
                 required
-                helperText="Fecha de inicio del compromiso"
+                helperText={!formData.fecha_inicio ? "Fecha de inicio del compromiso" : undefined}
               />
 
               <DatePicker
@@ -149,7 +149,7 @@ export const ReviewStep: React.FC<ReviewStepProps> = ({
                 minDate={formData.fecha_inicio || new Date().toISOString().split('T')[0]}
                 error={errors.fecha_fin}
                 required
-                helperText="Fecha límite del compromiso"
+                helperText={!formData.fecha_fin ? "Fecha límite del compromiso" : undefined}
               />
             </div>
           </div>
@@ -174,17 +174,6 @@ export const ReviewStep: React.FC<ReviewStepProps> = ({
             searchable={false}
           />
         </div>
-
-        {/* Nota informativa */}
-        <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
-          <div className="flex items-start gap-2">
-            <SystemIcons.interface.informationCircle size="sm" className="text-blue-500 mt-0.5 flex-shrink-0" />
-            <p className="text-xs text-blue-800">
-              Una vez creado el compromiso, se asignarán automáticamente todas las evidencias
-              seleccionadas a los usuarios indicados.
-            </p>
-          </div>
-        </div>
       </div>
 
       {/* Modal de Detalle de Criterio */}
@@ -194,6 +183,9 @@ export const ReviewStep: React.FC<ReviewStepProps> = ({
           onClose={() => setDetailModal({ open: false, criterion: null })}
           title={`Detalle: ${detailModal.criterion.criterio.nomenclatura}`}
           size="md"
+          variant="info"
+          showCancel
+          cancelLabel="Cerrar"
         >
           <div className="space-y-4">
             <div>
@@ -214,6 +206,9 @@ export const ReviewStep: React.FC<ReviewStepProps> = ({
               <p className="text-xs font-medium text-gris-una mb-2">Encargados</p>
               <p className="text-sm text-negro-una">
                 {detailModal.criterion.encargados_usuarios.length} usuario(s) asignado(s)
+              </p>
+              <p className="text-sm text-negro-una mt-1">
+                {detailModal.criterion.encargados_roles.length} rol(es) asignado(s)
               </p>
             </div>
 

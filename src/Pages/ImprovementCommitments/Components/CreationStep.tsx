@@ -211,7 +211,7 @@ export const CreationStep: React.FC<CreationStepProps> = ({
         const seleccionado = isCriterionSelected(criterio.criterio_id);
         return (
           <div className="w-max mx-auto">
-            <div className={`relative grid items-center px-2 py-0.5 font-sans font-bold rounded-corner select-none whitespace-nowrap text-xs ${
+            <div className={`relative grid items-center px-2 py-0.5 font-sans font-bold rounded-corner select-none whitespace-nowrap text-xs min-w-[92px] justify-center text-center ${
               seleccionado
                 ? 'text-green-900 bg-green-500/20' 
                 : 'text-yellow-800 bg-yellow-400/20'
@@ -317,14 +317,6 @@ export const CreationStep: React.FC<CreationStepProps> = ({
             />
           </div>
         </div>
-
-        {/* Error de validación */}
-        {errors.criterios && (
-          <div className="p-2.5 bg-red-50 border border-red-200 rounded-lg flex items-center gap-2">
-            <SystemIcons.interface.alert size="sm" className="text-red-600" />
-            <span className="text-sm text-red-800">{errors.criterios}</span>
-          </div>
-        )}
 
         {/* Tabla de Criterios o Mensaje de Sin Ciclo */}
         {!formData.ciclo_acreditacion_id ? (

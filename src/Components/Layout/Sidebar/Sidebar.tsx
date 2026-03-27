@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { useSidebar } from '@/Context/SidebarContext';
+import IsotipoSAAC from '@/Assets/IsotipoSAAC.svg?react';
 import { SidebarItem } from './SidebarItem';
 import { getNavigationItems } from '@/Navigation';
 import { SidebarNavProvider } from './SidebarNavProvider';
@@ -8,6 +9,7 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from '
 import { TooltipProvider } from '@/Components/Ui/Feedback/Tooltip';
 import { useAuth } from '@/Context/AuthContext';
 import { TYPOGRAPHY } from '@/Constants/Typography';
+import { UserProfileHeader } from './UserProfileHeader';
 
 interface SidebarProps {
   side?: 'left' | 'right';
@@ -17,82 +19,98 @@ interface SidebarProps {
   title?: string;
 }
 
-export const ModernSidebar: React.FC<SidebarProps> = ({ 
+export const ModernSidebar: React.FC<SidebarProps> = ({
   side = 'left',
   variant = 'sidebar',
   collapsible = 'icon',
   title = "SAAC",
-  className 
+  className
 }) => {
-  const { isMobile, state, openMobile, setOpenMobile } = useSidebar();
-  const isCollapsed = state === 'collapsed' && !isMobile;
-
-  // Hover: expande visualmente cuando está colapsado, sin afectar el layout del MainContent
-  const [isHovered, setIsHovered] = useState(false);
-  const isVisuallyExpanded = !isCollapsed || isHovered;
-  const isItemCollapsed = isCollapsed && !isHovered;
-
+  const { isMobile, openMobile, setOpenMobile } = useSidebar();
   const { user } = useAuth();
 
-  const sidebarContent = (
+  const navItems = getNavigationItems(user?.roles?.map(r => r.name));
+
+  // Contenido completo para mobile (Sheet expandido)
+  const mobileContent = (
     <div className="flex flex-col h-full">
-      {/* Logo Section — altura fija para que los ítems no se muevan al colapsar */}
-      {/** h-20 para cuando se use imagen */}
-      <div className="flex-shrink-0 h-20 flex justify-center items-center overflow-hidden">
+      <div className="flex-shrink-0 h-20 flex justify-center items-center overflow-hidden px-3">
         <a
           href="https://www.una.ac.cr/"
           target="_blank"
           rel="noopener noreferrer"
-          className={cn(
-            'transition-opacity duration-300 ease-in-out',
-            isItemCollapsed ? 'opacity-0 pointer-events-none' : 'opacity-100'
-          )}
+          className="flex items-center gap-2 min-w-0"
         >
-          <h1 className={`${TYPOGRAPHY.pageTitle} text-blanco-una font-semibold`}>
-              {title}
+          <IsotipoSAAC
+            aria-label="Universidad Nacional de Costa Rica"
+            className="flex-shrink-0 size-icon-logo cursor-pointer text-rojo-una-2"
+          />
+          <h1 className={cn(`${TYPOGRAPHY.pageTitle} text-rojo-una-2 font-semibold whitespace-nowrap`)}>
+            {title}
           </h1>
-          {/**
-          <img
-            src="/Images/UNAHorizontal-Blanco.png"
-            alt="Universidad Nacional de Costa Rica"
-            className="w-auto h-10 object-contain cursor-pointer"
-          /> 
-          */}
         </a>
       </div>
-
-      {/* Navigation Menu */}
-      <nav className="flex-1 py-2 overflow-hidden">
-        <SidebarNavProvider isCollapsed={isItemCollapsed}>
-          <div className="space-y-2 flex flex-col">
-            {getNavigationItems(user?.roles?.map(r => r.name)).map((item) => (
-              <SidebarItem 
-                key={item.id} 
-                item={item}
-                isCollapsed={isItemCollapsed}
-              />
+      <nav className="flex-1 py-15 overflow-hidden">
+        <SidebarNavProvider isCollapsed={false}>
+          <div className="space-y-2 flex flex-col px-2">
+            {navItems.map((item) => (
+              <SidebarItem key={item.id} item={item} isCollapsed={false} />
             ))}
           </div>
         </SidebarNavProvider>
       </nav>
+      <div className="flex-shrink-0 h-20 flex items-center px-3 justify-start">
+        <UserProfileHeader
+          className="pr-0 w-full justify-start px-0"
+          showUserMenu={true}
+          showNotifications={false}
+          showInlineIdentity={true}
+          useSidebarAvatarStyle={true}
+        />
+      </div>
     </div>
   );
 
-  if (collapsible === 'none') {
-    return (
-      <TooltipProvider delayDuration={0}>
-        <div
-          className={cn(
-            'bg-rojo-una-2 text-blanco-una flex h-full flex-col overflow-hidden',
-            'w-[var(--sidebar-width)]',
-            className
-          )}
+  // Contenido desktop: siempre icon-only, sin contenedor
+  const desktopContent = (
+    <div className="flex flex-col h-full">
+      {/* Logo — solo ícono */}
+      <div className="flex-shrink-0 h-20 flex justify-center items-center">
+        <a
+          href="https://www.una.ac.cr/"
+          target="_blank"
+          rel="noopener noreferrer"
         >
-          {sidebarContent}
-        </div>
-      </TooltipProvider>
-    );
-  }
+          <IsotipoSAAC
+            aria-label="Universidad Nacional de Costa Rica"
+            className="flex-shrink-0 size-icon-logo cursor-pointer text-rojo-una-2"
+          />
+        </a>
+      </div>
+
+      {/* Navegación — siempre colapsada */}
+      <nav className="flex-1 py-2 overflow-hidden">
+        <SidebarNavProvider isCollapsed={true}>
+          <div className="space-y-2 flex flex-col items-center">
+            {navItems.map((item) => (
+              <SidebarItem key={item.id} item={item} isCollapsed={true} />
+            ))}
+          </div>
+        </SidebarNavProvider>
+      </nav>
+
+      {/* Usuario — solo avatar */}
+      <div className="flex-shrink-0 h-20 flex items-center justify-center">
+        <UserProfileHeader
+          className="pr-0 w-auto justify-center px-0"
+          showUserMenu={true}
+          showNotifications={false}
+          showInlineIdentity={false}
+          useSidebarAvatarStyle={true}
+        />
+      </div>
+    </div>
+  );
 
   if (isMobile) {
     return (
@@ -105,7 +123,7 @@ export const ModernSidebar: React.FC<SidebarProps> = ({
             <SheetTitle>Sidebar</SheetTitle>
             <SheetDescription>Navegación lateral del sistema SAAC.</SheetDescription>
           </SheetHeader>
-          {sidebarContent}
+          {mobileContent}
         </SheetContent>
       </Sheet>
     );
@@ -114,50 +132,26 @@ export const ModernSidebar: React.FC<SidebarProps> = ({
   return (
     <TooltipProvider delayDuration={0}>
       <div
-        className="group peer text-blanco-una hidden md:block"
-        data-state={state}
-        data-collapsible={state === 'collapsed' ? collapsible : ''}
+        className="group peer hidden md:block"
+        data-state="collapsed"
+        data-collapsible={collapsible}
         data-variant={variant}
         data-side={side}
-        onMouseEnter={() => setIsHovered(true)}
-        onMouseLeave={() => setIsHovered(false)}
       >
-        {/* Gap del sidebar en desktop — se expande con el estado visual (hover + toggle) */}
+        {/* Espaciador — siempre ancho de íconos */}
+        <div className="relative bg-transparent w-[calc(var(--sidebar-width-icon)+1.5rem)]" />
+
+        {/* Sidebar sin contenedor: solo íconos flotantes */}
         <div
           className={cn(
-            'relative bg-transparent transition-[width] duration-300 ease-in-out',
-            side === 'left'
-              ? (isVisuallyExpanded ? 'w-[var(--sidebar-width)]' : 'w-[var(--sidebar-width-icon)]')
-              : (isVisuallyExpanded ? 'w-[calc(var(--sidebar-width)+0.75rem)]' : 'w-[calc(var(--sidebar-width-icon)+0.75rem)]'),
-            collapsible === 'offcanvas' && !isVisuallyExpanded && 'w-0'
-          )}
-        />
-        
-        {/* Container del sidebar */}
-        <div
-          className={cn(
-            'fixed z-10 hidden transition-[left,right,width,top,bottom] duration-300 ease-in-out md:flex',
-            'w-[var(--sidebar-width)]',
-            side === 'left' ? 'inset-y-0 left-0' : 'inset-y-3 right-3',
-            state === 'collapsed' && collapsible === 'offcanvas' && (
-              side === 'left'
-                ? '-left-[var(--sidebar-width)]'
-                : '-right-[var(--sidebar-width)]'
-            ),
-            !isVisuallyExpanded && collapsible === 'icon' && 'w-[var(--sidebar-width-icon)]',
+            'fixed z-10 hidden md:flex',
+            'w-[var(--sidebar-width-icon)]',
+            side === 'left' ? 'inset-y-3 left-3' : 'inset-y-3 right-3',
             className
           )}
         >
-          <div
-            className={cn(
-              'bg-rojo-una-2 flex h-full w-full flex-col overflow-hidden',
-              side === 'left'
-                ? 'rounded-l-none [border-top-right-radius:var(--radius-lg)] [border-bottom-right-radius:var(--radius-lg)]'
-                : 'rounded-corner-lg',
-              {/** shadow-2xl */}
-            )}
-          >
-            {sidebarContent}
+          <div className="flex h-full w-full flex-col overflow-hidden bg-transparent">
+            {desktopContent}
           </div>
         </div>
       </div>

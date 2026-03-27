@@ -1,16 +1,34 @@
-/**
- * StructureElementDetail - Modal de detalles de un elemento de estructura
- *
- * Muestra información completa de un elemento: tipo, nomenclatura, nombre,
- * estado, descripción, jerarquía y fecha de creación.
- */
-
 import React from 'react';
-import { DetailsModal } from '@/Components/Ui/Modals/DetailsModal';
-import { SystemIcons } from '@/Components/Ui/Icons/SystemIcons';
+import { Modal } from '@/Components/Ui/Modals/Modal';
+import { cn } from '@/Utils/ClassNames';
 import { ELEMENT_TYPE_LABELS } from '@/Constants/StructureConstants';
 import { TYPOGRAPHY } from '@/Constants/Typography';
 import type { StructureElement } from '@/Types/StructureTypes';
+
+const formatDate = (date: Date | string): string =>
+  new Intl.DateTimeFormat('es-ES', {
+    day: 'numeric', month: 'short', year: 'numeric',
+    hour: '2-digit', minute: '2-digit',
+  }).format(new Date(date));
+
+const SectionLabel: React.FC<{ label: string }> = ({ label }) => (
+  <div className="flex items-center gap-2 mb-2.5">
+    <span className={cn('uppercase tracking-wider font-semibold text-gris-una-2', TYPOGRAPHY.table.header)}>
+      {label}
+    </span>
+  </div>
+);
+
+const InfoCell: React.FC<{ label: string; children: React.ReactNode; className?: string }> = ({
+  label, children, className,
+}) => (
+  <div className={cn('flex flex-col gap-1.5', className)}>
+    <span className={cn('uppercase tracking-wider font-semibold text-gris-una-2', TYPOGRAPHY.table.header)}>
+      {label}
+    </span>
+    <div>{children}</div>
+  </div>
+);
 
 interface StructureElementDetailProps {
   isOpen: boolean;
@@ -27,110 +45,96 @@ export const StructureElementDetail: React.FC<StructureElementDetailProps> = ({
 }) => {
   if (!element) return null;
 
+  const typeLabel = ELEMENT_TYPE_LABELS[element.type];
+  const heroInitials = typeLabel.slice(0, 2).toUpperCase();
+  const title = element.name || element.nomenclature || typeLabel;
+  const isActive = element.active;
+
   return (
-    <DetailsModal
+    <Modal
       isOpen={isOpen}
       onClose={onClose}
-      title="Detalles del Elemento"
-      size="md"
+      title={title}
+      subtitle={typeLabel}
+      heroIcon={
+        <div className="w-11 h-11 rounded-[10px] flex items-center justify-center bg-white/20 border border-white/35 text-white font-bold text-base select-none">
+          {heroInitials}
+        </div>
+      }
+      variant="info"
+      size="lg"
+      maxHeight="lg"
+      showCancel={false}
+      showConfirm={false}
     >
-      <div className="space-y-6">
-        {/* Información básica */}
+      <div className="flex flex-col gap-5">
+
+        {/* IDENTIFICACIÓN */}
         <div>
-          <div className="flex items-center space-x-2 mb-3">
-            <SystemIcons.interface.informationCircle className="w-5 h-5" />
-            <h3 className="font-medium text-gray-800">Información básica</h3>
-          </div>
-          <div className="bg-white border border-gray-200 rounded-corner p-4 space-y-3">
-            <div>
-              <span className={`font-medium text-gray-500 ${TYPOGRAPHY.badge}`}>Tipo de Elemento</span>
-              <p className={`text-negro-una-2 mt-1 ${TYPOGRAPHY.table.cell}`}>
-                {ELEMENT_TYPE_LABELS[element.type]}
-              </p>
-            </div>
+          <SectionLabel label="Identificación" />
+          <div className="border border-gray-200 rounded-corner p-4 grid grid-cols-2 gap-x-6 gap-y-4">
+            <InfoCell label="Tipo de elemento">
+              <span className={cn(TYPOGRAPHY.table.cell, 'text-gris-una-2 font-medium')}>{typeLabel}</span>
+            </InfoCell>
+            <InfoCell label="Estado">
+              <span className={cn(
+                'inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full font-semibold',
+                TYPOGRAPHY.badge,
+                isActive
+                  ? 'bg-verde-light text-verde-dark border border-verde-ring'
+                  : 'bg-error-light text-error-dark border border-error-ring',
+              )}>
+                <span className={cn('w-1.5 h-1.5 rounded-full flex-shrink-0', isActive ? 'bg-verde' : 'bg-error')} />
+                {isActive ? 'Activo' : 'Inactivo'}
+              </span>
+            </InfoCell>
             {element.nomenclature && (
-              <div>
-                <span className={`font-medium text-gray-500 ${TYPOGRAPHY.badge}`}>Nomenclatura</span>
-                <p className={`text-negro-una-2 mt-1 ${TYPOGRAPHY.table.cell}`}>
-                  {element.nomenclature}
-                </p>
-              </div>
+              <InfoCell label="Nomenclatura">
+                <span className={cn(TYPOGRAPHY.table.cell, 'text-gris-una-2')}>{element.nomenclature}</span>
+              </InfoCell>
             )}
-            <div>
-              <span className={`font-medium text-gray-500 ${TYPOGRAPHY.badge}`}>Nombre</span>
-              <p className={`text-negro-una-2 mt-1 ${TYPOGRAPHY.table.cell}`}>
-                {element.name || '-'}
-              </p>
-            </div>
-            <div>
-              <span className={`font-medium text-gray-500 ${TYPOGRAPHY.badge}`}>Estado</span>
-              <div className="mt-1">
-                <div className={`inline-flex items-center px-2 py-1 font-sans font-bold rounded-corner ${TYPOGRAPHY.badge} ${
-                  element.active
-                    ? 'text-green-900 bg-green-500/20'
-                    : 'text-red-900 bg-red-500/20'
-                }`}>
-                  {element.active ? 'Activo' : 'Inactivo'}
-                </div>
-              </div>
-            </div>
+            {element.name && (
+              <InfoCell label="Nombre">
+                <span className={cn(TYPOGRAPHY.table.cell, 'text-gris-una-2')}>{element.name}</span>
+              </InfoCell>
+            )}
           </div>
         </div>
 
-        {/* Descripción */}
+        {/* DESCRIPCIÓN */}
         {element.description && (
           <div>
-            <div className="flex items-center space-x-2 mb-3">
-              <SystemIcons.work.myEvidences className="w-5 h-5 text-gray-600" />
-              <h3 className="font-medium text-gray-800">Descripción</h3>
-            </div>
-            <div className="bg-white border border-gray-200 rounded-corner p-4">
-              <p className={`text-gray-700 leading-relaxed ${TYPOGRAPHY.table.cell}`}>
-                {element.description}
-              </p>
+            <SectionLabel label="Descripción" />
+            <div className="border border-gray-200 rounded-corner p-4">
+              <p className={cn(TYPOGRAPHY.table.cell, 'text-gris-una-2 leading-relaxed')}>{element.description}</p>
             </div>
           </div>
         )}
 
-        {/* Jerarquía */}
-        <div>
-          <div className="flex items-center space-x-2 mb-3">
-            <SystemIcons.structure.nut className="w-5 h-5 text-gris-una" />
-            <h3 className="font-medium text-gray-800">Ubicación en la jerarquía</h3>
+        {/* JERARQUÍA + REGISTRO */}
+        <div className="grid grid-cols-2 gap-x-4">
+          <div>
+            <SectionLabel label="Jerarquía" />
+            <div className="border border-gray-200 rounded-corner p-4 h-[calc(100%-2rem)]">
+              <InfoCell label="Elemento padre">
+                <div className="flex items-center gap-2">
+                  <span className="w-1.5 h-1.5 rounded-full bg-azul-una flex-shrink-0" />
+                  <span className={cn(TYPOGRAPHY.table.cell, 'text-gris-una-2')}>{parentName}</span>
+                </div>
+              </InfoCell>
+            </div>
           </div>
-          <div className="bg-white border border-gray-200 rounded-corner p-4 space-y-2">
-            <div className="flex items-start space-x-2">
-              <div className="w-2 h-2 bg-azul-una rounded-full mt-2 flex-shrink-0" />
-              <div>
-                <span className={`font-medium text-gray-500 ${TYPOGRAPHY.badge}`}>Elemento padre:</span>
-                <p className={`text-gray-700 ${TYPOGRAPHY.table.cell}`}>
-                  {parentName}
-                </p>
-              </div>
+          <div>
+            <SectionLabel label="Registro" />
+            <div className="border border-gray-200 rounded-corner p-4 h-[calc(100%-2rem)]">
+              <InfoCell label="Fecha de creación">
+                <span className={cn(TYPOGRAPHY.table.cell, 'text-gris-una-2')}>{formatDate(element.createdAt)}</span>
+              </InfoCell>
             </div>
           </div>
         </div>
 
-        {/* Información adicional */}
-        <div>
-          <div className="flex items-center space-x-2 mb-3">
-            <SystemIcons.interface.calendar className="w-5 h-5 text-gray-600" />
-            <h3 className="font-medium text-gray-800">Información adicional</h3>
-          </div>
-          <div className="bg-white border border-gray-200 rounded-corner p-4">
-            <div className={`text-gray-500 ${TYPOGRAPHY.badge}`}>
-              Creado el:{' '}
-              {new Date(element.createdAt).toLocaleDateString('es-ES', {
-                year: 'numeric',
-                month: 'long',
-                day: 'numeric',
-                hour: '2-digit',
-                minute: '2-digit',
-              })}
-            </div>
-          </div>
-        </div>
       </div>
-    </DetailsModal>
+    </Modal>
   );
 };

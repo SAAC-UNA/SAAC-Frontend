@@ -13,6 +13,7 @@
  */
 
 import React, { useState, useCallback } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '@/Utils/ClassNames';
 import { TYPOGRAPHY } from '@/Constants/Typography';
 import { ICON_SIZES } from '@/Constants/Components';
@@ -212,14 +213,15 @@ export const DataTable = React.memo(<T extends Record<string, unknown>>({
             <thead>
               <tr>
                 {expandableRow && (
-                  <th className="w-10 pl-4 pr-2 py-4 border-b border-blue-gray-100 bg-gris-light rounded-tl-corner" />
+                  <th className="w-10 pl-4 pr-2 py-4 border-b border-blue-gray-100 bg-gris-light/50 rounded-tl-corner" />
                 )}
                 {columns.map((column, index) => (
                   <th
                     key={column.key}
                     style={column.width ? { width: column.width } : undefined}
+                    // Color del header de las tablas
                     className={cn(
-                      "py-4 border-b bg-gris-light border-blue-gray-100 text-center",
+                      "py-4 border-b bg-gris-light/50 border-blue-gray-100 text-center",
                       index === 0 ? (expandableRow ? "px-4" : "pl-8 pr-4") : "px-4",
                       // Esquina superior izquierda si no hay expandable y es la primera columna
                       index === 0 && !expandableRow && "rounded-tl-corner",
@@ -227,7 +229,7 @@ export const DataTable = React.memo(<T extends Record<string, unknown>>({
                       index === columns.length - 1 && (!actions || actions.length === 0) && "rounded-tr-corner"
                     )}
                   >
-                    <p className={`block font-sans antialiased font-semibold leading-none text-negro-una-2 ${TYPOGRAPHY.table.header}`}>
+                    <p className={`block font-sans antialiased font-bold leading-none text-negro-una-2 ${TYPOGRAPHY.table.header}`}>
                       {column.header}
                     </p>
                   </th>
@@ -250,17 +252,25 @@ export const DataTable = React.memo(<T extends Record<string, unknown>>({
                 return (
                   <React.Fragment key={`${rowKey}-${index}`}>
                     <tr
-                      className={cn(expandableRow && "cursor-pointer hover:bg-gray-50 transition-colors")}
+                      className={cn(expandableRow && "cursor-pointer transition-colors")}
                       onClick={expandableRow ? () => toggleRow(rowKey) : undefined}
                     >
                       {expandableRow && (
-                        <td className={cn("pl-4 pr-2 py-4 w-10", !isLast && !isExpanded && "border-b border-blue-gray-50")}>
-                          <SystemIcons.interface.chevronDown
-                            className={cn(
-                              `text-gris-una transition-transform duration-200 ${ICON_SIZES.sm}`,
-                              isExpanded && 'rotate-180'
-                            )}
-                          />
+                        <td className={cn("pl-4 pr-2 py-4 w-10 text-center align-middle", !isLast && !isExpanded && "border-b border-blue-gray-50")}>
+                          <motion.div
+                            initial={false}
+                            animate={{ rotate: isExpanded ? 180 : 0 }}
+                            transition={{ type: 'spring', damping: 25, stiffness: 300, mass: 0.8 }}
+                            className="inline-flex items-center justify-center cursor-pointer"
+                            onClick={(e) => {
+                               e.stopPropagation();
+                               toggleRow(rowKey);
+                            }}
+                          >
+                            <SystemIcons.interface.chevronDown
+                              className={`text-gris-una ${ICON_SIZES.sm}`}
+                            />
+                          </motion.div>
                         </td>
                       )}
                       {columns.map((column, colIndex) => (
@@ -307,13 +317,25 @@ export const DataTable = React.memo(<T extends Record<string, unknown>>({
                         </td>
                       )}
                     </tr>
-                    {expandableRow && isExpanded && (
-                      <tr>
-                        <td colSpan={totalCols} className="px-8 pb-2 bg-white">
-                          {expandableRow(item)}
-                        </td>
-                      </tr>
-                    )}
+                    <AnimatePresence initial={false}>
+                      {expandableRow && isExpanded && (
+                        <tr className="bg-blanco-una">
+                          <td colSpan={totalCols} className="p-0 border-0">
+                            <motion.div
+                              initial={{ height: 0, opacity: 0 }}
+                              animate={{ height: 'auto', opacity: 1 }}
+                              exit={{ height: 0, opacity: 0 }}
+                              transition={{ type: 'spring', damping: 25, stiffness: 300, mass: 0.8 }}
+                              className="overflow-hidden"
+                            >
+                              <div className="pl-8 pr-0 pb-4 pt-2">
+                                {expandableRow(item)}
+                              </div>
+                            </motion.div>
+                          </td>
+                        </tr>
+                      )}
+                    </AnimatePresence>
                   </React.Fragment>
                 );
               })}

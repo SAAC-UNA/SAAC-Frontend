@@ -4,4 +4,5 @@
 
 export { EvidenceSearchResultsTable } from './EvidenceSearchResultsTable';
 export { EvidenceDetailsModal } from './EvidenceDetailsModal';
+export { FeedbackModal } from './FeedbackModal';
 export type { EvidenceSearchResultsTableProps } from './EvidenceSearchResultsTable';
