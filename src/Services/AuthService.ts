@@ -45,7 +45,7 @@ export interface User {
 
 const AUTH_TOKEN_KEY = "auth_token";
 const USER_DATA_KEY = "auth_user";
-const SESSION_EXPIRATION_KEY = 'session_expiration';
+const SESSION_EXPIRATION_KEY = "session_expiration";
 
 export const authService = {
   loginWithCedula: async (
@@ -114,8 +114,12 @@ export const authService = {
 
       // Guardar el tiempo de expiración de la sesión
       if (data.session_lifetime) {
-        const expirationTime = new Date().getTime() + data.session_lifetime * 1000;
-        sessionStorage.setItem(SESSION_EXPIRATION_KEY, expirationTime.toString());
+        const expirationTime =
+          new Date().getTime() + data.session_lifetime * 1000;
+        sessionStorage.setItem(
+          SESSION_EXPIRATION_KEY,
+          expirationTime.toString(),
+        );
       }
 
       // Persistencia por pestaña: sobrevive refresh, pero no una pestaña nueva.
