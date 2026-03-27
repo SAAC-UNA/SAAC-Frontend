@@ -5,12 +5,11 @@
  * TODO - hay que estandarizar los estilos del login con lo que ya tenemos en el index general. Si se necesitan nuevos estilos para este caso particular, se pueden añadir en index, pero el global
  */
 
-import { useState, useEffect } from "react";
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/Context/AuthContext";
 import { SystemIcons } from "@/Components/Ui/Icons/SystemIcons";
 import { useToast } from "@/Hooks/useToast";
-import { useSessionWatcher } from "@/Hooks/useSessionWatcher";
 import { ValidationError } from "@/Services/AuthService";
 import styles from "./Login.module.css";
 import { FlipWords } from "@/Components/Ui/Index";
@@ -29,18 +28,6 @@ export const Login = () => {
   const { login } = useAuth();
   const navigate = useNavigate();
   const toast = useToast();
-  const [searchParams] = useSearchParams();
-  useSessionWatcher();
-
-  useEffect(() => {
-    if (searchParams.get("session_expired") === "true") {
-      toast.warning(
-        "Su sesión ha expirado. Por favor, inicie sesión de nuevo.",
-      );
-      // Opcional: limpiar el parámetro de la URL para que el mensaje no persista en refrescos
-      navigate("/login", { replace: true });
-    }
-  }, [searchParams, toast, navigate]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

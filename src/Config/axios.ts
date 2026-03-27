@@ -17,8 +17,15 @@ const axiosInstance = axios.create({
 axiosInstance.interceptors.response.use(
   (response) => response,
   (error) => {
+    const skipSessionRedirect =
+      error?.config?.headers?.["X-Skip-Session-Redirect"] === "true";
+
     // Códigos 401 (No autorizado) o 419 (Token CSRF expirado) indican sesión inválida
-    if (error.response && [401, 419].includes(error.response.status)) {
+    if (
+      !skipSessionRedirect &&
+      error.response &&
+      [401, 419].includes(error.response.status)
+    ) {
       // Prevenir llamadas repetitivas si ya se está redirigiendo
       if (!window.location.href.includes("/login")) {
         authService.logoutAndRedirect();

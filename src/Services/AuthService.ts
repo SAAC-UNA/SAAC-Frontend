@@ -46,6 +46,7 @@ export interface User {
 const AUTH_TOKEN_KEY = "auth_token";
 const USER_DATA_KEY = "auth_user";
 const SESSION_EXPIRATION_KEY = "session_expiration";
+let isHandlingSessionExpiry = false;
 
 export const authService = {
   loginWithCedula: async (
@@ -124,6 +125,7 @@ export const authService = {
 
       // Persistencia por pestaña: sobrevive refresh, pero no una pestaña nueva.
       sessionStorage.setItem(USER_DATA_KEY, JSON.stringify(data.user));
+      isHandlingSessionExpiry = false;
 
       return {
         user: data.user,
@@ -162,17 +164,21 @@ export const authService = {
   },
 
   /**
-   * Cierra la sesión y redirige al login con un mensaje.
+   * Cierra la sesión y redirige a una vista de expiración.
    * Usado por el interceptor de Axios cuando la sesión expira.
    */
   logoutAndRedirect: (): void => {
+    if (isHandlingSessionExpiry) {
+      return;
+    }
+    isHandlingSessionExpiry = true;
+
     authService.logout(); // Limpia el estado local
-    // Redirige a login con mensaje de sesión expirada
-    const loginUrl = `/login?session_expired=true`;
+    const expiredUrl = `/session-expired`;
     // Usamos `window.location.href` para forzar un refresco completo de la app
     // y así limpiar cualquier estado en memoria (React, etc.)
-    if (window.location.pathname !== "/login") {
-      window.location.href = loginUrl;
+    if (window.location.pathname !== "/session-expired") {
+      window.location.href = expiredUrl;
     }
   },
 
@@ -191,8 +197,12 @@ export const authService = {
   checkAuthStatus: async (): Promise<User | null> => {
     try {
       // Endpoint protegido que devuelve el usuario autenticado
-      const response = await axiosInstance.get("/user");
-      const user = response.data;
+      const response = await axiosInstance.get("/auth/me", {
+        headers: {
+          "X-Skip-Session-Redirect": "true",
+        },
+      });
+      const user = response.data?.user ?? response.data;
 
       if (user) {
         // Actualizar datos del usuario en sessionStorage
@@ -200,7 +210,7 @@ export const authService = {
         return user;
       }
       return null;
-    } catch (error) {
+    } catch {
       // Si hay error (401, 419, etc.), la sesión no es válida
       return null;
     }
