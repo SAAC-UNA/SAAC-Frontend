@@ -5,4 +5,4 @@
 export { default as HomePage } from "./HomePage";
 
 // Procesos de Acreditación
-export { AccreditationProcessList } from "./AccreditationProcess";
+export { AccreditationProcessList } from "./AccreditationProcess/Index";

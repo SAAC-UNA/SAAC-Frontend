@@ -57,6 +57,11 @@ const ImprovementCommitmentDetail = lazy(() =>
     (m) => ({ default: m.ImprovementCommitmentDetail }),
   ),
 );
+const AccreditationProcessList = lazy(() =>
+  import("./Pages/AccreditationProcess/AccreditationProcessList").then((m) => ({
+    default: m.AccreditationProcessList,
+  })),
+);
 const BlockApproval = lazy(() => import("./Pages/BlockApproval/BlockApproval"));
 const FinalReports = lazy(() =>
   import("./Pages/ReportManagement").then((m) => ({ default: m.FinalReports })),
@@ -256,6 +261,16 @@ function App() {
                             element={
                               <ProtectedRoute>
                                 <CreateImprovementCommitment />
+                              </ProtectedRoute>
+                            }
+                          />
+
+                          {/* Procesos de Acreditacion - Todos los autenticados */}
+                          <Route
+                            path="/procesos-acreditacion/listar"
+                            element={
+                              <ProtectedRoute>
+                                <AccreditationProcessList />
                               </ProtectedRoute>
                             }
                           />
