@@ -49,3 +49,52 @@ export const SPRING_HOVER = { type: 'spring' as const, damping: 30, stiffness: 5
 
 // Spring para la rotación del chevron en botones trigger
 export const SPRING_CHEVRON = { type: 'spring' as const, damping: 25, stiffness: 300, mass: 0.6 };
+
+// Fade de página — usado por el Layout al cambiar de ruta (simple y limpio)
+export const PAGE_TRANSITION_VARIANTS = {
+  initial: { opacity: 0 },
+  animate: {
+    opacity: 1,
+    transition: { duration: 0.18, ease: 'easeOut' as const },
+  },
+  exit: {
+    opacity: 0,
+    transition: { duration: 0.12, ease: 'easeIn' as const },
+  },
+};
+
+// Patrón OSS Hero: contenedor de stagger para secciones dentro de una página
+export const OSS_HERO_CONTAINER: import('framer-motion').Variants = {
+  initial: {},
+  animate: {
+    transition: {
+      staggerChildren: 0.08,
+      delayChildren: 0.04,
+    },
+  },
+};
+
+// Ítem individual del patrón OSS Hero (spring con blur)
+export const OSS_HERO_ITEM: import('framer-motion').Variants = {
+  initial: { opacity: 0, y: 28, filter: 'blur(6px)' },
+  animate: {
+    opacity: 1,
+    y: 0,
+    filter: 'blur(0px)',
+    transition: {
+      type: 'spring',
+      stiffness: 360,
+      damping: 28,
+      mass: 0.75,
+    },
+  },
+};
+
+// Aparición progresiva al entrar en el viewport (scroll reveal)
+export const SCROLL_REVEAL_VARIANTS = {
+  hidden: { opacity: 0, y: 20 },
+  visible: {
+    opacity: 1, y: 0,
+    transition: { duration: 0.55, ease: [0.23, 1, 0.32, 1] as [number, number, number, number] },
+  },
+};
