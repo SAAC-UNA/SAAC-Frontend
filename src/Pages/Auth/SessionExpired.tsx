@@ -48,7 +48,7 @@ export const SessionExpired = () => {
           SESIÓN EXPIRADA
         </h2>
         <p className="mx-auto mb-5 mt-3 max-w-[40ch] font-bold uppercase leading-relaxed tracking-[0.01em] text-slate-700">
-          Tu sesión ha expirado. Se te redirigirá al inicio de sesión en{" "}
+          Su sesión ha expirado. Se le redirigirá al inicio de sesión en{" "}
           {secondsLeft} segundo{secondsLeft === 1 ? "" : "s"}.
         </p>
         <div className="flex justify-center">
