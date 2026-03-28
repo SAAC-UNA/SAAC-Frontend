@@ -112,7 +112,7 @@ export const UserDropdown: React.FC<UserDropdownProps> = ({
   const initials = getInitials(user.name);
   const roleName = user.roles?.[0]?.name ?? 'Sin rol';
 
-  // ── Items del menú ──────────────────────────────────────────────
+  // Items del menú
   const menuItems: {
     id: string;
     icon: React.ReactNode;
@@ -182,6 +182,7 @@ export const UserDropdown: React.FC<UserDropdownProps> = ({
             className={cn(
               'absolute inset-0 flex items-center justify-center',
               'font-semibold leading-none select-none pointer-events-none text-[11px]',
+              '-translate-y-[-1px]',
               dark ? 'text-blanco-una' : 'text-negro-una-2',
             )}
           >

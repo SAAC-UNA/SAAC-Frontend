@@ -9,7 +9,6 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from '
 import { TooltipProvider } from '@/Components/Ui/Feedback/Tooltip';
 import { useAuth } from '@/Context/AuthContext';
 import { TYPOGRAPHY } from '@/Constants/Typography';
-import { UserProfileHeader } from './UserProfileHeader';
 
 interface SidebarProps {
   side?: 'left' | 'right';
@@ -59,15 +58,6 @@ export const ModernSidebar: React.FC<SidebarProps> = ({
           </div>
         </SidebarNavProvider>
       </nav>
-      <div className="flex-shrink-0 h-20 flex items-center px-3 justify-start">
-        <UserProfileHeader
-          className="pr-0 w-full justify-start px-0"
-          showUserMenu={true}
-          showNotifications={false}
-          showInlineIdentity={true}
-          useSidebarAvatarStyle={true}
-        />
-      </div>
     </div>
   );
 
@@ -99,16 +89,6 @@ export const ModernSidebar: React.FC<SidebarProps> = ({
         </SidebarNavProvider>
       </nav>
 
-      {/* Usuario — solo avatar */}
-      <div className="flex-shrink-0 h-20 flex items-center justify-center">
-        <UserProfileHeader
-          className="pr-0 w-auto justify-center px-0"
-          showUserMenu={true}
-          showNotifications={false}
-          showInlineIdentity={false}
-          useSidebarAvatarStyle={true}
-        />
-      </div>
     </div>
   );
 
