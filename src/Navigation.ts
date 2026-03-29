@@ -174,6 +174,17 @@ export const getNavigationItems = (userRoles?: string | string[]): NavItem[] => 
         href: '/estructura/listar',
         isActive: false,
       },
+      ...(isAdmin || isSuperUser
+        ? [
+            {
+              id: 'modelos-acreditacion',
+              label: 'Modelos de Acreditación',
+              icon: nutIcon,
+              href: '/estructura/modelos',
+              isActive: false,
+            },
+          ]
+        : []),
       {
         id: 'compromisos-mejora',
         label: 'Compromisos de Mejora',

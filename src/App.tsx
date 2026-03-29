@@ -24,6 +24,9 @@ const EditUserPage = lazy(() =>
   import("./Pages/Users").then((m) => ({ default: m.EditUserPage })),
 );
 const StructureList = lazy(() => import("@/Pages/Structure/StructureList"));
+const StructureModelsPage = lazy(
+  () => import("@/Pages/StructureModels/StructureModelsPage"),
+);
 const EvidenceAssignment = lazy(() =>
   import("./Pages/EvidenceAssignment").then((m) => ({
     default: m.EvidenceAssignment,
@@ -159,6 +162,18 @@ function App() {
                             element={
                               <ProtectedRoute>
                                 <StructureList />
+                              </ProtectedRoute>
+                            }
+                          />
+
+                          {/* Modelos de Acreditación - Administrador y Superusuario */}
+                          <Route
+                            path="/estructura/modelos"
+                            element={
+                              <ProtectedRoute
+                                requireRoles={["Administrador", "Superusuario"]}
+                              >
+                                <StructureModelsPage />
                               </ProtectedRoute>
                             }
                           />
