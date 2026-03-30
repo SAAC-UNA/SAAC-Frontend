@@ -35,6 +35,7 @@ export interface Process {
 export interface EvidenceAssignmentFormData {
   proceso_id: number | null;
   criterio_id: number | null;
+  selectedCriteria: number[];
   selectedEvidences: number[];
   selectedUsers: number[];
   selectedRoles: number[];
@@ -57,7 +58,7 @@ export interface EvidenceAssignmentResponse {
   proceso_id: number;
   evidencia_id: number;
   usuario_id: number;
-  estado: 'pendiente' | 'en_progreso' | 'completado' | 'vencido';
+  estado: "pendiente" | "en_progreso" | "completado" | "vencido";
   fecha_asignacion: string;
   fecha_limite?: string;
   created_at: string;
@@ -102,7 +103,7 @@ export interface ValidationErrors {
 export interface DuplicateAssignment {
   usuario_id: number;
   usuario_nombre: string;
-  estado: 'pendiente' | 'en_progreso' | 'completado' | 'vencido';
+  estado: "pendiente" | "en_progreso" | "completado" | "vencido";
   fecha_asignacion: string;
   asignacion_id?: number;
 }
