@@ -89,7 +89,7 @@ export const AuditLogTable: React.FC<AuditLogTableProps> = ({
       {
         key: 'tipo_accion',
         header: 'Acción',
-        align: 'center',
+        align: 'left',
         accessor: (log) => log.tipo_accion.descripcion,
         render: (_, log) => (
           <div className="flex justify-center">
@@ -113,16 +113,24 @@ export const AuditLogTable: React.FC<AuditLogTableProps> = ({
       },
       {
         key: 'fecha_hora',
-        header: 'Fecha y Hora',
+        header: 'Fecha',
         align: 'center',
         accessor: (log) => log.fecha_hora,
         render: (_, log) => (
-          <div className="flex flex-col">
-            <p className={`block font-sans antialiased font-normal leading-normal text-negro-una-2 ${TYPOGRAPHY.table.cell}`}>
-              {formatAuditDate(log.fecha_hora).split(', ')[0]}
-            </p>
-            <p className={`block font-sans antialiased font-normal leading-normal text-gray-500 ${TYPOGRAPHY.badge}`}>{formatAuditDate(log.fecha_hora).split(', ')[1]}</p>
-          </div>
+          <span className={`block font-sans antialiased font-normal leading-normal text-negro-una-2 ${TYPOGRAPHY.table.cell}`}>
+            {formatAuditDate(log.fecha_hora).split(', ')[0]}
+          </span>
+        ),
+      },
+      {
+        key: 'hora',
+        header: 'Hora',
+        align: 'center',
+        accessor: (log) => log.fecha_hora,
+        render: (_, log) => (
+          <span className={`block font-sans antialiased font-normal leading-normal text-negro-una-2 ${TYPOGRAPHY.table.cell}`}>
+            {formatAuditDate(log.fecha_hora).split(', ')[1]}
+          </span>
         ),
       },
       {

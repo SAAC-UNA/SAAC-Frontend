@@ -47,17 +47,17 @@ export const AppHeader: React.FC<AppHeaderProps> = ({
       "flex h-12 shrink-0 items-center gap-2 border-b-blanco-una/20 px-4",
       className
     )}>
-      {/* Trigger del Sidebar (botón hamburguesa) */}
+      {/* Trigger del Sidebar (botón hamburguesa) *}
       <Button
         variant="ghost"
         className={`${APP_HEADER_BUTTON.button} mr-2`}
         onClick={() => toggleSidebar()}
       >
         <SystemIcons.navigation.menu className={APP_HEADER_BUTTON.icon} />
-        {/* Este texto salta cuando el usuario usa un lector de pantalla como NVDA o JAWS */}
+        {/* Este texto salta cuando el usuario usa un lector de pantalla como NVDA o JAWS *}
         <span className="sr-only">Toggle Sidebar</span>
       </Button>
-{/**
+*
       {/* Logo /}
       <img 
         src={logo} 

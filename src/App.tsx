@@ -7,8 +7,9 @@ import { ProtectedRoute } from "@/Components/Ui/ProtectedRoute";
 import { Layout } from "./Components/Layout/Index";
 import { LoadingSpinner } from "@/Components/Ui/Feedback/Loading";
 
-// Lazy load de paginas para code splitting y mejor rendimiento
+// Lazy load de páginas para code splitting y mejor rendimiento
 import { Login } from "@/Pages/Auth/Login";
+import { SessionExpired } from "@/Pages/Auth/SessionExpired";
 const HomePage = lazy(() =>
   import("./Pages/Index").then((m) => ({ default: m.HomePage })),
 );
@@ -95,6 +96,7 @@ function App() {
             <Routes>
               {/* Rutas publicas */}
               <Route path="/login" element={<Login />} />
+              <Route path="/session-expired" element={<SessionExpired />} />
 
               {/* Rutas protegidas con Layout */}
               <Route
@@ -177,7 +179,7 @@ function App() {
                               <ProtectedRoute
                                 requireRoles={[
                                   "Administrador",
-                                  "Encargado de Acreditaci\u00f3n",
+                                  "Encargado de Acreditación",
                                 ]}
                               >
                                 <EvidenceAssignment />
@@ -209,14 +211,12 @@ function App() {
                             }
                           />
 
-                          {/* HU-016: Solicitudes de Ampliacion */}
+                          {/* HU-016: Solicitudes de Ampliación */}
                           <Route
                             path="/solicitudes-ampliacion/gestionar"
                             element={
                               <ProtectedRoute
-                                requireRoles={[
-                                  "Encargado de Acreditaci\u00f3n",
-                                ]}
+                                requireRoles={["Encargado de Acreditación"]}
                               >
                                 <ManageExtensionRequestsPage />
                               </ProtectedRoute>
@@ -285,7 +285,7 @@ function App() {
                             }
                           />
 
-                          {/* Gestion de Informes - Todos los autenticados */}
+                          {/* Gestión de Informes - Todos los autenticados */}
                           <Route
                             path="/gestion-informes"
                             element={

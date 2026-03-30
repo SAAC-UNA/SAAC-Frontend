@@ -1,17 +1,17 @@
 /**
  * NotificationDropdown - Dropdown de notificaciones recientes
  * HU-018 - Notificaciones automáticas
- * 
+ *
  * Se muestra al hacer click en NotificationBell
  * Muestra las últimas 5 notificaciones
  */
 
-import React, { useEffect, useState } from 'react';
-import { Button, LoadingSpinner } from '@/Components/Ui/Index';
-import { NotificationCard } from './NotificationCard';
-import { useNotifications } from '@/Hooks/useNotifications';
-import { NotificationService } from '@/Services/NotificationService';
-import type { Notification } from '@/Types/NotificationTypes';
+import React, { useEffect, useState } from "react";
+import { Button, LoadingSpinner } from "@/Components/Ui/Index";
+import { NotificationCard } from "./NotificationCard";
+import { useNotifications } from "@/Hooks/useNotifications";
+import { NotificationService } from "@/Services/NotificationService";
+import type { Notification } from "@/Types/NotificationTypes";
 
 interface NotificationDropdownProps {
   onClose: () => void;
@@ -22,8 +22,11 @@ export const NotificationDropdown: React.FC<NotificationDropdownProps> = ({
   onClose,
   onViewAll,
 }) => {
-  const [notifData, setNotifData] = useState<{ notifications: Notification[]; loading: boolean }>({ notifications: [], loading: true });
-  
+  const [notifData, setNotifData] = useState<{
+    notifications: Notification[];
+    loading: boolean;
+  }>({ notifications: [], loading: true });
+
   const { markAsRead, markAllAsRead, unreadCount } = useNotifications({
     enablePolling: false,
     autoFetch: false,
@@ -36,8 +39,8 @@ export const NotificationDropdown: React.FC<NotificationDropdownProps> = ({
         const recent = await NotificationService.getRecent(6);
         setNotifData({ notifications: recent, loading: false });
       } catch (error) {
-        console.error('Error cargando notificaciones recientes:', error);
-        setNotifData(prev => ({ ...prev, loading: false }));
+        console.error("Error cargando notificaciones recientes:", error);
+        setNotifData((prev) => ({ ...prev, loading: false }));
       }
     };
 
@@ -46,21 +49,21 @@ export const NotificationDropdown: React.FC<NotificationDropdownProps> = ({
 
   const handleMarkAsRead = async (id: number) => {
     await markAsRead(id);
-    setNotifData(prev => ({
+    setNotifData((prev) => ({
       ...prev,
-      notifications: prev.notifications.map(n =>
+      notifications: prev.notifications.map((n) =>
         n.notificacion_id === id
           ? { ...n, leida: true, fecha_lectura: new Date().toISOString() }
-          : n
+          : n,
       ),
     }));
   };
 
   const handleMarkAllAsRead = async () => {
     await markAllAsRead();
-    setNotifData(prev => ({
+    setNotifData((prev) => ({
       ...prev,
-      notifications: prev.notifications.map(n => ({
+      notifications: prev.notifications.map((n) => ({
         ...n,
         leida: true,
         fecha_lectura: new Date().toISOString(),
@@ -113,6 +116,7 @@ export const NotificationDropdown: React.FC<NotificationDropdownProps> = ({
                 notification={notification}
                 onMarkAsRead={handleMarkAsRead}
                 compact={true}
+                onNavigate={onClose}
               />
             ))}
           </div>

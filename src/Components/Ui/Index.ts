@@ -17,3 +17,5 @@ export type { SelectOption, CustomSelectProps } from './Forms/SingleSelect';
 export { ScreenContainer } from './Layout/ScreenContainer';
 export { WizardProgress } from './Layout/WizardProgress';
 export type { WizardStep, WizardProgressProps } from './Layout/WizardProgress';
+export { ScrollReveal } from './Layout/ScrollReveal';
+export { FlipWords } from './Text/FlipWords';
