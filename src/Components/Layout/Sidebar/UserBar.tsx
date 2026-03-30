@@ -111,12 +111,12 @@ export const UserWidget: React.FC<UserWidgetProps> = ({
 
   return (
     <>
-      <div className={cn("flex items-center gap-3 min-w-0 py-1", className)}>
+      <div className={cn("flex items-center gap-3 min-w-0", className)}>
         {/* Nombre y rol */}
-        <div className="flex flex-col items-start">
+        <div className="flex h-9 flex-col items-start justify-center translate-y-0.5">
           <span
             className={cn(
-              "font-semibold leading-tight text-xs",
+              "font-semibold leading-none text-xs",
               dark ? "text-blanco-una" : "text-negro-una",
             )}
           >
@@ -124,7 +124,7 @@ export const UserWidget: React.FC<UserWidgetProps> = ({
           </span>
           <span
             className={cn(
-              "leading-tight text-[11px]",
+              "-mt-0.5 leading-none text-[11px]",
               dark ? "text-blanco-una/70" : "text-gris-una",
             )}
           >
