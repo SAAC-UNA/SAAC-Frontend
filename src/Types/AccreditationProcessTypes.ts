@@ -34,4 +34,11 @@ export interface AccreditationProcessFormData {
 export interface AccreditationProcessApiPayload {
   tipo_proceso: string;
   ciclo_acreditacion_id: number;
+  fecha_inicio: string;
+  fecha_finalizacion: string;
+  activo: boolean;
+}
+
+export interface AccreditationProcessDeletePayload {
+  confirmacion: string;
 }

@@ -2,6 +2,7 @@ import { axiosInstance } from "@/Config/axios";
 import type {
   AccreditationCycle,
   AccreditationProcess,
+  AccreditationProcessDeletePayload,
   AccreditationProcessApiPayload,
 } from "@/Types/AccreditationProcessTypes";
 
@@ -47,11 +48,10 @@ const mapProcess = (item: RawRecord): AccreditationProcess => {
     accreditationCycleName: cycleName,
     careerName: career.nombre as string | undefined,
     campusName: campus.nombre as string | undefined,
-    // Backend actual no expone estado/fechas del proceso, se proveen defaults para UI.
-    status: "activo",
-    startDate: item.created_at ? String(item.created_at).slice(0, 10) : "",
-    estimatedEndDate: item.updated_at
-      ? String(item.updated_at).slice(0, 10)
+    status: (item.activo as boolean) ? "activo" : "inactivo",
+    startDate: item.fecha_inicio ? String(item.fecha_inicio).slice(0, 10) : "",
+    estimatedEndDate: item.fecha_finalizacion
+      ? String(item.fecha_finalizacion).slice(0, 10)
       : "",
     createdAt: item.created_at ? String(item.created_at) : "",
     updatedAt: item.updated_at ? String(item.updated_at) : "",
@@ -69,8 +69,12 @@ const mapCycle = (item: RawRecord): AccreditationCycle => {
     name:
       (item.nombre as string) ||
       `Ciclo ${String(item.ciclo_acreditacion_id ?? item.id)}`,
-    careerName: career.nombre as string | undefined,
-    campusName: campus.nombre as string | undefined,
+    careerName:
+      (career.nombre as string | undefined) ||
+      (item.carrera_nombre as string | undefined),
+    campusName:
+      (campus.nombre as string | undefined) ||
+      (item.sede_nombre as string | undefined),
   };
 };
 
@@ -138,10 +142,7 @@ class AccreditationProcessService {
       const raw = (response.data?.data ?? response.data) as RawRecord;
       return mapProcess(raw);
     } catch (error: unknown) {
-      throw toApiError(
-        error,
-        "No se pudo crear el proceso. Verifique si el endpoint POST /estructura/procesos está habilitado en backend.",
-      );
+      throw toApiError(error, "No se pudo crear el proceso.");
     }
   }
 
@@ -157,21 +158,20 @@ class AccreditationProcessService {
       const raw = (response.data?.data ?? response.data) as RawRecord;
       return mapProcess(raw);
     } catch (error: unknown) {
-      throw toApiError(
-        error,
-        "No se pudo actualizar el proceso. Verifique si el endpoint PUT /estructura/procesos/{id} está habilitado en backend.",
-      );
+      throw toApiError(error, "No se pudo actualizar el proceso.");
     }
   }
 
-  async deleteProcess(processId: string): Promise<void> {
+  async deleteProcess(
+    processId: string,
+    payload: AccreditationProcessDeletePayload,
+  ): Promise<void> {
     try {
-      await axiosInstance.delete(`${PROCESS_ENDPOINT}/${processId}`);
+      await axiosInstance.delete(`${PROCESS_ENDPOINT}/${processId}`, {
+        data: payload,
+      });
     } catch (error: unknown) {
-      throw toApiError(
-        error,
-        "No se pudo eliminar el proceso. Verifique si el endpoint DELETE /estructura/procesos/{id} está habilitado en backend.",
-      );
+      throw toApiError(error, "No se pudo eliminar el proceso.");
     }
   }
 }

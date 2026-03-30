@@ -26,54 +26,6 @@ interface ApiError extends Error {
   status?: number;
 }
 
-const FALLBACK_CYCLES: AccreditationCycle[] = [
-  {
-    id: "1",
-    name: "Ciclo 2024-2025",
-    careerName: "Ingeniería en Sistemas",
-    campusName: "Sede Central",
-  },
-  {
-    id: "2",
-    name: "Ciclo 2023-2024",
-    careerName: "Administración",
-    campusName: "Sede Chorotega",
-  },
-  {
-    id: "3",
-    name: "Ciclo 2022-2023",
-    careerName: "Contaduría",
-    campusName: "Sede Brunca",
-  },
-];
-
-const FALLBACK_PROCESSES: AccreditationProcess[] = [
-  {
-    id: "1",
-    type: "Autoevaluación",
-    accreditationCycleId: "1",
-    accreditationCycleName: "Ciclo 2024-2025",
-    careerName: "Ingeniería en Sistemas",
-    campusName: "Sede Central",
-    status: "activo",
-    startDate: "2024-01-15",
-    estimatedEndDate: "2024-06-30",
-    createdAt: "2024-01-10",
-  },
-  {
-    id: "2",
-    type: "Compromiso de mejora",
-    accreditationCycleId: "1",
-    accreditationCycleName: "Ciclo 2024-2025",
-    careerName: "Ingeniería en Sistemas",
-    campusName: "Sede Central",
-    status: "inactivo",
-    startDate: "2024-07-01",
-    estimatedEndDate: "2024-09-30",
-    createdAt: "2024-06-28",
-  },
-];
-
 export const AccreditationProcessList: React.FC = () => {
   const moduleInfo = getModuleInfo("accreditation_processes");
 
@@ -115,17 +67,12 @@ export const AccreditationProcessList: React.FC = () => {
         accreditationProcessService.getProcesses(),
       ]);
 
-      setCycles(loadedCycles.length ? loadedCycles : FALLBACK_CYCLES);
-      setProcesses(
-        loadedProcesses.length ? loadedProcesses : FALLBACK_PROCESSES,
-      );
+      setCycles(loadedCycles);
+      setProcesses(loadedProcesses);
     } catch (error) {
-      console.warn(
-        "No se pudo cargar desde backend, usando datos de respaldo:",
-        error,
-      );
-      setCycles(FALLBACK_CYCLES);
-      setProcesses(FALLBACK_PROCESSES);
+      console.error("No se pudo cargar procesos/ciclos desde backend:", error);
+      setCycles([]);
+      setProcesses([]);
     } finally {
       setIsLoading(false);
     }
@@ -177,110 +124,60 @@ export const AccreditationProcessList: React.FC = () => {
     const campusName = selectedCycle?.campusName;
 
     if (!processId) {
-      try {
-        const created = await accreditationProcessService.createProcess({
-          ciclo_acreditacion_id: Number(formData.accreditationCycleId),
-          tipo_proceso: formData.type,
-        });
+      const created = await accreditationProcessService.createProcess({
+        ciclo_acreditacion_id: Number(formData.accreditationCycleId),
+        tipo_proceso: formData.type,
+        fecha_inicio: formData.startDate,
+        fecha_finalizacion: formData.estimatedEndDate,
+        activo: formData.status === "activo",
+      });
 
-        const normalizedCreated: AccreditationProcess = {
-          ...created,
-          type: formData.type,
-          status: formData.status,
-          startDate: formData.startDate,
-          estimatedEndDate: formData.estimatedEndDate,
-          accreditationCycleId: formData.accreditationCycleId,
-          accreditationCycleName: cycleName,
-          careerName,
-          campusName,
-        };
-
-        setProcesses((prev) => [normalizedCreated, ...prev]);
-        return normalizedCreated;
-      } catch (rawError: unknown) {
-        const error = rawError as ApiError;
-        if (error.status !== 404) {
-          throw error;
-        }
-
-        // Fallback local mientras backend no publique endpoint de creación.
-        const localCreated: AccreditationProcess = {
-          id: String(Date.now()),
-          type: formData.type,
-          accreditationCycleId: formData.accreditationCycleId,
-          accreditationCycleName: cycleName,
-          careerName,
-          campusName,
-          status: formData.status,
-          startDate: formData.startDate,
-          estimatedEndDate: formData.estimatedEndDate,
-          createdAt: new Date().toISOString(),
-        };
-
-        setProcesses((prev) => [localCreated, ...prev]);
-        return localCreated;
-      }
-    }
-
-    try {
-      const updated = await accreditationProcessService.updateProcess(
-        processId,
-        {
-          ciclo_acreditacion_id: Number(formData.accreditationCycleId),
-          tipo_proceso: formData.type,
-        },
-      );
-
-      const normalizedUpdated: AccreditationProcess = {
-        ...updated,
-        id: processId,
-        type: formData.type,
-        status: formData.status,
-        startDate: formData.startDate,
-        estimatedEndDate: formData.estimatedEndDate,
-        accreditationCycleId: formData.accreditationCycleId,
-        accreditationCycleName: cycleName,
-        careerName,
-        campusName,
+      const normalizedCreated: AccreditationProcess = {
+        ...created,
+        type: created.type || formData.type,
+        status: created.status || formData.status,
+        startDate: created.startDate || formData.startDate,
+        estimatedEndDate: created.estimatedEndDate || formData.estimatedEndDate,
+        accreditationCycleId:
+          created.accreditationCycleId || formData.accreditationCycleId,
+        accreditationCycleName: created.accreditationCycleName || cycleName,
+        careerName: created.careerName ?? careerName,
+        campusName: created.campusName ?? campusName,
       };
 
-      setProcesses((prev) =>
-        prev.map((process) =>
-          process.id === processId ? normalizedUpdated : process,
-        ),
-      );
-
-      return normalizedUpdated;
-    } catch (rawError: unknown) {
-      const error = rawError as ApiError;
-      if (error.status !== 404) {
-        throw error;
-      }
-
-      // Fallback local mientras backend no publique endpoint de edición.
-      let localUpdated: AccreditationProcess | null = null;
-      setProcesses((prev) =>
-        prev.map((process) => {
-          if (process.id !== processId) return process;
-
-          localUpdated = {
-            ...process,
-            type: formData.type,
-            status: formData.status,
-            startDate: formData.startDate,
-            estimatedEndDate: formData.estimatedEndDate,
-            accreditationCycleId: formData.accreditationCycleId,
-            accreditationCycleName: cycleName,
-            careerName,
-            campusName,
-          };
-
-          return localUpdated;
-        }),
-      );
-
-      return localUpdated;
+      setProcesses((prev) => [normalizedCreated, ...prev]);
+      return normalizedCreated;
     }
+
+    const updated = await accreditationProcessService.updateProcess(processId, {
+      ciclo_acreditacion_id: Number(formData.accreditationCycleId),
+      tipo_proceso: formData.type,
+      fecha_inicio: formData.startDate,
+      fecha_finalizacion: formData.estimatedEndDate,
+      activo: formData.status === "activo",
+    });
+
+    const normalizedUpdated: AccreditationProcess = {
+      ...updated,
+      id: processId,
+      type: updated.type || formData.type,
+      status: updated.status || formData.status,
+      startDate: updated.startDate || formData.startDate,
+      estimatedEndDate: updated.estimatedEndDate || formData.estimatedEndDate,
+      accreditationCycleId:
+        updated.accreditationCycleId || formData.accreditationCycleId,
+      accreditationCycleName: updated.accreditationCycleName || cycleName,
+      careerName: updated.careerName ?? careerName,
+      campusName: updated.campusName ?? campusName,
+    };
+
+    setProcesses((prev) =>
+      prev.map((process) =>
+        process.id === processId ? normalizedUpdated : process,
+      ),
+    );
+
+    return normalizedUpdated;
   };
 
   const handleViewProcess = (process: AccreditationProcess) => {
@@ -304,16 +201,9 @@ export const AccreditationProcessList: React.FC = () => {
 
     const processToDelete = deleteModalState.process;
 
-    try {
-      await accreditationProcessService.deleteProcess(processToDelete.id);
-    } catch (rawError: unknown) {
-      const error = rawError as ApiError;
-      if (error.status !== 404) {
-        console.error("No se pudo eliminar el proceso:", error);
-        return;
-      }
-      // Fallback local mientras backend no publique endpoint de eliminación.
-    }
+    await accreditationProcessService.deleteProcess(processToDelete.id, {
+      confirmacion: processToDelete.type,
+    });
 
     setProcesses((prev) =>
       prev.filter((process) => process.id !== processToDelete.id),

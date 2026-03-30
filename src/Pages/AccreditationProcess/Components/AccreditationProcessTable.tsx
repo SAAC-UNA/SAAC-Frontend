@@ -17,8 +17,13 @@ interface AccreditationProcessTableProps {
   onDelete?: (process: AccreditationProcessRow) => void;
 }
 
-const formatDate = (dateValue: string) => {
-  return new Date(dateValue).toLocaleDateString("es-CR", {
+const formatDate = (dateValue?: string) => {
+  if (!dateValue) return "—";
+
+  const parsedDate = new Date(dateValue);
+  if (Number.isNaN(parsedDate.getTime())) return "—";
+
+  return parsedDate.toLocaleDateString("es-CR", {
     year: "numeric",
     month: "short",
     day: "numeric",
