@@ -213,7 +213,7 @@ export const DataTable = React.memo(<T extends Record<string, unknown>>({
             <thead>
               <tr>
                 {expandableRow && (
-                  <th className="w-10 pl-4 pr-2 py-3 border-b border-blue-gray-100 bg-gris-light/50 rounded-tl-corner" />
+                  <th className="w-10 pl-4 pr-2 py-3 border-b border-blue-gray-100 bg-blanco-una-2 rounded-tl-corner" />
                 )}
                 {columns.map((column, index) => (
                   <th
@@ -221,7 +221,8 @@ export const DataTable = React.memo(<T extends Record<string, unknown>>({
                     style={column.width ? { width: column.width } : undefined}
                     // Color del header de las tablas
                     className={cn(
-                      "py-3 border-b bg-blanco-una-2 border-blue-gray-100 text-center",
+                      "py-3 border-b bg-blanco-una-2 border-blue-gray-100",
+                      column.align === 'left' ? 'text-left' : column.align === 'right' ? 'text-right' : 'text-center',
                       index === 0 ? (expandableRow ? "px-4" : "pl-8 pr-4") : "px-4",
                       // Esquina superior izquierda si no hay expandable y es la primera columna
                       index === 0 && !expandableRow && "rounded-tl-corner",
@@ -319,7 +320,7 @@ export const DataTable = React.memo(<T extends Record<string, unknown>>({
                     </tr>
                     <AnimatePresence initial={false}>
                       {expandableRow && isExpanded && (
-                        <tr className="bg-blanco-una">
+                        <tr className="bg-blanco-una-2">
                           <td colSpan={totalCols} className="p-0 border-0">
                             <motion.div
                               initial={{ height: 0, opacity: 0 }}

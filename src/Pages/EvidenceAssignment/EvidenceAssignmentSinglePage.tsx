@@ -46,6 +46,12 @@ interface AssignmentTableRow extends Record<string, unknown> {
   comentario: string;
 }
 
+interface DuplicateGroupRow extends Record<string, unknown> {
+  id: number;
+  usuario_nombre: string;
+  evidences: DuplicateAssignment[];
+}
+
 // ---------------------------------------------------------------------------
 // EvidenceAssignmentSinglePage — página principal
 // ---------------------------------------------------------------------------
@@ -172,10 +178,9 @@ const EvidenceAssignmentSinglePage: React.FC = () => {
     validating: boolean;
   }>({ duplicates: [], validating: false });
 
-  const [expandedDuplicates, setExpandedDuplicates] = useState({
-    active: true,
-    completed: true,
-  });
+  const [excludedCompletedPairs, setExcludedCompletedPairs] = useState<
+    Array<{ usuario_id: number; evidencia_id: number }>
+  >([]);
 
   useEffect(() => {
     const validate = async () => {
@@ -186,9 +191,11 @@ const EvidenceAssignmentSinglePage: React.FC = () => {
       ) {
         setDuplicatesState({ duplicates: [], validating: false });
         updateFormData({ excludedUsers: [] });
+        setExcludedCompletedPairs([]);
         return;
       }
       setDuplicatesState((prev) => ({ ...prev, validating: true, duplicates: [] }));
+      setExcludedCompletedPairs([]);
       const found: DuplicateAssignment[] = [];
       try {
         for (const evidenciaId of formData.selectedEvidences) {
@@ -198,7 +205,7 @@ const EvidenceAssignmentSinglePage: React.FC = () => {
             usuarios: formData.selectedUsers,
           });
           if (res.tiene_duplicados) {
-            found.push(...res.duplicados);
+            found.push(...res.duplicados.map((d) => ({ ...d, evidencia_id: evidenciaId })));
           }
         }
       } catch {
@@ -378,18 +385,63 @@ const EvidenceAssignmentSinglePage: React.FC = () => {
     [formData.excludedUsers]
   );
 
-  const handleToggleUser = (userId: number) => {
-    const current = formData.excludedUsers ?? [];
-    const isExcluded = current.includes(userId);
-    updateFormData({
-      excludedUsers: isExcluded
-        ? current.filter((id) => id !== userId)
-        : [...current, userId],
+  const toggleCompletedPair = useCallback((usuario_id: number, evidencia_id: number) => {
+    setExcludedCompletedPairs((prev) => {
+      const exists = prev.some((p) => p.usuario_id === usuario_id && p.evidencia_id === evidencia_id);
+      if (exists) return prev.filter((p) => !(p.usuario_id === usuario_id && p.evidencia_id === evidencia_id));
+      return [...prev, { usuario_id, evidencia_id }];
     });
-  };
+  }, []);
+
+  const toggleAllCompletedPairsForUser = useCallback((evidences: DuplicateAssignment[]) => {
+    setExcludedCompletedPairs((prev) => {
+      const allExcluded = evidences.every((d) =>
+        prev.some((p) => p.usuario_id === d.usuario_id && p.evidencia_id === d.evidencia_id)
+      );
+      if (allExcluded) {
+        return prev.filter((p) => !evidences.some((d) => d.usuario_id === p.usuario_id && d.evidencia_id === p.evidencia_id));
+      }
+      const newPairs = evidences
+        .filter((d) => !prev.some((p) => p.usuario_id === d.usuario_id && p.evidencia_id === d.evidencia_id))
+        .map((d) => ({ usuario_id: d.usuario_id, evidencia_id: d.evidencia_id }));
+      return [...prev, ...newPairs];
+    });
+  }, []);
 
   const activeDuplicates = duplicatesState.duplicates.filter((d) => d.estado !== "completado");
   const completedDuplicates = duplicatesState.duplicates.filter((d) => d.estado === "completado");
+
+  const duplicatesByUser = (dups: DuplicateAssignment[]) => {
+    return dups.reduce<Record<string, DuplicateAssignment[]>>((acc, dup) => {
+      const key = dup.usuario_id.toString();
+      if (!acc[key]) {
+        acc[key] = [];
+      }
+      acc[key].push(dup);
+      return acc;
+    }, {});
+  };
+
+  const activeDuplicatesGrouped = duplicatesByUser(activeDuplicates);
+  const completedDuplicatesGrouped = duplicatesByUser(completedDuplicates);
+
+  const activeDuplicateRows = useMemo<DuplicateGroupRow[]>(() =>
+    Object.values(activeDuplicatesGrouped).map((userDups) => ({
+      id: userDups[0].usuario_id,
+      usuario_nombre: userDups[0].usuario_nombre,
+      evidences: userDups,
+    } as DuplicateGroupRow)),
+    [activeDuplicatesGrouped]
+  );
+
+  const completedDuplicateRows = useMemo<DuplicateGroupRow[]>(() =>
+    Object.values(completedDuplicatesGrouped).map((userDups) => ({
+      id: userDups[0].usuario_id,
+      usuario_nombre: userDups[0].usuario_nombre,
+      evidences: userDups,
+    } as DuplicateGroupRow)),
+    [completedDuplicatesGrouped]
+  );
 
   // ── Validación y envío ───────────────────────────────────────────────────
   const validate = (): boolean => {
@@ -437,7 +489,9 @@ const EvidenceAssignmentSinglePage: React.FC = () => {
     try {
       for (const evidenciaId of formData.selectedEvidences) {
         const finalUsers = formData.selectedUsers.filter(
-          (id) => !excludedUsersSet.has(id)
+          (id) =>
+            !excludedUsersSet.has(id) &&
+            !excludedCompletedPairs.some((p) => p.usuario_id === id && p.evidencia_id === evidenciaId)
         );
         await evidenceAssignmentService.createAssignment({
           proceso_id: formData.proceso_id!,
@@ -736,7 +790,7 @@ const EvidenceAssignmentSinglePage: React.FC = () => {
 
           {/* ── Sección 4: Tablas de duplicados ── */}
           {duplicatesState.validating && (
-            <div className="rounded-corner border border-info/20 bg-blue-50 p-4">
+            <div className="rounded-corner border border-info-ring bg-info-light p-4">
               <div className="flex items-center gap-3">
                 <div
                   className="w-4 h-4 border-2 border-azul-una border-t-transparent rounded-full animate-spin flex-shrink-0"
@@ -753,163 +807,174 @@ const EvidenceAssignmentSinglePage: React.FC = () => {
 
               {/* Tabla amarilla — duplicados activos (bloqueados) */}
               {activeDuplicates.length > 0 && (
-                <div className="relative overflow-hidden rounded-corner border-2 border-yellow-300 bg-gradient-to-br from-yellow-50 to-yellow-100">
-                  <button
-                    type="button"
-                    onClick={() =>
-                      setExpandedDuplicates((prev) => ({ ...prev, active: !prev.active }))
-                    }
-                    className="w-full p-6 text-left hover:bg-yellow-100/50 transition-all"
-                  >
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-3">
-                        <div className="flex items-center justify-center w-10 h-10 rounded-full bg-yellow-600 text-white font-bold text-sm">
-                          {activeDuplicates.length}
-                        </div>
-                        <div>
-                          <h3 className="text-base font-semibold text-yellow-900">
-                            Asignaciones Duplicadas
-                          </h3>
-                          <p className="text-sm text-yellow-800">
-                            Usuarios con asignaciones pendientes en progreso. No se pueden reasignar.
-                          </p>
-                        </div>
-                      </div>
-                      <span className="text-yellow-900 text-sm">
-                        {expandedDuplicates.active ? "▴" : "▾"}
-                      </span>
-                    </div>
-                  </button>
-
-                  {expandedDuplicates.active && (
-                    <div className="border-t border-yellow-300 p-6">
-                      <div className="overflow-x-auto">
-                        <table className="w-full text-sm">
+                <Card className="overflow-hidden border-2 border-warning-ring bg-warning-light">
+                  <div className="px-6 pt-6 pb-2">
+                    <h2 className={`${TYPOGRAPHY.table.caption} font-semibold text-negro-una`}>Asignaciones Duplicadas</h2>
+                    <p className={`mt-1 ${TYPOGRAPHY.form.helper} text-gris-una`}>Usuarios con asignaciones pendientes en progreso. No se pueden reasignar.</p>
+                  </div>
+                  <DataTable<DuplicateGroupRow>
+                    data={activeDuplicateRows}
+                    columns={[
+                      {
+                        key: 'usuario',
+                        header: 'Usuario',
+                        align: 'left',
+                        render: (_, row) => (
+                          <div className="flex items-center gap-3">
+                            <div className="flex items-center justify-center w-8 h-8 rounded-full bg-warning text-white font-bold text-xs flex-shrink-0">
+                              {row.evidences.length}
+                            </div>
+                            <p className={`${TYPOGRAPHY.table.cell} font-semibold text-warning-dark`}>{row.usuario_nombre}</p>
+                          </div>
+                        ),
+                      },
+                    ]}
+                    getRowKey={(row) => row.id.toString()}
+                    searchable={false}
+                    expandableRow={(item) => (
+                      <div className="p-4 bg-blanco-una-2">
+                        <table className="w-full">
                           <thead>
-                            <tr className="border-b border-yellow-300">
-                              <th className="text-left py-3 px-4 font-semibold text-yellow-900">Usuario</th>
-                              <th className="text-left py-3 px-4 font-semibold text-yellow-900">Fecha Asignación</th>
+                            <tr className="border-b border-gris-light">
+                              <th className={`text-left py-2 px-4 font-semibold text-negro-una ${TYPOGRAPHY.table.header}`}>Evidencia</th>
+                              <th className={`text-center py-2 px-4 font-semibold text-negro-una ${TYPOGRAPHY.table.header}`}>Fecha Asignación</th>
                             </tr>
                           </thead>
                           <tbody>
-                            {activeDuplicates.map((dup) => (
-                              <tr key={`act-${dup.usuario_id}`} className="border-b border-yellow-200 bg-yellow-50/50">
-                                <td className="py-3 px-4 text-yellow-900 font-medium">{dup.usuario_nombre}</td>
-                                <td className="py-3 px-4 text-yellow-900">
-                                  {new Date(dup.fecha_asignacion).toLocaleDateString("es-ES")}
+                            {item.evidences.map((dup) => (
+                              <tr key={`act-sub-${dup.asignacion_id ?? dup.evidencia_id}`} className="border-b border-gris-light/50">
+                                <td className={`py-2 px-4 ${TYPOGRAPHY.table.cell}`}>
+                                  <p className="font-semibold text-negro-una">{evidenceById[dup.evidencia_id]?.nomenclatura ?? 'N/A'}</p>
+                                  <p className="text-xs text-gris-una mt-0.5">{evidenceById[dup.evidencia_id]?.descripcion ?? ''}</p>
+                                </td>
+                                <td className={`py-2 px-4 text-negro-una text-center ${TYPOGRAPHY.table.cell}`}>
+                                  {new Date(dup.fecha_asignacion).toLocaleDateString("es-ES", { day: '2-digit', month: '2-digit', year: 'numeric' })}
                                 </td>
                               </tr>
                             ))}
                           </tbody>
                         </table>
                       </div>
-                      <div className="mt-4 p-3 bg-yellow-50 rounded-corner border border-yellow-200">
-                        <p className="text-xs text-yellow-800">
-                          <strong>Bloqueado automáticamente:</strong> Estos usuarios fueron excluidos; ya tienen
-                          esta evidencia asignada en estado activo. No se pueden crear asignaciones duplicadas
-                          mientras no esté completada o cancelada.
-                        </p>
-                      </div>
+                    )}
+                  />
+                  <div className="px-6 pb-6">
+                    <div className={`p-3 bg-warning-light rounded-corner border border-warning-ring ${TYPOGRAPHY.form.helper} text-warning-dark`}>
+                      <strong>Bloqueado automáticamente:</strong> Estos usuarios fueron excluidos; ya tienen
+                      evidencias asignadas en estado activo. No se pueden crear asignaciones duplicadas
+                      mientras no estén completadas o canceladas.
                     </div>
-                  )}
-                </div>
+                  </div>
+                </Card>
               )}
 
               {/* Tabla azul — completados (se pueden reasignar) */}
               {completedDuplicates.length > 0 && (
-                <div className="relative overflow-hidden rounded-corner border-2 border-blue-300 bg-gradient-to-br from-blue-50 to-blue-100">
-                  <button
-                    type="button"
-                    onClick={() =>
-                      setExpandedDuplicates((prev) => ({ ...prev, completed: !prev.completed }))
+                <Card className="overflow-hidden border-2 border-info-ring bg-info-light">
+                  <div className="px-6 pt-6 pb-2">
+                    <h2 className={`${TYPOGRAPHY.table.caption} font-semibold text-negro-una`}>Evidencias Ya Completadas</h2>
+                    <p className={`mt-1 ${TYPOGRAPHY.form.helper} text-gris-una`}>Usuarios que ya completaron estas evidencias. Puede reasignarlas si es necesario.</p>
+                  </div>
+                  <DataTable<DuplicateGroupRow>
+                    data={completedDuplicateRows}
+                    customFilters={
+                      <label className="flex items-center gap-2 cursor-pointer select-none">
+                        <input
+                          type="checkbox"
+                          checked={completedDuplicates.every((d) => !excludedCompletedPairs.some((p) => p.usuario_id === d.usuario_id && p.evidencia_id === d.evidencia_id))}
+                          onChange={(e) => {
+                            if (e.target.checked) {
+                              setExcludedCompletedPairs([]);
+                            } else {
+                              setExcludedCompletedPairs(
+                                completedDuplicates.map((d) => ({ usuario_id: d.usuario_id, evidencia_id: d.evidencia_id }))
+                              );
+                            }
+                          }}
+                          className="w-4 h-4 rounded border-info-ring text-info focus:ring-info cursor-pointer"
+                        />
+                        <span className={`${TYPOGRAPHY.form.helper} text-info-dark`}>Seleccionar todos</span>
+                      </label>
                     }
-                    className="w-full p-6 text-left hover:bg-blue-100/50 transition-all"
-                  >
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-3">
-                        <div className="flex items-center justify-center w-10 h-10 rounded-full bg-blue-600 text-white font-bold text-sm">
-                          {completedDuplicates.length}
-                        </div>
-                        <div>
-                          <h3 className="text-base font-semibold text-blue-900">
-                            Evidencias Ya Completadas
-                          </h3>
-                          <p className="text-sm text-blue-800">
-                            Usuarios que ya completaron estas evidencias. Puede reasignarlas si es necesario.
-                          </p>
-                        </div>
-                      </div>
-                      <span className="text-blue-900 text-sm">
-                        {expandedDuplicates.completed ? "▴" : "▾"}
-                      </span>
-                    </div>
-                  </button>
-
-                  {expandedDuplicates.completed && (
-                    <div className="border-t border-blue-300 p-6">
-                      <div className="overflow-x-auto">
-                        <table className="w-full text-sm">
+                    columns={[
+                      {
+                        key: 'seleccion',
+                        header: 'Reasignar',
+                        align: 'center',
+                        width: '90px',
+                        render: (_, row) => (
+                          <input
+                            type="checkbox"
+                            checked={row.evidences.every((e) => !excludedCompletedPairs.some((p) => p.usuario_id === e.usuario_id && p.evidencia_id === e.evidencia_id))}
+                            onChange={(e) => { e.stopPropagation(); toggleAllCompletedPairsForUser(row.evidences); }}
+                            className="w-4 h-4 rounded border-info-ring text-info focus:ring-info cursor-pointer"
+                            aria-label={`Reasignar a ${row.usuario_nombre}`}
+                          />
+                        ),
+                      },
+                      {
+                        key: 'usuario',
+                        header: 'Usuario',
+                        align: 'left',
+                        render: (_, row) => (
+                          <div className="flex items-center gap-3">
+                            <div className="flex items-center justify-center w-8 h-8 rounded-full bg-info text-white font-bold text-xs flex-shrink-0">
+                              {row.evidences.length}
+                            </div>
+                            <p className={`${TYPOGRAPHY.table.cell} font-semibold text-info-dark`}>{row.usuario_nombre}</p>
+                          </div>
+                        ),
+                      },
+                    ]}
+                    getRowKey={(row) => row.id.toString()}
+                    searchable={false}
+                    expandableRow={(item) => (
+                      <div className="p-4 bg-blanco-una-2">
+                        <table className="w-full">
                           <thead>
-                            <tr className="border-b border-blue-300">
-                              <th className="py-3 px-4">
-                                <input
-                                  type="checkbox"
-                                  checked={completedDuplicates.every(
-                                    (d) => !excludedUsersSet.has(d.usuario_id)
-                                  )}
-                                  onChange={(e) => {
-                                    const ids = completedDuplicates.map((d) => d.usuario_id);
-                                    const current = formData.excludedUsers ?? [];
-                                    updateFormData({
-                                      excludedUsers: e.target.checked
-                                        ? current.filter((id) => !ids.includes(id))
-                                        : [
-                                            ...current,
-                                            ...ids.filter((id) => !current.includes(id)),
-                                          ],
-                                    });
-                                  }}
-                                  className="w-4 h-4 rounded border-blue-400 text-blue-600 focus:ring-blue-500 cursor-pointer"
-                                  aria-label="Seleccionar todos los completados"
-                                />
-                              </th>
-                              <th className="text-left py-3 px-4 font-semibold text-blue-900">Usuario</th>
-                              <th className="text-left py-3 px-4 font-semibold text-blue-900">Fecha Completado</th>
+                            <tr className="border-b border-gris-light">
+                              <th className="w-12 py-2 px-4"></th>
+                              <th className={`text-left py-2 px-4 font-semibold text-negro-una ${TYPOGRAPHY.table.header}`}>Evidencia</th>
+                              <th className={`text-center py-2 px-4 font-semibold text-negro-una ${TYPOGRAPHY.table.header}`}>Fecha Completado</th>
                             </tr>
                           </thead>
                           <tbody>
-                            {completedDuplicates.map((dup) => (
-                              <tr
-                                key={`comp-${dup.usuario_id}`}
-                                className="border-b border-blue-200 hover:bg-blue-50"
-                              >
-                                <td className="py-3 px-4">
-                                  <input
-                                    type="checkbox"
-                                    checked={!excludedUsersSet.has(dup.usuario_id)}
-                                    onChange={() => handleToggleUser(dup.usuario_id)}
-                                    className="w-4 h-4 rounded border-blue-400 text-blue-600 focus:ring-blue-500 cursor-pointer"
-                                    aria-label={`Reasignar a ${dup.usuario_nombre}`}
-                                  />
-                                </td>
-                                <td className="py-3 px-4 text-blue-900 font-medium">{dup.usuario_nombre}</td>
-                                <td className="py-3 px-4 text-blue-900">
-                                  {new Date(dup.fecha_asignacion).toLocaleDateString("es-ES")}
-                                </td>
-                              </tr>
-                            ))}
+                            {item.evidences.map((dup) => {
+                              const isExcluded = excludedCompletedPairs.some(
+                                (p) => p.usuario_id === dup.usuario_id && p.evidencia_id === dup.evidencia_id
+                              );
+                              return (
+                                <tr key={`comp-sub-${dup.asignacion_id ?? dup.evidencia_id}`} className="border-b border-gris-light/50">
+                                  <td className="py-2 px-4 text-center">
+                                    <input
+                                      type="checkbox"
+                                      checked={!isExcluded}
+                                      onChange={() => toggleCompletedPair(dup.usuario_id, dup.evidencia_id)}
+                                      className="w-4 h-4 rounded border-info-ring text-info focus:ring-info cursor-pointer"
+                                      aria-label={`Reasignar ${evidenceById[dup.evidencia_id]?.nomenclatura}`}
+                                    />
+                                  </td>
+                                  <td className={`py-2 px-4 ${TYPOGRAPHY.table.cell}`}>
+                                    <p className="font-semibold text-negro-una">{evidenceById[dup.evidencia_id]?.nomenclatura ?? 'N/A'}</p>
+                                    <p className="text-xs text-gris-una mt-0.5">{evidenceById[dup.evidencia_id]?.descripcion ?? ''}</p>
+                                  </td>
+                                  <td className={`py-2 px-4 text-negro-una text-center ${TYPOGRAPHY.table.cell}`}>
+                                    {new Date(dup.fecha_asignacion).toLocaleDateString("es-ES", { day: '2-digit', month: '2-digit', year: 'numeric' })}
+                                  </td>
+                                </tr>
+                              );
+                            })}
                           </tbody>
                         </table>
                       </div>
-                      <div className="mt-4 p-3 bg-blue-50 rounded-corner border border-blue-200">
-                        <p className="text-xs text-blue-800">
-                          <strong>Reasignación permitida:</strong> Estos usuarios ya completaron estas evidencias.
-                          Márquelos si desea reasignarlas para crear una nueva asignación.
-                        </p>
-                      </div>
+                    )}
+                  />
+                  <div className="px-6 pb-6">
+                    <div className={`p-3 bg-info-light rounded-corner border border-info-ring ${TYPOGRAPHY.form.helper} text-info-dark`}>
+                      <strong>Reasignación permitida:</strong> Estos usuarios ya completaron estas evidencias.
+                      Márquelos si desea reasignarlas para crear una nueva asignación.
                     </div>
-                  )}
-                </div>
+                  </div>
+                </Card>
               )}
             </div>
           )}
