@@ -5,7 +5,8 @@
  * entre las diferentes acciones (crear, editar, eliminar).
  */
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { StructureTable } from './Components/StructureTable';
 import { StructureEditModal } from './Components/StructureEditModal';
 import { StructureCreateModal } from './Components/StructureCreateModal';
@@ -21,6 +22,12 @@ import { SearchInput } from '@/Components/Ui/Forms/SearchInput';
 import { Button } from '@/Components/Ui/Buttons/Button';
 import { truncateText } from '@/Utils';
 import { useToast } from '@/Context/ToastContext';
+import { CustomSelect } from '@/Components/Ui/Forms/SingleSelect';
+import { FlexibleElementTable } from './Components/FlexibleElementTable';
+import { StructureElementFormModal } from '@/Pages/StructureModels/Components/StructureElementFormModal';
+import { useStructureModels } from '@/Hooks/UseStructureModels';
+import { useStructureElements } from '@/Hooks/UseStructureElements';
+import type { FlexibleElement, CreateFlexibleElementForm, EditFlexibleElementForm } from '@/Types/StructureModelTypes';
 
 const StructureList: React.FC = () => {
   
@@ -37,6 +44,61 @@ const StructureList: React.FC = () => {
   loadTree,
   treeData 
 } = useStructure();
+
+  // ── Selector de modelo ─────────────────────────────────────────────────────
+  const { models } = useStructureModels();
+  const [searchParams, setSearchParams] = useSearchParams();
+
+  const SESSION_KEY = 'saac.structure.lastModel';
+
+  const initialModelId = (): number | null => {
+    // Prioridad 1: parámetro URL (viene de una tarjeta de modelo)
+    const urlRaw = searchParams.get('modelo');
+    if (urlRaw && urlRaw !== '0') {
+      const parsed = Number(urlRaw);
+      if (Number.isFinite(parsed) && parsed > 0) return parsed;
+    }
+    // Prioridad 2: último modelo usado en esta sesión
+    const stored = sessionStorage.getItem(SESSION_KEY);
+    if (stored && stored !== '0') {
+      const parsed = Number(stored);
+      if (Number.isFinite(parsed) && parsed > 0) return parsed;
+    }
+    // Por defecto: Modelo Tradicional
+    return null;
+  };
+
+  const [selectedModelId, setSelectedModelId] = useState<number | null>(initialModelId);
+  const isFlexible = selectedModelId !== null;
+
+  // Sincronizar selección con sessionStorage
+  useEffect(() => {
+    sessionStorage.setItem(SESSION_KEY, selectedModelId !== null ? String(selectedModelId) : '0');
+  }, [selectedModelId]);
+
+  const {
+    elements,
+    isLoading: elemLoading,
+    createElement,
+    updateElement: updateFlexElement,
+    deleteElement: deleteFlexElement,
+    toggleActive: toggleFlexActive,
+  } = useStructureElements(selectedModelId);
+
+  const modelOptions = useMemo(() => [
+    { value: '0', label: 'Modelo Tradicional' },
+    ...models
+      .filter(m => m.tipo === 'elemento_flexible')
+      .map(m => ({ value: String(m.modelo_estructura_id), label: m.nombre })),
+  ], [models]);
+
+  const handleModelChange = (val: string) => {
+    const newId = val === '0' ? null : Number(val);
+    setSelectedModelId(newId);
+    setSearchQuery('');
+    // Actualizar URL para que el botón "atrás" refleje el estado correcto
+    setSearchParams(newId ? { modelo: String(newId) } : {}, { replace: true });
+  };
 
   // Cargar árbol al montar la página
   useEffect(() => {
@@ -82,6 +144,23 @@ const StructureList: React.FC = () => {
 
   // Estado para búsqueda
   const [searchQuery, setSearchQuery] = useState('');
+
+  // ── Estados modales para modo flexible ────────────────────────────────────
+  const [flexFormModal, setFlexFormModal] = useState<{
+    isOpen: boolean;
+    element: FlexibleElement | null;
+  }>({ isOpen: false, element: null });
+
+  const [flexDeleteModal, setFlexDeleteModal] = useState<{
+    isOpen: boolean;
+    element: FlexibleElement | null;
+    loading: boolean;
+  }>({ isOpen: false, element: null, loading: false });
+
+  const [flexToggleModal, setFlexToggleModal] = useState<{
+    isOpen: boolean;
+    element: FlexibleElement | null;
+  }>({ isOpen: false, element: null });
 
   const handleEditElement = (element: StructureElement) => {
     setEditModalState({ isOpen: true, element });
@@ -202,6 +281,45 @@ const StructureList: React.FC = () => {
     setCreateModalOpen(true);
   };
 
+  // ── Handlers modo flexible ─────────────────────────────────────────────────
+  const handleFlexEdit = (el: FlexibleElement) => setFlexFormModal({ isOpen: true, element: el });
+  const handleFlexDelete = (el: FlexibleElement) => setFlexDeleteModal({ isOpen: true, element: el, loading: false });
+  const handleFlexToggleActive = (el: FlexibleElement) => setFlexToggleModal({ isOpen: true, element: el });
+
+  const handleFlexFormConfirm = async (
+    form: CreateFlexibleElementForm | EditFlexibleElementForm,
+    id?: number
+  ) => {
+    if (id !== undefined) return updateFlexElement(id, form as EditFlexibleElementForm);
+    return createElement(form as CreateFlexibleElementForm);
+  };
+
+  const confirmFlexDelete = async () => {
+    if (!flexDeleteModal.element) return;
+    const elName = flexDeleteModal.element.tipo;
+    setFlexDeleteModal(p => ({ ...p, loading: true }));
+    const result = await deleteFlexElement(flexDeleteModal.element.elemento_id);
+    setFlexDeleteModal({ isOpen: false, element: null, loading: false });
+    if (result.success) {
+      setSuccessModalState({ isOpen: true, elementName: elName, action: 'delete' });
+    } else {
+      showToast({ type: 'error', title: result.error ?? 'Error al eliminar el elemento' });
+    }
+  };
+
+  const confirmFlexToggle = async () => {
+    if (!flexToggleModal.element) return;
+    const el = flexToggleModal.element;
+    const action: 'activate' | 'deactivate' = el.activo ? 'deactivate' : 'activate';
+    const result = await toggleFlexActive(el.elemento_id, !el.activo);
+    setFlexToggleModal({ isOpen: false, element: null });
+    if (result.success) {
+      setSuccessModalState({ isOpen: true, elementName: el.tipo, action });
+    } else {
+      showToast({ type: 'error', title: result.error ?? 'Error al cambiar el estado' });
+    }
+  };
+
   const closeSuccessModal = () => {
     setSuccessModalState({ isOpen: false, elementName: '', action: 'activate' });
   };
@@ -213,7 +331,14 @@ const StructureList: React.FC = () => {
           title={moduleInfo.title}
           description={moduleInfo.description}
           headerExtra={
-            <div className="flex flex-col sm:flex-row w-full gap-2 shrink-0 lg:w-auto">
+            <div className="flex flex-col sm:flex-row w-full gap-2 shrink-0 lg:w-auto items-end">
+              <CustomSelect
+                label="Modelo"
+                value={selectedModelId === null ? '0' : String(selectedModelId)}
+                onChange={handleModelChange}
+                options={modelOptions}
+                className="w-52"
+              />
               <SearchInput
                 placeholder="Buscar elementos..."
                 value={searchQuery}
@@ -221,7 +346,7 @@ const StructureList: React.FC = () => {
                 className="w-full sm:w-72"
               />
               <Button
-                onClick={handleCreateElement}
+                onClick={isFlexible ? () => setFlexFormModal({ isOpen: true, element: null }) : handleCreateElement}
                 variant="secondary"
               >
                 Crear
@@ -229,14 +354,25 @@ const StructureList: React.FC = () => {
             </div>
           }
         />
-        <StructureTable
-          treeData={treeData}
-          isLoading={isLoading}
-          onEdit={handleEditElement}
-          onDelete={handleDeleteElement}
-          onToggleActive={handleToggleActive}
-          searchQuery={searchQuery}
-        />
+        {isFlexible ? (
+          <FlexibleElementTable
+            elements={elements}
+            isLoading={elemLoading}
+            searchQuery={searchQuery}
+            onEdit={handleFlexEdit}
+            onDelete={handleFlexDelete}
+            onToggleActive={handleFlexToggleActive}
+          />
+        ) : (
+          <StructureTable
+            treeData={treeData}
+            isLoading={isLoading}
+            onEdit={handleEditElement}
+            onDelete={handleDeleteElement}
+            onToggleActive={handleToggleActive}
+            searchQuery={searchQuery}
+          />
+        )}
       </ScreenContainer>
 
     {/* Modal de confirmación de eliminación*/}
@@ -314,25 +450,94 @@ const StructureList: React.FC = () => {
         onSuccess={() => { loadTree(); setEditModalState({ isOpen: false, element: null }); }}
       />
 
-      {/* Modal de éxito */}
+      {/* Modal de éxito (compartido entre modo tradicional y flexible) */}
       <SuccessModal
         isOpen={successModalState.isOpen}
         onClose={closeSuccessModal}
         title={
-          successModalState.action === 'activate' 
-            ? 'Elemento activado' 
+          successModalState.action === 'activate'
+            ? 'Elemento activado'
             : successModalState.action === 'deactivate'
             ? 'Elemento inactivado'
             : 'Elemento eliminado'
         }
         message={`El elemento "${truncateText(successModalState.elementName)}" ha sido ${
-          successModalState.action === 'activate' 
-            ? 'activado' 
+          successModalState.action === 'activate'
+            ? 'activado'
             : successModalState.action === 'deactivate'
             ? 'inactivado'
             : 'eliminado'
         } correctamente.`}
       />
+
+      {/* ── Modales modo flexible ───────────────────────────────────────────── */}
+
+      {/* Modal crear/editar elemento flexible */}
+      {isFlexible && selectedModelId && (
+        <StructureElementFormModal
+          isOpen={flexFormModal.isOpen}
+          onClose={() => setFlexFormModal({ isOpen: false, element: null })}
+          modelId={selectedModelId}
+          element={flexFormModal.element}
+          allElements={elements}
+          isLoadingElements={elemLoading}
+          onConfirm={handleFlexFormConfirm}
+        />
+      )}
+
+      {/* Modal eliminar elemento flexible */}
+      <DeleteConfirmationModal
+        isOpen={flexDeleteModal.isOpen}
+        onClose={() => setFlexDeleteModal({ isOpen: false, element: null, loading: false })}
+        onConfirm={confirmFlexDelete}
+        title="Confirmar Eliminación"
+        itemName={truncateText(flexDeleteModal.element?.tipo || '')}
+        confirmLabel="Eliminar"
+        cancelLabel="Cancelar"
+        variant="danger"
+        isLoading={flexDeleteModal.loading}
+      />
+
+      {/* Modal activar elemento flexible */}
+      {flexToggleModal.element && !flexToggleModal.element.activo && (
+        <Modal
+          isOpen={flexToggleModal.isOpen}
+          onClose={() => setFlexToggleModal({ isOpen: false, element: null })}
+          onConfirm={confirmFlexToggle}
+          variant="success"
+          title="Confirmar activación"
+          confirmLabel="Sí, activar"
+          cancelLabel="Cancelar"
+          showCancel
+          showConfirm
+        >
+          <p className="text-sm text-gris-una-2 leading-relaxed">
+            ¿Está seguro de que desea activar{' '}
+            <strong>"{truncateText(flexToggleModal.element.tipo)}"</strong>?
+          </p>
+        </Modal>
+      )}
+
+      {/* Modal inactivar elemento flexible */}
+      {flexToggleModal.element && flexToggleModal.element.activo && (
+        <Modal
+          isOpen={flexToggleModal.isOpen}
+          onClose={() => setFlexToggleModal({ isOpen: false, element: null })}
+          onConfirm={confirmFlexToggle}
+          variant="info"
+          title="Confirmar inactivación"
+          confirmLabel="Sí, inactivar"
+          cancelLabel="Cancelar"
+          showCancel
+          showConfirm
+          footerMeta="Esta acción puede ser revertida en el futuro"
+        >
+          <p className="text-sm text-gris-una-2 leading-relaxed">
+            ¿Está seguro de que desea inactivar{' '}
+            <strong>"{truncateText(flexToggleModal.element.tipo)}"</strong>?
+          </p>
+        </Modal>
+      )}
     </>
   );
 };

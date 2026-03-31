@@ -13,22 +13,16 @@ import { Modal } from '@/Components/Ui/Modals/Modal';
 import { SuccessModal } from '@/Components/Ui/Modals/SuccessModal';
 import { StructureModelFormModal } from './Components/StructureModelFormModal';
 import { StructureModelDeleteModal } from './Components/StructureModelDeleteModal';
-import { StructureElementsView } from './Components/StructureElementsView';
 import { useStructureModels } from '@/Hooks/UseStructureModels';
 import { useToast } from '@/Context/ToastContext';
 import type { StructureModel, CreateModelForm, EditModelForm } from '@/Types/StructureModelTypes';
 import { cn } from '@/Utils/ClassNames';
 import { TYPOGRAPHY } from '@/Constants/Typography';
 
-type View = 'models' | 'elements';
-
 const StructureModelsPage: React.FC = () => {
   const { showToast } = useToast();
   const { models, isLoading, createModel, updateModel, toggleActive, deleteModel } =
     useStructureModels();
-
-  const [view, setView] = useState<View>('models');
-  const [selectedModel, setSelectedModel] = useState<StructureModel | null>(null);
 
   const [formModal, setFormModal] = useState<{
     isOpen: boolean;
@@ -95,23 +89,7 @@ const StructureModelsPage: React.FC = () => {
     }
   };
 
-  // ── Render – Elementos View ───────────────────────────────────────────────
-
-  if (view === 'elements' && selectedModel) {
-    return (
-      <ScreenContainer>
-        <StructureElementsView
-          model={selectedModel}
-          onBack={() => {
-            setView('models');
-            setSelectedModel(null);
-          }}
-        />
-      </ScreenContainer>
-    );
-  }
-
-  // ── Render – Models View ──────────────────────────────────────────────────
+  // ── Render ────────────────────────────────────────────────────────────────
 
   return (
     <ScreenContainer>
@@ -142,10 +120,6 @@ const StructureModelsPage: React.FC = () => {
             <ModelCard
               key={model.modelo_estructura_id}
               model={model}
-              onViewElements={() => {
-                setSelectedModel(model);
-                setView('elements');
-              }}
               onEdit={() => setFormModal({ isOpen: true, model })}
               onToggleActive={() => handleToggleActive(model)}
               onDelete={() => setDeleteModal({ isOpen: true, model, loading: false, hasCiclos: false })}
@@ -224,7 +198,6 @@ const CARD_ACTION_BTN = '!size-9 !p-1.5';
 
 interface ModelCardProps {
   model: StructureModel;
-  onViewElements: () => void;
   onEdit: () => void;
   onToggleActive: () => void;
   onDelete: () => void;
@@ -233,7 +206,6 @@ interface ModelCardProps {
 
 const ModelCard: React.FC<ModelCardProps> = ({
   model,
-  onViewElements,
   onEdit,
   onToggleActive,
   onDelete,
@@ -294,9 +266,13 @@ const ModelCard: React.FC<ModelCardProps> = ({
       <div className="flex items-center justify-end gap-1 pt-1">
         <TableActionButton
           action="view"
-          tooltip={isTradicional ? 'Ver estructura' : 'Ver elementos'}
+          tooltip="Ver estructura"
           className={CARD_ACTION_BTN}
-          onClick={isTradicional ? () => navigate('/estructura/listar') : onViewElements}
+          onClick={() => navigate(
+            isTradicional
+              ? '/estructura/listar'
+              : `/estructura/listar?modelo=${model.modelo_estructura_id}`
+          )}
         />
         <TableActionButton
           action="edit"

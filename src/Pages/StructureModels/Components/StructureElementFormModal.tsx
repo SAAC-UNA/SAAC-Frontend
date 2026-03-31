@@ -28,6 +28,8 @@ interface Props {
   /** Padre preseleccionado para creación de hijos */
   defaultParentId?: number | null;
   allElements: FlexibleElement[];
+  /** Indica que la lista de elementos aún está cargando (bloquea el select de padre) */
+  isLoadingElements?: boolean;
   onConfirm: (
     form: CreateFlexibleElementForm | EditFlexibleElementForm,
     id?: number
@@ -65,6 +67,7 @@ export const StructureElementFormModal: React.FC<Props> = ({
   element,
   defaultParentId,
   allElements,
+  isLoadingElements = false,
   onConfirm,
 }) => {
   const isEditing = !!element;
@@ -165,9 +168,9 @@ export const StructureElementFormModal: React.FC<Props> = ({
         isOpen={isOpen && !confirmOpen && !success.isOpen}
         onClose={onClose}
         onConfirm={handleSubmitRequest}
-        title={isEditing ? 'Editar Elemento' : 'Agregar Elemento'}
+        title={isEditing ? 'Editar Elemento' : 'Crear Elemento'}
         subtitle={isEditing ? element?.tipo : undefined}
-        confirmLabel={isEditing ? 'Guardar cambios' : 'Agregar elemento'}
+        confirmLabel={isEditing ? 'Guardar' : 'Crear'}
         isEditing={isEditing}
         size="md"
       >
@@ -201,7 +204,9 @@ export const StructureElementFormModal: React.FC<Props> = ({
               label="Elemento padre"
               value={form.padre_id}
               onChange={val => setForm(p => ({ ...p, padre_id: val }))}
-              options={parentOptions}
+              options={isLoadingElements ? [] : parentOptions}
+              disabled={isLoadingElements}
+              placeholder={isLoadingElements ? 'Cargando elementos...' : 'Seleccionar...'}
             />
           )}
           <Textarea
