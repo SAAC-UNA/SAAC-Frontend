@@ -232,7 +232,7 @@
   --text-table-header: 12.8px; /* 14px - Headers de tabla */
   --text-table-cell: 12.8px; /* 12px - Contenido de celdas */
   --text-table-caption: 12.8px; /* 14px - Título de tabla */
-  --text-badge: 12.8px; /* 12px - Badges, chips, pills de acción (en tablas) */
+  --text-badge: 10.8px; /* 12px - Badges, chips, pills de acción (en tablas) */
   --text-alert-title: 12.8px; /* 14px - Título de alertas */
   --text-alert-message: 12.8px; /* 14px - Mensaje de alertas */
   --text-empty-title: 1.125rem; /* 18px - Título de estados vacíos */

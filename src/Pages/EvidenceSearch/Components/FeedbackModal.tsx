@@ -14,13 +14,13 @@
 import React, { useState, useCallback } from 'react';
 import { Modal } from '@/Components/Ui/Modals/Modal';
 import { Textarea } from '@/Components/Ui/Forms/Textarea';
+import { RadioGroupCards, type RadioCardOption } from '@/Components/Ui/Forms/RadioGroupCards';
 import { useToast } from '@/Context/ToastContext';
 import {
   feedbackService,
   type FeedbackEstado,
 } from '@/Services/FeedbackService';
 import type { EvidenceSearchResult } from '@/Types/EvidenceSearchTypes';
-import { TYPOGRAPHY } from '@/Constants/Typography';
 
 interface FeedbackModalProps {
   isOpen: boolean;
@@ -30,16 +30,28 @@ interface FeedbackModalProps {
   onSuccess?: (evidenciaId: number, nuevoEstado: FeedbackEstado) => void;
 }
 
-const ESTADOS_OPCIONES: { value: FeedbackEstado; label: string; description: string }[] = [
+const ESTADOS_OPCIONES: RadioCardOption[] = [
   {
     value: 'Observada',
     label: 'Observada',
     description: 'Requiere corrección — el responsable debe subsanar las observaciones.',
+    iconBg: 'bg-warning-light',
+    icon: (
+      <svg className="w-4 h-4 text-warning-dark flex-shrink-0" viewBox="0 0 20 20" fill="currentColor">
+        <path fillRule="evenodd" d="M8.485 2.495c.673-1.167 2.357-1.167 3.03 0l6.28 10.875c.673 1.167-.17 2.625-1.516 2.625H3.72c-1.347 0-2.189-1.458-1.515-2.625L8.485 2.495ZM10 5a.75.75 0 0 1 .75.75v3.5a.75.75 0 0 1-1.5 0v-3.5A.75.75 0 0 1 10 5Zm0 9a1 1 0 1 0 0-2 1 1 0 0 0 0 2Z" clipRule="evenodd" />
+      </svg>
+    ),
   },
   {
     value: 'Validada',
     label: 'Validada',
     description: 'Aprobada formalmente — la evidencia cumple los criterios de evaluación.',
+    iconBg: 'bg-verde-light',
+    icon: (
+      <svg className="w-4 h-4 text-verde-dark flex-shrink-0" viewBox="0 0 20 20" fill="currentColor">
+        <path fillRule="evenodd" d="M10 18a8 8 0 1 0 0-16 8 8 0 0 0 0 16Zm3.857-9.809a.75.75 0 0 0-1.214-.882l-3.483 4.79-1.88-1.88a.75.75 0 1 0-1.06 1.061l2.5 2.5a.75.75 0 0 0 1.137-.089l4-5.5Z" clipRule="evenodd" />
+      </svg>
+    ),
   },
 ];
 
@@ -150,46 +162,18 @@ export const FeedbackModal: React.FC<FeedbackModalProps> = ({
       <div className="flex flex-col gap-5 py-1">
 
         {/* Selector de estado */}
-        <div className="flex flex-col gap-2">
-          <label className={`font-semibold text-negro-una-2 ${TYPOGRAPHY.form.label}`}>
-            Estado <span className="text-error-dark">*</span>
-          </label>
-          <div className="flex flex-col gap-3">
-            {ESTADOS_OPCIONES.map((opcion) => (
-              <label
-                key={opcion.value}
-                className={`flex items-start gap-3 p-3 rounded-lg border cursor-pointer transition-colors ${
-                  estado === opcion.value
-                    ? 'border-azul-una bg-azul-ring'
-                    : 'border-gris-una-3 hover:border-gris-una-2 bg-white'
-                }`}
-              >
-                <input
-                  type="radio"
-                  name="estado_retroalimentacion"
-                  value={opcion.value}
-                  checked={estado === opcion.value}
-                  onChange={() => {
-                    setEstado(opcion.value);
-                    setErrors(prev => ({ ...prev, estado: undefined }));
-                  }}
-                  className="mt-0.5 accent-azul-una"
-                />
-                <div className="flex flex-col">
-                  <span className={`font-semibold text-negro-una-2 ${TYPOGRAPHY.body}`}>
-                    {opcion.label}
-                  </span>
-                  <span className={`text-gris-una-2 ${TYPOGRAPHY.form.helper}`}>
-                    {opcion.description}
-                  </span>
-                </div>
-              </label>
-            ))}
-          </div>
-          {errors.estado && (
-            <p className={`text-error-dark ${TYPOGRAPHY.form.helper}`}>{errors.estado}</p>
-          )}
-        </div>
+        <RadioGroupCards
+          name="estado_retroalimentacion"
+          value={estado}
+          onChange={(val) => {
+            setEstado(val as FeedbackEstado);
+            setErrors(prev => ({ ...prev, estado: undefined }));
+          }}
+          options={ESTADOS_OPCIONES}
+          label="Estado"
+          required
+          error={errors.estado}
+        />
 
         {/* Campo de comentario */}
         <Textarea
