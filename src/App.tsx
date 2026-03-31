@@ -27,6 +27,9 @@ const StructureList = lazy(() => import("@/Pages/Structure/StructureList"));
 const StructureModelsPage = lazy(
   () => import("@/Pages/StructureModels/StructureModelsPage"),
 );
+const AccreditationCyclesPage = lazy(
+  () => import("@/Pages/AccreditationCycles/AccreditationCyclesPage"),
+);
 const EvidenceAssignment = lazy(() =>
   import("./Pages/EvidenceAssignment").then((m) => ({
     default: m.EvidenceAssignment,
@@ -174,6 +177,18 @@ function App() {
                                 requireRoles={["Administrador", "Superusuario"]}
                               >
                                 <StructureModelsPage />
+                              </ProtectedRoute>
+                            }
+                          />
+
+                          {/* Ciclos de Acreditación - Administrador y Superusuario */}
+                          <Route
+                            path="/ciclos-acreditacion"
+                            element={
+                              <ProtectedRoute
+                                requireRoles={["Administrador", "Superusuario"]}
+                              >
+                                <AccreditationCyclesPage />
                               </ProtectedRoute>
                             }
                           />

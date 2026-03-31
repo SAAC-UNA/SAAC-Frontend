@@ -183,6 +183,13 @@ export const getNavigationItems = (userRoles?: string | string[]): NavItem[] => 
               href: '/estructura/modelos',
               isActive: false,
             },
+            {
+              id: 'ciclos-acreditacion',
+              label: 'Ciclos de Acreditación',
+              icon: calendarIcon,
+              href: '/ciclos-acreditacion',
+              isActive: false,
+            },
           ]
         : []),
       {
