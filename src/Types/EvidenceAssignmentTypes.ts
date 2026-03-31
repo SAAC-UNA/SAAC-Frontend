@@ -4,7 +4,11 @@
  */
 
 // Estados posibles de una asignación
-export type AssignmentStatus = 'pendiente' | 'en_progreso' | 'completado' | 'vencido';
+export type AssignmentStatus =
+  | "pendiente"
+  | "en_progreso"
+  | "completado"
+  | "vencido";
 
 // Modelo completo de asignación de evidencia
 export interface EvidenceAssignment {
@@ -18,16 +22,18 @@ export interface EvidenceAssignment {
   comentario: string | null;
   created_at: string;
   updated_at: string;
-  
+
   // HU-016: Indica si tiene una solicitud de ampliación pendiente
   has_pending_extension_request?: boolean;
-  
+  // Indica si ya hay al menos un archivo/enlace subido por el responsable
+  has_uploaded_files?: boolean;
+
   // Relaciones opcionales (cuando están cargadas con eager loading)
   proceso?: {
     proceso_id: number;
     ciclo_acreditacion_id: number;
   };
-  
+
   evidencia?: {
     evidencia_id: number;
     criterio_id: number;
@@ -53,7 +59,7 @@ export interface EvidenceAssignment {
       fecha: string;
     }>;
   };
-  
+
   usuario?: {
     usuario_id: number;
     nombre: string;
@@ -79,10 +85,10 @@ export interface UpdateAssignmentParams {
 
 // Filtros para la lista de asignaciones (uso en frontend)
 export interface AssignmentFilters {
-  estado?: AssignmentStatus | 'todos';
+  estado?: AssignmentStatus | "todos";
   search?: string; // Búsqueda por nombre o descripción de evidencia
-  sortBy?: 'fecha_asignacion' | 'fecha_limite' | 'nombre';
-  sortDirection?: 'asc' | 'desc';
+  sortBy?: "fecha_asignacion" | "fecha_limite" | "nombre";
+  sortDirection?: "asc" | "desc";
 }
 
 // Estado local para gestión de asignaciones en componentes
@@ -110,26 +116,28 @@ export interface StatusBadgeInfo {
  */
 export function isNearDeadline(fechaLimite: string | null): boolean {
   if (!fechaLimite) return false;
-  
+
   const deadline = new Date(fechaLimite);
   const now = new Date();
   const diffTime = deadline.getTime() - now.getTime();
   const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-  
+
   return diffDays <= 7 && diffDays > 0;
 }
 
 /**
  * Calcula los días restantes hasta la fecha límite
  */
-export function getDaysUntilDeadline(fechaLimite: string | null): number | null {
+export function getDaysUntilDeadline(
+  fechaLimite: string | null,
+): number | null {
   if (!fechaLimite) return null;
-  
+
   const deadline = new Date(fechaLimite);
   const now = new Date();
   const diffTime = deadline.getTime() - now.getTime();
   const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-  
+
   return diffDays;
 }
 
@@ -137,26 +145,26 @@ export function getDaysUntilDeadline(fechaLimite: string | null): number | null 
  * Formatea la fecha límite de manera legible
  */
 export function formatDeadline(fechaLimite: string | null): string {
-  if (!fechaLimite) return 'Sin fecha límite';
-  
+  if (!fechaLimite) return "Sin fecha límite";
+
   const deadline = new Date(fechaLimite);
   const now = new Date();
   const diffTime = deadline.getTime() - now.getTime();
   const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-  
+
   if (diffDays < 0) {
-    return `Vencido hace ${Math.abs(diffDays)} día${Math.abs(diffDays) !== 1 ? 's' : ''}`;
+    return `Vencido hace ${Math.abs(diffDays)} día${Math.abs(diffDays) !== 1 ? "s" : ""}`;
   } else if (diffDays === 0) {
-    return 'Vence hoy';
+    return "Vence hoy";
   } else if (diffDays === 1) {
-    return 'Vence mañana';
+    return "Vence mañana";
   } else if (diffDays <= 7) {
     return `Vence en ${diffDays} días`;
   } else {
-    return new Intl.DateTimeFormat('es-CR', {
-      day: '2-digit',
-      month: 'short',
-      year: 'numeric'
+    return new Intl.DateTimeFormat("es-CR", {
+      day: "2-digit",
+      month: "short",
+      year: "numeric",
     }).format(deadline);
   }
 }
@@ -165,10 +173,10 @@ export function formatDeadline(fechaLimite: string | null): string {
  * Formatea una fecha ISO a formato legible
  */
 export function formatDate(isoDate: string): string {
-  return new Intl.DateTimeFormat('es-CR', {
-    day: '2-digit',
-    month: '2-digit',
-    year: 'numeric'
+  return new Intl.DateTimeFormat("es-CR", {
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
   }).format(new Date(isoDate));
 }
 
@@ -177,7 +185,10 @@ export function formatDate(isoDate: string): string {
  */
 export function isOverdue(assignment: EvidenceAssignment): boolean {
   if (!assignment.fecha_limite) return false;
-  return new Date(assignment.fecha_limite) < new Date() && assignment.estado !== 'completado';
+  return (
+    new Date(assignment.fecha_limite) < new Date() &&
+    assignment.estado !== "completado"
+  );
 }
 
 /**
@@ -185,72 +196,81 @@ export function isOverdue(assignment: EvidenceAssignment): boolean {
  */
 export function filterAndSortAssignments(
   assignments: EvidenceAssignment[],
-  filters: AssignmentFilters
+  filters: AssignmentFilters,
 ): EvidenceAssignment[] {
   let filtered = [...assignments];
-  
+
   // Filtrar por estado
-  if (filters.estado && filters.estado !== 'todos') {
-    filtered = filtered.filter(a => a.estado === filters.estado);
+  if (filters.estado && filters.estado !== "todos") {
+    filtered = filtered.filter((a) => a.estado === filters.estado);
   }
-  
+
   // Filtrar por búsqueda
   if (filters.search && filters.search.trim()) {
     const searchTerm = filters.search.toLowerCase().trim();
 
     // Mapa de etiquetas legibles de estado para búsqueda
     const estadoLabels: Record<string, string> = {
-      pendiente: 'pendiente',
-      en_progreso: 'en progreso',
-      completado: 'completado',
-      vencido: 'vencido',
+      pendiente: "pendiente",
+      en_progreso: "en progreso",
+      completado: "completado",
+      vencido: "vencido",
     };
 
-    filtered = filtered.filter(a => {
+    filtered = filtered.filter((a) => {
       // Estado efectivo (considera vencido dinámicamente)
-      const estadoEfectivo = isOverdue(a) ? 'vencido' : a.estado;
+      const estadoEfectivo = isOverdue(a) ? "vencido" : a.estado;
       const estadoLabel = estadoLabels[estadoEfectivo] || estadoEfectivo;
 
       return (
         a.evidencia?.nomenclatura?.toLowerCase().includes(searchTerm) ||
         a.evidencia?.descripcion?.toLowerCase().includes(searchTerm) ||
-        a.evidencia?.criterion?.nomenclatura?.toLowerCase().includes(searchTerm) ||
-        a.evidencia?.criterion?.descripcion?.toLowerCase().includes(searchTerm) ||
+        a.evidencia?.criterion?.nomenclatura
+          ?.toLowerCase()
+          .includes(searchTerm) ||
+        a.evidencia?.criterion?.descripcion
+          ?.toLowerCase()
+          .includes(searchTerm) ||
         estadoLabel.includes(searchTerm) ||
         estadoEfectivo.includes(searchTerm) ||
-        (a.fecha_asignacion && formatDate(a.fecha_asignacion).includes(searchTerm)) ||
+        (a.fecha_asignacion &&
+          formatDate(a.fecha_asignacion).includes(searchTerm)) ||
         (a.fecha_limite && formatDate(a.fecha_limite).includes(searchTerm))
       );
     });
   }
-  
+
   // Ordenar
   if (filters.sortBy) {
     filtered.sort((a, b) => {
       let valueA: any;
       let valueB: any;
-      
+
       switch (filters.sortBy) {
-        case 'fecha_asignacion':
+        case "fecha_asignacion":
           valueA = new Date(a.fecha_asignacion).getTime();
           valueB = new Date(b.fecha_asignacion).getTime();
           break;
-        case 'fecha_limite':
-          valueA = a.fecha_limite ? new Date(a.fecha_limite).getTime() : Infinity;
-          valueB = b.fecha_limite ? new Date(b.fecha_limite).getTime() : Infinity;
+        case "fecha_limite":
+          valueA = a.fecha_limite
+            ? new Date(a.fecha_limite).getTime()
+            : Infinity;
+          valueB = b.fecha_limite
+            ? new Date(b.fecha_limite).getTime()
+            : Infinity;
           break;
-        case 'nombre':
-          valueA = a.evidencia?.nomenclatura || '';
-          valueB = b.evidencia?.nomenclatura || '';
+        case "nombre":
+          valueA = a.evidencia?.nomenclatura || "";
+          valueB = b.evidencia?.nomenclatura || "";
           break;
         default:
           return 0;
       }
-      
-      const direction = filters.sortDirection === 'asc' ? 1 : -1;
+
+      const direction = filters.sortDirection === "asc" ? 1 : -1;
       return valueA > valueB ? direction : valueA < valueB ? -direction : 0;
     });
   }
-  
+
   return filtered;
 }

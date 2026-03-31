@@ -1,67 +1,81 @@
 /**
  * EvidenceAssignment - Wizard principal para asignar evidencias
- * 
+ *
  * Componente wizard que guía al usuario a través del proceso de
  * asignación de evidencias a usuarios y roles específicos.
  */
 
-import React, { useState } from 'react';
-import { ScreenContainer, PageHeader, Button, LoadingSpinner, WizardProgress } from '@/Components/Ui/Index';
-import { SuccessModal } from '@/Components/Ui/Modals/SuccessModal.tsx';
-import { EditConfirmationModal } from '@/Components/Ui/Modals/EditConfirmationModal.tsx';
-import { useToast } from '@/Context/ToastContext';
-import { getContextualInfo } from '@/Constants/ModuleInfo';
-import { LAYOUT } from '@/Constants/Layout';
-import type { 
-  EvidenceAssignmentFormData, 
-  WizardStep, 
-  ValidationErrors 
-} from '@/Types/EvidenceAssignment';
-import { evidenceAssignmentService } from '@/Services/EvidenceAssignmentService';
+import React, { useState } from "react";
+import {
+  ScreenContainer,
+  PageHeader,
+  Button,
+  LoadingSpinner,
+  WizardProgress,
+} from "@/Components/Ui/Index";
+import { SuccessModal } from "@/Components/Ui/Modals/SuccessModal.tsx";
+import { EditConfirmationModal } from "@/Components/Ui/Modals/EditConfirmationModal.tsx";
+import { useToast } from "@/Context/ToastContext";
+import { getContextualInfo } from "@/Constants/ModuleInfo";
+import { LAYOUT } from "@/Constants/Layout";
+import type {
+  EvidenceAssignmentFormData,
+  WizardStep,
+  ValidationErrors,
+} from "@/Types/EvidenceAssignment";
+import { evidenceAssignmentService } from "@/Services/EvidenceAssignmentService";
 
 // Importar los componentes de cada paso
-import { SelectionStep } from './Components/SelectionStep.tsx';
-import { ConfigurationStep } from './Components/ConfigurationStep.tsx';
-import { ReviewStep } from './Components/ReviewStep.tsx';
+import { SelectionStep } from "./Components/SelectionStep.tsx";
+import { ConfigurationStep } from "./Components/ConfigurationStep.tsx";
+import { ReviewStep } from "./Components/ReviewStep.tsx";
 
 const EvidenceAssignment: React.FC = () => {
   const { showToast } = useToast();
   const [currentStep, setCurrentStep] = useState(1);
-  const [submitState, setSubmitState] = useState<{ isSubmitting: boolean; errors: ValidationErrors }>({ isSubmitting: false, errors: {} });
+  const [submitState, setSubmitState] = useState<{
+    isSubmitting: boolean;
+    errors: ValidationErrors;
+  }>({ isSubmitting: false, errors: {} });
   const isSubmitting = submitState.isSubmitting;
   const errors = submitState.errors;
-  const [modalState, setModalState] = useState({ showSuccessModal: false, showConfirmModal: false, assignedEvidencesCount: 0 });
+  const [modalState, setModalState] = useState({
+    showSuccessModal: false,
+    showConfirmModal: false,
+    assignedEvidencesCount: 0,
+  });
   const showSuccessModal = modalState.showSuccessModal;
   const showConfirmModal = modalState.showConfirmModal;
   const assignedEvidencesCount = modalState.assignedEvidencesCount;
 
   // Obtener información del módulo desde ModuleInfo
-  const moduleInfo = getContextualInfo('evidence_assignment', 'wizard');
+  const moduleInfo = getContextualInfo("evidence_assignment", "wizard");
 
   const [formData, setFormData] = useState<EvidenceAssignmentFormData>({
     proceso_id: null,
     criterio_id: null,
+    selectedCriteria: [],
     selectedEvidences: [],
     selectedUsers: [],
     selectedRoles: [],
-    fecha_limite: '',
-    comentario: '',
-    excludedUsers: []
+    fecha_limite: "",
+    comentario: "",
+    excludedUsers: [],
   });
 
   const steps: WizardStep[] = [
     {
       id: 1,
-      title: 'Selección',
+      title: "Selección",
     },
     {
       id: 2,
-      title: 'Configuración',
+      title: "Configuración",
     },
     {
       id: 3,
-      title: 'Revisión',
-    }
+      title: "Revisión",
+    },
   ];
 
   /**
@@ -69,41 +83,45 @@ const EvidenceAssignment: React.FC = () => {
    */
   const validateStep = (step: number): boolean => {
     const newErrors: ValidationErrors = {};
-    
+
     switch (step) {
       case 1:
         // Validar proceso, evidencias y destinatarios (ahora todo en paso 1)
         if (!formData.proceso_id) {
-          newErrors.proceso = 'Debe seleccionar un proceso';
+          newErrors.proceso = "Debe seleccionar un proceso";
         }
         if (formData.selectedEvidences.length === 0) {
-          newErrors.evidences = 'Debe seleccionar al menos una evidencia';
+          newErrors.evidences = "Debe seleccionar al menos una evidencia";
         }
-        if (formData.selectedUsers.length === 0 && formData.selectedRoles.length === 0) {
-          newErrors.destinatarios = 'Debe seleccionar al menos un usuario o rol';
+        if (
+          formData.selectedUsers.length === 0 &&
+          formData.selectedRoles.length === 0
+        ) {
+          newErrors.destinatarios =
+            "Debe seleccionar al menos un usuario o rol";
         }
         break;
-        
+
       case 2:
         // Validaciones opcionales para configuración
         if (formData.fecha_limite) {
           const selectedDate = new Date(formData.fecha_limite);
           const today = new Date();
           if (selectedDate <= today) {
-            newErrors.fecha_limite = 'La fecha límite debe ser posterior a hoy';
+            newErrors.fecha_limite = "La fecha límite debe ser posterior a hoy";
           }
         }
         break;
-        
+
       case 3:
         // Validación final - revalidar todos los pasos
         const step1Valid = validateStep(1);
         const step2Valid = validateStep(2);
-        
+
         return step1Valid && step2Valid;
     }
-    
-    setSubmitState(prev => ({...prev, errors: newErrors}));
+
+    setSubmitState((prev) => ({ ...prev, errors: newErrors }));
     return Object.keys(newErrors).length === 0;
   };
 
@@ -112,8 +130,8 @@ const EvidenceAssignment: React.FC = () => {
    */
   const handleNextStep = () => {
     if (validateStep(currentStep)) {
-      setCurrentStep(prev => prev + 1);
-      setSubmitState(prev => ({...prev, errors: {}}));
+      setCurrentStep((prev) => prev + 1);
+      setSubmitState((prev) => ({ ...prev, errors: {} }));
     }
   };
 
@@ -121,15 +139,15 @@ const EvidenceAssignment: React.FC = () => {
    * Ir al paso anterior
    */
   const handlePreviousStep = () => {
-    setCurrentStep(prev => prev - 1);
-    setSubmitState(prev => ({...prev, errors: {}}));
+    setCurrentStep((prev) => prev - 1);
+    setSubmitState((prev) => ({ ...prev, errors: {} }));
   };
 
   /**
    * Actualizar datos del formulario
    */
   const updateFormData = (updates: Partial<EvidenceAssignmentFormData>) => {
-    setFormData(prev => ({ ...prev, ...updates }));
+    setFormData((prev) => ({ ...prev, ...updates }));
   };
 
   /**
@@ -138,15 +156,15 @@ const EvidenceAssignment: React.FC = () => {
   const handleFormSubmit = async () => {
     if (!validateStep(4)) {
       showToast({
-        type: 'error',
-        title: 'Error de validación',
-        message: 'Por favor, revise los datos ingresados'
+        type: "error",
+        title: "Error de validación",
+        message: "Por favor, revise los datos ingresados",
       });
       return;
     }
 
     // Mostrar modal de confirmación
-    setModalState(prev => ({...prev, showConfirmModal: true}));
+    setModalState((prev) => ({ ...prev, showConfirmModal: true }));
   };
 
   /**
@@ -157,53 +175,62 @@ const EvidenceAssignment: React.FC = () => {
       return; // Evitar múltiples envíos
     }
 
-    setSubmitState(prev => ({...prev, isSubmitting: true}));
+    setSubmitState((prev) => ({ ...prev, isSubmitting: true }));
 
     try {
       // Procesar cada evidencia seleccionada
       for (const evidenceId of formData.selectedEvidences) {
         // Filtrar usuarios excluidos por duplicados
         const excludedUsersSet = new Set(formData.excludedUsers || []);
-        const finalUsers = formData.selectedUsers.filter(id => !excludedUsersSet.has(id));
-        
+        const finalUsers = formData.selectedUsers.filter(
+          (id) => !excludedUsersSet.has(id),
+        );
+
         const assignmentData = {
           proceso_id: formData.proceso_id!,
           evidencia_id: evidenceId,
           usuarios: finalUsers.length > 0 ? finalUsers : undefined,
-          roles: formData.selectedRoles.length > 0 ? formData.selectedRoles : undefined,
+          roles:
+            formData.selectedRoles.length > 0
+              ? formData.selectedRoles
+              : undefined,
           fecha_limite: formData.fecha_limite || undefined,
-          comentario: formData.comentario || undefined
+          comentario: formData.comentario || undefined,
         };
 
         await evidenceAssignmentService.createAssignment(assignmentData);
       }
 
       // Cerrar modal de confirmación y mostrar modal de éxito
-      setModalState({ showSuccessModal: true, showConfirmModal: false, assignedEvidencesCount: formData.selectedEvidences.length });
+      setModalState({
+        showSuccessModal: true,
+        showConfirmModal: false,
+        assignedEvidencesCount: formData.selectedEvidences.length,
+      });
 
       // Resetear formulario
       setFormData({
         proceso_id: null,
         criterio_id: null,
+        selectedCriteria: [],
         selectedEvidences: [],
         selectedUsers: [],
         selectedRoles: [],
-        fecha_limite: '',
-        comentario: '',
-        excludedUsers: []
+        fecha_limite: "",
+        comentario: "",
+        excludedUsers: [],
       });
       setCurrentStep(1);
-      setSubmitState(prev => ({...prev, errors: {}}));
-
+      setSubmitState((prev) => ({ ...prev, errors: {} }));
     } catch (error) {
-      console.error('Error al crear asignación:', error);
+      console.error("Error al crear asignación:", error);
       showToast({
-        type: 'error',
-        title: 'Error al asignar evidencias',
-        message: error instanceof Error ? error.message : 'Error desconocido'
+        type: "error",
+        title: "Error al asignar evidencias",
+        message: error instanceof Error ? error.message : "Error desconocido",
       });
     } finally {
-      setSubmitState(prev => ({...prev, isSubmitting: false}));
+      setSubmitState((prev) => ({ ...prev, isSubmitting: false }));
     }
   };
 
@@ -211,7 +238,7 @@ const EvidenceAssignment: React.FC = () => {
    * Cierra el modal de confirmación
    */
   const closeConfirmModal = () => {
-    setModalState(prev => ({...prev, showConfirmModal: false}));
+    setModalState((prev) => ({ ...prev, showConfirmModal: false }));
   };
 
   /**
@@ -221,7 +248,7 @@ const EvidenceAssignment: React.FC = () => {
     const commonProps = {
       formData,
       updateFormData,
-      errors
+      errors,
     };
 
     switch (currentStep) {
@@ -239,25 +266,25 @@ const EvidenceAssignment: React.FC = () => {
   return (
     <ScreenContainer>
       <PageHeader
-          title={moduleInfo.title}
-          description={moduleInfo.description}
-          headerExtra={
-            <div className="hidden md:block">
-              <WizardProgress 
-                steps={steps} 
-                currentStep={currentStep} 
-                onStepClick={setCurrentStep}
-                variant="compact"
-              />
-            </div>
-          }
+        title={moduleInfo.title}
+        description={moduleInfo.description}
+        headerExtra={
+          <div className="hidden md:block">
+            <WizardProgress
+              steps={steps}
+              currentStep={currentStep}
+              onStepClick={setCurrentStep}
+              variant="compact"
+            />
+          </div>
+        }
       />
 
       {/* Progress móvil - Solo se muestra en dispositivos pequeños */}
       <div className="block md:hidden mb-6">
-        <WizardProgress 
-          steps={steps} 
-          currentStep={currentStep} 
+        <WizardProgress
+          steps={steps}
+          currentStep={currentStep}
           onStepClick={setCurrentStep}
         />
       </div>
@@ -315,7 +342,7 @@ const EvidenceAssignment: React.FC = () => {
           </div>
         )}
       </div>
-      
+
       {/* Modal de confirmación */}
       <EditConfirmationModal
         isOpen={showConfirmModal}
@@ -327,13 +354,15 @@ const EvidenceAssignment: React.FC = () => {
         cancelLabel="Cancelar"
         isLoading={isSubmitting}
       />
-      
+
       {/* Modal de éxito */}
       <SuccessModal
         isOpen={showSuccessModal}
         title="¡Asignación completada!"
         message={`Se asignaron ${assignedEvidencesCount} evidencia(s) exitosamente.`}
-        onClose={() => setModalState(prev => ({...prev, showSuccessModal: false}))}
+        onClose={() =>
+          setModalState((prev) => ({ ...prev, showSuccessModal: false }))
+        }
         autoClose={true}
       />
     </ScreenContainer>
