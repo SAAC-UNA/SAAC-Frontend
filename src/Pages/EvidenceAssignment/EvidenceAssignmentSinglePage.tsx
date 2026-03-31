@@ -675,16 +675,17 @@ const EvidenceAssignmentSinglePage: React.FC = () => {
           </div>
 
           {/* ── Sección 2: Fecha y comentario ── */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-stretch">
 
             {/* Card: Fecha límite */}
-            <Card className="p-6 space-y-4">
+            <Card className="p-6 space-y-4 h-full">
               <h2 className={`${TYPOGRAPHY.table.caption} font-semibold text-negro-una`}>
                 Fecha límite
                 <span className={`ml-2 ${TYPOGRAPHY.form.helper} font-normal text-gris-una`}>(opcional)</span>
               </h2>
               <DateRangePicker
                 inline
+                compact
                 value={{ to: formData.fecha_limite || undefined }}
                 onChange={(range) => updateFormData({ fecha_limite: range.to ?? "" })}
                 minDate={today}
@@ -694,7 +695,7 @@ const EvidenceAssignmentSinglePage: React.FC = () => {
             </Card>
 
             {/* Card: Comentario */}
-            <Card className="p-6 space-y-4">
+            <Card className="p-6 space-y-4 h-full">
               <h2 className={`${TYPOGRAPHY.table.caption} font-semibold text-negro-una`}>
                 Comentario
                 <span className={`ml-2 ${TYPOGRAPHY.form.helper} font-normal text-gris-una`}>(opcional)</span>

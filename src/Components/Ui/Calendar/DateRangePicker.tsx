@@ -42,6 +42,8 @@ export interface DateRangePickerProps {
   id?: string;
   /** Muestra los calendarios siempre visibles sin necesidad de hacer clic */
   inline?: boolean;
+  /** Reduce el tamaño de las celdas y espaciado del calendario */
+  compact?: boolean;
   onChange?: (range: DateRange) => void;
 }
 
@@ -80,6 +82,7 @@ export const DateRangePicker: React.FC<DateRangePickerProps> = ({
   maxDate,
   id,
   inline = false,
+  compact = false,
   onChange,
 }) => {
   const generatedId = useId();
@@ -226,7 +229,7 @@ export const DateRangePicker: React.FC<DateRangePickerProps> = ({
     return (
       <div className="flex-1 min-w-0">
         {/* Cabecera mes */}
-        <div className="flex items-center justify-between gap-1 mb-3">
+        <div className={cn('flex items-center justify-between gap-1', compact ? 'mb-1' : 'mb-3')}>
           {showLeftNav ? (
             <button
               type="button"
@@ -259,9 +262,9 @@ export const DateRangePicker: React.FC<DateRangePickerProps> = ({
         </div>
 
         {/* Nombres de días */}
-        <div className="grid grid-cols-7 mb-1">
+        <div className={cn('grid grid-cols-7', compact ? 'mb-0' : 'mb-1')}>
           {DAY_NAMES.map(d => (
-            <div key={d} className={`text-center ${TYPOGRAPHY.form.helper} font-medium text-gris-una py-1`}>
+            <div key={d} className={cn(`text-center ${TYPOGRAPHY.form.helper} font-medium text-gris-una`, compact ? 'py-0.5' : 'py-1')}>
               {d}
             </div>
           ))}
@@ -270,7 +273,7 @@ export const DateRangePicker: React.FC<DateRangePickerProps> = ({
         {/* Celdas */}
         <div className="grid grid-cols-7">
           {cells.map((day, idx) => {
-            if (!day) return <div key={`e-${monthDate.getMonth()}-${idx}`} className="h-9" />;
+            if (!day) return <div key={`e-${monthDate.getMonth()}-${idx}`} className={compact ? 'h-7' : 'h-9'} />;
 
             const dateStr      = toDateStr(monthDate.getFullYear(), monthDate.getMonth(), day);
             const _isStart     = isRangeStart(dateStr);
@@ -284,7 +287,7 @@ export const DateRangePicker: React.FC<DateRangePickerProps> = ({
             return (
               <div
                 key={dateStr}
-                className="relative flex items-center justify-center h-9"
+                className={cn('relative flex items-center justify-center', compact ? 'h-7' : 'h-9')}
               >
                 {/* Franja de rango (fondo) */}
                 {_isMiddle && (
@@ -305,7 +308,9 @@ export const DateRangePicker: React.FC<DateRangePickerProps> = ({
                   onMouseEnter={() => { if (!_isDisabled) setHoverDate(dateStr); }}
                   onMouseLeave={() => setHoverDate(null)}
                   className={cn(
-                    `relative z-10 w-full p-1.5 ${TYPOGRAPHY.form.helper} rounded-corner font-medium transition-all min-h-[1.75rem] flex items-center justify-center`,
+                    compact
+                      ? `relative z-10 w-full p-0.5 ${TYPOGRAPHY.form.helper} rounded-corner font-medium transition-all min-h-[1.5rem] flex items-center justify-center`
+                      : `relative z-10 w-full p-1.5 ${TYPOGRAPHY.form.helper} rounded-corner font-medium transition-all min-h-[1.75rem] flex items-center justify-center`,
                     _isDisabled && 'opacity-30 cursor-not-allowed text-gris-una',
                     !_isDisabled && 'cursor-pointer',
                     // Día único — mismas clases que DatePicker seleccionado
@@ -315,7 +320,7 @@ export const DateRangePicker: React.FC<DateRangePickerProps> = ({
                     // Rango intermedio
                     _isMiddle && !_isDisabled && 'text-negro-una hover:bg-gris-una/10',
                     // Hoy (sin seleccionar) — mismo que DatePicker
-                    _isToday && !_isSelected && !_isSingle && !_isDisabled && 'bg-error-light text-error border border-error-ring shadow-sm',
+                    _isToday && !_isSelected && !_isSingle && !_isDisabled && 'bg-error-light text-error shadow-sm',
                     // Normal
                     !_isSelected && !_isSingle && !_isMiddle && !_isToday && !_isDisabled && 'hover:bg-gris-una/10 text-negro-una',
                   )}
@@ -353,12 +358,13 @@ export const DateRangePicker: React.FC<DateRangePickerProps> = ({
         )}
 
         <div className={cn(
-          'bg-blanco-una border rounded-corner p-4',
+          'bg-blanco-una border rounded-corner',
+          compact ? 'p-3' : 'p-4',
           error ? 'border-rojo-una-2' : 'border-gris-una',
         )}>
           <div className="flex gap-0">
             {renderMonth(leftMonth, true, false)}
-            <div className="w-px bg-gris-light mx-3 self-stretch" />
+            <div className={cn('w-px bg-gris-light self-stretch', compact ? 'mx-2' : 'mx-3')} />
             {renderMonth(rightMonth, false, true)}
           </div>
         </div>
