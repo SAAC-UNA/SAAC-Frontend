@@ -142,7 +142,7 @@ export const DataTable = React.memo(<T extends Record<string, unknown>>({
 
   return (
     <div className={cn(
-      "relative flex flex-col w-full h-full text-gris-light", // Header de la tabla
+      "relative flex flex-col w-full h-full text-gris-light", // entrelineas de la tabla
       !unstyled && "bg-transparent rounded-corner", // Cuerpo de la tabla
       className
     )}>
@@ -221,7 +221,7 @@ export const DataTable = React.memo(<T extends Record<string, unknown>>({
                     style={column.width ? { width: column.width } : undefined}
                     // Color del header de las tablas
                     className={cn(
-                      "py-3 border-b bg-gris-light/50 border-blue-gray-100 text-center",
+                      "py-3 border-b bg-blanco-una-2 border-blue-gray-100 text-center",
                       index === 0 ? (expandableRow ? "px-4" : "pl-8 pr-4") : "px-4",
                       // Esquina superior izquierda si no hay expandable y es la primera columna
                       index === 0 && !expandableRow && "rounded-tl-corner",

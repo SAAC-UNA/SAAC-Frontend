@@ -404,10 +404,10 @@ export const CustomSelect: React.FC<CustomSelectProps> = ({
               readonly && 'cursor-default',
               error
                 ? 'border-rojo-una-2'
-                : 'border-gris-una bg-blanco-una-2',
+                : 'border-blanco-una-2 bg-blanco-una-2',
               disabled
-                ? 'bg-gris-una/10 border-gris-una/5 text-gray-400'
-                : isOpen && !readonly && 'border-gris-una/20'
+                ? 'bg-blanco-una-2 border-blanco-una-2 text-gris-una'
+                : isOpen && !readonly && 'border-blanco-una-2/20'
             )}
             onClick={() => {
               if (!disabled) {

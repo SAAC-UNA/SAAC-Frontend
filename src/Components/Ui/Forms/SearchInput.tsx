@@ -34,11 +34,11 @@ export const SearchInput: React.FC<SearchInputProps> = ({
         {/* Input */}
         <input
           className={cn(
-            "h-10 w-full rounded-corner border border-gris-una bg-blanco-una-2 px-3 py-2 !pr-9",
+            "h-10 w-full rounded-corner bg-blanco-una px-3 py-2 !pr-9 shadow-sm",
             `${TYPOGRAPHY.form.input} font-normal text-negro-una outline-0 transition-all duration-200`,
             "placeholder:text-gris-una/60",
             "focus:outline-none focus:border-gris-una hover:border-gris-una/50",
-            disabled && "bg-gris-una/10 border-gris-una/5 text-gray-400 cursor-not-allowed"
+            disabled && "bg-blanco-una-2 border-blanco-una-2 text-gris-una cursor-not-allowed"
           )}
           placeholder={placeholder}
           value={value}
