@@ -29,7 +29,7 @@ interface ModalProps {
   /** Si se puede cerrar haciendo clic fuera o con Escape */
   closable?: boolean;
   /** Texto pequeño alineado a la izquierda del footer (meta-información) */
-  footerMeta?: string;
+  footerMeta?: React.ReactNode;
   /** Botones del footer. Si se omite y se pasa onConfirm, se generan automáticamente */
   footerButtons?: React.ReactNode;
 

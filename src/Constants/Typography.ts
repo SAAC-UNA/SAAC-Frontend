@@ -61,6 +61,7 @@ export const TYPOGRAPHY = {
   
   // ===== BADGES Y CHIPS =====
   badge: 'size-badge',                       // 12px - Badges, chips, pills
+  badgeSm: 'size-badge-sm',                  // 10px - Badges pequeños (tarjetas, espacios reducidos)
   
   // ===== PAGINACIÓN =====
   pagination: 'size-pagination',             // 14px - Números y texto de paginación

@@ -108,7 +108,7 @@ export const StructureModelFormModal: React.FC<Props> = ({ isOpen, onClose, mode
         onConfirm={handleSubmitRequest}
         title={isEditing ? 'Editar Modelo' : 'Crear Modelo de Acreditación'}
         subtitle={isEditing ? model?.nombre : undefined}
-        confirmLabel={isEditing ? 'Guardar cambios' : 'Crear modelo'}
+        confirmLabel={isEditing ? 'Guardar' : 'Crear modelo'}
         isEditing={isEditing}
         size="md"
       >
