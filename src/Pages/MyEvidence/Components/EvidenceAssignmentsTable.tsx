@@ -225,8 +225,8 @@ export const EvidenceAssignmentsTable: React.FC<
   );
 
   return (
-    <DataTable<EvidenceAssignment>
-      data={assignments}
+    <DataTable
+      data={assignments as any}
       columns={columns}
       title=""
       loading={loading}
@@ -237,7 +237,6 @@ export const EvidenceAssignmentsTable: React.FC<
           : "No tienes evidencias asignadas. Cuando se te asigne una evidencia, aparecerá aquí."
       }
       pagination={pagination}
-      unstyled={false}
     />
   );
 };

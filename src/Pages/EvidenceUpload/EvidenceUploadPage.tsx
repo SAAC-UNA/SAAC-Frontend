@@ -17,6 +17,7 @@ import { useToast } from '@/Context/ToastContext';
 import { getModuleInfo } from '@/Constants/ModuleInfo';
 import type { FileModel } from '@/Types/FileTypes';
 import { TYPOGRAPHY } from '@/constants/Typography';
+import { Card } from '@/Components/Ui/Layout/Card';
 
 interface EvidenceUploadPageProps {
   evidenciaId?: number;
@@ -278,9 +279,9 @@ export const EvidenceUploadPage: React.FC<EvidenceUploadPageProps> = ({
         description={`${moduleInfo.description}\nEvidencia: ${evidenciaNombre}`}
       />
       
-      <div className="max-w-7xl mx-auto space-y-6">
+      <div className="space-y-6">
         {/* Sección de subida */}
-        <div className="space-y-6">
+        <Card className="p-6 space-y-6">
           <div>
             <h2 className={` ${TYPOGRAPHY.pageSubtitle} font-semibold text-negro-una-2`}>
               Seleccione archivos
@@ -330,7 +331,7 @@ export const EvidenceUploadPage: React.FC<EvidenceUploadPageProps> = ({
               </Button>
             </div>
           )}
-        </div>
+        </Card>
 
         {/* Progreso de subida */}
         {uploadProgress.length > 0 && (
@@ -340,7 +341,7 @@ export const EvidenceUploadPage: React.FC<EvidenceUploadPageProps> = ({
         )}
 
         {/* Lista de archivos subidos */}
-        <div>
+        <Card className="p-4">
           <div className="flex items-center justify-between mb-4">
             <h2 className={` ${TYPOGRAPHY.pageSubtitle} font-semibold text-negro-una-2`}>
               Archivos subidos
@@ -371,7 +372,7 @@ export const EvidenceUploadPage: React.FC<EvidenceUploadPageProps> = ({
             loading={loadingFiles}
             onDelete={handleDeleteFile}
           />
-        </div>
+        </Card>
 
         {/* Botón para volver a Mis Evidencias */}
         <div className="mt-6 flex justify-center">

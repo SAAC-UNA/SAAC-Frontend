@@ -20,6 +20,7 @@ import type { DataTableColumn } from '@/Components/Ui/Table/DataTable';
 import type { AuditLog } from '@/Types/AuditLogTypes';
 import { formatAuditDate } from '@/Types/AuditLogTypes';
 import { useFirstColumnConfig } from '@/Hooks/UseFirstColumnConfig';
+import { AUDIT_ACTION_BADGE } from '@/Constants/StatusBadges';
 
 interface AuditLogTableProps {
   logs: AuditLog[];
@@ -39,28 +40,6 @@ export const AuditLogTable: React.FC<AuditLogTableProps> = ({
   onViewDetail,
 }) => {
   const firstColumn = useFirstColumnConfig();
-
-  /**
-   * Obtiene el badge de color según el tipo de acción
-   */
-  const getActionBadge = (actionType: string): string => {
-    const actionMap: Record<string, string> = {
-      crear:            'bg-teal-light text-teal-dark',
-      editar:           'bg-warning-ring text-warning-dark',
-      eliminar:         'bg-error-ring text-error-dark',
-      consultar:        'bg-gris-light text-gris-una',
-      login:            'bg-verde-ring text-verde-dark',
-      logout:           'bg-error-ring text-error-dark',
-      login_fallido:    'bg-error-ring text-error-dark',
-      activar:          'bg-verde-ring text-verde-dark',
-      desactivar:       'bg-gris-light text-gris-una',
-      asignar_rol:      'bg-morado-ring text-morado-dark',
-      asignar_permisos: 'bg-indigo-ring text-indigo-dark',
-      exportar:         'bg-teal-ring text-teal-dark',
-      asignar:          'bg-info-ring text-info-dark',
-    };
-    return actionMap[actionType.toLowerCase()] ?? 'bg-gray-100 text-gray-800';
-  };
 
   /**
    * Definición de columnas de la tabla
@@ -95,7 +74,7 @@ export const AuditLogTable: React.FC<AuditLogTableProps> = ({
           <div className="flex justify-center">
               <StatusBadge
                 label={log.tipo_accion.descripcion}
-                colorClasses={getActionBadge(log.tipo_accion.descripcion)}
+                colorClasses={(AUDIT_ACTION_BADGE[log.tipo_accion.descripcion.toLowerCase()] ?? { colorClasses: 'bg-gray-100 text-gray-800' }).colorClasses}
               />
           </div>
         ),

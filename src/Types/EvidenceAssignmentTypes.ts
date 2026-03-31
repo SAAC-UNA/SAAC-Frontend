@@ -11,7 +11,7 @@ export type AssignmentStatus =
   | "vencido";
 
 // Modelo completo de asignación de evidencia
-export interface EvidenceAssignment {
+export interface EvidenceAssignment extends Record<string, unknown> {
   evidencia_asignacion_id: number;
   proceso_id: number;
   evidencia_id: number;

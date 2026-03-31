@@ -198,13 +198,11 @@ export const EvidenceSearchPage: React.FC = () => {
       />
 
       {/* Tabla de resultados */}
-      <div className="rounded-corner">
-        <EvidenceSearchResultsTable
-          results={displayedResults}
-          loading={loading}
-          onViewDetails={handleViewDetails}
-        />
-      </div>
+      <EvidenceSearchResultsTable
+        results={displayedResults}
+        loading={loading}
+        onViewDetails={handleViewDetails}
+      />
 
       {/* Modal de detalles */}
       <EvidenceDetailsModal

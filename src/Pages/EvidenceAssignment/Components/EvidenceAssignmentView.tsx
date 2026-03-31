@@ -278,11 +278,8 @@ export const EvidenceAssignmentView: React.FC<EvidenceAssignmentViewProps> = ({
           </div>
 
           {/* ── Sección 3: Tabla de resumen ── */}
-          <Card className="p-4">
-            <h2 className={`${TYPOGRAPHY.table.caption} font-semibold text-negro-una mb-4 px-2 pt-2`}>
-              Resumen de asignaciones
-            </h2>
-            <DataTable
+          <DataTable
+              title="Resumen de asignaciones"
               data={assignmentTableRows}
               columns={assignmentColumns.map((col) =>
                 col.key === "destinatarios"
@@ -313,7 +310,6 @@ export const EvidenceAssignmentView: React.FC<EvidenceAssignmentViewProps> = ({
                 </p>
               }
             />
-          </Card>
 
           {/* ── Sección 4: Tablas de duplicados ── */}
           {duplicatesValidating && (
@@ -340,6 +336,7 @@ export const EvidenceAssignmentView: React.FC<EvidenceAssignmentViewProps> = ({
                     <p className={`mt-1 ${TYPOGRAPHY.form.helper} text-gris-una`}>Usuarios con asignaciones pendientes en progreso. No se pueden reasignar.</p>
                   </div>
                   <DataTable<DuplicateGroupRow>
+                    unstyled
                     data={activeDuplicateRows}
                     columns={[
                       {
@@ -402,6 +399,7 @@ export const EvidenceAssignmentView: React.FC<EvidenceAssignmentViewProps> = ({
                     <p className={`mt-1 ${TYPOGRAPHY.form.helper} text-gris-una`}>Usuarios que ya completaron estas evidencias. Puede reasignarlas si es necesario.</p>
                   </div>
                   <DataTable<DuplicateGroupRow>
+                    unstyled
                     data={completedDuplicateRows}
                     customFilters={
                       <label className="flex items-center gap-2 cursor-pointer select-none">

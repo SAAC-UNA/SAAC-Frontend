@@ -195,7 +195,6 @@ export const EvidenceSearchResultsTable: React.FC<EvidenceSearchResultsTableProp
           totalPages,
           onPageChange: handlePageChange
         } : undefined}
-        unstyled={true}
       />
       <EvidenceResourcesModal
         isOpen={resourcesModal !== null}

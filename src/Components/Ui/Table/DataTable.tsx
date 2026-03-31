@@ -23,6 +23,7 @@ import { SearchInput } from '../Forms/SearchInput';
 import { LoadingSpinner } from '../Feedback/Loading';
 import { Pagination } from './Pagination';
 import { EmptyState } from '../Feedback/EmptyState';
+import { Card } from '../Layout/Card';
 
 export interface DataTableColumn<T = unknown> {
   key: string;
@@ -140,17 +141,16 @@ export const DataTable = React.memo(<T extends Record<string, unknown>>({
     return item[column.key];
   }, []);
 
-  return (
+  const tableContent = (
     <div className={cn(
       "relative flex flex-col w-full h-full text-gris-light", // entrelineas de la tabla
-      !unstyled && "bg-transparent rounded-corner", // Cuerpo de la tabla
       className
     )}>
       {/* Header */}
       {(title || description || searchable || customFilters || primaryAction) && (
         <div className={cn(
           "relative text-gris-una bg-transparent rounded-none bg-clip-border",
-          !unstyled && "mx-4 mt-4"
+          unstyled && "mx-4 mt-4"
         )}>
           <div className="flex flex-col justify-between gap-4 mb-4 lg:flex-row lg:items-center">
             <div className="flex-1">
@@ -357,4 +357,6 @@ export const DataTable = React.memo(<T extends Record<string, unknown>>({
       )}
     </div>
   );
+
+  return unstyled ? tableContent : <Card className="p-4">{tableContent}</Card>;
 }) as <T extends Record<string, unknown>>(props: DataTableProps<T>) => React.ReactElement;

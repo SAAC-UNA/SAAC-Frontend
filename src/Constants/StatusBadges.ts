@@ -38,3 +38,20 @@ export const EXTENSION_REQUEST_STATUS_BADGE: Record<ExtensionRequestStatus, Stat
   aprobada:  { label: 'Aprobada',  colorClasses: 'bg-verde-ring text-verde-dark' },
   rechazada: { label: 'Rechazada', colorClasses: 'bg-error-ring text-error-dark' },
 };
+
+/** Tipos de acción de la bitácora del sistema */
+export const AUDIT_ACTION_BADGE: Record<string, StatusBadgeConfig> = {
+  crear:            { label: 'Crear',            colorClasses: 'bg-teal-light text-teal-dark' },
+  editar:           { label: 'Editar',           colorClasses: 'bg-warning-ring text-warning-dark' },
+  eliminar:         { label: 'Eliminar',         colorClasses: 'bg-error-ring text-error-dark' },
+  consultar:        { label: 'Consultar',        colorClasses: 'bg-gris-light text-gris-una' },
+  login:            { label: 'Login',            colorClasses: 'bg-verde-ring text-verde-dark' },
+  logout:           { label: 'Logout',           colorClasses: 'bg-error-ring text-error-dark' },
+  login_fallido:    { label: 'Login fallido',    colorClasses: 'bg-error-ring text-error-dark' },
+  activar:          { label: 'Activar',          colorClasses: 'bg-verde-ring text-verde-dark' },
+  desactivar:       { label: 'Desactivar',       colorClasses: 'bg-gris-light text-gris-una' },
+  asignar_rol:      { label: 'Asignar rol',      colorClasses: 'bg-morado-ring text-morado-dark' },
+  asignar_permisos: { label: 'Asignar permisos', colorClasses: 'bg-indigo-ring text-indigo-dark' },
+  exportar:         { label: 'Exportar',         colorClasses: 'bg-teal-ring text-teal-dark' },
+  asignar:          { label: 'Asignar',          colorClasses: 'bg-info-ring text-info-dark' },
+};
