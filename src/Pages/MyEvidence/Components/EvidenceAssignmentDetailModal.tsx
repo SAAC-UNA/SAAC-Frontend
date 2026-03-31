@@ -4,7 +4,8 @@ import { DetailsModal } from '@/Components/Ui/Modals/DetailsModal';
 import { cn } from '@/Utils/ClassNames';
 import { ICON_SIZES } from '@/Constants/Components';
 import { TYPOGRAPHY } from '@/Constants/Typography';
-import { AssignmentStatusBadge } from './AssignmentStatusBadge';
+import { StatusBadge } from '@/Components/Ui/Feedback/StatusBadge';
+import { ASSIGNMENT_STATUS_BADGE } from '@/Constants/StatusBadges';
 import type { EvidenceAssignment } from '@/Types/EvidenceAssignmentTypes';
 import { formatDeadline, getDaysUntilDeadline, isNearDeadline } from '@/Types/EvidenceAssignmentTypes';
 import { evidenceAssignmentService } from '@/Services/EvidenceAssignmentService';
@@ -202,7 +203,10 @@ export const EvidenceAssignmentDetail: React.FC<EvidenceAssignmentDetailProps> =
           <SectionLabel label="Estado y fechas" />
           <div className="border border-gray-200 rounded-corner p-4 grid grid-cols-3 gap-x-6">
             <InfoCell label="Estado" inline>
-              <AssignmentStatusBadge estado={assignment.estado} />
+              <StatusBadge
+                label={ASSIGNMENT_STATUS_BADGE[assignment.estado]?.label ?? assignment.estado}
+                colorClasses={ASSIGNMENT_STATUS_BADGE[assignment.estado]?.colorClasses ?? 'bg-gris-light text-gris-una'}
+              />
             </InfoCell>
             <InfoCell label="Fecha de asignación">
               <span className={cn(TYPOGRAPHY.modal.body, 'text-gris-una-2')}>

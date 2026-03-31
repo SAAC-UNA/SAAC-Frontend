@@ -12,6 +12,7 @@ import { useDebounce } from '@/Hooks/UseDebounce';
 import type { DataTableColumn } from '@/Components/Ui/Table/DataTable';
 import type { User } from '@/Services/UserService';
 import { useFirstColumnConfig } from '@/Hooks/UseFirstColumnConfig';
+import { STATUS_BADGE } from '@/Constants/StatusBadges';
 
 interface UsersTableProps {
     onViewUser?: (user: User) => void;
@@ -133,8 +134,8 @@ export const UsersTable: React.FC<UsersTableProps> = ({
             render: (_, user) => (
                 <div className="flex justify-center">
                     <StatusBadge
-                        label={user.status === 'active' ? 'Activo' : 'Inactivo'}
-                        colorClasses={user.status === 'active' ? 'text-verde-dark bg-verde-ring' : 'text-error-dark bg-error-ring'}
+                        label={STATUS_BADGE[user.status]?.label ?? user.status}
+                        colorClasses={STATUS_BADGE[user.status]?.colorClasses ?? 'bg-gris-light text-gris-una'}
                     />
                 </div>
             )

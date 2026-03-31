@@ -16,7 +16,8 @@ import {
 import { TYPOGRAPHY } from "@/Constants/Typography";
 import { truncateText } from "@/Utils";
 import { TableActionButton } from "@/Components/Ui/Buttons/TableActionButton";
-import { AssignmentStatusBadge } from "./AssignmentStatusBadge";
+import { StatusBadge } from '@/Components/Ui/Feedback/StatusBadge';
+import { ASSIGNMENT_STATUS_BADGE } from '@/Constants/StatusBadges';
 import type { EvidenceAssignment } from "@/Types/EvidenceAssignmentTypes";
 import { formatDate, isOverdue } from "@/Types/EvidenceAssignmentTypes";
 import { useFirstColumnConfig } from "@/Hooks/UseFirstColumnConfig";
@@ -135,7 +136,10 @@ export const EvidenceAssignmentsTable: React.FC<
           const estado = isOverdue(assignment) ? "vencido" : assignment.estado;
           return (
             <div className="flex justify-center">
-              <AssignmentStatusBadge estado={estado} />
+              <StatusBadge
+                label={ASSIGNMENT_STATUS_BADGE[estado]?.label ?? estado}
+                colorClasses={ASSIGNMENT_STATUS_BADGE[estado]?.colorClasses ?? 'bg-gris-light text-gris-una'}
+              />
             </div>
           );
         },

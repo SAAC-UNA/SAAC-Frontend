@@ -16,7 +16,7 @@ import type { FileModel } from '@/Types/FileTypes';
 import type { AssignmentStatus } from '@/Types/EvidenceAssignmentTypes';
 import type { EvidenceSearchResult } from '@/Types/EvidenceSearchTypes';
 import { TYPOGRAPHY } from '@/Constants/Typography';
-import { ASSIGNMENT_STATUS_BADGE, EVIDENCE_STATUS_BADGE } from '@/Constants/StatusBadges';
+import { ASSIGNMENT_STATUS_BADGE, EVIDENCE_STATUS_BADGE, BADGE_COLORS } from '@/Constants/StatusBadges';
 import { useFirstColumnConfig } from '@/Hooks/UseFirstColumnConfig';
 
 interface FilesByUser extends Record<string, unknown> {
@@ -207,17 +207,17 @@ export const EvidenceResourcesModal: React.FC<EvidenceResourcesModalProps> = ({
           {item.archivos_count > 0 && (
             <StatusBadge
               label={`${item.archivos_count} ${item.archivos_count === 1 ? 'archivo' : 'archivos'}`}
-              colorClasses="bg-info-ring text-info-dark"
+              colorClasses={BADGE_COLORS.info.colorClasses}
             />
           )}
           {item.enlaces_count > 0 && (
             <StatusBadge
               label={`${item.enlaces_count} ${item.enlaces_count === 1 ? 'enlace' : 'enlaces'}`}
-              colorClasses="bg-morado-ring text-morado-dark"
+              colorClasses={BADGE_COLORS.gris.colorClasses}
             />
           )}
           {item.archivos_count === 0 && item.enlaces_count === 0 && (
-            <StatusBadge label="Sin recursos" colorClasses="bg-gris-light text-gris-una" />
+            <StatusBadge label="Sin recursos" colorClasses={BADGE_COLORS.slate.colorClasses} />
           )}
         </div>
       ),

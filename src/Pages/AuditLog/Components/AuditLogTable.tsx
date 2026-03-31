@@ -68,13 +68,13 @@ export const AuditLogTable: React.FC<AuditLogTableProps> = ({
       {
         key: 'tipo_accion',
         header: 'Acción',
-        align: 'left',
+        align: 'center',
         accessor: (log) => log.tipo_accion.descripcion,
         render: (_, log) => (
           <div className="flex justify-center">
               <StatusBadge
                 label={log.tipo_accion.descripcion}
-                colorClasses={(AUDIT_ACTION_BADGE[log.tipo_accion.descripcion.toLowerCase()] ?? { colorClasses: 'bg-gray-100 text-gray-800' }).colorClasses}
+                colorClasses={(AUDIT_ACTION_BADGE[log.tipo_accion.descripcion.toLowerCase()] ?? { colorClasses: 'bg-slate-light text-slate' }).colorClasses}
               />
           </div>
         ),

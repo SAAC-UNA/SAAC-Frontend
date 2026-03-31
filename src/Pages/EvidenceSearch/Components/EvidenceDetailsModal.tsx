@@ -26,7 +26,7 @@ import { FeedbackModal } from './FeedbackModal';
 import { type FeedbackEstado } from '@/Services/FeedbackService';
 import { TYPOGRAPHY } from '@/Constants/Typography';
 import { ICON_SIZES } from '@/Constants/Components';
-import { ASSIGNMENT_STATUS_BADGE, EVIDENCE_STATUS_BADGE } from '@/Constants/StatusBadges';
+import { ASSIGNMENT_STATUS_BADGE, EVIDENCE_STATUS_BADGE, BADGE_COLORS } from '@/Constants/StatusBadges';
 import { useFirstColumnConfig } from '@/Hooks/UseFirstColumnConfig';
 import { cn } from '@/Utils/ClassNames';
 
@@ -231,17 +231,17 @@ export const EvidenceDetailsModal: React.FC<EvidenceDetailsModalProps> = ({
           {item.archivos_count > 0 && (
             <StatusBadge
               label={`${item.archivos_count} ${item.archivos_count === 1 ? 'archivo' : 'archivos'}`}
-              colorClasses="bg-info-ring text-info-dark"
+              colorClasses={BADGE_COLORS.info.colorClasses}
             />
           )}
           {item.enlaces_count > 0 && (
             <StatusBadge
               label={`${item.enlaces_count} ${item.enlaces_count === 1 ? 'enlace' : 'enlaces'}`}
-              colorClasses="bg-morado-ring text-morado-dark"
+              colorClasses={BADGE_COLORS.gris.colorClasses}
             />
           )}
           {item.archivos_count === 0 && item.enlaces_count === 0 && (
-            <StatusBadge label="Sin recursos" colorClasses="bg-gris-light text-gris-una" />
+            <StatusBadge label="Sin recursos" colorClasses={BADGE_COLORS.slate.colorClasses} />
           )}
         </div>
       ),
@@ -482,7 +482,7 @@ export const EvidenceDetailsModal: React.FC<EvidenceDetailsModalProps> = ({
                       key={rol}
                       className={cn(
                         'inline-flex px-2.5 py-1 font-semibold rounded-full',
-                        'bg-azul-una/10 text-azul-una border border-azul-una/20',
+                        'bg-info-light text-info',
                         TYPOGRAPHY.badge,
                       )}
                     >
