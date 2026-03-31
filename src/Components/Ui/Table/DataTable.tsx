@@ -48,7 +48,7 @@ export interface DataTableProps<T = unknown> {
   actions?: DataTableAction<T>[];
 
   // Header
-  title: string;
+  title?: string;
   description?: string;
 
   // Búsqueda
