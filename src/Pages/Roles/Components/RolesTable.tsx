@@ -25,6 +25,7 @@ import { TABLE_PAGE_SIZE } from '@/Constants/TablePagination';
 import { useRoles } from '@/hooks/UseRoles';
 import type { Role } from '@/Services/RoleService';
 import { useFirstColumnConfig } from '@/Hooks/UseFirstColumnConfig';
+import { BADGE_COLORS } from '@/Constants/StatusBadges';
 
 interface RolesTableProps {
     onEdit?: (role: Role) => void;
@@ -136,7 +137,7 @@ export const RolesTable: React.FC<RolesTableProps> = ({
                 <div className="flex justify-center">
                     <StatusBadge
                         label={`${Array.isArray(role.permissions) ? role.permissions.length : 0} permisos`}
-                        colorClasses="text-negro-una-2 bg-gris-light"
+                        colorClasses={BADGE_COLORS.slate.colorClasses}
                     />
                 </div>
             )

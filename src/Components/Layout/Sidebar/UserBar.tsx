@@ -5,18 +5,18 @@
  * El botón de notificaciones abre un panel via portal con framer-motion.
  */
 
-import React, { useState, useRef, useEffect, useCallback } from 'react';
-import { createPortal } from 'react-dom';
-import { motion, AnimatePresence } from 'framer-motion';
-import { useAuth } from '@/Context/AuthContext';
-import { useNavigate } from 'react-router-dom';
-import { useNotifications } from '@/Hooks/useNotifications';
-import { SystemIcons } from '@/Components/Ui/Icons/SystemIcons';
-import { cn } from '@/Utils/ClassNames';
-import { APP_HEADER_BUTTON } from '@/Constants/Components';
-import { DROPDOWN_VARIANTS, SPRING_HOVER } from '@/Constants/Animations';
-import { NotificationDropdown } from '@/Components/Notifications/NotificationDropdown';
-import NotificationCenter from '@/Pages/Notifications/NotificationCenter';
+import React, { useState, useRef, useEffect, useCallback } from "react";
+import { createPortal } from "react-dom";
+import { motion, AnimatePresence } from "framer-motion";
+import { useAuth } from "@/Context/AuthContext";
+import { useNavigate } from "react-router-dom";
+import { useNotifications } from "@/Hooks/useNotifications";
+import { SystemIcons } from "@/Components/Ui/Icons/SystemIcons";
+import { cn } from "@/Utils/ClassNames";
+import { APP_HEADER_BUTTON } from "@/Constants/Components";
+import { DROPDOWN_VARIANTS, SPRING_HOVER } from "@/Constants/Animations";
+import { NotificationDropdown } from "@/Components/Notifications/NotificationDropdown";
+import NotificationCenter from "@/Pages/Notifications/NotificationCenter";
 
 interface UserWidgetProps {
   className?: string;
@@ -36,7 +36,10 @@ export const UserWidget: React.FC<UserWidgetProps> = ({
   const { unreadCount, refreshNotifications } = useNotifications();
 
   const [isNotifOpen, setIsNotifOpen] = useState(false);
-  const [notifCoords, setNotifCoords] = useState<{ top: number; right: number } | null>(null);
+  const [notifCoords, setNotifCoords] = useState<{
+    top: number;
+    right: number;
+  } | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [bellHovered, setBellHovered] = useState(false);
   const [logoutHovered, setLogoutHovered] = useState(false);
@@ -64,19 +67,20 @@ export const UserWidget: React.FC<UserWidgetProps> = ({
     }
 
     if (isNotifOpen) {
-      document.addEventListener('mousedown', handleClickOutside);
-      return () => document.removeEventListener('mousedown', handleClickOutside);
+      document.addEventListener("mousedown", handleClickOutside);
+      return () =>
+        document.removeEventListener("mousedown", handleClickOutside);
     }
   }, [isNotifOpen]);
 
   useEffect(() => {
     if (!isNotifOpen) return;
     const recalc = () => calculatePosition();
-    window.addEventListener('scroll', recalc, true);
-    window.addEventListener('resize', recalc);
+    window.addEventListener("scroll", recalc, true);
+    window.addEventListener("resize", recalc);
     return () => {
-      window.removeEventListener('scroll', recalc, true);
-      window.removeEventListener('resize', recalc);
+      window.removeEventListener("scroll", recalc, true);
+      window.removeEventListener("resize", recalc);
     };
   }, [isNotifOpen, calculatePosition]);
 
@@ -90,37 +94,38 @@ export const UserWidget: React.FC<UserWidgetProps> = ({
 
   const handleLogout = () => {
     logout();
-    navigate('/login');
+    navigate("/login");
   };
 
   if (!user) return null;
 
-  const roleName = user.roles?.[0]?.name ?? 'Sin rol';
+  const roleName = user.roles?.[0]?.name ?? "Sin rol";
 
   const btnClass = cn(
-    'relative flex items-center justify-center cursor-pointer overflow-hidden',
-    APP_HEADER_BUTTON.button, 'rounded-corner',
-    'bg-blanco-una shadow-md',
-    'focus:outline-none focus-visible:ring-2 focus-visible:ring-gris-una focus-visible:ring-offset-1',
+    "relative flex items-center justify-center cursor-pointer overflow-hidden",
+    APP_HEADER_BUTTON.button,
+    "rounded-corner",
+    "bg-blanco-una shadow-md",
+    "focus:outline-none focus-visible:ring-2 focus-visible:ring-gris-una focus-visible:ring-offset-1",
   );
 
   return (
     <>
-      <div className={cn('flex items-center gap-2 min-w-0', className)}>
+      <div className={cn("flex items-center gap-3 min-w-0", className)}>
         {/* Nombre y rol */}
-        <div className="flex flex-col items-start">
+        <div className="flex h-9 flex-col items-start justify-center translate-y-0.5">
           <span
             className={cn(
-              'font-semibold leading-tight text-xs',
-              dark ? 'text-blanco-una' : 'text-negro-una',
+              "font-semibold leading-none text-xs",
+              dark ? "text-blanco-una" : "text-negro-una",
             )}
           >
             {user.name}
           </span>
           <span
             className={cn(
-              'leading-tight text-[11px]',
-              dark ? 'text-blanco-una/70' : 'text-gris-una',
+              "-mt-0.5 leading-none text-[11px]",
+              dark ? "text-blanco-una/70" : "text-gris-una",
             )}
           >
             {roleName}
@@ -148,8 +153,8 @@ export const UserWidget: React.FC<UserWidgetProps> = ({
             <SystemIcons.interface.bell
               className={cn(
                 APP_HEADER_BUTTON.icon,
-                'relative z-10 transition-colors duration-150',
-                bellHovered ? 'text-blanco-una' : 'text-negro-una-2',
+                "relative z-10 transition-colors duration-150",
+                bellHovered ? "text-blanco-una" : "text-negro-una-2",
               )}
             />
             {unreadCount > 0 && (
@@ -175,8 +180,8 @@ export const UserWidget: React.FC<UserWidgetProps> = ({
           <SystemIcons.actions.logout
             className={cn(
               APP_HEADER_BUTTON.icon,
-              'relative z-10 transition-colors duration-150',
-              logoutHovered ? 'text-blanco-una' : 'text-negro-una-2',
+              "relative z-10 transition-colors duration-150",
+              logoutHovered ? "text-blanco-una" : "text-negro-una-2",
             )}
           />
         </button>
@@ -189,7 +194,7 @@ export const UserWidget: React.FC<UserWidgetProps> = ({
             {isNotifOpen && (
               <div
                 style={{
-                  position: 'fixed',
+                  position: "fixed",
                   top: notifCoords.top,
                   right: notifCoords.right,
                   zIndex: 9999,
@@ -203,7 +208,7 @@ export const UserWidget: React.FC<UserWidgetProps> = ({
                   initial="hidden"
                   animate="visible"
                   exit="exit"
-                  style={{ position: 'relative' }}
+                  style={{ position: "relative" }}
                 >
                   <NotificationDropdown
                     onClose={() => setIsNotifOpen(false)}
@@ -220,7 +225,10 @@ export const UserWidget: React.FC<UserWidgetProps> = ({
         )}
 
       {/* Modal de centro de notificaciones */}
-      <NotificationCenter isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} />
+      <NotificationCenter
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+      />
     </>
   );
 };

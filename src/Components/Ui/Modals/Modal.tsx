@@ -212,7 +212,7 @@ export const Modal: React.FC<ModalProps> = React.memo(({
     >
       <DialogBackdrop
         transition
-        className="fixed inset-0 bg-[rgba(10,15,35,0.55)] backdrop-blur-[6px] transition-all duration-300 data-closed:opacity-0"
+        className="fixed inset-0 bg-[rgba(10,15,35,0.55)] backdrop-blur-sm transition-all duration-300 data-closed:opacity-0"
       />
 
       <div className="fixed inset-0 z-10 w-screen overflow-y-auto">

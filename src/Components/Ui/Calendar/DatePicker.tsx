@@ -40,6 +40,8 @@ export interface DatePickerProps {
   maxDate?: string;
   id?: string;
   placement?: 'top' | 'bottom';
+  /** Muestra el calendario siempre visible en lugar del dropdown desplegable */
+  inline?: boolean;
   onChange?: (date: string) => void;
 }
 
@@ -55,6 +57,7 @@ export const DatePicker: React.FC<DatePickerProps> = ({
   minDate,
   maxDate,
   id,
+  inline = false,
   onChange
 }) => {
   const [currentDate, setCurrentDate] = useState(() => {
@@ -209,12 +212,12 @@ export const DatePicker: React.FC<DatePickerProps> = ({
     const dayFormatted = String(selected.getDate()).padStart(2, '0');
     const formattedDate = `${year}-${month}-${dayFormatted}`;
     onChange?.(formattedDate);
-    setShowPicker(false);
+    if (!inline) setShowPicker(false);
   };
 
   const handleClearDate = () => {
     onChange?.('');
-    setShowPicker(false);
+    if (!inline) setShowPicker(false);
   };
 
   const formatDate = (date: Date | null) => {
@@ -246,7 +249,7 @@ export const DatePicker: React.FC<DatePickerProps> = ({
     return false;
   };
 
-  const days = [];
+  const days: (number | null)[] = [];
   const firstDay = getFirstDayOfMonth(currentDate);
   const daysInMonth = getDaysInMonth(currentDate);
 
@@ -276,6 +279,123 @@ export const DatePicker: React.FC<DatePickerProps> = ({
       currentDate.getFullYear() === selectedDate.getFullYear()
     );
   };
+
+  // Cuerpo del calendario compartido entre modo inline y dropdown
+  const renderCalendarBody = () => (
+    <>
+      {/* Header with navigation and selectors */}
+      <div className="flex items-center justify-between gap-2 mb-3">
+        <Button
+          type="button"
+          variant="ghost"
+          onClick={handlePrevMonth}
+          aria-label="Mes anterior"
+        >
+          <SystemIcons.navigation.arrow.left className={`${ICON_SIZES.sm} text-gris-una`} />
+        </Button>
+
+        <div className="flex items-center gap-2 flex-1 justify-center">
+          <select
+            value={currentDate.getMonth()}
+            onChange={(e) => handleMonthChange(parseInt(e.target.value))}
+            className={`${TYPOGRAPHY.form.input} font-semibold text-negro-una bg-blanco-una border border-gris-light rounded-corner-sm px-2 py-1 hover:border-gris-una-2 focus:outline-none cursor-pointer`}
+            aria-label="Seleccionar mes"
+          >
+            {monthNames.map((month) => (
+              <option key={month} value={monthNames.indexOf(month)}>
+                {month}
+              </option>
+            ))}
+          </select>
+
+          <select
+            value={currentDate.getFullYear()}
+            onChange={(e) => handleYearChange(parseInt(e.target.value))}
+            className={`${TYPOGRAPHY.form.input} font-semibold text-negro-una bg-blanco-una border border-gris-light rounded-corner-sm px-2 py-1 hover:border-gris-una-2 focus:outline-none cursor-pointer`}
+            aria-label="Seleccionar año"
+          >
+            {yearRange.map((year) => (
+              <option key={year} value={year}>
+                {year}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        <Button
+          type="button"
+          variant="ghost"
+          onClick={handleNextMonth}
+          aria-label="Mes siguiente"
+        >
+          <SystemIcons.navigation.arrow.right className={`${ICON_SIZES.sm} text-gris-una`} />
+        </Button>
+      </div>
+
+      {/* Day names header */}
+      <div className="grid grid-cols-7 gap-1 mb-2">
+        {dayNames.map((day) => (
+          <div key={day} className={`text-center ${TYPOGRAPHY.form.helper} font-medium text-gris-una py-1`}>
+            {day}
+          </div>
+        ))}
+      </div>
+
+      {/* Calendar grid */}
+      <div className="grid grid-cols-7 gap-1 mb-3">
+        {days.map((day, idx) => (
+          <button
+            key={day ? day.toString() : `empty-${idx}`}
+            type="button"
+            onClick={() => day && !isDateDisabled(day) && handleSelectDate(day)}
+            disabled={!day || isDateDisabled(day)}
+            className={cn(
+              `p-1.5 ${TYPOGRAPHY.form.helper} rounded-corner font-medium transition-all min-h-[1.75rem] flex items-center justify-center`,
+              !day && 'opacity-0 cursor-default',
+              day && isDateDisabled(day) && 'opacity-30 cursor-not-allowed text-gris-una',
+              day && !isDateDisabled(day) && 'cursor-pointer',
+              isSelected(day) && 'bg-info-light text-info shadow-sm',
+              isToday(day) && !isSelected(day) && 'bg-error-light text-error border border-error-ring',
+              day && !isSelected(day) && !isToday(day) && !isDateDisabled(day) && 'hover:bg-gris-una/10 text-negro-una'
+            )}
+          >
+            {day}
+          </button>
+        ))}
+      </div>
+    </>
+  );
+
+  // Modo inline: calendario siempre visible, sin input trigger ni portal
+  if (inline) {
+    return (
+      <div className={cn('space-y-1', className)}>
+        {label && (
+          <label className={cn(TYPOGRAPHY.form.label, 'block font-semibold', error ? 'text-rojo-una-2' : 'text-gris-una')}>
+            {label}
+            {required && <span className="text-rojo-una-2 ml-1">*</span>}
+          </label>
+        )}
+
+        <div className={cn(
+          'bg-blanco-una border rounded-corner p-3 w-72',
+          error ? 'border-rojo-una-2' : 'border-gris-una'
+        )}>
+          {renderCalendarBody()}
+        </div>
+
+        {error && (
+          <div className={`flex items-center gap-2 ${TYPOGRAPHY.form.helper} text-rojo-una-2`}>
+            <SystemIcons.interface.alert className={ICON_SIZES.sm} />
+            {error}
+          </div>
+        )}
+        {helperText && !error && (
+          <p className={`${TYPOGRAPHY.form.helper} text-gris-una`}>{helperText}</p>
+        )}
+      </div>
+    );
+  }
 
   // Clases base del input
   const hasValue = Boolean(selectedDate);
@@ -403,90 +523,9 @@ export const DatePicker: React.FC<DatePickerProps> = ({
                   left: dropdownPosition.left,
                   zIndex: 9999,
                 }}
-                className="bg-blanco-una border border-gris-light rounded-corner shadow-lg p-3 w-72"
+                className="bg-blanco-una border border-gris-una rounded-corner shadow-lg p-3 w-72"
               >
-                {/* Header with navigation and selectors */}
-                <div className="flex items-center justify-between gap-2 mb-3">
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    onClick={handlePrevMonth}
-                    aria-label="Mes anterior"
-                  >
-                    <SystemIcons.navigation.arrow.left className={`${ICON_SIZES.sm} text-gris-una`} />
-                  </Button>
-
-                  <div className="flex items-center gap-2 flex-1 justify-center">
-                    {/* Selector de Mes */}
-                    <select
-                      value={currentDate.getMonth()}
-                      onChange={(e) => handleMonthChange(parseInt(e.target.value))}
-                      className={`${TYPOGRAPHY.form.input} font-semibold text-negro-una bg-blanco-una border border-gris-light rounded-corner-sm px-2 py-1 hover:border-gris-una-2 focus:outline-none cursor-pointer`}
-                      aria-label="Seleccionar mes"
-                    >
-                      {monthNames.map((month) => (
-                        <option key={month} value={monthNames.indexOf(month)}>
-                          {month}
-                        </option>
-                      ))}
-                    </select>
-
-                    {/* Selector de Año */}
-                    <select
-                      value={currentDate.getFullYear()}
-                      onChange={(e) => handleYearChange(parseInt(e.target.value))}
-                      className={`${TYPOGRAPHY.form.input} font-semibold text-negro-una bg-blanco-una border border-gris-light rounded-corner-sm px-2 py-1 hover:border-gris-una-2 focus:outline-none cursor-pointer`}
-                      aria-label="Seleccionar año"
-                    >
-                      {yearRange.map((year) => (
-                        <option key={year} value={year}>
-                          {year}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    onClick={handleNextMonth}
-                    aria-label="Mes siguiente"
-                  >
-                    <SystemIcons.navigation.arrow.right className={`${ICON_SIZES.sm} text-gris-una`} />
-                  </Button>
-                </div>
-
-                {/* Day names header */}
-                <div className="grid grid-cols-7 gap-1 mb-2">
-                  {dayNames.map((day) => (
-                    <div key={day} className={`text-center ${TYPOGRAPHY.form.helper} font-medium text-gris-una py-1`}>
-                      {day}
-                    </div>
-                  ))}
-                </div>
-
-                {/* Calendar grid */}
-                <div className="grid grid-cols-7 gap-1 mb-3">
-                  {days.map((day, idx) => (
-                    <button
-                      key={day ? day.toString() : `empty-${idx}`}
-                      type="button"
-                      onClick={() => day && !isDateDisabled(day) && handleSelectDate(day)}
-                      disabled={!day || isDateDisabled(day)}
-                      className={cn(
-                        `p-1.5 ${TYPOGRAPHY.form.helper} rounded-corner font-medium transition-all min-h-[1.75rem] flex items-center justify-center`,
-                        !day && 'opacity-0 cursor-default',
-                        day && isDateDisabled(day) && 'opacity-30 cursor-not-allowed text-gris-una',
-                        day && !isDateDisabled(day) && 'cursor-pointer',
-                        isSelected(day) && 'bg-info-light text-info shadow-sm',
-                        isToday(day) && !isSelected(day) && 'bg-error-light text-error border border-error-ring',
-                        day && !isSelected(day) && !isToday(day) && !isDateDisabled(day) && 'hover:bg-gris-una/10 text-negro-una'
-                      )}
-                    >
-                      {day}
-                    </button>
-                  ))}
-                </div>
+                {renderCalendarBody()}
 
                 {/* Close button */}
                 <Button

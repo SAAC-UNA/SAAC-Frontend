@@ -25,9 +25,7 @@ const EditUserPage = lazy(() =>
 );
 const StructureList = lazy(() => import("@/Pages/Structure/StructureList"));
 const EvidenceAssignment = lazy(() =>
-  import("./Pages/EvidenceAssignment").then((m) => ({
-    default: m.EvidenceAssignment,
-  })),
+  import("./Pages/EvidenceAssignment/EvidenceAssignment"),
 );
 const EvidenceUploadPage = lazy(() =>
   import("./Pages/EvidenceUpload").then((m) => ({

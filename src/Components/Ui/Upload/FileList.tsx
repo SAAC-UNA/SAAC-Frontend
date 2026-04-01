@@ -182,6 +182,7 @@ export const FileList: React.FC<FileListProps> = ({
   return (
     <>
       <DataTable<FileRow>
+        unstyled
         data={files as FileRow[]}
         columns={columns as any}
         title=""

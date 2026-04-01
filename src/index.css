@@ -57,18 +57,20 @@
 
 /* Para el bounce loader */
 @keyframes sk-bouncedelay {
-  0%, 80%, 100% { 
+  0%,
+  80%,
+  100% {
     -webkit-transform: scale(0);
     transform: scale(0);
-  } 
-  40% { 
-    -webkit-transform: scale(1.0);
-    transform: scale(1.0);
+  }
+  40% {
+    -webkit-transform: scale(1);
+    transform: scale(1);
   }
 }
 
 /*! Loader de documentos 12-03-2026*/
-/* From Uiverse.io by nawinasokan */ 
+/* From Uiverse.io by nawinasokan */
 .loader-con {
   position: relative;
   width: 50%;
@@ -81,7 +83,11 @@
   bottom: 25px;
   width: 40px;
   height: 50px;
-  background: linear-gradient(90deg, var(--color-gris-una), var(--color-gris-light));
+  background: linear-gradient(
+    90deg,
+    var(--color-gris-una),
+    var(--color-gris-light)
+  );
   border-radius: 4px;
   transform-origin: center;
   animation: flyRight 3s ease-in-out infinite;
@@ -148,131 +154,152 @@
 /* Colores oficiales, tipografías y espaciado */
 
 @theme {
-  --color-rojo-una: #CD1719;
-  --color-rojo-una-2: #C32B30;
-  --color-gris-una: #A7A7A9;
+  --color-blanco-una: #ffffff;
+  --color-blanco-una-2: #f8f9fa;
+  --color-rojo-una: #cd1719;
+  --color-rojo-una-2: #c32b30;
+  --color-azul-una: #034991;
+  --color-azul-una-2: #2b57da;
+  --color-gris-una: #a7a7a9;
   --color-gris-una-2: #888887;
   --color-gris-una-3: #444852;
   --color-gris-una-4: #2d3037;
-  --color-azul-una: #034991;
-  --color-azul-una-2: #2b57da;
-  --color-blanco-una: #FFFFFF;
-  --color-blanco-una-2: #F8F9FA;
   --color-negro-una: #000000;
   --color-negro-una-2: #232323;
 
-    /* Colores para estados */
-  --color-verde: #10b981;
-  --color-warning: #f59e0b;
-  --color-error: #ef4444;
-  --color-info: #3b82f6;
-  --color-error-screen: #aba9af;
-
-  --color-verde-dark: #166534;   /* Texto verde oscuro para éxito */
-  --color-warning-dark: #92400e;   /* Texto amarillo oscuro para advertencias */
-  --color-error-dark: #ee4343;      /* Texto rojo oscuro para errores */
-  --color-info-dark: #1e40af;      /* Texto azul oscuro para información */
-  --color-morado-dark: #a21caf;    /* Texto morado oscuro para información */
-  --color-teal-dark: #0f766e;      /* Texto teal oscuro para información */
+  /* Tono 700 */
+  --color-verde-dark: #166534;
+  --color-teal-dark: #0f766e;
+  --color-warning-dark: #92400e;
+  --color-naranja-dark: #c2410c;
+  --color-error-dark: #ee4343;
+  --color-rose-dark: #be123c;
+  --color-info-dark: #1e40af;
+  --color-slate-dark: #334155;
+  --color-morado-dark: #a21caf;
   --color-indigo-dark: #4338ca;
 
-  --color-verde-light: #f0fdf4;     /* Fondo verde claro para éxito */
-  --color-warning-light: #fffbeb;     /* Fondo amarillo claro para advertencias */
-  --color-error-light: #fef2f2;       /* Fondo rojo claro para errores */
-  --color-info-light: #eff6ff;        /* Fondo azul claro para información */
-  --color-gris-light: #e7e8ea;   /* Fondo gris claro para inactivo */
-  --color-morado-light: #f5d0fe; /* Fondo morado claro para información */
-  --color-teal-light: #ccfbf1;   /* Fondo teal claro para información */
-  --color-indigo-light: #c7d2fe;  /* Fondo indigo claro para información */
+  /* Tono 400 */
+  --color-verde: #10b981;
+  --color-teal: #0d9488;
+  --color-warning: #f59e0b;
+  --color-naranja: #fb923c;
+  --color-error: #ef4444;
+  --color-rose: #fb7185;
+  --color-info: #3b82f6;
+  --color-slate: #94a3b8;
+  --color-morado: #c026d3;
+  --color-indigo: #6366f1;
 
-  --color-verde-ring: #bbf7d0; /* Borde verde para éxito */
-  --color-warning-ring: #fde68a; /* Borde amarillo para advertencias */
-  --color-error-ring: #fecaca;   /* Borde rojo para errores */
-  --color-info-ring: #bfdbfe;    /* Borde azul para información */
-  --color-morado-ring: #f0abfc;  /* Borde morado para información */
-  --color-teal-ring: #5eead4;    /* Borde teal para información */
-  --color-indigo-ring: #a5b4fc;  /* Borde indigo para información */
+  /* Tono 300 */
+  --color-verde-ring: #bbf7d0;
+  --color-teal-ring: #5eead4;
+  --color-warning-ring: #fde68a;
+  --color-naranja-ring: #fdba74;
+  --color-error-ring: #fecaca;
+  --color-rose-ring: #fda4af;
+  --color-info-ring: #bfdbfe;
+  --color-slate-ring: #cbd5e1;
+  --color-morado-ring: #f0abfc;
+  --color-indigo-ring: #a5b4fc;
 
-  --font-poppins: 'Poppins', sans-serif;
+  /* Tono 200 */
+  --color-verde-light: #f0fdf4;
+  --color-teal-light: #ccfbf1;
+  --color-warning-light: #fffbeb;
+  --color-naranja-light: #ffedd5;
+  --color-error-light: #fef2f2;
+  --color-rose-light: #fecdd3;
+  --color-info-light: #eff6ff;
+  --color-gris-light: #e7e8ea;
+  --color-slate-light:#e2e8f0;
+  --color-morado-light: #f5d0fe;
+  --color-indigo-light: #c7d2fe;
+
+  --font-poppins: "Poppins", sans-serif;
 
   /* Tamaños de tipografía estandarizados por tipo de elemento */
   /* Fórmula: rem × 16 = px | Ejemplo: 0.875rem × 16 = 14px */
-  --text-header: 12.8px;             /* 8px - Texto principal en headers */
-  --text-body: 12.8px;            /* 14px - Texto general/contenido */
-  --text-page-title: 1.25rem;        /* 24px - Título principal de página */
-  --text-page-subtitle: 1rem;       /* 16px - Subtítulo/descripción de página */
-  --text-button: 12.8px;          /* 12px - Todos los botones */
-  --text-sidebar: 13px;         /* 14px - Items de navegación */
-  --text-form-input: 12.8px;      /* 14px - Inputs, selects, textareas */
-  --text-form-label: 12.8px;      /* 14px - Labels de formularios */
-  --text-form-helper: 0.75rem;      /* 12px - Textos de ayuda y validación */
-  --text-table-header: 12.8px;     /* 14px - Headers de tabla */
-  --text-table-cell: 12.8px;      /* 12px - Contenido de celdas */
-  --text-table-caption: 12.8px;   /* 14px - Título de tabla */
-  --text-badge: 12.8px;            /* 12px - Badges, chips, pills de acción (en tablas) */
-  --text-alert-title: 12.8px;     /* 14px - Título de alertas */
-  --text-alert-message: 12.8px;   /* 14px - Mensaje de alertas */
-  --text-empty-title: 1.125rem;     /* 18px - Título de estados vacíos */
-  --text-empty-desc: 12.8px;      /* 14px - Descripción de estados vacíos */
+  --text-header: 12.8px; /* 8px - Texto principal en headers */
+  --text-body: 12.8px; /* 14px - Texto general/contenido */
+  --text-page-title: 1.25rem; /* 24px - Título principal de página */
+  --text-page-subtitle: 1rem; /* 16px - Subtítulo/descripción de página */
+  --text-button: 12.8px; /* 12px - Todos los botones */
+  --text-sidebar: 13px; /* 14px - Items de navegación */
+  --text-form-input: 12.8px; /* 14px - Inputs, selects, textareas */
+  --text-form-label: 12.8px; /* 14px - Labels de formularios */
+  --text-form-helper: 0.75rem; /* 12px - Textos de ayuda y validación */
+  --text-table-header: 12.8px; /* 14px - Headers de tabla */
+  --text-table-cell: 12.8px; /* 12px - Contenido de celdas */
+  --text-table-caption: 12.8px; /* 14px - Título de tabla */
+  --text-badge: 10.8px; /* 12px - Badges, chips, pills de acción (en tablas) */
+  --text-alert-title: 12.8px; /* 14px - Título de alertas */
+  --text-alert-message: 12.8px; /* 14px - Mensaje de alertas */
+  --text-empty-title: 1.125rem; /* 18px - Título de estados vacíos */
+  --text-empty-desc: 12.8px; /* 14px - Descripción de estados vacíos */
   --text-empty-title-compact: 1rem; /* 16px - Título compacto */
   --text-empty-desc-compact: 0.75rem; /* 12px - Descripción compacta */
-  --text-modal-title: 1.25rem;      /* 20px - Título de modales */
-  --text-modal-subtitle: 12.8px;  /* 14px - Subtítulo de modales */
-  --text-modal-body: 12.8px;      /* 14px - Contenido de modales */
-  --text-pagination: 12.8px;      /* 14px - Paginación */
-  --text-tooltip: 0.75rem;         /* 12px - Texto de tooltips */
-  --text-toast: 0.75rem;           /* 12px - Título del toast */
+  --text-modal-title: 1.25rem; /* 20px - Título de modales */
+  --text-modal-subtitle: 12.8px; /* 14px - Subtítulo de modales */
+  --text-modal-body: 12.8px; /* 14px - Contenido de modales */
+  --text-pagination: 12.8px; /* 14px - Paginación */
+  --text-tooltip: 0.75rem; /* 12px - Texto de tooltips */
+  --text-toast: 0.75rem; /* 12px - Título del toast */
   --text-toast-message: 0.6875rem; /* 11px - Mensaje del toast */
 
   /* SIDEBAR */
-  --sidebar-width: 13rem;            /* 208px - Ancho expandido */
-  --sidebar-width-mobile: 18rem;     /* 288px - Ancho en móvil */
-  --sidebar-width-icon: 3.50rem;     /* 56px - Ancho colapsado (solo íconos) */
-  --height-sidebar-item: 3rem;    /* 48px - Altura fija del botón */
-  --padding-sidebar-x: 1rem;         /* 16px - Padding horizontal del botón */
-  --size-sidebar-icon: 2rem;         /* 32px - Tamaño del ícono */
-  --radius-sm: 0.5rem;               /* 8px - Inputs, badges y elementos compactos */
-  --radius-md: 0.875rem;             /* 14px - Cards, botones y contenedores estándar */
-  --radius-lg: 1.25rem;              /* 20px - Modales, sidebar y contenedores destacados */
-  --radius-full: 9999px;             /* Full - Pills y formas completamente redondeadas */
+  --sidebar-width: 13rem; /* 208px - Ancho expandido */
+  --sidebar-width-mobile: 18rem; /* 288px - Ancho en móvil */
+  --sidebar-width-icon: 3.5rem; /* 56px - Ancho colapsado (solo íconos) */
+  --height-sidebar-item: 3rem; /* 48px - Altura fija del botón */
+  --padding-sidebar-x: 1rem; /* 16px - Padding horizontal del botón */
+  --size-sidebar-icon: 2rem; /* 32px - Tamaño del ícono */
+  --radius-sm: 0.5rem; /* 8px - Inputs, badges y elementos compactos */
+  --radius-md: 0.875rem; /* 14px - Cards, botones y contenedores estándar */
+  --radius-lg: 1.25rem; /* 20px - Modales, sidebar y contenedores destacados */
+  --radius-full: 9999px; /* Full - Pills y formas completamente redondeadas */
   --radius-sidebar-item: var(--radius-lg); /* Alias semántico para el sidebar */
-  --radius-corner: var(--radius-md); /* Alias de compatibilidad para rounded-corner */
+  --radius-corner: var(
+    --radius-md
+  ); /* Alias de compatibilidad para rounded-corner */
 
   /* Tamaño de button */
   --width-button: 8rem; /* 128px - Ancho mínimo estándar para botones de contenido */
-  
+
   /* Tamaños de íconos generales */
-  --size-icon-button: 1rem;          /* 20px - Ícono en botones */
-  --size-icon-sm: 1rem;              /* 16px - Ícono pequeño */
-  --size-icon-md: 1.25rem;           /* 20px - Ícono mediano */
-  --size-icon-lg: 1.5rem;            /* 24px - Ícono grande */
-  --size-icon-logo: 2rem;            /* 32px - Isotipo/logo de la aplicación */
+  --size-icon-button: 1rem; /* 20px - Ícono en botones */
+  --size-icon-sm: 1rem; /* 16px - Ícono pequeño */
+  --size-icon-md: 1.25rem; /* 20px - Ícono mediano */
+  --size-icon-lg: 1.5rem; /* 24px - Ícono grande */
+  --size-icon-logo: 2rem; /* 32px - Isotipo/logo de la aplicación */
 
   /* Tamaños para botones de acción en tablas */
   --size-table-action-button: 2rem; /* 32px - Tamaño del botón (h-8 w-8) */
-  --size-table-action-icon: 0.875rem;   /* 16px - Tamaño del icono (w-4 h-4) */
-  --padding-table-action: 0.5rem;   /* 8px - Padding del botón (p-2) */
+  --size-table-action-icon: 0.875rem; /* 16px - Tamaño del icono (w-4 h-4) */
+  --padding-table-action: 0.5rem; /* 8px - Padding del botón (p-2) */
 
   /* Tamaños para botones en headers */
-  --size-header-button: 2.25rem;     /* 32px - Tamaño del botón (h-10 w-10) */
-  --size-header-icon: 1.25rem;     /* 20px - Tamaño del icono (w-5 h-5) */
+  --size-header-button: 2.25rem; /* 32px - Tamaño del botón (h-10 w-10) */
+  --size-header-icon: 1.25rem; /* 20px - Tamaño del icono (w-5 h-5) */
   --padding-header-action: 0.5rem; /* 8px - Padding del botón (p-2) */
 
   /*? Alturas y paddings de componentes (inputs, buttons, selects, etc) */
-  --height-component: 2.5rem;       /* 40px - Altura estándar para todos los tamaños */
-  --padding-component-sm-x: 0.75rem;  /* 12px - Padding horizontal sm */
-  --padding-component-sm-y: 0.5rem;   /* 8px - Padding vertical sm */
-  --padding-component-md-x: 1rem;     /* 16px - Padding horizontal md */
-  --padding-component-md-y: 0.75rem;  /* 12px - Padding vertical md */
-  --padding-component-lg-x: 1rem;     /* 16px - Padding horizontal lg */
-  --padding-component-lg-y: 1rem;     /* 16px - Padding vertical lg */
-
+  --height-component: 2.5rem; /* 40px - Altura estándar para todos los tamaños */
+  --padding-component-sm-x: 0.75rem; /* 12px - Padding horizontal sm */
+  --padding-component-sm-y: 0.5rem; /* 8px - Padding vertical sm */
+  --padding-component-md-x: 1rem; /* 16px - Padding horizontal md */
+  --padding-component-md-y: 0.75rem; /* 12px - Padding vertical md */
+  --padding-component-lg-x: 1rem; /* 16px - Padding horizontal lg */
+  --padding-component-lg-y: 1rem; /* 16px - Padding vertical lg */
 }
 
 /* ===== CONFIGURACIÓN BASE ===== */
 /* ? Variables CSS para el sidebar y configuración global */
 
-  @layer base {
+@layer base {
+  html {
+    font-size: 15px;
+  }
 
   body {
     @apply font-poppins bg-blanco-una-2;
@@ -303,7 +330,6 @@
 /* ? Clases específicas para elementos del sistema */
 
 @layer components {
-
   /* ! ===== TOAST STYLES ===== 24-03-2026*/
   /* Clases para el componente CustomToast (Toast.tsx)
    * Cada variante expone --toast-bar para el color de la barra de progreso */
@@ -312,7 +338,8 @@
     background: color-mix(in srgb, var(--color-verde-light) 60%, transparent);
     border: 1px solid var(--color-verde-ring);
     color: var(--color-verde-dark);
-    box-shadow: 0 4px 14px -2px color-mix(in srgb, var(--color-verde) 30%, transparent);
+    box-shadow: 0 4px 14px -2px
+      color-mix(in srgb, var(--color-verde) 30%, transparent);
     --toast-bar: var(--color-verde);
   }
 
@@ -320,7 +347,8 @@
     background: color-mix(in srgb, var(--color-error-light) 60%, transparent);
     border: 1px solid var(--color-error-ring);
     color: var(--color-error-dark);
-    box-shadow: 0 4px 14px -2px color-mix(in srgb, var(--color-error) 30%, transparent);
+    box-shadow: 0 4px 14px -2px
+      color-mix(in srgb, var(--color-error) 30%, transparent);
     --toast-bar: var(--color-error);
   }
 
@@ -328,7 +356,8 @@
     background: color-mix(in srgb, var(--color-warning-light) 60%, transparent);
     border: 1px solid var(--color-warning-ring);
     color: var(--color-warning-dark);
-    box-shadow: 0 4px 14px -2px color-mix(in srgb, var(--color-warning) 30%, transparent);
+    box-shadow: 0 4px 14px -2px
+      color-mix(in srgb, var(--color-warning) 30%, transparent);
     --toast-bar: var(--color-warning);
   }
 
@@ -336,7 +365,8 @@
     background: color-mix(in srgb, var(--color-info-light) 60%, transparent);
     border: 1px solid var(--color-info-ring);
     color: var(--color-info-dark);
-    box-shadow: 0 4px 14px -2px color-mix(in srgb, var(--color-info) 30%, transparent);
+    box-shadow: 0 4px 14px -2px
+      color-mix(in srgb, var(--color-info) 30%, transparent);
     --toast-bar: var(--color-info);
   }
 }
@@ -344,7 +374,6 @@
 /* ===== UTILIDADES ADICIONALES ===== */
 /* Transiciones, sombras, efectos especiales y scrollbars */
 @layer utilities {
-
   /*! ===== Border radius del sistema ===== 05-03-2026 */
   /* TODO: hay que unificar estos redondeos a lo largo del sistema */
   .rounded-corner-sm {
@@ -366,40 +395,106 @@
 
   /*! ===== TIPOGRAFÍA ESTANDARIZADA ===== 14-02-2026 */
   /* Usamos prefijo 'size-' para evitar conflictos con clases de color 'text-*' de Tailwind */
-  .size-header { font-size: var(--text-header); }
-  .size-body { font-size: var(--text-body); }
-  .size-page-title { font-size: var(--text-page-title); }
-  .size-page-subtitle { font-size: var(--text-page-subtitle); }
-  .size-button { font-size: var(--text-button); }
-  .size-sidebar { font-size: var(--text-sidebar); }
+  .size-header {
+    font-size: var(--text-header);
+  }
+  .size-body {
+    font-size: var(--text-body);
+  }
+  .size-page-title {
+    font-size: var(--text-page-title);
+  }
+  .size-page-subtitle {
+    font-size: var(--text-page-subtitle);
+  }
+  .size-button {
+    font-size: var(--text-button);
+  }
+  .size-sidebar {
+    font-size: var(--text-sidebar);
+  }
 
   /* ===== SIDEBAR ITEM DIMENSIONS ===== */
   /* Altura y padding del botón son independientes del texto y del ícono */
-  .h-sidebar-item { height: var(--height-sidebar-item); }
-  .size-sidebar-item { width: var(--height-sidebar-item); height: var(--height-sidebar-item); }
-  .px-sidebar-item { padding-left: var(--padding-sidebar-x); padding-right: var(--padding-sidebar-x); }
-  .size-sidebar-icon { width: var(--size-sidebar-icon); height: var(--size-sidebar-icon); }
-  .rounded-l-sidebar-item { border-top-left-radius: var(--radius-sidebar-item); border-bottom-left-radius: var(--radius-sidebar-item); }
-  .size-form-input { font-size: var(--text-form-input); }
-  .size-form-label { font-size: var(--text-form-label); }
-  .size-form-helper { font-size: var(--text-form-helper); }
-  .size-table-header { font-size: var(--text-table-header); }
-  .size-table-cell { font-size: var(--text-table-cell); }
-  .size-table-caption { font-size: var(--text-table-caption); }
-  .size-alert-title { font-size: var(--text-alert-title); }
-  .size-alert-message { font-size: var(--text-alert-message); }
-  .size-empty-title { font-size: var(--text-empty-title); }
-  .size-empty-desc { font-size: var(--text-empty-desc); }
-  .size-empty-title-compact { font-size: var(--text-empty-title-compact); }
-  .size-empty-desc-compact { font-size: var(--text-empty-desc-compact); }
-  .size-modal-title { font-size: var(--text-modal-title); }
-  .size-modal-subtitle { font-size: var(--text-modal-subtitle); }
-  .size-modal-body { font-size: var(--text-modal-body); }
-  .size-badge { font-size: var(--text-badge); }
-  .size-pagination { font-size: var(--text-pagination); }
-  .size-tooltip { font-size: var(--text-tooltip); }
-  .size-toast { font-size: var(--text-toast); }
-  .size-toast-message { font-size: var(--text-toast-message); }
+  .h-sidebar-item {
+    height: var(--height-sidebar-item);
+  }
+  .size-sidebar-item {
+    width: var(--height-sidebar-item);
+    height: var(--height-sidebar-item);
+  }
+  .px-sidebar-item {
+    padding-left: var(--padding-sidebar-x);
+    padding-right: var(--padding-sidebar-x);
+  }
+  .size-sidebar-icon {
+    width: var(--size-sidebar-icon);
+    height: var(--size-sidebar-icon);
+  }
+  .rounded-l-sidebar-item {
+    border-top-left-radius: var(--radius-sidebar-item);
+    border-bottom-left-radius: var(--radius-sidebar-item);
+  }
+  .size-form-input {
+    font-size: var(--text-form-input);
+  }
+  .size-form-label {
+    font-size: var(--text-form-label);
+  }
+  .size-form-helper {
+    font-size: var(--text-form-helper);
+  }
+  .size-table-header {
+    font-size: var(--text-table-header);
+  }
+  .size-table-cell {
+    font-size: var(--text-table-cell);
+  }
+  .size-table-caption {
+    font-size: var(--text-table-caption);
+  }
+  .size-alert-title {
+    font-size: var(--text-alert-title);
+  }
+  .size-alert-message {
+    font-size: var(--text-alert-message);
+  }
+  .size-empty-title {
+    font-size: var(--text-empty-title);
+  }
+  .size-empty-desc {
+    font-size: var(--text-empty-desc);
+  }
+  .size-empty-title-compact {
+    font-size: var(--text-empty-title-compact);
+  }
+  .size-empty-desc-compact {
+    font-size: var(--text-empty-desc-compact);
+  }
+  .size-modal-title {
+    font-size: var(--text-modal-title);
+  }
+  .size-modal-subtitle {
+    font-size: var(--text-modal-subtitle);
+  }
+  .size-modal-body {
+    font-size: var(--text-modal-body);
+  }
+  .size-badge {
+    font-size: var(--text-badge);
+  }
+  .size-pagination {
+    font-size: var(--text-pagination);
+  }
+  .size-tooltip {
+    font-size: var(--text-tooltip);
+  }
+  .size-toast {
+    font-size: var(--text-toast);
+  }
+  .size-toast-message {
+    font-size: var(--text-toast-message);
+  }
 
   /*! ===== FLOATING LABEL HALO ===== 24-03-2026 */
   /* Simula fondo en el label flotante con text-shadow en 8 direcciones,
@@ -407,13 +502,13 @@
   .floating-label-halo {
     text-shadow:
       -1px -1px 0 var(--color-blanco-una-2),
-       1px -1px 0 var(--color-blanco-una-2),
-      -1px  1px 0 var(--color-blanco-una-2),
-       1px  1px 0 var(--color-blanco-una-2),
-      -2px  0   0 var(--color-blanco-una-2),
-       2px  0   0 var(--color-blanco-una-2),
-       0   -2px 0 var(--color-blanco-una-2),
-       0    2px 0 var(--color-blanco-una-2);
+      1px -1px 0 var(--color-blanco-una-2),
+      -1px 1px 0 var(--color-blanco-una-2),
+      1px 1px 0 var(--color-blanco-una-2),
+      -2px 0 0 var(--color-blanco-una-2),
+      2px 0 0 var(--color-blanco-una-2),
+      0 -2px 0 var(--color-blanco-una-2),
+      0 2px 0 var(--color-blanco-una-2);
   }
 
   /*! ==== TAMAÑO DE BOTONES PRINCIPALES ===== 04-03-2026 */
@@ -423,22 +518,39 @@
   }
 
   /*! ===== TAMAÑOS DE ICONOS ===== 04-03-2026 */
-  .size-icon-button { width: var(--size-icon-button); height: var(--size-icon-button); }
-  .size-icon-sm     { width: var(--size-icon-sm);     height: var(--size-icon-sm); }
-  .size-icon-md     { width: var(--size-icon-md);     height: var(--size-icon-md); }
-  .size-icon-lg     { width: var(--size-icon-lg);     height: var(--size-icon-lg); }
-  .size-icon-logo   { width: auto;                    height: var(--size-icon-logo); }
+  .size-icon-button {
+    width: var(--size-icon-button);
+    height: var(--size-icon-button);
+  }
+  .size-icon-sm {
+    width: var(--size-icon-sm);
+    height: var(--size-icon-sm);
+  }
+  .size-icon-md {
+    width: var(--size-icon-md);
+    height: var(--size-icon-md);
+  }
+  .size-icon-lg {
+    width: var(--size-icon-lg);
+    height: var(--size-icon-lg);
+  }
+  .size-icon-logo {
+    width: auto;
+    height: var(--size-icon-logo);
+  }
 
   /*! ===== TAMAÑOS DE BOTONES DE TABLA ===== 14-02-2026 */
-  .size-table-action-button { 
-    height: var(--size-table-action-button) !important; 
-    width: var(--size-table-action-button) !important; 
+  .size-table-action-button {
+    height: var(--size-table-action-button) !important;
+    width: var(--size-table-action-button) !important;
   }
-  .size-table-action-icon { 
-    height: var(--size-table-action-icon) !important; 
-    width: var(--size-table-action-icon) !important; 
+  .size-table-action-icon {
+    height: var(--size-table-action-icon) !important;
+    width: var(--size-table-action-icon) !important;
   }
-  .p-table-action { padding: var(--padding-table-action) !important; }
+  .p-table-action {
+    padding: var(--padding-table-action) !important;
+  }
 
   /*! ==== TAMAÑO DE BOTONES DE HEADER ==== 15-02-2026 */
   .size-header-button {
@@ -456,20 +568,40 @@
   }
 
   /*? ===== TAMAÑOS DE COMPONENTES ===== */
-  .h-component { height: var(--height-component); }
-  .px-component-sm { padding-left: var(--padding-component-sm-x); padding-right: var(--padding-component-sm-x); }
-  .py-component-sm { padding-top: var(--padding-component-sm-y); padding-bottom: var(--padding-component-sm-y); }
-  .px-component-md { padding-left: var(--padding-component-md-x); padding-right: var(--padding-component-md-x); }
-  .py-component-md { padding-top: var(--padding-component-md-y); padding-bottom: var(--padding-component-md-y); }
-  .px-component-lg { padding-left: var(--padding-component-lg-x); padding-right: var(--padding-component-lg-x); }
-  .py-component-lg { padding-top: var(--padding-component-lg-y); padding-bottom: var(--padding-component-lg-y); }
+  .h-component {
+    height: var(--height-component);
+  }
+  .px-component-sm {
+    padding-left: var(--padding-component-sm-x);
+    padding-right: var(--padding-component-sm-x);
+  }
+  .py-component-sm {
+    padding-top: var(--padding-component-sm-y);
+    padding-bottom: var(--padding-component-sm-y);
+  }
+  .px-component-md {
+    padding-left: var(--padding-component-md-x);
+    padding-right: var(--padding-component-md-x);
+  }
+  .py-component-md {
+    padding-top: var(--padding-component-md-y);
+    padding-bottom: var(--padding-component-md-y);
+  }
+  .px-component-lg {
+    padding-left: var(--padding-component-lg-x);
+    padding-right: var(--padding-component-lg-x);
+  }
+  .py-component-lg {
+    padding-top: var(--padding-component-lg-y);
+    padding-bottom: var(--padding-component-lg-y);
+  }
 
   /* Transiciones personalizadas */
-  
+
   .shadow-card-hover {
     box-shadow: 0 10px 25px -3px rgba(0, 0, 0, 0.1);
   }
-  
+
   /* Text shadows */
   .text-shadow-sm {
     text-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
@@ -484,13 +616,13 @@
     flex-direction: column;
     min-height: 60vh; /* Altura mínima para empujar botones */
   }
-  
+
   .content-layout-form-tall {
     display: flex;
     flex-direction: column;
     min-height: 70vh; /* Para pantallas que necesitan más altura */
   }
-  
+
   /* El contenido que crece para empujar botones al fondo */
   .content-flex-grow {
     flex: 1;
@@ -541,7 +673,9 @@
   /*===== Mínima altura del Layout para el screenContainer =====*/
   .min-h-app {
     /* py-8 = 4rem (2 + 2) */
-    min-height: calc(100dvh - var(--app-header-height, 64px) - 3rem); /* Ajustar según la altura del header */
+    min-height: calc(
+      100dvh - var(--app-header-height, 64px) - 3rem
+    ); /* Ajustar según la altura del header */
   }
 
   /* ===== ANIMACIONES PARA MODALES ===== */

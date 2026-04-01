@@ -385,7 +385,6 @@ export const ImprovementCommitmentDetail: React.FC = () => {
                   } : undefined}
                   loading={false}
                   emptyMessage="No hay criterios vinculados."
-                  unstyled={true}
                 />
               )}
             </div>
