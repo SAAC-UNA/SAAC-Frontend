@@ -18,6 +18,7 @@ import type { EvidenceSearchResult } from '@/Types/EvidenceSearchTypes';
 import { TYPOGRAPHY } from '@/Constants/Typography';
 import { ASSIGNMENT_STATUS_BADGE, EVIDENCE_STATUS_BADGE, BADGE_COLORS } from '@/Constants/StatusBadges';
 import { useFirstColumnConfig } from '@/Hooks/UseFirstColumnConfig';
+import { formatDate } from '@/Utils/DateUtils';
 
 interface FilesByUser extends Record<string, unknown> {
   usuario_id: number;
@@ -35,15 +36,6 @@ export interface EvidenceResourcesModalProps {
   evidencias: EvidenceSearchResult[];
   criterioNomenclatura?: string;
 }
-
-const formatDate = (iso: string | null): string => {
-  if (!iso) return '—';
-  return new Date(iso).toLocaleDateString('es-CR', {
-    year: 'numeric',
-    month: '2-digit',
-    day: '2-digit',
-  });
-};
 
 /** Carga lazy de responsables y archivos para una evidencia concreta */
 const EvidenciaResponsablesPanel: React.FC<{ evidenciaId: number }> = ({ evidenciaId }) => {

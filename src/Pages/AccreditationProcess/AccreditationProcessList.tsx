@@ -22,10 +22,6 @@ import { AccreditationProcessTable } from "./Components/AccreditationProcessTabl
 import { AccreditationProcessDetailsModal } from "./Components/AccreditationProcessDetailsModal";
 import { AccreditationProcessFormModal } from "./Components/AccreditationProcessFormModal";
 
-interface ApiError extends Error {
-  status?: number;
-}
-
 export const AccreditationProcessList: React.FC = () => {
   const moduleInfo = getModuleInfo("accreditation_processes");
 

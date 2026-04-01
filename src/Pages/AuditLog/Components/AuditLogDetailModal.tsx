@@ -7,6 +7,7 @@ import { AUDIT_ACTION_BADGE, BADGE_COLORS } from '@/Constants/StatusBadges';
 import type { AuditLog } from '@/Types/AuditLogTypes';
 import { TYPOGRAPHY } from '@/Constants/Typography';
 import { ICON_SIZES } from '@/Constants/Components';
+import { formatDateFull } from '@/Utils/DateUtils';
 
 interface AuditLogDetailModalProps {
   isOpen: boolean;
@@ -37,20 +38,6 @@ export const AuditLogDetailModal: React.FC<AuditLogDetailModalProps> = ({
   log,
 }) => {
   if (!log) return null;
-
-  const formatDateFull = (dateString: string): string => {
-    const date = new Date(dateString);
-    return new Intl.DateTimeFormat('es-ES', {
-      weekday: 'long',
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
-      second: '2-digit',
-      hour12: false,
-    }).format(date);
-  };
 
   return (
     <DetailsModal

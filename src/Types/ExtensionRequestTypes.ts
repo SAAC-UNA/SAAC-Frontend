@@ -2,6 +2,7 @@
  * Tipos TypeScript para Solicitudes de Ampliación (HU-016)
  * Corresponde al modelo ExtensionRequest del backend
  */
+import { formatDate } from '@/Utils/DateUtils';
 
 // Estados posibles de una solicitud de ampliación
 export type ExtensionRequestStatus = 'pendiente' | 'aprobada' | 'rechazada';
@@ -107,17 +108,6 @@ export interface ReviewFormData {
 }
 
 /**
- * Formatea una fecha ISO a dd/mm/yyyy (estándar del proyecto)
- */
-export function formatExtensionDate(isoDate: string): string {
-  return new Date(isoDate).toLocaleDateString('es-CR', {
-    year: 'numeric',
-    month: '2-digit',
-    day: '2-digit',
-  });
-}
-
-/**
  * Filtra solicitudes de ampliación por estado y término de búsqueda.
  * Cubre todos los campos visibles en la tabla.
  */
@@ -140,8 +130,8 @@ export function filterExtensionRequests(
       req.usuario?.nombre?.toLowerCase().includes(q) ||
       req.usuario?.email?.toLowerCase().includes(q) ||
       req.estado.toLowerCase().includes(q) ||
-      formatExtensionDate(req.fecha_sugerida).includes(q) ||
-      formatExtensionDate(req.created_at).includes(q)
+      formatDate(req.fecha_sugerida).includes(q) ||
+      formatDate(req.created_at).includes(q)
     );
   }
 

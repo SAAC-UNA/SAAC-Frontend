@@ -16,6 +16,7 @@ import { useFirstColumnConfig } from "@/Hooks/UseFirstColumnConfig";
 import type { UserAvatarsUser } from "@/Components/Ui/UserAvatars/UserAvatars";
 import type { DataTableColumn } from "@/Components/Ui/Index";
 import { TYPOGRAPHY } from "@/Constants/Typography";
+import { formatDateLong } from "@/Utils/DateUtils";
 
 import { EvidenceAssignmentView } from "./Components/EvidenceAssignmentView";
 
@@ -323,13 +324,9 @@ const EvidenceAssignment: React.FC = () => {
   const firstColumn = useFirstColumnConfig();
 
   const formatDisplayDate = (dateStr: string): string => {
-    if (!dateStr) return "—";
-    const [y, m, d] = dateStr.split("-").map(Number);
-    return new Date(y, m - 1, d).toLocaleDateString("es-ES", {
-      day: "numeric",
-      month: "long",
-      year: "numeric",
-    });
+    if (!dateStr) return '—';
+    const [y, m, d] = dateStr.split('-').map(Number);
+    return formatDateLong(new Date(y, m - 1, d));
   };
 
   const assignmentTableRows = useMemo<AssignmentTableRow[]>(() =>

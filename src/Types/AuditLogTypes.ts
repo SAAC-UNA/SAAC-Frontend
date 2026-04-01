@@ -1,6 +1,7 @@
 /**
  * Tipos para la Bitácora del Sistema (HU-005)
  */
+import { formatDateWithTime } from '@/Utils/DateUtils';
 
 /**
  * Tipo de acción registrada en la bitácora
@@ -84,18 +85,6 @@ export interface AuditLogState {
  * Formatea una fecha ISO a fecha + hora legible (estándar del proyecto, es-CR)
  * Retorna string con formato "dd/mm/yyyy, hh:mm:ss" separable por ", "
  */
-export function formatAuditDate(isoDate: string): string {
-  return new Intl.DateTimeFormat('es-CR', {
-    year: 'numeric',
-    month: '2-digit',
-    day: '2-digit',
-    hour: '2-digit',
-    minute: '2-digit',
-    second: '2-digit',
-    hour12: false,
-  }).format(new Date(isoDate));
-}
-
 /**
  * Filtra logs de bitácora localmente según un término de búsqueda.
  * Cubre todos los campos visibles en la tabla.
@@ -106,7 +95,7 @@ export function filterAuditLogs(logs: AuditLog[], searchTerm: string): AuditLog[
   const term = searchTerm.toLowerCase();
 
   return logs.filter(log => {
-    const fechaFormateada = formatAuditDate(log.fecha_hora).toLowerCase();
+    const fechaFormateada = formatDateWithTime(log.fecha_hora).toLowerCase();
     return (
       log.usuario?.nombre?.toLowerCase().includes(term) ||
       log.usuario?.email?.toLowerCase().includes(term) ||

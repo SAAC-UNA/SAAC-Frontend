@@ -17,6 +17,7 @@ import { BackendErrorAlert } from "@/Components/Ui/Feedback/BackendErrorAlert";
 import { TYPOGRAPHY } from "@/Constants/Typography";
 import type { DuplicateAssignment } from "@/Types/EvidenceAssignment";
 import type { EvidenceAssignmentViewProps, DuplicateGroupRow } from "../EvidenceAssignment";
+import { formatDate } from "@/Utils/DateUtils";
 
 // ---------------------------------------------------------------------------
 // EvidenceAssignmentView — componente de presentación puro
@@ -372,7 +373,7 @@ export const EvidenceAssignmentView: React.FC<EvidenceAssignmentViewProps> = ({
                                   <p className="text-xs text-gris-una mt-0.5">{evidenceById[dup.evidencia_id]?.descripcion ?? ''}</p>
                                 </td>
                                 <td className={`py-2 px-4 text-negro-una text-center ${TYPOGRAPHY.table.cell}`}>
-                                  {new Date(dup.fecha_asignacion).toLocaleDateString("es-ES", { day: '2-digit', month: '2-digit', year: 'numeric' })}
+                                  {formatDate(dup.fecha_asignacion)}
                                 </td>
                               </tr>
                             ))}
@@ -487,7 +488,7 @@ export const EvidenceAssignmentView: React.FC<EvidenceAssignmentViewProps> = ({
                                     <p className="text-xs text-gris-una mt-0.5">{evidenceById[dup.evidencia_id]?.descripcion ?? ''}</p>
                                   </td>
                                   <td className={`py-2 px-4 text-negro-una text-center ${TYPOGRAPHY.table.cell}`}>
-                                    {new Date(dup.fecha_asignacion).toLocaleDateString("es-ES", { day: '2-digit', month: '2-digit', year: 'numeric' })}
+                                    {formatDate(dup.fecha_asignacion)}
                                   </td>
                                 </tr>
                               );

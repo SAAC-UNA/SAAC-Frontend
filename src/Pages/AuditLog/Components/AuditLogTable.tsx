@@ -18,7 +18,7 @@ import { TYPOGRAPHY } from '@/Constants/Typography';
 import { truncateText } from '@/Utils';
 import type { DataTableColumn } from '@/Components/Ui/Table/DataTable';
 import type { AuditLog } from '@/Types/AuditLogTypes';
-import { formatAuditDate } from '@/Types/AuditLogTypes';
+import { formatDateWithTime } from '@/Utils/DateUtils';
 import { useFirstColumnConfig } from '@/Hooks/UseFirstColumnConfig';
 import { AUDIT_ACTION_BADGE } from '@/Constants/StatusBadges';
 
@@ -97,7 +97,7 @@ export const AuditLogTable: React.FC<AuditLogTableProps> = ({
         accessor: (log) => log.fecha_hora,
         render: (_, log) => (
           <span className={`block font-sans antialiased font-normal leading-normal text-negro-una-2 ${TYPOGRAPHY.table.cell}`}>
-            {formatAuditDate(log.fecha_hora).split(', ')[0]}
+            {formatDateWithTime(log.fecha_hora).split(', ')[0]}
           </span>
         ),
       },
@@ -108,7 +108,7 @@ export const AuditLogTable: React.FC<AuditLogTableProps> = ({
         accessor: (log) => log.fecha_hora,
         render: (_, log) => (
           <span className={`block font-sans antialiased font-normal leading-normal text-negro-una-2 ${TYPOGRAPHY.table.cell}`}>
-            {formatAuditDate(log.fecha_hora).split(', ')[1]}
+            {formatDateWithTime(log.fecha_hora).split(', ')[1]}
           </span>
         ),
       },

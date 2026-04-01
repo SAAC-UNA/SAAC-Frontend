@@ -13,6 +13,7 @@ import type { DataTableColumn } from '@/Components/Ui/Table/DataTable';
 import { ButtonWithTooltip } from '@/Components/Ui/Buttons/ButtonWithTooltip';
 import { TYPOGRAPHY } from '@/Constants/Typography';
 import type { CompromisoFormData, CriterioSeleccionado, ValidationErrors } from '@/Types/ImprovementCommitmentTypes';
+import { formatDateShort, formatDateLong } from '@/Utils/DateUtils';
 
 interface ReviewStepProps {
   formData: CompromisoFormData;
@@ -72,11 +73,7 @@ export const ReviewStep: React.FC<ReviewStepProps> = ({
       render: (_, item) => (
         item.fecha_limite ? (
           <p className={`block font-sans antialiased font-normal leading-normal text-negro-una ${TYPOGRAPHY.table.cell}`}>
-            {new Date(item.fecha_limite).toLocaleDateString('es-CR', {
-              day: '2-digit',
-              month: 'short',
-              year: 'numeric'
-            })}
+            {formatDateShort(item.fecha_limite)}
           </p>
         ) : (
           <p className={`block font-sans antialiased font-normal leading-normal text-gris-una ${TYPOGRAPHY.table.cell}`}>-</p>
@@ -216,12 +213,7 @@ export const ReviewStep: React.FC<ReviewStepProps> = ({
               <div className="border-t border-gray-200 pt-4">
                 <p className="text-xs font-medium text-gris-una mb-1">Fecha límite</p>
                 <p className="text-sm text-negro-una">
-                  {new Date(detailModal.criterion.fecha_limite).toLocaleDateString('es-CR', {
-                    weekday: 'long',
-                    year: 'numeric',
-                    month: 'long',
-                    day: 'numeric'
-                  })}
+                  {formatDateLong(detailModal.criterion.fecha_limite)}
                 </p>
               </div>
             )}

@@ -4,10 +4,11 @@ import { Card, CardContent } from './card';
 import { Badge } from './badge';
 import { Avatar, AvatarFallback, AvatarImage } from './avatar';
 import { Calendar, GripVertical, MessageCircle, Paperclip, Plus } from 'lucide-react';
-import { TYPOGRAPHY } from '../../../Constants/Typography';
-import { ICON_SIZES } from '../../../Constants/Components';
-import { BADGE_COLORS } from '../../../Constants/StatusBadges';
-import { ITEM_VARIANTS } from '../../../Constants/Animations';
+import { TYPOGRAPHY } from '@/Constants/Typography';
+import { ICON_SIZES } from '@/Constants/Components';
+import { BADGE_COLORS } from '@/Constants/StatusBadges';
+import { ITEM_VARIANTS } from '@/Constants/Animations';
+import { formatDateCompact } from '@/Utils/DateUtils';
 
 interface Task {
   id: string;
@@ -249,10 +250,7 @@ export default function KanbanBoard() {
                                 <div className="flex items-center gap-1">
                                   <Calendar className={ICON_SIZES.sm} />
                                   <span className={`${TYPOGRAPHY.badge} font-medium`}>
-                                    {new Date(task.dueDate).toLocaleDateString('es-PE', {
-                                      month: 'short',
-                                      day: 'numeric',
-                                    })}
+                                    {formatDateCompact(task.dueDate)}
                                   </span>
                                 </div>
                               )}

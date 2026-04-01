@@ -1,8 +1,5 @@
 import React from "react";
-import { Button } from "@/Components/Ui/Buttons/Button";
-import { SystemIcons } from "@/Components/Ui/Icons/SystemIcons";
 import { useSidebar } from "@/Context/SidebarContext";
-import { APP_HEADER_BUTTON } from "@/Constants/Components";
 import { cn } from "@/Utils/ClassNames";
 //import { TYPOGRAPHY } from '@/Constants/Typography';
 
@@ -40,7 +37,7 @@ export const AppHeader: React.FC<AppHeaderProps> = ({
   //  logoAlt = "SAAC Logo",
   rightContent,
 }) => {
-  const { toggleSidebar } = useSidebar();
+  useSidebar();
 
   return (
     <header

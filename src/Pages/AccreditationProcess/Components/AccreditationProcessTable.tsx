@@ -6,6 +6,7 @@ import { useDebounce } from "@/Hooks/UseDebounce";
 import { StatusBadge } from "@/Components/Ui/Feedback/StatusBadge";
 import { TableActionButton } from "@/Components/Ui/Buttons/TableActionButton";
 import { TYPOGRAPHY } from "@/Constants/Typography";
+import { formatDateShort } from "@/Utils/DateUtils";
 import type { AccreditationProcess as AccreditationProcessRow } from "@/Types/AccreditationProcessTypes";
 
 interface AccreditationProcessTableProps {
@@ -16,19 +17,6 @@ interface AccreditationProcessTableProps {
   onView?: (process: AccreditationProcessRow) => void;
   onDelete?: (process: AccreditationProcessRow) => void;
 }
-
-const formatDate = (dateValue?: string) => {
-  if (!dateValue) return "—";
-
-  const parsedDate = new Date(dateValue);
-  if (Number.isNaN(parsedDate.getTime())) return "—";
-
-  return parsedDate.toLocaleDateString("es-CR", {
-    year: "numeric",
-    month: "short",
-    day: "numeric",
-  });
-};
 
 const normalizeText = (value?: string) => {
   if (!value) return "";
@@ -144,10 +132,10 @@ export const AccreditationProcessTable: React.FC<
           <p
             className={`block text-center font-sans antialiased font-semibold text-negro-una-2 text-[12px] ${TYPOGRAPHY.table.cell}`}
           >
-            Inicio: {formatDate(process.startDate)}
+            Inicio: {formatDateShort(process.startDate)}
           </p>
           <p className="text-[11px] font-semibold text-gris-una-2">
-            Fin: {formatDate(process.estimatedEndDate)}
+            Fin: {formatDateShort(process.estimatedEndDate)}
           </p>
         </div>
       ),

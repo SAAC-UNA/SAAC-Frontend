@@ -2,6 +2,7 @@ import React from "react";
 import { DetailsModal } from "@/Components/Ui/Modals/DetailsModal";
 import { TYPOGRAPHY } from "@/Constants/Typography";
 import { cn } from "@/Utils/ClassNames";
+import { formatDateShort } from "@/Utils/DateUtils";
 import type { AccreditationProcess } from "@/Types/AccreditationProcessTypes";
 
 interface AccreditationProcessDetailsModalProps {
@@ -9,18 +10,6 @@ interface AccreditationProcessDetailsModalProps {
   onClose: () => void;
   process: AccreditationProcess | null;
 }
-
-const formatDate = (value?: string) => {
-  if (!value) return "—";
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) return "—";
-
-  return new Intl.DateTimeFormat("es-CR", {
-    day: "2-digit",
-    month: "short",
-    year: "numeric",
-  }).format(date);
-};
 
 const Label: React.FC<{ text: string }> = ({ text }) => (
   <span
@@ -86,17 +75,17 @@ export const AccreditationProcessDetailsModal: React.FC<
 
           <div className="flex flex-col gap-1.5">
             <Label text="Fecha de inicio" />
-            <Value>{formatDate(process.startDate)}</Value>
+            <Value>{formatDateShort(process.startDate)}</Value>
           </div>
 
           <div className="flex flex-col gap-1.5">
             <Label text="Fecha estimada de finalización" />
-            <Value>{formatDate(process.estimatedEndDate)}</Value>
+            <Value>{formatDateShort(process.estimatedEndDate)}</Value>
           </div>
 
           <div className="flex flex-col gap-1.5">
             <Label text="Creado" />
-            <Value>{formatDate(process.createdAt)}</Value>
+            <Value>{formatDateShort(process.createdAt)}</Value>
           </div>
         </div>
       </div>

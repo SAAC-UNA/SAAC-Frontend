@@ -12,6 +12,7 @@ import { SystemIcons } from '@/Components/Ui/Icons/SystemIcons';
 import { ICON_SIZES } from '@/Constants/Components';
 import { TYPOGRAPHY } from '@/Constants/Typography';
 import type { ExtensionRequestFormData } from '@/Types/ExtensionRequestTypes';
+import { formatDateLong } from '@/Utils/DateUtils';
 
 interface CreateExtensionRequestModalProps {
   isOpen: boolean;
@@ -146,11 +147,7 @@ export const CreateExtensionRequestModal: React.FC<CreateExtensionRequestModalPr
           <div className="bg-yellow-50 border border-yellow-200 rounded-corner p-3">
             <p className={`${TYPOGRAPHY.modal.body} font-medium text-yellow-900`}>Fecha límite actual:</p>
             <p className={`${TYPOGRAPHY.modal.body} text-yellow-700`}>
-              {new Date(fechaLimiteActual).toLocaleDateString('es-ES', {
-                day: '2-digit',
-                month: 'long',
-                year: 'numeric'
-              })}
+              {formatDateLong(fechaLimiteActual)}
             </p>
           </div>
         )}
