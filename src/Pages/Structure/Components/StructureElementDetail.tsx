@@ -4,12 +4,7 @@ import { cn } from '@/Utils/ClassNames';
 import { ELEMENT_TYPE_LABELS } from '@/Constants/StructureConstants';
 import { TYPOGRAPHY } from '@/Constants/Typography';
 import type { StructureElement } from '@/Types/StructureTypes';
-
-const formatDate = (date: Date | string): string =>
-  new Intl.DateTimeFormat('es-ES', {
-    day: 'numeric', month: 'short', year: 'numeric',
-    hour: '2-digit', minute: '2-digit',
-  }).format(new Date(date));
+import { formatDateShort } from '@/Utils/DateUtils';
 
 const SectionLabel: React.FC<{ label: string }> = ({ label }) => (
   <div className="flex items-center gap-2 mb-2.5">
@@ -128,7 +123,7 @@ export const StructureElementDetail: React.FC<StructureElementDetailProps> = ({
             <SectionLabel label="Registro" />
             <div className="border border-gray-200 rounded-corner p-4 h-[calc(100%-2rem)]">
               <InfoCell label="Fecha de creación">
-                <span className={cn(TYPOGRAPHY.table.cell, 'text-gris-una-2')}>{formatDate(element.createdAt)}</span>
+                <span className={cn(TYPOGRAPHY.table.cell, 'text-gris-una-2')}>{formatDateShort(element.createdAt, true)}</span>
               </InfoCell>
             </div>
           </div>

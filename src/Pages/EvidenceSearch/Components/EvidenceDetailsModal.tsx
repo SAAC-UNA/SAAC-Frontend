@@ -29,6 +29,7 @@ import { ICON_SIZES } from '@/Constants/Components';
 import { ASSIGNMENT_STATUS_BADGE, EVIDENCE_STATUS_BADGE, BADGE_COLORS } from '@/Constants/StatusBadges';
 import { useFirstColumnConfig } from '@/Hooks/UseFirstColumnConfig';
 import { cn } from '@/Utils/ClassNames';
+import { formatDate } from '@/Utils/DateUtils';
 
 interface EvidenceDetailsModalProps {
   isOpen: boolean;
@@ -46,15 +47,6 @@ interface FilesByUser extends Record<string, unknown> {
   fecha_limite: string | null;
   estado_asignacion: AssignmentStatus | null;
 }
-
-const formatDate = (iso: string | null): string => {
-  if (!iso) return '—';
-  return new Date(iso).toLocaleDateString('es-CR', {
-    year: 'numeric',
-    month: '2-digit',
-    day: '2-digit',
-  });
-};
 
 interface EvidenciaResponsablesPanelAdminProps {
   evidenciaId: number;

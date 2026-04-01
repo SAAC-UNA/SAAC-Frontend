@@ -20,6 +20,7 @@ import { TYPOGRAPHY } from "@/Constants/Typography";
 import { StatusBadge } from "@/Components/Ui/Feedback/StatusBadge";
 import { TABLE_PAGE_SIZE } from "@/Constants/TablePagination";
 import { truncateText } from "@/Utils";
+import { formatDateShort } from "@/Utils/DateUtils";
 import { useFirstColumnConfig } from "@/Hooks/UseFirstColumnConfig";
 import { ImprovementCommitmentDetailModal } from "./Components/ImprovementCommitmentDetailModal";
 
@@ -107,14 +108,6 @@ export const ImprovementCommitmentsList: React.FC = () => {
     setCurrentPage(1);
   }, [searchQuery]);
 
-  const formatDate = (fecha: string) => {
-    return new Date(fecha).toLocaleDateString("es-CR", {
-      year: "numeric",
-      month: "short",
-      day: "numeric",
-    });
-  };
-
   const handleViewDetail = (id: number) => {
     setDetailId(id);
   };
@@ -148,7 +141,7 @@ export const ImprovementCommitmentsList: React.FC = () => {
         <p
           className={`block font-sans antialiased font-normal leading-normal text-negro-una-2 ${TYPOGRAPHY.table.cell}`}
         >
-          {formatDate(compromiso.fecha_inicio)}
+          {formatDateShort(compromiso.fecha_inicio)}
         </p>
       ),
     },
@@ -160,7 +153,7 @@ export const ImprovementCommitmentsList: React.FC = () => {
         <p
           className={`block font-sans antialiased font-normal leading-normal text-negro-una-2 ${TYPOGRAPHY.table.cell}`}
         >
-          {formatDate(compromiso.fecha_fin)}
+          {formatDateShort(compromiso.fecha_fin)}
         </p>
       ),
     },

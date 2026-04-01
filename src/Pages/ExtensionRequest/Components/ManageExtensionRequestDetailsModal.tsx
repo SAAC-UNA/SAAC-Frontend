@@ -10,6 +10,7 @@ import { ICON_SIZES } from '@/Constants/Components';
 import { TYPOGRAPHY } from '@/Constants/Typography';
 import { cn } from '@/Utils/ClassNames';
 import type { ExtensionRequest } from '@/Types/ExtensionRequestTypes';
+import { formatDateShort } from '@/Utils/DateUtils';
 
 interface ReviewExtensionRequestModalProps {
   isOpen: boolean;
@@ -33,12 +34,6 @@ const InfoCell: React.FC<{ label: string; children: React.ReactNode; className?:
     <div>{children}</div>
   </div>
 );
-
-const formatDate = (dateStr: string, includeTime = false) =>
-  new Date(dateStr).toLocaleDateString('es-ES', {
-    day: '2-digit', month: 'long', year: 'numeric',
-    ...(includeTime ? { hour: '2-digit', minute: '2-digit' } : {}),
-  });
 
 export const ReviewExtensionRequestModal: React.FC<ReviewExtensionRequestModalProps> = ({
   isOpen,
@@ -74,7 +69,7 @@ export const ReviewExtensionRequestModal: React.FC<ReviewExtensionRequestModalPr
             </InfoCell>
             <InfoCell label="Fecha de solicitud" className="col-span-2">
               <span className={cn(TYPOGRAPHY.modal.body, 'text-gris-una-2')}>
-                {formatDate(solicitud.created_at, true)}
+                {formatDateShort(solicitud.created_at, true)}
               </span>
             </InfoCell>
           </div>
@@ -112,13 +107,13 @@ export const ReviewExtensionRequestModal: React.FC<ReviewExtensionRequestModalPr
               {solicitud.evidencia_asignacion && (
                 <InfoCell label="Fecha límite actual">
                   <span className={cn(TYPOGRAPHY.modal.body, 'text-gris-una-2')}>
-                    {formatDate(solicitud.evidencia_asignacion.fecha_limite)}
+                    {formatDateShort(solicitud.evidencia_asignacion.fecha_limite)}
                   </span>
                 </InfoCell>
               )}
               <InfoCell label="Fecha nueva solicitada">
                 <span className={cn(TYPOGRAPHY.modal.body, 'text-info font-semibold')}>
-                  {formatDate(solicitud.fecha_sugerida)}
+                  {formatDateShort(solicitud.fecha_sugerida)}
                 </span>
               </InfoCell>
             </div>

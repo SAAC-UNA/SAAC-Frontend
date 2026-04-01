@@ -8,6 +8,7 @@ import { StatusBadge } from '@/Components/Ui/Feedback/StatusBadge';
 import { ASSIGNMENT_STATUS_BADGE } from '@/Constants/StatusBadges';
 import type { EvidenceAssignment } from '@/Types/EvidenceAssignmentTypes';
 import { formatDeadline, getDaysUntilDeadline, isNearDeadline } from '@/Types/EvidenceAssignmentTypes';
+import { formatDateShort } from '@/Utils/DateUtils';
 import { evidenceAssignmentService } from '@/Services/EvidenceAssignmentService';
 import { fileService } from '@/Services/FileService';
 import { useToast } from '@/Context/ToastContext';
@@ -72,7 +73,7 @@ function formatAssignmentDate(fechaAsignacion: string): string {
   if (diffDays === 0) return 'Hoy';
   if (diffDays === 1) return 'Ayer';
   if (diffDays <= 7) return `Hace ${diffDays} días`;
-  return new Intl.DateTimeFormat('es-CR', { day: '2-digit', month: 'short', year: 'numeric' }).format(assignmentDate);
+  return formatDateShort(assignmentDate);
 }
 
 export const EvidenceAssignmentDetail: React.FC<EvidenceAssignmentDetailProps> = ({
@@ -264,7 +265,7 @@ export const EvidenceAssignmentDetail: React.FC<EvidenceAssignmentDetailProps> =
                       {comentario.autor ?? 'Encargado'}
                     </span>
                     <span className={cn(TYPOGRAPHY.modal.body, 'text-gris-una-2')}>
-                      {new Intl.DateTimeFormat('es-CR', { day: '2-digit', month: 'short', year: 'numeric' }).format(new Date(comentario.fecha))}
+                      {formatDateShort(new Date(comentario.fecha))}
                     </span>
                   </div>
                   <p className={cn(TYPOGRAPHY.modal.body, 'text-gris-una-2 whitespace-pre-wrap')}>

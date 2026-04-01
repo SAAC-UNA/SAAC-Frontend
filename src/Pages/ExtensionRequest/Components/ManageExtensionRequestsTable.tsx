@@ -20,7 +20,8 @@ import { truncateText } from '@/Utils';
 import { StatusBadge } from '@/Components/Ui/Feedback/StatusBadge';
 import { EXTENSION_REQUEST_STATUS_BADGE } from '@/Constants/StatusBadges';
 import type { ExtensionRequest, ExtensionRequestStatus } from '@/Types/ExtensionRequestTypes';
-import { filterExtensionRequests, formatExtensionDate } from '@/Types/ExtensionRequestTypes';
+import { filterExtensionRequests } from '@/Types/ExtensionRequestTypes';
+import { formatDate } from '@/Utils/DateUtils';
 import { useFirstColumnConfig } from '@/Hooks/UseFirstColumnConfig';
 
 const EMPTY_REQUESTS: ExtensionRequest[] = [];
@@ -122,7 +123,7 @@ export const ManageExtensionRequestsTable: React.FC<ManageExtensionRequestsTable
       align: 'center',
       render: (_: unknown, item: ExtensionRequest) => (
         <span className={`block font-sans antialiased leading-normal text-negro-una-2 ${TYPOGRAPHY.table.cell}`}>
-          {formatExtensionDate(item.created_at)}
+          {formatDate(item.created_at)}
         </span>
       )
     },
@@ -132,7 +133,7 @@ export const ManageExtensionRequestsTable: React.FC<ManageExtensionRequestsTable
       align: 'center',
       render: (_: unknown, item: ExtensionRequest) => (
         <span className={`block font-sans antialiased leading-normal text-negro-una-2 ${TYPOGRAPHY.table.cell}`}>
-          {formatExtensionDate(item.fecha_sugerida)}
+          {formatDate(item.fecha_sugerida)}
         </span>
       )
     },

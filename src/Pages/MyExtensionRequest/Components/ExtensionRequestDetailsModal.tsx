@@ -5,6 +5,7 @@ import { ICON_SIZES } from '@/Constants/Components';
 import { TYPOGRAPHY } from '@/Constants/Typography';
 import { cn } from '@/Utils/ClassNames';
 import type { ExtensionRequest } from '@/Types/ExtensionRequestTypes';
+import { formatDateShort } from '@/Utils/DateUtils';
 
 interface ExtensionRequestDetailsModalProps {
   isOpen: boolean;
@@ -28,12 +29,6 @@ const InfoCell: React.FC<{ label: string; children: React.ReactNode; className?:
     <div>{children}</div>
   </div>
 );
-
-const formatDate = (dateStr: string, includeTime = false) =>
-  new Date(dateStr).toLocaleDateString('es-ES', {
-    day: '2-digit', month: 'long', year: 'numeric',
-    ...(includeTime ? { hour: '2-digit', minute: '2-digit' } : {}),
-  });
 
 export const ExtensionRequestDetailsModal: React.FC<ExtensionRequestDetailsModalProps> = ({
   isOpen,
@@ -71,19 +66,19 @@ export const ExtensionRequestDetailsModal: React.FC<ExtensionRequestDetailsModal
             <div className="grid grid-cols-2 gap-x-6">
               <InfoCell label="Fecha de solicitud">
               <span className={cn(TYPOGRAPHY.modal.body, 'text-gris-una-2')}>
-                  {formatDate(solicitud.created_at, true)}
+                  {formatDateShort(solicitud.created_at, true)}
                 </span>
               </InfoCell>
               <InfoCell label="Fecha nueva solicitada">
               <span className={cn(TYPOGRAPHY.modal.body, 'text-gris-una-2')}>
-                  {formatDate(solicitud.fecha_sugerida)}
+                  {formatDateShort(solicitud.fecha_sugerida)}
                 </span>
               </InfoCell>
             </div>
             {solicitud.evidencia_asignacion && (
               <InfoCell label="Fecha límite actual">
                 <span className={cn(TYPOGRAPHY.modal.body, 'text-info font-semibold')}>
-                  {formatDate(solicitud.evidencia_asignacion.fecha_limite)}
+                  {formatDateShort(solicitud.evidencia_asignacion.fecha_limite)}
                 </span>
               </InfoCell>
             )}
@@ -119,7 +114,7 @@ export const ExtensionRequestDetailsModal: React.FC<ExtensionRequestDetailsModal
               {solicitud.fecha_resolucion && (
                 <div className={cn('flex items-center gap-1.5 pt-2 border-t', isApproved ? 'border-info-ring' : 'border-error-ring')}>
                   <span className={cn(TYPOGRAPHY.form.helper, isApproved ? 'text-info' : 'text-error')}>
-                    Resuelta el {formatDate(solicitud.fecha_resolucion)}
+                    Resuelta el {formatDateShort(solicitud.fecha_resolucion)}
                     {solicitud.resolutor?.nombre && <> por <strong>{solicitud.resolutor.nombre}</strong></>}
                   </span>
                 </div>
