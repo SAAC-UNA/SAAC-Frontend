@@ -150,8 +150,8 @@ const buttonVariants = cva(
         ].join(' '),
 
         tableList: [
-          'bg-transparent text-morado-dark border-0 p-2',
-          'hover:[filter:drop-shadow(0_0_6px_rgba(162,28,175,0.85))] transition-all duration-200',
+          'bg-transparent text-rose border-0 p-2',
+          'hover:[filter:drop-shadow(0_0_6px_rgba(190,18,60,0.85))] transition-all duration-200',
           'disabled:opacity-50 disabled:cursor-not-allowed',
         ].join(' '),
 

@@ -29,7 +29,6 @@ export interface IconProps {
  * Retorna string vacío si size no fue pasado explícitamente,
  * para que className (con ICON_SIZES) sea el único que controla el tamaño.
  *
- * TODO: Una vez todos los íconos hayan migrado al nuevo estándar CSS (index.css),
  * eliminar esta función y el prop `size` de IconProps. Los tamaños se controlarán
  * únicamente mediante `className` con las clases CSS: size-icon-sm, size-icon-md,
  * size-icon-lg, size-icon-button (definidas en @layer utilities de index.css).
@@ -114,28 +113,7 @@ export const SystemIcons = {
         <path fillRule="evenodd" d="M7.345 4.017a42.253 42.253 0 0 1 9.31 0c1.713.192 3.095 1.541 3.296 3.26a40.66 40.66 0 0 1 0 9.445 3.734 3.734 0 0 1-3.296 3.26 42.123 42.123 0 0 1-9.31 0 3.734 3.734 0 0 1-3.296-3.26 40.652 40.652 0 0 1 0-9.444 3.734 3.734 0 0 1 3.295-3.26ZM12 7.007a.75.75 0 0 1 .75.75v3.493h3.493a.75.75 0 1 1 0 1.5H12.75v3.493a.75.75 0 0 1-1.5 0V12.75H7.757a.75.75 0 0 1 0-1.5h3.493V7.757a.75.75 0 0 1 .75-.75Z" clipRule="evenodd" />
       </svg>
     ),
-/*
-    addSquare: ({ className, size, color }: IconProps) => (
-      <svg
-        className={`${getSizeClasses(size)} ${className || ''}`}
-        viewBox="0 0 24 24"
-        fill={color || "currentColor"}
-      >
-        <g clipPath="url(#clip0_4418_4944)">
-          <path
-            opacity={0.4}
-            d="M16.19 2H7.81C4.17 2 2 4.17 2 7.81V16.18C2 19.83 4.17 22 7.81 22H16.18C19.82 22 21.99 19.83 21.99 16.19V7.81C22 4.17 19.83 2 16.19 2Z"
-          />
-          <path d="M16 11.25H12.75V8C12.75 7.59 12.41 7.25 12 7.25C11.59 7.25 11.25 7.59 11.25 8V11.25H8C7.59 11.25 7.25 11.59 7.25 12C7.25 12.41 7.59 12.75 8 12.75H11.25V16C11.25 16.41 11.59 16.75 12 16.75C12.41 16.75 12.75 16.41 12.75 16V12.75H16C16.41 12.75 16.75 12.41 16.75 12C16.75 11.59 16.41 11.25 16 11.25Z" />
-        </g>
-        <defs>
-          <clipPath id="clip0_4418_4944">
-            <rect width="24" height="24" fill="white" />
-          </clipPath>
-        </defs>
-      </svg>
-    ),
-*/
+
     save: ({ className, size, color = 'var(--color-verde)' }: IconProps) => (
       <svg
         className={`${getSizeClasses(size)} ${className || ''}`}
@@ -238,12 +216,9 @@ export const SystemIcons = {
         strokeLinejoin="round"
         strokeWidth="2"
       >
-        <path d="M9 6h11.25" />
-        <path d="M9 12h11.25" />
-        <path d="M9 18h11.25" />
-        <path d="M3.75 6h1.5" />
-        <path d="M3.75 12h1.5" />
-        <path d="M3.75 18h1.5" />
+        <path d="M3.75 12h16.5" />
+        <path d="M3.75 6h16.5" />
+        <path d="M3.75 18h16.5" />
       </svg>
     ),
 
@@ -375,35 +350,6 @@ export const SystemIcons = {
       </svg>
     ),
 
-    expand: ({ className, size, color }: IconProps) => (
-      <svg
-        className={`${getSizeClasses(size)} ${className || ''}`}
-        viewBox="0 0 24 24"
-        fill={color || "currentColor"}
-      >
-        <path
-        fillRule="evenodd"
-        d="M13.664 6.343c0 .414.336.75.75.75h2.493v2.493a.75.75 0 0 0 1.5 0V6.343a.75.75 0 0 0-.75-.75h-3.243a.75.75 0 0 0-.75.75Z"
-        clipRule="evenodd"
-      />
-      <path
-        fillRule="evenodd"
-        d="M17.657 13.664a.75.75 0 0 0-.75.75v2.493h-2.493a.75.75 0 0 0 0 1.5h3.243a.75.75 0 0 0 .75-.75v-3.243a.75.75 0 0 0-.75-.75Z"
-        clipRule="evenodd"
-      />
-      <path
-        fillRule="evenodd"
-        d="M6.343 13.664a.75.75 0 0 1 .75.75v2.493h2.493a.75.75 0 0 1 0 1.5H6.343a.75.75 0 0 1-.75-.75v-3.243a.75.75 0 0 1 .75-.75Z"
-        clipRule="evenodd"
-      />
-      <path
-        fillRule="evenodd"
-        d="M10.336 6.343a.75.75 0 0 1-.75.75H7.093v2.493a.75.75 0 1 1-1.5 0V6.343a.75.75 0 0 1 .75-.75h3.243a.75.75 0 0 1 .75.75Z"
-        clipRule="evenodd"
-      />
-      </svg>
-    ),
-
     link: ({ className, size, color = 'currentColor' }: IconProps) => (
       <svg
         className={`${getSizeClasses(size)} ${className || ''}`}
@@ -416,60 +362,6 @@ export const SystemIcons = {
       >
         <path d="m12.421 5.746.9-.91a4.134 4.134 0 0 1 5.841 5.841l-2.84 2.832a4.116 4.116 0 0 1-5.832 0" />
         <path d="m11.578 18.255-.9.909a4.135 4.135 0 0 1-5.84-5.84l2.84-2.832a4.115 4.115 0 0 1 5.831 0" />
-      </svg>
-    ),
-
-    collapse: ({ className, size, color }: IconProps) => (
-      <svg
-        className={`${getSizeClasses(size)} ${className || ''}`}
-        viewBox="0 0 24 24"
-        fill={color || "currentColor"}
-      >
-        <path
-          fillRule="evenodd"
-          d="M18.028 9.964a.75.75 0 0 0-.75-.75h-2.492V6.722a.75.75 0 0 0-1.5 0v3.242c0 .415.335.75.75.75h3.242a.75.75 0 0 0 .75-.75Z"
-          clipRule="evenodd"
-        />
-        <path
-          fillRule="evenodd"
-          d="M14.036 18.028a.75.75 0 0 0 .75-.75v-2.493h2.492a.75.75 0 0 0 0-1.5h-3.242a.75.75 0 0 0-.75.75v3.243c0 .414.335.75.75.75Z"
-          clipRule="evenodd"
-        />
-        <path
-          fillRule="evenodd"
-          d="M9.964 18.028a.75.75 0 0 1-.75-.75v-2.493H6.722a.75.75 0 0 1 0-1.5h3.242a.75.75 0 0 1 .75.75v3.243a.75.75 0 0 1-.75.75Z"
-          clipRule="evenodd"
-        />
-        <path
-          fillRule="evenodd"
-          d="M5.972 9.964a.75.75 0 0 1 .75-.750h2.492V6.722a.75.75 0 0 1 1.5 0v3.242a.75.75 0 0 1-.75.75H6.722a.75.75 0 0 1-.75-.75Z"
-          clipRule="evenodd"
-        />
-      </svg>
-    ),
-    cloud: ({ className, size, color }: IconProps) => (
-      <svg
-        className={`${getSizeClasses(size)} ${className || ''}`}
-        viewBox="0 0 24 24"
-        fill={color || "currentColor"}
-
-      >
-          <path
-          fillRule="evenodd"
-          d="M21.03 4.83a.75.75 0 1 0-1.06-1.06l-16 16a.75.75 0 0 0 1.06 1.06l2.08-2.08h11.413a4.478 4.478 0 1 0-.19-8.951 5.38 5.38 0 0 0-.437-1.834L21.03 4.83Zm-4.31 4.312L8.61 17.25h9.912a2.978 2.978 0 1 0-.77-5.854.75.75 0 0 1-.939-.813 3.957 3.957 0 0 0-.095-1.44Z"
-          clipRule="evenodd"
-        />
-        <path d="M12.932 4.708c1.107 0 2.136.333 2.993.903a.24.24 0 0 1 .032.371l-.728.728a.261.261 0 0 1-.317.036 3.91 3.91 0 0 0-5.504 1.676.75.75 0 0 1-.947.373 4.375 4.375 0 0 0-3.708 7.906c.152.086.19.295.067.419l-.724.723a.243.243 0 0 1-.299.038A5.875 5.875 0 0 1 8.38 7.195a5.405 5.405 0 0 1 4.552-2.487Z" />
-      </svg>
-    ),
-
-    upload: ({ className, size, color }: IconProps) => (
-      <svg
-        className={`${getSizeClasses(size)} ${className || ''}`}
-        viewBox="0 0 24 24"
-        fill={color || "currentColor"}
-      >
-        <path d="M15.01 3.75a8.26 8.26 0 0 0-7.388 4.566 8.119 8.119 0 0 0-.872 3.656.769.769 0 0 1-.694.778.75.75 0 0 1-.806-.75c0-1.048.168-2.09.497-3.084a.375.375 0 0 0-.44-.488A6 6 0 0 0 .75 14.25c0 3.3 2.794 6 6.084 6H15a8.25 8.25 0 0 0 .01-16.5Zm2.952 10.463a.778.778 0 0 1-.534.215.75.75 0 0 1-.525-.216L15 12.31V18a.75.75 0 1 1-1.5 0v-5.69l-1.903 1.902a.75.75 0 0 1-1.06-1.059l3.179-3.187a.76.76 0 0 1 1.068 0l3.178 3.187a.75.75 0 0 1 0 1.06Z" />
       </svg>
     ),
 
@@ -679,21 +571,6 @@ export const SystemIcons = {
 
   // ===== NAVEGACIÓN =====
   navigation: {
-    menu: ({ className, size, color }: IconProps) => (
-      <svg
-        className={`${getSizeClasses(size)} ${className || ''}`}
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke={color || "currentColor"}
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        strokeWidth="2"
-      >
-        <path d="M3.75 12h16.5" />
-        <path d="M3.75 6h16.5" />
-        <path d="M3.75 18h16.5" />
-      </svg>
-    ),
 
     light: ({ className, size, color }: IconProps) => (
       <svg
@@ -1119,12 +996,9 @@ export const getIconByName = (iconName: string, size: IconProps['size'] = 'md'):
     'logout': () => SystemIcons.actions.logout({ size }),
     'back': () => SystemIcons.interface.back({ size }),
     'refresh': () => SystemIcons.interface.refresh({ size }),
-    'expand': () => SystemIcons.interface.expand({ size }),
-    'collapse': () => SystemIcons.interface.collapse({ size }),
     'calendar': () => SystemIcons.interface.calendar({ size }),
     'chevron-down': () => SystemIcons.interface.chevronDown({ size }),
     'chevron-right': () => SystemIcons.interface.chevronRight({ size }),
-    'cloud': () => SystemIcons.interface.cloud({ size }),
     'upload-arrow': () => SystemIcons.interface.uploadArrow({ size }),
     'clock': () => SystemIcons.interface.clock({ size }),
     'hourglass': () => SystemIcons.interface.hourglass({ size }),

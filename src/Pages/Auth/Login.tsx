@@ -12,8 +12,6 @@ import { SystemIcons } from "@/Components/Ui/Icons/SystemIcons";
 import { useToast } from "@/Hooks/useToast";
 import { ValidationError } from "@/Services/AuthService";
 import styles from "./Login.module.css";
-import { FlipWords } from "@/Components/Ui/Index";
-import { motion } from "framer-motion";
 
 export const Login = () => {
   const [formState, setFormState] = useState({
