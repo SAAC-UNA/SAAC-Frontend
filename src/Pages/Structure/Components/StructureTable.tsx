@@ -24,6 +24,8 @@ import { useDebounce } from '@/Hooks/UseDebounce';
 import { ELEMENT_TYPE_LABELS } from '@/Constants/StructureConstants';
 import { truncateText } from '@/Utils';
 import { TABLE_PAGE_SIZE } from '@/Constants/TablePagination';
+import { TABLE_TRUNCATE } from '@/Constants/TableTruncate';
+import { useFirstColumnConfig } from '@/Hooks/UseFirstColumnConfig';
 import type { DataTableColumn} from '@/Components/Ui/Table/DataTable';
 import type { StructureElement, ElementType } from '@/Types/StructureTypes';
 import { TableActionButton } from '@/Components/Ui/Buttons/TableActionButton';
@@ -52,6 +54,7 @@ export const StructureTable: React.FC<StructureTableProps> = ({
     unstyled = false
 }) => {
 
+    const firstColumn = useFirstColumnConfig();
     const [currentPage, setCurrentPage] = useState(1);
     const [modalState, setModalState] = useState<{
         isOpen: boolean;
@@ -189,21 +192,18 @@ export const StructureTable: React.FC<StructureTableProps> = ({
             key: 'type',
             header: 'Tipo',
             align: 'left',
-            width: '18%',
+            width: firstColumn.width,
             render: (_, element) => (
-                <p className={`block font-sans antialiased font-bold leading-normal text-negro-una-2 ${TYPOGRAPHY.table.cell}`}>
-                    {ELEMENT_TYPE_LABELS[element.type]}
-                </p>
-            )
-        },
-        {
-            key: 'nomenclature',
-            header: 'Nomenclatura',
-            align: 'center',
-            render: (_, element) => (
-                <p className={`block font-sans antialiased font-normal leading-normal text-negro-una-2 ${TYPOGRAPHY.table.cell}`}>
-                    {element.nomenclature || '-'}
-                </p>
+                <div className="flex flex-col">
+                    <p className={`block font-sans antialiased font-bold leading-normal text-negro-una-2 ${TYPOGRAPHY.table.cell}`}>
+                        {ELEMENT_TYPE_LABELS[element.type]}
+                    </p>
+                    {element.nomenclature && (
+                        <p className={`${TYPOGRAPHY.table.helper} text-gris-una-2 mt-0.5`}>
+                            {element.nomenclature}
+                        </p>
+                    )}
+                </div>
             )
         },
         {
@@ -228,10 +228,13 @@ export const StructureTable: React.FC<StructureTableProps> = ({
             align: 'left',
             width: '20%',
             render: (_, element) => (
-                <p className={`block font-sans antialiased font-normal leading-normal text-negro-una-2 ${TYPOGRAPHY.table.cell} ${
-                    !element.description ? 'text-center' : 'text-left'
-                }`}>
-                    {truncateText(element.description) || '-'}
+                <p
+                    className={`block font-sans antialiased font-normal leading-normal text-negro-una-2 ${TYPOGRAPHY.table.cell} ${
+                        !element.description ? 'text-center' : 'text-left'
+                    }`}
+                    title={element.description || undefined}
+                >
+                    {truncateText(element.description, TABLE_TRUNCATE.text) || '-'}
                 </p>
             )
         },

@@ -15,6 +15,8 @@ import { useDebounce } from '@/Hooks/UseDebounce';
 import { truncateText } from '@/Utils';
 import { cn } from '@/Utils/ClassNames';
 import { TABLE_PAGE_SIZE } from '@/Constants/TablePagination';
+import { TABLE_TRUNCATE } from '@/Constants/TableTruncate';
+import { useFirstColumnConfig } from '@/Hooks/UseFirstColumnConfig';
 import type { DataTableColumn } from '@/Components/Ui/Table/DataTable';
 import type { FlexibleElement } from '@/Types/StructureModelTypes';
 import { TableActionButton } from '@/Components/Ui/Buttons/TableActionButton';
@@ -47,6 +49,7 @@ export const FlexibleElementTable: React.FC<FlexibleElementTableProps> = ({
   }>({ isOpen: false, element: null });
 
   const debouncedSearchQuery = useDebounce(searchQuery, 300);
+  const firstColumn = useFirstColumnConfig();
 
   // Reset página al cambiar búsqueda — patrón derived state (igual que StructureTable)
   const prevDebouncedSearch = useRef(debouncedSearchQuery);
@@ -100,21 +103,18 @@ export const FlexibleElementTable: React.FC<FlexibleElementTableProps> = ({
       key: 'tipo',
       header: 'Tipo',
       align: 'left',
-      width: '20%',
+      width: firstColumn.width,
       render: (_, el) => (
-        <p className={`block font-sans antialiased font-bold leading-normal text-negro-una-2 ${TYPOGRAPHY.table.cell}`}>
-          {el.tipo}
-        </p>
-      ),
-    },
-    {
-      key: 'nomenclatura',
-      header: 'Nomenclatura',
-      align: 'center',
-      render: (_, el) => (
-        <p className={`block font-sans antialiased font-normal leading-normal text-negro-una-2 ${TYPOGRAPHY.table.cell}`}>
-          {el.nomenclatura || '-'}
-        </p>
+        <div className="flex flex-col">
+          <p className={`block font-sans antialiased font-bold leading-normal text-negro-una-2 ${TYPOGRAPHY.table.cell}`}>
+            {el.tipo}
+          </p>
+          {el.nomenclatura && (
+            <p className={`${TYPOGRAPHY.table.helper} text-gris-una-2 mt-0.5`}>
+              {el.nomenclatura}
+            </p>
+          )}
+        </div>
       ),
     },
     {
@@ -129,7 +129,7 @@ export const FlexibleElementTable: React.FC<FlexibleElementTableProps> = ({
           }`}
           title={el.descripcion || undefined}
         >
-          {truncateText(el.descripcion) || '-'}
+          {truncateText(el.descripcion, TABLE_TRUNCATE.text) || '-'}
         </p>
       ),
     },
