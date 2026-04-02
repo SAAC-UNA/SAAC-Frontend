@@ -70,69 +70,78 @@
 }
 
 /*! Loader de documentos 12-03-2026*/
-/* From Uiverse.io by nawinasokan */
-.loader-con {
+.loader {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.loaderMiniContainer {
+  display: flex;
+  align-items: center;
+  justify-content: center;
   position: relative;
-  width: 50%;
-  height: 100px;
-  overflow: hidden;
+  width: 130px;
+  height: fit-content;
 }
-
-.pfile {
-  position: absolute;
-  bottom: 25px;
-  width: 40px;
-  height: 50px;
+.barContainer {
+  width: 100%;
+  height: fit-content;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+  gap: 10px;
+  background-position: left;
+}
+.bar {
+  width: 100%;
+  height: 8px;
   background: linear-gradient(
-    90deg,
-    var(--color-gris-una),
-    var(--color-gris-light)
+    to right,
+    rgb(143, 143, 143),
+    rgb(255, 255, 255),
+    rgb(143, 143, 143)
   );
-  border-radius: 4px;
-  transform-origin: center;
-  animation: flyRight 3s ease-in-out infinite;
-  opacity: 0;
+  background-size: 200% 100%;
+  border-radius: 10px;
+  animation: bar ease-in-out 3s infinite alternate-reverse;
 }
-
-.pfile::before {
-  content: "";
-  position: absolute;
-  top: 6px;
-  left: 6px;
-  width: 28px;
-  height: 4px;
-  background-color: #ffffff;
-  border-radius: 2px;
-}
-
-.pfile::after {
-  content: "";
-  position: absolute;
-  top: 13px;
-  left: 6px;
-  width: 18px;
-  height: 4px;
-  background-color: #ffffff;
-  border-radius: 2px;
-}
-
-@keyframes flyRight {
+@keyframes bar {
   0% {
-    left: -10%;
-    transform: scale(0);
-    opacity: 0;
-  }
-  50% {
-    left: 45%;
-    transform: scale(1.2);
-    opacity: 1;
+    background-position: left;
   }
   100% {
-    left: 100%;
-    transform: scale(0);
-    opacity: 0;
+    background-position: right;
   }
 }
+.bar2 {
+  width: 50%;
+}
+.svgIcon {
+  position: absolute;
+  left: -25px;
+  margin-top: 18px;
+  z-index: 2;
+  width: 70%;
+  animation: search ease-in-out 3s infinite alternate-reverse;
+}
+@keyframes search {
+  0% {
+    transform: translateX(0%) rotate(70deg);
+  }
+
+  100% {
+    transform: translateX(100px) rotate(10deg);
+  }
+}
+.svgIcon circle,
+line {
+  stroke: rgb(182, 182, 182);
+}
+.svgIcon circle {
+  fill: rgba(97, 91, 104, 0.238);
+}
+
 /*! Animación de efecto ripple para los botones 17-03-2026 */
 
 @keyframes ripple-effect {

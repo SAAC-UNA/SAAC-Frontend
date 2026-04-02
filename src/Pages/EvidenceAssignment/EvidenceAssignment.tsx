@@ -16,7 +16,7 @@ import { useFirstColumnConfig } from "@/Hooks/UseFirstColumnConfig";
 import type { UserAvatarsUser } from "@/Components/Ui/UserAvatars/UserAvatars";
 import type { DataTableColumn } from "@/Components/Ui/Index";
 import { TYPOGRAPHY } from "@/Constants/Typography";
-import { formatDateLong } from "@/Utils/DateUtils";
+import { formatDateShort } from "@/Utils/DateUtils";
 
 import { EvidenceAssignmentView } from "./Components/EvidenceAssignmentView";
 
@@ -323,12 +323,6 @@ const EvidenceAssignment: React.FC = () => {
 
   const firstColumn = useFirstColumnConfig();
 
-  const formatDisplayDate = (dateStr: string): string => {
-    if (!dateStr) return '—';
-    const [y, m, d] = dateStr.split('-').map(Number);
-    return formatDateLong(new Date(y, m - 1, d));
-  };
-
   const assignmentTableRows = useMemo<AssignmentTableRow[]>(() =>
     formData.selectedEvidences.map((id) => {
       const ev = evidenceById[id];
@@ -350,9 +344,10 @@ const EvidenceAssignment: React.FC = () => {
       header: "Evidencia",
       width: firstColumn.width,
       render: (_val: unknown, row: AssignmentTableRow) => (
-        <div>
-          <p className="font-semibold text-negro-una text-sm">{row.nomenclatura as string}</p>
-          <p className="text-xs text-gris-una mt-0.5">{row.descripcion as string}</p>
+        <div className={`${TYPOGRAPHY.table.cell} text-negro-una`}>
+          <span className="font-semibold">{row.nomenclatura as string}</span>
+          <span className="text-gris-una mx-1.5">—</span>
+          <span className="text-negro-una font-semibold">{row.descripcion as string}</span>
         </div>
       ),
     },
@@ -377,7 +372,7 @@ const EvidenceAssignment: React.FC = () => {
       render: (_val: unknown, row: AssignmentTableRow) => {
         const fecha = row.fecha_limite as string;
         return fecha
-          ? <p className={`${TYPOGRAPHY.table.cell} text-gris-una`}>{formatDisplayDate(fecha)}</p>
+          ? <p className={`${TYPOGRAPHY.table.cell} text-gris-una`}>{formatDateShort(fecha)}</p>
           : <span className={`${TYPOGRAPHY.table.cell} text-gris-una/50`}>—</span>;
       },
     },

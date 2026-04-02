@@ -9,6 +9,7 @@ import {
 } from "@/Components/Ui/Index";
 import { DateRangePicker } from "@/Components/Ui/Calendar/DateRangePicker";
 import { Card } from "@/Components/Ui/Layout/Card";
+import { ScrollReveal } from "@/Components/Ui/Layout/ScrollReveal";
 import { UserAvatars } from "@/Components/Ui/UserAvatars/UserAvatars";
 import { SuccessModal } from "@/Components/Ui/Modals/SuccessModal.tsx";
 import { EditConfirmationModal } from "@/Components/Ui/Modals/EditConfirmationModal.tsx";
@@ -17,7 +18,7 @@ import { BackendErrorAlert } from "@/Components/Ui/Feedback/BackendErrorAlert";
 import { TYPOGRAPHY } from "@/Constants/Typography";
 import type { DuplicateAssignment } from "@/Types/EvidenceAssignment";
 import type { EvidenceAssignmentViewProps, DuplicateGroupRow } from "../EvidenceAssignment";
-import { formatDate } from "@/Utils/DateUtils";
+import { formatDateShort } from "@/Utils/DateUtils";
 
 // ---------------------------------------------------------------------------
 // EvidenceAssignmentView — componente de presentación puro
@@ -70,13 +71,14 @@ export const EvidenceAssignmentView: React.FC<EvidenceAssignmentViewProps> = ({
       />
 
       {criteriaLoading ? (
-        <div className="relative py-16 min-h-[400px]">
+        <Card className="relative py-16 min-h-[400px]">
           <LoadingSpinner variant="loader" />
-        </div>
+        </Card>
       ) : (
         <div className="space-y-6">
 
           {/* ── Sección 1: Asignaciones + Destinatarios ── */}
+          <ScrollReveal delay={0}>
           <div className="grid grid-cols-1 lg:grid-cols-[3fr_2.2fr] gap-6 items-start">
 
             {/* Card: Criterios y Evidencias */}
@@ -236,8 +238,10 @@ export const EvidenceAssignmentView: React.FC<EvidenceAssignmentViewProps> = ({
             </Card>
 
           </div>
+          </ScrollReveal>
 
           {/* ── Sección 2: Fecha y comentario ── */}
+          <ScrollReveal delay={0.08}>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-stretch">
 
             {/* Card: Fecha límite */}
@@ -277,8 +281,10 @@ export const EvidenceAssignmentView: React.FC<EvidenceAssignmentViewProps> = ({
             </Card>
 
           </div>
+          </ScrollReveal>
 
           {/* ── Sección 3: Tabla de resumen ── */}
+          <ScrollReveal delay={0.14}>
           <DataTable
               title="Resumen de asignaciones"
               data={assignmentTableRows}
@@ -311,6 +317,7 @@ export const EvidenceAssignmentView: React.FC<EvidenceAssignmentViewProps> = ({
                 </p>
               }
             />
+          </ScrollReveal>
 
           {/* ── Sección 4: Tablas de duplicados ── */}
           {duplicatesValidating && (
@@ -334,7 +341,7 @@ export const EvidenceAssignmentView: React.FC<EvidenceAssignmentViewProps> = ({
                 <Card className="overflow-hidden border-2 border-warning-ring bg-warning-light">
                   <div className="px-6 pt-6 pb-2">
                     <h2 className={`${TYPOGRAPHY.table.caption} font-semibold text-negro-una`}>Asignaciones Duplicadas</h2>
-                    <p className={`mt-1 ${TYPOGRAPHY.form.helper} text-gris-una`}>Usuarios con asignaciones pendientes en progreso. No se pueden reasignar.</p>
+                    <p className={`mt-1 ${TYPOGRAPHY.table.helper} text-gris-una`}>Usuarios con asignaciones pendientes en progreso. No se pueden reasignar.</p>
                   </div>
                   <DataTable<DuplicateGroupRow>
                     unstyled
@@ -362,18 +369,19 @@ export const EvidenceAssignmentView: React.FC<EvidenceAssignmentViewProps> = ({
                           <thead>
                             <tr className="border-b border-gris-light">
                               <th className={`text-left py-2 px-4 font-semibold text-negro-una ${TYPOGRAPHY.table.header}`}>Evidencia</th>
-                              <th className={`text-center py-2 px-4 font-semibold text-negro-una ${TYPOGRAPHY.table.header}`}>Fecha Asignación</th>
+                              <th className={`text-center py-2 px-4 font-semibold text-negro-una ${TYPOGRAPHY.table.header}`}>Fecha de Asignación</th>
                             </tr>
                           </thead>
                           <tbody>
                             {item.evidences.map((dup) => (
                               <tr key={`act-sub-${dup.asignacion_id ?? dup.evidencia_id}`} className="border-b border-gris-light/50">
                                 <td className={`py-2 px-4 ${TYPOGRAPHY.table.cell}`}>
-                                  <p className="font-semibold text-negro-una">{evidenceById[dup.evidencia_id]?.nomenclatura ?? 'N/A'}</p>
-                                  <p className="text-xs text-gris-una mt-0.5">{evidenceById[dup.evidencia_id]?.descripcion ?? ''}</p>
+                                  <span className="font-semibold text-negro-una">{evidenceById[dup.evidencia_id]?.nomenclatura ?? 'N/A'}</span>
+                                  <span className="text-gris-una mx-1.5">—</span>
+                                  <span className="font-semibold text-negro-una">{evidenceById[dup.evidencia_id]?.descripcion ?? ''}</span>
                                 </td>
-                                <td className={`py-2 px-4 text-negro-una text-center ${TYPOGRAPHY.table.cell}`}>
-                                  {formatDate(dup.fecha_asignacion)}
+                                <td className={`py-2 px-4 text-gris-una text-center ${TYPOGRAPHY.table.cell}`}>
+                                  {formatDateShort(dup.fecha_asignacion)}
                                 </td>
                               </tr>
                             ))}
@@ -383,7 +391,7 @@ export const EvidenceAssignmentView: React.FC<EvidenceAssignmentViewProps> = ({
                     )}
                   />
                   <div className="px-6 pb-6">
-                    <div className={`p-3 bg-warning-light rounded-corner border border-warning-ring ${TYPOGRAPHY.form.helper} text-warning-dark`}>
+                    <div className={`p-3 bg-warning-light rounded-corner border border-warning-ring ${TYPOGRAPHY.table.helper} text-warning-dark`}>
                       <strong>Bloqueado automáticamente:</strong> Estos usuarios fueron excluidos; ya tienen
                       evidencias asignadas en estado activo. No se pueden crear asignaciones duplicadas
                       mientras no estén completadas o canceladas.
@@ -397,13 +405,9 @@ export const EvidenceAssignmentView: React.FC<EvidenceAssignmentViewProps> = ({
                 <Card className="overflow-hidden border-2 border-info-ring bg-info-light">
                   <div className="px-6 pt-6 pb-2">
                     <h2 className={`${TYPOGRAPHY.table.caption} font-semibold text-negro-una`}>Evidencias Ya Completadas</h2>
-                    <p className={`mt-1 ${TYPOGRAPHY.form.helper} text-gris-una`}>Usuarios que ya completaron estas evidencias. Puede reasignarlas si es necesario.</p>
-                  </div>
-                  <DataTable<DuplicateGroupRow>
-                    unstyled
-                    data={completedDuplicateRows}
-                    customFilters={
-                      <label className="flex items-center gap-2 cursor-pointer select-none">
+                    <div className="flex items-center justify-between gap-4 mt-1">
+                      <p className={`${TYPOGRAPHY.table.helper} text-gris-una`}>Usuarios que ya completaron estas evidencias. Puede reasignarlas si es necesario.</p>
+                      <label className="flex items-center gap-2 cursor-pointer select-none flex-shrink-0">
                         <input
                           type="checkbox"
                           checked={completedDuplicates.every((d: DuplicateAssignment) =>
@@ -418,11 +422,15 @@ export const EvidenceAssignmentView: React.FC<EvidenceAssignmentViewProps> = ({
                               );
                             }
                           }}
-                          className="w-4 h-4 rounded border-info-ring text-info focus:ring-info cursor-pointer"
+                          className="w-3 h-3 rounded border-info-ring text-info focus:ring-info cursor-pointer"
                         />
                         <span className={`${TYPOGRAPHY.form.helper} text-info-dark`}>Seleccionar todos</span>
                       </label>
-                    }
+                    </div>
+                  </div>
+                  <DataTable<DuplicateGroupRow>
+                    unstyled
+                    data={completedDuplicateRows}
                     columns={[
                       {
                         key: 'seleccion',
@@ -436,7 +444,7 @@ export const EvidenceAssignmentView: React.FC<EvidenceAssignmentViewProps> = ({
                               !excludedCompletedPairs.some((p) => p.usuario_id === e.usuario_id && p.evidencia_id === e.evidencia_id)
                             )}
                             onChange={(e) => { e.stopPropagation(); toggleAllCompletedPairsForUser(row.evidences); }}
-                            className="w-4 h-4 rounded border-info-ring text-info focus:ring-info cursor-pointer"
+                            className="w-3 h-3 rounded border-info-ring text-info focus:ring-info cursor-pointer"
                             aria-label={`Reasignar a ${row.usuario_nombre}`}
                           />
                         ),
@@ -484,11 +492,12 @@ export const EvidenceAssignmentView: React.FC<EvidenceAssignmentViewProps> = ({
                                     />
                                   </td>
                                   <td className={`py-2 px-4 ${TYPOGRAPHY.table.cell}`}>
-                                    <p className="font-semibold text-negro-una">{evidenceById[dup.evidencia_id]?.nomenclatura ?? 'N/A'}</p>
-                                    <p className="text-xs text-gris-una mt-0.5">{evidenceById[dup.evidencia_id]?.descripcion ?? ''}</p>
+                                    <span className="font-semibold text-negro-una">{evidenceById[dup.evidencia_id]?.nomenclatura ?? 'N/A'}</span>
+                                    <span className="text-gris-una mx-1.5">—</span>
+                                    <span className="font-semibold text-negro-una">{evidenceById[dup.evidencia_id]?.descripcion ?? ''}</span>
                                   </td>
                                   <td className={`py-2 px-4 text-negro-una text-center ${TYPOGRAPHY.table.cell}`}>
-                                    {formatDate(dup.fecha_asignacion)}
+                                    {formatDateShort(dup.fecha_asignacion)}
                                   </td>
                                 </tr>
                               );
@@ -499,7 +508,7 @@ export const EvidenceAssignmentView: React.FC<EvidenceAssignmentViewProps> = ({
                     )}
                   />
                   <div className="px-6 pb-6">
-                    <div className={`p-3 bg-info-light rounded-corner border border-info-ring ${TYPOGRAPHY.form.helper} text-info-dark`}>
+                    <div className={`p-3 bg-info-light rounded-corner border border-info-ring ${TYPOGRAPHY.table.helper} text-info-dark`}>
                       <strong>Reasignación permitida:</strong> Estos usuarios ya completaron estas evidencias.
                       Márquelos si desea reasignarlas para crear una nueva asignación.
                     </div>
