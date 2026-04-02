@@ -200,6 +200,17 @@ export const getNavigationItems = (
             },
           ]
         : []),
+    ],
+  });
+
+  items.push({
+    id: "evaluacion",
+    label: "Evaluacion",
+    icon: auditLogIcon,
+    href: "#",
+    isActive: false,
+    isExpandable: true,
+    children: [
       {
         id: "compromisos-mejora",
         label: "Compromisos de Mejora",
