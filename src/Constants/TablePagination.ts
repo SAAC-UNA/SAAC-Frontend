@@ -11,6 +11,5 @@
 
 export const TABLE_PAGE_SIZE = {
 
-  /** Tablas estándar de gestión — 5 ítems */
-  standard: 7,
+  standard: 8,
 } as const;

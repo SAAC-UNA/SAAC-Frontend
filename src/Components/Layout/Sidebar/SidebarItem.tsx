@@ -7,6 +7,8 @@ import { getIconByName } from '@/Components/Ui/Icons/SystemIcons';
 import { SidebarNavContext } from './SidebarNavContext';
 import { SIDEBAR_ITEM } from '@/Constants/Components';
 import { TYPOGRAPHY } from '@/Constants/Typography';
+import { buttonVariants } from '@/Components/Ui/Buttons/Button';
+import { SPRING_SIDEBAR } from '@/Constants/Animations';
 
 interface SidebarItemProps {
   item: NavItem;
@@ -69,17 +71,16 @@ const SidebarItemComponent: React.FC<SidebarItemProps> = ({
         <button
           onClick={handleClick}
           className={cn(
-            'group/btn flex items-center text-left rounded-corner font-medium cursor-pointer relative z-10',
-            'transition-colors duration-200',
+            buttonVariants({ variant: 'sidebarItem', size: 'none' }),
+            'group/btn flex items-center text-left !font-medium z-10',
             layoutCollapsed
               ? 'size-sidebar-item justify-center'
               : `w-full ${SIDEBAR_ITEM.button} gap-1 justify-start`,
-            // Fondo estático SOLO si está activo (ruta elegida) y NO se está interactuando con él (hover ni flyout abierto)
             (isActive && !showAnimatedBackground)
-              ? 'bg-rojo-una-2 text-blanco-una shadow-md'
+              ? '!bg-rojo-una-2 !text-blanco-una shadow-md'
               : (isActive || showAnimatedBackground)
-                ? 'text-blanco-una'
-                : 'bg-blanco-una text-negro-una-2 shadow-md'
+                ? '!bg-transparent !text-blanco-una'
+                : 'shadow-md',
           )}
         >
           {/* Fondo deslizable animado */}
@@ -90,12 +91,7 @@ const SidebarItemComponent: React.FC<SidebarItemProps> = ({
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              transition={{
-                type: 'spring',
-                stiffness: 400,
-                damping: 30,
-                mass: 0.8
-              }}
+              transition={SPRING_SIDEBAR}
             />
           )}
           {iconName && (

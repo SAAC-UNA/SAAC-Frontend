@@ -155,7 +155,7 @@ export const DataTable = React.memo(<T extends Record<string, unknown>>({
           <div className="flex flex-col justify-between gap-4 mb-4 lg:flex-row lg:items-center">
             <div className="flex-1">
               {title && (
-                <h5 className={`block font-sans antialiased font-semibold leading-snug tracking-normal text-negro-una-2 ${TYPOGRAPHY.table.caption}`}>
+                <h5 className={`${TYPOGRAPHY.table.caption} font-semibold text-negro-una`}>
                   {title}
                 </h5>
               )}
@@ -213,7 +213,7 @@ export const DataTable = React.memo(<T extends Record<string, unknown>>({
             <thead>
               <tr>
                 {expandableRow && (
-                  <th className="w-10 pl-4 pr-2 py-3 border-b border-blue-gray-100 bg-blanco-una-2 rounded-tl-corner" />
+                  <th className="w-10 pl-4 pr-2 py-2 border-b border-blue-gray-100 bg-blanco-una-2 rounded-tl-corner" />
                 )}
                 {columns.map((column, index) => (
                   <th
@@ -221,7 +221,7 @@ export const DataTable = React.memo(<T extends Record<string, unknown>>({
                     style={column.width ? { width: column.width } : undefined}
                     // Color del header de las tablas
                     className={cn(
-                      "py-3 border-b bg-blanco-una-2 border-blue-gray-100",
+                      "py-2 border-b bg-blanco-una-2 border-blue-gray-100",
                       column.align === 'left' ? 'text-left' : column.align === 'right' ? 'text-right' : 'text-center',
                       index === 0 ? (expandableRow ? "px-4" : "pl-8 pr-4") : "px-4",
                       // Esquina superior izquierda si no hay expandable y es la primera columna
@@ -236,7 +236,7 @@ export const DataTable = React.memo(<T extends Record<string, unknown>>({
                   </th>
                 ))}
                 {actions && actions.length > 0 && (
-                  <th className="pl-4 pr-8 py-3 border-b border-blue-gray-100 text-center rounded-tr-corner">
+                  <th className="pl-4 pr-8 py-2 border-b border-blue-gray-100 text-center rounded-tr-corner">
                     <p className="block font-sans text-sm antialiased font-normal leading-none text-gris-una-2 opacity-70">
                       {/* Columna de acciones vacía */}
                     </p>
@@ -257,7 +257,7 @@ export const DataTable = React.memo(<T extends Record<string, unknown>>({
                       onClick={expandableRow ? () => toggleRow(rowKey) : undefined}
                     >
                       {expandableRow && (
-                        <td className={cn("pl-4 pr-2 py-3 w-10 text-center align-middle", !isLast && !isExpanded && "border-b border-blue-gray-50")}>
+                        <td className={cn("pl-4 pr-2 py-2 w-10 text-center align-middle", !isLast && !isExpanded && "border-b border-blue-gray-50")}>
                           <motion.div
                             initial={false}
                             animate={{ rotate: isExpanded ? 180 : 0 }}
@@ -278,7 +278,7 @@ export const DataTable = React.memo(<T extends Record<string, unknown>>({
                         <td
                           key={column.key}
                           className={cn(
-                            "py-3",
+                            "py-2",
                             colIndex === 0 ? (expandableRow ? "px-4" : "pl-8 pr-4") : "px-4",
                             !isLast && !isExpanded && "border-b border-blue-gray-50"
                           )}
@@ -293,7 +293,7 @@ export const DataTable = React.memo(<T extends Record<string, unknown>>({
                       ))}
                       {actions && actions.length > 0 && (
                         <td className={cn(
-                          "pl-4 pr-8 py-3",
+                          "pl-4 pr-8 py-2",
                           !isLast && !isExpanded && "border-b border-blue-gray-50"
                         )}>
                           <div className="flex items-center gap-2">
@@ -347,7 +347,7 @@ export const DataTable = React.memo(<T extends Record<string, unknown>>({
 
       {/* Paginación */}
       {pagination && pagination.totalPages > 1 && (
-        <div className="flex items-center justify-center p-4">
+        <div className="flex items-center justify-center py-1">
           <Pagination
             currentPage={pagination.currentPage}
             totalPages={pagination.totalPages}

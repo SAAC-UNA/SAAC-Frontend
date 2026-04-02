@@ -77,7 +77,7 @@ export const NotificationDropdown: React.FC<NotificationDropdownProps> = ({
   };
 
   return (
-    <div className="absolute right-0 mt-2 w-96 bg-white rounded-lg shadow-xl border border-gray-200 z-50 max-h-[600px] flex flex-col">
+    <div className="relative w-96 bg-white rounded-lg shadow-xl border border-gray-200 z-50 max-h-[600px] flex flex-col">
       {/* Header */}
       <div className="px-4 py-3 border-b border-gray-200 relative flex items-center justify-center">
         <h3 className="text-sm font-semibold text-gray-900 text-center">

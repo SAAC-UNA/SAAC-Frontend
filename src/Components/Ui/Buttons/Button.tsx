@@ -69,7 +69,7 @@ const buttonVariants = cva(
         ].join(' '),
 
         outline: [
-          'border border-gris-una bg-transparent text-negro-una',
+          'border border-0 bg-blanco-una text-negro-una shadow-sm',
           'hover:bg-gris-una/10',
           'focus-visible:ring-gris-una',
           '[--ripple-color:rgba(0,0,0,0.08)]',
@@ -85,7 +85,7 @@ const buttonVariants = cva(
         // ===== Variantes sutiles =====
         ghost: [
           'bg-transparent text-gris-una border-0',
-          'hover:bg-gris-una/10',
+          'hover:bg-blanco-una hover:shadow-sm',
           'focus-visible:ring-azul-una',
           '[--ripple-color:rgba(3,73,145,0.12)]',
         ].join(' '),
@@ -154,12 +154,43 @@ const buttonVariants = cva(
           'hover:[filter:drop-shadow(0_0_6px_rgba(162,28,175,0.85))] transition-all duration-200',
           'disabled:opacity-50 disabled:cursor-not-allowed',
         ].join(' '),
+
+        // ===== Variante de paginación =====
+        pagination: [
+          'bg-transparent text-gris-una border-0',
+          '!rounded-full',
+          'hover:bg-blanco-una hover:shadow-md',
+          'focus-visible:ring-azul-una',
+          '[--ripple-color:rgba(3,73,145,0.12)]',
+        ].join(' '),
+
+        // ===== Variantes del sidebar =====
+        // Botón icono cuadrado para acciones (UserBar). Hover manejado por CSS.
+        sidebarAction: [
+          'bg-blanco-una text-negro-una-2 border-0 shadow-md',
+          '!rounded-corner !size-header-button !p-header-action',
+          'cursor-pointer relative overflow-hidden',
+          'focus-visible:ring-gris-una',
+          '[--ripple-color:rgba(195,43,48,0.18)]',
+        ].join(' '),
+
+        // Estilos base para ítems de sidebar. Usar vía buttonVariants() sobre <button> nativo
+        // para mantener control total del layout flex. El motion.div layoutId va como hijo.
+        sidebarItem: [
+          'bg-blanco-una text-negro-una-2 border-0',
+          '!rounded-corner',
+          'cursor-pointer',
+          'focus-visible:ring-rojo-una-2',
+          '[--ripple-color:rgba(195,43,48,0.18)]',
+        ].join(' '),
       },
 
       size: {
         sm: getComponentSizeClasses.button('sm'),
         md: getComponentSizeClasses.button('md'),
         lg: getComponentSizeClasses.button('lg'),
+        /** Sin clases de tamaño — el caller controla dimensiones vía className */
+        none: '',
       },
     },
     defaultVariants: {
@@ -174,7 +205,7 @@ export type ButtonVariant = NonNullable<VariantProps<typeof buttonVariants>['var
 
 // Variantes que no reciben ancho estándar automático
 const TABLE_VARIANTS: ButtonVariant[] = [
-  'tableView', 'tableEdit', 'tableDelete', 'tablePower', 'tablePowerInactive', 'tableList', 'ghost',
+  'tableView', 'tableEdit', 'tableDelete', 'tablePower', 'tablePowerInactive', 'tableList', 'ghost', 'pagination', 'sidebarAction', 'sidebarItem',
 ];
 
 export interface ButtonProps

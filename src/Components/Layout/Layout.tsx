@@ -5,8 +5,6 @@ import { SidebarProvider } from "@/Context/SidebarContext";
 import {
   ModernSidebar,
   MainContent,
-  AppHeader,
-  UserWidget,
 } from "./Sidebar/Index";
 import { PAGE_TRANSITION_VARIANTS } from "@/Constants/Animations";
 
@@ -45,7 +43,6 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
       <div className="flex min-h-screen w-full bg-transparent">
         <ModernSidebar />
         <MainContent>
-          <AppHeader rightContent={<UserWidget showNotifications={true} />} />
           <div className="flex-1">
             <div
               className="px-3 pt-3 pb-3 sm:px-4 sm:pt-3 sm:pb-4"

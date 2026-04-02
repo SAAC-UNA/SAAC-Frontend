@@ -99,7 +99,7 @@ export const ManageExtensionRequestsTable: React.FC<ManageExtensionRequestsTable
           <p className={`block font-sans antialiased font-bold leading-normal text-negro-una-2 ${TYPOGRAPHY.table.cell}`} title={item.usuario?.nombre || 'N/A'}>
             {truncateText(item.usuario?.nombre || 'N/A', firstColumn.maxLength)}
           </p>
-          <p className={`block font-sans antialiased leading-normal text-gris-una-2 ${TYPOGRAPHY.table.cell}`} title={item.usuario?.email || ''}>
+          <p className={`block font-sans antialiased leading-normal text-gris-una-2 ${TYPOGRAPHY.table.helper}`} title={item.usuario?.email || ''}>
             {truncateText(item.usuario?.email || '', firstColumn.maxLength)}
           </p>
         </div>

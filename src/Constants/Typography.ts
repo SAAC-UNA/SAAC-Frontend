@@ -38,6 +38,7 @@ export const TYPOGRAPHY = {
     header: 'size-table-header',             // 12px - Headers de tabla (uppercase)
     cell: 'size-table-cell',                 // 14px - Contenido de celdas
     caption: 'size-table-caption',           // 14px - Título de tabla (DataTable)
+    helper: 'size-table-helper',             // 12px - Textos de ayuda debajo de tablas
   },
   
   // ===== COMPONENTES DE UI =====

@@ -8,6 +8,7 @@ import { cn } from '@/Utils/ClassNames';
 import { TYPOGRAPHY } from '@/Constants/Typography';
 import { ICON_SIZES } from '@/Constants/Components';
 import { getIconByName } from '@/Components/Ui/Icons/SystemIcons';
+import { SPRING_SIDEBAR } from '@/Constants/Animations';
 
 interface SidebarNavProviderProps {
   children: React.ReactNode;
@@ -244,7 +245,7 @@ export const SidebarNavProvider: React.FC<SidebarNavProviderProps> = ({ children
                             initial={{ opacity: 0 }}
                             animate={{ opacity: 1 }}
                             exit={{ opacity: 0 }}
-                            transition={{ type: 'spring', stiffness: 400, damping: 30, mass: 0.8 }}
+                            transition={SPRING_SIDEBAR}
                           />
                         )}
                         {iconName && (

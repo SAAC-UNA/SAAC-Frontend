@@ -219,34 +219,33 @@
   --font-poppins: "Poppins", sans-serif;
 
   /* Tamaños de tipografía estandarizados por tipo de elemento */
-  /* Fórmula: rem × 16 = px | Ejemplo: 0.875rem × 16 = 14px */
-  --text-header: 12.8px; /* 8px - Texto principal en headers */
-  --text-body: 12.8px; /* 14px - Texto general/contenido */
-  --text-page-title: 1.25rem; /* 24px - Título principal de página */
-  --text-page-subtitle: 1rem; /* 16px - Subtítulo/descripción de página */
-  --text-button: 12.8px; /* 12px - Todos los botones */
-  --text-sidebar: 13px; /* 14px - Items de navegación */
-  --text-form-input: 12.8px; /* 14px - Inputs, selects, textareas */
-  --text-form-label: 12.8px; /* 14px - Labels de formularios */
-  --text-form-helper: 0.75rem; /* 12px - Textos de ayuda y validación */
-  --text-table-header: 12.8px; /* 14px - Headers de tabla */
-  --text-table-cell: 12.8px; /* 12px - Contenido de celdas */
-  --text-table-caption: 12.8px; /* 14px - Título de tabla */
-  --text-badge: 10.8px; /* 12px - Badges, chips, pills de acción (en tablas) */
-  --text-badge-sm: 10px;  /* 10px - Badges pequeños (en tarjetas, espacios reducidos) */
-  --text-alert-title: 12.8px; /* 14px - Título de alertas */
-  --text-alert-message: 12.8px; /* 14px - Mensaje de alertas */
-  --text-empty-title: 1.125rem; /* 18px - Título de estados vacíos */
-  --text-empty-desc: 12.8px; /* 14px - Descripción de estados vacíos */
-  --text-empty-title-compact: 1rem; /* 16px - Título compacto */
-  --text-empty-desc-compact: 0.75rem; /* 12px - Descripción compacta */
-  --text-modal-title: 1.25rem; /* 20px - Título de modales */
-  --text-modal-subtitle: 12.8px; /* 14px - Subtítulo de modales */
-  --text-modal-body: 12.8px; /* 14px - Contenido de modales */
-  --text-pagination: 12.8px; /* 14px - Paginación */
-  --text-tooltip: 0.75rem; /* 12px - Texto de tooltips */
-  --text-toast: 0.75rem; /* 12px - Título del toast */
-  --text-toast-message: 0.6875rem; /* 11px - Mensaje del toast */
+  --text-header: 12.8px;
+  --text-body: 12.8px;
+  --text-page-title: 18px;
+  --text-page-subtitle: 14px;
+  --text-button: 12.8px;
+  --text-sidebar: 13px;
+  --text-form-input: 12.8px;
+  --text-form-label: 12.8px;
+  --text-form-helper: 12px;
+  --text-table-header: 12.8px;
+  --text-table-cell: 12.8px;
+  --text-table-caption: 12.8px;
+  --text-table-helper: 11px;
+  --text-badge: 10.8px;
+  --text-alert-title: 12.8px;
+  --text-alert-message: 12.8px;
+  --text-empty-title: 18px;
+  --text-empty-desc: 12.8px;
+  --text-empty-title-compact: 16px;
+  --text-empty-desc-compact: 12px;
+  --text-modal-title: 20px;
+  --text-modal-subtitle: 12.8px;
+  --text-modal-body: 12.8px;
+  --text-pagination: 12.8px;
+  --text-tooltip: 12px;
+  --text-toast: 12px;
+  --text-toast-message: 11px;
 
   /* SIDEBAR */
   --sidebar-width: 13rem; /* 208px - Ancho expandido */
@@ -295,35 +294,43 @@
 }
 
 /* ===== CONFIGURACIÓN BASE ===== */
-/* ? Variables CSS para el sidebar y configuración global */
+/* ! Variables CSS para el sidebar y configuración global 01/04/2026 */
 
 @layer base {
   html {
     font-size: 15px;
+    /* overflow-y: scroll mantiene el scrollbar SIEMPRE presente (transparente),
+       evitando saltos de layout al abrir modales sin reservar espacio asimétrico */
+    overflow-y: scroll;
+    scrollbar-width: thin;
+    scrollbar-color: transparent transparent;
+  }
+
+  html::-webkit-scrollbar {
+    width: 3px;
+  }
+
+  html::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  html::-webkit-scrollbar-thumb {
+    background: transparent;
+    border-radius: 2px;
+  }
+
+  html:hover::-webkit-scrollbar-thumb {
+    background: rgba(167, 167, 169, 0.3);
+  }
+
+  html::-webkit-scrollbar-thumb:hover {
+    background: rgba(167, 167, 169, 0.5);
   }
 
   body {
     @apply font-poppins bg-blanco-una-2;
-    /* Aplicar scrollbar personalizado globalmente */
-    scrollbar-width: thin;
-    scrollbar-color: rgba(167, 167, 169, 0.3) transparent;
-  }
-
-  body::-webkit-scrollbar {
-    width: 10px;
-  }
-
-  body::-webkit-scrollbar-track {
-    background: rgba(167, 167, 169, 0.05);
-  }
-
-  body::-webkit-scrollbar-thumb {
-    background: rgba(167, 167, 169, 0.3);
-    border-radius: 5px;
-  }
-
-  body::-webkit-scrollbar-thumb:hover {
-    background: rgba(167, 167, 169, 0.5);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
   }
 }
 
@@ -453,6 +460,9 @@
   }
   .size-table-caption {
     font-size: var(--text-table-caption);
+  }
+  .size-table-helper {
+    font-size: var(--text-table-helper);
   }
   .size-alert-title {
     font-size: var(--text-alert-title);
