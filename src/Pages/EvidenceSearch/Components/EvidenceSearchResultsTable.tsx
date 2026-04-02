@@ -73,7 +73,7 @@ export const EvidenceSearchResultsTable: React.FC<EvidenceSearchResultsTableProp
       align: 'left',
       width: firstColumn.width,
       render: (_, item) => (
-        <div className="flex flex-col pl-2 py-1">
+        <div className="flex flex-col pl-2">
           <div className="flex flex-row items-baseline gap-1.5">
             <p className={`font-sans antialiased font-bold leading-normal text-negro-una-2 shrink-0 ${TYPOGRAPHY.table.cell}`} title={item.criterio_nomenclatura}>
               {truncateText(item.criterio_nomenclatura, firstColumn.maxLength)}

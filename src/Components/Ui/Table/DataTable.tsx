@@ -257,7 +257,7 @@ export const DataTable = React.memo(<T extends Record<string, unknown>>({
                       onClick={expandableRow ? () => toggleRow(rowKey) : undefined}
                     >
                       {expandableRow && (
-                        <td className={cn("pl-4 pr-2 py-2 w-10 text-center align-middle", !isLast && !isExpanded && "border-b border-blue-gray-50")}>
+                        <td className={cn("pl-4 pr-2 py-2 h-16 w-10 text-center align-middle", !isLast && !isExpanded && "border-b border-blue-gray-50")}>
                           <motion.div
                             initial={false}
                             animate={{ rotate: isExpanded ? 180 : 0 }}
@@ -278,7 +278,7 @@ export const DataTable = React.memo(<T extends Record<string, unknown>>({
                         <td
                           key={column.key}
                           className={cn(
-                            "py-2",
+                            "py-2 h-16 align-middle",
                             colIndex === 0 ? (expandableRow ? "px-4" : "pl-8 pr-4") : "px-4",
                             !isLast && !isExpanded && "border-b border-blue-gray-50"
                           )}
@@ -293,7 +293,7 @@ export const DataTable = React.memo(<T extends Record<string, unknown>>({
                       ))}
                       {actions && actions.length > 0 && (
                         <td className={cn(
-                          "pl-4 pr-8 py-2",
+                          "pl-4 pr-8 py-2 h-16 align-middle",
                           !isLast && !isExpanded && "border-b border-blue-gray-50"
                         )}>
                           <div className="flex items-center gap-2">

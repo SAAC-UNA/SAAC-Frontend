@@ -136,7 +136,7 @@ export const AuditLogFilters: React.FC<AuditLogFiltersProps> = ({
   }, [actionTypes]);
 
   return (
-    <Card className="p-4">
+    <Card className="p-4 w-full">
       <div className="flex items-end gap-4">
         <div className="flex-1 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
           {/* Filtro por Usuario */}

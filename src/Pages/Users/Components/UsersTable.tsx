@@ -108,7 +108,7 @@ export const UsersTable: React.FC<UsersTableProps> = ({
                     <p className={`block font-sans antialiased font-bold leading-normal text-negro-una-2 ${TYPOGRAPHY.table.cell}`} title={String(value)}>
                         {truncateText(String(value), firstColumn.maxLength)}
                     </p>
-                    <p className={`block font-sans antialiased font-normal leading-normal text-gris-una ${TYPOGRAPHY.table.cell}`} title={user.email}>
+                    <p className={`block font-sans antialiased font-normal leading-normal text-gris-una ${TYPOGRAPHY.table.helper}`} title={user.email}>
                         {truncateText(user.email, firstColumn.maxLength)}
                     </p>
                 </div>
