@@ -3,25 +3,11 @@ import { DetailsModal } from '@/Components/Ui/Modals/DetailsModal';
 import { SystemIcons } from '@/Components/Ui/Icons/SystemIcons';
 import { StatusBadge } from '@/Components/Ui/Feedback/StatusBadge';
 import { cn } from '@/Utils/ClassNames';
+import { AUDIT_ACTION_BADGE, BADGE_COLORS } from '@/Constants/StatusBadges';
 import type { AuditLog } from '@/Types/AuditLogTypes';
 import { TYPOGRAPHY } from '@/Constants/Typography';
 import { ICON_SIZES } from '@/Constants/Components';
-
-const ACTION_BADGE: Record<string, string> = {
-  crear:            'bg-verde-ring text-verde-dark',
-  editar:           'bg-warning-ring text-warning-dark',
-  eliminar:         'bg-error-ring text-error-dark',
-  consultar:        'bg-gris-light text-gris-una',
-  login:            'bg-verde-ring text-verde-dark',
-  logout:           'bg-error-ring text-error-dark',
-  login_fallido:    'bg-error-ring text-error-dark',
-  activar:          'bg-verde-ring text-verde-dark',
-  desactivar:       'bg-gris-light text-gris-una',
-  asignar_rol:      'bg-morado-ring text-morado-dark',
-  asignar_permisos: 'bg-indigo-ring text-indigo-dark',
-  exportar:         'bg-teal-ring text-teal-dark',
-  asignar:          'bg-info-ring text-info-dark',
-};
+import { formatDateFull } from '@/Utils/DateUtils';
 
 interface AuditLogDetailModalProps {
   isOpen: boolean;
@@ -52,20 +38,6 @@ export const AuditLogDetailModal: React.FC<AuditLogDetailModalProps> = ({
   log,
 }) => {
   if (!log) return null;
-
-  const formatDateFull = (dateString: string): string => {
-    const date = new Date(dateString);
-    return new Intl.DateTimeFormat('es-ES', {
-      weekday: 'long',
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
-      second: '2-digit',
-      hour12: false,
-    }).format(date);
-  };
 
   return (
     <DetailsModal
@@ -102,7 +74,7 @@ export const AuditLogDetailModal: React.FC<AuditLogDetailModalProps> = ({
                         <StatusBadge
                           key={rol}
                           label={rol}
-                          colorClasses="bg-morado-ring text-morado-dark"
+                          colorClasses={BADGE_COLORS.tail.colorClasses}
                         />
                       ))}
                     </div>
@@ -125,7 +97,7 @@ export const AuditLogDetailModal: React.FC<AuditLogDetailModalProps> = ({
               <InfoCell label="Tipo">
                 <StatusBadge
                   label={log.tipo_accion.descripcion}
-                  colorClasses={ACTION_BADGE[log.tipo_accion.descripcion.toLowerCase()] ?? 'bg-gray-100 text-gray-800'}
+                  colorClasses={AUDIT_ACTION_BADGE[log.tipo_accion.descripcion.toLowerCase()]?.colorClasses ?? 'bg-slate-light text-slate'}
                 />
               </InfoCell>
               {log.modulo && (
@@ -142,7 +114,7 @@ export const AuditLogDetailModal: React.FC<AuditLogDetailModalProps> = ({
         {/* Detalle */}
         <div>
           <SectionLabel label="Detalle" />
-          <div className="border border-gray-200 rounded-corner p-4">
+          <div className="border border-gris-light rounded-corner p-4">
             <span className={cn(TYPOGRAPHY.modal.body, 'text-gris-una-2 leading-relaxed whitespace-pre-wrap')}>
               {log.detalle || <span className="italic">Sin detalle adicional</span>}
             </span>
@@ -152,7 +124,7 @@ export const AuditLogDetailModal: React.FC<AuditLogDetailModalProps> = ({
         {/* Fechas */}
         <div>
           <SectionLabel label="Información de tiempo" />
-          <div className="border border-gray-200 rounded-corner p-4 grid grid-cols-2 gap-4">
+          <div className="border border-gris-light rounded-corner p-4 grid grid-cols-2 gap-4">
             <InfoCell label="Fecha y hora">
               <span className={cn(TYPOGRAPHY.modal.body, 'text-gris-una-2 capitalize')}>
                 {formatDateFull(log.fecha_hora)}

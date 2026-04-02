@@ -154,50 +154,67 @@
 /* Colores oficiales, tipografías y espaciado */
 
 @theme {
+  --color-blanco-una: #ffffff;
+  --color-blanco-una-2: #f8f9fa;
   --color-rojo-una: #cd1719;
   --color-rojo-una-2: #c32b30;
+  --color-azul-una: #034991;
+  --color-azul-una-2: #2b57da;
   --color-gris-una: #a7a7a9;
   --color-gris-una-2: #888887;
   --color-gris-una-3: #444852;
   --color-gris-una-4: #2d3037;
-  --color-azul-una: #034991;
-  --color-azul-una-2: #2b57da;
-  --color-blanco-una: #ffffff;
-  --color-blanco-una-2: #f8f9fa;
   --color-negro-una: #000000;
   --color-negro-una-2: #232323;
 
-  /* Colores para estados */
-  --color-verde: #10b981;
-  --color-warning: #f59e0b;
-  --color-error: #ef4444;
-  --color-info: #3b82f6;
-  --color-error-screen: #aba9af;
-
-  --color-verde-dark: #166534; /* Texto verde oscuro para éxito */
-  --color-warning-dark: #92400e; /* Texto amarillo oscuro para advertencias */
-  --color-error-dark: #ee4343; /* Texto rojo oscuro para errores */
-  --color-info-dark: #1e40af; /* Texto azul oscuro para información */
-  --color-morado-dark: #a21caf; /* Texto morado oscuro para información */
-  --color-teal-dark: #0f766e; /* Texto teal oscuro para información */
+  /* Tono 700 */
+  --color-verde-dark: #166534;
+  --color-teal-dark: #0f766e;
+  --color-warning-dark: #92400e;
+  --color-naranja-dark: #c2410c;
+  --color-error-dark: #ee4343;
+  --color-rose-dark: #be123c;
+  --color-info-dark: #1e40af;
+  --color-slate-dark: #334155;
+  --color-morado-dark: #a21caf;
   --color-indigo-dark: #4338ca;
 
-  --color-verde-light: #f0fdf4; /* Fondo verde claro para éxito */
-  --color-warning-light: #fffbeb; /* Fondo amarillo claro para advertencias */
-  --color-error-light: #fef2f2; /* Fondo rojo claro para errores */
-  --color-info-light: #eff6ff; /* Fondo azul claro para información */
-  --color-gris-light: #e7e8ea; /* Fondo gris claro para inactivo */
-  --color-morado-light: #f5d0fe; /* Fondo morado claro para información */
-  --color-teal-light: #ccfbf1; /* Fondo teal claro para información */
-  --color-indigo-light: #c7d2fe; /* Fondo indigo claro para información */
+  /* Tono 400 */
+  --color-verde: #10b981;
+  --color-teal: #0d9488;
+  --color-warning: #f59e0b;
+  --color-naranja: #fb923c;
+  --color-error: #ef4444;
+  --color-rose: #fb7185;
+  --color-info: #3b82f6;
+  --color-slate: #94a3b8;
+  --color-morado: #c026d3;
+  --color-indigo: #6366f1;
 
-  --color-verde-ring: #bbf7d0; /* Borde verde para éxito */
-  --color-warning-ring: #fde68a; /* Borde amarillo para advertencias */
-  --color-error-ring: #fecaca; /* Borde rojo para errores */
-  --color-info-ring: #bfdbfe; /* Borde azul para información */
-  --color-morado-ring: #f0abfc; /* Borde morado para información */
-  --color-teal-ring: #5eead4; /* Borde teal para información */
-  --color-indigo-ring: #a5b4fc; /* Borde indigo para información */
+  /* Tono 300 */
+  --color-verde-ring: #bbf7d0;
+  --color-teal-ring: #5eead4;
+  --color-warning-ring: #fde68a;
+  --color-naranja-ring: #fdba74;
+  --color-error-ring: #fecaca;
+  --color-rose-ring: #fda4af;
+  --color-info-ring: #bfdbfe;
+  --color-slate-ring: #cbd5e1;
+  --color-morado-ring: #f0abfc;
+  --color-indigo-ring: #a5b4fc;
+
+  /* Tono 200 */
+  --color-verde-light: #f0fdf4;
+  --color-teal-light: #ccfbf1;
+  --color-warning-light: #fffbeb;
+  --color-naranja-light: #ffedd5;
+  --color-error-light: #fef2f2;
+  --color-rose-light: #fecdd3;
+  --color-info-light: #eff6ff;
+  --color-gris-light: #e7e8ea;
+  --color-slate-light:#e2e8f0;
+  --color-morado-light: #f5d0fe;
+  --color-indigo-light: #c7d2fe;
 
   --font-poppins: "Poppins", sans-serif;
 
@@ -215,7 +232,7 @@
   --text-table-header: 12.8px; /* 14px - Headers de tabla */
   --text-table-cell: 12.8px; /* 12px - Contenido de celdas */
   --text-table-caption: 12.8px; /* 14px - Título de tabla */
-  --text-badge: 12.8px; /* 12px - Badges, chips, pills de acción (en tablas) */
+  --text-badge: 10.8px; /* 12px - Badges, chips, pills de acción (en tablas) */
   --text-badge-sm: 10px;  /* 10px - Badges pequeños (en tarjetas, espacios reducidos) */
   --text-alert-title: 12.8px; /* 14px - Título de alertas */
   --text-alert-message: 12.8px; /* 14px - Mensaje de alertas */

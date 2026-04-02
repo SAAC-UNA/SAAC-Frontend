@@ -13,6 +13,8 @@ import type { EvidenceSearchResult } from '@/Types/EvidenceSearchTypes';
 import { useFirstColumnConfig } from '@/Hooks/UseFirstColumnConfig';
 import { EVIDENCE_STATUS_BADGE } from '@/Constants/StatusBadges';
 import { EvidenceResourcesModal } from './EvidenceResourcesModal';
+import { BADGE_COLORS } from '@/Constants/StatusBadges';
+import { formatDate } from '@/Utils/DateUtils';
 
 
 export interface EvidenceSearchResultsTableProps {
@@ -45,16 +47,6 @@ export const EvidenceSearchResultsTable: React.FC<EvidenceSearchResultsTableProp
     if (text.length <= maxLength) return text;
     return text.substring(0, maxLength) + '...';
   }, []);
-
-  // Función para formatear fecha
-  const formatDate = (isoDate: string): string => {
-    const date = new Date(isoDate);
-    return date.toLocaleDateString('es-CR', {
-      year: 'numeric',
-      month: '2-digit',
-      day: '2-digit'
-    });
-  };
 
   // Calcular datos paginados - memoizado
   const { totalPages, paginatedData } = useMemo(() => {
@@ -129,19 +121,19 @@ export const EvidenceSearchResultsTable: React.FC<EvidenceSearchResultsTableProp
           {item.archivos_count > 0 && (
             <StatusBadge
               label={`${item.archivos_count} ${item.archivos_count === 1 ? 'archivo' : 'archivos'}`}
-              colorClasses="bg-info-ring text-info-dark"
+              colorClasses={BADGE_COLORS.info.colorClasses}
             />
           )}
           {item.enlaces_count > 0 && (
             <StatusBadge
               label={`${item.enlaces_count} ${item.enlaces_count === 1 ? 'enlace' : 'enlaces'}`}
-              colorClasses="bg-morado-ring text-morado-dark"
+              colorClasses={BADGE_COLORS.gris.colorClasses}
             />
           )}
           {item.archivos_count === 0 && item.enlaces_count === 0 && (
             <StatusBadge
               label="Sin recursos"
-              colorClasses="bg-gris-light text-gris-una"
+              colorClasses={BADGE_COLORS.slate.colorClasses}
             />
           )}
         </div>
@@ -195,7 +187,6 @@ export const EvidenceSearchResultsTable: React.FC<EvidenceSearchResultsTableProp
           totalPages,
           onPageChange: handlePageChange
         } : undefined}
-        unstyled={true}
       />
       <EvidenceResourcesModal
         isOpen={resourcesModal !== null}

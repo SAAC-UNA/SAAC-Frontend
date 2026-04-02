@@ -88,7 +88,7 @@ export const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(({
               // Base styles - Similar al Input actualizado
               `w-full px-4 py-3 ${TYPOGRAPHY.form.input} border rounded-corner transition-all duration-300`,
               'focus:outline-none focus:border-gris-una',
-              'disabled:bg-gris-una/10 disabled:cursor-not-allowed',
+              'disabled:bg-blanco-una-2 disabled:cursor-not-allowed',
               'peer', // Para usar peer selectors de Tailwind
               
               // Placeholder condicional - solo visible en focus (igual al Input)
@@ -100,7 +100,7 @@ export const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(({
               // State variants - mismo estilo que Input
               error
                 ? 'border-rojo-una-2' 
-                : 'border-gris-una bg-blanco-una-2',
+                : 'border-blanco-una-2 bg-blanco-una-2',
               
               // Custom classes
               className

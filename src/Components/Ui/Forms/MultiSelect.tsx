@@ -235,6 +235,11 @@ const DropdownContent: React.FC<DropdownContentProps> = ({
                 onMouseEnter={() => setHoveredItem(option.value)}
                 onMouseLeave={() => setHoveredItem(null)}
               >
+                {/* Fondo permanente para ítems seleccionados */}
+                {isSelected && !option.disabled && (
+                  <div className="absolute inset-0 bg-info/8 rounded-sm" />
+                )}
+
                 {/* Fondo hover deslizante */}
                 {showIndicator && !option.disabled && (
                   <motion.div
@@ -452,9 +457,9 @@ export const MultiSelect: React.FC<MultiSelectProps> = ({
             className={cn(
               `relative w-full h-10 px-4 ${TYPOGRAPHY.form.input} border rounded-corner text-left cursor-pointer transition-all duration-300`,
               'focus:outline-none focus:border-gris-una',
-              'disabled:bg-gris-una/10 disabled:cursor-not-allowed',
+              'disabled:bg-blanco-una-2 disabled:cursor-not-allowed',
               'peer',
-              error ? 'border-rojo-una-2' : 'border-gris-una bg-blanco-una-2',
+              error ? 'border-rojo-una-2' : 'border-blanco-una bg-blanco-una-2',
               disabled
                 ? 'bg-gris-una/10 border-gris-una/5 text-gris-una'
                 : isOpen && 'border-gris-una/20'

@@ -103,6 +103,7 @@ export interface ValidationErrors {
 export interface DuplicateAssignment {
   usuario_id: number;
   usuario_nombre: string;
+  evidencia_id: number;
   estado: "pendiente" | "en_progreso" | "completado" | "vencido";
   fecha_asignacion: string;
   asignacion_id?: number;

@@ -2,6 +2,7 @@
  * Tipos TypeScript para Búsqueda Avanzada de Evidencias
  * Definiciones para filtros, resultados y exportación
  */
+import { formatDate } from '@/Utils/DateUtils';
 
 // Estados posibles de una evidencia — enum PascalCase en EVIDENCIA.estado (migración 037/041)
 export type EvidencePublicationStatus =
@@ -159,9 +160,7 @@ export function filterEvidenceResults(
   const term = searchTerm.toLowerCase();
 
   return results.filter((item) => {
-    const fechaFormateada = new Date(item.fecha_publicacion).toLocaleDateString('es-CR', {
-      year: 'numeric', month: '2-digit', day: '2-digit'
-    });
+    const fechaFormateada = formatDate(item.fecha_publicacion);
     const archivosText = item.archivos_count > 0
       ? `${item.archivos_count} ${item.archivos_count === 1 ? 'archivo' : 'archivos'}`
       : '';

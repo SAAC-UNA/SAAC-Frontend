@@ -18,8 +18,9 @@ import { TYPOGRAPHY } from '@/Constants/Typography';
 import { truncateText } from '@/Utils';
 import type { DataTableColumn } from '@/Components/Ui/Table/DataTable';
 import type { AuditLog } from '@/Types/AuditLogTypes';
-import { formatAuditDate } from '@/Types/AuditLogTypes';
+import { formatDateWithTime } from '@/Utils/DateUtils';
 import { useFirstColumnConfig } from '@/Hooks/UseFirstColumnConfig';
+import { AUDIT_ACTION_BADGE } from '@/Constants/StatusBadges';
 
 interface AuditLogTableProps {
   logs: AuditLog[];
@@ -39,28 +40,6 @@ export const AuditLogTable: React.FC<AuditLogTableProps> = ({
   onViewDetail,
 }) => {
   const firstColumn = useFirstColumnConfig();
-
-  /**
-   * Obtiene el badge de color según el tipo de acción
-   */
-  const getActionBadge = (actionType: string): string => {
-    const actionMap: Record<string, string> = {
-      crear:            'bg-teal-light text-teal-dark',
-      editar:           'bg-warning-ring text-warning-dark',
-      eliminar:         'bg-error-ring text-error-dark',
-      consultar:        'bg-gris-light text-gris-una',
-      login:            'bg-verde-ring text-verde-dark',
-      logout:           'bg-error-ring text-error-dark',
-      login_fallido:    'bg-error-ring text-error-dark',
-      activar:          'bg-verde-ring text-verde-dark',
-      desactivar:       'bg-gris-light text-gris-una',
-      asignar_rol:      'bg-morado-ring text-morado-dark',
-      asignar_permisos: 'bg-indigo-ring text-indigo-dark',
-      exportar:         'bg-teal-ring text-teal-dark',
-      asignar:          'bg-info-ring text-info-dark',
-    };
-    return actionMap[actionType.toLowerCase()] ?? 'bg-gray-100 text-gray-800';
-  };
 
   /**
    * Definición de columnas de la tabla
@@ -89,13 +68,13 @@ export const AuditLogTable: React.FC<AuditLogTableProps> = ({
       {
         key: 'tipo_accion',
         header: 'Acción',
-        align: 'left',
+        align: 'center',
         accessor: (log) => log.tipo_accion.descripcion,
         render: (_, log) => (
           <div className="flex justify-center">
               <StatusBadge
                 label={log.tipo_accion.descripcion}
-                colorClasses={getActionBadge(log.tipo_accion.descripcion)}
+                colorClasses={(AUDIT_ACTION_BADGE[log.tipo_accion.descripcion.toLowerCase()] ?? { colorClasses: 'bg-slate-light text-slate' }).colorClasses}
               />
           </div>
         ),
@@ -118,7 +97,7 @@ export const AuditLogTable: React.FC<AuditLogTableProps> = ({
         accessor: (log) => log.fecha_hora,
         render: (_, log) => (
           <span className={`block font-sans antialiased font-normal leading-normal text-negro-una-2 ${TYPOGRAPHY.table.cell}`}>
-            {formatAuditDate(log.fecha_hora).split(', ')[0]}
+            {formatDateWithTime(log.fecha_hora).split(', ')[0]}
           </span>
         ),
       },
@@ -129,7 +108,7 @@ export const AuditLogTable: React.FC<AuditLogTableProps> = ({
         accessor: (log) => log.fecha_hora,
         render: (_, log) => (
           <span className={`block font-sans antialiased font-normal leading-normal text-negro-una-2 ${TYPOGRAPHY.table.cell}`}>
-            {formatAuditDate(log.fecha_hora).split(', ')[1]}
+            {formatDateWithTime(log.fecha_hora).split(', ')[1]}
           </span>
         ),
       },

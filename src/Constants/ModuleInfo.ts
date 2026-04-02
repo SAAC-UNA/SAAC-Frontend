@@ -1,6 +1,6 @@
 /**
  * Definiciones centralizadas de títulos y descripciones para módulos del sistema
- * 
+ *
  * Este archivo centraliza todos los textos de títulos, subtítulos y descripciones
  * que se muestran en las diferentes páginas y componentes del sistema.
  */
@@ -16,216 +16,248 @@ export interface ModuleInfo {
  * Información de módulos principales del sistema
  */
 const MODULE_INFO: Record<string, ModuleInfo> = {
-    // Página principal
+  // Página principal
   home: {
-    title: 'Panel Principal',
-    subtitle: 'Sistema SAAC-UNA',
-    description: 'Acceda a todas las funcionalidades de acreditación y autoevaluación de carreras',
-    shortDescription: 'Panel principal de funcionalidades'
+    title: "Panel Principal",
+    subtitle: "Sistema SAAC-UNA",
+    description:
+      "Acceda a todas las funcionalidades de acreditación y autoevaluación de carreras",
+    shortDescription: "Panel principal de funcionalidades",
   },
-  
+
   // Gestión de Roles
   roles: {
-    title: 'Gestión de Roles',
-    subtitle: 'Administración de Roles y Permisos',
-    description: 'Cree, edite y administre los roles y permisos disponibles',
-    shortDescription: 'Administrar roles y permisos'
+    title: "Gestión de Roles",
+    subtitle: "Administración de Roles y Permisos",
+    description: "Cree, edite y administre los roles y permisos disponibles",
+    shortDescription: "Administrar roles y permisos",
   },
 
   roles_create: {
-    title: 'Crear Nuevo Rol',
-    subtitle: 'Definición de Rol y Permisos',
-    description: 'Defina un nuevo rol asignando los permisos correspondientes para los usuarios',
-    shortDescription: 'Crear nuevo rol con permisos'
+    title: "Crear Nuevo Rol",
+    subtitle: "Definición de Rol y Permisos",
+    description:
+      "Defina un nuevo rol asignando los permisos correspondientes para los usuarios",
+    shortDescription: "Crear nuevo rol con permisos",
   },
 
   roles_edit: {
-    title: 'Editar Rol',
-    subtitle: 'Modificación de Rol y Permisos',
-    description: 'Modifique la información del rol seleccionado y sus permisos asignados',
-    shortDescription: 'Editar rol existente'
+    title: "Editar Rol",
+    subtitle: "Modificación de Rol y Permisos",
+    description:
+      "Modifique la información del rol seleccionado y sus permisos asignados",
+    shortDescription: "Editar rol existente",
   },
 
   roles_list: {
-    title: 'Gestión de Roles',
-    subtitle: 'Administración de Roles y Permisos',
-    description: 'Cree, edite y administre los roles y permisos disponibles',
-    shortDescription: 'Administrar roles y permisos'
+    title: "Gestión de Roles",
+    subtitle: "Administración de Roles y Permisos",
+    description: "Cree, edite y administre los roles y permisos disponibles",
+    shortDescription: "Administrar roles y permisos",
   },
 
   // Gestión de Usuarios
   users: {
-    title: 'Gestión de Usuarios',
-    subtitle: 'Administración de Usuarios',
-    description: 'Administre los usuarios, sus roles y permisos de acceso a las funcionalidades',
-    shortDescription: 'Administrar usuarios'
+    title: "Gestión de Usuarios",
+    subtitle: "Administración de Usuarios",
+    description:
+      "Administre los usuarios, sus roles y permisos de acceso a las funcionalidades",
+    shortDescription: "Administrar usuarios",
   },
 
   users_create: {
-    title: 'Crear Nuevo Usuario',
-    subtitle: 'Registro de Usuario',
-    description: 'Registre un nuevo usuario y asigne los roles correspondientes para su acceso',
-    shortDescription: 'Registrar nuevo usuario'
+    title: "Crear Nuevo Usuario",
+    subtitle: "Registro de Usuario",
+    description:
+      "Registre un nuevo usuario y asigne los roles correspondientes para su acceso",
+    shortDescription: "Registrar nuevo usuario",
   },
 
   users_edit: {
-    title: 'Editar Usuario',
-    subtitle: 'Modificación de Usuario',
-    description: 'Gestione los roles y permisos del usuario',
-    shortDescription: 'Editar usuario existente'
+    title: "Editar Usuario",
+    subtitle: "Modificación de Usuario",
+    description: "Gestione los roles y permisos del usuario",
+    shortDescription: "Editar usuario existente",
   },
 
   users_list: {
-    title: 'Gestión de Usuarios',
-    subtitle: 'Administración de Usuarios',
-    description: 'Administre los usuarios, sus roles y permisos de acceso a las funcionalidades',
-    shortDescription: 'Administrar usuarios'
+    title: "Gestión de Usuarios",
+    subtitle: "Administración de Usuarios",
+    description:
+      "Administre los usuarios, sus roles y permisos de acceso a las funcionalidades",
+    shortDescription: "Administrar usuarios",
   },
 
   // Asignación de Evidencias
   evidence_assignment: {
-    title: 'Asignación de Evidencias',
-    subtitle: 'Wizard de Asignación',
-    description: 'Asigne evidencias específicas a usuarios y roles del sistema de manera guiada',
-    shortDescription: 'Asignar evidencias a usuarios'
+    title: "Asignación de Evidencias",
+    subtitle: "Wizard de Asignación",
+    description:
+      "Asigne evidencias específicas a usuarios y roles del sistema de manera guiada",
+    shortDescription: "Asignar evidencias a usuarios",
   },
 
   evidence_assignment_wizard: {
-    title: 'Asignar Evidencias',
-    subtitle: 'Proceso de Asignación Guiado',
-    description: 'Complete el proceso de asignación de evidencias siguiendo los pasos',
-    shortDescription: 'Wizard de asignación de evidencias'
+    title: "Asignar Evidencias",
+    subtitle: "Proceso de Asignación Guiado",
+    description:
+      "Complete el proceso de asignación de evidencias siguiendo los pasos",
+    shortDescription: "Wizard de asignación de evidencias",
   },
 
   // Mis Evidencias Asignadas
   my_evidence_assignments: {
-    title: 'Mis Evidencias Asignadas',
-    subtitle: 'Evidencias Pendientes y Completadas',
-    description: 'Visualice y administre las evidencias que le han sido asignadas',
-    shortDescription: 'Ver evidencias asignadas a mí'
+    title: "Mis Evidencias Asignadas",
+    subtitle: "Evidencias Pendientes y Completadas",
+    description:
+      "Visualice y administre las evidencias que le han sido asignadas",
+    shortDescription: "Ver evidencias asignadas a mí",
   },
 
   // Subida de Evidencias
   evidence_upload: {
-    title: 'Subir Evidencias',
-    subtitle: 'Carga de Archivos',
-    description: 'Suba archivos digitales como respaldo de las evidencias del proceso de acreditación',
-    shortDescription: 'Subir archivos de evidencias'
+    title: "Subir Evidencias",
+    subtitle: "Carga de Archivos",
+    description:
+      "Suba archivos digitales como respaldo de las evidencias del proceso de acreditación",
+    shortDescription: "Subir archivos de evidencias",
   },
 
   // Búsqueda Avanzada de Evidencias
   evidence_search: {
-    title: 'Explorador de Criterios',
-    subtitle: 'Criterios y Evidencias',
-    description: 'Explore los criterios de acreditación, sus evidencias y recursos asociados',
-    shortDescription: 'Explorar criterios y evidencias'
+    title: "Explorador de Criterios",
+    subtitle: "Criterios y Evidencias",
+    description:
+      "Explore los criterios de acreditación, sus evidencias y recursos asociados",
+    shortDescription: "Explorar criterios y evidencias",
   },
 
   // Solicitudes de Ampliación
   extension_requests_my: {
-    title: 'Mis Solicitudes de Ampliación',
-    subtitle: 'Solicitudes de Extensión de Plazo',
-    description: 'Visualice el estado de sus solicitudes de ampliación de plazo para evidencias',
-    shortDescription: 'Ver mis solicitudes de ampliación'
+    title: "Mis Solicitudes de Ampliación",
+    subtitle: "Solicitudes de Extensión de Plazo",
+    description:
+      "Visualice el estado de sus solicitudes de ampliación de plazo para evidencias",
+    shortDescription: "Ver mis solicitudes de ampliación",
   },
 
   extension_requests_manage: {
-    title: 'Gestión de Solicitudes de Ampliación',
-    subtitle: 'Revisión y Aprobación de Solicitudes',
-    description: 'Revise y gestione las solicitudes de ampliación de plazo para evidencias',
-    shortDescription: 'Gestionar solicitudes de ampliación'
+    title: "Gestión de Solicitudes de Ampliación",
+    subtitle: "Revisión y Aprobación de Solicitudes",
+    description:
+      "Revise y gestione las solicitudes de ampliación de plazo para evidencias",
+    shortDescription: "Gestionar solicitudes de ampliación",
   },
 
   // Gestión de Reportes
   reports: {
-    title: 'Gestión de Reportes',
-    subtitle: 'Generación de Reportes',
-    description: 'Genere y administre reportes académicos y administrativos con datos actualizados',
-    shortDescription: 'Generar y administrar reportes'
+    title: "Gestión de Reportes",
+    subtitle: "Generación de Reportes",
+    description:
+      "Genere y administre reportes académicos y administrativos con datos actualizados",
+    shortDescription: "Generar y administrar reportes",
   },
 
   // Gestión de Programas Académicos
   programs: {
-    title: 'Gestión de Programas',
-    subtitle: 'Programas Académicos',
-    description: 'Administre los programas académicos y sus configuraciones institucionales',
-    shortDescription: 'Administrar programas académicos'
+    title: "Gestión de Programas",
+    subtitle: "Programas Académicos",
+    description:
+      "Administre los programas académicos y sus configuraciones institucionales",
+    shortDescription: "Administrar programas académicos",
   },
 
   // Gestión de Ciclos Académicos
   cycles: {
-    title: 'Gestión de Ciclos',
-    subtitle: 'Ciclos Académicos',
-    description: 'Administre los ciclos académicos, periodos de estudio y calendarios institucionales',
-    shortDescription: 'Administrar ciclos académicos'
+    title: "Gestión de Ciclos",
+    subtitle: "Ciclos Académicos",
+    description:
+      "Administre los ciclos académicos, periodos de estudio y calendarios institucionales",
+    shortDescription: "Administrar ciclos académicos",
   },
 
   // Bitácora del Sistema
   auditlog: {
-    title: 'Bitácora del Sistema',
-    subtitle: 'Registro de Auditoría',
-    description: 'Consulte todos los registros de acciones realizadas en el sistema',
-    shortDescription: 'Ver bitácora del sistema'
+    title: "Bitácora del Sistema",
+    subtitle: "Registro de Auditoría",
+    description:
+      "Consulte todos los registros de acciones realizadas en el sistema",
+    shortDescription: "Ver bitácora del sistema",
   },
 
   auditlog_list: {
-    title: 'Bitácora del Sistema',
-    subtitle: 'Consulta de Registros',
-    description: 'Visualice y filtre todos los registros de auditoría del sistema',
-    shortDescription: 'Consultar bitácora'
+    title: "Bitácora del Sistema",
+    subtitle: "Consulta de Registros",
+    description:
+      "Visualice y filtre todos los registros de auditoría del sistema",
+    shortDescription: "Consultar bitácora",
   },
 
   listRoles: {
-    title: 'Lista de Roles',
-    subtitle: 'Roles Existentes',
-    description: 'Visualiza y administra todos los roles existentes con sus permisos asignados',
-    shortDescription: 'Ver todos los roles existentes'
+    title: "Lista de Roles",
+    subtitle: "Roles Existentes",
+    description:
+      "Visualiza y administra todos los roles existentes con sus permisos asignados",
+    shortDescription: "Ver todos los roles existentes",
   },
-// Gestión de Estructura
+  // Gestión de Estructura
   structure: {
-    title: 'Gestión de Estructura',
-    subtitle: 'Administración de Elementos del Repositorio',
-    description: 'Crea, edita y administra los elementos de la estructura del repositorio',
-    shortDescription: 'Administrar elementos de la estructura'
+    title: "Gestión de Estructura",
+    subtitle: "Administración de Elementos del Repositorio",
+    description:
+      "Crea, edita y administra los elementos de la estructura del repositorio",
+    shortDescription: "Administrar elementos de la estructura",
   },
 
   // Aprobación de Bloques
   block_approval: {
-    title: 'Aprobación de Bloques',
-    subtitle: 'Validación de Criterios',
-    description: 'Seleccione un proceso para ver y aprobar los criterios correspondientes validando que todas las evidencias estén adjuntadas',
-    shortDescription: 'Aprobar criterios por bloques'
+    title: "Aprobación de Bloques",
+    subtitle: "Validación de Criterios",
+    description:
+      "Seleccione un proceso para ver y aprobar los criterios correspondientes validando que todas las evidencias estén adjuntadas",
+    shortDescription: "Aprobar criterios por bloques",
   },
 
   // Gestión de Informes Finales
   final_reports: {
-    title: 'Gestión de Informes Finales',
-    subtitle: 'Enlaces Públicos y Exportación',
-    description: 'Genere enlaces públicos para las evidencias de criterios aprobados y exporte informes',
-    shortDescription: 'Gestionar informes finales'
+    title: "Gestión de Informes Finales",
+    subtitle: "Enlaces Públicos y Exportación",
+    description:
+      "Genere enlaces públicos para las evidencias de criterios aprobados y exporte informes",
+    shortDescription: "Gestionar informes finales",
   },
 
   structure_list: {
-    title: 'Gestión de Estructura',
-    subtitle: 'Elementos de la Estructura',
-    description: 'Visualiza y administra todos los elementos existentes en la estructura del repositorio',
-    shortDescription: 'Ver todos los elementos'
+    title: "Gestión de Estructura",
+    subtitle: "Elementos de la Estructura",
+    description:
+      "Visualiza y administra todos los elementos existentes en la estructura del repositorio",
+    shortDescription: "Ver todos los elementos",
   },
 
   structure_creation: {
-    title: 'Crear Elemento de Estructura',
-    subtitle: 'Nueva Estructura',
-    description: 'Agrega un nuevo elemento a la jerarquía del Sistema SAAC-UNA respetando las reglas de estructura.',
-    shortDescription: 'Crear elemento de estructura'
+    title: "Crear Elemento de Estructura",
+    subtitle: "Nueva Estructura",
+    description:
+      "Agrega un nuevo elemento a la jerarquía del Sistema SAAC-UNA respetando las reglas de estructura.",
+    shortDescription: "Crear elemento de estructura",
   },
 
   improvement_commitments: {
-    title: 'Compromisos de Mejora',
-    subtitle: 'Gestión de Compromisos',
-    description: 'Gestione los compromisos de mejora vinculados a criterios y evidencias',
-    shortDescription: 'Gestionar compromisos de mejora'
+    title: "Compromisos de Mejora",
+    subtitle: "Gestión de Compromisos",
+    description:
+      "Gestione los compromisos de mejora vinculados a criterios y evidencias",
+    shortDescription: "Gestionar compromisos de mejora",
   },
 
+  accreditation_processes: {
+    title: "Procesos de Acreditación",
+    subtitle: "Gestión de Procesos",
+    description:
+      "Gestione los procesos de acreditación asociados a ciclos de acreditación",
+    shortDescription: "Gestionar procesos de acreditación",
+  },
 };
 
 /**
@@ -234,11 +266,13 @@ const MODULE_INFO: Record<string, ModuleInfo> = {
  * @returns Información completa del módulo
  */
 export const getModuleInfo = (moduleKey: string): ModuleInfo => {
-  return MODULE_INFO[moduleKey] || {
-    title: 'Módulo',
-    description: 'Funcionalidad de acreditación y autoevaluación de carreras',
-    shortDescription: 'Módulo de funcionalidades'
-  };
+  return (
+    MODULE_INFO[moduleKey] || {
+      title: "Módulo",
+      description: "Funcionalidad de acreditación y autoevaluación de carreras",
+      shortDescription: "Módulo de funcionalidades",
+    }
+  );
 };
 
 /**
@@ -247,7 +281,10 @@ export const getModuleInfo = (moduleKey: string): ModuleInfo => {
  * @param action - Acción (create, edit, list, view)
  * @returns Información contextualizada
  */
-export const getContextualInfo = (module: string, action?: string): ModuleInfo => {
+export const getContextualInfo = (
+  module: string,
+  action?: string,
+): ModuleInfo => {
   const key = action ? `${module}_${action}` : module;
   return getModuleInfo(key);
 };
@@ -260,19 +297,19 @@ export const getContextualInfo = (module: string, action?: string): ModuleInfo =
  * @returns Información contextualizada con título dinámico
  */
 export const getModuleInfoWithDynamicTitle = (
-  module: string, 
-  action?: string, 
-  itemName?: string
+  module: string,
+  action?: string,
+  itemName?: string,
 ): ModuleInfo => {
   const baseInfo = getContextualInfo(module, action);
-  
+
   // Si es edición y tenemos nombre del item, personalizar título
-  if (action === 'edit' && itemName) {
+  if (action === "edit" && itemName) {
     return {
       ...baseInfo,
-      title: `${baseInfo.title}: ${itemName}`
+      title: `${baseInfo.title}: ${itemName}`,
     };
   }
-  
+
   return baseInfo;
 };

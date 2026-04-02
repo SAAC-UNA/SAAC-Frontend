@@ -14,9 +14,11 @@ import { TableActionButton } from '@/Components/Ui/Buttons/TableActionButton';
 import { BackendErrorAlert } from '@/Components/Ui/Feedback/BackendErrorAlert';
 import { TYPOGRAPHY } from '@/Constants/Typography';
 import { TABLE_PAGE_SIZE } from '@/Constants/TablePagination';
-import { ExtensionRequestStatusBadge } from './ExtensionRequestStatusBadge';
+import { StatusBadge } from '@/Components/Ui/Feedback/StatusBadge';
+import { EXTENSION_REQUEST_STATUS_BADGE } from '@/Constants/StatusBadges';
 import type { ExtensionRequest, ExtensionRequestStatus } from '@/Types/ExtensionRequestTypes';
-import { filterExtensionRequests, formatExtensionDate } from '@/Types/ExtensionRequestTypes';
+import { filterExtensionRequests } from '@/Types/ExtensionRequestTypes';
+import { formatDate } from '@/Utils/DateUtils';
 import { useFirstColumnConfig } from '@/Hooks/UseFirstColumnConfig';
 
 const EMPTY_REQUESTS: ExtensionRequest[] = [];
@@ -105,7 +107,7 @@ export const ExtensionRequestsTable: React.FC<ExtensionRequestsTableProps> = ({
       align: 'center',
       render: (_: unknown, item: ExtensionRequest) => (
         <span className={`block font-sans antialiased leading-normal text-negro-una-2 ${TYPOGRAPHY.table.cell}`}>
-          {formatExtensionDate(item.created_at)}
+          {formatDate(item.created_at)}
         </span>
       )
     },
@@ -115,7 +117,7 @@ export const ExtensionRequestsTable: React.FC<ExtensionRequestsTableProps> = ({
       align: 'center',
       render: (_: unknown, item: ExtensionRequest) => (
         <span className={`block font-sans antialiased leading-normal text-negro-una-2 ${TYPOGRAPHY.table.cell}`}>
-          {formatExtensionDate(item.fecha_sugerida)}
+          {formatDate(item.fecha_sugerida)}
         </span>
       )
     },
@@ -125,7 +127,10 @@ export const ExtensionRequestsTable: React.FC<ExtensionRequestsTableProps> = ({
       align: 'center',
       render: (_: unknown, item: ExtensionRequest) => 
         <div className="flex justify-center">
-          <ExtensionRequestStatusBadge estado={item.estado} />
+          <StatusBadge
+            label={EXTENSION_REQUEST_STATUS_BADGE[item.estado]?.label ?? item.estado}
+            colorClasses={EXTENSION_REQUEST_STATUS_BADGE[item.estado]?.colorClasses ?? 'bg-gris-light text-gris-una'}
+          />
         </div>
     },
     {

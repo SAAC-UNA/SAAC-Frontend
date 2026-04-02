@@ -2,6 +2,8 @@
  * Tipos para asignaciones de evidencias (HU-029)
  * Corresponde al modelo EvidenceAssignment del backend
  */
+import { formatDate, formatDateShort } from '@/Utils/DateUtils';
+export { formatDate };
 
 // Estados posibles de una asignación
 export type AssignmentStatus =
@@ -11,7 +13,7 @@ export type AssignmentStatus =
   | "vencido";
 
 // Modelo completo de asignación de evidencia
-export interface EvidenceAssignment {
+export interface EvidenceAssignment extends Record<string, unknown> {
   evidencia_asignacion_id: number;
   proceso_id: number;
   evidencia_id: number;
@@ -161,23 +163,8 @@ export function formatDeadline(fechaLimite: string | null): string {
   } else if (diffDays <= 7) {
     return `Vence en ${diffDays} días`;
   } else {
-    return new Intl.DateTimeFormat("es-CR", {
-      day: "2-digit",
-      month: "short",
-      year: "numeric",
-    }).format(deadline);
+    return formatDateShort(deadline);
   }
-}
-
-/**
- * Formatea una fecha ISO a formato legible
- */
-export function formatDate(isoDate: string): string {
-  return new Intl.DateTimeFormat("es-CR", {
-    day: "2-digit",
-    month: "2-digit",
-    year: "numeric",
-  }).format(new Date(isoDate));
 }
 
 /**

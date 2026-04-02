@@ -31,9 +31,7 @@ const AccreditationCyclesPage = lazy(
   () => import("@/Pages/AccreditationCycles/AccreditationCyclesPage"),
 );
 const EvidenceAssignment = lazy(() =>
-  import("./Pages/EvidenceAssignment").then((m) => ({
-    default: m.EvidenceAssignment,
-  })),
+  import("./Pages/EvidenceAssignment/EvidenceAssignment"),
 );
 const EvidenceUploadPage = lazy(() =>
   import("./Pages/EvidenceUpload").then((m) => ({
@@ -59,12 +57,22 @@ const ImprovementCommitmentsList = lazy(() =>
 const CreateImprovementCommitment = lazy(
   () => import("./Pages/ImprovementCommitments/CreateImprovementCommitment"),
 );
+const ImprovementCommitmentDetail = lazy(() =>
+  import("./Pages/ImprovementCommitments/ImprovementCommitmentDetail").then(
+    (m) => ({ default: m.ImprovementCommitmentDetail }),
+  ),
+);
+const AccreditationProcessList = lazy(() =>
+  import("./Pages/AccreditationProcess/AccreditationProcessList").then((m) => ({
+    default: m.AccreditationProcessList,
+  })),
+);
 const BlockApproval = lazy(() => import("./Pages/BlockApproval/BlockApproval"));
 const FinalReports = lazy(() =>
   import("./Pages/ReportManagement").then((m) => ({ default: m.FinalReports })),
 );
 
-// HU-016: Páginas de solicitudes de ampliación
+// HU-016: Paginas de solicitudes de ampliacion
 const ManageExtensionRequestsPage = lazy(() =>
   import("./Pages/ExtensionRequest").then((m) => ({
     default: m.ManageExtensionRequestsPage,
@@ -90,7 +98,7 @@ function App() {
         <ToastProvider>
           <NavigationProvider>
             <Routes>
-              {/* Rutas públicas */}
+              {/* Rutas publicas */}
               <Route path="/login" element={<Login />} />
               <Route path="/session-expired" element={<SessionExpired />} />
 
@@ -102,7 +110,7 @@ function App() {
                     <Layout>
                       <Suspense fallback={<PageLoader />}>
                         <Routes>
-                          {/* Página de inicio */}
+                          {/* Pagina de inicio */}
                           <Route path="/" element={<HomePage />} />
 
                           {/* Roles - Solo Superusuario */}
@@ -131,7 +139,7 @@ function App() {
                             }
                           />
 
-                          {/* Bitácora del Sistema - Solo Superusuario */}
+                          {/* Bitacora del Sistema - Solo Superusuario */}
                           <Route
                             path="/bitacora"
                             element={
@@ -270,6 +278,14 @@ function App() {
                             }
                           />
                           <Route
+                            path="/compromisos/ver/:id"
+                            element={
+                              <ProtectedRoute>
+                                <ImprovementCommitmentDetail />
+                              </ProtectedRoute>
+                            }
+                          />
+                          <Route
                             path="/compromisos/editar/:id"
                             element={
                               <ProtectedRoute>
@@ -278,7 +294,17 @@ function App() {
                             }
                           />
 
-                          {/* Aprobación de Bloques - Todos los autenticados */}
+                          {/* Procesos de Acreditacion - Todos los autenticados */}
+                          <Route
+                            path="/procesos-acreditacion/listar"
+                            element={
+                              <ProtectedRoute>
+                                <AccreditationProcessList />
+                              </ProtectedRoute>
+                            }
+                          />
+
+                          {/* Aprobacion de Bloques - Todos los autenticados */}
                           <Route
                             path="/aprobacion-bloques"
                             element={

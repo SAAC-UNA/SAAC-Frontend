@@ -19,6 +19,7 @@ import type { AuditLogFilters as Filters, ActionType } from '@/Types/AuditLogTyp
 import AuditLogService from '@/Services/AuditLogService';
 import { userService } from '@/Services/UserService';
 import type { BackendUser } from '@/Services/UserService';
+import { Card } from '@/Components/Ui/Layout/Card';
 
 interface AuditLogFiltersProps {
   onApplyFilters: (filters: Filters) => void;
@@ -135,8 +136,8 @@ export const AuditLogFilters: React.FC<AuditLogFiltersProps> = ({
   }, [actionTypes]);
 
   return (
-    <div>
-      <div className="flex items-end gap-4 mb-4">
+    <Card className="p-4">
+      <div className="flex items-end gap-4">
         <div className="flex-1 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
           {/* Filtro por Usuario */}
           <div>
@@ -232,6 +233,6 @@ export const AuditLogFilters: React.FC<AuditLogFiltersProps> = ({
           </Tooltip>
         )}
       </div>
-    </div>
+    </Card>
   );
 };

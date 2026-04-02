@@ -23,6 +23,7 @@ import { SearchInput } from '../Forms/SearchInput';
 import { LoadingSpinner } from '../Feedback/Loading';
 import { Pagination } from './Pagination';
 import { EmptyState } from '../Feedback/EmptyState';
+import { Card } from '../Layout/Card';
 
 export interface DataTableColumn<T = unknown> {
   key: string;
@@ -48,7 +49,7 @@ export interface DataTableProps<T = unknown> {
   actions?: DataTableAction<T>[];
 
   // Header
-  title: string;
+  title?: string;
   description?: string;
 
   // Búsqueda
@@ -140,17 +141,16 @@ export const DataTable = React.memo(<T extends Record<string, unknown>>({
     return item[column.key];
   }, []);
 
-  return (
+  const tableContent = (
     <div className={cn(
-      "relative flex flex-col w-full h-full text-gris-light", // Header de la tabla
-      !unstyled && "bg-transparent rounded-corner", // Cuerpo de la tabla
+      "relative flex flex-col w-full h-full text-gris-light", // entrelineas de la tabla
       className
     )}>
       {/* Header */}
       {(title || description || searchable || customFilters || primaryAction) && (
         <div className={cn(
           "relative text-gris-una bg-transparent rounded-none bg-clip-border",
-          !unstyled && "mx-4 mt-4"
+          unstyled && "mx-4 mt-4"
         )}>
           <div className="flex flex-col justify-between gap-4 mb-4 lg:flex-row lg:items-center">
             <div className="flex-1">
@@ -213,7 +213,7 @@ export const DataTable = React.memo(<T extends Record<string, unknown>>({
             <thead>
               <tr>
                 {expandableRow && (
-                  <th className="w-10 pl-4 pr-2 py-3 border-b border-blue-gray-100 bg-gris-light/50 rounded-tl-corner" />
+                  <th className="w-10 pl-4 pr-2 py-3 border-b border-blue-gray-100 bg-blanco-una-2 rounded-tl-corner" />
                 )}
                 {columns.map((column, index) => (
                   <th
@@ -221,7 +221,8 @@ export const DataTable = React.memo(<T extends Record<string, unknown>>({
                     style={column.width ? { width: column.width } : undefined}
                     // Color del header de las tablas
                     className={cn(
-                      "py-3 border-b bg-gris-light/50 border-blue-gray-100 text-center",
+                      "py-3 border-b bg-blanco-una-2 border-blue-gray-100",
+                      column.align === 'left' ? 'text-left' : column.align === 'right' ? 'text-right' : 'text-center',
                       index === 0 ? (expandableRow ? "px-4" : "pl-8 pr-4") : "px-4",
                       // Esquina superior izquierda si no hay expandable y es la primera columna
                       index === 0 && !expandableRow && "rounded-tl-corner",
@@ -319,7 +320,7 @@ export const DataTable = React.memo(<T extends Record<string, unknown>>({
                     </tr>
                     <AnimatePresence initial={false}>
                       {expandableRow && isExpanded && (
-                        <tr className="bg-blanco-una">
+                        <tr className="bg-blanco-una-2">
                           <td colSpan={totalCols} className="p-0 border-0">
                             <motion.div
                               initial={{ height: 0, opacity: 0 }}
@@ -356,4 +357,6 @@ export const DataTable = React.memo(<T extends Record<string, unknown>>({
       )}
     </div>
   );
+
+  return unstyled ? tableContent : <Card className="p-4">{tableContent}</Card>;
 }) as <T extends Record<string, unknown>>(props: DataTableProps<T>) => React.ReactElement;

@@ -110,7 +110,7 @@ export const ModernSidebar: React.FC<SidebarProps> = ({
   }
 
   return (
-    <TooltipProvider delayDuration={0}>
+    <TooltipProvider>
       <div
         className="group peer hidden md:block"
         data-state="collapsed"

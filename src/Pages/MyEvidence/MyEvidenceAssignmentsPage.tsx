@@ -316,7 +316,7 @@ export const MyEvidenceAssignmentsPage: React.FC = () => {
         }
       ></PageHeader>
 
-      <div className="max-w-7xl mx-auto space-y-6">
+      <div className="space-y-6">
         {/* Error del backend */}
         {error && <BackendErrorAlert error={error} onRetry={loadAssignments} />}
 

@@ -16,21 +16,13 @@ import { ButtonWithTooltip } from '@/Components/Ui/Buttons/ButtonWithTooltip';
 import { TYPOGRAPHY } from '@/Constants/Typography';
 import { TABLE_ACTION_BUTTON, ICON_SIZES } from '@/Constants/Components';
 import { TABLE_PAGE_SIZE } from '@/Constants/TablePagination';
+import { formatDateShort } from '@/Utils/DateUtils';
 
 interface Props {
   id: number | null;
   isOpen: boolean;
   onClose: () => void;
 }
-
-const formatDate = (date?: string) => {
-  if (!date) return 'Sin fecha';
-  return new Date(date).toLocaleDateString('es-CR', {
-    year: 'numeric',
-    month: 'short',
-    day: 'numeric'
-  });
-};
 
 export const ImprovementCommitmentDetailModal: React.FC<Props> = ({ id, isOpen, onClose }) => {
   const [fetchState, setFetchState] = useState<{
@@ -198,7 +190,7 @@ export const ImprovementCommitmentDetailModal: React.FC<Props> = ({ id, isOpen, 
       )
     ) as string[];
     if (fechas.length === 0) return 'Sin fecha';
-    if (fechas.length === 1) return formatDate(fechas[0]);
+    if (fechas.length === 1) return formatDateShort(fechas[0]);
     return 'Varias fechas';
   }, [criterionAssignments]);
 
@@ -300,7 +292,7 @@ export const ImprovementCommitmentDetailModal: React.FC<Props> = ({ id, isOpen, 
                 <div className="flex items-center gap-1.5">
                   <SystemIcons.interface.calendar size="xs" className="w-3.5 h-3.5" />
                   <span className="whitespace-nowrap">
-                    {formatDate(compromiso.fecha_inicio)} - {formatDate(compromiso.fecha_fin)}
+                    {formatDateShort(compromiso.fecha_inicio)} - {formatDateShort(compromiso.fecha_fin)}
                   </span>
                 </div>
                 <div className="w-px h-4 bg-gray-300" />
@@ -421,7 +413,7 @@ export const ImprovementCommitmentDetailModal: React.FC<Props> = ({ id, isOpen, 
                           </div>
                           <div className="text-right">
                             <p className="text-xs text-gris-una">Fecha limite</p>
-                            <p className="text-sm text-negro-una">{formatDate(item.fechaLimite)}</p>
+                            <p className="text-sm text-negro-una">{formatDateShort(item.fechaLimite)}</p>
                             <p className="text-xs text-gris-una mt-2">Estado</p>
                             <p className="text-sm text-negro-una">{item.estado}</p>
                           </div>
