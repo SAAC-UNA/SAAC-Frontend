@@ -294,37 +294,43 @@
 }
 
 /* ===== CONFIGURACIÓN BASE ===== */
-/* ? Variables CSS para el sidebar y configuración global */
+/* ! Variables CSS para el sidebar y configuración global 01/04/2026 */
 
 @layer base {
   html {
     font-size: 15px;
+    /* overflow-y: scroll mantiene el scrollbar SIEMPRE presente (transparente),
+       evitando saltos de layout al abrir modales sin reservar espacio asimétrico */
+    overflow-y: scroll;
+    scrollbar-width: thin;
+    scrollbar-color: transparent transparent;
+  }
+
+  html::-webkit-scrollbar {
+    width: 3px;
+  }
+
+  html::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  html::-webkit-scrollbar-thumb {
+    background: transparent;
+    border-radius: 2px;
+  }
+
+  html:hover::-webkit-scrollbar-thumb {
+    background: rgba(167, 167, 169, 0.3);
+  }
+
+  html::-webkit-scrollbar-thumb:hover {
+    background: rgba(167, 167, 169, 0.5);
   }
 
   body {
     @apply font-poppins bg-blanco-una-2;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
-    /* Aplicar scrollbar personalizado globalmente */
-    scrollbar-width: thin;
-    scrollbar-color: rgba(167, 167, 169, 0.3) transparent;
-  }
-
-  body::-webkit-scrollbar {
-    width: 10px;
-  }
-
-  body::-webkit-scrollbar-track {
-    background: rgba(167, 167, 169, 0.05);
-  }
-
-  body::-webkit-scrollbar-thumb {
-    background: rgba(167, 167, 169, 0.3);
-    border-radius: 5px;
-  }
-
-  body::-webkit-scrollbar-thumb:hover {
-    background: rgba(167, 167, 169, 0.5);
   }
 }
 

@@ -52,8 +52,6 @@ interface VariantConfig {
   cardBg: string;
   /** Sombra de color de la tarjeta */
   cardShadow: string;
-  /** Borde de la tarjeta */
-  cardBorder: string;
   /** Ícono por defecto */
   Icon: React.FC<{ className?: string }>;
   /** Variante del botón de confirmar */
@@ -64,23 +62,20 @@ interface VariantConfig {
 
 const VARIANT_CONFIG: Record<ModalVariant, VariantConfig> = {
   info: {
-    cardBg: 'bg-azul-una',
+    cardBg: 'bg-info-dark',
     cardShadow: 'shadow-[0_4px_14px_rgba(3,73,145,0.28)]',
-    cardBorder: 'border-[rgba(29,78,216,0.5)]',
     Icon: ({ className }) => <SystemIcons.interface.informationCircle className={className}/>,
     confirmVariant: 'primary',
   },
   success: {
     cardBg: 'bg-verde',
     cardShadow: 'shadow-[0_4px_14px_rgba(16,185,129,0.28)]',
-    cardBorder: 'border-[rgba(21,128,61,0.5)]',
     Icon: ({ className }) => <SystemIcons.interface.checkCircle className={className} />,
     confirmVariant: 'success',
   },
   danger: {
     cardBg: 'bg-error',
     cardShadow: 'shadow-[0_4px_14px_rgba(239,68,68,0.28)]',
-    cardBorder: 'border-[rgba(185,28,28,0.5)]',
     Icon: ({ className }) => <SystemIcons.structure.trashCan className={className} />,
     confirmVariant: 'secondary',
     metaColor: 'text-error',
@@ -88,7 +83,6 @@ const VARIANT_CONFIG: Record<ModalVariant, VariantConfig> = {
   warning: {
     cardBg: 'bg-warning',
     cardShadow: 'shadow-[0_4px_14px_rgba(245,158,11,0.28)]',
-    cardBorder: 'border-[rgba(180,83,9,0.5)]',
     Icon: ({ className }) => <SystemIcons.interface.alert className={className} />,
     confirmVariant: 'warning',
     metaColor: 'text-warning',
@@ -96,7 +90,6 @@ const VARIANT_CONFIG: Record<ModalVariant, VariantConfig> = {
   neutral: {
     cardBg: 'bg-gris-una',
     cardShadow: 'shadow-[0_4px_14px_rgba(107,114,128,0.22)]',
-    cardBorder: 'border-[rgba(75,85,99,0.5)]',
     Icon: ({ className }) => <SystemIcons.actions.view className={className} />,
     confirmVariant: 'secondary',
   },
@@ -228,10 +221,10 @@ export const Modal: React.FC<ModalProps> = React.memo(({
             transition
             tabIndex={-1}
             className={cn(
-              'relative flex flex-col w-full overflow-hidden',
-              'bg-blanco-una border border-gris-light rounded-[18px]',
+              'relative flex flex-col w-full',
+              'bg-blanco-una border border-none rounded-corner',
               'shadow-[0_6px_16px_rgba(0,0,0,0.10),0_2px_6px_rgba(0,0,0,0.06)]',
-              'transition-all duration-300 ease-out sm:my-8',
+              'transition-all duration-300 ease-out sm:mt-12 sm:mb-8',
               'data-closed:translate-y-4 data-closed:opacity-0 data-closed:sm:scale-95',
               sizeClasses[size],
               maxHeightClasses[maxHeight],
@@ -242,18 +235,17 @@ export const Modal: React.FC<ModalProps> = React.memo(({
                 HÉRO CARD — tarjeta de color interna
             ════════════════════════════════════ */}
             {cfg && (
-              <div className="px-3.5 pt-3.5 pb-0 bg-blanco-una flex-shrink-0">
+              <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[calc(100%-2rem)] z-20">
                 <div
                   className={cn(
-                    'relative rounded-xl px-5 py-5 overflow-hidden border',
+                    'relative rounded-corner px-3 py-2.5 overflow-hidden',
                     cfg.cardBg,
                     cfg.cardShadow,
-                    cfg.cardBorder,
                   )}
                 >
                   {/* Brillo superior */}
                   <div
-                    className="pointer-events-none absolute inset-x-0 top-0 h-1/2 rounded-t-xl"
+                    className="pointer-events-none absolute inset-x-0 top-0 h-1/2 rounded-t-corner"
                     style={{ background: 'linear-gradient(to bottom, rgba(255,255,255,0.12), transparent)' }}
                   />
                   {/* Círculo decorativo */}
@@ -269,14 +261,16 @@ export const Modal: React.FC<ModalProps> = React.memo(({
                         {heroIcon ?? <cfg.Icon className={`${ICON_SIZES.md} text-blanco-una`}/>}
                       </div>
                       <div className="flex flex-col min-w-0">
-                        <p className={cn('font-bold text-white tracking-tight leading-snug', TYPOGRAPHY.modal.title)}>
-                          {title}
-                        </p>
-                        {subtitle && (
-                          <p className={cn('text-white/70 mt-0.5 leading-snug', TYPOGRAPHY.modal.subtitle)}>
-                            {subtitle}
+                        <div className="flex items-baseline gap-2 flex-wrap min-w-0">
+                          <p className={cn('font-bold text-white tracking-tight leading-snug', TYPOGRAPHY.modal.title)}>
+                            {title}
                           </p>
-                        )}
+                          {subtitle && (
+                            <p className={cn('text-white/70 leading-snug', TYPOGRAPHY.modal.subtitle)}>
+                              {subtitle}
+                            </p>
+                          )}
+                        </div>
                         {heroBadge && (
                           <span className={cn('inline-flex items-center gap-1.5 mt-2 px-2.5 py-1 rounded-full bg-white/18 border border-white/35 text-white/95 font-semibold w-fit', TYPOGRAPHY.badge)}>
                             <span className="w-1.5 h-1.5 rounded-full bg-white/90" />
@@ -291,7 +285,7 @@ export const Modal: React.FC<ModalProps> = React.memo(({
                         onClick={handleClose}
                         disabled={isPending}
                         aria-label="Cerrar modal"
-                        className="w-7 h-7 rounded-md flex items-center justify-center bg-white/15 border border-white/30 text-white/90 hover:bg-white/30 transition-colors duration-150 disabled:opacity-50 flex-shrink-0 self-start"
+                        className="w-7 h-7 rounded-corner flex items-center justify-center bg-white/15 border border-white/30 text-white/90 hover:bg-white/30 transition-colors duration-150 disabled:opacity-50 flex-shrink-0 self-start"
                       >
                         <SystemIcons.interface.closeCircle className={`${ICON_SIZES.md}`} />
                       </button>
@@ -300,12 +294,14 @@ export const Modal: React.FC<ModalProps> = React.memo(({
                 </div>
               </div>
             )}
+            {cfg && <div className="h-9 flex-shrink-0" />}
 
+            <div className="flex flex-col flex-1 min-h-0 overflow-hidden rounded-corner">
             {/* ════════════════════════════════════
                 HEADER sin hero (modo sin variante)
             ════════════════════════════════════ */}
             {!cfg && (
-              <div className="flex items-center justify-between border-b border-gray-100 bg-gradient-to-r from-gray-50 to-white px-6 py-5 flex-shrink-0">
+              <div className="flex items-center justify-between border-b border-gray-100 bg-gradient-to-r from-gray-50 to-white px-5 py-4 flex-shrink-0">
                 <p className={cn('font-bold text-negro-una-2 tracking-tight', TYPOGRAPHY.modal.title)}>
                   {title}
                 </p>
@@ -327,12 +323,7 @@ export const Modal: React.FC<ModalProps> = React.memo(({
                 BODY
             ════════════════════════════════════ */}
             {children && (
-              <div
-                className={cn(
-                  'flex-1 overflow-y-auto px-5 py-5',
-                  'scrollbar-thin scrollbar-color-[var(--color-gris-una)/30]',
-                )}
-              >
+              <div className="flex-1 overflow-y-auto px-4 py-3">
                 {children}
               </div>
             )}
@@ -341,7 +332,7 @@ export const Modal: React.FC<ModalProps> = React.memo(({
                 FOOTER
             ════════════════════════════════════ */}
             {hasFooter && (
-              <div className="flex items-center justify-between gap-3 px-5 py-4 border-t border-gray-100 bg-gray-50/60 flex-shrink-0">
+              <div className="flex items-center justify-between gap-3 px-4 py-3 border-t border-gray-100 bg-gray-50/60 flex-shrink-0">
                 {/* Meta izquierda */}
                 <span
                   className={cn(
@@ -386,6 +377,7 @@ export const Modal: React.FC<ModalProps> = React.memo(({
                 </div>
               </div>
             )}
+            </div>
           </DialogPanel>
         </div>
       </div>
