@@ -93,7 +93,7 @@ export const getNavigationItems = (
     if (isAdmin || isEncargado || isSuperUser) {
       evidenciaChildren.push({
         id: "evidenciasAsignar",
-        label: "Asignar Evidencias",
+        label: "Asignar Entregables",
         icon: evidenceIcon,
         href: "/evidencias/asignar",
         isActive: false,
@@ -103,7 +103,7 @@ export const getNavigationItems = (
     evidenciaChildren.push(
       {
         id: "misEvidenciasAsignadas",
-        label: "Mis Evidencias",
+        label: "Mis Entregas",
         icon: myEvidencesIcon,
         href: "/mis-evidencias-asignadas",
         isActive: false,
@@ -119,7 +119,7 @@ export const getNavigationItems = (
 
     items.push({
       id: "evidencias",
-      label: "Evidencias",
+      label: "Entregables",
       icon: evidenceIcon,
       href: "#",
       isActive: false,

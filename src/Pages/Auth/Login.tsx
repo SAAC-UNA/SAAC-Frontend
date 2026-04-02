@@ -104,25 +104,6 @@ export const Login = () => {
           <p className={styles["login-form-subtitle"]}>
             Ingrese con sus credenciales institucionales
           </p>
-          <motion.p
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.3, duration: 0.5, ease: "easeOut" }}
-            className="mt-3 mb-5 text-sm font-medium text-gray-400 text-center w-full"
-          >
-            Gestión de{" "}
-            <FlipWords
-              words={[
-                "Acreditaciones",
-                "Evidencias",
-                "Carreras",
-                "Compromisos",
-                "Reportes",
-              ]}
-              duration={2800}
-              className="font-bold text-azul-una"
-            />
-          </motion.p>
           <form onSubmit={handleSubmit} className={styles["login-form"]}>
             <div
               className={`${styles["login-input-field"]} ${error ? styles["error"] : ""}`}
