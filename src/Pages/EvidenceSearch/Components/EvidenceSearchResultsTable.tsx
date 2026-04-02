@@ -14,7 +14,7 @@ import { useFirstColumnConfig } from '@/Hooks/UseFirstColumnConfig';
 import { EVIDENCE_STATUS_BADGE } from '@/Constants/StatusBadges';
 import { EvidenceResourcesModal } from './EvidenceResourcesModal';
 import { BADGE_COLORS } from '@/Constants/StatusBadges';
-import { formatDate } from '@/Utils/DateUtils';
+import { formatDateShort } from '@/Utils/DateUtils';
 
 
 export interface EvidenceSearchResultsTableProps {
@@ -73,12 +73,17 @@ export const EvidenceSearchResultsTable: React.FC<EvidenceSearchResultsTableProp
       align: 'left',
       width: firstColumn.width,
       render: (_, item) => (
-        <div className="flex flex-col pl-2">
-          <p className={`block font-sans antialiased font-bold leading-normal text-negro-una-2 ${TYPOGRAPHY.table.cell}`} title={item.criterio_nomenclatura}>
-            {truncateText(item.criterio_nomenclatura, firstColumn.maxLength)}
-          </p>
-          <p className={`block font-sans antialiased font-normal leading-normal text-gris-una-2 ${TYPOGRAPHY.table.cell}`} title={item.criterio_descripcion}>
-            {truncateText(item.criterio_descripcion, firstColumn.maxLength)}
+        <div className="flex flex-col pl-2 py-1">
+          <div className="flex flex-row items-baseline gap-1.5">
+            <p className={`font-sans antialiased font-bold leading-normal text-negro-una-2 shrink-0 ${TYPOGRAPHY.table.cell}`} title={item.criterio_nomenclatura}>
+              {truncateText(item.criterio_nomenclatura, firstColumn.maxLength)}
+            </p>
+            <p className={`font-sans antialiased font-bold leading-normal text-negro-una-2 ${TYPOGRAPHY.table.cell}`} title={item.criterio_descripcion}>
+              {truncateText(item.criterio_descripcion, firstColumn.maxLength)}
+            </p>
+          </div>
+          <p className={`${TYPOGRAPHY.table.helper} text-gris-una mt-1.5 -mb-0.5`}>
+            {formatDateShort(item.fecha_publicacion)}
           </p>
         </div>
       )
@@ -90,7 +95,7 @@ export const EvidenceSearchResultsTable: React.FC<EvidenceSearchResultsTableProp
       render: (_, item) => {
         const count = item.responsables.length;
         return (
-          <div className={`flex flex-col items-center ${TYPOGRAPHY.table.cell}`}>
+          <div className="flex flex-col items-center">
             <span className={`block font-sans antialiased leading-normal text-negro-una-2 ${TYPOGRAPHY.table.cell}`}>
               {count === 0 && 'Sin asignar'}
               {count === 1 && '1 responsable'}
@@ -100,18 +105,7 @@ export const EvidenceSearchResultsTable: React.FC<EvidenceSearchResultsTableProp
         );
       }
     },
-    {
-      key: 'fecha_publicacion',
-      header: 'Fecha Creación',
-      align: 'center',
-      render: (_, item) => (
-        <div className={`flex flex-col items-center ${TYPOGRAPHY.table.cell}`}>
-          <span className={`block font-sans antialiased leading-normal text-negro-una-2 ${TYPOGRAPHY.table.cell}`}>
-            {formatDate(item.fecha_publicacion)}
-          </span>
-        </div>
-      )
-    },
+
     {
       key: 'recursos',
       header: 'Recursos',

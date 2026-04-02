@@ -38,6 +38,14 @@ export function formatDateShort(date?: string | null | Date, includeTime = false
 }
 
 /**
+ * Formato con mes abreviado y hora: 31 mar. 2026, 14:30
+ * Acepta string ISO, Date, null o undefined.
+ */
+export function formatDateShortWithTime(date?: string | null | Date): string {
+  return formatDateShort(date, true);
+}
+
+/**
  * Formato con mes completo: 31 de marzo de 2026
  * Con includeTime=true: 31 de marzo de 2026, 14:30
  */
@@ -49,6 +57,20 @@ export function formatDateLong(date: string | Date, includeTime = false): string
     month: 'long',
     year: 'numeric',
     ...(includeTime ? { hour: '2-digit', minute: '2-digit', hour12: false } : {}),
+  }).format(d);
+}
+
+/**
+ * Formato completo con día de semana sin hora: martes, 31 de marzo de 2026
+ */
+export function formatDateFullNoTime(date: string | Date): string {
+  const d = new Date(date);
+  if (Number.isNaN(d.getTime())) return '—';
+  return new Intl.DateTimeFormat(LOCALE, {
+    weekday: 'long',
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
   }).format(d);
 }
 

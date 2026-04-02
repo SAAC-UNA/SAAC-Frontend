@@ -9,6 +9,7 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from '
 import { TooltipProvider } from '@/Components/Ui/Feedback/Tooltip';
 import { useAuth } from '@/Context/AuthContext';
 import { TYPOGRAPHY } from '@/Constants/Typography';
+import { UserWidget } from './UserBar';
 
 interface SidebarProps {
   side?: 'left' | 'right';
@@ -88,6 +89,11 @@ export const ModernSidebar: React.FC<SidebarProps> = ({
           </div>
         </SidebarNavProvider>
       </nav>
+
+      {/* Botones de usuario — al fondo */}
+      <div className="flex-shrink-0 pb-6 flex flex-col items-center">
+        <UserWidget collapsed showNotifications />
+      </div>
 
     </div>
   );

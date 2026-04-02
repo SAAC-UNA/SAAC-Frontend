@@ -121,7 +121,7 @@ export const UsersTable: React.FC<UsersTableProps> = ({
             align: 'center',
             render: (role) => (
                 <div className="w-max mx-auto">
-                    <div className={`relative grid items-center px-2 py-1 font-sans text-negro-una-2 rounded-corner select-none whitespace-nowrap ${TYPOGRAPHY.badge}`} title={String(role || 'Sin rol').toLowerCase().replace(/\b\w/g, c => c.toUpperCase())}>
+                    <div className={`relative grid items-center px-2 py-1 font-sans text-negro-una-2 rounded-corner select-none whitespace-nowrap ${TYPOGRAPHY.table.cell}`} title={String(role || 'Sin rol').toLowerCase().replace(/\b\w/g, c => c.toUpperCase())}>
                         <span>{truncateText(String(role || 'Sin rol').toLowerCase().replace(/\b\w/g, c => c.toUpperCase()), TABLE_TRUNCATE.name)}</span>
                     </div>
                 </div>

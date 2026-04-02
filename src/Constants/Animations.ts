@@ -47,6 +47,9 @@ export const ITEM_VARIANTS = {
 // Spring para el fondo deslizable de hover en ítems
 export const SPRING_HOVER = { type: 'spring' as const, damping: 30, stiffness: 520, mass: 0.8 };
 
+// Spring para el fondo deslizable del sidebar (hover indicator y child hover indicator)
+export const SPRING_SIDEBAR = { type: 'spring' as const, stiffness: 400, damping: 30, mass: 0.8 };
+
 // Spring para la rotación del chevron en botones trigger
 export const SPRING_CHEVRON = { type: 'spring' as const, damping: 25, stiffness: 300, mass: 0.6 };
 

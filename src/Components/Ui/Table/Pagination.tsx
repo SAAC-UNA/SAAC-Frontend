@@ -85,7 +85,7 @@ export const Pagination: React.FC<PaginationProps> = ({
       <Button
         onClick={handlePrevious}
         disabled={currentPage === 1}
-        variant="ghost"
+        variant="pagination"
         size="sm"
         className={`!${PAGINATION_BUTTON.button}`}
         aria-label="Página anterior"
@@ -112,11 +112,11 @@ export const Pagination: React.FC<PaginationProps> = ({
             <Button
               key={page}
               onClick={() => onPageChange(page as number)}
-              variant="ghost"
+              variant="pagination"
               size="sm"
               className={cn(
-                `!${ICON_SIZES.button} ${TYPOGRAPHY.pagination} !font-medium`,
-                isActive && ' !bg-gris-light !text-gris-una'
+                `${PAGINATION_BUTTON.button} ${TYPOGRAPHY.pagination} !font-medium !p-0`,
+                isActive && '!bg-blanco-una !shadow-md'
               )}
               aria-label={`Ir a página ${page}`}
               aria-current={isActive ? 'page' : undefined}
@@ -131,7 +131,7 @@ export const Pagination: React.FC<PaginationProps> = ({
       <Button
         onClick={handleNext}
         disabled={currentPage === totalPages}
-        variant="ghost"
+        variant="pagination"
         size="sm"
         className={`!${PAGINATION_BUTTON.button}`}
         aria-label="Página siguiente"

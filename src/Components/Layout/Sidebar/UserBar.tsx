@@ -14,9 +14,12 @@ import { useNotifications } from "@/Hooks/useNotifications";
 import { SystemIcons } from "@/Components/Ui/Icons/SystemIcons";
 import { cn } from "@/Utils/ClassNames";
 import { APP_HEADER_BUTTON } from "@/Constants/Components";
-import { DROPDOWN_VARIANTS, SPRING_HOVER } from "@/Constants/Animations";
+import { buttonVariants } from "@/Components/Ui/Buttons/Button";
+import { DROPDOWN_VARIANTS, SPRING_SIDEBAR } from "@/Constants/Animations";
 import { NotificationDropdown } from "@/Components/Notifications/NotificationDropdown";
 import NotificationCenter from "@/Pages/Notifications/NotificationCenter";
+import { Tooltip, TooltipTrigger, TooltipContent } from "@/Components/Ui/Feedback/Tooltip";
+import { TYPOGRAPHY } from "@/Constants/Typography";
 
 interface UserWidgetProps {
   className?: string;
@@ -24,12 +27,15 @@ interface UserWidgetProps {
   dark?: boolean;
   /** Mostrar botón de notificaciones */
   showNotifications?: boolean;
+  /** Modo colapsado: solo íconos apilados verticalmente (para sidebar) */
+  collapsed?: boolean;
 }
 
 export const UserWidget: React.FC<UserWidgetProps> = ({
   className,
   dark = false,
   showNotifications = false,
+  collapsed = false,
 }) => {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
@@ -38,8 +44,10 @@ export const UserWidget: React.FC<UserWidgetProps> = ({
   const [isNotifOpen, setIsNotifOpen] = useState(false);
   const [notifCoords, setNotifCoords] = useState<{
     top: number;
-    right: number;
+    left: number;
   } | null>(null);
+
+  const DROPDOWN_WIDTH = 384; // w-96
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [bellHovered, setBellHovered] = useState(false);
   const [logoutHovered, setLogoutHovered] = useState(false);
@@ -50,10 +58,16 @@ export const UserWidget: React.FC<UserWidgetProps> = ({
   const calculatePosition = useCallback(() => {
     if (!bellRef.current) return;
     const rect = bellRef.current.getBoundingClientRect();
-    setNotifCoords({
-      top: rect.bottom,
-      right: window.innerWidth - rect.right,
-    });
+    const gap = 4;
+    const left = Math.min(
+      rect.right + gap,
+      window.innerWidth - DROPDOWN_WIDTH - gap
+    );
+    const top = Math.min(
+      rect.top,
+      window.innerHeight - 480
+    );
+    setNotifCoords({ top, left });
   }, []);
 
   useEffect(() => {
@@ -111,9 +125,30 @@ export const UserWidget: React.FC<UserWidgetProps> = ({
 
   return (
     <>
-      <div className={cn("flex items-center gap-3 min-w-0", className)}>
-        {/* Nombre y rol */}
-        <div className="flex h-9 flex-col items-start justify-center translate-y-0.5">
+      <div className={cn(collapsed ? "flex flex-col items-center gap-2" : "flex items-center gap-3 min-w-0", className)}>
+        {/* Ícono usuario con tooltip — solo en modo colapsado */}
+        {collapsed && (
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <div
+                className={cn(btnClass, "cursor-default")}
+                aria-label={`${user.name} — ${roleName}`}
+              >
+                <SystemIcons.users.user
+                  className={cn(APP_HEADER_BUTTON.icon, "text-negro-una-2")}
+                />
+              </div>
+            </TooltipTrigger>
+            <TooltipContent side="right">
+              <p className={`${TYPOGRAPHY.body} font-semibold`}>{user.name}</p>
+              <p className={`${TYPOGRAPHY.form.helper} font-semibold`}>{roleName}</p>
+            </TooltipContent>
+          </Tooltip>
+        )}
+
+        {/* ? Nombre y rol — oculto en modo colapsado */}
+        {!collapsed && (
+          <div className="flex h-9 flex-col items-start justify-center translate-y-0.5">
           <span
             className={cn(
               "font-semibold leading-none text-xs",
@@ -131,60 +166,89 @@ export const UserWidget: React.FC<UserWidgetProps> = ({
             {roleName}
           </span>
         </div>
+        )}
 
         {/* Botón notificaciones */}
         {showNotifications && (
-          <button
-            ref={bellRef}
-            type="button"
-            onClick={handleBellClick}
-            aria-label="Notificaciones"
-            aria-expanded={isNotifOpen}
-            aria-haspopup="dialog"
-            className={btnClass}
-            onMouseEnter={() => setBellHovered(true)}
-            onMouseLeave={() => setBellHovered(false)}
-          >
-            <motion.span
-              className="absolute inset-0 bg-rojo-una-2 pointer-events-none"
-              animate={{ opacity: bellHovered ? 1 : 0 }}
-              transition={SPRING_HOVER}
-            />
-            <SystemIcons.interface.bell
-              className={cn(
-                APP_HEADER_BUTTON.icon,
-                "relative z-10 transition-colors duration-150",
-                bellHovered ? "text-blanco-una" : "text-negro-una-2",
-              )}
-            />
-            {unreadCount > 0 && (
-              <span className="absolute top-1 right-1 h-2 w-2 rounded-full bg-rojo-una-2 pointer-events-none ring-1 ring-blanco-una" />
-            )}
-          </button>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <div className="relative">
+                <button
+                  ref={bellRef}
+                  type="button"
+                  onClick={handleBellClick}
+                  aria-label="Notificaciones"
+                  aria-expanded={isNotifOpen}
+                  aria-haspopup="dialog"
+                  className={cn(
+                    buttonVariants({ variant: 'sidebarAction', size: 'none' }),
+                    bellHovered && '!bg-transparent'
+                  )}
+                  onMouseEnter={() => setBellHovered(true)}
+                  onMouseLeave={() => setBellHovered(false)}
+                >
+                  {bellHovered && (
+                    <motion.div
+                      layoutId="sidebar-action-hover-indicator"
+                      className="absolute inset-0 bg-rojo-una-2 rounded-corner -z-10"
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      exit={{ opacity: 0 }}
+                      transition={SPRING_SIDEBAR}
+                    />
+                  )}
+                  <SystemIcons.interface.bell
+                    className={cn(
+                      APP_HEADER_BUTTON.icon,
+                      "relative z-10 transition-colors duration-150",
+                      bellHovered ? "text-blanco-una" : "text-negro-una-2",
+                    )}
+                  />
+                </button>
+                {unreadCount > 0 && (
+                  <span className="absolute -top-0.5 -right-0.5 h-2.5 w-2.5 rounded-full bg-rojo-una-2 pointer-events-none ring-1.5 ring-blanco-una" />
+                )}
+              </div>
+            </TooltipTrigger>
+            <TooltipContent side="right">Notificaciones</TooltipContent>
+          </Tooltip>
         )}
 
         {/* Botón cerrar sesión */}
-        <button
-          type="button"
-          onClick={handleLogout}
-          aria-label="Cerrar sesión"
-          className={btnClass}
-          onMouseEnter={() => setLogoutHovered(true)}
-          onMouseLeave={() => setLogoutHovered(false)}
-        >
-          <motion.span
-            className="absolute inset-0 bg-rojo-una-2 pointer-events-none"
-            animate={{ opacity: logoutHovered ? 1 : 0 }}
-            transition={SPRING_HOVER}
-          />
-          <SystemIcons.actions.logout
-            className={cn(
-              APP_HEADER_BUTTON.icon,
-              "relative z-10 transition-colors duration-150",
-              logoutHovered ? "text-blanco-una" : "text-negro-una-2",
-            )}
-          />
-        </button>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <button
+              type="button"
+              onClick={handleLogout}
+              aria-label="Cerrar sesión"
+              className={cn(
+                buttonVariants({ variant: 'sidebarAction', size: 'none' }),
+                logoutHovered && '!bg-transparent'
+              )}
+              onMouseEnter={() => setLogoutHovered(true)}
+              onMouseLeave={() => setLogoutHovered(false)}
+            >
+              {logoutHovered && (
+                <motion.div
+                  layoutId="sidebar-action-hover-indicator"
+                  className="absolute inset-0 bg-rojo-una-2 rounded-corner -z-10"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  transition={SPRING_SIDEBAR}
+                />
+              )}
+              <SystemIcons.actions.logout
+                className={cn(
+                  APP_HEADER_BUTTON.icon,
+                  "relative z-10 transition-colors duration-150",
+                  logoutHovered ? "text-blanco-una" : "text-negro-una-2",
+                )}
+              />
+            </button>
+          </TooltipTrigger>
+          <TooltipContent side="right">Cerrar sesión</TooltipContent>
+        </Tooltip>
       </div>
 
       {/* Panel de notificaciones via portal */}
@@ -196,7 +260,7 @@ export const UserWidget: React.FC<UserWidgetProps> = ({
                 style={{
                   position: "fixed",
                   top: notifCoords.top,
-                  right: notifCoords.right,
+                  left: notifCoords.left,
                   zIndex: 9999,
                   width: 0,
                   height: 0,
@@ -208,7 +272,7 @@ export const UserWidget: React.FC<UserWidgetProps> = ({
                   initial="hidden"
                   animate="visible"
                   exit="exit"
-                  style={{ position: "relative" }}
+                  style={{ position: "relative", width: DROPDOWN_WIDTH }}
                 >
                   <NotificationDropdown
                     onClose={() => setIsNotifOpen(false)}

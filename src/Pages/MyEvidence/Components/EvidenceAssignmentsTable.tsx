@@ -89,7 +89,7 @@ export const EvidenceAssignmentsTable: React.FC<
                 {truncateText(fullText, firstColumn.maxLength)}
               </p>
               <p
-                className={`block font-sans antialiased font-normal leading-normal text-gris-una ${TYPOGRAPHY.table.cell}`}
+                className={`block font-sans antialiased font-normal leading-normal text-gris-una ${TYPOGRAPHY.table.helper}`}
                 title={`Criterio: ${criterionText}`}
               >
                 {truncateText(criterionText, firstColumn.maxLength)}

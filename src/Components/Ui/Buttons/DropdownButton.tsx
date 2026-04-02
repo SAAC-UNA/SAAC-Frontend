@@ -200,7 +200,7 @@ export const DropdownButton: React.FC<DropdownButtonProps> = ({
                 zIndex: 9999,
               }}
               className={cn(
-                "rounded-corner bg-blanco-una shadow-lg border border-gris-light overflow-hidden",
+                "rounded-corner bg-blanco-una shadow-lg border border-none overflow-hidden",
                 getMenuWidthClass(),
               )}
             >
