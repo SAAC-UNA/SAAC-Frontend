@@ -752,7 +752,17 @@ export const SystemIcons = {
           <path fillRule="evenodd" d="M3.75 12a.75.75 0 01.75-.75h13.19l-5.47-5.47a.75.75 0 011.06-1.06l6.75 6.75a.75.75 0 010 1.06l-6.75 6.75a.75.75 0 11-1.06-1.06l5.47-5.47H4.5a.75.75 0 01-.75-.75z" clipRule="evenodd" />
         </svg>
       )
-    }
+    },
+
+    reports: ({ className, size, color }: IconProps) => (
+      <svg
+        className={`${getSizeClasses(size)} ${className || ''}`}
+        viewBox="0 0 24 24"
+        fill={color || "currentColor"}
+      >
+        <path d="M19.5 3h-15A1.5 1.5 0 0 0 3 4.5v15A1.5 1.5 0 0 0 4.5 21h15a1.5 1.5 0 0 0 1.5-1.5v-15A1.5 1.5 0 0 0 19.5 3Zm-12 16.5h-3v-15h3v15Zm9-5.25h-6a.75.75 0 1 1 0-1.5h6a.75.75 0 1 1 0 1.5Zm0-3h-6a.75.75 0 1 1 0-1.5h6a.75.75 0 1 1 0 1.5Z" />
+      </svg>
+    )
   },
 
   // ===== USUARIOS Y ROLES =====
@@ -841,11 +851,11 @@ export const SystemIcons = {
   },
   // ===== MODALES =====
   modal:{
-    document: ({ className, size, color }: IconProps) => (
+    document: ({ className, size }: IconProps) => (
       <svg
         className={`${getSizeClasses(size)} ${className || ''}`}
         viewBox="0 0 24 24"
-        fill={color || "currentColor"}
+        fill="currentColor"
       >
         <path d="M15.75 13a.75.75 0 0 0-.75-.75H9a.75.75 0 0 0 0 1.5h6a.75.75 0 0 0 .75-.75Z" />
         <path d="M15.75 17a.75.75 0 0 0-.75-.75H9a.75.75 0 0 0 0 1.5h6a.75.75 0 0 0 .75-.75Z" />
@@ -1126,8 +1136,7 @@ export const getIconByName = (iconName: string, size: IconProps['size'] = 'md'):
     'information-circle': () => SystemIcons.interface.informationCircle({ size }),
     'check-circle': () => SystemIcons.interface.checkCircle({ size }),
     'key': () => SystemIcons.modal.key({ size }),
-    'document': () => SystemIcons.modal.document({ size }),
-    'document-text': () => SystemIcons.modal.document({ size }),
+    'reports': () => SystemIcons.navigation.reports({ size }),
 
     // Repository
     'box-archive': () => SystemIcons.repository.boxArchive({ size }),

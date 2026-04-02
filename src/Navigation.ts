@@ -14,7 +14,7 @@ const commitmentIcon = "system-icon:box-archive";
 const approvalIcon = "system-icon:check-circle";
 const extensionRequestIcon = "system-icon:clock";
 const calendarIcon = "system-icon:calendar";
-const reportsIcon = "system-icon:document-text";
+const reportsIcon = "system-icon:reports";
 const lightIcon = "system-icon:lightbulb";
 
 /**
