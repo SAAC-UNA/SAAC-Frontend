@@ -320,7 +320,7 @@ export const DataTable = React.memo(<T extends Record<string, unknown>>({
                     </tr>
                     <AnimatePresence initial={false}>
                       {expandableRow && isExpanded && (
-                        <tr className="bg-blanco-una-2">
+                        <tr className="bg-white">
                           <td colSpan={totalCols} className="p-0 border-0">
                             <motion.div
                               initial={{ height: 0, opacity: 0 }}
@@ -329,7 +329,7 @@ export const DataTable = React.memo(<T extends Record<string, unknown>>({
                               transition={{ type: 'spring', damping: 25, stiffness: 300, mass: 0.8 }}
                               className="overflow-hidden"
                             >
-                              <div className="pl-8 pr-0 pb-4 pt-2">
+                              <div className="px-4 pb-3 pt-1">
                                 {expandableRow(item)}
                               </div>
                             </motion.div>

@@ -365,15 +365,15 @@ const BlockApproval: React.FC = () => {
                   return <p className="text-sm text-gris-una py-2">No hay evidencias para este criterio.</p>;
                 }
                 return (
-                  <div className="space-y-1.5 py-2">
+                  <div className="space-y-1 py-1.5">
                     {criterionEvidences.map((evidencia) => (
                       <div
                         key={evidencia.id}
-                        className="flex items-center justify-between px-3 py-2 bg-gray-50 rounded-md border border-gray-200"
+                        className="flex items-center justify-between px-3 py-1 bg-white rounded border border-gray-100"
                         onClick={e => e.stopPropagation()}
                       >
                         <div className="flex-1 min-w-0">
-                          <p className={`truncate ${TYPOGRAPHY.table.cell}`}>
+                          <p className={`truncate ${TYPOGRAPHY.table.helper}`}>
                             <span className="font-medium text-negro-una">{evidencia.nomenclatura}</span>
                             <span className="text-gris-una"> — {evidencia.descripcion}</span>
                           </p>

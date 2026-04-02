@@ -109,10 +109,11 @@ class ImprovementCommitmentService {
    * Obtener todos los ciclos de acreditación activos
    */
   async obtenerCiclosAcreditacion(): Promise<CicloAcreditacion[]> {
-    const response = await axiosInstance.get<CicloAcreditacion[]>(
+    const response = await axiosInstance.get<{ data: CicloAcreditacion[] } | CicloAcreditacion[]>(
       '/estructura/ciclos-acreditacion'
     );
-    return response.data;
+    const raw = (response.data as any)?.data ?? response.data;
+    return Array.isArray(raw) ? raw : [];
   }
 
   /**
