@@ -381,7 +381,8 @@ const StructureList: React.FC = () => {
       onClose={cancelDeleteElement}
       onConfirm={confirmDeleteElement}
       title="Confirmar Eliminación"
-      itemName={truncateText(deleteModalState.element?.name || deleteModalState.element?.nomenclature || '')}      confirmLabel="Eliminar"
+      itemName={truncateText(deleteModalState.element?.name || deleteModalState.element?.nomenclature || '')}      
+      confirmLabel="Sí, eliminar"
       cancelLabel="Cancelar"
       variant="danger"
       isLoading={isLoading}

@@ -1,5 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { Modal } from '@/Components/Ui/Modals/Modal';
+import { Textarea } from '@/Components/Ui/Forms/Textarea';
+import { TYPOGRAPHY } from '@/Constants/Typography';
+import { cn } from '@/Utils/ClassNames';
 
 interface Criterio {
   id: number;
@@ -55,8 +58,6 @@ export const ApprovalModal: React.FC<ApprovalModalProps> = ({
 
   const isAprobar = action === 'aprobar';
   const title = isAprobar ? 'Aprobar Criterio' : 'Rechazar Criterio';
-  
-  const totalEvidencias = evidencias.length;
 
   return (
     <Modal
@@ -65,54 +66,50 @@ export const ApprovalModal: React.FC<ApprovalModalProps> = ({
       title={title}
       size="md"
       variant={isAprobar ? 'info' : 'danger'}
-      showConfirm={true}
-      showCancel={true}
-      confirmLabel={isAprobar ? 'Aprobar' : 'Rechazar'}
+      showConfirm
+      showCancel
+      confirmLabel={isAprobar ? 'Sí, aprobar' : 'Sí, rechazar'}
       cancelLabel="Cancelar"
       onConfirm={handleSubmit}
       confirmLoading={isSubmitting}
     >
-      <div className="space-y-3">
-        {/* Información del Criterio */}
-        <div className="bg-gray-50 p-3 rounded-md">
-          <div className="text-sm font-medium text-gray-900">{criterio.nomenclatura}</div>
-          <div className="text-sm text-gray-500 mt-1">{criterio.descripcion}</div>
-          <div className="text-sm text-gray-600 mt-2">
-            <span className="font-medium">Evidencias asociadas:</span> {totalEvidencias}
-          </div>
+      <div className="flex flex-col gap-3">
+
+        {/* Pregunta de confirmación */}
+        <p className={cn(TYPOGRAPHY.modal.body, 'text-gris-una-2 leading-relaxed')}>
+          {isAprobar
+            ? '¿Está seguro que desea aprobar este criterio? Esta acción quedará registrada en la bitácora del sistema.'
+            : '¿Está seguro que desea rechazar este criterio? Esta acción quedará registrada en la bitácora del sistema.'}
+        </p>
+
+        {/* Información del criterio */}
+        <div className="flex flex-col gap-0.5 border-l-2 border-gris-light pl-3">
+          <span className={cn(TYPOGRAPHY.modal.body, 'font-semibold text-negro-una')}>
+            {criterio.nomenclatura}
+          </span>
+          <span className={cn(TYPOGRAPHY.modal.body, 'text-gris-una-2')}>
+            {criterio.descripcion}
+          </span>
+          <span className={cn(TYPOGRAPHY.modal.subtitle, 'text-gris-una mt-1')}>
+            {evidencias.length} {evidencias.length === 1 ? 'evidencia asociada' : 'evidencias asociadas'}
+          </span>
         </div>
 
-        {/* Mensaje de confirmación */}
-        <div className="text-sm text-gray-500">
-          {isAprobar ? (
-            '¿Está seguro que desea aprobar este criterio? Esta acción quedará registrada en la bitácora del sistema.'
-          ) : (
-            '¿Está seguro que desea rechazar este criterio? Esta acción quedará registrada en la bitácora del sistema.'
-          )}
-        </div>
+        {/* Comentario */}
+        <Textarea
+          label="Comentario (opcional)"
+          value={comment}
+          onChange={(e) => setComment(e.target.value)}
+          rows={3}
+          maxLength={100}
+          characterCount
+          placeholder={
+            isAprobar
+              ? 'Agregue un comentario adicional si lo desea...'
+              : 'Agregue un comentario sobre esta decisión...'
+          }
+        />
 
-        {/* Campo de Comentario - Opcional */}
-        <div>
-          <label htmlFor="comentario" className="block text-sm font-medium text-gray-700 mb-1">
-            Comentario (opcional)
-          </label>
-          <textarea
-            id="comentario"
-            value={comment}
-            onChange={(e) => setComment(e.target.value)}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
-            rows={3}
-            maxLength={100}
-            placeholder={
-              isAprobar
-                ? 'Agregue un comentario adicional si lo desea...'
-                : 'Agregue un comentario sobre esta decisión...'
-            }
-          />
-          <p className="mt-1 text-xs text-gray-500">
-            {comment.length} / 100 caracteres
-          </p>
-        </div>
       </div>
     </Modal>
   );

@@ -264,7 +264,7 @@ export const AccreditationProcessList: React.FC = () => {
         onConfirm={confirmDeleteProcess}
         title="Confirmar eliminación de proceso"
         itemName={deleteModalState.process?.type}
-        confirmLabel="Eliminar"
+        confirmLabel="Sí, eliminar"
         cancelLabel="Cancelar"
         variant="danger"
       />

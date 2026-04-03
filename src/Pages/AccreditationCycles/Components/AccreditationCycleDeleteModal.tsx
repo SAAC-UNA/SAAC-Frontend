@@ -47,7 +47,7 @@ export const AccreditationCycleDeleteModal: React.FC<Props> = ({
       showCancel={false}
       showConfirm={false}
       footerMeta={
-        <span className="inline-flex items-center px-2 py-0.5 rounded-full bg-red-50 text-red-700 text-xs font-medium border border-red-200">
+        <span className={cn(TYPOGRAPHY.form.helper, 'text-error')}>
           Acción irreversible
         </span>
       }
@@ -63,7 +63,7 @@ export const AccreditationCycleDeleteModal: React.FC<Props> = ({
             standardWidth
             onClick={() => canDelete && onConfirm(confirmText)}
           >
-            Eliminar
+            Sí, eliminar
           </Button>
         </div>
       }
@@ -78,7 +78,7 @@ export const AccreditationCycleDeleteModal: React.FC<Props> = ({
         <div className="mt-1">
           <div className={cn(TYPOGRAPHY.form.helper, 'text-gris-una-2 mb-2 flex flex-wrap items-center gap-1.5')}>
             <span>Para confirmar, escribe el nombre exacto del ciclo:</span>
-            <span className="inline-flex items-center px-3 py-0.5 rounded-full bg-gray-100 text-gray-600 font-mono font-bold border border-gray-200 select-all cursor-text">
+            <span className={cn(TYPOGRAPHY.modal.body, 'text-error font-bold')}>
               {cycle.nombre}
             </span>
           </div>
