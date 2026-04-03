@@ -45,53 +45,37 @@ export const PermissionsModal: React.FC<PermissionsModalProps> = ({
       showCancel={false}
       showConfirm={false}
     >
-      <div className="flex flex-col gap-5">
+      <div className="flex flex-col gap-4">
         {/* Descripción del rol */}
         {roleDescription && (
-          <div>
-            <div className="flex items-center gap-2 mb-2.5">
-              <span className={cn('uppercase tracking-wider font-semibold text-gris-una-2', TYPOGRAPHY.modal.subtitle)}>
-                Descripción del rol
-              </span>
-            </div>
-            <div className="border border-gray-200 rounded-corner p-4">
-              <p className={cn(TYPOGRAPHY.modal.body, 'text-gris-una-2 leading-relaxed')}>{roleDescription}</p>
-            </div>
-          </div>
+          <>
+            <p className={cn(TYPOGRAPHY.modal.body, 'text-gris-una-2 leading-relaxed')}>{roleDescription}</p>
+            <hr className="border-gray-200" />
+          </>
         )}
 
         {/* Lista de permisos */}
-        <div>
-          <div className="flex items-center gap-2 mb-2.5">
-              <span className={cn('uppercase tracking-wider font-semibold text-gris-una-2', TYPOGRAPHY.modal.subtitle)}>
-              Permisos asignados
-            </span>
+        {permissions.length > 0 ? (
+          <div className="grid grid-cols-2 gap-x-4 gap-y-2 max-h-72 overflow-y-auto">
+            {permissions.map((permission, index) => {
+              const isObject = typeof permission === 'object' && permission !== null;
+              const label = isObject
+                ? (permission as BackendPermission).label
+                : (getPermissionLabel ? getPermissionLabel(permission as string) : permission as string);
+              const key = isObject ? (permission as BackendPermission).id : index;
+              return (
+                <div key={key} className="flex items-center gap-2">
+                  <span className="w-1.5 h-1.5 rounded-full bg-verde flex-shrink-0" />
+                  <span className={cn(TYPOGRAPHY.modal.body, 'text-gris-una-2 truncate')}>{label}</span>
+                </div>
+              );
+            })}
           </div>
-
-          {permissions.length > 0 ? (
-            <div className="border border-gray-200 rounded-corner p-4 max-h-72 overflow-y-auto">
-              <div className="grid grid-cols-2 gap-x-4 gap-y-2">
-                {permissions.map((permission, index) => {
-                  const isObject = typeof permission === 'object' && permission !== null;
-                  const label = isObject
-                    ? (permission as BackendPermission).label
-                    : (getPermissionLabel ? getPermissionLabel(permission as string) : permission as string);
-                  const key = isObject ? (permission as BackendPermission).id : index;
-                  return (
-                    <div key={key} className="flex items-center gap-2">
-                      <span className="w-1.5 h-1.5 rounded-full bg-verde flex-shrink-0" />
-                      <span className={cn(TYPOGRAPHY.modal.body, 'text-gris-una-2 truncate')}>{label}</span>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-          ) : (
-            <div className="border border-gray-200 rounded-corner p-6 text-center">
-              <p className={cn(TYPOGRAPHY.modal.body, 'text-gris-una-2')}>Este rol no tiene permisos asignados</p>
-            </div>
-          )}
-        </div>
+        ) : (
+          <p className={cn(TYPOGRAPHY.modal.body, 'text-gris-una-2 text-center py-2')}>
+            Este rol no tiene permisos asignados
+          </p>
+        )}
       </div>
     </Modal>
   );

@@ -13,20 +13,20 @@ interface ExtensionRequestDetailsModalProps {
   solicitud: ExtensionRequest | null;
 }
 
-const SectionLabel: React.FC<{ label: string }> = ({ label }) => (
-  <span className={cn('uppercase tracking-wider font-semibold text-gris-una-2 mb-2.5 block', TYPOGRAPHY.modal.subtitle)}>
-    {label}
-  </span>
-);
-
-const InfoCell: React.FC<{ label: string; children: React.ReactNode; className?: string }> = ({
-  label, children, className,
+const InfoCell: React.FC<{ label: string; children: React.ReactNode; className?: string; labelClassName?: string }> = ({
+  label, children, className, labelClassName,
 }) => (
   <div className={cn('flex flex-col gap-1', className)}>
-    <span className={cn('uppercase tracking-wider font-semibold text-gris-una-2', TYPOGRAPHY.modal.subtitle)}>
+    <span className={cn('uppercase tracking-wider font-semibold text-gris-una-2', TYPOGRAPHY.modal.subtitle, labelClassName)}>
       {label}
     </span>
     <div>{children}</div>
+  </div>
+);
+
+const Separator: React.FC = () => (
+  <div className="col-span-6 py-1">
+    <hr className="border-gray-200" />
   </div>
 );
 
@@ -52,80 +52,79 @@ export const ExtensionRequestDetailsModal: React.FC<ExtensionRequestDetailsModal
       variant="info"
       heroIcon={<SystemIcons.modal.document className={`${ICON_SIZES.md} text-blanco-una`} />}
     >
-      <div className="flex flex-col gap-5">
+      <div className="grid grid-cols-6 gap-x-4 gap-y-3">
 
-        {/* Detalles */}
-        <div>
-          <SectionLabel label="Detalles de la Solicitud" />
-          <div className="border border-gris-light rounded-corner p-4 flex flex-col gap-4">
-            <InfoCell label="Motivo">
-              <p className={cn(TYPOGRAPHY.modal.body, 'text-gris-una-2 whitespace-pre-wrap break-all')}>
-                {solicitud.motivo}
-              </p>
-            </InfoCell>
-            <div className="grid grid-cols-2 gap-x-6">
-              <InfoCell label="Fecha de solicitud">
-              <span className={cn(TYPOGRAPHY.modal.body, 'text-gris-una-2')}>
-                  {formatDateShort(solicitud.created_at, true)}
-                </span>
-              </InfoCell>
-              <InfoCell label="Fecha nueva solicitada">
-              <span className={cn(TYPOGRAPHY.modal.body, 'text-gris-una-2')}>
-                  {formatDateShort(solicitud.fecha_sugerida)}
-                </span>
-              </InfoCell>
+        {/* div1 — Fecha de solicitud */}
+        <InfoCell label="Fecha de solicitud" className="col-start-1 col-end-3">
+          <span className={cn(TYPOGRAPHY.modal.body, 'text-gris-una-2')}>
+            {formatDateShort(solicitud.created_at, true)}
+          </span>
+        </InfoCell>
+
+        {/* div2 — Fecha límite actual */}
+        <InfoCell label="Fecha límite actual" className="col-start-3 col-end-5">
+          <span className={cn(TYPOGRAPHY.modal.body, 'text-gris-una-2')}>
+            {solicitud.evidencia_asignacion
+              ? formatDateShort(solicitud.evidencia_asignacion.fecha_limite)
+              : '—'}
+          </span>
+        </InfoCell>
+
+        {/* div3 — Fecha nueva solicitada (destacada) */}
+        <InfoCell
+          label="Fecha nueva solicitada"
+          className="col-start-5 col-end-7"
+          labelClassName="text-info"
+        >
+          <span className={cn(TYPOGRAPHY.modal.body, 'text-info font-semibold')}>
+            {formatDateShort(solicitud.fecha_sugerida)}
+          </span>
+        </InfoCell>
+
+        <Separator />
+
+        {/* div4 — Motivo */}
+        <InfoCell label="Motivo" className="col-span-6">
+          <p className={cn(TYPOGRAPHY.modal.body, 'text-gris-una-2 whitespace-pre-wrap break-all')}>
+            {solicitud.motivo}
+          </p>
+        </InfoCell>
+
+        <Separator />
+
+        {/* div5 — Resolución o Aviso */}
+        {isResolved ? (
+          <div className={cn(
+            'col-span-6 flex flex-col gap-3 px-4 py-3 rounded-corner border',
+            isApproved ? 'border-info-ring bg-info-light' : 'border-error-ring bg-error-light',
+          )}>
+            <div className="flex items-center gap-2">
+              {isApproved
+                ? <SystemIcons.interface.checkCircle className={cn(ICON_SIZES.sm, 'text-info flex-shrink-0')} />
+                : <SystemIcons.interface.xCircle className={cn(ICON_SIZES.sm, 'text-error flex-shrink-0')} />
+              }
+              <span className={cn(TYPOGRAPHY.modal.body, 'font-semibold', isApproved ? 'text-info' : 'text-error')}>
+                {isApproved ? 'Solicitud aprobada' : 'Solicitud rechazada'}
+              </span>
             </div>
-            {solicitud.evidencia_asignacion && (
-              <InfoCell label="Fecha límite actual">
-                <span className={cn(TYPOGRAPHY.modal.body, 'text-info font-semibold')}>
-                  {formatDateShort(solicitud.evidencia_asignacion.fecha_limite)}
-                </span>
+            {solicitud.justificacion && (
+              <InfoCell label="Justificación">
+                <p className={cn(TYPOGRAPHY.modal.body, 'text-gris-una-2 whitespace-pre-wrap break-all')}>
+                  {solicitud.justificacion}
+                </p>
               </InfoCell>
             )}
-          </div>
-        </div>
-
-        {/* Resolución */}
-        {isResolved && (
-          <div>
-            <SectionLabel label="Resolución" />
-            <div className={cn(
-              'border rounded-corner p-4 flex flex-col gap-3',
-              isApproved ? 'border-info-ring bg-info-light' : 'border-error-ring bg-error-light'
-            )}>
-              <div className="flex items-center gap-2">
-                {isApproved
-                  ? <SystemIcons.interface.checkCircle className={cn(ICON_SIZES.sm, 'text-info flex-shrink-0')} />
-                  : <SystemIcons.interface.xCircle className={cn(ICON_SIZES.sm, 'text-error flex-shrink-0')} />
-                }
-                <span className={cn(TYPOGRAPHY.modal.body, 'font-semibold', isApproved ? 'text-info' : 'text-error')}>
-                  {isApproved ? 'Solicitud aprobada' : 'Solicitud rechazada'}
+            {solicitud.fecha_resolucion && (
+              <div className={cn('flex items-center gap-1.5 pt-2 border-t', isApproved ? 'border-info-ring' : 'border-error-ring')}>
+                <span className={cn(TYPOGRAPHY.form.helper, isApproved ? 'text-info' : 'text-error')}>
+                  Resuelta el {formatDateShort(solicitud.fecha_resolucion)}
+                  {solicitud.resolutor?.nombre && <> por <strong>{solicitud.resolutor.nombre}</strong></>}
                 </span>
               </div>
-
-              {solicitud.justificacion && (
-                <InfoCell label="Justificación">
-                  <p className={cn(TYPOGRAPHY.modal.body, 'text-gris-una-2 whitespace-pre-wrap break-all')}>
-                    {solicitud.justificacion}
-                  </p>
-                </InfoCell>
-              )}
-
-              {solicitud.fecha_resolucion && (
-                <div className={cn('flex items-center gap-1.5 pt-2 border-t', isApproved ? 'border-info-ring' : 'border-error-ring')}>
-                  <span className={cn(TYPOGRAPHY.form.helper, isApproved ? 'text-info' : 'text-error')}>
-                    Resuelta el {formatDateShort(solicitud.fecha_resolucion)}
-                    {solicitud.resolutor?.nombre && <> por <strong>{solicitud.resolutor.nombre}</strong></>}
-                  </span>
-                </div>
-              )}
-            </div>
+            )}
           </div>
-        )}
-
-        {/* Aviso (solo si pendiente) */}
-        {!isResolved && (
-          <div className="flex items-start gap-2.5 px-4 py-3 rounded-corner border bg-info/10 border-info/30">
+        ) : (
+          <div className="col-span-6 flex items-start gap-2.5 px-4 py-3 rounded-corner border bg-info/10 border-info/30">
             <SystemIcons.interface.informationCircle className={cn(ICON_SIZES.sm, 'flex-shrink-0 text-info mt-0.5')} />
             <p className={cn(TYPOGRAPHY.form.helper, 'text-info font-medium')}>
               Su solicitud está siendo revisada. Recibirá una notificación cuando sea resuelta.

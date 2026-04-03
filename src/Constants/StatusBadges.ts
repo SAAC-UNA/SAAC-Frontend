@@ -23,7 +23,7 @@ export const EVIDENCE_STATUS_BADGE: Record<EvidencePublicationStatus, StatusBadg
   'En Proceso': { label: 'En proceso', colorClasses: 'bg-warning-ring text-warning' },
   'Aprobado': { label: 'Aprobado', colorClasses: 'bg-verde-ring text-verde' },
   'Rechazado': { label: 'Rechazado', colorClasses: 'bg-error-ring text-error' },
-  'Completado': { label: 'Completado', colorClasses: 'bg-teal-ring text-teal' },
+  'Completado': { label: 'Completado', colorClasses: 'bg-verde-ring text-verde' },
   'Vencido': { label: 'Vencido', colorClasses: 'bg-rose-ring text-rose' },
   'Observada': { label: 'Observada', colorClasses: 'bg-naranja-ring text-naranja' },
   'Validada': { label: 'Validada', colorClasses: 'bg-info-ring text-info' },
@@ -33,7 +33,7 @@ export const EVIDENCE_STATUS_BADGE: Record<EvidencePublicationStatus, StatusBadg
 export const ASSIGNMENT_STATUS_BADGE: Record<AssignmentStatus, StatusBadgeConfig> = {
   pendiente: { label: 'Pendiente', colorClasses: 'bg-slate-ring text-slate' },
   en_progreso: { label: 'En progreso', colorClasses: 'bg-warning-ring text-warning' },
-  completado: { label: 'Completado', colorClasses: 'bg-teal-ring text-teal' },
+  completado: { label: 'Completado', colorClasses: 'bg-verde-ring text-verde' },
   vencido: { label: 'Vencido', colorClasses: 'bg-rose-ring text-rose' },
 };
 

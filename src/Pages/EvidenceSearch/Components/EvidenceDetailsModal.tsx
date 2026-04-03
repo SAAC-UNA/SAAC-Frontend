@@ -154,22 +154,9 @@ const EvidenciaResponsablesPanelAdmin: React.FC<EvidenciaResponsablesPanelAdminP
 
 // Componentes locales de layout
 
-const SectionLabel: React.FC<{ label: string }> = ({ label }) => (
-  <div className="flex items-center gap-2 mb-2.5">
-    <span className={cn('uppercase tracking-wider font-semibold text-gris-una-2', TYPOGRAPHY.modal.subtitle)}>
-      {label}
-    </span>
-  </div>
-);
-
-const InfoCell: React.FC<{ label: string; children: React.ReactNode; className?: string }> = ({
-  label, children, className,
-}) => (
-  <div className={cn('flex flex-col gap-1.5', className)}>
-    <span className={cn('uppercase tracking-wider font-semibold text-gris-una-2', TYPOGRAPHY.modal.subtitle)}>
-      {label}
-    </span>
-    <div>{children}</div>
+const Separator: React.FC = () => (
+  <div className="col-span-5 py-1">
+    <hr className="border-gray-200" />
   </div>
 );
 
@@ -437,80 +424,76 @@ export const EvidenceDetailsModal: React.FC<EvidenceDetailsModalProps> = ({
           Cargando información del criterio…
         </div>
       ) : (
-        <div className="flex flex-col gap-5">
+        <div className="grid grid-cols-5 gap-x-4 gap-y-3">
 
-          {/* INFORMACIÓN DEL CRITERIO */}
+          {/* div1 — Nomenclatura + Descripción */}
           {criterio && (
-            <div>
-              <SectionLabel label="Información del criterio" />
-              <div className="border border-gray-200 rounded-corner p-4 grid grid-cols-2 gap-x-6 gap-y-4">
-                <InfoCell label="Nomenclatura">
-                  <span className={cn(TYPOGRAPHY.modal.body, 'text-gris-una-2 font-medium')}>
-                    {criterio.criterio_nomenclatura}
-                  </span>
-                </InfoCell>
-                <InfoCell label="Evidencias asociadas">
-                  <span className={cn(TYPOGRAPHY.modal.body, 'text-gris-una-2')}>
-                    {evidencias.length}
-                  </span>
-                </InfoCell>
-                <InfoCell label="Descripción" className="col-span-2">
-                  <span className={cn(TYPOGRAPHY.modal.body, 'text-gris-una-2')}>
-                    {criterio.criterio_descripcion}
-                  </span>
-                </InfoCell>
-              </div>
+            <div className="col-start-1 col-end-4 flex flex-col gap-0.5">
+              <span className={cn(TYPOGRAPHY.modal.body, 'text-negro-una-2 font-semibold')}>
+                {criterio.criterio_nomenclatura}
+              </span>
+              <span className={cn(TYPOGRAPHY.modal.body, 'text-gris-una-2')}>
+                {criterio.criterio_descripcion}
+              </span>
             </div>
           )}
 
-          {/* ROLES CON ACCESO */}
+          {/* div2 — Evidencias asociadas (pequeño, derecha) */}
+          {criterio && (
+            <div className="col-start-4 col-end-6 flex flex-col items-start gap-0.5">
+              <span className={cn('uppercase tracking-wider font-semibold text-gris-una-2', TYPOGRAPHY.modal.subtitle)}>
+                Evidencias asociadas
+              </span>
+              <span className={cn(TYPOGRAPHY.modal.subtitle, 'text-gris-una-2')}>
+                {evidencias.length}
+              </span>
+            </div>
+          )}
+
+          {criterio && <Separator />}
+
+          {/* div3 — Roles con acceso */}
           {criterio && criterio.roles_acceso && criterio.roles_acceso.length > 0 && (
-            <div>
-              <SectionLabel label="Roles con acceso" />
-              <div className="border border-gray-200 rounded-corner p-4">
-                <div className="flex flex-wrap gap-2">
-                  {criterio.roles_acceso.map((rol) => (
-                    <span
-                      key={rol}
-                      className={cn(
-                        'inline-flex px-2.5 py-1 font-semibold rounded-full',
-                        'bg-info-light text-info',
-                        TYPOGRAPHY.badge,
-                      )}
-                    >
-                      {rol}
-                    </span>
-                  ))}
-                </div>
-              </div>
+            <div className="col-span-5 flex flex-wrap gap-2">
+              {criterio.roles_acceso.map((rol) => (
+                <span
+                  key={rol}
+                  className={cn(
+                    'inline-flex px-2.5 py-1 font-semibold rounded-full',
+                    'bg-info-light text-info',
+                    TYPOGRAPHY.badge,
+                  )}
+                >
+                  {rol}
+                </span>
+              ))}
             </div>
           )}
 
-          {/* GESTIÓN DE RECURSOS (solo Superusuario / Administrador) */}
+          {criterio && criterio.roles_acceso && criterio.roles_acceso.length > 0 && <Separator />}
+
+          {/* div4 — Gestión de recursos (solo Superusuario / Administrador) */}
           {isPrivileged && (
-            <div>
-              <SectionLabel label="Gestión de recursos" />
-              <div className="px-1 py-2">
-                <DataTable
-                  title=""
-                  searchable={false}
-                  loading={loadingFiles}
-                  data={evidencias as any}
-                  columns={evidenceColumns as any}
-                  getRowKey={(item: any) => String(item.evidencia_id)}
-                  emptyMessage="No hay evidencias para este criterio"
-                  unstyled
-                  expandableRow={(ev: any) => (
-                    <EvidenciaResponsablesPanelAdmin
-                      evidenciaId={ev.evidencia_id}
-                      groups={filesByEvidencia.get(ev.evidencia_id) ?? []}
-                      loading={false}
-                      onDelete={handleDeleteFile}
-                      onUpload={(group) => handleOpenUpload(ev.evidencia_id, group)}
-                    />
-                  )}
-                />
-              </div>
+            <div className="col-span-5">
+              <DataTable
+                title=""
+                searchable={false}
+                loading={loadingFiles}
+                data={evidencias as any}
+                columns={evidenceColumns as any}
+                getRowKey={(item: any) => String(item.evidencia_id)}
+                emptyMessage="No hay evidencias para este criterio"
+                unstyled
+                expandableRow={(ev: any) => (
+                  <EvidenciaResponsablesPanelAdmin
+                    evidenciaId={ev.evidencia_id}
+                    groups={filesByEvidencia.get(ev.evidencia_id) ?? []}
+                    loading={false}
+                    onDelete={handleDeleteFile}
+                    onUpload={(group) => handleOpenUpload(ev.evidencia_id, group)}
+                  />
+                )}
+              />
             </div>
           )}
 
