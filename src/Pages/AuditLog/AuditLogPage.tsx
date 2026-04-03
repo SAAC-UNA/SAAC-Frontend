@@ -10,6 +10,7 @@
  */
 
 import React, { useState, useEffect, useCallback, useRef } from 'react';
+import { AnimatePresence, motion } from 'framer-motion';
 import { PageHeader, ScreenContainer, Tooltip, TooltipTrigger } from '@/Components/Ui/Index';
 import { BackendErrorAlert } from '@/Components/Ui/Feedback/BackendErrorAlert';
 import { SystemIcons } from '@/Components/Ui/Icons/SystemIcons';
@@ -28,6 +29,7 @@ import { TYPOGRAPHY } from '@/Constants/Typography';
 import { ICON_SIZES } from '@/Constants/Components';
 import { TABLE_PAGE_SIZE } from '@/Constants/TablePagination';
 import { TooltipContent } from '@/Components/Ui/Index';
+import { COLLAPSIBLE_PANEL, COLLAPSIBLE_PANEL_INNER } from '@/Constants/Animations';
 
 const AuditLogPage: React.FC = () => {
   // Hook de toast
@@ -266,13 +268,25 @@ const AuditLogPage: React.FC = () => {
           </div>
         }
       >
-        {/* Componente de filtros como children del header */}
-        {/* Panel de filtros colapsable */}
+        {/* Panel de filtros colapsable — se pasa undefined cuando no hay filtros para no generar mt-4 en el PageHeader */}
         {showFilters && (
-          <AuditLogFilters
-            onApplyFilters={handleApplyFilters}
-            isLoading={isLoading}
-          />
+          <AnimatePresence>
+            <motion.div
+              key="audit-filters"
+              className="w-full overflow-hidden"
+              variants={COLLAPSIBLE_PANEL}
+              initial="collapsed"
+              animate="open"
+              exit="collapsed"
+            >
+              <div className={COLLAPSIBLE_PANEL_INNER}>
+                <AuditLogFilters
+                  onApplyFilters={handleApplyFilters}
+                  isLoading={isLoading}
+                />
+              </div>
+            </motion.div>
+          </AnimatePresence>
         )}
       </PageHeader>
 

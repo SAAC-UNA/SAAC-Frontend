@@ -53,7 +53,6 @@ export const PageHeader: React.FC<PageHeaderProps> = ({
             <p className={cn(
               'font-poppins text-gris-una',
               TYPOGRAPHY.pageSubtitle,
-              children ? 'mb-4' : '' // Si hay children, dar más espacio
             )}>
               {description}
             </p>
@@ -73,6 +72,7 @@ export const PageHeader: React.FC<PageHeaderProps> = ({
         <div className={cn(
           'flex items-center gap-4',
           'justify-start',
+          description ? 'mt-4' : '',
           isMobile ? 'flex-col' : 'flex-row'
         )}>
           {children}

@@ -3,6 +3,7 @@
  *
  * Uso:
  *   import { DROPDOWN_VARIANTS, DROPDOWN_VARIANTS_UP, ITEM_VARIANTS, SPRING_HOVER, SPRING_CHEVRON } from '@/Constants/Animations';
+ *   import { COLLAPSIBLE_PANEL, SPRING_LAYOUT } from '@/Constants/Animations';
  */
 
 // Dropdown que abre hacia abajo
@@ -100,4 +101,73 @@ export const SCROLL_REVEAL_VARIANTS = {
     opacity: 1, y: 0,
     transition: { duration: 0.55, ease: [0.23, 1, 0.32, 1] as [number, number, number, number] },
   },
+};
+
+/**
+ * COLLAPSIBLE_PANEL — Panel colapsable con altura animada (filtros, sidebars, accordions)
+ *
+ * Uso con motion.div:
+ *   <motion.div
+ *     className="w-full overflow-hidden"
+ *     initial="collapsed"
+ *     animate="open"
+ *     exit="collapsed"
+ *     variants={COLLAPSIBLE_PANEL}
+ *   >
+ *     <div className={COLLAPSIBLE_PANEL_INNER}>
+ *       {children}
+ *     </div>
+ *   </motion.div>
+ *
+ * Usar COLLAPSIBLE_PANEL_INNER como className del div interno para que las
+ * sombras de las cards no sean recortadas por overflow-hidden.
+ */
+export const COLLAPSIBLE_PANEL = {
+  open: {
+    height: 'auto',
+    opacity: 1,
+    y: 0,
+    transition: { type: 'spring' as const, damping: 30, stiffness: 300, mass: 0.8 },
+  },
+  collapsed: {
+    height: 0,
+    opacity: 0,
+    y: -8,
+    transition: { type: 'spring' as const, damping: 30, stiffness: 300, mass: 0.8 },
+  },
+};
+
+/** Padding interno del wrapper para que las sombras no sean recortadas por overflow-hidden */
+export const COLLAPSIBLE_PANEL_INNER = 'px-2 pb-2 pt-1';
+
+/**
+ * SPRING_LAYOUT — Transición spring para layout animations (motion.div con prop `layout`)
+ * Úsalo en elementos que deben moverse suavemente cuando un vecino cambia de tamaño.
+ *
+ * Uso:
+ *   <motion.div layout transition={SPRING_LAYOUT}>...</motion.div>
+ */
+export const SPRING_LAYOUT = { type: 'spring' as const, damping: 30, stiffness: 300, mass: 0.8 };
+
+/**
+ * TABLE_ROW_VARIANTS — Entrada escalonada de filas de tabla.
+ * Cada fila hace fade + slide desde abajo con un delay incremental.
+ * El delay está acotado a 180ms para listas largas.
+ *
+ * Uso en DataTable (motion.tbody con key cambiante + motion.tr con custom):
+ *   <motion.tbody key={bodyKey} initial="hidden" animate="visible">
+ *     {data.map((item, index) => (
+ *       <motion.tr variants={TABLE_ROW_VARIANTS} custom={index} ...>
+ */
+export const TABLE_ROW_VARIANTS = {
+  hidden: { opacity: 0, y: 5 },
+  visible: (i: number) => ({
+    opacity: 1,
+    y: 0,
+    transition: {
+      delay: Math.min(i * 0.012, 0.18),
+      duration: 0.2,
+      ease: [0.23, 1, 0.32, 1] as [number, number, number, number],
+    },
+  }),
 };

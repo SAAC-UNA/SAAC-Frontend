@@ -14,6 +14,7 @@
 
 import React, { useState, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { SPRING_LAYOUT, TABLE_ROW_VARIANTS } from '@/Constants/Animations';
 import { cn } from '@/Utils/ClassNames';
 import { TYPOGRAPHY } from '@/Constants/Typography';
 import { ICON_SIZES } from '@/Constants/Components';
@@ -244,7 +245,11 @@ export const DataTable = React.memo(<T extends Record<string, unknown>>({
                 )}
               </tr>
             </thead>
-            <tbody>
+            <motion.tbody
+              key={`${pagination?.currentPage ?? 0}-${data.length}-${(data[0] as Record<string, unknown>)?.id ?? ''}`}
+              initial="hidden"
+              animate="visible"
+            >
               {data.map((item, index) => {
                 const rowKey = getRowKey ? getRowKey(item, index) : String((item as Record<string, unknown>).id ?? index);
                 const isExpanded = expandableRow ? expandedRows.has(rowKey) : false;
@@ -252,7 +257,9 @@ export const DataTable = React.memo(<T extends Record<string, unknown>>({
                 const totalCols = columns.length + (expandableRow ? 1 : 0) + (actions?.length ? 1 : 0);
                 return (
                   <React.Fragment key={`${rowKey}-${index}`}>
-                    <tr
+                    <motion.tr
+                      variants={TABLE_ROW_VARIANTS}
+                      custom={index}
                       className={cn(expandableRow && "cursor-pointer transition-colors")}
                       onClick={expandableRow ? () => toggleRow(rowKey) : undefined}
                     >
@@ -317,7 +324,7 @@ export const DataTable = React.memo(<T extends Record<string, unknown>>({
                           </div>
                         </td>
                       )}
-                    </tr>
+                    </motion.tr>
                     <AnimatePresence initial={false}>
                       {expandableRow && isExpanded && (
                         <tr className="bg-white">
@@ -340,7 +347,7 @@ export const DataTable = React.memo(<T extends Record<string, unknown>>({
                   </React.Fragment>
                 );
               })}
-            </tbody>
+            </motion.tbody>
           </table>
         )}
       </div>
@@ -358,5 +365,9 @@ export const DataTable = React.memo(<T extends Record<string, unknown>>({
     </div>
   );
 
-  return unstyled ? tableContent : <Card className="p-4">{tableContent}</Card>;
+  return (
+    <motion.div layout="position" transition={SPRING_LAYOUT}>
+      {unstyled ? tableContent : <Card className="p-4">{tableContent}</Card>}
+    </motion.div>
+  );
 }) as <T extends Record<string, unknown>>(props: DataTableProps<T>) => React.ReactElement;
