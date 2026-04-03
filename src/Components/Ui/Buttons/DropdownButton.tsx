@@ -183,7 +183,7 @@ export const DropdownButton: React.FC<DropdownButtonProps> = ({
             </Button>
           </TooltipTrigger>
           {tooltip && (
-            <TooltipContent side="top">
+            <TooltipContent side="bottom">
               <p>{tooltip}</p>
             </TooltipContent>
           )}
