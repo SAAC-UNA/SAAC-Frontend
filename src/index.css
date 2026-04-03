@@ -268,9 +268,7 @@ line {
   --radius-lg: 1.25rem; /* 20px - Modales, sidebar y contenedores destacados */
   --radius-full: 9999px; /* Full - Pills y formas completamente redondeadas */
   --radius-sidebar-item: var(--radius-lg); /* Alias semántico para el sidebar */
-  --radius-corner: var(
-    --radius-md
-  ); /* Alias de compatibilidad para rounded-corner */
+  --radius-corner: var(--radius-md); /* Alias de compatibilidad para rounded-corner */
 
   /* Tamaño de button */
   --width-button: 8rem; /* 128px - Ancho mínimo estándar para botones de contenido */
@@ -385,6 +383,56 @@ line {
     box-shadow: 0 4px 14px -2px
       color-mix(in srgb, var(--color-info) 30%, transparent);
     --toast-bar: var(--color-info);
+  }
+
+  /* ! ===== BOTÓN PILL FILL ===== */
+  /* Botón pill rojo con efecto de relleno blanco que entra desde la izquierda al hacer hover.
+  */
+  .btn-pill-fill {
+    padding: 12px 28px;
+    font-family: var(--font-poppins);
+    font-size: 0.9rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    border-radius: var(--radius-full);
+    border: 2px solid var(--color-rojo-una);
+    background: var(--color-rojo-una);
+    color: var(--color-blanco-una);
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+    z-index: 1;
+    transition: color 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .btn-pill-fill::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 100%;
+    width: 0;
+    background-color: var(--color-blanco-una);
+    z-index: -1;
+    transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .btn-pill-fill:hover:not(:disabled) {
+    color: var(--color-rojo-una);
+  }
+
+  .btn-pill-fill:hover:not(:disabled)::before {
+    width: 100%;
+  }
+
+  .btn-pill-fill:active:not(:disabled) {
+    transform: scale(0.98);
+  }
+
+  .btn-pill-fill:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
   }
 }
 

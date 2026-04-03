@@ -294,42 +294,6 @@ export const SystemIcons = {
   </svg>
     ),
     
-    infoCircle: ({ className, size }: IconProps) => (
-      <svg
-        className={`${getSizeClasses(size)} ${className || ''}`}
-        fill="none"
-        viewBox="0 0 24 24"
-        strokeWidth={1.5}
-        stroke="currentColor"
-      >
-        <path strokeLinecap="round" strokeLinejoin="round" d="m11.25 11.25.041-.02a.75.75 0 0 1 1.063.852l-.708 2.836a.75.75 0 0 0 1.063.853l.041-.021M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9-3.75h.008v.008H12V8.25Z" />
-      </svg>
-    ),
-
-    user: ({ className, size }: IconProps) => (
-      <svg
-        className={`${getSizeClasses(size)} ${className || ''}`}
-        fill="none"
-        viewBox="0 0 24 24"
-        strokeWidth={1.5}
-        stroke="currentColor"
-      >
-        <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z" />
-      </svg>
-    ),
-
-    lock: ({ className, size }: IconProps) => (
-      <svg
-        className={`${getSizeClasses(size)} ${className || ''}`}
-        fill="none"
-        viewBox="0 0 24 24"
-        strokeWidth={1.5}
-        stroke="currentColor"
-      >
-        <path strokeLinecap="round" strokeLinejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 1 0-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 0 0 2.25-2.25v-6.75a2.25 2.25 0 0 0-2.25-2.25H6.75a2.25 2.25 0 0 0-2.25 2.25v6.75a2.25 2.25 0 0 0 2.25 2.25Z" />
-      </svg>
-    ),
-    
     back: ({ className, size, color = 'var(--color-rojo-una-2)' }: IconProps) => (
       <svg
         className={`${getSizeClasses(size)} ${className || ''}`}
@@ -654,16 +618,6 @@ export const SystemIcons = {
       </svg>
     ),
 
-    contacts: ({ className, size, color }: IconProps) => (
-      <svg
-        className={`${getSizeClasses(size)} ${className || ''}`}
-        viewBox="0 0 24 24"
-        fill={color || "currentColor"}
-      >
-        <path fillRule="evenodd" d="M16.456 2.883a31.331 31.331 0 0 0-8.913 0 3.197 3.197 0 0 0-2.728 2.874l-.127 1.396a53.504 53.504 0 0 0 0 9.694l.127 1.396a3.197 3.197 0 0 0 2.728 2.874c2.956.425 5.958.425 8.913 0a3.197 3.197 0 0 0 2.73-2.874l.126-1.396c.293-3.225.293-6.47 0-9.694l-.127-1.396a3.196 3.196 0 0 0-2.729-2.874ZM10 9a2 2 0 1 1 4 0 2 2 0 0 1-4 0Zm-2 6.5a3 3 0 0 1 3-3h2a3 3 0 0 1 3 3 1 1 0 0 1-1 1H9a1 1 0 0 1-1-1Z" clipRule="evenodd" />
-      </svg>
-    ),
-
     roles: ({ className, size, color }: IconProps) => (
       <svg
         className={`${getSizeClasses(size)} ${className || ''}`}
@@ -773,7 +727,7 @@ export const SystemIcons = {
 
 // ===== AUTENTICACIÓN =====
   auth: {
-    Lock: ({ className, size, color }: IconProps) => (
+    lock: ({ className, size, color }: IconProps) => (
       <svg
         className={`${getSizeClasses(size)} ${className || ''}`}
         viewBox="0 0 24 24"
@@ -977,7 +931,6 @@ export const getIconByName = (iconName: string, size: IconProps['size'] = 'md'):
 
     // Users
     'user': () => SystemIcons.users.user({ size }),
-    'contacts': () => SystemIcons.users.contacts({ size }),
 
     // Work & Security
     'shield': () => SystemIcons.users.roles({ size }), // Usando roles que tiene el shield
