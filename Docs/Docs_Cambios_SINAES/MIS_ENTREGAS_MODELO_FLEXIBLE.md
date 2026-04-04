@@ -34,10 +34,17 @@ export interface FlexibleAssignmentItem extends Record<string, unknown> {
   updated_at: string;
   has_pending_extension_request?: boolean;
   element?: { elemento_id: number; nombre: string; tipo: string; ... };
-  process?: { proceso_id: number; nombre: string; };
+  process?: {
+    proceso_id: number;
+    nombre: string;
+    ciclo_acreditacion_id?: number;   // ← para agrupar por ciclo
+  };
   user?: { usuario_id: number; nombre: string; };
 }
 ```
+
+Campo `ciclo_nombre?: string` agregado a la interfaz `Process` para mostrar el
+nombre del ciclo en el selector.
 
 ---
 
@@ -50,6 +57,9 @@ Tres métodos nuevos para el modelo flexible:
 | `getMyElementAssignments(userId)` | `GET /api/usuarios/{id}/elementos-asignados` | Lista pautas asignadas al usuario |
 | `updateElementStatus(id, estado)` | `PATCH /api/elementos-asignaciones/{id}` | Cambia estado a `En Progreso` o `Completado` |
 | `requestElementExtension(id, data)` | `POST /api/elementos-asignaciones/{id}/solicitud-ampliacion` | Solicita ampliación de plazo |
+
+`getAllProcesses()` ahora mapea también `ciclo_nombre: cycle.nombre`, necesario para
+mostrar el nombre del ciclo en el selector.
 
 ---
 
@@ -75,32 +85,39 @@ Agregado el export de `ElementAssignmentsTable`.
 Cambios principales:
 
 1. **Carga paralela de ambas listas** al montar: `loadAssignments()` (tradicional) +
-   `loadFlexAssignments()` (flexible) + `loadProcesses()` (nombres de proceso).
+   `loadFlexAssignments()` (flexible) + `loadProcesses()` (nombres de ciclo).
 
-2. **`availableProcesses` (derivado):** lista de procesos donde el usuario tiene
-   asignaciones de cualquier tipo, construida con `useMemo` cruzando los `proceso_id`
-   de ambas listas.
+2. **`availableCycles` (derivado):** lista de ciclos donde el usuario tiene
+   asignaciones de cualquier tipo, construida con `useMemo` cruzando los
+   `ciclo_acreditacion_id` de ambas listas. Un ciclo puede ser tradicional o
+   flexible — nunca los dos al mismo tiempo.
 
-3. **Selector de proceso** (`CustomSelect`): aparece **solo si el usuario tiene más
-   de un proceso** (`processOptions.length > 1`). Si solo tiene uno, la tabla se
-   muestra directamente sin selector.
+3. **Selector de ciclo** (`CustomSelect`, etiqueta "Ciclo de acreditación"): aparece
+   **solo si el usuario tiene más de un ciclo** (`cycleOptions.length > 1`). Si solo
+   tiene uno, la tabla se muestra directamente sin selector.
 
-4. **Detección de modelo** por proceso: el flag `isFlexible` se deriva de si el
-   `proceso_id` seleccionado aparece en las asignaciones flexibles o tradicionales.
+4. **Detección de modelo** por ciclo: el flag `isFlexible` se deriva de si el
+   `ciclo_acreditacion_id` seleccionado aparece en las asignaciones flexibles.
+   Esta detección es determinista porque un ciclo usa un único modelo.
 
-5. **Tabla dinámica:** según `isFlexible`, se renderiza `ElementAssignmentsTable`
+5. **Filtrado correcto para profesores en múltiples carreras:** un profesor en dos
+   carreras tiene dos `ciclo_acreditacion_id` distintos, uno por carrera. El filtrado
+   por `ciclo_acreditacion_id` es semánticamente correcto — agrupar por `proceso_id`
+   podría mezclar procesos de distintas carreras bajo el mismo selector.
+
+6. **Tabla dinámica:** según `isFlexible`, se renderiza `ElementAssignmentsTable`
    o `EvidenceAssignmentsTable`. La paginación y el reseteo de página son compartidos.
 
-6. **Modal de ampliación reutilizado:** `CreateExtensionRequestModal` se usa para
+7. **Modal de ampliación reutilizado:** `CreateExtensionRequestModal` se usa para
    ambos modelos. Para el modelo flexible llama a
    `evidenceAssignmentService.requestElementExtension()`.
 
-7. **SearchInput** solo se muestra en el modelo tradicional (el flexible no tiene
+8. **SearchInput** solo se muestra en el modelo tradicional (el flexible no tiene
    filtrado por texto implementado).
 
 ---
 
-## Cómo funciona el selector de proceso
+## Cómo funciona el selector de ciclo
 
 ```
 Al montar:
@@ -111,13 +128,13 @@ Al montar:
              │                                  │
              └────────────┬─────────────────────┘
                           ▼
-               availableProcesses (useMemo)
-               ┌──────────────────────────────────┐
-               │ proceso_id: 1, isFlexible: false  │ ← Proceso A (carrera X)
-               │ proceso_id: 2, isFlexible: true   │ ← Proceso B (carrera Y)
-               └──────────────────────────────────┘
+               availableCycles (useMemo, keyed on ciclo_acreditacion_id)
+               ┌──────────────────────────────────────────────┐
+               │ ciclo_id: 3, nombre: "Sistemas 2024", isFlexible: false │ ← carrera X
+               │ ciclo_id: 7, nombre: "Computación 2025", isFlexible: true│ ← carrera Y
+               └──────────────────────────────────────────────┘
                           ▼
-               si length > 1 → muestra CustomSelect
+               si length > 1 → muestra CustomSelect "Ciclo de acreditación"
                si length = 1 → tabla directa sin selector
                           ▼
                isFlexible=false → EvidenceAssignmentsTable (criterios)
@@ -126,39 +143,34 @@ Al montar:
 
 ---
 
-## Limitación actual — Cómo se obtienen los nombres de proceso
+## Limitación actual — Cómo se obtienen los nombres de ciclo
 
 ### Situación presente
 
-Los nombres de proceso se resuelven por esta cadena de fallbacks:
+Los nombres de ciclo se resuelven por esta cadena de fallbacks:
 
 ```
-1. getAllProcesses()                    → GET /api/estructura/procesos (TODOS los procesos del sistema)
-   si no encontrado:
-2. assignment.process?.nombre          → nombre embebido en ELEMENTO_ASIGNACION (solo modelo flexible)
-   si no encontrado:
-3. `Proceso ${proceso_id}`             → fallback genérico
+1. getAllProcesses() → GET /api/estructura/procesos
+   mapea ciclo_nombre = cycle.nombre para cada proceso del usuario
+   si no encontrado en la lista de procesos:
+2. `Ciclo ${ciclo_acreditacion_id}`   → fallback genérico
 ```
 
 **Problema:** `getAllProcesses()` (`/api/estructura/procesos`) devuelve todos los
 procesos del sistema. Es una llamada sobredimensionada para obtener únicamente los
-nombres de los 1-3 procesos que el usuario tiene asignados.
-
-Adicionalmente, **el modelo tradicional no embebe el nombre del proceso** en la
-respuesta de `getMyAssignments()`, por lo que sin `getAllProcesses()` los procesos
-tradicionales mostrarían el texto genérico `"Proceso 5"`.
+nombres de los 1-3 ciclos que el usuario tiene asignados.
 
 ---
 
 ## Requerimiento pendiente de backend
 
-### Opción A — Endpoint dedicado `GET /api/usuarios/{id}/mis-procesos` *(recomendada)*
+### Opción A — Endpoint dedicado `GET /api/usuarios/{id}/mis-ciclos` *(recomendada)*
 
-Endpoint que retorna solo los procesos donde el usuario tiene asignaciones, junto
+Endpoint que retorna solo los ciclos donde el usuario tiene asignaciones, junto
 con el tipo de modelo de cada uno:
 
 ```
-GET /api/usuarios/{usuario_id}/mis-procesos
+GET /api/usuarios/{usuario_id}/mis-ciclos
 Authorization: Bearer {token}
 ```
 
@@ -168,99 +180,80 @@ Authorization: Bearer {token}
 {
   "data": [
     {
-      "proceso_id": 1,
+      "ciclo_acreditacion_id": 3,
       "nombre": "Proceso de Acreditación Informática 2024",
-      "tipo_modelo": "tradicional",
-      "ciclo_acreditacion_id": 3
+      "tipo_modelo": "tradicional"
     },
     {
-      "proceso_id": 4,
+      "ciclo_acreditacion_id": 7,
       "nombre": "Proceso de Acreditación Computación 2025",
-      "tipo_modelo": "elemento_flexible",
-      "ciclo_acreditacion_id": 7
+      "tipo_modelo": "elemento_flexible"
     }
   ]
 }
 ```
 
-**Lógica sugerida en el backend** (nuevo método en `EvidenceAssignmentService` o
-en un `UserProcessService`):
+**Lógica sugerida en el backend:**
 
 ```php
-public function getProcessesForUser(int $userId): Collection
+public function getCyclesForUser(int $userId): Collection
 {
     // Procesos del modelo tradicional
     $tradicional = EvidenceAssignment::where('usuario_id', $userId)
-        ->distinct()
-        ->pluck('proceso_id');
+        ->with('process.accreditationCycle.modeloEstructura')
+        ->get()
+        ->pluck('process.accreditationCycle')
+        ->unique('ciclo_acreditacion_id');
 
     // Procesos del modelo flexible
     $flexible = ElementAssignment::where('usuario_id', $userId)
-        ->distinct()
-        ->pluck('proceso_id');
-
-    $allIds = $tradicional->merge($flexible)->unique();
-
-    return Process::with('accreditationCycle.modeloEstructura')
-        ->whereIn('proceso_id', $allIds)
+        ->with('process.accreditationCycle.modeloEstructura')
         ->get()
-        ->map(fn ($p) => [
-            'proceso_id'           => $p->proceso_id,
-            'nombre'               => $p->accreditationCycle?->nombre ?? "Proceso {$p->proceso_id}",
-            'tipo_modelo'          => $p->accreditationCycle?->modeloEstructura?->tipo ?? 'tradicional',
-            'ciclo_acreditacion_id'=> $p->ciclo_acreditacion_id,
+        ->pluck('process.accreditationCycle')
+        ->unique('ciclo_acreditacion_id');
+
+    return $tradicional->merge($flexible)->unique('ciclo_acreditacion_id')
+        ->map(fn ($c) => [
+            'ciclo_acreditacion_id' => $c->ciclo_acreditacion_id,
+            'nombre'                => $c->nombre,
+            'tipo_modelo'           => $c->modeloEstructura?->tipo ?? 'tradicional',
         ]);
 }
 ```
 
-**Ventajas:** una sola llamada, sin sobreobtener datos, el frontend ya conoce el
-tipo de modelo sin inferirlo de las asignaciones.
+**Ventajas:** una sola llamada, sin sobreobtener datos, el frontend ya conoce
+el tipo de modelo sin inferirlo — el flag `isFlexible` vendría del backend.
 
 ---
 
-### Opción B — Agregar `process.nombre` al eager load del modelo tradicional
+### Opción B — Mantener `getAllProcesses()` (situación actual)
 
-Como segunda opción más simple, agregar el `nombre` del ciclo al eager load en
-`EvidenceAssignmentService::WITH_BASE`:
-
-```php
-// Actualmente:
-private const WITH_BASE = ['evidence.criterion', 'evidence.comments.user', 'user', 'process'];
-
-// El modelo Process no tiene campo 'nombre' directamente.
-// Pero sí se puede agregar accreditationCycle al proceso:
-private const WITH_BASE = ['evidence.criterion', 'evidence.comments.user', 'user', 'process.accreditationCycle.modeloEstructura'];
-```
-
-Y en el frontend leer `assignment.proceso?.accreditationCycle?.nombre ?? assignment.proceso?.accreditationCycle?.modeloEstructura?.tipo`.
-
-**Desventaja:** el nombre del proceso en la tabla PROCESO no existe — está en el
-ciclo (`AccreditationCycle.nombre`). Aun así resuelve el problema de forma sin
-endpoint extra, aunque agrega carga a `getMyAssignments()`.
+La llamada actual a `getAllProcesses()` ya resuelve los nombres de ciclo porque
+mapea `ciclo_nombre = cycle.nombre`. Funciona, aunque trae más datos de los
+necesarios.
 
 ---
 
 ## Impacto si se implementa la Opción A
 
-Una vez disponible `GET /api/usuarios/{id}/mis-procesos`:
+Una vez disponible `GET /api/usuarios/{id}/mis-ciclos`:
 
 1. Eliminar la llamada a `loadProcesses()` que usa `getAllProcesses()`
 2. Eliminar el estado `processes: Process[]` de la página
-3. `availableProcesses` se construiría directamente desde la respuesta del nuevo
+3. `availableCycles` se construiría directamente desde la respuesta del nuevo
    endpoint, con `tipo_modelo` ya resuelto — el flag `isFlexible` vendría del
    backend en lugar de inferirse
-4. El `useMemo` de `availableProcesses` se simplifica a un simple mapeo
+4. El `useMemo` de `availableCycles` se simplifica a un simple mapeo
 
 ```typescript
 // Con el nuevo endpoint, la lógica quedaría:
-const [userProcesses, setUserProcesses] = useState<UserProcess[]>([]);
+const [userCycles, setUserCycles] = useState<UserCycle[]>([]);
 
-// availableProcesses ya no es un useMemo complejo:
-const processOptions = userProcesses.map(p => ({
-  value: String(p.proceso_id),
-  label: p.nombre,
+const cycleOptions = userCycles.map(c => ({
+  value: String(c.ciclo_acreditacion_id),
+  label: c.nombre,
 }));
 
-const selectedProcess = userProcesses.find(p => p.proceso_id === selectedProcessId);
-const isFlexible = selectedProcess?.tipo_modelo === 'elemento_flexible';
+const selectedCycle = userCycles.find(c => c.ciclo_acreditacion_id === selectedCycleId);
+const isFlexible = selectedCycle?.tipo_modelo === 'elemento_flexible';
 ```

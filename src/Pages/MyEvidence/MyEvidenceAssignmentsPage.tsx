@@ -52,9 +52,9 @@ export const MyEvidenceAssignmentsPage: React.FC = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = TABLE_PAGE_SIZE.standard;
 
-  // Selector de proceso — detecta modelo según asignaciones cargadas
+  // Selector de ciclo — detecta modelo según asignaciones cargadas
   const [processes, setProcesses] = useState<Process[]>([]);
-  const [selectedProcessId, setSelectedProcessId] = useState<number | null>(null);
+  const [selectedCycleId, setSelectedCycleId] = useState<number | null>(null);
 
   // Estado del modelo flexible
   const [flexState, setFlexState] = useState<{
@@ -176,40 +176,47 @@ export const MyEvidenceAssignmentsPage: React.FC = () => {
     }
   };
 
-  // Auto-seleccionar el primer proceso disponible al cargar
-  const availableProcesses = useMemo(() => {
-    const traditionalIds = new Set(assignments.map((a) => a.proceso_id));
-    const flexIds = new Set(flexState.assignments.map((a) => a.proceso_id));
-    const allIds = new Set([...traditionalIds, ...flexIds]);
-    const processMap = new Map(processes.map((p) => [p.proceso_id, p]));
+  // Auto-seleccionar el primer ciclo disponible al cargar
+  const availableCycles = useMemo(() => {
+    const cycleMap = new Map<number, { nombre: string; isFlexible: boolean }>();
 
-    return [...allIds].map((id) => {
-      const p = processMap.get(id);
-      const flexName = flexState.assignments.find(
-        (a) => a.proceso_id === id,
-      )?.process?.nombre;
-      return {
-        proceso_id: id,
-        nombre: p?.nombre ?? flexName ?? `Proceso ${id}`,
-        isFlexible: flexIds.has(id),
-      };
-    });
+    for (const a of assignments) {
+      const cicloId = a.proceso?.ciclo_acreditacion_id;
+      if (cicloId && !cycleMap.has(cicloId)) {
+        const proc = processes.find((p) => p.ciclo_acreditacion_id === cicloId);
+        cycleMap.set(cicloId, {
+          nombre: proc?.ciclo_nombre ?? `Ciclo ${cicloId}`,
+          isFlexible: false,
+        });
+      }
+    }
+
+    for (const a of flexState.assignments) {
+      const cicloId = a.process?.ciclo_acreditacion_id;
+      if (cicloId && !cycleMap.has(cicloId)) {
+        const proc = processes.find((p) => p.ciclo_acreditacion_id === cicloId);
+        cycleMap.set(cicloId, {
+          nombre: proc?.ciclo_nombre ?? `Ciclo ${cicloId}`,
+          isFlexible: true,
+        });
+      }
+    }
+
+    return [...cycleMap.entries()].map(([id, info]) => ({ ciclo_id: id, ...info }));
   }, [assignments, flexState.assignments, processes]);
 
   useEffect(() => {
-    if (availableProcesses.length > 0 && selectedProcessId === null) {
-      setSelectedProcessId(availableProcesses[0].proceso_id);
+    if (availableCycles.length > 0 && selectedCycleId === null) {
+      setSelectedCycleId(availableCycles[0].ciclo_id);
     }
-  }, [availableProcesses, selectedProcessId]);
+  }, [availableCycles, selectedCycleId]);
 
-  const selectedProcess = availableProcesses.find(
-    (p) => p.proceso_id === selectedProcessId,
-  ) ?? null;
-  const isFlexible = selectedProcess?.isFlexible ?? false;
+  const selectedCycle = availableCycles.find((c) => c.ciclo_id === selectedCycleId) ?? null;
+  const isFlexible = selectedCycle?.isFlexible ?? false;
 
-  const processOptions: SelectOption[] = availableProcesses.map((p) => ({
-    value: String(p.proceso_id),
-    label: p.nombre,
+  const cycleOptions: SelectOption[] = availableCycles.map((c) => ({
+    value: String(c.ciclo_id),
+    label: c.nombre,
   }));
 
   const handleViewDetails = (assignment: EvidenceAssignment) => {
@@ -440,11 +447,11 @@ export const MyEvidenceAssignmentsPage: React.FC = () => {
   };
 
   const filteredAssignments = filterAndSortAssignments(
-    assignments.filter((a) => a.proceso_id === selectedProcessId),
+    assignments.filter((a) => a.proceso?.ciclo_acreditacion_id === selectedCycleId),
     filters,
   );
   const filteredFlex = flexState.assignments.filter(
-    (a) => a.proceso_id === selectedProcessId,
+    (a) => a.process?.ciclo_acreditacion_id === selectedCycleId,
   );
   const moduleInfo = getModuleInfo("my_evidence_assignments");
 
@@ -466,15 +473,15 @@ export const MyEvidenceAssignmentsPage: React.FC = () => {
         title={moduleInfo.title}
         description={moduleInfo.description}
         headerExtra={
-          processOptions.length > 1 || (!isFlexible && !error && assignments.length > 0) ? (
+          cycleOptions.length > 1 || (!isFlexible && !error && assignments.length > 0) ? (
             <div className="flex items-end gap-3">
-              {processOptions.length > 1 && (
+              {cycleOptions.length > 1 && (
                 <CustomSelect className="w-80"
-                  label="Proceso"
-                  options={processOptions}
-                  value={selectedProcessId ? String(selectedProcessId) : ""}
+                  label="Ciclo de acreditación"
+                  options={cycleOptions}
+                  value={selectedCycleId ? String(selectedCycleId) : ""}
                   onChange={(v) => {
-                    setSelectedProcessId(Number(v));
+                    setSelectedCycleId(Number(v));
                     setCurrentPage(1);
                   }}
                 />
@@ -495,21 +502,21 @@ export const MyEvidenceAssignmentsPage: React.FC = () => {
 
       <div className="space-y-6">
         {/* Carga inicial */}
-        {(loading || flexState.loading) && !selectedProcessId && (
+        {(loading || flexState.loading) && !selectedCycleId && (
           <div className="flex justify-center py-10">
             <LoadingSpinner />
           </div>
         )}
 
         {/* Sin procesos asignados */}
-        {!loading && !flexState.loading && availableProcesses.length === 0 && (
+        {!loading && !flexState.loading && availableCycles.length === 0 && (
           <p className="text-sm text-gris-una text-center py-10">
             No tienes asignaciones en ningún proceso de acreditación.
           </p>
         )}
 
         {/* ── Modelo tradicional (Criterios) ── */}
-        {selectedProcessId !== null && !isFlexible && (
+        {selectedCycleId !== null && !isFlexible && (
           <>
             {error && <BackendErrorAlert error={error} onRetry={loadAssignments} />}
             {!error && (
@@ -532,7 +539,7 @@ export const MyEvidenceAssignmentsPage: React.FC = () => {
         )}
 
         {/* ── Modelo flexible (Pautas) ── */}
-        {selectedProcessId !== null && isFlexible && (
+        {selectedCycleId !== null && isFlexible && (
           <>
             {flexState.error && (
               <BackendErrorAlert error={flexState.error} onRetry={loadFlexAssignments} />
