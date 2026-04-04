@@ -6,6 +6,15 @@ import { ToastProvider } from "./Context/ToastContext";
 import { ProtectedRoute } from "@/Components/Ui/ProtectedRoute";
 import { Layout } from "./Components/Layout/Index";
 import { LoadingSpinner } from "@/Components/Ui/Feedback/Loading";
+import {
+  CAPABILITIES,
+  EVIDENCE_ASSIGNMENT_PERMISSIONS,
+  EVIDENCE_VIEW_PERMISSIONS,
+  IMPROVEMENT_COMMITMENT_ACCESS_PERMISSIONS,
+  REPORTS_ACCESS_PERMISSIONS,
+  ROLE_MANAGEMENT_PERMISSIONS,
+  USER_MANAGEMENT_PERMISSIONS,
+} from "@/Constants/PermissionCapabilities";
 
 // Lazy load de páginas para code splitting y mejor rendimiento
 import { Login } from "@/Pages/Auth/Login";
@@ -118,11 +127,10 @@ function App() {
                             path="/roles/listar"
                             element={
                               <ProtectedRoute
-                                requirePermissions={[
-                                  "roles.create",
-                                  "roles.edit",
-                                  "roles.delete",
+                                requireCapabilities={[
+                                  CAPABILITIES.ADMIN_ROLES_MANAGE,
                                 ]}
+                                requirePermissions={ROLE_MANAGEMENT_PERMISSIONS}
                               >
                                 <RolesRepository />
                               </ProtectedRoute>
@@ -166,7 +174,10 @@ function App() {
                             path="/usuarios/listar"
                             element={
                               <ProtectedRoute
-                                requirePermissions={["usuarios.view"]}
+                                requireCapabilities={[
+                                  CAPABILITIES.ADMIN_USERS_MANAGE,
+                                ]}
+                                requirePermissions={USER_MANAGEMENT_PERMISSIONS}
                               >
                                 <UsersRepository />
                               </ProtectedRoute>
@@ -188,7 +199,7 @@ function App() {
                             path="/estructura/listar"
                             element={
                               <ProtectedRoute
-                                requirePermissions={["elemento.view"]}
+                                requirePermissions={["procesos.view"]}
                               >
                                 <StructureList />
                               </ProtectedRoute>
@@ -224,7 +235,10 @@ function App() {
                             path="/evidencias/asignar"
                             element={
                               <ProtectedRoute
-                                requirePermissions={["evidencias.assign"]}
+                                requireCapabilities={[CAPABILITIES.EVIDENCE_ASSIGN]}
+                                requirePermissions={
+                                  EVIDENCE_ASSIGNMENT_PERMISSIONS
+                                }
                               >
                                 <EvidenceAssignment />
                               </ProtectedRoute>
@@ -234,7 +248,8 @@ function App() {
                             path="/mis-evidencias-asignadas"
                             element={
                               <ProtectedRoute
-                                requirePermissions={["evidencias.view"]}
+                                requireCapabilities={[CAPABILITIES.EVIDENCE_VIEW]}
+                                requirePermissions={EVIDENCE_VIEW_PERMISSIONS}
                               >
                                 <MyEvidenceAssignmentsPage />
                               </ProtectedRoute>
@@ -254,7 +269,10 @@ function App() {
                             path="/evidencias/busqueda-avanzada"
                             element={
                               <ProtectedRoute
-                                requirePermissions={["evidencias.view"]}
+                                requireCapabilities={[CAPABILITIES.EVIDENCE_ASSIGN]}
+                                requirePermissions={
+                                  EVIDENCE_ASSIGNMENT_PERMISSIONS
+                                }
                               >
                                 <EvidenceSearchPage />
                               </ProtectedRoute>
@@ -293,7 +311,12 @@ function App() {
                             path="/compromisos/listar"
                             element={
                               <ProtectedRoute
-                                requirePermissions={["compromisos_mejora.view"]}
+                                requireCapabilities={[
+                                  CAPABILITIES.IMPROVEMENT_ACCESS,
+                                ]}
+                                requirePermissions={
+                                  IMPROVEMENT_COMMITMENT_ACCESS_PERMISSIONS
+                                }
                               >
                                 <ImprovementCommitmentsList />
                               </ProtectedRoute>
@@ -315,7 +338,12 @@ function App() {
                             path="/compromisos/ver/:id"
                             element={
                               <ProtectedRoute
-                                requirePermissions={["compromisos_mejora.view"]}
+                                requireCapabilities={[
+                                  CAPABILITIES.IMPROVEMENT_ACCESS,
+                                ]}
+                                requirePermissions={
+                                  IMPROVEMENT_COMMITMENT_ACCESS_PERMISSIONS
+                                }
                               >
                                 <ImprovementCommitmentDetail />
                               </ProtectedRoute>
@@ -361,7 +389,10 @@ function App() {
                             path="/gestion-informes"
                             element={
                               <ProtectedRoute
-                                requirePermissions={["reportes.view"]}
+                                requireCapabilities={[
+                                  CAPABILITIES.REPORTS_ACCESS,
+                                ]}
+                                requirePermissions={REPORTS_ACCESS_PERMISSIONS}
                               >
                                 <FinalReports />
                               </ProtectedRoute>

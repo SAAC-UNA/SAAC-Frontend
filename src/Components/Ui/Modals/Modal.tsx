@@ -225,7 +225,7 @@ export const Modal: React.FC<ModalProps> = React.memo(({
               'relative flex flex-col w-full',
               'bg-blanco-una border border-none rounded-corner',
               'shadow-[0_6px_16px_rgba(0,0,0,0.10),0_2px_6px_rgba(0,0,0,0.06)]',
-              'transition-all duration-300 ease-out sm:mt-12 sm:mb-8',
+              'transition-all duration-300 ease-out sm:mt-8 sm:mb-8',
               'data-closed:translate-y-4 data-closed:opacity-0 data-closed:sm:scale-95',
               sizeClasses[size],
               maxHeightClasses[maxHeight],

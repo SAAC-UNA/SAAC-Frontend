@@ -1,7 +1,7 @@
 import { useState, useCallback } from 'react';
 import { roleService } from '@/Services/RoleService';
 import type { CreateRoleData, Role, ApiResponse } from '@/Services/RoleService';
-import type { PermissionOption } from '@/types/RoleTypes';
+import type { PermissionGroupOption, PermissionOption } from '@/types/RoleTypes';
 
 /**
  * Extracts the most user-readable error message from an unknown error.
@@ -17,7 +17,6 @@ function extractBackendError(err: unknown, fallback: string): string {
         if (typeof data.message === 'string' && data.message) return data.message;
       }
     }
-    if (typeof e.message === 'string') return e.message;
   }
   return fallback;
 }
@@ -42,6 +41,7 @@ interface UseRolesReturn {
   error: string | null;
   roles: Role[];
   availablePermissions: PermissionOption[];
+  availablePermissionGroups: PermissionGroupOption[];
   
   // Acciones
   createRole: (roleData: CreateRoleData) => Promise<Role | null>;
@@ -58,6 +58,7 @@ export const useRoles = (): UseRolesReturn => {
   const [error, setError] = useState<string | null>(null);
   const [roles, setRoles] = useState<Role[]>([]);
   const [availablePermissions, setAvailablePermissions] = useState<PermissionOption[]>([]);
+  const [availablePermissionGroups, setAvailablePermissionGroups] = useState<PermissionGroupOption[]>([]);
 
   /**
    * Limpiar errores
@@ -84,8 +85,9 @@ export const useRoles = (): UseRolesReturn => {
       
       throw new Error('No se recibieron datos del servidor');
     } catch (err) {
-      const msg = extractBackendError(err, 'No se pudo crear el rol');
-      throw new Error(msg);
+      const msg = extractBackendError(err, 'Error al crear rol');
+      setError(msg);
+      return null;
     } finally {
       setIsLoading(false);
     }
@@ -113,8 +115,9 @@ export const useRoles = (): UseRolesReturn => {
       
       throw new Error('No se recibieron datos del servidor');
     } catch (err) {
-      const msg = extractBackendError(err, 'No se pudo editar el rol');
-      throw new Error(msg);
+      const msg = extractBackendError(err, 'Error al editar rol');
+      setError(msg);
+      return null;
     } finally {
       setIsLoading(false);
     }
@@ -134,8 +137,9 @@ export const useRoles = (): UseRolesReturn => {
       setRoles(prevRoles => prevRoles.filter(role => role.id !== roleId));
       return true;
     } catch (err) {
-      const msg = extractBackendError(err, 'No se pudo eliminar el rol');
-      throw new Error(msg);
+      const msg = extractBackendError(err, 'Error al eliminar rol');
+      setError(msg);
+      return false;
     } finally {
       setIsLoading(false);
     }
@@ -175,6 +179,8 @@ export const useRoles = (): UseRolesReturn => {
       
       if (response.data) {
         setAvailablePermissions(response.data);
+        const groupedPermissions = (response as ApiResponse<PermissionOption[]> & { groups?: PermissionGroupOption[] }).groups ?? [];
+        setAvailablePermissionGroups(groupedPermissions);
         return response.data;
       }
       
@@ -219,6 +225,7 @@ export const useRoles = (): UseRolesReturn => {
     error,
     roles,
     availablePermissions,
+    availablePermissionGroups,
     
     // Acciones
     createRole,

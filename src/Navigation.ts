@@ -1,5 +1,14 @@
 import type { NavItem } from "./Types/CommonTypes";
 import { evaluateAccess, type AccessRule } from "@/Utils/Authorization";
+import {
+  CAPABILITIES,
+  EVIDENCE_ASSIGNMENT_PERMISSIONS,
+  EVIDENCE_VIEW_PERMISSIONS,
+  IMPROVEMENT_COMMITMENT_ACCESS_PERMISSIONS,
+  REPORTS_ACCESS_PERMISSIONS,
+  ROLE_MANAGEMENT_PERMISSIONS,
+  USER_MANAGEMENT_PERMISSIONS,
+} from "@/Constants/PermissionCapabilities";
 
 // ===== ICONOS =====
 const homeIcon = "system-icon:home";
@@ -68,7 +77,8 @@ export const getNavigationItems = (
 
     if (
       hasAccess({
-        requireAnyPermissions: ["roles.create", "roles.edit", "roles.delete"],
+        requireAnyCapabilities: [CAPABILITIES.ADMIN_ROLES_MANAGE],
+        requireAnyPermissions: ROLE_MANAGEMENT_PERMISSIONS,
       })
     ) {
       adminChildren.push({
@@ -80,7 +90,12 @@ export const getNavigationItems = (
       });
     }
 
-    if (hasAccess({ requireAnyPermissions: ["usuarios.view"] })) {
+    if (
+      hasAccess({
+        requireAnyCapabilities: [CAPABILITIES.ADMIN_USERS_MANAGE],
+        requireAnyPermissions: USER_MANAGEMENT_PERMISSIONS,
+      })
+    ) {
       adminChildren.push({
         id: "usuarios",
         label: "Usuarios",
@@ -90,7 +105,12 @@ export const getNavigationItems = (
       });
     }
 
-    if (hasAccess({ requireAnyPermissions: ["bitacora.view"] })) {
+    if (
+      hasAccess({
+        requireAnyCapabilities: [CAPABILITIES.AUDIT_VIEW],
+        requireAnyPermissions: ["bitacora.view"],
+      })
+    ) {
       adminChildren.push({
         id: "bitacora",
         label: "Bitácora del Sistema",
@@ -116,7 +136,12 @@ export const getNavigationItems = (
   {
     const evidenciaChildren: NavItem[] = [];
 
-    if (hasAccess({ requireAnyPermissions: ["evidencias.assign"] })) {
+    if (
+      hasAccess({
+        requireAnyCapabilities: [CAPABILITIES.EVIDENCE_ASSIGN],
+        requireAnyPermissions: EVIDENCE_ASSIGNMENT_PERMISSIONS,
+      })
+    ) {
       evidenciaChildren.push({
         id: "evidenciasAsignar",
         label: "Asignar Entregables",
@@ -126,23 +151,34 @@ export const getNavigationItems = (
       });
     }
 
-    if (hasAccess({ requireAnyPermissions: ["evidencias.view"] })) {
-      evidenciaChildren.push(
-        {
-          id: "misEvidenciasAsignadas",
-          label: "Mis Entregas",
-          icon: myEvidencesIcon,
-          href: "/mis-evidencias-asignadas",
-          isActive: false,
-        },
-        {
-          id: "busquedaEvidencias",
-          label: "Busqueda de Criterios",
-          icon: searchEvidenceIcon,
-          href: "/evidencias/busqueda-avanzada",
-          isActive: false,
-        },
-      );
+    if (
+      hasAccess({
+        requireAnyCapabilities: [CAPABILITIES.EVIDENCE_VIEW],
+        requireAnyPermissions: EVIDENCE_VIEW_PERMISSIONS,
+      })
+    ) {
+      evidenciaChildren.push({
+        id: "misEvidenciasAsignadas",
+        label: "Mis Entregas",
+        icon: myEvidencesIcon,
+        href: "/mis-evidencias-asignadas",
+        isActive: false,
+      });
+    }
+
+    if (
+      hasAccess({
+        requireAnyCapabilities: [CAPABILITIES.EVIDENCE_ASSIGN],
+        requireAnyPermissions: EVIDENCE_ASSIGNMENT_PERMISSIONS,
+      })
+    ) {
+      evidenciaChildren.push({
+        id: "busquedaEvidencias",
+        label: "Busqueda de Criterios",
+        icon: searchEvidenceIcon,
+        href: "/evidencias/busqueda-avanzada",
+        isActive: false,
+      });
     }
 
     if (evidenciaChildren.length > 0) {
@@ -163,6 +199,7 @@ export const getNavigationItems = (
 
     if (
       hasAccess({
+        requireAnyCapabilities: [CAPABILITIES.EXTENSION_MANAGE],
         requireAnyPermissions: [
           "solicitudes_ampliacion.approve",
           "solicitudes_ampliacion.reject",
@@ -178,7 +215,12 @@ export const getNavigationItems = (
       });
     }
 
-    if (hasAccess({ requireAnyPermissions: ["solicitudes_ampliacion.view"] })) {
+    if (
+      hasAccess({
+        requireAnyCapabilities: [CAPABILITIES.EXTENSION_VIEW],
+        requireAnyPermissions: ["solicitudes_ampliacion.view"],
+      })
+    ) {
       solicitudChildren.push({
         id: "misSolicitudesAmpliacion",
         label: "Mis Solicitudes",
@@ -204,7 +246,12 @@ export const getNavigationItems = (
   {
     const acreditacionChildren: NavItem[] = [];
 
-    if (hasAccess({ requireAnyPermissions: ["procesos.view"] })) {
+    if (
+      hasAccess({
+        requireAnyCapabilities: [CAPABILITIES.ACCREDITATION_PROCESS_VIEW],
+        requireAnyPermissions: ["procesos.view"],
+      })
+    ) {
       acreditacionChildren.push({
         id: "procesos-acreditacion",
         label: "Procesos de Acreditación",
@@ -214,7 +261,12 @@ export const getNavigationItems = (
       });
     }
 
-    if (hasAccess({ requireAnyPermissions: ["elemento.view"] })) {
+    if (
+      hasAccess({
+        requireAnyCapabilities: [CAPABILITIES.ACCREDITATION_PROCESS_VIEW],
+        requireAnyPermissions: ["procesos.view"],
+      })
+    ) {
       acreditacionChildren.push({
         id: "estructura",
         label: "Gestión de Estructura",
@@ -224,7 +276,12 @@ export const getNavigationItems = (
       });
     }
 
-    if (hasAccess({ requireAnyPermissions: ["modelos.view"] })) {
+    if (
+      hasAccess({
+        requireAnyCapabilities: [CAPABILITIES.ACCREDITATION_MODEL_VIEW],
+        requireAnyPermissions: ["modelos.view"],
+      })
+    ) {
       acreditacionChildren.push({
         id: "modelos-acreditacion",
         label: "Modelos de Acreditación",
@@ -234,7 +291,12 @@ export const getNavigationItems = (
       });
     }
 
-    if (hasAccess({ requireAnyPermissions: ["ciclos.view"] })) {
+    if (
+      hasAccess({
+        requireAnyCapabilities: [CAPABILITIES.ACCREDITATION_CYCLE_VIEW],
+        requireAnyPermissions: ["ciclos.view"],
+      })
+    ) {
       acreditacionChildren.push({
         id: "ciclos-acreditacion",
         label: "Ciclos de Acreditación",
@@ -260,7 +322,12 @@ export const getNavigationItems = (
   {
     const evaluacionChildren: NavItem[] = [];
 
-    if (hasAccess({ requireAnyPermissions: ["compromisos_mejora.view"] })) {
+    if (
+      hasAccess({
+        requireAnyCapabilities: [CAPABILITIES.IMPROVEMENT_ACCESS],
+        requireAnyPermissions: IMPROVEMENT_COMMITMENT_ACCESS_PERMISSIONS,
+      })
+    ) {
       evaluacionChildren.push({
         id: "compromisos-mejora",
         label: "Compromisos de Mejora",
@@ -270,7 +337,12 @@ export const getNavigationItems = (
       });
     }
 
-    if (hasAccess({ requireAnyPermissions: ["aprobaciones.view"] })) {
+    if (
+      hasAccess({
+        requireAnyCapabilities: [CAPABILITIES.APPROVALS_VIEW],
+        requireAnyPermissions: ["aprobaciones.view"],
+      })
+    ) {
       evaluacionChildren.push({
         id: "aprobacion-bloques",
         label: "Aprobación de Bloques",
@@ -280,7 +352,12 @@ export const getNavigationItems = (
       });
     }
 
-    if (hasAccess({ requireAnyPermissions: ["reportes.view"] })) {
+    if (
+      hasAccess({
+        requireAnyCapabilities: [CAPABILITIES.REPORTS_ACCESS],
+        requireAnyPermissions: REPORTS_ACCESS_PERMISSIONS,
+      })
+    ) {
       evaluacionChildren.push({
         id: "gestion-informes",
         label: "Gestión de Informes",

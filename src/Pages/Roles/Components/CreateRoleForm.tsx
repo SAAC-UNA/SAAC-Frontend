@@ -19,12 +19,12 @@
  * @param simplified - Usar validación simple (true) o avanzada (false)
  */
 import React, { useState, useEffect } from 'react';
-import { Input, Textarea, MultiSelect, Button } from '@/components/Ui/Index';
+import { Input, Textarea, Button } from '@/components/Ui/Index';
 import { useBreakpoint } from '@/hooks/UseBreakpoint';
 import { useRoles } from '@/hooks/UseRoles';
 import { validationRules, useValidation } from '@/utils/Validation';
 import type { CreateRoleData, Role } from '@/Services/RoleService';
-import type { PermissionOption } from '@/types/RoleTypes';
+import { PermissionMatrixField } from './PermissionMatrixField';
 
 /**
  * Props del componente CreateRoleForm
@@ -77,7 +77,7 @@ export const CreateRoleForm: React.FC<CreateRoleFormProps> = ({
   onHasChangesChange
 }) => {
   const { isDesktop } = useBreakpoint();
-  const { editRole, loadPermissions, isLoading, error, availablePermissions, clearError } = useRoles();
+  const { editRole, loadPermissions, isLoading, error, availablePermissionGroups, clearError } = useRoles();
   
   // Determinar si estamos en modo edición
   const isEditing = !!initialData;
@@ -313,38 +313,6 @@ export const CreateRoleForm: React.FC<CreateRoleFormProps> = ({
   /**
    * Transformar permisos de backend a formato MultiSelect
    */
-  const transformPermissionsToOptions = (permissions: PermissionOption[]) => {
-    return permissions.map(permission => ({
-      value: permission.value,
-      label: permission.label,
-      disabled: false
-    }));
-  };
-
-  /**
-   * Gestiona estados de permisos (loading, vacío, con datos)
-   */
-  const getPermissionsState = () => {
-    if (isLoading && availablePermissions.length === 0) {
-      return {
-        options: [{ value: 'loading', label: 'Cargando permisos...', disabled: true }],
-        placeholder: 'Cargando permisos disponibles...'
-      };
-    }
-
-    if (availablePermissions.length === 0) {
-      return {
-        options: [{ value: 'empty', label: 'No hay permisos disponibles', disabled: true }],
-        placeholder: 'No se encontraron permisos'
-      };
-    }
-
-    return {
-      options: transformPermissionsToOptions(availablePermissions),
-      placeholder: 'Seleccione los permisos...'
-    };
-  };
-
   return (
     <form onSubmit={handleSubmit} className="w-full">
       {isDesktop ? (
@@ -371,14 +339,12 @@ export const CreateRoleForm: React.FC<CreateRoleFormProps> = ({
               />
 
               {/* Privilegios */}
-              <MultiSelect
-                label="Permisos del Rol"
-                options={getPermissionsState().options}
+              <PermissionMatrixField
                 value={formData.permissions}
                 onChange={(values) => handleInputChange('permissions', values)}
+                groups={availablePermissionGroups}
+                loading={isLoading}
                 error={getFieldError('permissions')}
-                required
-                placeholder={getPermissionsState().placeholder}
               />
             </div>
 
@@ -476,14 +442,12 @@ export const CreateRoleForm: React.FC<CreateRoleFormProps> = ({
           />
 
           {/* Campo: Privilegios */}
-          <MultiSelect
-            label="Permisos del Rol"
-            options={getPermissionsState().options}
+          <PermissionMatrixField
+            groups={availablePermissionGroups}
             value={formData.permissions}
             onChange={(values) => handleInputChange('permissions', values)}
+            loading={isLoading}
             error={getFieldError('permissions')}
-            required
-            placeholder={getPermissionsState().placeholder}
           />
 
           {/* Mostrar error de la API si existe */}

@@ -8,9 +8,11 @@ import type {
   Evidence,
   DuplicateAssignment,
 } from "@/Types/EvidenceAssignment";
-import { evidenceAssignmentService } from "@/Services/EvidenceAssignmentService";
-import { userService, type User } from "@/Services/UserService";
-import { roleService, type Role } from "@/Services/RoleService";
+import {
+  evidenceAssignmentService,
+  type AssignmentCatalogRoleOption,
+  type AssignmentCatalogUser,
+} from "@/Services/EvidenceAssignmentService";
 import type { MultiSelectOption } from "@/Components/Ui/Forms/MultiSelect";
 import { useFirstColumnConfig } from "@/Hooks/UseFirstColumnConfig";
 import type { UserAvatarsUser } from "@/Components/Ui/UserAvatars/UserAvatars";
@@ -120,8 +122,8 @@ const EvidenceAssignment: React.FC = () => {
   }>({ criteria: [], evidences: [], loading: true });
 
   const [catalogState, setCatalogState] = useState<{
-    availableUsers: User[];
-    availableRoles: Role[];
+    availableUsers: AssignmentCatalogUser[];
+    availableRoles: AssignmentCatalogRoleOption[];
     loading: boolean;
     userError: string | null;
     roleError: string | null;
@@ -139,14 +141,7 @@ const EvidenceAssignment: React.FC = () => {
 
   const loadUsers = useCallback(async () => {
     try {
-      const users = await userService.listUsers();
-      const transformed: User[] = users.map((u) => ({
-        id: u.id,
-        name: u.name,
-        email: u.email,
-        status: u.status === "active" ? "active" : "inactive",
-        role: u.roles?.[0]?.name,
-      }));
+      const users = await evidenceAssignmentService.getAssignmentUsersCatalog();
       const countMap: Record<number, number> = {};
       users.forEach((u) => {
         u.roles?.forEach((r: any) => {
@@ -155,7 +150,7 @@ const EvidenceAssignment: React.FC = () => {
       });
       setCatalogState((prev) => ({
         ...prev,
-        availableUsers: transformed,
+        availableUsers: users,
         userCountByRole: countMap,
         userError: null,
       }));
@@ -166,8 +161,8 @@ const EvidenceAssignment: React.FC = () => {
 
   const loadRoles = useCallback(async () => {
     try {
-      const response = await roleService.listarRoles();
-      setCatalogState((prev) => ({ ...prev, availableRoles: response.data || [], roleError: null }));
+      const roles = await evidenceAssignmentService.getAssignmentRolesCatalog();
+      setCatalogState((prev) => ({ ...prev, availableRoles: roles, roleError: null }));
     } catch {
       setCatalogState((prev) => ({ ...prev, roleError: "Error al cargar la lista de roles" }));
     }

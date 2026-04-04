@@ -20,7 +20,51 @@ import type {
 } from '@/Types/EvidenceAssignment';
 import { devLog } from '@/Utils/devLogger';
 
+export interface AssignmentCatalogRole {
+  id: number;
+  name: string;
+}
+
+export interface AssignmentCatalogUser {
+  id: number;
+  name: string;
+  email: string;
+  status: 'active' | 'inactive';
+  roles: AssignmentCatalogRole[];
+}
+
+export interface AssignmentCatalogRoleOption {
+  id: number;
+  name: string;
+  description?: string;
+  permissions: Array<{ id: number; name: string; label: string }>;
+}
+
 class EvidenceAssignmentService {
+  /**
+   * Catálogo de usuarios activos para asignaciones.
+   */
+  async getAssignmentUsersCatalog(): Promise<AssignmentCatalogUser[]> {
+    try {
+      const response = await axiosInstance.get<{ data: AssignmentCatalogUser[] }>('/evidencias-asignaciones/catalogo/usuarios');
+      return response.data.data || [];
+    } catch (error) {
+      throw new Error('Error al obtener catálogo de usuarios para asignaciones');
+    }
+  }
+
+  /**
+   * Catálogo de roles para asignaciones.
+   */
+  async getAssignmentRolesCatalog(): Promise<AssignmentCatalogRoleOption[]> {
+    try {
+      const response = await axiosInstance.get<{ data: AssignmentCatalogRoleOption[] }>('/evidencias-asignaciones/catalogo/roles');
+      return response.data.data || [];
+    } catch (error) {
+      throw new Error('Error al obtener catálogo de roles para asignaciones');
+    }
+  }
+
   /**
    * Validar asignaciones duplicadas antes de crear
    */

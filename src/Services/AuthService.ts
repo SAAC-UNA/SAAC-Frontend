@@ -47,6 +47,7 @@ export interface User {
   updated_at: string;
   all_permissions: UserPermission[];
   direct_permissions: UserPermission[];
+  all_capabilities?: string[];
 }
 
 const AUTH_TOKEN_KEY = "auth_token";

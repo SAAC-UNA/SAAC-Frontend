@@ -117,7 +117,8 @@ export const RoleFormModal: React.FC<RoleFormModalProps> = ({
         subtitle={isEditing ? initialData?.name : undefined}
         isEditing={isEditing}
         confirmDisabled={!hasChanges}
-        size="lg"
+        size="xl"
+        maxHeight="xl"
       >
         <RoleFormContent
           formRef={formRef}

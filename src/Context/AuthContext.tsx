@@ -23,16 +23,18 @@ interface AuthContextType {
   user: User | null;
   userRoleNames: string[];
   userPermissionNames: string[];
+  userCapabilityNames: string[];
   loading: boolean; // Para el login/logout
   authChecked: boolean; // Para la verificación inicial
   isAuthenticated: boolean;
-  isSuperUser: () => boolean;
-  isAdmin: () => boolean;
   hasRole: (role: string) => boolean;
   hasAnyRole: (roles: string[]) => boolean;
   hasPermission: (permission: string) => boolean;
   hasAnyPermission: (permissions: string[]) => boolean;
   hasAllPermissions: (permissions: string[]) => boolean;
+  hasCapability: (capability: string) => boolean;
+  hasAnyCapability: (capabilities: string[]) => boolean;
+  hasAllCapabilities: (capabilities: string[]) => boolean;
   canAccess: (rule?: AccessRule) => boolean;
   canMakeFilesPublic: () => boolean;
   getUserCareer: () => Career | null;
@@ -59,6 +61,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
     () => getUserPermissionNames(user?.all_permissions),
     [user],
   );
+  const userCapabilityNames = useMemo(() => user?.all_capabilities ?? [], [user]);
 
   // Verificación de sesión al montar el provider
   useEffect(() => {
@@ -101,14 +104,6 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
     }
   };
 
-  const isSuperUser = (): boolean => {
-    return userRoleNames.includes("Superusuario");
-  };
-
-  const isAdmin = (): boolean => {
-    return userRoleNames.includes("Administrador");
-  };
-
   const hasRole = (role: string): boolean => {
     return userRoleNames.includes(role);
   };
@@ -134,17 +129,26 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
       {
         roles: userRoleNames,
         permissions: userPermissionNames,
+        capabilities: userCapabilityNames,
       },
       rule,
     );
   };
 
+  const hasCapability = (capability: string): boolean => {
+    return canAccess({ requireAnyCapabilities: [capability] });
+  };
+
+  const hasAnyCapability = (capabilities: string[]): boolean => {
+    return canAccess({ requireAnyCapabilities: capabilities });
+  };
+
+  const hasAllCapabilities = (capabilities: string[]): boolean => {
+    return canAccess({ requireAllCapabilities: capabilities });
+  };
+
   /**
-   * Verifica si el usuario puede hacer archivos públicos.
-   * Según FilePolicy del backend, solo pueden:
-   * - Superusuario
-   * - Vicerrectoría de Docencia
-   * - Administrador (Coordinador de Carrera)
+   * Verifica si el usuario puede hacer archivos públicos según permisos efectivos.
    */
   const canMakeFilesPublic = (): boolean => {
     return canAccess({ requireAnyPermissions: ["archivos.make_public"] });
@@ -158,17 +162,19 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
     user,
     userRoleNames,
     userPermissionNames,
+    userCapabilityNames,
     loading,
     authChecked,
     error,
     isAuthenticated: !!user,
-    isSuperUser,
-    isAdmin,
     hasRole,
     hasAnyRole,
     hasPermission,
     hasAnyPermission,
     hasAllPermissions,
+    hasCapability,
+    hasAnyCapability,
+    hasAllCapabilities,
     canAccess,
     canMakeFilesPublic,
     getUserCareer,

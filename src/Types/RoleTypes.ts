@@ -29,3 +29,20 @@ export interface PermissionOption {
   value: string;  // nombre técnico (ej: "gestion_roles")
   label: string;  // descripción legible (ej: "Gestión de Roles")
 }
+
+export interface PermissionGroupOption {
+  key: string;
+  label: string;
+  description?: string | null;
+  permissions: PermissionOption[];
+}
+
+export interface PermissionCatalog {
+  groups: PermissionGroupOption[];
+  permissions: PermissionOption[];
+}
+
+export interface PermissionCatalogResponse {
+  data: PermissionOption[];
+  groups?: PermissionGroupOption[];
+}

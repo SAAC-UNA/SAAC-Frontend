@@ -10,6 +10,8 @@ export { PageHeader } from './Layout/PageHeader';
 export { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from './Feedback/Tooltip';
 export { DataTable } from './Table/DataTable';
 export type { DataTableColumn, DataTableAction, DataTableProps } from './Table/DataTable';
+export { PermissionsTable } from './Table/PermissionsTable';
+export type { PermissionsTableColumn, PermissionsTableAction, PermissionsTableProps } from './Table/PermissionsTable';
 export { BackendErrorAlert } from './Feedback/BackendErrorAlert';
 export { StatusBadge } from './Feedback/StatusBadge';
 export { CustomSelect } from './Forms/SingleSelect';

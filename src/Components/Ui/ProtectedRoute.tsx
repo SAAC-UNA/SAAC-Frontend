@@ -14,6 +14,8 @@ interface ProtectedRouteProps {
   requireRoles?: string[];
   requirePermissions?: string[];
   requireAllPermissions?: string[];
+  requireCapabilities?: string[];
+  requireAllCapabilities?: string[];
 }
 
 export const ProtectedRoute = ({
@@ -21,6 +23,8 @@ export const ProtectedRoute = ({
   requireRoles,
   requirePermissions,
   requireAllPermissions,
+  requireCapabilities,
+  requireAllCapabilities,
 }: ProtectedRouteProps) => {
   const { isAuthenticated, authChecked, canAccess } = useAuth();
 
@@ -44,6 +48,8 @@ export const ProtectedRoute = ({
       requireRoles,
       requireAnyPermissions: requirePermissions,
       requireAllPermissions,
+      requireAnyCapabilities: requireCapabilities,
+      requireAllCapabilities,
     })
   ) {
     return (
