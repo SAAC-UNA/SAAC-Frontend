@@ -89,6 +89,7 @@ export interface DataTableProps<T = unknown> {
 
   // Filas expandibles
   expandableRow?: (item: T) => ExpandableChildItem[];
+  onRowExpand?: (rowKey: string, isExpanding: boolean) => void;
   getRowKey?: (item: T, index: number) => string;
 
   // Estilos
@@ -167,6 +168,7 @@ export const DataTable = React.memo(<T extends Record<string, unknown>>({
   className,
   unstyled = false,
   expandableRow,
+  onRowExpand,
   getRowKey,
 }: DataTableProps<T>) => {
   const [searchQuery, setSearchQuery] = useState('');
@@ -181,10 +183,12 @@ export const DataTable = React.memo(<T extends Record<string, unknown>>({
   const toggleRow = useCallback((key: string) => {
     setExpandedRows(prev => {
       const next = new Set(prev);
-      next.has(key) ? next.delete(key) : next.add(key);
+      const isExpanding = !next.has(key);
+      isExpanding ? next.add(key) : next.delete(key);
+      onRowExpand?.(key, isExpanding);
       return next;
     });
-  }, []);
+  }, [onRowExpand]);
 
   const getCellValue = useCallback((item: T, column: DataTableColumn<T>) => {
     if (column.render) {
