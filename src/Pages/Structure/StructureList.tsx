@@ -28,6 +28,7 @@ import { StructureElementFormModal } from '@/Pages/StructureModels/Components/St
 import { useStructureModels } from '@/Hooks/UseStructureModels';
 import { useStructureElements } from '@/Hooks/UseStructureElements';
 import type { FlexibleElement, CreateFlexibleElementForm, EditFlexibleElementForm } from '@/Types/StructureModelTypes';
+import { Card } from '@/Components/Ui/Layout/Card';
 
 const StructureList: React.FC = () => {
   
@@ -332,13 +333,15 @@ const StructureList: React.FC = () => {
           description={moduleInfo.description}
           headerExtra={
             <div className="flex flex-col sm:flex-row w-full gap-2 shrink-0 lg:w-auto items-end">
-              <CustomSelect
-                label="Modelo"
-                value={selectedModelId === null ? '0' : String(selectedModelId)}
-                onChange={handleModelChange}
-                options={modelOptions}
-                className="w-52"
-              />
+              <Card>
+                <CustomSelect
+                  label="Modelo"
+                  value={selectedModelId === null ? '0' : String(selectedModelId)}
+                  onChange={handleModelChange}
+                  options={modelOptions}
+                  className="w-52"
+                />
+              </Card>
               <SearchInput
                 placeholder="Buscar elementos..."
                 value={searchQuery}

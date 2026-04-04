@@ -160,7 +160,7 @@ export const AccreditationCycleFormModal: React.FC<Props> = ({
         subtitle={isEditing ? cycle?.nombre : undefined}
         confirmLabel={isEditing ? 'Guardar' : 'Crear'}
         isEditing={isEditing}
-        size="md"
+        size="lg"
       >
         <div className="flex flex-col gap-4">
           <Input

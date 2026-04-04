@@ -224,17 +224,15 @@ export const AccreditationProcessList: React.FC = () => {
             <Button
               variant="secondary"
               onClick={handleCreateProcess}
-              className="gap-2 text-[13px] font-normal"
+              className="gap-2 text-[13px] font-semibold"
             >
-              <SystemIcons.actions.add className="w-4 h-4" size="sm" />
               Crear
             </Button>
           </div>
         }
       />
 
-      <div className="flex-1 flex flex-col items-center justify-center min-h-[60vh]">
-        <AccreditationProcessTable
+      <AccreditationProcessTable
           processes={processes}
           isLoading={isLoading}
           searchQuery={searchQuery}
@@ -242,7 +240,6 @@ export const AccreditationProcessList: React.FC = () => {
           onEdit={handleEditProcess}
           onDelete={handleDeleteProcess}
         />
-      </div>
 
       <AccreditationProcessFormModal
         isOpen={formModalState.isOpen}

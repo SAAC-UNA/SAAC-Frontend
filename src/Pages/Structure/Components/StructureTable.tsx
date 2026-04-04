@@ -16,7 +16,7 @@
  * @param showHeader - Mostrar/ocultar el header
  */
 
-import React, { useState, useMemo, useRef } from 'react';
+import React, { useState, useMemo, useCallback, useRef } from 'react';
 import { StructureElementDetail } from './StructureElementDetail';
 import { DataTable } from '@/components/index';
 import { TYPOGRAPHY } from '@/Constants/Typography';
@@ -30,6 +30,7 @@ import type { DataTableColumn} from '@/Components/Ui/Table/DataTable';
 import type { StructureElement, ElementType } from '@/Types/StructureTypes';
 import { TableActionButton } from '@/Components/Ui/Buttons/TableActionButton';
 import { StatusBadge } from '@/Components/Ui/Feedback/StatusBadge';
+import { TABLE_COLUMN_WIDTHS } from '@/Constants/Components';
 
 
 interface StructureTableProps {
@@ -175,7 +176,7 @@ export const StructureTable: React.FC<StructureTableProps> = ({
         return parentTypeMap[elementType];
     };
 
-    const getParentName = (element: StructureElement): string => {
+    const getParentName = useCallback((element: StructureElement): string => {
         if (!element.parentElementId) return 'Sin elemento padre';
         const expectedParentType = getExpectedParentType(element.type);
         if (!expectedParentType) return 'Sin elemento padre';
@@ -184,22 +185,35 @@ export const StructureTable: React.FC<StructureTableProps> = ({
             el.id === element.parentElementId
         );
         return parent?.name || parent?.nomenclature || parent?.description || 'Elemento padre no encontrado';
-    };
+    }, [allElements]);
 
     // Configuración de columnas de la tabla
-    const columns: DataTableColumn<StructureElement>[] = [
+    const columns: DataTableColumn<StructureElement>[] = useMemo(() => [
+        {
+            key: 'name',
+            header: 'Nombre',
+            align: 'left',
+            width: firstColumn.width,
+            render: (_, element) => (
+                <p
+                    className={`block font-sans antialiased font-bold leading-normal text-negro-una-2 ${TYPOGRAPHY.table.cell}`}
+                    title={element.name || '-'}
+                >
+                    {truncateText(element.name, firstColumn.maxLength) || '-'}
+                </p>
+            )
+        },
         {
             key: 'type',
             header: 'Tipo',
             align: 'left',
-            width: firstColumn.width,
             render: (_, element) => (
-                <div className="flex flex-col">
-                    <p className={`block font-sans antialiased font-bold leading-normal text-negro-una-2 ${TYPOGRAPHY.table.cell}`}>
+                <div className="flex flex-col justify-start">
+                    <p className={`block font-sans antialiased font-normal leading-normal text-negro-una-2 ${TYPOGRAPHY.table.cell}`}>
                         {ELEMENT_TYPE_LABELS[element.type]}
                     </p>
                     {element.nomenclature && (
-                        <p className={`${TYPOGRAPHY.table.helper} text-gris-una-2 mt-0.5`}>
+                        <p className={`block font-sans antialiased font-normal leading-normal text-gris-una ${TYPOGRAPHY.table.helper}`}>
                             {element.nomenclature}
                         </p>
                     )}
@@ -207,48 +221,28 @@ export const StructureTable: React.FC<StructureTableProps> = ({
             )
         },
         {
-            key: 'name',
-            header: 'Nombre',
-            align: 'left',
-            width: '20%',
-            render: (_, element) => (
-                <p
-                    className={`block font-sans antialiased font-normal leading-normal text-negro-una-2 ${TYPOGRAPHY.table.cell} ${
-                        !element.name ? 'text-center' : 'text-left'
-                    }`}
-                    title={element.name || '-'}
-                >
-                    {truncateText(element.name) || '-'}
-                </p>
-            )
-        },
-        {
             key: 'description',
             header: 'Descripción',
             align: 'left',
-            width: '20%',
             render: (_, element) => (
                 <p
-                    className={`block font-sans antialiased font-normal leading-normal text-negro-una-2 ${TYPOGRAPHY.table.cell} ${
-                        !element.description ? 'text-center' : 'text-left'
-                    }`}
+                    className={`block font-sans antialiased font-normal leading-normal text-negro-una-2 ${TYPOGRAPHY.table.cell}`}
                     title={element.description || undefined}
                 >
-                    {truncateText(element.description, TABLE_TRUNCATE.text) || '-'}
+                    {truncateText(element.description, TABLE_TRUNCATE.text) || 'N/A'}
                 </p>
             )
         },
         {
             key: 'status',
             header: 'Estado',
-            align: 'center',
-            width: '10%',
+            align: 'left',
+            width: TABLE_COLUMN_WIDTHS.status,
             render: (_, element) => (
-                <div className="flex justify-center">
+                <div className="flex justify-start">
                     <StatusBadge
                         label={element.active ? 'Activo' : 'Inactivo'}
                         colorClasses={element.active ? 'text-verde-dark bg-verde-ring' : 'text-error-dark bg-error-ring'}
-                        badgeClassName="min-w-[76px] justify-center text-center"
                     />
                 </div>
             )
@@ -257,14 +251,14 @@ export const StructureTable: React.FC<StructureTableProps> = ({
         key: 'actions',
         header: 'Acciones',
         align: 'center',
-        width: '14%',
+        width: TABLE_COLUMN_WIDTHS.actionsLarge,
         render: (_, element) => {
             // Lógica para bloquear botones
             const canDelete = !element.hasChildren; // Solo puede eliminar si NO tiene hijos
             const canActivate = element.active || !element.parentElement || element.parentElement.active; // Puede activar si ya está activo, o si no tiene padre, o si el padre está activo
             
             return (
-                <div className="flex items-center justify-center gap-2">
+                <div className="flex items-center justify-center gap-2 pr-2">
                     <TableActionButton
                         action="view"
                         tooltip="Ver detalles"
@@ -302,7 +296,7 @@ export const StructureTable: React.FC<StructureTableProps> = ({
             );
         }
     }
-    ];
+    ], [onEdit, onDelete, onToggleActive, getParentName]);
 
     return (
         <>

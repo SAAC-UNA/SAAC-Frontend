@@ -6,10 +6,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { LoadingSpinner } from '@/Components/Ui/Index';
 import { CustomSelect } from '@/Components/Ui/Forms/SingleSelect';
-import { SearchInput } from '@/Components/Ui/Forms/SearchInput';
 import { SystemIcons } from '@/Components/Ui/Icons/SystemIcons';
-import { FilterButton } from '@/Components/Ui/Buttons/FilterButton';
-import type { FilterOption } from '@/Components/Ui/Buttons/FilterButton';
 import { ButtonWithTooltip } from '@/Components/Ui/Buttons/ButtonWithTooltip';
 import { DataTable } from '@/components/index';
 import type { DataTableColumn } from '@/Components/Ui/Table/DataTable';
@@ -23,9 +20,14 @@ import type {
 } from '@/Types/ImprovementCommitmentTypes';
 import { CriterionModal } from '@/Pages/ImprovementCommitments/Components/CriterionModal';
 import { DeleteConfirmationModal } from '@/Components/Ui/Modals/DeleteConfirmationModal';
-import { TABLE_ACTION_BUTTON } from '@/Constants/Components';
+import { TABLE_ACTION_BUTTON, TABLE_COLUMN_WIDTHS } from '@/Constants/Components';
 import { TYPOGRAPHY } from '@/Constants/Typography';
 import { TABLE_PAGE_SIZE } from '@/Constants/TablePagination';
+import { useFirstColumnConfig } from '@/Hooks/UseFirstColumnConfig';
+import { truncateText } from '@/Utils';
+import { StatusBadge } from '@/Components/Ui/Feedback/StatusBadge';
+import { CRITERIO_SELECTION_STATUS_BADGE } from '@/Constants/StatusBadges';
+import { Card } from '@/Components/Ui/Layout/Card';
 
 interface CreationStepProps {
   formData: CompromisoFormData;
@@ -34,9 +36,11 @@ interface CreationStepProps {
   eliminarCriterio: (criterioId: number) => void;
   actualizarCriterio: (criterio: CriterioSeleccionado) => void;
   errors: ValidationErrors;
+  searchTerm: string;
+  statusFilter: StatusFilter;
 }
 
-type StatusFilter = 'todos' | 'seleccionados' | 'pendientes';
+export type StatusFilter = 'todos' | 'seleccionados' | 'pendientes';
 
 export const CreationStep: React.FC<CreationStepProps> = ({
   formData,
@@ -44,17 +48,21 @@ export const CreationStep: React.FC<CreationStepProps> = ({
   agregarCriterio: addCriterion,
   eliminarCriterio: deleteCriterion,
   actualizarCriterio: updateCriterion,
-  errors
+  errors,
+  searchTerm,
+  statusFilter,
 }) => {
   const [catalogState, setCatalogState] = useState<{ ciclos: CicloAcreditacion[]; criterios: Criterio[]; loading: boolean }>({ ciclos: [], criterios: [], loading: true });
   const ciclos = catalogState.ciclos;
   const criterios = catalogState.criterios;
   const loading = catalogState.loading;
-  const [filterState, setFilterState] = useState<{ searchTerm: string; statusFilter: StatusFilter; currentPage: number }>({ searchTerm: '', statusFilter: 'todos', currentPage: 1 });
-  const searchTerm = filterState.searchTerm;
-  const statusFilter = filterState.statusFilter;
-  const currentPage = filterState.currentPage;
+  const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = TABLE_PAGE_SIZE.standard;
+  const firstColumn = useFirstColumnConfig();
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchTerm, statusFilter]);
   
   // Modal state
   const [modalState, setModalState] = useState<{ showModal: boolean; selectedCriterion: Criterio | null; editMode: boolean }>({ showModal: false, selectedCriterion: null, editMode: false });
@@ -158,79 +166,63 @@ export const CreationStep: React.FC<CreationStepProps> = ({
     }
   };
 
-  const isCriterionSelected = (criterioId: number) => {
-    const seleccionado = formData.criterios_seleccionados.some(c => c.criterio_id === criterioId);
-    return seleccionado;
-  };
-
-  // Opciones para el filtro de estado
-  const filterOptions: FilterOption<StatusFilter>[] = [
-    { value: 'todos', label: 'Todos' },
-    { value: 'seleccionados', label: 'Seleccionados' },
-    { value: 'pendientes', label: 'Pendientes' }
-  ];
-
-  if (loading) {
-    return (
-      <div className="relative py-12 min-h-[400px]">
-        <LoadingSpinner variant="loader" />
-      </div>
-    );
-  }
-
-  // Configuración de columnas de la tabla
-  const columns: DataTableColumn<Criterio>[] = [
+  const columns: DataTableColumn<Criterio>[] = useMemo(() => [
     {
       key: 'nomenclatura',
-      header: 'Nomenclatura',
-      align: 'center',
-      render: (_, criterio) => (
-        <p className={`block font-sans antialiased font-semibold leading-normal text-negro-una ${TYPOGRAPHY.table.cell}`}>
-          {criterio.nomenclatura}
-        </p>
-      )
-    },
-    {
-      key: 'descripcion',
-      header: 'Descripción',
+      header: 'Criterio',
       align: 'left',
+      width: firstColumn.width,
       render: (_, criterio) => (
-        <p 
-          className={`block font-sans antialiased font-normal leading-normal text-gris-una max-w-md truncate ${TYPOGRAPHY.table.cell}`}
-          title={criterio.descripcion}
-        >
-          {criterio.descripcion}
-        </p>
-      )
+        <div className="flex flex-col pl-2">
+          <p
+            className={`block font-sans antialiased font-bold leading-normal text-negro-una-2 ${TYPOGRAPHY.table.cell}`}
+            title={criterio.nomenclatura}
+          >
+            {truncateText(criterio.nomenclatura, firstColumn.maxLength)}
+          </p>
+          <p
+            className={`block font-sans antialiased font-normal leading-normal text-gris-una ${TYPOGRAPHY.table.helper}`}
+            title={criterio.descripcion}
+          >
+            {truncateText(criterio.descripcion, firstColumn.maxLength)}
+          </p>
+        </div>
+      ),
     },
     {
       key: 'estado',
       header: 'Estado',
       align: 'center',
+      width: TABLE_COLUMN_WIDTHS.status,
       render: (_, criterio) => {
-        const seleccionado = isCriterionSelected(criterio.criterio_id);
+        const seleccionado = formData.criterios_seleccionados.some(
+          c => c.criterio_id === criterio.criterio_id
+        );
         return (
-          <div className="w-max mx-auto">
-            <div className={`relative grid items-center px-2 py-0.5 font-sans font-bold rounded-corner select-none whitespace-nowrap text-xs min-w-[92px] justify-center text-center ${
-              seleccionado
-                ? 'text-green-900 bg-green-500/20' 
-                : 'text-yellow-800 bg-yellow-400/20'
-            }`}>
-              <span>{seleccionado ? 'Seleccionado' : 'Pendiente'}</span>
-            </div>
+          <div className="flex justify-center">
+            <StatusBadge
+              label={seleccionado ? CRITERIO_SELECTION_STATUS_BADGE.seleccionado.label : CRITERIO_SELECTION_STATUS_BADGE.pendiente.label}
+              colorClasses={
+                seleccionado
+                  ? CRITERIO_SELECTION_STATUS_BADGE.seleccionado.colorClasses
+                  : CRITERIO_SELECTION_STATUS_BADGE.pendiente.colorClasses
+              }
+            />
           </div>
         );
-      }
+      },
     },
     {
       key: 'actions',
       header: 'Acciones',
       align: 'center',
+      width: TABLE_COLUMN_WIDTHS.actionsLarge,
       render: (_, criterio) => {
-        const seleccionado = isCriterionSelected(criterio.criterio_id);
+        const seleccionado = formData.criterios_seleccionados.some(
+          c => c.criterio_id === criterio.criterio_id
+        );
         return (
           <div className="flex items-center justify-center gap-2 pr-2">
-            {/* Tuerca - Activa cuando NO está seleccionado */}
             <ButtonWithTooltip
               variant="tableView"
               size="sm"
@@ -243,7 +235,6 @@ export const CreationStep: React.FC<CreationStepProps> = ({
               <SystemIcons.structure.nut size="md" />
             </ButtonWithTooltip>
 
-            {/* Lápiz (Editar) - Activo cuando SÍ está seleccionado */}
             <ButtonWithTooltip
               variant="tableEdit"
               size="sm"
@@ -256,7 +247,6 @@ export const CreationStep: React.FC<CreationStepProps> = ({
               <SystemIcons.actions.edit className={TABLE_ACTION_BUTTON.icon} />
             </ButtonWithTooltip>
 
-            {/* Basurero - Activo cuando SÍ está seleccionado */}
             <ButtonWithTooltip
               variant="tableDelete"
               size="sm"
@@ -275,48 +265,34 @@ export const CreationStep: React.FC<CreationStepProps> = ({
             </ButtonWithTooltip>
           </div>
         );
-      }
-    }
-  ];
+      },
+    },
+  ], [firstColumn, formData.criterios_seleccionados]);
+
+  if (loading) {
+    return (
+      <div className="relative py-12 min-h-[400px]">
+        <LoadingSpinner variant="loader" />
+      </div>
+    );
+  }
 
   return (
     <>
       <div className="space-y-2">
-        {/* Fila de controles: Ciclo + Búsqueda + Filtro */}
-        <div className="flex gap-3 items-end">
-          {/* Select de Ciclo */}
-          <div className="w-80">
-            <CustomSelect
-              label="Ciclo de Acreditación"
-              value={formData.ciclo_acreditacion_id?.toString() || ''}
-              options={cicloOptions}
-              placeholder="Seleccione un ciclo..."
-              onChange={handleCicloChange}
-              required
-              error={errors.ciclo_acreditacion_id}
-              size="sm"
-            />
-          </div>
-
-          {/* Búsqueda */}
-          <div className="flex-1">
-            <SearchInput
-              value={searchTerm}
-              onChange={(v) => { setFilterState(prev => ({ ...prev, searchTerm: v, currentPage: 1 })); }}
-              placeholder="Buscar por nomenclatura o descripción..."
-            />
-          </div>
-
-          {/* Filtro por estado - Solo ícono */}
-          <div className="flex-shrink-0">
-            <FilterButton
-              tooltipText="Filtrar por estado"
-              options={filterOptions}
-              value={statusFilter}
-              onChange={(v) => { setFilterState(prev => ({ ...prev, statusFilter: v as StatusFilter, currentPage: 1 })); }}
-            />
-          </div>
-        </div>
+        {/* Select de Ciclo */}
+        <Card className="w-80">
+          <CustomSelect
+            label="Ciclo de Acreditación"
+            value={formData.ciclo_acreditacion_id?.toString() || ''}
+            options={cicloOptions}
+            placeholder="Seleccione un ciclo..."
+            onChange={handleCicloChange}
+            required
+            error={errors.ciclo_acreditacion_id}
+            size="sm"
+          />
+        </Card>
 
         {/* Tabla de Criterios o Mensaje de Sin Ciclo */}
         {!formData.ciclo_acreditacion_id ? (
@@ -337,7 +313,7 @@ export const CreationStep: React.FC<CreationStepProps> = ({
             pagination={{
               currentPage,
               totalPages,
-              onPageChange: (page: number) => setFilterState(prev => ({ ...prev, currentPage: page }))
+              onPageChange: setCurrentPage
             }}
           />
         )}

@@ -10,7 +10,8 @@ import { LoadingSpinner } from '@/Components/Ui/Feedback/Loading';
 import { SystemIcons } from '@/Components/Ui/Icons/SystemIcons';
 import { improvementCommitmentService } from '@/Services/ImprovementCommitmentService';
 import type { CompromisoMejora } from '@/Types/ImprovementCommitmentTypes';
-import { CompromisoStatusBadge } from './CompromisoStatusBadge';
+import { StatusBadge } from '@/Components/Ui/Feedback/StatusBadge';
+import { COMPROMISO_STATUS_BADGE } from '@/Constants/StatusBadges';
 import { DataTable } from '@/components/index';
 import type { DataTableColumn } from '@/Components/Ui/Table/DataTable';
 import { ButtonWithTooltip } from '@/Components/Ui/Buttons/ButtonWithTooltip';
@@ -254,7 +255,10 @@ export const ImprovementCommitmentDetailModal: React.FC<Props> = ({ id, isOpen, 
       width: '150px',
       render: (_, item) => (
         <div className="flex justify-center">
-          <CompromisoStatusBadge estado={getCriterionStatus(item.criterio?.criterio_id)} />
+          <StatusBadge
+              label={COMPROMISO_STATUS_BADGE[getCriterionStatus(item.criterio?.criterio_id)]?.label ?? getCriterionStatus(item.criterio?.criterio_id)}
+              colorClasses={COMPROMISO_STATUS_BADGE[getCriterionStatus(item.criterio?.criterio_id)]?.colorClasses ?? 'text-warning-dark bg-warning-ring'}
+            />
         </div>
       ),
     },
@@ -397,7 +401,10 @@ export const ImprovementCommitmentDetailModal: React.FC<Props> = ({ id, isOpen, 
                 <div className="flex items-start gap-8">
                   <div>
                     <p className={cn('uppercase tracking-wider font-semibold text-gris-una-2 mb-1', TYPOGRAPHY.modal.subtitle)}>Estado</p>
-                    <CompromisoStatusBadge estado={criterionStatus} />
+                    <StatusBadge
+                      label={COMPROMISO_STATUS_BADGE[criterionStatus]?.label ?? criterionStatus}
+                      colorClasses={COMPROMISO_STATUS_BADGE[criterionStatus]?.colorClasses ?? 'text-warning-dark bg-warning-ring'}
+                    />
                   </div>
                   <div>
                     <p className={cn('uppercase tracking-wider font-semibold text-gris-una-2 mb-1', TYPOGRAPHY.modal.subtitle)}>Fecha límite</p>

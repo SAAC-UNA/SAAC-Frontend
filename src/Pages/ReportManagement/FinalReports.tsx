@@ -7,42 +7,18 @@ import { SystemIcons } from "@/Components/Ui/Icons/SystemIcons";
 import { axiosInstance } from "@/Config/axios";
 import { CustomSelect } from "@/Components/Ui/Forms/SingleSelect";
 import { PublicLinkModal } from "./Components/PublicLinkModal";
+import { CriterionDetailModal } from "./Components/CriterionDetailModal";
+import { GenerateLinksConfirmModal } from "./Components/GenerateLinksConfirmModal";
 import { DropdownButton } from "@/Components/Ui/Buttons/DropdownButton";
 import type { DropdownOption } from "@/Components/Ui/Buttons/DropdownButton";
+import { FinalReportsTable } from "./Components/FinalReportsTable";
+import type { Criterio, Evidencia, Archivo } from "./Components/FinalReportsTable";
 import { usePdfExport } from "@/Hooks/usePdfExport";
-import { Modal } from "@/Components/Ui/Modals/Modal";
 import { useToast } from "@/Context/ToastContext";
-import { DataTable } from "@/Components/Ui/Table/DataTable";
-import type { DataTableColumn } from "@/Components/Ui/Table/DataTable";
-import { StatusBadge } from "@/Components/Ui/Feedback/StatusBadge";
-import { TYPOGRAPHY } from "@/Constants/Typography";
-import { TABLE_ACTION_BUTTON } from "@/Constants/Components";
+import { ICON_SIZES } from "@/Constants/Components";
+import { Card } from "@/Components/Ui/Layout/Card";
 
 type ApprovalStatus = "pendiente" | "aprobado" | "rechazado";
-
-interface Archivo {
-  archivo_id: number;
-  nombre_original: string;
-  ruta_archivo: string;
-  token_publico?: string;
-  is_publico: boolean;
-  link_expira_en?: string;
-}
-
-interface Evidencia {
-  id: number;
-  nomenclatura: string;
-  descripcion: string;
-  criterio_id: number;
-  archivos?: Archivo[];
-}
-
-interface Criterio {
-  id: number;
-  nomenclatura: string;
-  descripcion: string;
-  estado_aprobacion?: ApprovalStatus;
-}
 
 interface Proceso {
   proceso_id: number;
@@ -62,175 +38,6 @@ interface Proceso {
 }
 
 type ExportFormat = "pdf" | "excel";
-
-// ---------- Expandable row component ----------
-interface EvidenceExpansionProps {
-  criterio: Criterio;
-  evidences: Evidencia[];
-  loadingFiles: Set<number>;
-  onLoadFile: (id: number) => void;
-  onOpenLink: (evidencia: Evidencia) => void;
-}
-
-const EvidenceExpansionRow: React.FC<EvidenceExpansionProps> = ({
-  criterio,
-  evidences,
-  loadingFiles,
-  onLoadFile,
-  onOpenLink,
-}) => {
-  const criterionEvidences = evidences.filter(
-    (e) => e.criterio_id === criterio.id,
-  );
-  const [noFilesModal, setNoFilesModal] = useState<{
-    open: boolean;
-    evidencia: Evidencia | null;
-  }>({ open: false, evidencia: null });
-
-  useEffect(() => {
-    criterionEvidences.forEach((ev) => {
-      if (!ev.archivos) onLoadFile(ev.id);
-    });
-    // Only run on mount for this criterio
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [criterio.id]);
-
-  if (criterionEvidences.length === 0) {
-    return <p className="px-4 py-3 text-sm text-gris-una">Sin evidencias</p>;
-  }
-
-  return (
-    <>
-      <div className="p-4 bg-gray-50 space-y-3">
-        <h4 className="text-sm font-medium text-gray-700">
-          Evidencias del Criterio:
-        </h4>
-        <div className="space-y-1.5">
-          {criterionEvidences.map((evidencia) => {
-            const tieneArchivos = (evidencia.archivos?.length || 0) > 0;
-            const tieneEnlace = (evidencia.archivos || []).some(
-              (archivo) => archivo.is_publico && archivo.token_publico,
-            );
-            const isLoadingFile = loadingFiles.has(evidencia.id);
-
-            return (
-              <div
-                key={evidencia.id}
-                className="flex items-center justify-between px-3 py-2 bg-gray-50 rounded-md border border-gray-200"
-                onClick={(e) => e.stopPropagation()}
-              >
-                <div className="flex-1 min-w-0">
-                  <p className={`truncate ${TYPOGRAPHY.table.cell}`}>
-                    <span className="font-medium text-negro-una">
-                      {evidencia.nomenclatura}
-                    </span>
-                    <span className="text-gris-una">
-                      {" "}
-                      — {evidencia.descripcion}
-                    </span>
-                  </p>
-                </div>
-                <div className="flex items-center gap-1.5 ml-3 shrink-0">
-                  {isLoadingFile ? (
-                    <span className="text-xs text-gris-una px-2">
-                      Cargando...
-                    </span>
-                  ) : tieneEnlace ? (
-                    <>
-                      <StatusBadge
-                        label="Enlace listo"
-                        colorClasses="text-verde-dark bg-verde-ring"
-                      />
-                      <ButtonWithTooltip
-                        variant="tableView"
-                        size="sm"
-                        tooltip="Abrir enlace público"
-                        tooltipPosition="left"
-                        onClick={() => onOpenLink(evidencia)}
-                        className={TABLE_ACTION_BUTTON.button}
-                      >
-                        <SystemIcons.actions.linkIcon
-                          className={TABLE_ACTION_BUTTON.icon}
-                        />
-                      </ButtonWithTooltip>
-                    </>
-                  ) : tieneArchivos ? (
-                    <>
-                      <StatusBadge
-                        label="Sin enlace"
-                        colorClasses="text-warning-dark bg-warning-ring"
-                      />
-                      <ButtonWithTooltip
-                        variant="tableView"
-                        size="sm"
-                        tooltip="Abrir enlace público"
-                        tooltipPosition="left"
-                        onClick={() => onOpenLink(evidencia)}
-                        className={TABLE_ACTION_BUTTON.button}
-                      >
-                        <SystemIcons.actions.linkIcon
-                          className={TABLE_ACTION_BUTTON.icon}
-                        />
-                      </ButtonWithTooltip>
-                    </>
-                  ) : (
-                    <ButtonWithTooltip
-                      variant="tableView"
-                      size="sm"
-                      tooltip="Ver archivos asociados"
-                      tooltipPosition="left"
-                      onClick={() => setNoFilesModal({ open: true, evidencia })}
-                      className={TABLE_ACTION_BUTTON.button}
-                    >
-                      <SystemIcons.actions.view
-                        className={TABLE_ACTION_BUTTON.icon}
-                      />
-                    </ButtonWithTooltip>
-                  )}
-                </div>
-              </div>
-            );
-          })}
-        </div>
-      </div>
-
-      {/* Modal sin archivos */}
-      <Modal
-        isOpen={noFilesModal.open}
-        onClose={() => setNoFilesModal({ open: false, evidencia: null })}
-        title="Archivos de la evidencia"
-        subtitle={noFilesModal.evidencia?.nomenclatura ?? ""}
-        size="md"
-        variant="info"
-        heroIcon={
-          <SystemIcons.modal.document className="h-5 w-5 text-blanco-una" />
-        }
-        showCancel
-        cancelLabel="Cerrar"
-      >
-        <div className="space-y-4">
-          <div className="bg-gray-50 p-3 rounded-md">
-            <div className="text-sm text-gray-500">
-              {noFilesModal.evidencia?.descripcion}
-            </div>
-          </div>
-          <div className="border border-gray-200 rounded-md p-8">
-            <div className="text-center">
-              <SystemIcons.modal.document className="mx-auto h-12 w-12 text-gray-400" />
-              <h3 className="mt-2 text-sm font-medium text-gray-900">
-                No hay archivos asociados
-              </h3>
-              <p className="mt-1 text-sm text-gray-500">
-                Esta evidencia aún no tiene archivos adjuntos.
-              </p>
-            </div>
-          </div>
-        </div>
-      </Modal>
-    </>
-  );
-};
-// ---------- End EvidenceExpansionRow ----------
 
 const FinalReports: React.FC = () => {
   const moduleInfo = getModuleInfo("final_reports");
@@ -574,18 +381,11 @@ const FinalReports: React.FC = () => {
       <PageHeader
         title={moduleInfo.title}
         description={moduleInfo.description}
-      />
-      {isLoading ? (
-        <div className="relative py-12 min-h-[400px]">
-          <LoadingSpinner variant="loader" />
-        </div>
-      ) : (
-        <>
-          {/* Selector de proceso y acciones */}
-          <div className="mb-6 flex gap-4 items-end">
-            <div className="flex-1">
+        headerExtra={
+          <div className="flex items-center gap-2">
+            <Card className="w-80">
               <CustomSelect
-                label="Seleccionar Proceso"
+                label="Seleccione proceso"
                 value={selectedProcesoId?.toString() || ""}
                 placeholder="Seleccione un proceso"
                 size="sm"
@@ -598,10 +398,8 @@ const FinalReports: React.FC = () => {
                 options={processes
                   .filter(
                     (proceso: Proceso) =>
-                      proceso.accreditation_cycle?.career_campus?.career
-                        ?.nombre &&
-                      proceso.accreditation_cycle?.career_campus?.campus
-                        ?.nombre,
+                      proceso.accreditation_cycle?.career_campus?.career?.nombre &&
+                      proceso.accreditation_cycle?.career_campus?.campus?.nombre,
                   )
                   .map((proceso: Proceso) => ({
                     value: proceso.proceso_id.toString(),
@@ -609,37 +407,36 @@ const FinalReports: React.FC = () => {
                   }))}
                 maxVisibleItems={5}
               />
-            </div>
-
-            {/* Botones de acción */}
+            </Card>
             {selectedProcesoId && criteria.length > 0 && (
               <>
                 <ButtonWithTooltip
-                  variant="primary"
+                  variant="outline"
                   size="sm"
                   tooltip="Generar enlaces"
                   onClick={handleGenerateAllLinks}
-                  className="h-9 w-9 max-h-[36px] max-w-[36px]"
+                  className="w-auto"
                 >
-                  <SystemIcons.actions.linkIcon className="w-4 h-4" />
+                  <SystemIcons.actions.linkIcon className={ICON_SIZES.sm} />
+                  Generar
                 </ButtonWithTooltip>
                 <DropdownButton
                   label="Exportar"
                   variant="outline"
                   size="sm"
-                  icon={<SystemIcons.actions.export className="w-4 h-4" />}
+                  icon={<SystemIcons.actions.export className={ICON_SIZES.sm} />}
                   options={
                     [
                       {
                         id: "pdf",
                         label: "Exportar a PDF",
-                        icon: <SystemIcons.modal.pdf className="w-4 h-4" />,
+                        icon: <SystemIcons.modal.pdf className={ICON_SIZES.sm} />,
                         onClick: () => handleExportInforme("pdf"),
                       },
                       {
                         id: "excel",
                         label: "Exportar a Excel",
-                        icon: <SystemIcons.modal.excel className="w-4 h-4" />,
+                        icon: <SystemIcons.modal.excel className={ICON_SIZES.sm} />,
                         onClick: () => handleExportInforme("excel"),
                       },
                     ] as DropdownOption[]
@@ -648,7 +445,14 @@ const FinalReports: React.FC = () => {
               </>
             )}
           </div>
-
+        }
+      />
+      {isLoading ? (
+        <div className="relative py-12 min-h-[400px]">
+          <LoadingSpinner variant="loader" />
+        </div>
+      ) : (
+        <>
           {/* Lista de criterios aprobados */}
           {!selectedProcesoId ? (
             <div className="bg-white rounded-lg border border-gray-200 py-16">
@@ -680,74 +484,13 @@ const FinalReports: React.FC = () => {
                   </div>
                 </div>
               ) : (
-                <DataTable
-                  title="Criterios aprobados"
-                  data={criteria as any}
-                  columns={
-                    [
-                      {
-                        key: "nomenclatura",
-                        header: "Criterio",
-                        width: "140px",
-                        render: (_: any, item: any) => (
-                          <p
-                            className={`block font-sans antialiased font-bold leading-normal text-negro-una-2 ${TYPOGRAPHY.table.cell}`}
-                          >
-                            {item.nomenclatura}
-                          </p>
-                        ),
-                      },
-                      {
-                        key: "descripcion",
-                        header: "Descripción",
-                        render: (_: any, item: any) => (
-                          <p
-                            className={`block font-sans antialiased font-normal leading-normal text-gris-una max-w-2xl truncate ${TYPOGRAPHY.table.cell}`}
-                            title={item.descripcion}
-                          >
-                            {item.descripcion}
-                          </p>
-                        ),
-                      },
-                      {
-                        key: "actions",
-                        header: "Acciones",
-                        align: "center",
-                        width: "90px",
-                        render: (_: any, item: any) => (
-                          <div
-                            className="flex gap-1 justify-center"
-                            onClick={(e) => e.stopPropagation()}
-                          >
-                            <ButtonWithTooltip
-                              variant="tableView"
-                              size="sm"
-                              tooltip="Ver detalles"
-                              onClick={() =>
-                                setDetailModal({ open: true, criterio: item })
-                              }
-                              className={TABLE_ACTION_BUTTON.button}
-                            >
-                              <SystemIcons.actions.view
-                                className={TABLE_ACTION_BUTTON.icon}
-                              />
-                            </ButtonWithTooltip>
-                          </div>
-                        ),
-                      },
-                    ] as DataTableColumn[] as any
-                  }
-                  getRowKey={(item: any) => item.id.toString()}
-                  expandableRow={(item: any) => (
-                    <EvidenceExpansionRow
-                      criterio={item}
-                      evidences={evidences}
-                      loadingFiles={loadingFiles}
-                      onLoadFile={loadEvidenceFiles}
-                      onOpenLink={handleAbrirEnlaceEvidencia}
-                    />
-                  )}
-                  searchable={false}
+                <FinalReportsTable
+                  criteria={criteria}
+                  evidences={evidences}
+                  loadingFiles={loadingFiles}
+                  onLoadFile={loadEvidenceFiles}
+                  onOpenLink={handleAbrirEnlaceEvidencia}
+                  onViewDetail={(criterio) => setDetailModal({ open: true, criterio })}
                 />
               )}
             </>
@@ -756,42 +499,19 @@ const FinalReports: React.FC = () => {
       )}
 
       {/* Modal de detalle de criterio */}
-      <Modal
+      <CriterionDetailModal
         isOpen={detailModal.open}
         onClose={() => setDetailModal({ open: false, criterio: null })}
-        title={detailModal.criterio?.nomenclatura ?? ""}
-        subtitle="Descripción completa del criterio"
-        size="md"
-        variant="info"
-        heroIcon={
-          <SystemIcons.modal.document className="h-5 w-5 text-blanco-una" />
-        }
-        showCancel
-        cancelLabel="Cerrar"
-      >
-        <p className="text-sm text-gris-una leading-relaxed">
-          {detailModal.criterio?.descripcion}
-        </p>
-      </Modal>
+        criterio={detailModal.criterio}
+      />
 
       {/* Modal de confirmación para generar todos los enlaces */}
-      <Modal
+      <GenerateLinksConfirmModal
         isOpen={showConfirmModal}
         onClose={() => setConfirmModal((prev) => ({ ...prev, show: false }))}
-        title="Generar Enlaces Públicos"
-        size="md"
-        variant="warning"
-        showConfirm={true}
-        confirmLabel="Generar"
         onConfirm={confirmGenerateAllLinks}
-        confirmLoading={isGeneratingLinks}
-        showCancel={true}
-        cancelLabel="Cancelar"
-      >
-        ¿Está seguro que desea generar enlaces públicos para TODAS las
-        evidencias de los criterios aprobados? Esta acción puede tardar un
-        momento.
-      </Modal>
+        isLoading={isGeneratingLinks}
+      />
 
       {/* Modal para gestionar enlaces públicos */}
       <PublicLinkModal
