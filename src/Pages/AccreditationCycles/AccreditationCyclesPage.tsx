@@ -8,31 +8,31 @@
  *  - Reactivar ciclo (solo Superusuario)
  */
 
-import React, { useState } from 'react';
-import { ScreenContainer } from '@/Components/Ui/Layout/ScreenContainer';
+import React, { useState } from "react";
+import { ScreenContainer } from "@/Components/Ui/Layout/ScreenContainer";
 import {
   PageHeader,
   Button,
   Tooltip,
   TooltipContent,
   TooltipTrigger,
-} from '@/Components/Ui/Index';
-import { Modal } from '@/Components/Ui/Modals/Modal';
-import { SuccessModal } from '@/Components/Ui/Modals/SuccessModal';
-import { AccreditationCycleFormModal } from './Components/AccreditationCycleFormModal';
-import { AccreditationCycleDeleteModal } from './Components/AccreditationCycleDeleteModal';
-import { AccreditationCycleDetailModal } from './Components/AccreditationCycleDetailModal';
-import { AccreditationCyclesTable } from './Components/AccreditationCyclesTable';
-import { useAccreditationCycles } from '@/Hooks/UseAccreditationCycles';
-import { useAuth } from '@/Context/AuthContext';
-import { useToast } from '@/Context/ToastContext';
-import { TYPOGRAPHY } from '@/Constants/Typography';
-import { cn } from '@/Utils/ClassNames';
+} from "@/Components/Ui/Index";
+import { Modal } from "@/Components/Ui/Modals/Modal";
+import { SuccessModal } from "@/Components/Ui/Modals/SuccessModal";
+import { AccreditationCycleFormModal } from "./Components/AccreditationCycleFormModal";
+import { AccreditationCycleDeleteModal } from "./Components/AccreditationCycleDeleteModal";
+import { AccreditationCycleDetailModal } from "./Components/AccreditationCycleDetailModal";
+import { AccreditationCyclesTable } from "./Components/AccreditationCyclesTable";
+import { useAccreditationCycles } from "@/Hooks/UseAccreditationCycles";
+import { useAuth } from "@/Context/AuthContext";
+import { useToast } from "@/Context/ToastContext";
+import { TYPOGRAPHY } from "@/Constants/Typography";
+import { cn } from "@/Utils/ClassNames";
 import type {
   AccreditationCycle,
   CreateAccreditationCycleForm,
   EditAccreditationCycleForm,
-} from '@/Types/AccreditationCycleTypes';
+} from "@/Types/AccreditationCycleTypes";
 
 const AccreditationCyclesPage: React.FC = () => {
   const { canAccess } = useAuth();
@@ -50,10 +50,12 @@ const AccreditationCyclesPage: React.FC = () => {
     reactivateCycle,
   } = useAccreditationCycles();
 
-  const canCreate = canAccess({ requireAnyPermissions: ['ciclos.create'] });
-  const canEdit = canAccess({ requireAnyPermissions: ['ciclos.edit'] });
-  const canDelete = canAccess({ requireAnyPermissions: ['ciclos.delete'] });
-  const canReactivate = canAccess({ requireAnyPermissions: ['ciclos.reactivar'] });
+  const canCreate = canAccess({ requireAnyPermissions: ["ciclos.create"] });
+  const canEdit = canAccess({ requireAnyPermissions: ["ciclos.edit"] });
+  const canDelete = canAccess({ requireAnyPermissions: ["ciclos.delete"] });
+  const canReactivate = canAccess({
+    requireAnyPermissions: ["ciclos.reactivar"],
+  });
 
   // ── Modal state ───────────────────────────────────────────────────────────
 
@@ -79,44 +81,68 @@ const AccreditationCyclesPage: React.FC = () => {
     cycle: AccreditationCycle | null;
   }>({ isOpen: false, cycle: null });
 
-  const [successModal, setSuccessModal] = useState({ isOpen: false, title: '', message: '' });
+  const [successModal, setSuccessModal] = useState({
+    isOpen: false,
+    title: "",
+    message: "",
+  });
 
   // ── Handlers ──────────────────────────────────────────────────────────────
 
-  const handleCreateConfirm = async (form: CreateAccreditationCycleForm | EditAccreditationCycleForm) =>
-    createCycle(form as CreateAccreditationCycleForm);
+  const handleCreateConfirm = async (
+    form: CreateAccreditationCycleForm | EditAccreditationCycleForm,
+  ) => createCycle(form as CreateAccreditationCycleForm);
 
-  const handleEditConfirm = async (form: CreateAccreditationCycleForm | EditAccreditationCycleForm) => {
-    if (!formModal.cycle) return { success: false, error: 'Sin ciclo seleccionado' };
-    return updateCycle(formModal.cycle.ciclo_acreditacion_id, form as EditAccreditationCycleForm);
+  const handleEditConfirm = async (
+    form: CreateAccreditationCycleForm | EditAccreditationCycleForm,
+  ) => {
+    if (!formModal.cycle)
+      return { success: false, error: "Sin ciclo seleccionado" };
+    return updateCycle(
+      formModal.cycle.ciclo_acreditacion_id,
+      form as EditAccreditationCycleForm,
+    );
   };
 
   const handleDeleteConfirm = async (confirmacion: string) => {
     if (!deleteModal.cycle) return;
-    setDeleteModal(p => ({ ...p, loading: true }));
-    const result = await deleteCycle(deleteModal.cycle.ciclo_acreditacion_id, confirmacion);
+    setDeleteModal((p) => ({ ...p, loading: true }));
+    const result = await deleteCycle(
+      deleteModal.cycle.ciclo_acreditacion_id,
+      confirmacion,
+    );
     setDeleteModal({ isOpen: false, cycle: null, loading: false });
     if (result.success) {
-      setSuccessModal({ isOpen: true, title: 'Ciclo eliminado', message: 'El ciclo fue eliminado exitosamente.' });
+      setSuccessModal({
+        isOpen: true,
+        title: "Ciclo eliminado",
+        message: "El ciclo fue eliminado exitosamente.",
+      });
     } else {
-      showToast({ type: 'error', title: result.error ?? 'Error al eliminar el ciclo' });
+      showToast({
+        type: "error",
+        title: result.error ?? "Error al eliminar el ciclo",
+      });
     }
   };
 
   const confirmReactivate = async () => {
     if (!reactivateModal.cycle) return;
-    setReactivateModal(p => ({ ...p, loading: true }));
+    setReactivateModal((p) => ({ ...p, loading: true }));
     const cycle = reactivateModal.cycle;
     const result = await reactivateCycle(cycle.ciclo_acreditacion_id);
     setReactivateModal({ isOpen: false, cycle: null, loading: false });
     if (result.success) {
       setSuccessModal({
         isOpen: true,
-        title: 'Ciclo reactivado',
+        title: "Ciclo reactivado",
         message: `El ciclo "${cycle.nombre}" fue reactivado correctamente.`,
       });
     } else {
-      showToast({ type: 'error', title: result.error ?? 'Error al reactivar el ciclo' });
+      showToast({
+        type: "error",
+        title: result.error ?? "Error al reactivar el ciclo",
+      });
     }
   };
 
@@ -139,7 +165,9 @@ const AccreditationCyclesPage: React.FC = () => {
                   Crear
                 </Button>
               </TooltipTrigger>
-              <TooltipContent side="bottom">Crear nuevo ciclo de acreditación</TooltipContent>
+              <TooltipContent side="bottom">
+                Crear nuevo ciclo de acreditación
+              </TooltipContent>
             </Tooltip>
           ) : undefined
         }
@@ -153,8 +181,12 @@ const AccreditationCyclesPage: React.FC = () => {
         onPageChange={(page) => loadCycles(page)}
         onView={(cycle) => setViewModal({ isOpen: true, cycle })}
         onEdit={(cycle) => setFormModal({ isOpen: true, cycle })}
-        onDelete={(cycle) => setDeleteModal({ isOpen: true, cycle, loading: false })}
-        onReactivate={(cycle) => setReactivateModal({ isOpen: true, cycle, loading: false })}
+        onDelete={(cycle) =>
+          setDeleteModal({ isOpen: true, cycle, loading: false })
+        }
+        onReactivate={(cycle) =>
+          setReactivateModal({ isOpen: true, cycle, loading: false })
+        }
         canEdit={canEdit}
         canDelete={canDelete}
         canReactivate={canReactivate}
@@ -185,7 +217,9 @@ const AccreditationCyclesPage: React.FC = () => {
       {/* Modal eliminar */}
       <AccreditationCycleDeleteModal
         isOpen={deleteModal.isOpen}
-        onClose={() => setDeleteModal({ isOpen: false, cycle: null, loading: false })}
+        onClose={() =>
+          setDeleteModal({ isOpen: false, cycle: null, loading: false })
+        }
         cycle={deleteModal.cycle}
         onConfirm={handleDeleteConfirm}
         isLoading={deleteModal.loading}
@@ -195,7 +229,9 @@ const AccreditationCyclesPage: React.FC = () => {
       {reactivateModal.cycle && (
         <Modal
           isOpen={reactivateModal.isOpen}
-          onClose={() => setReactivateModal({ isOpen: false, cycle: null, loading: false })}
+          onClose={() =>
+            setReactivateModal({ isOpen: false, cycle: null, loading: false })
+          }
           onConfirm={confirmReactivate}
           variant="success"
           title="Confirmar reactivación"
@@ -206,10 +242,17 @@ const AccreditationCyclesPage: React.FC = () => {
           showConfirm
           footerMeta="Solo usuarios con permiso de reactivación pueden continuar"
         >
-          <p className={cn(TYPOGRAPHY.modal.body, 'text-gris-una-2 leading-relaxed')}>
-            ¿Está seguro de reactivar el ciclo{' '}
-            <strong className="text-negro-una">"{reactivateModal.cycle.nombre}"</strong>?
-            {' '}Se establecerá como el ciclo activo para su carrera-sede.
+          <p
+            className={cn(
+              TYPOGRAPHY.modal.body,
+              "text-gris-una-2 leading-relaxed",
+            )}
+          >
+            ¿Está seguro de reactivar el ciclo{" "}
+            <strong className="text-negro-una">
+              "{reactivateModal.cycle.nombre}"
+            </strong>
+            ? Se establecerá como el ciclo activo para su carrera-sede.
           </p>
         </Modal>
       )}
@@ -218,7 +261,9 @@ const AccreditationCyclesPage: React.FC = () => {
         isOpen={successModal.isOpen}
         title={successModal.title}
         message={successModal.message}
-        onClose={() => setSuccessModal({ isOpen: false, title: '', message: '' })}
+        onClose={() =>
+          setSuccessModal({ isOpen: false, title: "", message: "" })
+        }
       />
     </ScreenContainer>
   );

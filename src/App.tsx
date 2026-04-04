@@ -199,7 +199,9 @@ function App() {
                           <Route
                             path="/estructura/modelos"
                             element={
-                              <ProtectedRoute requirePermissions={["modelos.view"]}>
+                              <ProtectedRoute
+                                requirePermissions={["modelos.view"]}
+                              >
                                 <StructureModelsPage />
                               </ProtectedRoute>
                             }
@@ -209,7 +211,9 @@ function App() {
                           <Route
                             path="/ciclos-acreditacion"
                             element={
-                              <ProtectedRoute requirePermissions={["ciclos.view"]}>
+                              <ProtectedRoute
+                                requirePermissions={["ciclos.view"]}
+                              >
                                 <AccreditationCyclesPage />
                               </ProtectedRoute>
                             }

@@ -19,7 +19,12 @@ describe("Navigation permissions", () => {
   it("muestra Acreditacion para encargado con permisos de lectura", () => {
     const items = getNavigationItems({
       roles: ["Encargado de Acreditación"],
-      permissions: ["procesos.view", "elemento.view", "modelos.view", "ciclos.view"],
+      permissions: [
+        "procesos.view",
+        "elemento.view",
+        "modelos.view",
+        "ciclos.view",
+      ],
     });
 
     const acreditacion = items.find((item) => item.id === "acreditacion");

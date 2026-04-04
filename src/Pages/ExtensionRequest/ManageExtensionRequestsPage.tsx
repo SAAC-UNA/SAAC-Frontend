@@ -3,54 +3,69 @@
  * HU-016 - Vista de gestión para encargados de acreditación
  */
 
-import React, { useState, useEffect, useCallback } from 'react';
-import { PageHeader, ScreenContainer } from '@/Components/Ui/Index';
-import { SearchInput } from '@/Components/Ui/Forms/SearchInput';
-import { FilterButton, type FilterOption } from '@/Components/Ui/Buttons/FilterButton';
-import { extensionRequestService } from '@/Services/ExtensionRequestService';
-import { useToast } from '@/Context/ToastContext';
-import { useAuth } from '@/Context/AuthContext';
-import { getContextualInfo } from '@/Constants/ModuleInfo';
-import { TABLE_PAGE_SIZE } from '@/Constants/TablePagination';
-import { ManageExtensionRequestsTable } from './Components/ManageExtensionRequestsTable';
-import { ReviewExtensionRequestModal } from '@/Pages/ExtensionRequest/Components/ManageExtensionRequestDetailsModal';
-import { CreateConfirmationModal } from '@/Components/Ui/Modals/CreateConfirmationModal';
-import { DeleteConfirmationModal } from '@/Components/Ui/Modals/DeleteConfirmationModal';
-import type { 
-  ExtensionRequest, 
+import React, { useState, useEffect, useCallback } from "react";
+import { PageHeader, ScreenContainer } from "@/Components/Ui/Index";
+import { SearchInput } from "@/Components/Ui/Forms/SearchInput";
+import {
+  FilterButton,
+  type FilterOption,
+} from "@/Components/Ui/Buttons/FilterButton";
+import { extensionRequestService } from "@/Services/ExtensionRequestService";
+import { useToast } from "@/Context/ToastContext";
+import { useAuth } from "@/Context/AuthContext";
+import { getContextualInfo } from "@/Constants/ModuleInfo";
+import { TABLE_PAGE_SIZE } from "@/Constants/TablePagination";
+import { ManageExtensionRequestsTable } from "./Components/ManageExtensionRequestsTable";
+import { ReviewExtensionRequestModal } from "@/Pages/ExtensionRequest/Components/ManageExtensionRequestDetailsModal";
+import { CreateConfirmationModal } from "@/Components/Ui/Modals/CreateConfirmationModal";
+import { DeleteConfirmationModal } from "@/Components/Ui/Modals/DeleteConfirmationModal";
+import type {
+  ExtensionRequest,
   ExtensionRequestStatus,
-  ReviewFormData 
-} from '@/Types/ExtensionRequestTypes';
-import { SystemIcons } from '@/Components/Ui/Icons/SystemIcons';
+  ReviewFormData,
+} from "@/Types/ExtensionRequestTypes";
+import { SystemIcons } from "@/Components/Ui/Icons/SystemIcons";
 
 export const ManageExtensionRequestsPage: React.FC = () => {
   const { showToast } = useToast();
   const { isAuthenticated, canAccess } = useAuth();
-  
+
   // Obtener información del módulo desde ModuleInfo
-  const moduleInfo = getContextualInfo('extension_requests', 'manage');
-  
-  const [pageState, setPageState] = useState<{ solicitudes: ExtensionRequest[]; loading: boolean; error: string | null }>({ solicitudes: [], loading: true, error: null });
+  const moduleInfo = getContextualInfo("extension_requests", "manage");
+
+  const [pageState, setPageState] = useState<{
+    solicitudes: ExtensionRequest[];
+    loading: boolean;
+    error: string | null;
+  }>({ solicitudes: [], loading: true, error: null });
   const solicitudes = pageState.solicitudes;
   const loading = pageState.loading;
   const error = pageState.error;
-  const [searchQuery, setSearchQuery] = useState('');
-  const [filterState, setFilterState] = useState<{ filtroEstado: ExtensionRequestStatus | 'todos'; currentPage: number }>({ filtroEstado: 'todos', currentPage: 1 });
+  const [searchQuery, setSearchQuery] = useState("");
+  const [filterState, setFilterState] = useState<{
+    filtroEstado: ExtensionRequestStatus | "todos";
+    currentPage: number;
+  }>({ filtroEstado: "todos", currentPage: 1 });
   const filtroEstado = filterState.filtroEstado;
   const currentPage = filterState.currentPage;
 
   // Estado para el modal de revisión (detalles)
-  const [selectedSolicitud, setSelectedSolicitud] = useState<ExtensionRequest | null>(null);
+  const [selectedSolicitud, setSelectedSolicitud] =
+    useState<ExtensionRequest | null>(null);
 
   // Estado para las confirmaciones de aprobación/rechazo
-  const [confirmState, setConfirmState] = useState<{ action: 'approve' | 'reject' | null; solicitud: ExtensionRequest | null; loading: boolean }>({ action: null, solicitud: null, loading: false });
+  const [confirmState, setConfirmState] = useState<{
+    action: "approve" | "reject" | null;
+    solicitud: ExtensionRequest | null;
+    loading: boolean;
+  }>({ action: null, solicitud: null, loading: false });
 
   // Opciones para el filtro de estado
-  const estadoOptions: FilterOption<ExtensionRequestStatus | 'todos'>[] = [
-    { value: 'todos', label: 'Todos' },
-    { value: 'pendiente', label: 'Pendiente' },
-    { value: 'aprobada', label: 'Aprobada' },
-    { value: 'rechazada', label: 'Rechazada' }
+  const estadoOptions: FilterOption<ExtensionRequestStatus | "todos">[] = [
+    { value: "todos", label: "Todos" },
+    { value: "pendiente", label: "Pendiente" },
+    { value: "aprobada", label: "Aprobada" },
+    { value: "rechazada", label: "Rechazada" },
   ];
 
   useEffect(() => {
@@ -59,29 +74,31 @@ export const ManageExtensionRequestsPage: React.FC = () => {
 
   const loadSolicitudes = async () => {
     try {
-      setPageState(prev => ({...prev, loading: true, error: null}));
-      
+      setPageState((prev) => ({ ...prev, loading: true, error: null }));
+
       const filters = {
-        estado: filtroEstado === 'todos' ? undefined : filtroEstado,
+        estado: filtroEstado === "todos" ? undefined : filtroEstado,
         page: currentPage,
-        per_page: 15
+        per_page: 15,
       };
 
-      const response = filtroEstado === 'pendiente' 
-        ? await extensionRequestService.getPendingRequests(filters)
-        : await extensionRequestService.getAllRequests(filters);
+      const response =
+        filtroEstado === "pendiente"
+          ? await extensionRequestService.getPendingRequests(filters)
+          : await extensionRequestService.getAllRequests(filters);
 
-      setPageState(prev => ({...prev, solicitudes: response.data}));
+      setPageState((prev) => ({ ...prev, solicitudes: response.data }));
     } catch (error: any) {
-      const errorMessage = error.message || 'No se pudieron cargar las solicitudes';
-      setPageState(prev => ({...prev, error: errorMessage}));
+      const errorMessage =
+        error.message || "No se pudieron cargar las solicitudes";
+      setPageState((prev) => ({ ...prev, error: errorMessage }));
       showToast({
-        type: 'error',
-        title: 'Error al Cargar',
-        message: errorMessage
+        type: "error",
+        title: "Error al Cargar",
+        message: errorMessage,
       });
     } finally {
-      setPageState(prev => ({...prev, loading: false}));
+      setPageState((prev) => ({ ...prev, loading: false }));
     }
   };
 
@@ -95,11 +112,11 @@ export const ManageExtensionRequestsPage: React.FC = () => {
   }, []);
 
   const handleOpenApprove = useCallback((solicitud: ExtensionRequest) => {
-    setConfirmState({ action: 'approve', solicitud, loading: false });
+    setConfirmState({ action: "approve", solicitud, loading: false });
   }, []);
 
   const handleOpenReject = useCallback((solicitud: ExtensionRequest) => {
-    setConfirmState({ action: 'reject', solicitud, loading: false });
+    setConfirmState({ action: "reject", solicitud, loading: false });
   }, []);
 
   const handleCloseConfirm = useCallback(() => {
@@ -109,78 +126,88 @@ export const ManageExtensionRequestsPage: React.FC = () => {
   const handleConfirmAction = async () => {
     const { action, solicitud } = confirmState;
     if (!action || !solicitud) return;
-    setConfirmState(prev => ({ ...prev, loading: true }));
+    setConfirmState((prev) => ({ ...prev, loading: true }));
     try {
-      const data: ReviewFormData = { justificacion: '' };
-      if (action === 'approve') {
+      const data: ReviewFormData = { justificacion: "" };
+      if (action === "approve") {
         await handleApprove(data, solicitud);
       } else {
         await handleReject(data, solicitud);
       }
       handleCloseConfirm();
     } catch {
-      setConfirmState(prev => ({ ...prev, loading: false }));
+      setConfirmState((prev) => ({ ...prev, loading: false }));
     }
   };
 
-  const handleApprove = async (data: ReviewFormData, solicitud?: ExtensionRequest) => {
+  const handleApprove = async (
+    data: ReviewFormData,
+    solicitud?: ExtensionRequest,
+  ) => {
     const target = solicitud ?? selectedSolicitud;
     if (!target) return;
 
     try {
       await extensionRequestService.approveRequest(
         target.solicitud_ampliacion_id,
-        data
+        data,
       );
 
       showToast({
-        type: 'success',
-        title: 'Solicitud Aprobada',
-        message: 'La solicitud ha sido aprobada correctamente y la fecha límite ha sido actualizada.'
+        type: "success",
+        title: "Solicitud Aprobada",
+        message:
+          "La solicitud ha sido aprobada correctamente y la fecha límite ha sido actualizada.",
       });
 
       await loadSolicitudes();
       handleCloseModal();
     } catch (error: any) {
       showToast({
-        type: 'error',
-        title: 'Error al Aprobar',
-        message: error.message || 'No se pudo aprobar la solicitud'
+        type: "error",
+        title: "Error al Aprobar",
+        message: error.message || "No se pudo aprobar la solicitud",
       });
       throw error;
     }
   };
 
-  const handleReject = async (data: ReviewFormData, solicitud?: ExtensionRequest) => {
+  const handleReject = async (
+    data: ReviewFormData,
+    solicitud?: ExtensionRequest,
+  ) => {
     const target = solicitud ?? selectedSolicitud;
     if (!target) return;
 
     try {
       await extensionRequestService.rejectRequest(
         target.solicitud_ampliacion_id,
-        data
+        data,
       );
 
       showToast({
-        type: 'warning',
-        title: 'Solicitud Rechazada',
-        message: 'La solicitud ha sido rechazada.'
+        type: "warning",
+        title: "Solicitud Rechazada",
+        message: "La solicitud ha sido rechazada.",
       });
 
       await loadSolicitudes();
       handleCloseModal();
     } catch (error: any) {
       showToast({
-        type: 'error',
-        title: 'Error al Rechazar',
-        message: error.message || 'No se pudo rechazar la solicitud'
+        type: "error",
+        title: "Error al Rechazar",
+        message: error.message || "No se pudo rechazar la solicitud",
       });
       throw error;
     }
   };
 
   const canManageRequests = canAccess({
-    requireAnyPermissions: ['solicitudes_ampliacion.approve', 'solicitudes_ampliacion.reject'],
+    requireAnyPermissions: [
+      "solicitudes_ampliacion.approve",
+      "solicitudes_ampliacion.reject",
+    ],
   });
 
   return (
@@ -208,12 +235,14 @@ export const ManageExtensionRequestsPage: React.FC = () => {
             </div>
           ) : undefined
         }
-      >
-      </PageHeader>
-      
+      ></PageHeader>
+
       {!isAuthenticated ? (
         <div className="bg-yellow-50 border border-yellow-200 rounded-corner p-6 text-center">
-          <SystemIcons.interface.xCircle size="3xl" className="text-yellow-600 mx-auto mb-3" />
+          <SystemIcons.interface.xCircle
+            size="3xl"
+            className="text-yellow-600 mx-auto mb-3"
+          />
           <h3 className="text-lg font-semibold text-yellow-900 mb-2">
             Autenticación Requerida
           </h3>
@@ -223,12 +252,16 @@ export const ManageExtensionRequestsPage: React.FC = () => {
         </div>
       ) : !canManageRequests ? (
         <div className="bg-red-50 border border-red-200 rounded-corner p-6 text-center">
-          <SystemIcons.interface.xCircle size="3xl" className="text-red-600 mx-auto mb-3" />
+          <SystemIcons.interface.xCircle
+            size="3xl"
+            className="text-red-600 mx-auto mb-3"
+          />
           <h3 className="text-lg font-semibold text-red-900 mb-2">
             Acceso Denegado
           </h3>
           <p className="text-red-700">
-            No tiene permisos para gestionar solicitudes de ampliación. Esta sección es solo para Encargados de Acreditación.
+            No tiene permisos para gestionar solicitudes de ampliación. Esta
+            sección es solo para Encargados de Acreditación.
           </p>
         </div>
       ) : (
@@ -245,7 +278,7 @@ export const ManageExtensionRequestsPage: React.FC = () => {
             onApproveRequest={handleOpenApprove}
             onRejectRequest={handleOpenReject}
           />
-          
+
           {/* Modal de detalles (solo lectura) */}
           {selectedSolicitud && (
             <ReviewExtensionRequestModal
@@ -257,7 +290,7 @@ export const ManageExtensionRequestsPage: React.FC = () => {
 
           {/* Confirmación de aprobación */}
           <CreateConfirmationModal
-            isOpen={confirmState.action === 'approve'}
+            isOpen={confirmState.action === "approve"}
             onClose={handleCloseConfirm}
             onConfirm={handleConfirmAction}
             title="Aprobar solicitud"
@@ -269,7 +302,7 @@ export const ManageExtensionRequestsPage: React.FC = () => {
 
           {/* Confirmación de rechazo */}
           <DeleteConfirmationModal
-            isOpen={confirmState.action === 'reject'}
+            isOpen={confirmState.action === "reject"}
             onClose={handleCloseConfirm}
             onConfirm={handleConfirmAction}
             title="Rechazar solicitud"
