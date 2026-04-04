@@ -18,6 +18,7 @@ export interface FlexibleElement {
   modelo_estructura_id: number;
   padre_id: number | null;
   tipo: string;
+  nombre: string | null;
   categoria: 'A' | 'B' | 'C' | 'D' | null;
   nomenclatura: string | null;
   descripcion: string | null;
@@ -42,6 +43,7 @@ export interface CreateFlexibleElementForm {
   modelo_estructura_id: number;
   padre_id?: number | null;
   tipo: string;
+  nombre?: string;
   categoria?: 'A' | 'B' | 'C' | 'D' | null;
   nomenclatura?: string;
   descripcion?: string;
@@ -49,6 +51,7 @@ export interface CreateFlexibleElementForm {
 
 export interface EditFlexibleElementForm {
   tipo?: string;
+  nombre?: string;
   categoria?: 'A' | 'B' | 'C' | 'D' | null;
   nomenclatura?: string;
   descripcion?: string;

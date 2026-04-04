@@ -167,7 +167,7 @@ export const StructureElementsView: React.FC<Props> = ({ model, onBack }) => {
               <tr>
                 <th className="text-left px-4 py-3 font-semibold text-gris-una-2">Tipo</th>
                 <th className="text-left px-4 py-3 font-semibold text-gris-una-2">Nomenclatura</th>
-                <th className="text-left px-4 py-3 font-semibold text-gris-una-2">Descripción</th>
+                <th className="text-left px-4 py-3 font-semibold text-gris-una-2">Identificador</th>
                 <th className="text-left px-4 py-3 font-semibold text-gris-una-2">Padre</th>
                 <th className="text-left px-4 py-3 font-semibold text-gris-una-2">Cat.</th>
                 <th className="text-left px-4 py-3 font-semibold text-gris-una-2">Estado</th>
@@ -191,8 +191,20 @@ export const StructureElementsView: React.FC<Props> = ({ model, onBack }) => {
                     <td className="px-4 py-3 text-gris-una font-mono text-xs">
                       {el.nomenclatura ?? '—'}
                     </td>
-                    <td className="px-4 py-3 text-gris-una max-w-[200px] truncate">
-                      {el.descripcion ?? '—'}
+                    <td className="px-4 py-3">
+                      {(() => {
+                        const hasNombre = Boolean(el.nombre);
+                        const hasDesc = Boolean(el.descripcion);
+                        if (hasNombre && hasDesc) return (
+                          <div className="flex flex-col">
+                            <span className="font-medium text-negro-una">{el.nombre}</span>
+                            <span className="text-xs text-gris-una mt-0.5 truncate max-w-[200px]">{el.descripcion}</span>
+                          </div>
+                        );
+                        if (hasNombre) return <span className="font-medium text-negro-una">{el.nombre}</span>;
+                        if (hasDesc) return <span className="text-gris-una max-w-[200px] truncate block">{el.descripcion}</span>;
+                        return <span className="text-gris-una">—</span>;
+                      })()}
                     </td>
                     <td className="px-4 py-3 text-gris-una text-xs">
                       {parentName(el) ?? '—'}

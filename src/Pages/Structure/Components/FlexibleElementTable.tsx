@@ -100,10 +100,46 @@ export const FlexibleElementTable: React.FC<FlexibleElementTableProps> = ({
 
   const columns: DataTableColumn<FlexibleElement>[] = [
     {
+      key: 'descripcion',
+      header: 'Identificador',
+      align: 'left',
+      width: firstColumn.width,
+      render: (_, el) => {
+        const hasNombre = Boolean(el.nombre);
+        const hasDesc = Boolean(el.descripcion);
+        if (hasNombre && hasDesc) {
+          return (
+            <div className="flex flex-col">
+              <p className={`block font-sans antialiased font-bold leading-normal text-negro-una-2 ${TYPOGRAPHY.table.cell}`} title={el.nombre!}>
+                {truncateText(el.nombre, firstColumn.maxLength)}
+              </p>
+              <p className={`${TYPOGRAPHY.table.helper} text-gris-una mt-0.5`} title={el.descripcion!}>
+                {truncateText(el.descripcion, firstColumn.maxLength)}
+              </p>
+            </div>
+          );
+        }
+        if (hasNombre) {
+          return (
+            <p className={`block font-sans antialiased font-bold leading-normal text-negro-una-2 ${TYPOGRAPHY.table.cell}`} title={el.nombre!}>
+              {truncateText(el.nombre, firstColumn.maxLength)}
+            </p>
+          );
+        }
+        if (hasDesc) {
+          return (
+            <p className={`block font-sans antialiased font-normal leading-normal text-negro-una-2 ${TYPOGRAPHY.table.cell}`} title={el.descripcion!}>
+              {truncateText(el.descripcion, firstColumn.maxLength)}
+            </p>
+          );
+        }
+        return <span className={`${TYPOGRAPHY.table.cell} text-gris-una`}>—</span>;
+      },
+    },
+    {
       key: 'tipo',
       header: 'Tipo',
       align: 'left',
-      width: firstColumn.width,
       render: (_, el) => (
         <div className="flex flex-col">
           <p className={`block font-sans antialiased font-bold leading-normal text-negro-una-2 ${TYPOGRAPHY.table.cell}`}>
@@ -115,22 +151,6 @@ export const FlexibleElementTable: React.FC<FlexibleElementTableProps> = ({
             </p>
           )}
         </div>
-      ),
-    },
-    {
-      key: 'descripcion',
-      header: 'Descripción',
-      align: 'left',
-      width: '25%',
-      render: (_, el) => (
-        <p
-          className={`block font-sans antialiased font-normal leading-normal text-negro-una-2 ${TYPOGRAPHY.table.cell} ${
-            !el.descripcion ? 'text-center' : 'text-left'
-          }`}
-          title={el.descripcion || undefined}
-        >
-          {truncateText(el.descripcion, TABLE_TRUNCATE.text) || '-'}
-        </p>
       ),
     },
     {
