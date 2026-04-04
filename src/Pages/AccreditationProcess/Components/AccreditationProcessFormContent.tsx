@@ -149,6 +149,7 @@ export const AccreditationProcessFormContent: React.FC<
           error={errors.type}
           className="text-[13px]"
           required
+          disabled={isEditing}
         />
       </div>
 

@@ -11,7 +11,7 @@ interface StatusBadgeProps {
 
 export const StatusBadge: React.FC<StatusBadgeProps> = ({ label, colorClasses, badgeClassName, size = 'md' }) => {
   const sizeClasses = size === 'sm'
-    ? `${TYPOGRAPHY.badgeSm} px-1.5 py-0`
+    ? `${TYPOGRAPHY.badgeSm} px-1.5 py-0.5`
     : `${TYPOGRAPHY.badge} px-2 py-1`;
 
   return (

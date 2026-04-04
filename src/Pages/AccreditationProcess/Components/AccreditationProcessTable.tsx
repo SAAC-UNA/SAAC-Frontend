@@ -5,7 +5,8 @@ import { TABLE_PAGE_SIZE } from "@/Constants/TablePagination";
 import { useDebounce } from "@/Hooks/UseDebounce";
 import { StatusBadge } from "@/Components/Ui/Feedback/StatusBadge";
 import { TableActionButton } from "@/Components/Ui/Buttons/TableActionButton";
-import { TABLE_COLUMN_WIDTHS } from "@/Constants/Components";
+import { SystemIcons } from "@/Components/Ui/Icons/SystemIcons";
+import { TABLE_COLUMN_WIDTHS, TABLE_ACTION_BUTTON } from "@/Constants/Components";
 import { TYPOGRAPHY } from "@/Constants/Typography";
 import { formatDateShort } from "@/Utils/DateUtils";
 import { truncateText } from '@/Utils';
@@ -170,14 +171,17 @@ export const AccreditationProcessTable: React.FC<
             onClick={() => onEdit?.(process)}
           />
           <TableActionButton
+            action="custom"
+            tooltip={process.type === "Compromiso de mejora" ? "Configurar compromisos" : "Solo disponible para Compromisos de mejora"}
+            onClick={() => onConfigure?.(process)}
+            disabled={process.type !== "Compromiso de mejora"}
+            customIcon={<SystemIcons.structure.nut className={TABLE_ACTION_BUTTON.icon} />}
+            customVariant="tableView"
+          />
+          <TableActionButton
             action="delete"
             tooltip="Eliminar proceso"
             onClick={() => onDelete?.(process)}
-          />
-          <TableActionButton
-            action="add"
-            tooltip="Configurar compromiso"
-            onClick={() => onConfigure?.(process)}
           />
         </div>
       ),
