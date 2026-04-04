@@ -3,9 +3,9 @@
  * Fuente única de verdad para labels y colores de todos los estados del sistema.
  */
 
-import type { EvidencePublicationStatus } from "@/Types/EvidenceSearchTypes";
-import type { AssignmentStatus } from "@/Types/EvidenceAssignmentTypes";
-import type { ExtensionRequestStatus } from "@/Types/ExtensionRequestTypes";
+import type { EvidencePublicationStatus } from '@/Types/EvidenceSearchTypes';
+import type { AssignmentStatus } from '@/Types/EvidenceAssignmentTypes';
+import type { ExtensionRequestStatus } from '@/Types/ExtensionRequestTypes';
 
 export interface StatusBadgeConfig {
   label: string;
@@ -18,235 +18,80 @@ export interface BadgeColorConfig {
 }
 
 /** Estados de publicación de evidencia — enum PascalCase (EVIDENCIA.estado) */
-export const EVIDENCE_STATUS_BADGE: Record<
-  EvidencePublicationStatus,
-  StatusBadgeConfig
-> = {
-  Pendiente: {
-    label: "Pendiente",
-    colorClasses:
-      "bg-neutral-secondary-medium border-default-medium text-heading",
-  },
-  "En Proceso": {
-    label: "En proceso",
-    colorClasses: "bg-warning-soft border-warning-subtle text-fg-warning",
-  },
-  Aprobado: {
-    label: "Aprobado",
-    colorClasses:
-      "bg-success-soft border-success-subtle text-fg-success-strong",
-  },
-  Rechazado: {
-    label: "Rechazado",
-    colorClasses: "bg-danger-soft border-danger-subtle text-fg-danger-strong",
-  },
-  Completado: {
-    label: "Completado",
-    colorClasses:
-      "bg-success-soft border-success-subtle text-fg-success-strong",
-  },
-  Vencido: {
-    label: "Vencido",
-    colorClasses: "bg-danger-soft border-danger-subtle text-fg-danger-strong",
-  },
-  Observada: {
-    label: "Observada",
-    colorClasses: "bg-warning-soft border-warning-subtle text-fg-warning",
-  },
-  Validada: {
-    label: "Validada",
-    colorClasses: "bg-brand-softer border-brand-subtle text-fg-brand-strong",
-  },
+export const EVIDENCE_STATUS_BADGE: Record<EvidencePublicationStatus, StatusBadgeConfig> = {
+  'Pendiente': { label: 'Pendiente', colorClasses: 'bg-slate-ring text-slate' },
+  'En Proceso': { label: 'En proceso', colorClasses: 'bg-warning-ring text-warning' },
+  'Aprobado': { label: 'Aprobado', colorClasses: 'bg-verde-ring text-verde' },
+  'Rechazado': { label: 'Rechazado', colorClasses: 'bg-error-ring text-error' },
+  'Completado': { label: 'Completado', colorClasses: 'bg-verde-ring text-verde' },
+  'Vencido': { label: 'Vencido', colorClasses: 'bg-rose-ring text-rose' },
+  'Observada': { label: 'Observada', colorClasses: 'bg-naranja-ring text-naranja' },
+  'Validada': { label: 'Validada', colorClasses: 'bg-info-ring text-info' },
 };
 
 /** Estados de asignación de evidencia a responsable */
-export const ASSIGNMENT_STATUS_BADGE: Record<
-  AssignmentStatus,
-  StatusBadgeConfig
-> = {
-  pendiente: {
-    label: "Pendiente",
-    colorClasses:
-      "bg-neutral-secondary-medium border-default-medium text-heading",
-  },
-  en_progreso: {
-    label: "En progreso",
-    colorClasses: "bg-warning-soft border-warning-subtle text-fg-warning",
-  },
-  completado: {
-    label: "Completado",
-    colorClasses:
-      "bg-success-soft border-success-subtle text-fg-success-strong",
-  },
-  vencido: {
-    label: "Vencido",
-    colorClasses: "bg-danger-soft border-danger-subtle text-fg-danger-strong",
-  },
+export const ASSIGNMENT_STATUS_BADGE: Record<AssignmentStatus, StatusBadgeConfig> = {
+  pendiente: { label: 'Pendiente', colorClasses: 'bg-slate-ring text-slate' },
+  en_progreso: { label: 'En progreso', colorClasses: 'bg-warning-ring text-warning' },
+  completado: { label: 'Completado', colorClasses: 'bg-verde-ring text-verde' },
+  vencido: { label: 'Vencido', colorClasses: 'bg-rose-ring text-rose' },
 };
 
 /** Estados de solicitud de ampliación de plazo */
-export const EXTENSION_REQUEST_STATUS_BADGE: Record<
-  ExtensionRequestStatus,
-  StatusBadgeConfig
-> = {
-  pendiente: {
-    label: "Pendiente",
-    colorClasses:
-      "bg-neutral-secondary-medium border-default-medium text-heading",
-  },
-  aprobada: {
-    label: "Aprobado",
-    colorClasses:
-      "bg-success-soft border-success-subtle text-fg-success-strong",
-  },
-  rechazada: {
-    label: "Rechazado",
-    colorClasses: "bg-danger-soft border-danger-subtle text-fg-danger-strong",
-  },
+export const EXTENSION_REQUEST_STATUS_BADGE: Record<ExtensionRequestStatus, StatusBadgeConfig> = {
+  pendiente: { label: 'Pendiente', colorClasses: 'bg-slate-ring text-slate' },
+  aprobada:  { label: 'Aprobado',  colorClasses: 'bg-verde-ring text-verde' },
+  rechazada: { label: 'Rechazado', colorClasses: 'bg-error-ring text-error' },
 };
 
 /** Estado activo/inactivo de un usuario */
 export const STATUS_BADGE: Record<string, StatusBadgeConfig> = {
-  active: {
-    label: "Activo",
-    colorClasses:
-      "bg-success-soft border-success-subtle text-fg-success-strong",
-  },
-  inactive: {
-    label: "Inactivo",
-    colorClasses: "bg-danger-soft border-danger-subtle text-fg-danger-strong",
-  },
+  active:   { label: 'Activo',   colorClasses: 'bg-verde-ring text-verde' },
+  inactive: { label: 'Inactivo', colorClasses: 'bg-error-ring text-error' },
 };
 
 /** Paleta de colores del sistema — bg light + texto tono 400
  * Úsala para asignar colores a cualquier badge dinámicamente. */
 export const BADGE_COLORS: Record<string, BadgeColorConfig> = {
-  verde: {
-    colorClasses:
-      "bg-success-soft border-success-subtle text-fg-success-strong",
-  },
-  teal: {
-    colorClasses: "bg-brand-softer border-brand-subtle text-fg-brand-strong",
-  },
-  warning: {
-    colorClasses: "bg-warning-soft border-warning-subtle text-fg-warning",
-  },
-  naranja: {
-    colorClasses: "bg-warning-soft border-warning-subtle text-fg-warning",
-  },
-  error: {
-    colorClasses: "bg-danger-soft border-danger-subtle text-fg-danger-strong",
-  },
-  rose: {
-    colorClasses: "bg-danger-soft border-danger-subtle text-fg-danger-strong",
-  },
-  info: {
-    colorClasses: "bg-brand-softer border-brand-subtle text-fg-brand-strong",
-  },
-  gris: { colorClasses: "bg-neutral-primary-soft border-default text-heading" },
-  slate: {
-    colorClasses:
-      "bg-neutral-secondary-medium border-default-medium text-heading",
-  },
-  morado: {
-    colorClasses: "bg-brand-softer border-brand-subtle text-fg-brand-strong",
-  },
-  indigo: {
-    colorClasses: "bg-brand-softer border-brand-subtle text-fg-brand-strong",
-  },
+  verde:   { colorClasses: 'bg-verde-ring text-verde' },
+  teal:    { colorClasses: 'bg-teal-ring text-teal' },
+  warning: { colorClasses: 'bg-warning-ring text-warning' },
+  naranja: { colorClasses: 'bg-naranja-ring text-naranja' },
+  error:   { colorClasses: 'bg-error-ring text-error' },
+  rose:    { colorClasses: 'bg-rose-ring text-rose' },
+  info:    { colorClasses: 'bg-info-ring text-info' },
+  gris:    { colorClasses: 'bg-gris-light text-gris-una' },
+  slate:   { colorClasses: 'bg-slate-ring text-slate' },
+  morado:  { colorClasses: 'bg-morado-ring text-morado' },
+  indigo:  { colorClasses: 'bg-indigo-ring text-indigo' },
 };
 
 /** Estado de selección de criterio en el wizard de compromisos */
-export const CRITERIO_SELECTION_STATUS_BADGE: Record<
-  "seleccionado" | "pendiente",
-  StatusBadgeConfig
-> = {
-  seleccionado: {
-    label: "Seleccionado",
-    colorClasses:
-      "bg-success-soft border-success-subtle text-fg-success-strong",
-  },
-  pendiente: {
-    label: "Pendiente",
-    colorClasses: "bg-warning-soft border-warning-subtle text-fg-warning",
-  },
+export const CRITERIO_SELECTION_STATUS_BADGE: Record<'seleccionado' | 'pendiente', StatusBadgeConfig> = {
+  seleccionado: { label: 'Seleccionado', colorClasses: 'text-verde bg-verde-ring' },
+  pendiente:    { label: 'Pendiente',    colorClasses: 'text-warning bg-warning-ring' },
 };
 
 /** Estado global del compromiso de mejora */
 export const COMPROMISO_STATUS_BADGE: Record<string, StatusBadgeConfig> = {
-  Pendiente: {
-    label: "Pendiente",
-    colorClasses: "bg-warning-soft border-warning-subtle text-fg-warning",
-  },
-  "En Progreso": {
-    label: "En Progreso",
-    colorClasses: "bg-brand-softer border-brand-subtle text-fg-brand-strong",
-  },
-  Completado: {
-    label: "Completado",
-    colorClasses:
-      "bg-success-soft border-success-subtle text-fg-success-strong",
-  },
-  Vencido: {
-    label: "Vencido",
-    colorClasses: "bg-danger-soft border-danger-subtle text-fg-danger-strong",
-  },
+  Pendiente:     { label: 'Pendiente',    colorClasses: 'text-warning-dark bg-warning-ring' },
+  'En Progreso': { label: 'En Progreso',  colorClasses: 'text-info-dark bg-info-ring' },
+  Completado:    { label: 'Completado',   colorClasses: 'text-verde-dark bg-verde-ring' },
+  Vencido:       { label: 'Vencido',      colorClasses: 'text-error-dark bg-error-ring' },
 };
 
 export const AUDIT_ACTION_BADGE: Record<string, StatusBadgeConfig> = {
-  crear: {
-    label: "Crear",
-    colorClasses: "bg-brand-softer border-brand-subtle text-fg-brand-strong",
-  },
-  editar: {
-    label: "Editar",
-    colorClasses: "bg-warning-soft border-warning-subtle text-fg-warning",
-  },
-  eliminar: {
-    label: "Eliminar",
-    colorClasses: "bg-danger-soft border-danger-subtle text-fg-danger-strong",
-  },
-  consultar: {
-    label: "Consultar",
-    colorClasses:
-      "bg-neutral-secondary-medium border-default-medium text-heading",
-  },
-  login: {
-    label: "Login",
-    colorClasses:
-      "bg-success-soft border-success-subtle text-fg-success-strong",
-  },
-  logout: {
-    label: "Logout",
-    colorClasses: "bg-danger-soft border-danger-subtle text-fg-danger-strong",
-  },
-  login_fallido: {
-    label: "Login fallido",
-    colorClasses: "bg-danger-soft border-danger-subtle text-fg-danger-strong",
-  },
-  activar: {
-    label: "Activar",
-    colorClasses:
-      "bg-success-soft border-success-subtle text-fg-success-strong",
-  },
-  desactivar: {
-    label: "Desactivar",
-    colorClasses: "bg-neutral-primary-soft border-default text-heading",
-  },
-  asignar_rol: {
-    label: "Asignar rol",
-    colorClasses: "bg-brand-softer border-brand-subtle text-fg-brand-strong",
-  },
-  asignar_permisos: {
-    label: "Asignar permisos",
-    colorClasses: "bg-brand-softer border-brand-subtle text-fg-brand-strong",
-  },
-  exportar: {
-    label: "Exportar",
-    colorClasses: "bg-brand-softer border-brand-subtle text-fg-brand-strong",
-  },
-  asignar: {
-    label: "Asignar",
-    colorClasses: "bg-brand-softer border-brand-subtle text-fg-brand-strong",
-  },
+  crear: { label: 'Crear', colorClasses: 'bg-teal-ring text-teal' },
+  editar: { label: 'Editar', colorClasses: 'bg-warning-ring text-warning' },
+  eliminar: { label: 'Eliminar', colorClasses: 'bg-error-ring text-error' },
+  consultar: { label: 'Consultar', colorClasses: 'bg-slate-ring text-slate' },
+  login: { label: 'Login', colorClasses: 'bg-verde-ring text-verde' },
+  logout: { label: 'Logout', colorClasses: 'bg-error-ring text-error' },
+  login_fallido: { label: 'Login fallido', colorClasses: 'bg-rose-ring text-rose' },
+  activar: { label: 'Activar', colorClasses: 'bg-teal-ring text-teal' },
+  desactivar: { label: 'Desactivar', colorClasses: 'bg-gris-light text-gris-una' },
+  asignar_rol: { label: 'Asignar rol', colorClasses: 'bg-morado-ring text-morado' },
+  asignar_permisos: { label: 'Asignar permisos', colorClasses: 'bg-indigo-ring text-indigo' },
+  exportar: { label: 'Exportar', colorClasses: 'bg-teal-ring text-teal' },
+  asignar: { label: 'Asignar', colorClasses: 'bg-info-ring text-info' },
 };

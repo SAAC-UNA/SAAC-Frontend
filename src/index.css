@@ -165,23 +165,6 @@ line {
 @theme {
   --color-blanco-una: #ffffff;
   --color-blanco-una-2: #f8f9fa;
-  --color-brand-softer: #eff6ff;
-  --color-brand-subtle: #bfdbfe;
-  --color-fg-brand-strong: #1d4ed8;
-  --color-neutral-primary-soft: #f8f9fa;
-  --color-neutral-secondary-medium: #e5e7eb;
-  --color-default: #d1d5db;
-  --color-default-medium: #9ca3af;
-  --color-heading: #232323;
-  --color-danger-soft: #fef2f2;
-  --color-danger-subtle: #fecaca;
-  --color-fg-danger-strong: #dc2626;
-  --color-success-soft: #f0fdf4;
-  --color-success-subtle: #bbf7d0;
-  --color-fg-success-strong: #166534;
-  --color-warning-soft: #fffbeb;
-  --color-warning-subtle: #fde68a;
-  --color-fg-warning: #b45309;
   --color-rojo-una: #cd1719;
   --color-rojo-una-2: #c32b30;
   --color-azul-una: #034991;
@@ -238,7 +221,7 @@ line {
   --color-rose-light: #fecdd3;
   --color-info-light: #eff6ff;
   --color-gris-light: #e7e8ea;
-  --color-slate-light: #e2e8f0;
+  --color-slate-light:#e2e8f0;
   --color-morado-light: #f5d0fe;
   --color-indigo-light: #c7d2fe;
 
@@ -285,9 +268,7 @@ line {
   --radius-lg: 1.25rem; /* 20px - Modales, sidebar y contenedores destacados */
   --radius-full: 9999px; /* Full - Pills y formas completamente redondeadas */
   --radius-sidebar-item: var(--radius-lg); /* Alias semántico para el sidebar */
-  --radius-corner: var(
-    --radius-md
-  ); /* Alias de compatibilidad para rounded-corner */
+  --radius-corner: var(--radius-md); /* Alias de compatibilidad para rounded-corner */
 
   /* Tamaño de button */
   --width-button: 8rem; /* 128px - Ancho mínimo estándar para botones de contenido */
