@@ -8,7 +8,7 @@
  *  - Reactivar ciclo (solo Superusuario)
  */
 
-import React, { useMemo, useState } from 'react';
+import React, { useMemo, useState, useRef } from 'react';
 import { ScreenContainer } from '@/Components/Ui/Layout/ScreenContainer';
 import {
   PageHeader,
@@ -34,6 +34,7 @@ import { TYPOGRAPHY } from '@/Constants/Typography';
 import { TABLE_TRUNCATE } from '@/Constants/TableTruncate';
 import { SystemIcons } from '@/Components/Ui/Icons/SystemIcons';
 import { TABLE_ACTION_BUTTON } from '@/Constants/Components';
+import { TABLE_PAGE_SIZE } from '@/Constants/TablePagination';
 import { cn } from '@/Utils/ClassNames';
 import type { DataTableColumn } from '@/Components/Ui/Table/DataTable';
 import type {
@@ -67,14 +68,34 @@ const AccreditationCyclesPage: React.FC = () => {
   const {
     cycles,
     isLoading,
-    currentPage,
-    totalPages,
-    loadCycles,
     createCycle,
     updateCycle,
     deleteCycle,
     reactivateCycle,
   } = useAccreditationCycles();
+
+  const [currentPage, setCurrentPage] = useState(1);
+  const prevCyclesLength = useRef(cycles.length);
+
+  const itemsPerPage = TABLE_PAGE_SIZE.standard;
+  const totalPages = Math.max(1, Math.ceil(cycles.length / itemsPerPage));
+  const boundedCurrentPage = Math.min(currentPage, totalPages);
+  if (boundedCurrentPage !== currentPage) {
+    setCurrentPage(boundedCurrentPage);
+  }
+
+  // When cycles are added, go to page 1 to show the new item at the top
+  if (cycles.length > prevCyclesLength.current) {
+    prevCyclesLength.current = cycles.length;
+    setCurrentPage(1);
+  } else {
+    prevCyclesLength.current = cycles.length;
+  }
+
+  const paginatedCycles = useMemo(() => {
+    const start = (boundedCurrentPage - 1) * itemsPerPage;
+    return cycles.slice(start, start + itemsPerPage);
+  }, [cycles, boundedCurrentPage, itemsPerPage]);
 
   const canCreate = isAdmin() || isSuperUser();
   const canEdit = isAdmin() || isSuperUser();
@@ -110,7 +131,7 @@ const AccreditationCyclesPage: React.FC = () => {
   // ── Handlers ──────────────────────────────────────────────────────────────
 
   const handleCreateConfirm = async (form: CreateAccreditationCycleForm | EditAccreditationCycleForm) =>
-    createCycle(form as CreateAccreditationCycleForm);
+    await createCycle(form as CreateAccreditationCycleForm);
 
   const handleEditConfirm = async (form: CreateAccreditationCycleForm | EditAccreditationCycleForm) => {
     if (!formModal.cycle) return { success: false, error: 'Sin ciclo seleccionado' };
@@ -300,7 +321,7 @@ const AccreditationCyclesPage: React.FC = () => {
 
       <DataTable
         title=""
-        data={cycles as unknown as Record<string, unknown>[]}
+        data={paginatedCycles as unknown as Record<string, unknown>[]}
         columns={columns as unknown as DataTableColumn<Record<string, unknown>>[]}
         loading={isLoading}
         searchable={false}
@@ -308,9 +329,9 @@ const AccreditationCyclesPage: React.FC = () => {
         pagination={
           totalPages > 1
             ? {
-                currentPage,
+                currentPage: boundedCurrentPage,
                 totalPages,
-                onPageChange: (page) => loadCycles(page),
+                onPageChange: setCurrentPage,
               }
             : undefined
         }

@@ -79,6 +79,11 @@ export const AccreditationCycleDetailModal: React.FC<AccreditationCycleDetailMod
   const cs = cycle.carrera_sede;
   const modelo = cycle.modelo_estructura;
 
+  const TIPO_LABEL: Record<string, string> = {
+    tradicional: 'Tradicional',
+    elemento_flexible: 'Elemento flexible',
+  };
+
   return (
     <DetailsModal
       isOpen={isOpen}
@@ -146,7 +151,7 @@ export const AccreditationCycleDetailModal: React.FC<AccreditationCycleDetailMod
 
             <InfoCell label="Tipo">
               <span className={cn(TYPOGRAPHY.modal.body, 'text-gris-una-2')}>
-                {modelo?.tipo ?? '—'}
+                {modelo?.tipo ? (TIPO_LABEL[modelo.tipo] ?? modelo.tipo) : '—'}
               </span>
             </InfoCell>
 

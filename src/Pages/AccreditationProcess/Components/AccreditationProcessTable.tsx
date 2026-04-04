@@ -5,6 +5,9 @@ import { TABLE_PAGE_SIZE } from "@/Constants/TablePagination";
 import { useDebounce } from "@/Hooks/UseDebounce";
 import { StatusBadge } from "@/Components/Ui/Feedback/StatusBadge";
 import { TableActionButton } from "@/Components/Ui/Buttons/TableActionButton";
+import { ButtonWithTooltip } from "@/Components/Ui/Buttons/ButtonWithTooltip";
+import { SystemIcons } from "@/Components/Ui/Icons/SystemIcons";
+import { TABLE_ACTION_BUTTON } from "@/Constants/Components";
 import { TYPOGRAPHY } from "@/Constants/Typography";
 import { formatDateShort } from "@/Utils/DateUtils";
 import type { AccreditationProcess as AccreditationProcessRow } from "@/Types/AccreditationProcessTypes";
@@ -16,6 +19,7 @@ interface AccreditationProcessTableProps {
   onEdit?: (process: AccreditationProcessRow) => void;
   onView?: (process: AccreditationProcessRow) => void;
   onDelete?: (process: AccreditationProcessRow) => void;
+  onConfigure?: (process: AccreditationProcessRow) => void;
 }
 
 const normalizeText = (value?: string) => {
@@ -29,7 +33,7 @@ const normalizeText = (value?: string) => {
 
 export const AccreditationProcessTable: React.FC<
   AccreditationProcessTableProps
-> = ({ processes, isLoading, searchQuery = "", onEdit, onView, onDelete }) => {
+> = ({ processes, isLoading, searchQuery = "", onEdit, onView, onDelete, onConfigure }) => {
   const [currentPage, setCurrentPage] = useState(1);
   const debouncedSearchQuery = useDebounce(searchQuery, 300);
 
@@ -144,25 +148,38 @@ export const AccreditationProcessTable: React.FC<
       key: "actions",
       header: "Acciones",
       align: "center",
-      render: (_, process) => (
-        <div className="flex items-center justify-center gap-2">
-          <TableActionButton
-            action="view"
-            tooltip="Ver detalles"
-            onClick={() => onView?.(process)}
-          />
-          <TableActionButton
-            action="edit"
-            tooltip="Editar proceso"
-            onClick={() => onEdit?.(process)}
-          />
-          <TableActionButton
-            action="delete"
-            tooltip="Eliminar proceso"
-            onClick={() => onDelete?.(process)}
-          />
-        </div>
-      ),
+      render: (_, process) => {
+        const isCompromiso = process.type === 'Compromiso de mejora';
+        return (
+          <div className="flex items-center justify-center gap-2">
+            <TableActionButton
+              action="view"
+              tooltip="Ver detalles"
+              onClick={() => onView?.(process)}
+            />
+            <TableActionButton
+              action="edit"
+              tooltip="Editar proceso"
+              onClick={() => onEdit?.(process)}
+            />
+            <ButtonWithTooltip
+              variant="tableView"
+              size="sm"
+              tooltip={isCompromiso ? 'Configurar criterios' : 'No se configura en esta sección'}
+              disabled={!isCompromiso}
+              onClick={() => isCompromiso && onConfigure?.(process)}
+              className={TABLE_ACTION_BUTTON.button}
+            >
+              <SystemIcons.structure.nut className={TABLE_ACTION_BUTTON.icon} />
+            </ButtonWithTooltip>
+            <TableActionButton
+              action="delete"
+              tooltip="Eliminar proceso"
+              onClick={() => onDelete?.(process)}
+            />
+          </div>
+        );
+      },
     },
   ];
 

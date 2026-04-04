@@ -7,7 +7,7 @@
  */
 
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { ScreenContainer } from '@/Components/Ui/Layout/ScreenContainer';
 import { Button, WizardProgress, PageHeader } from '@/Components/Ui/Index';
 import { getModuleInfo } from '@/Constants/ModuleInfo';
@@ -35,6 +35,16 @@ const CreateImprovementCommitment: React.FC = () => {
   const moduleInfo = getModuleInfo('improvement_commitments');
   const { showToast } = useToast();
   const navigate = useNavigate();
+  const location = useLocation();
+
+  // State recibido desde AccreditationProcessList al pulsar "Configurar"
+  const locationState = (location.state ?? {}) as {
+    procesoId?: string;
+    cicloId?: string;
+    startDate?: string;
+    estimatedEndDate?: string;
+  };
+  const fromProcess = !!locationState.procesoId;
   
   const [currentStep, setCurrentStep] = useState(1);
   const [submitState, setSubmitState] = useState<{ isSubmitting: boolean; errors: ValidationErrors }>({ isSubmitting: false, errors: {} });
@@ -45,10 +55,11 @@ const CreateImprovementCommitment: React.FC = () => {
   const showConfirmModal = modals.showConfirmModal;
 
   const [formData, setFormData] = useState<CompromisoFormData>({
-    ciclo_acreditacion_id: null,
+    ciclo_acreditacion_id: locationState.cicloId ? parseInt(locationState.cicloId) : null,
+    proceso_id: locationState.procesoId ? parseInt(locationState.procesoId) : undefined,
     descripcion: '',
-    fecha_inicio: '',
-    fecha_fin: '',
+    fecha_inicio: locationState.startDate ?? '',
+    fecha_fin: locationState.estimatedEndDate ?? '',
     criterios_seleccionados: []
   });
 
@@ -117,13 +128,15 @@ const CreateImprovementCommitment: React.FC = () => {
         }
         break;
       case 2:
-        if (!formData.fecha_inicio) {
-          newErrors.fecha_inicio = 'La fecha de inicio es obligatoria';
-        }
-        if (!formData.fecha_fin) {
-          newErrors.fecha_fin = 'La fecha fin es obligatoria';
-        } else if (formData.fecha_inicio && new Date(formData.fecha_fin) <= new Date(formData.fecha_inicio)) {
-          newErrors.fecha_fin = 'La fecha fin debe ser posterior a la fecha de inicio';
+        if (!fromProcess) {
+          if (!formData.fecha_inicio) {
+            newErrors.fecha_inicio = 'La fecha de inicio es obligatoria';
+          }
+          if (!formData.fecha_fin) {
+            newErrors.fecha_fin = 'La fecha fin es obligatoria';
+          } else if (formData.fecha_inicio && new Date(formData.fecha_fin) <= new Date(formData.fecha_inicio)) {
+            newErrors.fecha_fin = 'La fecha fin debe ser posterior a la fecha de inicio';
+          }
         }
         if (formData.descripcion && formData.descripcion.length > 100) {
           newErrors.descripcion = 'La descripción no puede exceder 100 caracteres';
@@ -174,6 +187,7 @@ const CreateImprovementCommitment: React.FC = () => {
       // Crear payload
       const payload: CrearCompromisoPayload = {
         ciclo_acreditacion_id: formData.ciclo_acreditacion_id!,
+        ...(formData.proceso_id !== undefined && { proceso_id: formData.proceso_id }),
         descripcion: formData.descripcion || `Compromiso de mejora ${new Date().toLocaleDateString()}`,
         fecha_inicio: formData.fecha_inicio,
         fecha_fin: formData.fecha_fin,
@@ -278,7 +292,7 @@ const CreateImprovementCommitment: React.FC = () => {
    */
   const handleSuccessClose = () => {
     setModals(prev => ({...prev, showSuccessModal: false}));
-    navigate('/compromisos/listar');
+    navigate(fromProcess ? '/procesos-acreditacion/listar' : '/compromisos/listar');
   };
 
   /**
@@ -327,6 +341,7 @@ const CreateImprovementCommitment: React.FC = () => {
                 eliminarCriterio={deleteCriterion}
                 actualizarCriterio={updateCriterion}
                 errors={errors}
+                cicloFijo={fromProcess}
               />
             ) : currentStep === 2 ? (
               <ReviewStep
@@ -335,6 +350,7 @@ const CreateImprovementCommitment: React.FC = () => {
                 onSubmit={handleSubmit}
                 isSubmitting={isSubmitting}
                 errors={errors}
+                fromProcess={fromProcess}
               />
             ) : null}
           </div>
@@ -357,7 +373,7 @@ const CreateImprovementCommitment: React.FC = () => {
             ) : (
               <Button
                 variant="secondary"
-                onClick={() => navigate('/compromisos/listar')}
+                onClick={() => navigate(fromProcess ? '/procesos-acreditacion/listar' : '/compromisos/listar')}
                 disabled={isSubmitting}
                 standardWidth
                 size="sm"

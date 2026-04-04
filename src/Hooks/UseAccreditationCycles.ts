@@ -12,7 +12,6 @@ import type {
   EditAccreditationCycleForm,
 } from '@/Types/AccreditationCycleTypes';
 import * as cycleService from '@/Services/AccreditationCycleService';
-import { TABLE_PAGE_SIZE } from '@/Constants/TablePagination';
 
 // ── Helpers ────────────────────────────────────────────────────────────────────
 
@@ -23,6 +22,11 @@ function extractBackendError(err: unknown, fallback: string): string {
       const resp = e.response as Record<string, unknown>;
       if (resp.data && typeof resp.data === 'object') {
         const d = resp.data as Record<string, unknown>;
+        // Laravel 422: errors object has field-level messages
+        if (d.errors && typeof d.errors === 'object') {
+          const firstMsg = Object.values(d.errors as Record<string, string[]>).flat()[0];
+          if (firstMsg) return firstMsg;
+        }
         if (typeof d.message === 'string' && d.message) return d.message;
       }
     }
@@ -37,9 +41,7 @@ export interface UseAccreditationCyclesReturn {
   cycles: AccreditationCycle[];
   isLoading: boolean;
   error: string | null;
-  currentPage: number;
-  totalPages: number;
-  loadCycles: (page?: number) => Promise<void>;
+  loadCycles: () => Promise<void>;
   createCycle: (form: CreateAccreditationCycleForm) => Promise<{ success: boolean; error?: string }>;
   updateCycle: (id: number, form: EditAccreditationCycleForm) => Promise<{ success: boolean; error?: string }>;
   deleteCycle: (id: number, confirmacion: string) => Promise<{ success: boolean; error?: string }>;
@@ -49,37 +51,32 @@ export interface UseAccreditationCyclesReturn {
 // ── Hook ──────────────────────────────────────────────────────────────────────
 
 export function useAccreditationCycles(): UseAccreditationCyclesReturn {
-  const perPage = TABLE_PAGE_SIZE.standard;
-
   const [cycles, setCycles] = useState<AccreditationCycle[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [currentPage, setCurrentPage] = useState(1);
-  const [totalPages, setTotalPages] = useState(1);
 
-  const loadCycles = useCallback(async (page: number = 1) => {
+  const loadCycles = useCallback(async () => {
     setIsLoading(true);
     setError(null);
     try {
-      const result = await cycleService.getAllCycles({ page, per_page: perPage });
-      setCycles(result.data);
-      setCurrentPage(result.current_page);
-      setTotalPages(result.last_page);
+      const result = await cycleService.getAllCycles({ per_page: 50 });
+      const sorted = [...result.data].sort((a, b) => b.ciclo_acreditacion_id - a.ciclo_acreditacion_id);
+      setCycles(sorted);
     } catch (err) {
       setError(extractBackendError(err, 'Error al cargar los ciclos de acreditación'));
     } finally {
       setIsLoading(false);
     }
-  }, [perPage]);
+  }, []);
 
   useEffect(() => {
-    loadCycles(1);
+    loadCycles();
   }, [loadCycles]);
 
   const createCycle = useCallback(async (form: CreateAccreditationCycleForm) => {
     try {
       await cycleService.createCycle(form);
-      await loadCycles(1);
+      await loadCycles();
       return { success: true };
     } catch (err) {
       return { success: false, error: extractBackendError(err, 'No se pudo crear el ciclo') };
@@ -89,41 +86,37 @@ export function useAccreditationCycles(): UseAccreditationCyclesReturn {
   const updateCycle = useCallback(async (id: number, form: EditAccreditationCycleForm) => {
     try {
       await cycleService.updateCycle(id, form);
-      await loadCycles(currentPage);
+      await loadCycles();
       return { success: true };
     } catch (err) {
       return { success: false, error: extractBackendError(err, 'No se pudo actualizar el ciclo') };
     }
-  }, [loadCycles, currentPage]);
+  }, [loadCycles]);
 
   const deleteCycle = useCallback(async (id: number, confirmacion: string) => {
     try {
       await cycleService.deleteCycle(id, confirmacion);
-      // If last item on page, go to previous page
-      const nextPage = cycles.length === 1 && currentPage > 1 ? currentPage - 1 : currentPage;
-      await loadCycles(nextPage);
+      await loadCycles();
       return { success: true };
     } catch (err) {
       return { success: false, error: extractBackendError(err, 'No se pudo eliminar el ciclo') };
     }
-  }, [loadCycles, currentPage, cycles.length]);
+  }, [loadCycles]);
 
   const reactivateCycle = useCallback(async (id: number) => {
     try {
       await cycleService.reactivateCycle(id);
-      await loadCycles(currentPage);
+      await loadCycles();
       return { success: true };
     } catch (err) {
       return { success: false, error: extractBackendError(err, 'No se pudo reactivar el ciclo') };
     }
-  }, [loadCycles, currentPage]);
+  }, [loadCycles]);
 
   return {
     cycles,
     isLoading,
     error,
-    currentPage,
-    totalPages,
     loadCycles,
     createCycle,
     updateCycle,

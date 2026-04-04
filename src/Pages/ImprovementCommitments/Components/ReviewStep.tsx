@@ -21,12 +21,15 @@ interface ReviewStepProps {
   onSubmit: () => void;
   isSubmitting: boolean;
   errors: ValidationErrors;
+  /** Cuando viene desde Procesos, las fechas ya están definidas en el proceso */
+  fromProcess?: boolean;
 }
 
 export const ReviewStep: React.FC<ReviewStepProps> = ({
   formData,
   updateFormData,
-  errors
+  errors,
+  fromProcess = false,
 }) => {
   const [detailModal, setDetailModal] = useState<{ open: boolean; criterion: CriterioSeleccionado | null }>({ open: false, criterion: null });
 
@@ -125,30 +128,32 @@ export const ReviewStep: React.FC<ReviewStepProps> = ({
               />
             </div>
 
-            {/* Fechas */}
-            <div className="w-80 space-y-4">
-              <DatePicker
-                label="Fecha de Inicio"
-                value={formData.fecha_inicio}
-                onChange={(value) => updateFormData({ fecha_inicio: value })}
-                placeholder="Seleccione fecha de inicio..."
-                minDate={new Date().toISOString().split('T')[0]}
-                error={errors.fecha_inicio}
-                required
-                helperText={!formData.fecha_inicio ? "Fecha de inicio del compromiso" : undefined}
-              />
+            {/* Fechas — solo se muestran si no vienen del proceso */}
+            {!fromProcess && (
+              <div className="w-80 space-y-4">
+                <DatePicker
+                  label="Fecha de Inicio"
+                  value={formData.fecha_inicio}
+                  onChange={(value) => updateFormData({ fecha_inicio: value })}
+                  placeholder="Seleccione fecha de inicio..."
+                  minDate={new Date().toISOString().split('T')[0]}
+                  error={errors.fecha_inicio}
+                  required
+                  helperText={!formData.fecha_inicio ? "Fecha de inicio del compromiso" : undefined}
+                />
 
-              <DatePicker
-                label="Fecha de Fin"
-                value={formData.fecha_fin}
-                onChange={(value) => updateFormData({ fecha_fin: value })}
-                placeholder="Seleccione fecha de fin..."
-                minDate={formData.fecha_inicio || new Date().toISOString().split('T')[0]}
-                error={errors.fecha_fin}
-                required
-                helperText={!formData.fecha_fin ? "Fecha límite del compromiso" : undefined}
-              />
-            </div>
+                <DatePicker
+                  label="Fecha de Fin"
+                  value={formData.fecha_fin}
+                  onChange={(value) => updateFormData({ fecha_fin: value })}
+                  placeholder="Seleccione fecha de fin..."
+                  minDate={formData.fecha_inicio || new Date().toISOString().split('T')[0]}
+                  error={errors.fecha_fin}
+                  required
+                  helperText={!formData.fecha_fin ? "Fecha límite del compromiso" : undefined}
+                />
+              </div>
+            )}
           </div>
         </div>
 

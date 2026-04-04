@@ -5,6 +5,7 @@
  */
 
 import React, { useCallback, useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { ScreenContainer } from "@/Components/Ui/Layout/ScreenContainer";
 import { PageHeader, Button } from "@/Components/Ui/Index";
 import { DeleteConfirmationModal } from "@/Components/Ui/Modals/DeleteConfirmationModal";
@@ -24,6 +25,7 @@ import { AccreditationProcessFormModal } from "./Components/AccreditationProcess
 
 export const AccreditationProcessList: React.FC = () => {
   const moduleInfo = getModuleInfo("accreditation_processes");
+  const navigate = useNavigate();
 
   // Filtros
   const [searchQuery, setSearchQuery] = useState("");
@@ -180,6 +182,17 @@ export const AccreditationProcessList: React.FC = () => {
     setDetailsModalState({ isOpen: true, process });
   };
 
+  const handleConfigureProcess = (process: AccreditationProcess) => {
+    navigate('/compromisos/crear', {
+      state: {
+        procesoId: process.id,
+        cicloId: process.accreditationCycleId,
+        startDate: process.startDate,
+        estimatedEndDate: process.estimatedEndDate,
+      },
+    });
+  };
+
   const handleEditProcess = (process: AccreditationProcess) => {
     setFormModalState({ isOpen: true, process });
   };
@@ -241,6 +254,7 @@ export const AccreditationProcessList: React.FC = () => {
           onView={handleViewProcess}
           onEdit={handleEditProcess}
           onDelete={handleDeleteProcess}
+          onConfigure={handleConfigureProcess}
         />
       </div>
 

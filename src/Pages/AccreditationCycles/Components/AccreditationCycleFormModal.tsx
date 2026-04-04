@@ -169,7 +169,7 @@ export const AccreditationCycleFormModal: React.FC<Props> = ({
             value={form.nombre}
             onChange={e => setForm(p => ({ ...p, nombre: e.target.value }))}
             error={errors.nombre}
-            maxLength={100}
+            maxLength={50}
             characterCount
           />
 

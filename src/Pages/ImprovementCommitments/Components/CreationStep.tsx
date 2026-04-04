@@ -34,6 +34,8 @@ interface CreationStepProps {
   eliminarCriterio: (criterioId: number) => void;
   actualizarCriterio: (criterio: CriterioSeleccionado) => void;
   errors: ValidationErrors;
+  /** Cuando viene desde Procesos, el ciclo ya viene definido y no se puede cambiar */
+  cicloFijo?: boolean;
 }
 
 type StatusFilter = 'todos' | 'seleccionados' | 'pendientes';
@@ -44,7 +46,8 @@ export const CreationStep: React.FC<CreationStepProps> = ({
   agregarCriterio: addCriterion,
   eliminarCriterio: deleteCriterion,
   actualizarCriterio: updateCriterion,
-  errors
+  errors,
+  cicloFijo = false,
 }) => {
   const [catalogState, setCatalogState] = useState<{ ciclos: CicloAcreditacion[]; criterios: Criterio[]; loading: boolean }>({ ciclos: [], criterios: [], loading: true });
   const ciclos = catalogState.ciclos;
@@ -295,6 +298,7 @@ export const CreationStep: React.FC<CreationStepProps> = ({
               required
               error={errors.ciclo_acreditacion_id}
               size="sm"
+              disabled={cicloFijo}
             />
           </div>
 
