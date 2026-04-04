@@ -77,130 +77,133 @@ export const AccreditationProcessTable: React.FC<
     return filteredProcesses.slice(start, start + safeItemsPerPage);
   }, [filteredProcesses, boundedCurrentPage, safeItemsPerPage]);
 
-  const columns: DataTableColumn<AccreditationProcessRow>[] = useMemo(() => [
-    {
-      key: "accreditationCycleName",
-      header: "Ciclo",
-      align: "left",
-      width: firstColumn.width,
-      render: (_, process) => (
-        <div className="flex flex-col pl-2">
-          <p
-            className={`block font-sans antialiased font-bold leading-normal text-negro-una-2 ${TYPOGRAPHY.table.cell}`}
-            title={process.accreditationCycleName}
-          >
-            {process.accreditationCycleName}
-          </p>
-          <p
-            className={`block font-sans antialiased font-normal leading-normal text-gris-una ${TYPOGRAPHY.table.helper}`}
-            title={process.careerName || "Sin carrera"}
-          >
-            {process.careerName || "Sin carrera"}
-          </p>
-        </div>
-      ),
-    },
-    {
-      key: "type",
-      header: "Tipo de Proceso",
-      align: "left",
-      render: (_, process) => (
-        <div className="flex flex-col items-start">
-          <p
-            className={`block font-sans antialiased font-normal leading-normal text-negro-una-2 ${TYPOGRAPHY.table.cell}`}
-            title={process.type}
-          >
-            {truncateText(process.type, firstColumn.maxLength)}
-          </p>
-        </div>
-      ),
-    },
-    {
-      key: "period",
-      header: "Periodo",
-      align: "left",
-      render: (_, process) => (
-        <div className="flex flex-col items-start">
-          <p
-            className={`block font-sans antialiased font-normal leading-normal text-negro-una-2 ${TYPOGRAPHY.table.cell}`}
-          >
-            Inicio: {formatDateShort(process.startDate)}
-          </p>
-          <p
-            className={`block font-sans antialiased font-normal leading-normal text-negro-una-2 ${TYPOGRAPHY.table.cell}`}
-          >
-            Fin: {formatDateShort(process.estimatedEndDate)}
-          </p>
-        </div>
-      ),
-    },
-    {
-      key: "status",
-      header: "Estado",
-      align: "left",
-      width: TABLE_COLUMN_WIDTHS.status,
-      render: (_, process) => (
-        <div className="flex justify-start">
-          <StatusBadge
-            label={process.status === "activo" ? "Activo" : "Inactivo"}
-            colorClasses={
-              process.status === "activo"
-                ? "text-verde-dark bg-verde-ring"
-                : "text-error-dark bg-error-ring"
-            }
-          />
-        </div>
-      ),
-    },
-    {
-      key: "actions",
-      header: "Acciones",
-      align: "center",
-      render: (_, process) => (
-        <div className="flex items-center justify-center gap-2 pr-2">
-          <TableActionButton
-            action="view"
-            tooltip="Ver detalles"
-            onClick={() => onView?.(process)}
-          />
-          <TableActionButton
-            action="edit"
-            tooltip="Editar proceso"
-            onClick={() => onEdit?.(process)}
-          />
-          <TableActionButton
-            action="delete"
-            tooltip="Eliminar proceso"
-            onClick={() => onDelete?.(process)}
-          />
-        </div>
-      ),
-    },
-  ], [onView, onEdit, onDelete, firstColumn]);
+  const columns: DataTableColumn<AccreditationProcessRow>[] = useMemo(
+    () => [
+      {
+        key: "accreditationCycleName",
+        header: "Ciclo",
+        align: "left",
+        width: firstColumn.width,
+        render: (_, process) => (
+          <div className="flex flex-col pl-2">
+            <p
+              className={`block font-sans antialiased font-bold leading-normal text-negro-una-2 ${TYPOGRAPHY.table.cell}`}
+              title={process.accreditationCycleName}
+            >
+              {process.accreditationCycleName}
+            </p>
+            <p
+              className={`block font-sans antialiased font-normal leading-normal text-gris-una ${TYPOGRAPHY.table.helper}`}
+              title={process.careerName || "Sin carrera"}
+            >
+              {process.careerName || "Sin carrera"}
+            </p>
+          </div>
+        ),
+      },
+      {
+        key: "type",
+        header: "Tipo de Proceso",
+        align: "left",
+        render: (_, process) => (
+          <div className="flex flex-col items-start">
+            <p
+              className={`block font-sans antialiased font-normal leading-normal text-negro-una-2 ${TYPOGRAPHY.table.cell}`}
+              title={process.type}
+            >
+              {truncateText(process.type, firstColumn.maxLength)}
+            </p>
+          </div>
+        ),
+      },
+      {
+        key: "period",
+        header: "Periodo",
+        align: "left",
+        render: (_, process) => (
+          <div className="flex flex-col items-start">
+            <p
+              className={`block font-sans antialiased font-normal leading-normal text-negro-una-2 ${TYPOGRAPHY.table.cell}`}
+            >
+              Inicio: {formatDateShort(process.startDate)}
+            </p>
+            <p
+              className={`block font-sans antialiased font-normal leading-normal text-negro-una-2 ${TYPOGRAPHY.table.cell}`}
+            >
+              Fin: {formatDateShort(process.estimatedEndDate)}
+            </p>
+          </div>
+        ),
+      },
+      {
+        key: "status",
+        header: "Estado",
+        align: "left",
+        width: TABLE_COLUMN_WIDTHS.status,
+        render: (_, process) => (
+          <div className="flex justify-start">
+            <StatusBadge
+              label={process.status === "activo" ? "Activo" : "Inactivo"}
+              colorClasses={
+                process.status === "activo"
+                  ? "text-verde-dark bg-verde-ring"
+                  : "text-error-dark bg-error-ring"
+              }
+            />
+          </div>
+        ),
+      },
+      {
+        key: "actions",
+        header: "Acciones",
+        align: "center",
+        render: (_, process) => (
+          <div className="flex items-center justify-center gap-2 pr-2">
+            <TableActionButton
+              action="view"
+              tooltip="Ver detalles"
+              onClick={() => onView?.(process)}
+            />
+            <TableActionButton
+              action="edit"
+              tooltip="Editar proceso"
+              onClick={() => onEdit?.(process)}
+            />
+            <TableActionButton
+              action="delete"
+              tooltip="Eliminar proceso"
+              onClick={() => onDelete?.(process)}
+            />
+          </div>
+        ),
+      },
+    ],
+    [onView, onEdit, onDelete, firstColumn],
+  );
 
   return (
     <div className="w-full">
       <DataTable
-      data={paginatedData}
-      columns={columns}
-      title=""
-      searchable={false}
-      pagination={
-        totalPages > 1
-          ? {
-              currentPage: boundedCurrentPage,
-              totalPages,
-              onPageChange: setCurrentPage,
-            }
-          : undefined
-      }
-      loading={isLoading}
-      emptyMessage={
-        debouncedSearchQuery
-          ? `No se encontraron procesos que coincidan con "${debouncedSearchQuery}"`
-          : "No hay procesos de acreditación registrados"
-      }
-    />
+        data={paginatedData}
+        columns={columns}
+        title=""
+        searchable={false}
+        pagination={
+          totalPages > 1
+            ? {
+                currentPage: boundedCurrentPage,
+                totalPages,
+                onPageChange: setCurrentPage,
+              }
+            : undefined
+        }
+        loading={isLoading}
+        emptyMessage={
+          debouncedSearchQuery
+            ? `No se encontraron procesos que coincidan con "${debouncedSearchQuery}"`
+            : "No hay procesos de acreditación registrados"
+        }
+      />
     </div>
   );
 };
