@@ -63,6 +63,8 @@ export const EvidenceAssignmentView: React.FC<EvidenceAssignmentViewProps> = ({
   onCloseSuccessModal,
   criteriaEvidences,
   selectedAvatars,
+  isFlexible,
+  elementOptions,
 }) => {
   return (
     <ScreenContainer>
@@ -72,7 +74,7 @@ export const EvidenceAssignmentView: React.FC<EvidenceAssignmentViewProps> = ({
       />
 
       {criteriaLoading ? (
-        <Card className="relative py-16 min-h-[400px]">
+        <Card className="relative py-16 min-h-100">
           <LoadingSpinner variant="loader" />
         </Card>
       ) : (
@@ -91,14 +93,23 @@ export const EvidenceAssignmentView: React.FC<EvidenceAssignmentViewProps> = ({
                   Asignaciones
                 </h2>
                 <div className="flex items-center gap-3">
-                  <div className="rounded-corner bg-blanco-una px-3 py-1.5 border border-gris-una/15 text-center">
-                    <p className={`${TYPOGRAPHY.form.helper} text-gris-una`}>Criterios</p>
-                    <p className={`${TYPOGRAPHY.form.helper} font-semibold text-gris-una`}>{formData.selectedCriteria.length}</p>
-                  </div>
-                  <div className="rounded-corner bg-blanco-una px-3 py-1.5 border border-gris-una/15 text-center">
-                    <p className={`${TYPOGRAPHY.form.helper} text-gris-una`}>Evidencias</p>
-                    <p className={`${TYPOGRAPHY.form.helper} font-semibold text-gris-una`}>{formData.selectedEvidences.length}</p>
-                  </div>
+                  {isFlexible ? (
+                    <div className="rounded-corner bg-blanco-una px-3 py-1.5 border border-gris-una/15 text-center">
+                      <p className={`${TYPOGRAPHY.form.helper} text-gris-una`}>Elementos</p>
+                      <p className={`${TYPOGRAPHY.form.helper} font-semibold text-gris-una`}>{formData.selectedElements.length}</p>
+                    </div>
+                  ) : (
+                    <>
+                      <div className="rounded-corner bg-blanco-una px-3 py-1.5 border border-gris-una/15 text-center">
+                        <p className={`${TYPOGRAPHY.form.helper} text-gris-una`}>Criterios</p>
+                        <p className={`${TYPOGRAPHY.form.helper} font-semibold text-gris-una`}>{formData.selectedCriteria.length}</p>
+                      </div>
+                      <div className="rounded-corner bg-blanco-una px-3 py-1.5 border border-gris-una/15 text-center">
+                        <p className={`${TYPOGRAPHY.form.helper} text-gris-una`}>Evidencias</p>
+                        <p className={`${TYPOGRAPHY.form.helper} font-semibold text-gris-una`}>{formData.selectedEvidences.length}</p>
+                      </div>
+                    </>
+                  )}
                 </div>
               </div>
 
@@ -123,62 +134,86 @@ export const EvidenceAssignmentView: React.FC<EvidenceAssignmentViewProps> = ({
                 </div>
               )}
 
-              {/* Criterios de Evaluación */}
-              <div>
-                <MultiSelect
-                  label="Criterios de Evaluación"
-                  options={criterionOptions}
-                  value={formData.selectedCriteria.map(String)}
-                  onChange={(vals) => {
-                    const ids = vals.map((v) => parseInt(v, 10));
-                    const set = new Set(ids);
-                    const filtered = formData.selectedEvidences.filter((id) => {
-                      const ev = criteriaEvidences.find((e) => e.evidencia_id === id);
-                      return ev ? set.has(ev.criterio_id) : false;
-                    });
-                    updateFormData({
-                      criterio_id: ids.length > 0 ? ids[0] : null,
-                      selectedCriteria: ids,
-                      selectedEvidences: filtered,
-                    });
-                  }}
-                  placeholder="Seleccione uno o varios criterios..."
-                  required
-                  selectAllText="Seleccionar todos"
-                  deselectAllText="Deseleccionar todos"
-                  showSelectAll
-                />
-                <p className={`mt-1.5 ${TYPOGRAPHY.form.helper} text-gris-una`}>
-                  Defina las evidencias disponibles para asignar.
-                </p>
-              </div>
+              {/* Selectores: modo flexible vs tradicional */}
+              {isFlexible ? (
+                <div>
+                  <MultiSelect
+                    label="Elementos a asignar"
+                    options={elementOptions}
+                    value={formData.selectedElements.map(String)}
+                    onChange={(vals) =>
+                      updateFormData({ selectedElements: vals.map((v) => parseInt(v, 10)) })
+                    }
+                    placeholder="Seleccione elementos..."
+                    required
+                    selectAllText="Seleccionar todos"
+                    deselectAllText="Deseleccionar todos"
+                    showSelectAll
+                  />
+                  <p className={`mt-1.5 ${TYPOGRAPHY.form.helper} text-gris-una`}>
+                    Elementos del modelo de acreditación a asignar.
+                  </p>
+                </div>
+              ) : (
+                <>
+                  {/* Criterios de Evaluación */}
+                  <div>
+                    <MultiSelect
+                      label="Criterios de Evaluación"
+                      options={criterionOptions}
+                      value={formData.selectedCriteria.map(String)}
+                      onChange={(vals) => {
+                        const ids = vals.map((v) => parseInt(v, 10));
+                        const set = new Set(ids);
+                        const filtered = formData.selectedEvidences.filter((id) => {
+                          const ev = criteriaEvidences.find((e) => e.evidencia_id === id);
+                          return ev ? set.has(ev.criterio_id) : false;
+                        });
+                        updateFormData({
+                          criterio_id: ids.length > 0 ? ids[0] : null,
+                          selectedCriteria: ids,
+                          selectedEvidences: filtered,
+                        });
+                      }}
+                      placeholder="Seleccione uno o varios criterios..."
+                      required
+                      selectAllText="Seleccionar todos"
+                      deselectAllText="Deseleccionar todos"
+                      showSelectAll
+                    />
+                    <p className={`mt-1.5 ${TYPOGRAPHY.form.helper} text-gris-una`}>
+                      Defina las evidencias disponibles para asignar.
+                    </p>
+                  </div>
 
-              {/* Evidencias a asignar */}
-              <div>
-                <MultiSelect
-                  label="Evidencias a asignar"
-                  options={evidenceOptions}
-                  value={formData.selectedEvidences.map(String)}
-                  onChange={(vals) =>
-                    updateFormData({ selectedEvidences: vals.map((v) => parseInt(v, 10)) })
-                  }
-                  placeholder={
-                    formData.selectedCriteria.length > 0
-                      ? "Seleccione evidencias..."
-                      : "Primero seleccione al menos un criterio"
-                  }
-                  required
-                  selectAllText="Seleccionar todas"
-                  deselectAllText="Deseleccionar todas"
-                  showSelectAll
-                  disabled={formData.selectedCriteria.length === 0}
-                />
-                <p className={`mt-1.5 ${TYPOGRAPHY.form.helper} text-gris-una`}>
-                  Mostrando {availableEvidencesCount} evidencias de{" "}
-                  {formData.selectedCriteria.length}{" "}
-                  {formData.selectedCriteria.length === 1 ? "criterio" : "criterios"} seleccionados.
-                </p>
-              </div>
+                  {/* Evidencias a asignar */}
+                  <div>
+                    <MultiSelect
+                      label="Evidencias a asignar"
+                      options={evidenceOptions}
+                      value={formData.selectedEvidences.map(String)}
+                      onChange={(vals) =>
+                        updateFormData({ selectedEvidences: vals.map((v) => parseInt(v, 10)) })
+                      }
+                      placeholder={
+                        formData.selectedCriteria.length > 0
+                          ? "Seleccione evidencias..."
+                          : "Primero seleccione al menos un criterio"
+                      }
+                      required
+                      selectAllText="Seleccionar todas"
+                      deselectAllText="Deseleccionar todas"
+                      showSelectAll
+                      disabled={formData.selectedCriteria.length === 0}
+                    />
+                    <p className={`mt-1.5 ${TYPOGRAPHY.form.helper} text-gris-una`}>
+                      Mostrando {availableEvidencesCount} evidencias de{" "}
+                      {formData.selectedCriteria.length}{" "}
+                      {formData.selectedCriteria.length === 1 ? "criterio" : "criterios"} seleccionados.
+                    </p>
+                  </div>
+                </>
+              )}
             </Card>
 
             {/* Card: Destinatarios */}
@@ -314,7 +349,9 @@ export const EvidenceAssignmentView: React.FC<EvidenceAssignmentViewProps> = ({
               getRowKey={(row) => row.id as string}
               emptyMessage={
                 <p className={`${TYPOGRAPHY.emptyState.descriptionCompact} text-gris-una py-6 text-center`}>
-                  Selecciona criterios y evidencias para ver el resumen
+                  {isFlexible
+                    ? "Selecciona elementos para ver el resumen"
+                    : "Selecciona criterios y evidencias para ver el resumen"}
                 </p>
               }
             />
@@ -325,7 +362,7 @@ export const EvidenceAssignmentView: React.FC<EvidenceAssignmentViewProps> = ({
             <div className="rounded-corner border border-info-ring bg-info-light p-4">
               <div className="flex items-center gap-3">
                 <div
-                  className="w-4 h-4 border-2 border-azul-una border-t-transparent rounded-full animate-spin flex-shrink-0"
+                  className="w-4 h-4 border-2 border-azul-una border-t-transparent rounded-full animate-spin shrink-0"
                   role="status"
                   aria-label="Cargando..."
                 />
@@ -354,7 +391,7 @@ export const EvidenceAssignmentView: React.FC<EvidenceAssignmentViewProps> = ({
                         align: 'left',
                         render: (_, row) => (
                           <div className="flex items-center gap-3">
-                            <div className="flex items-center justify-center w-8 h-8 rounded-full bg-warning text-white font-bold text-xs flex-shrink-0">
+                            <div className="flex items-center justify-center w-8 h-8 rounded-full bg-warning text-white font-bold text-xs shrink-0">
                               {row.evidences.length}
                             </div>
                             <p className={`${TYPOGRAPHY.table.cell} font-semibold text-warning-dark`}>{row.usuario_nombre}</p>
@@ -375,7 +412,7 @@ export const EvidenceAssignmentView: React.FC<EvidenceAssignmentViewProps> = ({
                           </div>
                         ),
                         action: (
-                          <span className={`text-gris-una flex-shrink-0 ${TYPOGRAPHY.table.cell}`}>{formatDateShort(dup.fecha_asignacion)}</span>
+                            <span className={`text-gris-una shrink-0 ${TYPOGRAPHY.table.cell}`}>{formatDateShort(dup.fecha_asignacion)}</span>
                         ),
                       }))
                     }
@@ -397,7 +434,7 @@ export const EvidenceAssignmentView: React.FC<EvidenceAssignmentViewProps> = ({
                     <h2 className={`${TYPOGRAPHY.table.caption} font-semibold text-negro-una`}>Evidencias Ya Completadas</h2>
                     <div className="flex items-center justify-between gap-4 mt-1">
                       <p className={`${TYPOGRAPHY.table.helper} text-gris-una`}>Usuarios que ya completaron estas evidencias. Puede reasignarlas si es necesario.</p>
-                      <label className="flex items-center gap-2 cursor-pointer select-none flex-shrink-0">
+                      <label className="flex items-center gap-2 cursor-pointer select-none shrink-0">
                         <input
                           type="checkbox"
                           checked={completedDuplicates.every((d: DuplicateAssignment) =>
@@ -445,7 +482,7 @@ export const EvidenceAssignmentView: React.FC<EvidenceAssignmentViewProps> = ({
                         align: 'left',
                         render: (_, row) => (
                           <div className="flex items-center gap-3">
-                            <div className="flex items-center justify-center w-8 h-8 rounded-full bg-info text-white font-bold text-xs flex-shrink-0">
+                            <div className="flex items-center justify-center w-8 h-8 rounded-full bg-info text-white font-bold text-xs shrink-0">
                               {row.evidences.length}
                             </div>
                             <p className={`${TYPOGRAPHY.table.cell} font-semibold text-info-dark`}>{row.usuario_nombre}</p>
@@ -468,7 +505,7 @@ export const EvidenceAssignmentView: React.FC<EvidenceAssignmentViewProps> = ({
                                 type="checkbox"
                                 checked={!isExcluded}
                                 onChange={() => toggleCompletedPair(dup.usuario_id, dup.evidencia_id)}
-                                className="w-4 h-4 rounded border-info-ring text-info focus:ring-info cursor-pointer flex-shrink-0"
+                                className="w-4 h-4 rounded border-info-ring text-info focus:ring-info cursor-pointer shrink-0"
                                 aria-label={`Reasignar ${evidenceById[dup.evidencia_id]?.nomenclatura}`}
                               />
                               <span className="font-semibold text-negro-una">{evidenceById[dup.evidencia_id]?.nomenclatura ?? 'N/A'}</span>
@@ -477,7 +514,7 @@ export const EvidenceAssignmentView: React.FC<EvidenceAssignmentViewProps> = ({
                             </div>
                           ),
                           action: (
-                            <span className={`text-negro-una flex-shrink-0 ${TYPOGRAPHY.table.cell}`}>{formatDateShort(dup.fecha_asignacion)}</span>
+                            <span className={`text-negro-una shrink-0 ${TYPOGRAPHY.table.cell}`}>{formatDateShort(dup.fecha_asignacion)}</span>
                           ),
                         };
                       })

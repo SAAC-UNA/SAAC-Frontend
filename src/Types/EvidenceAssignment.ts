@@ -28,6 +28,8 @@ export interface Evidence {
 export interface Process {
   proceso_id: number;
   ciclo_acreditacion_id: number;
+  modelo_estructura_id?: number;
+  modelo_estructura_tipo?: string;
   created_at?: string;
   updated_at?: string;
 }
@@ -37,6 +39,8 @@ export interface EvidenceAssignmentFormData {
   criterio_id: number | null;
   selectedCriteria: number[];
   selectedEvidences: number[];
+  /** Modo flexible: IDs de elementos seleccionados para asignar */
+  selectedElements: number[];
   selectedUsers: number[];
   selectedRoles: number[];
   fecha_limite?: string;

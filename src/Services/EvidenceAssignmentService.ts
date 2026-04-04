@@ -18,6 +18,7 @@ import type {
   DuplicateValidationRequest,
   DuplicateValidationResponse
 } from '@/Types/EvidenceAssignment';
+import type { FlexibleElement } from '@/Types/StructureModelTypes';
 import { devLog } from '@/Utils/devLogger';
 
 class EvidenceAssignmentService {
@@ -178,24 +179,84 @@ class EvidenceAssignmentService {
   }
 
   /**
-   * Obtener todos los procesos desde el backend
+   * Obtener todos los procesos desde el backend.
+   * Incluye tipo de modelo del ciclo para bifurcar tradicional / elemento_flexible.
    */
   async getAllProcesses(): Promise<Process[]> {
     try {
       const response = await axiosInstance.get<{ data: any[] }>('/estructura/procesos');
       
       const rawProcesses = response.data.data || response.data || [];
-      
-      // Mapear respuesta del backend: id -> proceso_id
-      return rawProcesses.map((item: any) => ({
-        proceso_id: item.id || item.proceso_id,
-        ciclo_acreditacion_id: item.ciclo_acreditacion_id,
-        created_at: item.created_at,
-        updated_at: item.updated_at,
-      }));
+
+      return rawProcesses.map((item: any) => {
+        const cycle =
+          item.accreditation_cycle ||
+          item.accreditationCycle ||
+          {};
+        const modelo = cycle.modelo_estructura || {};
+
+        return {
+          proceso_id: item.id || item.proceso_id,
+          ciclo_acreditacion_id: item.ciclo_acreditacion_id ?? cycle.ciclo_acreditacion_id,
+          modelo_estructura_id: modelo.modelo_estructura_id ?? cycle.modelo_estructura_id ?? undefined,
+          modelo_estructura_tipo: modelo.tipo ?? undefined,
+          created_at: item.created_at,
+          updated_at: item.updated_at,
+        };
+      });
     } catch (error) {
       devLog.error('Error al obtener procesos:', error);
       throw error;
+    }
+  }
+
+  /**
+   * Obtener elementos de estructura para un modelo flexible.
+   * GET /api/estructura/elementos?modelo_estructura_id={id}
+   */
+  async getElementsByModel(modeloId: number): Promise<FlexibleElement[]> {
+    try {
+      const response = await axiosInstance.get<any[]>('/estructura/elementos', {
+        params: { modelo_estructura_id: modeloId },
+      });
+      const raw: any[] = Array.isArray(response.data)
+        ? response.data
+        : (response.data as any)?.data ?? [];
+      return raw.map((item: any) => ({
+        elemento_id:          item.elemento_id ?? item.id,
+        modelo_estructura_id: item.modelo_estructura_id,
+        padre_id:             item.padre_id ?? null,
+        tipo:                 item.tipo ?? '',
+        nombre:               item.nombre ?? null,
+        categoria:            item.categoria ?? null,
+        nomenclatura:         item.nomenclatura ?? null,
+        descripcion:          item.descripcion ?? null,
+        activo:               item.activo ?? true,
+        created_at:           item.created_at ?? '',
+        updated_at:           item.updated_at ?? '',
+      }));
+    } catch (error) {
+      devLog.error('Error al obtener elementos:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Crear asignación de elemento (modelo flexible).
+   * POST /api/elementos-asignaciones
+   */
+  async createElementAssignment(data: {
+    elemento_id: number;
+    proceso_id: number;
+    usuarios?: number[];
+    roles?: number[];
+    fecha_limite?: string;
+    comentario?: string;
+  }): Promise<void> {
+    try {
+      await axiosInstance.post('/elementos-asignaciones', data);
+    } catch (error: any) {
+      throw new Error(error.response?.data?.message || 'Error al asignar elemento.');
     }
   }
 

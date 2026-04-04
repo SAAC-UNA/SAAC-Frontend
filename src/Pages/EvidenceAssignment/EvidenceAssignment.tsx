@@ -6,8 +6,10 @@ import type {
   ValidationErrors,
   Criterion,
   Evidence,
+  Process,
   DuplicateAssignment,
 } from "@/Types/EvidenceAssignment";
+import type { FlexibleElement } from "@/Types/StructureModelTypes";
 import { evidenceAssignmentService } from "@/Services/EvidenceAssignmentService";
 import { userService, type User } from "@/Services/UserService";
 import { roleService, type Role } from "@/Services/RoleService";
@@ -85,6 +87,9 @@ export interface EvidenceAssignmentViewProps {
   // Criteria evidences para el onChange de criterios
   criteriaEvidences: Evidence[];
   selectedAvatars: UserAvatarsUser[];
+  // Modo flexible
+  isFlexible: boolean;
+  elementOptions: MultiSelectOption[];
 }
 
 // ---------------------------------------------------------------------------
@@ -101,6 +106,7 @@ const EvidenceAssignment: React.FC = () => {
     criterio_id: null,
     selectedCriteria: [],
     selectedEvidences: [],
+    selectedElements: [],
     selectedUsers: [],
     selectedRoles: [],
     fecha_limite: "",
@@ -108,9 +114,33 @@ const EvidenceAssignment: React.FC = () => {
     excludedUsers: [],
   });
 
+  // ── Tipo de modelo del proceso seleccionado ──────────────────────────────
+  const [processes, setProcesses] = useState<Process[]>([]);
+  const [flexElements, setFlexElements] = useState<FlexibleElement[]>([]);
+
+  const selectedProcess = useMemo(
+    () => processes.find((p) => p.proceso_id === formData.proceso_id) ?? null,
+    [processes, formData.proceso_id],
+  );
+
+  const isFlexible = selectedProcess?.modelo_estructura_tipo === 'elemento_flexible';
+
   const updateFormData = useCallback((updates: Partial<EvidenceAssignmentFormData>) => {
+    // Al cambiar de proceso, limpiar selecciones que dependen del modelo
+    if ('proceso_id' in updates && updates.proceso_id !== formData.proceso_id) {
+      setFormData((prev) => ({
+        ...prev,
+        ...updates,
+        criterio_id: null,
+        selectedCriteria: [],
+        selectedEvidences: [],
+        selectedElements: [],
+        excludedUsers: [],
+      }));
+      return;
+    }
     setFormData((prev) => ({ ...prev, ...updates }));
-  }, []);
+  }, [formData.proceso_id]);
 
   // ── Catálogos ────────────────────────────────────────────────────────────
   const [criteriaState, setCriteriaState] = useState<{
@@ -183,6 +213,7 @@ const EvidenceAssignment: React.FC = () => {
           evidenceAssignmentService.getAllProcesses(),
         ]);
         setCriteriaState({ criteria: criteriaData, evidences: evidencesData, loading: false });
+        setProcesses(processesData);
         if (processesData.length > 0 && !formData.proceso_id) {
           updateFormData({ proceso_id: processesData[0].proceso_id });
         }
@@ -196,6 +227,18 @@ const EvidenceAssignment: React.FC = () => {
     };
     load();
   }, [dataLoaded]);
+
+  // Cargar elementos cuando cambia el proceso a uno de tipo flexible
+  useEffect(() => {
+    if (!isFlexible || !selectedProcess?.modelo_estructura_id) {
+      setFlexElements([]);
+      return;
+    }
+    evidenceAssignmentService
+      .getElementsByModel(selectedProcess.modelo_estructura_id)
+      .then(setFlexElements)
+      .catch(() => setFlexElements([]));
+  }, [isFlexible, selectedProcess?.modelo_estructura_id]);
 
   // ── Duplicados ───────────────────────────────────────────────────────────
   const [duplicatesState, setDuplicatesState] = useState<{
@@ -262,6 +305,21 @@ const EvidenceAssignment: React.FC = () => {
     })), [criteriaState.criteria]
   );
 
+  // Elementos del modelo flexible: solo hojas (sin hijos) para poder asignarlos
+  const elementOptions = useMemo<MultiSelectOption[]>(() => {
+    const parentIds = new Set(
+      flexElements.filter((e) => e.padre_id !== null).map((e) => e.padre_id as number)
+    );
+    return flexElements
+      .filter((e) => !parentIds.has(e.elemento_id) && e.activo)
+      .map((e) => ({
+        value: e.elemento_id.toString(),
+        label: e.nomenclatura
+          ? `${e.nomenclatura} — ${e.descripcion ?? e.tipo}`
+          : e.descripcion ?? e.tipo,
+      }));
+  }, [flexElements]);
+
   const criterionById = useMemo(() =>
     criteriaState.criteria.reduce<Record<number, Criterion>>((acc, c) => {
       acc[c.criterio_id] = c;
@@ -323,8 +381,22 @@ const EvidenceAssignment: React.FC = () => {
 
   const firstColumn = useFirstColumnConfig();
 
-  const assignmentTableRows = useMemo<AssignmentTableRow[]>(() =>
-    formData.selectedEvidences.map((id) => {
+  const assignmentTableRows = useMemo<AssignmentTableRow[]>(() => {
+    if (isFlexible) {
+      return formData.selectedElements.map((id) => {
+        const el = flexElements.find((e) => e.elemento_id === id);
+        return {
+          id: `el-${id}`,
+          evidencia_id: id,
+          nomenclatura: el?.nomenclatura ?? "—",
+          descripcion: el?.descripcion ?? el?.tipo ?? "—",
+          destinatarios: "—",
+          fecha_limite: formData.fecha_limite ?? "",
+          comentario: formData.comentario ?? "",
+        };
+      });
+    }
+    return formData.selectedEvidences.map((id) => {
       const ev = evidenceById[id];
       return {
         id: id.toString(),
@@ -335,8 +407,8 @@ const EvidenceAssignment: React.FC = () => {
         fecha_limite: formData.fecha_limite ?? "",
         comentario: formData.comentario ?? "",
       };
-    }), [formData.selectedEvidences, evidenceById, formData.fecha_limite, formData.comentario]
-  );
+    });
+  }, [isFlexible, formData.selectedElements, formData.selectedEvidences, flexElements, evidenceById, formData.fecha_limite, formData.comentario]);
 
   const assignmentColumns = useMemo<DataTableColumn<AssignmentTableRow>[]>(() => [
     {
@@ -452,7 +524,13 @@ const EvidenceAssignment: React.FC = () => {
   const validate = (): boolean => {
     const newErrors: ValidationErrors = {};
     if (!formData.proceso_id) newErrors.proceso = "Debe seleccionar un proceso";
-    if (formData.selectedEvidences.length === 0) newErrors.evidences = "Debe seleccionar al menos una evidencia";
+    if (isFlexible) {
+      if (formData.selectedElements.length === 0)
+        newErrors.evidences = "Debe seleccionar al menos un elemento";
+    } else {
+      if (formData.selectedEvidences.length === 0)
+        newErrors.evidences = "Debe seleccionar al menos una evidencia";
+    }
     if (formData.selectedUsers.length === 0 && formData.selectedRoles.length === 0) {
       newErrors.destinatarios = "Debe seleccionar al menos un usuario o rol";
     }
@@ -479,42 +557,72 @@ const EvidenceAssignment: React.FC = () => {
     if (submitState.isSubmitting) return;
     setSubmitState((prev) => ({ ...prev, isSubmitting: true }));
     try {
-      for (const evidenciaId of formData.selectedEvidences) {
-        const finalUsers = formData.selectedUsers.filter(
-          (id) =>
-            !excludedUsersSet.has(id) &&
-            !excludedCompletedPairs.some((p) => p.usuario_id === id && p.evidencia_id === evidenciaId)
-        );
-        await evidenceAssignmentService.createAssignment({
-          proceso_id: formData.proceso_id!,
-          evidencia_id: evidenciaId,
-          usuarios: finalUsers.length > 0 ? finalUsers : undefined,
-          roles: formData.selectedRoles.length > 0 ? formData.selectedRoles : undefined,
-          fecha_limite: formData.fecha_limite || undefined,
-          comentario: formData.comentario || undefined,
+      if (isFlexible) {
+        // Modelo flexible: un POST por cada elemento seleccionado
+        for (const elementoId of formData.selectedElements) {
+          await evidenceAssignmentService.createElementAssignment({
+            proceso_id: formData.proceso_id!,
+            elemento_id: elementoId,
+            usuarios: formData.selectedUsers.length > 0 ? formData.selectedUsers : undefined,
+            roles: formData.selectedRoles.length > 0 ? formData.selectedRoles : undefined,
+            fecha_limite: formData.fecha_limite || undefined,
+            comentario: formData.comentario || undefined,
+          });
+        }
+        setModalState({
+          showSuccessModal: true,
+          showConfirmModal: false,
+          assignedEvidencesCount: formData.selectedElements.length,
+        });
+        setFormData((prev) => ({
+          ...prev,
+          selectedElements: [],
+          selectedUsers: [],
+          selectedRoles: [],
+          fecha_limite: "",
+          comentario: "",
+          excludedUsers: [],
+        }));
+      } else {
+        // Modelo tradicional: un POST por cada evidencia seleccionada
+        for (const evidenciaId of formData.selectedEvidences) {
+          const finalUsers = formData.selectedUsers.filter(
+            (id) =>
+              !excludedUsersSet.has(id) &&
+              !excludedCompletedPairs.some((p) => p.usuario_id === id && p.evidencia_id === evidenciaId)
+          );
+          await evidenceAssignmentService.createAssignment({
+            proceso_id: formData.proceso_id!,
+            evidencia_id: evidenciaId,
+            usuarios: finalUsers.length > 0 ? finalUsers : undefined,
+            roles: formData.selectedRoles.length > 0 ? formData.selectedRoles : undefined,
+            fecha_limite: formData.fecha_limite || undefined,
+            comentario: formData.comentario || undefined,
+          });
+        }
+        setModalState({
+          showSuccessModal: true,
+          showConfirmModal: false,
+          assignedEvidencesCount: formData.selectedEvidences.length,
+        });
+        setFormData({
+          proceso_id: formData.proceso_id,
+          criterio_id: null,
+          selectedCriteria: [],
+          selectedEvidences: [],
+          selectedElements: [],
+          selectedUsers: [],
+          selectedRoles: [],
+          fecha_limite: "",
+          comentario: "",
+          excludedUsers: [],
         });
       }
-      setModalState({
-        showSuccessModal: true,
-        showConfirmModal: false,
-        assignedEvidencesCount: formData.selectedEvidences.length,
-      });
-      setFormData({
-        proceso_id: formData.proceso_id,
-        criterio_id: null,
-        selectedCriteria: [],
-        selectedEvidences: [],
-        selectedUsers: [],
-        selectedRoles: [],
-        fecha_limite: "",
-        comentario: "",
-        excludedUsers: [],
-      });
       setSubmitState({ isSubmitting: false, errors: {} });
     } catch (error) {
       showToast({
         type: "error",
-        title: "Error al asignar evidencias",
+        title: "Error al asignar",
         message: error instanceof Error ? error.message : "Error desconocido",
       });
       setSubmitState((prev) => ({ ...prev, isSubmitting: false }));
@@ -562,6 +670,8 @@ const EvidenceAssignment: React.FC = () => {
     onCloseSuccessModal: () => setModalState((prev) => ({ ...prev, showSuccessModal: false })),
     criteriaEvidences: criteriaState.evidences,
     selectedAvatars,
+    isFlexible,
+    elementOptions,
   };
 
   return <EvidenceAssignmentView {...viewProps} />;
