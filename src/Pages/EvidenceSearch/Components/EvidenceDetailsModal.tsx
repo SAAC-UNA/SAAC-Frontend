@@ -139,11 +139,9 @@ export const EvidenceDetailsModal: React.FC<EvidenceDetailsModalProps> = ({
   onClose,
   criterioId,
 }) => {
-  const { isSuperUser, isAdmin, user } = useAuth();
-  const isPrivileged = isSuperUser() || isAdmin();
-  const canRetroalimentar = user?.roles?.some(r =>
-    ['Encargado de Acreditación', 'Administrador', 'Superusuario'].includes(r.name)
-  ) ?? false;
+  const { canAccess } = useAuth();
+  const isPrivileged = canAccess({ requireAnyPermissions: ['archivos.make_public'] });
+  const canRetroalimentar = canAccess({ requireAnyPermissions: ['evidencias.edit'] });
 
   const [evidencias, setEvidencias] = useState<EvidenceSearchResult[]>([]);
   const [filesByEvidencia, setFilesByEvidencia] = useState<Map<number, FilesByUser[]>>(new Map());

@@ -35,7 +35,7 @@ import type {
 } from '@/Types/AccreditationCycleTypes';
 
 const AccreditationCyclesPage: React.FC = () => {
-  const { isSuperUser, isAdmin } = useAuth();
+  const { canAccess } = useAuth();
   const { showToast } = useToast();
 
   const {
@@ -50,10 +50,10 @@ const AccreditationCyclesPage: React.FC = () => {
     reactivateCycle,
   } = useAccreditationCycles();
 
-  const canCreate = isAdmin() || isSuperUser();
-  const canEdit = isAdmin() || isSuperUser();
-  const canDelete = isAdmin() || isSuperUser();
-  const canReactivate = isSuperUser();
+  const canCreate = canAccess({ requireAnyPermissions: ['ciclos.create'] });
+  const canEdit = canAccess({ requireAnyPermissions: ['ciclos.edit'] });
+  const canDelete = canAccess({ requireAnyPermissions: ['ciclos.delete'] });
+  const canReactivate = canAccess({ requireAnyPermissions: ['ciclos.reactivar'] });
 
   // ── Modal state ───────────────────────────────────────────────────────────
 
@@ -204,7 +204,7 @@ const AccreditationCyclesPage: React.FC = () => {
           confirmLoading={reactivateModal.loading}
           showCancel
           showConfirm
-          footerMeta="Solo Superusuario puede reactivar ciclos"
+          footerMeta="Solo usuarios con permiso de reactivación pueden continuar"
         >
           <p className={cn(TYPOGRAPHY.modal.body, 'text-gris-una-2 leading-relaxed')}>
             ¿Está seguro de reactivar el ciclo{' '}

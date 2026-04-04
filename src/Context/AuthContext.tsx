@@ -3,10 +3,16 @@
  * Maneja el estado del usuario autenticado y sus permisos
  */
 
-import { createContext, useContext, useState, useEffect } from "react";
+import { createContext, useContext, useState, useEffect, useMemo } from "react";
 import type { ReactNode } from "react";
 import { authService, type User, type Career } from "@/Services/AuthService";
 import { useSessionWatcher } from "@/Hooks/useSessionWatcher";
+import {
+  evaluateAccess,
+  getUserPermissionNames,
+  getUserRoleNames,
+  type AccessRule,
+} from "@/Utils/Authorization";
 
 interface LoginCredentials {
   cedula: string;
@@ -15,11 +21,19 @@ interface LoginCredentials {
 
 interface AuthContextType {
   user: User | null;
+  userRoleNames: string[];
+  userPermissionNames: string[];
   loading: boolean; // Para el login/logout
   authChecked: boolean; // Para la verificación inicial
   isAuthenticated: boolean;
   isSuperUser: () => boolean;
   isAdmin: () => boolean;
+  hasRole: (role: string) => boolean;
+  hasAnyRole: (roles: string[]) => boolean;
+  hasPermission: (permission: string) => boolean;
+  hasAnyPermission: (permissions: string[]) => boolean;
+  hasAllPermissions: (permissions: string[]) => boolean;
+  canAccess: (rule?: AccessRule) => boolean;
   canMakeFilesPublic: () => boolean;
   getUserCareer: () => Career | null;
   login: (credentials: LoginCredentials) => Promise<void>;
@@ -39,6 +53,12 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
   const [authChecked, setAuthChecked] = useState(false); // Carga inicial
   const [error, setError] = useState<string | null>(null);
   useSessionWatcher();
+
+  const userRoleNames = useMemo(() => getUserRoleNames(user?.roles), [user]);
+  const userPermissionNames = useMemo(
+    () => getUserPermissionNames(user?.all_permissions),
+    [user],
+  );
 
   // Verificación de sesión al montar el provider
   useEffect(() => {
@@ -82,11 +102,41 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
   };
 
   const isSuperUser = (): boolean => {
-    return user?.roles?.some((r) => r.name === "Superusuario") || false;
+    return userRoleNames.includes("Superusuario");
   };
 
   const isAdmin = (): boolean => {
-    return user?.roles?.some((r) => r.name === "Administrador") || false;
+    return userRoleNames.includes("Administrador");
+  };
+
+  const hasRole = (role: string): boolean => {
+    return userRoleNames.includes(role);
+  };
+
+  const hasAnyRole = (roles: string[]): boolean => {
+    return roles.some((role) => userRoleNames.includes(role));
+  };
+
+  const hasPermission = (permission: string): boolean => {
+    return canAccess({ requireAnyPermissions: [permission] });
+  };
+
+  const hasAnyPermission = (permissions: string[]): boolean => {
+    return canAccess({ requireAnyPermissions: permissions });
+  };
+
+  const hasAllPermissions = (permissions: string[]): boolean => {
+    return canAccess({ requireAllPermissions: permissions });
+  };
+
+  const canAccess = (rule?: AccessRule): boolean => {
+    return evaluateAccess(
+      {
+        roles: userRoleNames,
+        permissions: userPermissionNames,
+      },
+      rule,
+    );
   };
 
   /**
@@ -97,14 +147,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
    * - Administrador (Coordinador de Carrera)
    */
   const canMakeFilesPublic = (): boolean => {
-    return (
-      user?.roles?.some(
-        (r) =>
-          r.name === "Superusuario" ||
-          r.name === "Vicerrectoría de Docencia" ||
-          r.name === "Administrador",
-      ) || false
-    );
+    return canAccess({ requireAnyPermissions: ["archivos.make_public"] });
   };
 
   const getUserCareer = () => {
@@ -113,12 +156,20 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
 
   const value: AuthContextType = {
     user,
+    userRoleNames,
+    userPermissionNames,
     loading,
     authChecked,
     error,
     isAuthenticated: !!user,
     isSuperUser,
     isAdmin,
+    hasRole,
+    hasAnyRole,
+    hasPermission,
+    hasAnyPermission,
+    hasAllPermissions,
+    canAccess,
     canMakeFilesPublic,
     getUserCareer,
     login,

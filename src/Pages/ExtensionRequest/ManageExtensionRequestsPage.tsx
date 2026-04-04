@@ -25,7 +25,7 @@ import { SystemIcons } from '@/Components/Ui/Icons/SystemIcons';
 
 export const ManageExtensionRequestsPage: React.FC = () => {
   const { showToast } = useToast();
-  const { user, isAuthenticated } = useAuth();
+  const { isAuthenticated, canAccess } = useAuth();
   
   // Obtener información del módulo desde ModuleInfo
   const moduleInfo = getContextualInfo('extension_requests', 'manage');
@@ -179,10 +179,9 @@ export const ManageExtensionRequestsPage: React.FC = () => {
     }
   };
 
-  // Validar que tenga rol de Encargado de Acreditación o Superusuario
-  const hasPermission = user?.roles?.some(r => 
-    r.name === 'Encargado de Acreditación' || r.name === 'Superusuario'
-  );
+  const canManageRequests = canAccess({
+    requireAnyPermissions: ['solicitudes_ampliacion.approve', 'solicitudes_ampliacion.reject'],
+  });
 
   return (
     <ScreenContainer>
@@ -190,7 +189,7 @@ export const ManageExtensionRequestsPage: React.FC = () => {
         title={moduleInfo.title}
         description={moduleInfo.description}
         headerExtra={
-          isAuthenticated && hasPermission ? (
+          isAuthenticated && canManageRequests ? (
             <div className="flex flex-col sm:flex-row w-full gap-2 shrink-0 lg:w-auto">
               <SearchInput
                 placeholder="Buscar por solicitante, email o motivo..."
@@ -222,7 +221,7 @@ export const ManageExtensionRequestsPage: React.FC = () => {
             Debe iniciar sesión para acceder a esta sección.
           </p>
         </div>
-      ) : !hasPermission ? (
+      ) : !canManageRequests ? (
         <div className="bg-red-50 border border-red-200 rounded-corner p-6 text-center">
           <SystemIcons.interface.xCircle size="3xl" className="text-red-600 mx-auto mb-3" />
           <h3 className="text-lg font-semibold text-red-900 mb-2">

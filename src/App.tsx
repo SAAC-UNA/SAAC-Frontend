@@ -30,8 +30,8 @@ const StructureModelsPage = lazy(
 const AccreditationCyclesPage = lazy(
   () => import("@/Pages/AccreditationCycles/AccreditationCyclesPage"),
 );
-const EvidenceAssignment = lazy(() =>
-  import("./Pages/EvidenceAssignment/EvidenceAssignment"),
+const EvidenceAssignment = lazy(
+  () => import("./Pages/EvidenceAssignment/EvidenceAssignment"),
 );
 const EvidenceUploadPage = lazy(() =>
   import("./Pages/EvidenceUpload").then((m) => ({
@@ -117,7 +117,13 @@ function App() {
                           <Route
                             path="/roles/listar"
                             element={
-                              <ProtectedRoute requireRoles={["Superusuario"]}>
+                              <ProtectedRoute
+                                requirePermissions={[
+                                  "roles.create",
+                                  "roles.edit",
+                                  "roles.delete",
+                                ]}
+                              >
                                 <RolesRepository />
                               </ProtectedRoute>
                             }
@@ -125,7 +131,9 @@ function App() {
                           <Route
                             path="/roles/crear"
                             element={
-                              <ProtectedRoute requireRoles={["Superusuario"]}>
+                              <ProtectedRoute
+                                requirePermissions={["roles.create"]}
+                              >
                                 <RoleForm />
                               </ProtectedRoute>
                             }
@@ -133,7 +141,9 @@ function App() {
                           <Route
                             path="/roles/editar/:id"
                             element={
-                              <ProtectedRoute requireRoles={["Superusuario"]}>
+                              <ProtectedRoute
+                                requirePermissions={["roles.edit"]}
+                              >
                                 <RoleForm />
                               </ProtectedRoute>
                             }
@@ -143,7 +153,9 @@ function App() {
                           <Route
                             path="/bitacora"
                             element={
-                              <ProtectedRoute requireRoles={["Superusuario"]}>
+                              <ProtectedRoute
+                                requirePermissions={["bitacora.view"]}
+                              >
                                 <AuditLogPage />
                               </ProtectedRoute>
                             }
@@ -153,7 +165,9 @@ function App() {
                           <Route
                             path="/usuarios/listar"
                             element={
-                              <ProtectedRoute>
+                              <ProtectedRoute
+                                requirePermissions={["usuarios.view"]}
+                              >
                                 <UsersRepository />
                               </ProtectedRoute>
                             }
@@ -161,7 +175,9 @@ function App() {
                           <Route
                             path="/usuarios/editar/:id"
                             element={
-                              <ProtectedRoute>
+                              <ProtectedRoute
+                                requirePermissions={["usuarios.edit"]}
+                              >
                                 <EditUserPage />
                               </ProtectedRoute>
                             }
@@ -171,7 +187,9 @@ function App() {
                           <Route
                             path="/estructura/listar"
                             element={
-                              <ProtectedRoute>
+                              <ProtectedRoute
+                                requirePermissions={["elemento.view"]}
+                              >
                                 <StructureList />
                               </ProtectedRoute>
                             }
@@ -181,9 +199,7 @@ function App() {
                           <Route
                             path="/estructura/modelos"
                             element={
-                              <ProtectedRoute
-                                requireRoles={["Administrador", "Superusuario"]}
-                              >
+                              <ProtectedRoute requirePermissions={["modelos.view"]}>
                                 <StructureModelsPage />
                               </ProtectedRoute>
                             }
@@ -193,9 +209,7 @@ function App() {
                           <Route
                             path="/ciclos-acreditacion"
                             element={
-                              <ProtectedRoute
-                                requireRoles={["Administrador", "Superusuario"]}
-                              >
+                              <ProtectedRoute requirePermissions={["ciclos.view"]}>
                                 <AccreditationCyclesPage />
                               </ProtectedRoute>
                             }
@@ -206,10 +220,7 @@ function App() {
                             path="/evidencias/asignar"
                             element={
                               <ProtectedRoute
-                                requireRoles={[
-                                  "Administrador",
-                                  "Encargado de Acreditación",
-                                ]}
+                                requirePermissions={["evidencias.assign"]}
                               >
                                 <EvidenceAssignment />
                               </ProtectedRoute>
@@ -218,7 +229,9 @@ function App() {
                           <Route
                             path="/mis-evidencias-asignadas"
                             element={
-                              <ProtectedRoute>
+                              <ProtectedRoute
+                                requirePermissions={["evidencias.view"]}
+                              >
                                 <MyEvidenceAssignmentsPage />
                               </ProtectedRoute>
                             }
@@ -226,7 +239,9 @@ function App() {
                           <Route
                             path="/evidencias/subir"
                             element={
-                              <ProtectedRoute>
+                              <ProtectedRoute
+                                requirePermissions={["archivos.upload"]}
+                              >
                                 <EvidenceUploadPage />
                               </ProtectedRoute>
                             }
@@ -234,7 +249,9 @@ function App() {
                           <Route
                             path="/evidencias/busqueda-avanzada"
                             element={
-                              <ProtectedRoute>
+                              <ProtectedRoute
+                                requirePermissions={["evidencias.view"]}
+                              >
                                 <EvidenceSearchPage />
                               </ProtectedRoute>
                             }
@@ -245,7 +262,10 @@ function App() {
                             path="/solicitudes-ampliacion/gestionar"
                             element={
                               <ProtectedRoute
-                                requireRoles={["Encargado de Acreditación"]}
+                                requirePermissions={[
+                                  "solicitudes_ampliacion.approve",
+                                  "solicitudes_ampliacion.reject",
+                                ]}
                               >
                                 <ManageExtensionRequestsPage />
                               </ProtectedRoute>
@@ -254,7 +274,11 @@ function App() {
                           <Route
                             path="/solicitudes-ampliacion/mis-solicitudes"
                             element={
-                              <ProtectedRoute>
+                              <ProtectedRoute
+                                requirePermissions={[
+                                  "solicitudes_ampliacion.view",
+                                ]}
+                              >
                                 <MyExtensionRequestsPage />
                               </ProtectedRoute>
                             }
@@ -264,7 +288,9 @@ function App() {
                           <Route
                             path="/compromisos/listar"
                             element={
-                              <ProtectedRoute>
+                              <ProtectedRoute
+                                requirePermissions={["compromisos_mejora.view"]}
+                              >
                                 <ImprovementCommitmentsList />
                               </ProtectedRoute>
                             }
@@ -272,7 +298,11 @@ function App() {
                           <Route
                             path="/compromisos/crear"
                             element={
-                              <ProtectedRoute>
+                              <ProtectedRoute
+                                requirePermissions={[
+                                  "compromisos_mejora.create",
+                                ]}
+                              >
                                 <CreateImprovementCommitment />
                               </ProtectedRoute>
                             }
@@ -280,7 +310,9 @@ function App() {
                           <Route
                             path="/compromisos/ver/:id"
                             element={
-                              <ProtectedRoute>
+                              <ProtectedRoute
+                                requirePermissions={["compromisos_mejora.view"]}
+                              >
                                 <ImprovementCommitmentDetail />
                               </ProtectedRoute>
                             }
@@ -288,7 +320,9 @@ function App() {
                           <Route
                             path="/compromisos/editar/:id"
                             element={
-                              <ProtectedRoute>
+                              <ProtectedRoute
+                                requirePermissions={["compromisos_mejora.edit"]}
+                              >
                                 <CreateImprovementCommitment />
                               </ProtectedRoute>
                             }
@@ -298,7 +332,9 @@ function App() {
                           <Route
                             path="/procesos-acreditacion/listar"
                             element={
-                              <ProtectedRoute>
+                              <ProtectedRoute
+                                requirePermissions={["procesos.view"]}
+                              >
                                 <AccreditationProcessList />
                               </ProtectedRoute>
                             }
@@ -308,7 +344,9 @@ function App() {
                           <Route
                             path="/aprobacion-bloques"
                             element={
-                              <ProtectedRoute>
+                              <ProtectedRoute
+                                requirePermissions={["aprobaciones.view"]}
+                              >
                                 <BlockApproval />
                               </ProtectedRoute>
                             }
@@ -318,7 +356,9 @@ function App() {
                           <Route
                             path="/gestion-informes"
                             element={
-                              <ProtectedRoute>
+                              <ProtectedRoute
+                                requirePermissions={["reportes.view"]}
+                              >
                                 <FinalReports />
                               </ProtectedRoute>
                             }

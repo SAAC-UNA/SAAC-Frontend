@@ -1,35 +1,44 @@
-import React from 'react';
-import { useSidebar } from '@/Context/SidebarContext';
-import IsotipoSAAC from '@/Assets/IsotipoSAAC.svg?react';
-import { SidebarItem } from './SidebarItem';
-import { getNavigationItems } from '@/Navigation';
-import { SidebarNavProvider } from './SidebarNavProvider';
-import { cn } from '@/Utils/ClassNames';
-import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from '@/Components/Ui/Layout/Sheet';
-import { TooltipProvider } from '@/Components/Ui/Feedback/Tooltip';
-import { useAuth } from '@/Context/AuthContext';
-import { TYPOGRAPHY } from '@/Constants/Typography';
-import { UserWidget } from './UserBar';
+import React from "react";
+import { useSidebar } from "@/Context/SidebarContext";
+import IsotipoSAAC from "@/Assets/IsotipoSAAC.svg?react";
+import { SidebarItem } from "./SidebarItem";
+import { getNavigationItems } from "@/Navigation";
+import { SidebarNavProvider } from "./SidebarNavProvider";
+import { cn } from "@/Utils/ClassNames";
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetDescription,
+} from "@/Components/Ui/Layout/Sheet";
+import { TooltipProvider } from "@/Components/Ui/Feedback/Tooltip";
+import { useAuth } from "@/Context/AuthContext";
+import { TYPOGRAPHY } from "@/Constants/Typography";
+import { UserWidget } from "./UserBar";
 
 interface SidebarProps {
-  side?: 'left' | 'right';
-  variant?: 'sidebar' | 'floating' | 'inset';
-  collapsible?: 'offcanvas' | 'icon' | 'none';
+  side?: "left" | "right";
+  variant?: "sidebar" | "floating" | "inset";
+  collapsible?: "offcanvas" | "icon" | "none";
   className?: string;
   title?: string;
 }
 
 export const ModernSidebar: React.FC<SidebarProps> = ({
-  side = 'left',
-  variant = 'sidebar',
-  collapsible = 'icon',
+  side = "left",
+  variant = "sidebar",
+  collapsible = "icon",
   title = "SAAC",
-  className
+  className,
 }) => {
   const { isMobile, openMobile, setOpenMobile } = useSidebar();
   const { user } = useAuth();
 
-  const navItems = getNavigationItems(user?.roles?.map(r => r.name));
+  const navItems = getNavigationItems({
+    roles: user?.roles?.map((r) => r.name),
+    permissions: user?.all_permissions?.map((p) => p.name),
+  });
 
   // Contenido completo para mobile (Sheet expandido)
   const mobileContent = (
@@ -45,7 +54,11 @@ export const ModernSidebar: React.FC<SidebarProps> = ({
             aria-label="Universidad Nacional de Costa Rica"
             className="flex-shrink-0 size-icon-logo cursor-pointer text-rojo-una-2"
           />
-          <h1 className={cn(`${TYPOGRAPHY.pageTitle} text-rojo-una-2 font-semibold whitespace-nowrap`)}>
+          <h1
+            className={cn(
+              `${TYPOGRAPHY.pageTitle} text-rojo-una-2 font-semibold whitespace-nowrap`,
+            )}
+          >
             {title}
           </h1>
         </a>
@@ -94,7 +107,6 @@ export const ModernSidebar: React.FC<SidebarProps> = ({
       <div className="flex-shrink-0 pb-6 flex flex-col items-center">
         <UserWidget collapsed showNotifications />
       </div>
-
     </div>
   );
 
@@ -107,7 +119,9 @@ export const ModernSidebar: React.FC<SidebarProps> = ({
         >
           <SheetHeader className="sr-only">
             <SheetTitle>Sidebar</SheetTitle>
-            <SheetDescription>Navegación lateral del sistema SAAC.</SheetDescription>
+            <SheetDescription>
+              Navegación lateral del sistema SAAC.
+            </SheetDescription>
           </SheetHeader>
           {mobileContent}
         </SheetContent>
@@ -130,10 +144,10 @@ export const ModernSidebar: React.FC<SidebarProps> = ({
         {/* Sidebar sin contenedor: solo íconos flotantes */}
         <div
           className={cn(
-            'fixed z-10 hidden md:flex',
-            'w-[var(--sidebar-width-icon)]',
-            side === 'left' ? 'inset-y-3 left-3' : 'inset-y-3 right-3',
-            className
+            "fixed z-10 hidden md:flex",
+            "w-[var(--sidebar-width-icon)]",
+            side === "left" ? "inset-y-3 left-3" : "inset-y-3 right-3",
+            className,
           )}
         >
           <div className="flex h-full w-full flex-col overflow-hidden bg-transparent">

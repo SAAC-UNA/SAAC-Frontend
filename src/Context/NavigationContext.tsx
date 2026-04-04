@@ -1,12 +1,12 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
-import { useLocation } from 'react-router-dom';
-import type { ReactNode } from 'react';
-import { getNavigationItems } from '@/Navigation';
-import { useAuth } from '@/Context/AuthContext';
+import React, { createContext, useContext, useState, useEffect } from "react";
+import { useLocation } from "react-router-dom";
+import type { ReactNode } from "react";
+import { getNavigationItems } from "@/Navigation";
+import { useAuth } from "@/Context/AuthContext";
 
 /**
  * CONTEXTO DE NAVEGACIÓN DEL SIDEBAR
- * 
+ *
  * Contexto global que maneja todo el estado y comportamiento de la navegación
  * en el sidebar de la aplicación. Controla qué elementos están activos,
  * expandidos y sincroniza la navegación con las rutas de React Router.
@@ -20,21 +20,30 @@ interface NavigationContextType {
   toggleExpanded: (itemId: string) => void;
 }
 
-const NavigationContext = createContext<NavigationContextType | undefined>(undefined);
+const NavigationContext = createContext<NavigationContextType | undefined>(
+  undefined,
+);
 
 interface NavigationProviderProps {
   children: ReactNode;
 }
-  
-export const NavigationProvider: React.FC<NavigationProviderProps> = ({ children }) => {
+
+export const NavigationProvider: React.FC<NavigationProviderProps> = ({
+  children,
+}) => {
   const location = useLocation();
   const { user } = useAuth();
-  
-  // Obtener items filtrados por rol (pasar todos los roles)
-  const navigationItems = getNavigationItems(user?.roles?.map(r => r.name));
+
+  // Obtener items filtrados por reglas de acceso (roles + permisos)
+  const navigationItems = getNavigationItems({
+    roles: user?.roles?.map((r) => r.name),
+    permissions: user?.all_permissions?.map((p) => p.name),
+  });
 
   // Función para encontrar el item activo y su grupo padre basado en la ruta actual
-  const findActiveItemByPath = (path: string): { activeId: string; parentId: string | null } => {
+  const findActiveItemByPath = (
+    path: string,
+  ): { activeId: string; parentId: string | null } => {
     // Primero buscar coincidencias exactas
     for (const item of navigationItems) {
       if (item.href === path) {
@@ -51,35 +60,38 @@ export const NavigationProvider: React.FC<NavigationProviderProps> = ({ children
     }
 
     // Si no hay coincidencia exacta, buscar por prefijo de módulo
-    if (path.startsWith('/roles')) {
-      return { activeId: 'roles', parentId: 'administracion' };
+    if (path.startsWith("/roles")) {
+      return { activeId: "roles", parentId: "administracion" };
     }
-    if (path.startsWith('/estructura')) {
-      return { activeId: 'estructura', parentId: 'acreditacion' };
+    if (path.startsWith("/estructura")) {
+      return { activeId: "estructura", parentId: "acreditacion" };
     }
-    if (path.startsWith('/usuarios')) {
-      return { activeId: 'usuarios', parentId: 'administracion' };
+    if (path.startsWith("/usuarios")) {
+      return { activeId: "usuarios", parentId: "administracion" };
     }
-    if (path.startsWith('/compromisos')) {
-      return { activeId: 'compromisos-mejora', parentId: 'acreditacion' };
+    if (path.startsWith("/compromisos")) {
+      return { activeId: "compromisos-mejora", parentId: "acreditacion" };
     }
-    if (path.startsWith('/evidencias')) {
-      return { activeId: 'evidenciasAsignar', parentId: 'evidencias' };
+    if (path.startsWith("/evidencias")) {
+      return { activeId: "evidenciasAsignar", parentId: "evidencias" };
     }
-    if (path.startsWith('/mis-evidencias')) {
-      return { activeId: 'misEvidenciasAsignadas', parentId: 'evidencias' };
+    if (path.startsWith("/mis-evidencias")) {
+      return { activeId: "misEvidenciasAsignadas", parentId: "evidencias" };
     }
-    if (path.startsWith('/bitacora')) {
-      return { activeId: 'bitacora', parentId: 'administracion' };
+    if (path.startsWith("/bitacora")) {
+      return { activeId: "bitacora", parentId: "administracion" };
     }
-    if (path.startsWith('/solicitudes-ampliacion')) {
-      return { activeId: 'misSolicitudesAmpliacion', parentId: 'solicitudesAmpliacion' };
+    if (path.startsWith("/solicitudes-ampliacion")) {
+      return {
+        activeId: "misSolicitudesAmpliacion",
+        parentId: "solicitudesAmpliacion",
+      };
     }
-    if (path.startsWith('/aprobacion-bloques')) {
-      return { activeId: 'aprobacion-bloques', parentId: 'acreditacion' };
+    if (path.startsWith("/aprobacion-bloques")) {
+      return { activeId: "aprobacion-bloques", parentId: "acreditacion" };
     }
 
-    return { activeId: 'inicio', parentId: null }; // Default
+    return { activeId: "inicio", parentId: null }; // Default
   };
 
   // Inicializar con el estado correcto desde el principio
@@ -118,13 +130,15 @@ export const NavigationProvider: React.FC<NavigationProviderProps> = ({ children
   };
 
   return (
-    <NavigationContext.Provider value={{ 
-      activeItemId, 
-      expandedItemId,
-      setActiveItem, 
-      setExpandedItem,
-      toggleExpanded 
-    }}>
+    <NavigationContext.Provider
+      value={{
+        activeItemId,
+        expandedItemId,
+        setActiveItem,
+        setExpandedItem,
+        toggleExpanded,
+      }}
+    >
       {children}
     </NavigationContext.Provider>
   );
@@ -133,7 +147,7 @@ export const NavigationProvider: React.FC<NavigationProviderProps> = ({ children
 export const useNavigation = () => {
   const context = useContext(NavigationContext);
   if (context === undefined) {
-    throw new Error('useNavigation must be used within a NavigationProvider');
+    throw new Error("useNavigation must be used within a NavigationProvider");
   }
   return context;
 };
