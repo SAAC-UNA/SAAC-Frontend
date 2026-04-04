@@ -101,19 +101,19 @@ export const EvidenceAssignmentsTable: React.FC<
       {
         key: "fecha_asignacion",
         header: "Fecha Asignación",
-        align: "center",
+        align: "left",
         render: (_: unknown, assignment: EvidenceAssignment) => (
-          <span
-            className={`relative grid items-center px-2 py-1 font-sans text-negro-una-2 rounded-corner select-none whitespace-nowrap ${TYPOGRAPHY.table.cell}`}
-          >
-            {formatDate(assignment.fecha_asignacion)}
-          </span>
+            <span
+              className={`relative grid items-start font-sans text-negro-una-2 rounded-corner select-none whitespace-nowrap ${TYPOGRAPHY.table.cell}`}
+            >
+              {formatDate(assignment.fecha_asignacion)}
+            </span>
         ),
       },
       {
         key: "fecha_limite",
         header: "Fecha Límite",
-        align: "center",
+        align: "left",
         render: (_: unknown, assignment: EvidenceAssignment) => {
           const fechaLimite = assignment.fecha_limite
             ? formatDate(assignment.fecha_limite)
@@ -121,7 +121,7 @@ export const EvidenceAssignmentsTable: React.FC<
           const overdue = isOverdue(assignment);
           return (
             <span
-              className={`relative grid items-center px-2 py-1 font-sans rounded-corner select-none whitespace-nowrap ${TYPOGRAPHY.table.cell} ${overdue ? "text-red-600 font-bold" : "text-negro-una-2"}`}
+              className={`relative grid items-start font-sans rounded-corner select-none whitespace-nowrap ${TYPOGRAPHY.table.cell} ${overdue ? "text-red-600 font-bold" : "text-negro-una-2"}`}
             >
               {fechaLimite}
             </span>
@@ -131,11 +131,11 @@ export const EvidenceAssignmentsTable: React.FC<
       {
         key: "estado",
         header: "Estado",
-        align: "center",
+        align: "left",
         render: (_: unknown, assignment: EvidenceAssignment) => {
           const estado = isOverdue(assignment) ? "vencido" : assignment.estado;
           return (
-            <div className="flex justify-center">
+            <div className="flex justify-start">
               <StatusBadge
                 label={ASSIGNMENT_STATUS_BADGE[estado]?.label ?? estado}
                 colorClasses={ASSIGNMENT_STATUS_BADGE[estado]?.colorClasses ?? 'bg-gris-light text-gris-una'}

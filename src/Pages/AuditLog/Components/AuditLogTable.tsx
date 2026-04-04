@@ -68,13 +68,13 @@ export const AuditLogTable: React.FC<AuditLogTableProps> = ({
       {
         key: 'tipo_accion',
         header: 'Acción',
-        align: 'center',
+        align: 'left',
         accessor: (log) => log.tipo_accion.descripcion,
         render: (_, log) => {
           const key = log.tipo_accion.descripcion.toLowerCase();
           const badge = AUDIT_ACTION_BADGE[key];
           return (
-            <div className="flex justify-center">
+            <div className="flex items-start">
               <StatusBadge
                 label={badge?.label ?? log.tipo_accion.descripcion}
                 colorClasses={badge?.colorClasses ?? 'bg-slate-light text-slate'}
@@ -86,7 +86,7 @@ export const AuditLogTable: React.FC<AuditLogTableProps> = ({
       {
         key: 'modulo',
         header: 'Módulo',
-        align: 'center',
+        align: 'left',
         accessor: (log) => log.modulo || 'N/A',
         render: (_, log) => (
           <span className={`block font-sans antialiased font-normal leading-normal text-negro-una-2 ${TYPOGRAPHY.table.cell}`}>
@@ -97,7 +97,7 @@ export const AuditLogTable: React.FC<AuditLogTableProps> = ({
       {
         key: 'fecha_hora',
         header: 'Fecha',
-        align: 'center',
+        align: 'left',
         accessor: (log) => log.fecha_hora,
         render: (_, log) => (
           <span className={`block font-sans antialiased font-normal leading-normal text-negro-una-2 ${TYPOGRAPHY.table.cell}`}>
@@ -108,7 +108,7 @@ export const AuditLogTable: React.FC<AuditLogTableProps> = ({
       {
         key: 'hora',
         header: 'Hora',
-        align: 'center',
+        align: 'left',
         accessor: (log) => log.fecha_hora,
         render: (_, log) => (
           <span className={`block font-sans antialiased font-normal leading-normal text-negro-una-2 ${TYPOGRAPHY.table.cell}`}>

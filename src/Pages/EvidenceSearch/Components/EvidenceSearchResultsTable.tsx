@@ -91,11 +91,11 @@ export const EvidenceSearchResultsTable: React.FC<EvidenceSearchResultsTableProp
     {
       key: 'responsables',
       header: 'Responsables',
-      align: 'center',
+      align: 'left',
       render: (_, item) => {
         const count = item.responsables.length;
         return (
-          <div className="flex flex-col items-center">
+          <div className="flex flex-col items-start">
             <span className={`block font-sans antialiased leading-normal text-negro-una-2 ${TYPOGRAPHY.table.cell}`}>
               {count === 0 && 'Sin asignar'}
               {count === 1 && '1 responsable'}
@@ -109,9 +109,9 @@ export const EvidenceSearchResultsTable: React.FC<EvidenceSearchResultsTableProp
     {
       key: 'recursos',
       header: 'Recursos',
-      align: 'center',
+      align: 'left',
       render: (_, item) => (
-        <div className="flex items-center justify-center gap-2">
+        <div className="flex items-start">
           {item.archivos_count > 0 && (
             <StatusBadge
               label={`${item.archivos_count} ${item.archivos_count === 1 ? 'archivo' : 'archivos'}`}
@@ -136,9 +136,9 @@ export const EvidenceSearchResultsTable: React.FC<EvidenceSearchResultsTableProp
     {
       key: 'estado',
       header: 'Estado',
-      align: 'center',
+      align: 'left',
       render: (_, item) => (
-        <div className="flex items-center justify-center">
+        <div className="flex items-start">
           <StatusBadge
             label={EVIDENCE_STATUS_BADGE[item.estado].label}
             colorClasses={EVIDENCE_STATUS_BADGE[item.estado].colorClasses}

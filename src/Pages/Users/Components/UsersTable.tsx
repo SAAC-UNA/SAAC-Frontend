@@ -118,9 +118,9 @@ export const UsersTable: React.FC<UsersTableProps> = ({
             key: 'role',
             header: 'Rol',
             accessor: 'role',
-            align: 'center',
+            align: 'left',
             render: (role) => (
-                <div className="w-max mx-auto">
+                <div className="flex items-start">
                     <div className={`relative grid items-center px-2 py-1 font-sans text-negro-una-2 rounded-corner select-none whitespace-nowrap ${TYPOGRAPHY.table.cell}`} title={String(role || 'Sin rol').toLowerCase().replace(/\b\w/g, c => c.toUpperCase())}>
                         <span>{truncateText(String(role || 'Sin rol').toLowerCase().replace(/\b\w/g, c => c.toUpperCase()), TABLE_TRUNCATE.name)}</span>
                     </div>
@@ -130,9 +130,9 @@ export const UsersTable: React.FC<UsersTableProps> = ({
         {
             key: 'status',
             header: 'Estado',
-            align: 'center',
+            align: 'left',
             render: (_, user) => (
-                <div className="flex justify-center">
+                <div className="flex items-start">
                     <StatusBadge
                         label={STATUS_BADGE[user.status]?.label ?? user.status}
                         colorClasses={STATUS_BADGE[user.status]?.colorClasses ?? 'bg-gris-light text-gris-una'}

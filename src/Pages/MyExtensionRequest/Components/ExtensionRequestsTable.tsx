@@ -104,29 +104,33 @@ export const ExtensionRequestsTable: React.FC<ExtensionRequestsTableProps> = ({
     {
       key: 'fecha_solicitud',
       header: 'Fecha Solicitud',
-      align: 'center',
+      align: 'left',
       render: (_: unknown, item: ExtensionRequest) => (
-        <span className={`block font-sans antialiased leading-normal text-negro-una-2 ${TYPOGRAPHY.table.cell}`}>
-          {formatDate(item.created_at)}
-        </span>
+        <div className="flex items-start">
+          <span className={`block font-sans antialiased leading-normal text-negro-una-2 ${TYPOGRAPHY.table.cell}`}>
+            {formatDate(item.created_at)}
+          </span>
+        </div>
       )
     },
     {
       key: 'fecha_sugerida',
       header: 'Fecha Sugerida',
-      align: 'center',
+      align: 'left',
       render: (_: unknown, item: ExtensionRequest) => (
-        <span className={`block font-sans antialiased leading-normal text-negro-una-2 ${TYPOGRAPHY.table.cell}`}>
-          {formatDate(item.fecha_sugerida)}
-        </span>
+        <div className="flex items-start">
+          <span className={`block font-sans antialiased leading-normal text-negro-una-2 ${TYPOGRAPHY.table.cell}`}>
+            {formatDate(item.fecha_sugerida)}
+          </span>
+        </div>
       )
     },
     {
       key: 'estado',
       header: 'Estado',
-      align: 'center',
+      align: 'left',
       render: (_: unknown, item: ExtensionRequest) => 
-        <div className="flex justify-center">
+        <div className="flex justify-start">
           <StatusBadge
             label={EXTENSION_REQUEST_STATUS_BADGE[item.estado]?.label ?? item.estado}
             colorClasses={EXTENSION_REQUEST_STATUS_BADGE[item.estado]?.colorClasses ?? 'bg-gris-light text-gris-una'}

@@ -407,7 +407,7 @@ export const DatePicker: React.FC<DatePickerProps> = ({
     'placeholder-gris-una/60',
     // Estados
     disabled
-      ? 'bg-gris-una/10 border-rojo-una/5 text-gris-light cursor-not-allowed'
+      ? 'bg-gris-una/10 border-gris-una/5 text-gris-light cursor-not-allowed'
       : error
         ? 'border-rojo-una-2 bg-blanco-una-2'
         : 'border-gris-light bg-blanco-una hover:border-gris-light',
