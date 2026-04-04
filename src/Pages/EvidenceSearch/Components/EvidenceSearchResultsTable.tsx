@@ -22,13 +22,15 @@ export interface EvidenceSearchResultsTableProps {
   loading?: boolean;
   onViewDetails: (evidenceId: number) => void;
   itemsPerPage?: number;
+  isFlexible?: boolean;
 }
 
 export const EvidenceSearchResultsTable: React.FC<EvidenceSearchResultsTableProps> = ({
   results,
   loading = false,
   onViewDetails,
-  itemsPerPage = TABLE_PAGE_SIZE.standard
+  itemsPerPage = TABLE_PAGE_SIZE.standard,
+  isFlexible = false,
 }) => {
   const [currentPage, setCurrentPage] = useState(1);
   const [resourcesModal, setResourcesModal] = useState<{ criterioNomenclatura: string; evidencias: EvidenceSearchResult[] } | null>(null);
@@ -69,7 +71,7 @@ export const EvidenceSearchResultsTable: React.FC<EvidenceSearchResultsTableProp
   const columns: DataTableColumn<EvidenceSearchResult>[] = useMemo(() => [
     {
       key: 'criterio',
-      header: 'Criterio',
+      header: isFlexible ? 'Pauta' : 'Criterio',
       align: 'left',
       width: firstColumn.width,
       render: (_, item) => (
@@ -165,7 +167,7 @@ export const EvidenceSearchResultsTable: React.FC<EvidenceSearchResultsTableProp
         </div>
       )
     },
-  ], [onViewDetails, openResourcesModal, results]);
+  ], [onViewDetails, openResourcesModal, results, isFlexible]);
 
   return (
     <>

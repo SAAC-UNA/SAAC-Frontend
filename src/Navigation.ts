@@ -109,7 +109,7 @@ export const getNavigationItems = (
       },
       {
         id: "busquedaEvidencias",
-        label: "Busqueda de Criterios",
+        label: "Buscar Entregables",
         icon: searchEvidenceIcon,
         href: "/evidencias/busqueda-avanzada",
         isActive: false,

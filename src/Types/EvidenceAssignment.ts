@@ -27,6 +27,7 @@ export interface Evidence {
 
 export interface Process {
   proceso_id: number;
+  nombre: string;
   ciclo_acreditacion_id: number;
   modelo_estructura_id?: number;
   modelo_estructura_tipo?: string;

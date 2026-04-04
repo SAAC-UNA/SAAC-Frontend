@@ -9,8 +9,9 @@
  * - Restricción de resultados según rol del usuario
  */
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { PageHeader, ScreenContainer, Tooltip, TooltipTrigger, TooltipContent } from '@/Components/Ui/Index';
+import type { SelectOption } from '@/Components/Ui/Index';
 import { SearchInput } from '@/Components/Ui/Forms/SearchInput';
 import { Button } from '@/Components/Ui/Buttons/Button';
 import { DropdownButton } from '@/Components/Ui/Buttons/DropdownButton';
@@ -21,12 +22,15 @@ import { useToast } from '@/Context/ToastContext';
 import { useAuth } from '@/Context/AuthContext';
 import { getModuleInfo } from '@/Constants/ModuleInfo';
 import { evidenceSearchService, mapBackendToFrontend } from '@/Services/EvidenceSearchService';
+import { evidenceAssignmentService } from '@/Services/EvidenceAssignmentService';
 import type {
   EvidenceSearchFilters as EvidenceFilters,
   EvidenceSearchResult,
   ExportFormat
 } from '@/Types/EvidenceSearchTypes';
 import { filterEvidenceResults } from '@/Types/EvidenceSearchTypes';
+import type { Process } from '@/Types/EvidenceAssignment';
+import type { FlexibleElement } from '@/Types/StructureModelTypes';
 import { ICON_SIZES } from '@/Constants/Components';
 import { TABLE_PAGE_SIZE } from '@/Constants/TablePagination';
 import { TYPOGRAPHY } from '@/Constants/Typography';
@@ -34,6 +38,33 @@ import { TYPOGRAPHY } from '@/Constants/Typography';
 export const EvidenceSearchPage: React.FC = () => {
   const { showToast } = useToast();
   const { user: _user } = useAuth();
+
+  // ── Contexto de proceso / modelo ─────────────────────────────────────────
+  const [processes, setProcesses] = useState<Process[]>([]);
+  const [selectedProcessId, setSelectedProcessId] = useState<string>('');
+  const [flexElements, setFlexElements] = useState<FlexibleElement[]>([]);
+
+  const selectedProcess = useMemo(
+    () => (selectedProcessId ? processes.find(p => p.proceso_id === parseInt(selectedProcessId)) ?? null : null),
+    [processes, selectedProcessId]
+  );
+  const isFlexible = selectedProcess?.modelo_estructura_tipo === 'elemento_flexible';
+
+  const processOptions = useMemo<SelectOption[]>(
+    () => processes.map(p => ({ value: p.proceso_id.toString(), label: p.nombre })),
+    [processes]
+  );
+
+  // Elementos hoja del modelo flexible (sin hijos, activos)
+  const elementOptions = useMemo<SelectOption[]>(() => {
+    if (!isFlexible) return [];
+    const parentIds = new Set(
+      flexElements.filter(e => e.padre_id !== null).map(e => e.padre_id as number)
+    );
+    return flexElements
+      .filter(e => !parentIds.has(e.elemento_id) && e.activo)
+      .map(e => ({ value: e.elemento_id.toString(), label: e.nombre ?? `Elemento ${e.elemento_id}` }));
+  }, [isFlexible, flexElements]);
 
   // Estado de resultados y búsqueda
   const [searchState, setSearchState] = useState<{ filteredResults: EvidenceSearchResult[]; displayedResults: EvidenceSearchResult[]; loading: boolean; searchTerm: string; currentPage: number; currentFilters: EvidenceFilters }>({
@@ -57,6 +88,23 @@ export const EvidenceSearchPage: React.FC = () => {
   const selectedCriterioId = modalState.selectedCriterioId;
 
   // Modal de retroalimentación movido a EvidenceDetailsModal
+
+  // Cargar procesos al montar
+  useEffect(() => {
+    evidenceAssignmentService.getAllProcesses().then(setProcesses).catch(console.error);
+  }, []);
+
+  // Cargar elementos del modelo al seleccionar un proceso flexible
+  useEffect(() => {
+    if (!isFlexible || !selectedProcess?.modelo_estructura_id) {
+      setFlexElements([]);
+      return;
+    }
+    evidenceAssignmentService
+      .getElementsByModel(selectedProcess.modelo_estructura_id)
+      .then(setFlexElements)
+      .catch(console.error);
+  }, [isFlexible, selectedProcess?.modelo_estructura_id]);
 
   // Cargar datos iniciales
   useEffect(() => {
@@ -115,6 +163,18 @@ export const EvidenceSearchPage: React.FC = () => {
     }
   }, [showToast, currentPage, itemsPerPage]);
 
+  // Cambio de proceso — actualiza selección y lanza búsqueda con proceso correcto
+  const handleProcessChange = useCallback((value: string) => {
+    const newId = value === '__all__' ? '' : value;
+    setSelectedProcessId(newId);
+    const newProcess = processes.find(p => p.proceso_id === parseInt(newId)) ?? null;
+    const newIsFlexible = newProcess?.modelo_estructura_tipo === 'elemento_flexible';
+    applyFilters({
+      proceso_id: newId ? parseInt(newId) : null,
+      is_flexible: newIsFlexible,
+    });
+  }, [applyFilters, processes]);
+
   // Exportar resultados
   const handleExport = async (format: ExportFormat) => {
     setSearchState(prev => ({ ...prev, loading: true }));
@@ -156,6 +216,7 @@ export const EvidenceSearchPage: React.FC = () => {
   // Handlers de retroalimentación movidos a EvidenceDetailsModal
 
   const moduleInfo = getModuleInfo('evidence_search');
+  const pageTitle = isFlexible ? 'Explorador de Pautas' : moduleInfo.title;
 
   // Opciones del menú de exportación
   const exportOptions: DropdownOption[] = [
@@ -178,13 +239,13 @@ export const EvidenceSearchPage: React.FC = () => {
   return (
     <ScreenContainer>
       <PageHeader
-        title={moduleInfo.title}
+        title={pageTitle}
         description={moduleInfo.description}
         headerExtra={
           <div className="flex items-center gap-3">
             <div className="flex-1 min-w-64">
               <SearchInput
-                placeholder="Buscar por descripción, criterio o responsable..."
+                placeholder={isFlexible ? 'Buscar por descripción, pauta o responsable...' : 'Buscar por descripción, criterio o responsable...'}
                 value={searchTerm}
                 onChange={handleSearchChange}
                 disabled={loading}
@@ -216,7 +277,12 @@ export const EvidenceSearchPage: React.FC = () => {
       >
         {showFilters && (
           <EvidenceSearchFiltersPanel
-            onFiltersChange={(filters) => applyFilters({ ...currentFilters, ...filters })}
+            onFiltersChange={(filters) => applyFilters({ ...currentFilters, ...filters, is_flexible: isFlexible })}
+            isFlexible={isFlexible}
+            processOptions={processOptions}
+            selectedProcessId={selectedProcessId}
+            onProcessChange={handleProcessChange}
+            elementOptions={elementOptions}
           />
         )}
       </PageHeader>
@@ -226,6 +292,7 @@ export const EvidenceSearchPage: React.FC = () => {
         results={displayedResults}
         loading={loading}
         onViewDetails={handleViewDetails}
+        isFlexible={isFlexible}
       />
 
       {/* Modal de detalles */}

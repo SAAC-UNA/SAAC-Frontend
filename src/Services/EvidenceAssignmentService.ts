@@ -197,6 +197,7 @@ class EvidenceAssignmentService {
 
         return {
           proceso_id: item.id || item.proceso_id,
+          nombre: item.nombre ?? `Proceso ${item.id || item.proceso_id}`,
           ciclo_acreditacion_id: item.ciclo_acreditacion_id ?? cycle.ciclo_acreditacion_id,
           modelo_estructura_id: modelo.modelo_estructura_id ?? cycle.modelo_estructura_id ?? undefined,
           modelo_estructura_tipo: modelo.tipo ?? undefined,

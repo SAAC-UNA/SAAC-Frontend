@@ -1,6 +1,12 @@
 /**
  * EvidenceSearchService - Servicio para búsqueda avanzada de evidencias
  * HU-012: Filtrado Avanzado de Evidencias
+ *
+ * Soporta dos modos:
+ *  - Tradicional: GET /api/estructura/evidencias/filter  (EVIDENCIA + criterio)
+ *  - Flexible:    GET /api/elementos-asignaciones/filtrar (ELEMENTO_ASIGNACION + elemento)
+ *
+ * El modo se determina por la presencia de `is_flexible` en los filtros.
  */
 
 import { axiosInstance } from '../Config/axios';
@@ -10,6 +16,9 @@ import type {
 } from '@/Types/EvidenceSearchTypes';
 
 interface SearchParams {
+  // Proceso de acreditación
+  proceso_id?: number;
+
   // Filtros jerárquicos
   dimension_id?: number;
   componente_id?: number;
@@ -20,6 +29,8 @@ interface SearchParams {
   estado?: string; // PascalCase — valor del enum EVIDENCIA.estado
   rol_id?: number;
   
+  elemento_id?: number;
+
   // Ordenamiento
   sort_by?: 'nomenclatura' | 'descripcion' | 'fecha' | 'estado';
   sort_order?: 'asc' | 'desc';
@@ -76,6 +87,41 @@ interface PaginatedResponse {
   };
 }
 
+// ── Tipos para respuesta del modelo flexible ────────────────────────────────
+interface BackendElementAssignment {
+  elemento_asignacion_id: number;
+  elemento_id: number;
+  proceso_id: number;
+  estado: string;
+  fecha_limite?: string | null;
+  comentario?: string | null;
+  created_at: string;
+  updated_at: string;
+  element?: {
+    elemento_id: number;
+    nomenclatura?: string | null;
+    descripcion?: string | null;
+    nombre?: string | null;
+    tipo?: string;
+  };
+  user?: {
+    usuario_id: number;
+    nombre?: string;
+    name?: string;
+    email?: string;
+  };
+}
+
+interface FlexiblePaginatedResponse {
+  data: BackendElementAssignment[];
+  meta: {
+    current_page: number;
+    last_page: number;
+    per_page: number;
+    total: number;
+  };
+}
+
 // Valores válidos del enum EVIDENCIA.estado (PascalCase)
 const ESTADOS_VALIDOS = new Set<string>([
   'Pendiente', 'En Proceso', 'Completado', 'Vencido',
@@ -84,19 +130,32 @@ const ESTADOS_VALIDOS = new Set<string>([
 
 export const evidenceSearchService = {
   /**
-   * Buscar evidencias con filtros
+   * Buscar evidencias o asignaciones de elementos dependiendo del modelo.
+   * Cuando filters.is_flexible = true → GET /api/elementos-asignaciones/filtrar
+   * Cuando filters.is_flexible = false/undefined → GET /api/estructura/evidencias/filter
+   *
+   * Siempre retorna PaginatedResponse con BackendEvidenceResult para que el
+   * resto de la página funcione sin cambios.
    */
   async search(
     filters: EvidenceSearchFilters,
     page: number = 1,
     perPage: number = 10
   ): Promise<PaginatedResponse> {
+    if (filters.is_flexible) {
+      return evidenceSearchService.searchFlexible(filters, page, perPage);
+    }
+
     const params: SearchParams = {
       page,
       per_page: perPage,
     };
 
     // Mapear filtros del frontend a parámetros del backend
+    if (filters.proceso_id) {
+      params.proceso_id = filters.proceso_id;
+    }
+
     if (filters.dimension_id) {
       params.dimension_id = filters.dimension_id;
     }
@@ -107,6 +166,10 @@ export const evidenceSearchService = {
 
     if (filters.criterio) {
       params.criterio_id = parseInt(filters.criterio);
+    }
+
+    if (filters.elemento_id) {
+      params.elemento_id = filters.elemento_id;
     }
 
     if (filters.responsable_id) {
@@ -137,6 +200,67 @@ export const evidenceSearchService = {
       }
     });
     return response.data;
+  },
+
+  /**
+   * Búsqueda para el modelo flexible.
+   * GET /api/elementos-asignaciones/filtrar
+   * Mapea la respuesta al mismo shape de PaginatedResponse<BackendEvidenceResult>
+   * para que el resto de la página no necesite cambios.
+   */
+  async searchFlexible(
+    filters: EvidenceSearchFilters,
+    page: number = 1,
+    perPage: number = 10
+  ): Promise<PaginatedResponse> {
+    const params: Record<string, unknown> = { page, per_page: perPage };
+
+    if (filters.proceso_id) params.proceso_id = filters.proceso_id;
+    if (filters.elemento_id) params.elemento_id = filters.elemento_id;
+    if (filters.estado && filters.estado !== 'todos') params.estado = filters.estado;
+
+    const response = await axiosInstance.get<FlexiblePaginatedResponse>(
+      '/elementos-asignaciones/filtrar',
+      { params }
+    );
+
+    const raw = response.data;
+
+    // Adaptar al shape BackendEvidenceResult para reutilizar el resto del flujo
+    const mapped: BackendEvidenceResult[] = raw.data.map((ea) => ({
+      evidencia_id:    ea.elemento_asignacion_id,
+      criterio_id:     ea.elemento_id,
+      nomenclatura:    ea.element?.nomenclatura ?? '',
+      descripcion:     ea.element?.descripcion ?? ea.element?.nombre ?? '',
+      estado:          ea.estado,
+      criterion: {
+        id:          ea.elemento_id,
+        nomenclatura: ea.element?.nomenclatura ?? '',
+        descripcion:  ea.element?.descripcion ?? ea.element?.nombre ?? '',
+      },
+      responsables: ea.user
+        ? [{ usuario_id: ea.user.usuario_id, nombre: ea.user.nombre ?? ea.user.name ?? '', email: ea.user.email ?? '' }]
+        : [],
+      fecha_publicacion: ea.created_at,
+      created_at:        ea.created_at,
+      updated_at:        ea.updated_at,
+      archivos_count:    0,
+      enlaces_count:     0,
+    }));
+
+    return {
+      data: mapped,
+      links: { first: '', last: '', prev: null, next: null },
+      meta: {
+        current_page: raw.meta.current_page,
+        from:         0,
+        last_page:    raw.meta.last_page,
+        path:         '',
+        per_page:     raw.meta.per_page,
+        to:           0,
+        total:        raw.meta.total,
+      },
+    };
   },
 
   /**
