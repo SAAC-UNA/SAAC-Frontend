@@ -28,7 +28,7 @@
 
 import { useMemo } from 'react';
 import { useBreakpoint } from '@/Hooks/UseBreakpoint';
-import { useSidebar } from '@/context/SidebarContext';
+import { useSidebar } from '@/Context/SidebarContext';
 
 export interface FirstColumnConfig {
   /** Valor CSS para el atributo width del <th> (ej. '35%') */

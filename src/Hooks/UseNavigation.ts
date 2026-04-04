@@ -1,5 +1,5 @@
 import { useNavigate } from 'react-router-dom';
-import { useNavigation } from '@/context/NavigationContext';
+import { useNavigation } from '@/Context/NavigationContext';
 
 /**
  * HOOK DE NAVEGACIÓN DEL SIDEBAR
