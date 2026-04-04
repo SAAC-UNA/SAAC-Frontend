@@ -6,7 +6,7 @@
  * 2. Revisión y confirmación
  */
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { ScreenContainer } from '@/Components/Ui/Layout/ScreenContainer';
 import { Button, WizardProgress, PageHeader } from '@/Components/Ui/Index';
@@ -18,10 +18,13 @@ import { improvementCommitmentService } from '@/Services/ImprovementCommitmentSe
 import type {
   CompromisoFormData,
   CriterioSeleccionado,
+  ElementoSeleccionado,
   ValidationErrors,
-  CrearCompromisoPayload
+  CrearCompromisoPayload,
+  CrearCompromisoElementoPayload,
+  Criterio,
 } from '@/Types/ImprovementCommitmentTypes';
-
+import type { FlexibleElement } from '@/Types/StructureModelTypes';
 // Importar componentes de los pasos
 import { CreationStep } from './Components/CreationStep';
 import type { StatusFilter } from './Components/CreationStep';
@@ -47,8 +50,11 @@ const CreateImprovementCommitment: React.FC = () => {
     cicloId?: string;
     startDate?: string;
     estimatedEndDate?: string;
+    modeloTipo?: string;
+    modeloId?: number;
   };
   const fromProcess = !!locationState.procesoId;
+  const isFlexible = locationState.modeloTipo === 'elemento_flexible';
   
   const [currentStep, setCurrentStep] = useState(1);
   const [submitState, setSubmitState] = useState<{ isSubmitting: boolean; errors: ValidationErrors }>({ isSubmitting: false, errors: {} });
@@ -75,13 +81,106 @@ const CreateImprovementCommitment: React.FC = () => {
     descripcion: '',
     fecha_inicio: locationState.startDate ?? '',
     fecha_fin: locationState.estimatedEndDate ?? '',
-    criterios_seleccionados: []
+    criterios_seleccionados: [],
+    elementos_seleccionados: [],
   });
 
+  const [existingCompromisoId, setExistingCompromisoId] = useState<number | null>(null);
+  const [existingElementIdMap, setExistingElementIdMap] = useState<Record<number, number>>({});
+
   const steps: WizardStep[] = [
-    { id: 1, title: 'Creación' },
+    { id: 1, title: 'Configuración' },
     { id: 2, title: 'Revisión' }
   ];
+
+  // Cargar datos existentes al abrir si el proceso ya tiene compromiso configurado
+  useEffect(() => {
+    if (!fromProcess || !locationState.procesoId) return;
+    const procesoId = parseInt(locationState.procesoId);
+    if (isFlexible) {
+      improvementCommitmentService.obtenerCompromisoElementosPorProceso(procesoId)
+        .then(commitments => {
+          if (!commitments.length) return;
+          const idMap: Record<number, number> = {};
+          const elementosSeleccionados: ElementoSeleccionado[] = [];
+          commitments.forEach((commitment: any) => {
+            const assignments: any[] = commitment.assigned_elements ?? [];
+            if (!assignments.length) return;
+            const byElemento: Record<number, any[]> = {};
+            assignments.forEach((a: any) => {
+              if (!byElemento[a.elemento_id]) byElemento[a.elemento_id] = [];
+              byElemento[a.elemento_id].push(a);
+            });
+            Object.entries(byElemento).forEach(([elIdStr, assigns]) => {
+              const elementoId = Number(elIdStr);
+              idMap[elementoId] = commitment.compromiso_elemento_id;
+              const elementDetails = assigns[0]?.element;
+              elementosSeleccionados.push({
+                elemento_id: elementoId,
+                elemento: {
+                  elemento_id: elementoId,
+                  modelo_estructura_id: locationState.modeloId ?? 0,
+                  padre_id: elementDetails?.padre_id ?? null,
+                  tipo: elementDetails?.tipo ?? '',
+                  nombre: elementDetails?.nombre ?? null,
+                  categoria: elementDetails?.categoria ?? null,
+                  nomenclatura: elementDetails?.nomenclatura ?? null,
+                  descripcion: elementDetails?.descripcion ?? null,
+                  activo: elementDetails?.activo ?? true,
+                  created_at: elementDetails?.created_at ?? '',
+                  updated_at: elementDetails?.updated_at ?? '',
+                } as FlexibleElement,
+                encargados_usuarios: assigns.map((a: any) => a.usuario_id),
+                encargados_roles: [],
+                fecha_limite: assigns[0]?.fecha_limite ?? '',
+                comentario: assigns[0]?.comentario ?? '',
+              });
+            });
+          });
+          setExistingElementIdMap(idMap);
+          if (elementosSeleccionados.length) {
+            setFormData(prev => ({ ...prev, elementos_seleccionados: elementosSeleccionados }));
+          }
+        })
+        .catch(() => {});
+    } else {
+      improvementCommitmentService.obtenerCompromisoPorProceso(procesoId)
+        .then(commitment => {
+          if (!commitment) return;
+          setExistingCompromisoId(commitment.compromiso_mejora_id);
+          const assignedEvidences: any[] = (commitment as any).assigned_evidences ?? [];
+          const criteriosSeleccionados: CriterioSeleccionado[] = ((commitment as any).selecciones ?? []).map((sel: any) => {
+            const criterioId: number = sel.criterio?.criterio_id;
+            const evidenciaIds: number[] = (sel.evidencias ?? []).map((e: any) => e.evidencia_id);
+            const matchingAssignments = assignedEvidences.filter(ae => evidenciaIds.includes(ae.evidencia_id));
+            const uniqueUsers = [...new Set(matchingAssignments.map((ae: any) => ae.usuario_id as number))];
+            return {
+              criterio_id: criterioId,
+              criterio: {
+                criterio_id: criterioId,
+                nomenclatura: sel.criterio?.nomenclatura ?? '',
+                descripcion: sel.criterio?.descripcion ?? '',
+                componente_id: 0,
+                activo: true,
+              } as Criterio,
+              evidencias_seleccionadas: evidenciaIds,
+              encargados_usuarios: uniqueUsers,
+              encargados_roles: [],
+              fecha_limite: matchingAssignments[0]?.fecha_limite ?? '',
+              comentario: matchingAssignments[0]?.pivot?.comentario ?? matchingAssignments[0]?.comentario ?? '',
+            } as CriterioSeleccionado;
+          });
+          setFormData(prev => ({
+            ...prev,
+            descripcion: (commitment as any).descripcion ?? '',
+            fecha_inicio: (commitment as any).fecha_inicio ?? prev.fecha_inicio,
+            fecha_fin: (commitment as any).fecha_fin ?? prev.fecha_fin,
+            criterios_seleccionados: criteriosSeleccionados,
+          }));
+        })
+        .catch(() => {});
+    }
+  }, []);
 
   /**
    * Actualizar datos del formulario
@@ -128,6 +227,40 @@ const CreateImprovementCommitment: React.FC = () => {
   };
 
   /**
+   * Agregar un elemento seleccionado (modelo flexible)
+   */
+  const addElemento = (elemento: ElementoSeleccionado) => {
+    setFormData(prev => ({
+      ...prev,
+      elementos_seleccionados: [...(prev.elementos_seleccionados ?? []), elemento],
+    }));
+  };
+
+  /**
+   * Eliminar un elemento seleccionado (modelo flexible)
+   */
+  const deleteElemento = (elementoId: number) => {
+    setFormData(prev => ({
+      ...prev,
+      elementos_seleccionados: (prev.elementos_seleccionados ?? []).filter(
+        e => e.elemento_id !== elementoId
+      ),
+    }));
+  };
+
+  /**
+   * Actualizar un elemento existente (modelo flexible)
+   */
+  const updateElemento = (elementoActualizado: ElementoSeleccionado) => {
+    setFormData(prev => ({
+      ...prev,
+      elementos_seleccionados: (prev.elementos_seleccionados ?? []).map(e =>
+        e.elemento_id === elementoActualizado.elemento_id ? elementoActualizado : e
+      ),
+    }));
+  };
+
+  /**
    * Validar el paso actual — retorna los errores encontrados, o null si no hay errores.
    */
   const validateStep = (step: number): ValidationErrors | null => {
@@ -138,8 +271,14 @@ const CreateImprovementCommitment: React.FC = () => {
         if (!formData.ciclo_acreditacion_id) {
           newErrors.ciclo_acreditacion_id = 'Debe seleccionar un ciclo de acreditación';
         }
-        if (formData.criterios_seleccionados.length === 0) {
-          newErrors.criterios = 'Debe seleccionar al menos un criterio';
+        if (isFlexible) {
+          if (!formData.elementos_seleccionados?.length) {
+            newErrors.criterios = 'Debe seleccionar al menos un elemento';
+          }
+        } else {
+          if (formData.criterios_seleccionados.length === 0) {
+            newErrors.criterios = 'Debe seleccionar al menos un criterio';
+          }
         }
         break;
       case 2:
@@ -189,31 +328,62 @@ const CreateImprovementCommitment: React.FC = () => {
     setSubmitState(prev => ({...prev, isSubmitting: true}));
     
     try {
-      // Preparar selecciones (criterios)
-      const selecciones = improvementCommitmentService.transformarCriteriosParaBackend(
-        formData.criterios_seleccionados
-      );
-      
-      // Preparar evidencias a asignar
-      const evidencias_asignar = improvementCommitmentService.transformarEvidenciasParaBackend(
-        formData.criterios_seleccionados
-      );
-      
-      // Crear payload
-      const payload: CrearCompromisoPayload = {
-        ciclo_acreditacion_id: formData.ciclo_acreditacion_id!,
-        ...(formData.proceso_id !== undefined && { proceso_id: formData.proceso_id }),
-        descripcion: formData.descripcion || `Compromiso de mejora ${new Date().toLocaleDateString()}`,
-        fecha_inicio: formData.fecha_inicio,
-        fecha_fin: formData.fecha_fin,
-        selecciones,
-        evidencias_asignar
-      };
-      
-      console.log('Enviando compromiso:', payload);
-      
-      // Crear compromiso
-      await improvementCommitmentService.crearCompromiso(payload);
+      if (isFlexible) {
+        // Modelo flexible — un compromiso por elemento seleccionado
+        const elementosSeleccionados = formData.elementos_seleccionados ?? [];
+        const descripcionBase = formData.descripcion || `Compromiso de mejora ${new Date().toLocaleDateString()}`;
+
+        for (const elemento of elementosSeleccionados) {
+          const payload: CrearCompromisoElementoPayload = {
+            proceso_id: formData.proceso_id!,
+            elemento_id: elemento.elemento_id,
+            descripcion: descripcionBase,
+            fecha_inicio: formData.fecha_inicio,
+            fecha_fin: formData.fecha_fin,
+            elementos_asignar: improvementCommitmentService.transformarElementosParaBackend(elemento),
+          };
+          const existingId = existingElementIdMap[elemento.elemento_id];
+          if (existingId) {
+            await improvementCommitmentService.actualizarCompromisoElemento(existingId, {
+              elementos_asignar: improvementCommitmentService.transformarElementosParaBackend(elemento),
+              descripcion: descripcionBase,
+              fecha_inicio: formData.fecha_inicio,
+              fecha_fin: formData.fecha_fin,
+              elemento_id: elemento.elemento_id,
+            });
+          } else {
+            await improvementCommitmentService.crearCompromisoElemento(payload);
+          }
+        }
+      } else {
+        // Modelo tradicional — un único compromiso con todos los criterios
+        const selecciones = improvementCommitmentService.transformarCriteriosParaBackend(
+          formData.criterios_seleccionados
+        );
+        const evidencias_asignar = improvementCommitmentService.transformarEvidenciasParaBackend(
+          formData.criterios_seleccionados
+        );
+        const payload: CrearCompromisoPayload = {
+          ciclo_acreditacion_id: formData.ciclo_acreditacion_id!,
+          ...(formData.proceso_id !== undefined && { proceso_id: formData.proceso_id }),
+          descripcion: formData.descripcion || `Compromiso de mejora ${new Date().toLocaleDateString()}`,
+          fecha_inicio: formData.fecha_inicio,
+          fecha_fin: formData.fecha_fin,
+          selecciones,
+          evidencias_asignar,
+        };
+        if (existingCompromisoId) {
+          await improvementCommitmentService.actualizarCompromiso(existingCompromisoId, {
+            selecciones,
+            evidencias_asignar,
+            descripcion: payload.descripcion,
+            fecha_inicio: payload.fecha_inicio,
+            fecha_fin: payload.fecha_fin,
+          });
+        } else {
+          await improvementCommitmentService.crearCompromiso(payload);
+        }
+      }
       
       setModals({ showSuccessModal: true, showConfirmModal: false });
     } catch (error: any) {
@@ -251,32 +421,26 @@ const CreateImprovementCommitment: React.FC = () => {
           mappedErrors.general = Object.values(backendErrors).flat().join(', ');
         }
 
-        // Si el backend devuelve error del ciclo/proceso, llevar al paso 1 para corregir rápido.
-        if ((backendErrors as any).ciclo_acreditacion_id || (backendErrors as any).proceso_id) {
-          setCurrentStep(1);
-        }
-
         setSubmitState(prev => ({...prev, errors: mappedErrors}));
 
-        const isDuplicateCycle = !!(backendErrors as any).ciclo_acreditacion_id || !!(backendErrors as any).proceso_id;
         showToast({
           type: 'error',
-          title: isDuplicateCycle ? 'Ya existe un compromiso para este ciclo' : 'Error al crear el compromiso',
+          title: 'Error al configurar el compromiso',
           message: mappedErrors.general || error.response?.data?.message || 'Error de validación'
         });
       } else {
         const status = error.response?.status;
-        let toastTitle = 'Error al crear el compromiso';
+        let toastTitle = 'Error al configurar el compromiso';
         let toastMessage: string;
 
         if (status === 409) {
-          toastTitle = 'Conflicto al crear el compromiso';
+          toastTitle = 'Conflicto al configurar el compromiso';
           toastMessage = error.response?.data?.message || 'Ya existe un registro con los mismos datos.';
         } else if (status === 500) {
-          toastMessage = 'Es posible que ya exista un compromiso de mejora para este ciclo. Verifique la lista antes de intentarlo nuevamente.';
+          toastMessage = 'Error interno al configurar el compromiso. Intente nuevamente.';
         } else if (status === 403) {
           toastTitle = 'Sin permisos';
-          toastMessage = 'No tiene permisos para crear compromisos de mejora.';
+          toastMessage = 'No tiene permisos para configurar compromisos de mejora.';
         } else {
           toastMessage = error.response?.data?.message || error.message || 'Error inesperado. Intente nuevamente.';
         }
@@ -307,7 +471,7 @@ const CreateImprovementCommitment: React.FC = () => {
    */
   const handleSuccessClose = () => {
     setModals(prev => ({...prev, showSuccessModal: false}));
-    navigate(fromProcess ? '/procesos-acreditacion/listar' : '/compromisos/listar');
+    navigate('/procesos-acreditacion/listar');
   };
 
   /**
@@ -321,7 +485,7 @@ const CreateImprovementCommitment: React.FC = () => {
         <div className="space-y-4">
           {/* Header */}
           <PageHeader
-                title={`Crear ${moduleInfo.title.replace('Compromisos de Mejora', 'Compromiso de Mejora')}`}
+                title={`Configurar ${moduleInfo.title.replace('Compromisos de Mejora', 'Compromiso de Mejora')}`}
                 description="Seleccione criterios y configure las asignaciones"
                 headerExtra={
                   <div className="flex gap-4 items-center">
@@ -359,10 +523,15 @@ const CreateImprovementCommitment: React.FC = () => {
                 agregarCriterio={addCriterion}
                 eliminarCriterio={deleteCriterion}
                 actualizarCriterio={updateCriterion}
+                agregarElemento={addElemento}
+                eliminarElemento={deleteElemento}
+                actualizarElemento={updateElemento}
                 errors={errors}
                 cicloFijo={fromProcess}
                 searchTerm={creationFilter.searchTerm}
                 statusFilter={creationFilter.statusFilter}
+                modeloTipo={locationState.modeloTipo}
+                modeloId={locationState.modeloId}
               />
             ) : currentStep === 2 ? (
               <ReviewStep
@@ -372,6 +541,7 @@ const CreateImprovementCommitment: React.FC = () => {
                 isSubmitting={isSubmitting}
                 errors={errors}
                 fromProcess={fromProcess}
+                modeloTipo={locationState.modeloTipo}
               />
             ) : null}
           </div>
@@ -394,7 +564,7 @@ const CreateImprovementCommitment: React.FC = () => {
             ) : (
               <Button
                 variant="secondary"
-                onClick={() => navigate(fromProcess ? '/procesos-acreditacion/listar' : '/compromisos/listar')}
+                onClick={() => navigate('/procesos-acreditacion/listar')}
                 disabled={isSubmitting}
                 standardWidth
                 size="sm"
@@ -417,7 +587,7 @@ const CreateImprovementCommitment: React.FC = () => {
                 disabled={isSubmitting}
                 variant="primary"
               >
-                Crear
+                Configurar
               </Button>
             )}
           </div>
@@ -429,10 +599,10 @@ const CreateImprovementCommitment: React.FC = () => {
         isOpen={showConfirmModal}
         onClose={() => setModals(prev => ({...prev, showConfirmModal: false}))}
         onConfirm={handleSubmit}
-        title="Confirmar creación de compromiso"
-        message="¿Está seguro de que desea crear este compromiso de mejora? Se asignarán todas las evidencias y notificaciones a los encargados."
+        title="Confirmar configuración de compromiso"
+        message="¿Está seguro de que desea configurar este compromiso de mejora? Se guardarán todas las asignaciones y notificaciones a los encargados."
         itemType="compromiso de mejora"
-        confirmLabel="Crear"
+        confirmLabel="Configurar"
         isLoading={isSubmitting}
       />
 
@@ -440,8 +610,8 @@ const CreateImprovementCommitment: React.FC = () => {
       <SuccessModal
         isOpen={showSuccessModal}
         onClose={handleSuccessClose}
-        title="Compromiso creado exitosamente"
-        message="El compromiso de mejora ha sido registrado correctamente en el sistema."
+        title="Compromiso configurado exitosamente"
+        message="El compromiso de mejora ha sido guardado correctamente en el sistema."
       />
     </>
   );

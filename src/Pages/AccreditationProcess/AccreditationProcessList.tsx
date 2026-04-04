@@ -182,12 +182,17 @@ export const AccreditationProcessList: React.FC = () => {
   };
 
   const handleConfigureProcess = (process: AccreditationProcess) => {
+    const matchedCycle = cycles.find(c => c.id === process.accreditationCycleId);
+    const modeloTipo = process.modeloEstructuraTipo ?? matchedCycle?.modeloEstructuraTipo;
+    const modeloId = process.modeloEstructuraId ?? matchedCycle?.modeloEstructuraId;
     navigate('/compromisos/crear', {
       state: {
         procesoId: process.id,
         cicloId: process.accreditationCycleId,
         startDate: process.startDate,
         estimatedEndDate: process.estimatedEndDate,
+        modeloTipo,
+        modeloId: modeloId ? parseInt(modeloId) : undefined,
       },
     });
   };

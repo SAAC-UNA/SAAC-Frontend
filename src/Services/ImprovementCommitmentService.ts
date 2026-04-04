@@ -9,11 +9,13 @@ import type {
   CompromisoListResponse,
   CompromisoResponse,
   CrearCompromisoPayload,
+  CrearCompromisoElementoPayload,
   ActualizarCompromisoPayload,
   CicloAcreditacion,
   Criterio,
   Evidencia,
 } from '@/Types/ImprovementCommitmentTypes';
+import type { FlexibleElement } from '@/Types/StructureModelTypes';
 
 const BASE_URL = '/compromisos-de-mejora';
 
@@ -110,7 +112,8 @@ class ImprovementCommitmentService {
    */
   async obtenerCiclosAcreditacion(): Promise<CicloAcreditacion[]> {
     const response = await axiosInstance.get<{ data: CicloAcreditacion[] } | CicloAcreditacion[]>(
-      '/estructura/ciclos-acreditacion'
+      '/estructura/ciclos-acreditacion',
+      { params: { per_page: 50 } }
     );
     const raw = (response.data as any)?.data ?? response.data;
     return Array.isArray(raw) ? raw : [];
@@ -197,6 +200,81 @@ class ImprovementCommitmentService {
     });
 
     return evidenciasAsignar;
+  }
+
+  // ============================================
+  // Métodos para Modelo Flexible (Elementos)
+  // ============================================
+
+  /**
+   * Obtener todos los elementos activos de un modelo de estructura flexible
+   */
+  async obtenerElementosPorModelo(modeloId: number): Promise<FlexibleElement[]> {
+    const response = await axiosInstance.get<{ data: FlexibleElement[] } | FlexibleElement[]>(
+      '/estructura/elementos',
+      { params: { modelo_estructura_id: modeloId } }
+    );
+    const raw = (response.data as any)?.data ?? response.data;
+    return Array.isArray(raw) ? raw : [];
+  }
+
+  /**
+   * Crear un compromiso de mejora para un elemento del modelo flexible
+   */
+  async crearCompromisoElemento(payload: CrearCompromisoElementoPayload): Promise<unknown> {
+    const response = await axiosInstance.post('/compromisos-elementos', payload);
+    return response.data;
+  }
+
+  /**
+   * Construir el payload de elementos_asignar para un ElementoSeleccionado
+   */
+  transformarElementosParaBackend(elemento: import('@/Types/ImprovementCommitmentTypes').ElementoSeleccionado): CrearCompromisoElementoPayload['elementos_asignar'] {
+    return [{
+      elemento_id: elemento.elemento_id,
+      usuarios: elemento.encargados_usuarios,
+      roles: elemento.encargados_roles,
+      fecha_limite: elemento.fecha_limite,
+      comentario: elemento.comentario,
+    }];
+  }
+
+  /**
+   * Obtener compromiso existente para un proceso (modelo tradicional)
+   */
+  async obtenerCompromisoPorProceso(procesoId: number): Promise<CompromisoMejora | null> {
+    try {
+      const response = await axiosInstance.get(BASE_URL, {
+        params: { proceso_id: procesoId, per_page: 1 },
+      });
+      const list: CompromisoMejora[] = (response.data as any)?.data ?? [];
+      return list[0] ?? null;
+    } catch {
+      return null;
+    }
+  }
+
+  /**
+   * Obtener compromisos existentes para un proceso (modelo flexible)
+   */
+  async obtenerCompromisoElementosPorProceso(procesoId: number): Promise<any[]> {
+    try {
+      const response = await axiosInstance.get('/compromisos-elementos', {
+        params: { proceso_id: procesoId, per_page: 50 },
+      });
+      const raw = (response.data as any)?.data;
+      return raw?.data ?? (Array.isArray(raw) ? raw : []);
+    } catch {
+      return [];
+    }
+  }
+
+  /**
+   * Actualizar compromiso de elemento existente (modelo flexible)
+   */
+  async actualizarCompromisoElemento(id: number, payload: Record<string, unknown>): Promise<unknown> {
+    const response = await axiosInstance.put(`/compromisos-elementos/${id}`, payload);
+    return response.data;
   }
 }
 

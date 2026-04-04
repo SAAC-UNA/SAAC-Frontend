@@ -10,7 +10,6 @@ const evidenceIcon = "system-icon:assignEvidence";
 const myEvidencesIcon = "system-icon:myEvidences";
 const searchEvidenceIcon = "system-icon:search";
 const auditLogIcon = "system-icon:edit-element";
-const commitmentIcon = "system-icon:box-archive";
 const approvalIcon = "system-icon:check-circle";
 const extensionRequestIcon = "system-icon:clock";
 const calendarIcon = "system-icon:calendar";
@@ -211,13 +210,6 @@ export const getNavigationItems = (
     isActive: false,
     isExpandable: true,
     children: [
-      {
-        id: "compromisos-mejora",
-        label: "Compromisos de Mejora",
-        icon: commitmentIcon,
-        href: "/compromisos/listar",
-        isActive: false,
-      },
       {
         id: "aprobacion-bloques",
         label: "Aprobación de Bloques",

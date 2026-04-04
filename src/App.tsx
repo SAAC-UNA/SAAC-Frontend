@@ -49,18 +49,8 @@ const MyEvidenceAssignmentsPage = lazy(() =>
   })),
 );
 const AuditLogPage = lazy(() => import("@/Pages/AuditLog/AuditLogPage"));
-const ImprovementCommitmentsList = lazy(() =>
-  import("./Pages/ImprovementCommitments/ImprovementCommitmentsList").then(
-    (m) => ({ default: m.ImprovementCommitmentsList }),
-  ),
-);
 const CreateImprovementCommitment = lazy(
   () => import("./Pages/ImprovementCommitments/CreateImprovementCommitment"),
-);
-const ImprovementCommitmentDetail = lazy(() =>
-  import("./Pages/ImprovementCommitments/ImprovementCommitmentDetail").then(
-    (m) => ({ default: m.ImprovementCommitmentDetail }),
-  ),
 );
 const AccreditationProcessList = lazy(() =>
   import("./Pages/AccreditationProcess/AccreditationProcessList").then((m) => ({
@@ -260,33 +250,9 @@ function App() {
                             }
                           />
 
-                          {/* Compromisos de Mejora - Todos los autenticados */}
-                          <Route
-                            path="/compromisos/listar"
-                            element={
-                              <ProtectedRoute>
-                                <ImprovementCommitmentsList />
-                              </ProtectedRoute>
-                            }
-                          />
+                          {/* Compromisos de Mejora - accedido desde procesos de acreditación */}
                           <Route
                             path="/compromisos/crear"
-                            element={
-                              <ProtectedRoute>
-                                <CreateImprovementCommitment />
-                              </ProtectedRoute>
-                            }
-                          />
-                          <Route
-                            path="/compromisos/ver/:id"
-                            element={
-                              <ProtectedRoute>
-                                <ImprovementCommitmentDetail />
-                              </ProtectedRoute>
-                            }
-                          />
-                          <Route
-                            path="/compromisos/editar/:id"
                             element={
                               <ProtectedRoute>
                                 <CreateImprovementCommitment />
