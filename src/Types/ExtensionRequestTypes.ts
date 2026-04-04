@@ -10,7 +10,8 @@ export type ExtensionRequestStatus = 'pendiente' | 'aprobada' | 'rechazada';
 // Modelo completo de solicitud de ampliación
 export interface ExtensionRequest {
   solicitud_ampliacion_id: number;
-  evidencia_asignacion_id: number;
+  evidencia_asignacion_id: number | null;
+  elemento_asignacion_id: number | null;
   usuario_id: number;
   motivo: string;
   fecha_sugerida: string; // ISO 8601
@@ -25,12 +26,29 @@ export interface ExtensionRequest {
   evidencia_asignacion?: {
     evidencia_asignacion_id: number;
     evidencia_id: number;
+    proceso_id?: number;
     estado: string;
     fecha_limite: string;
     evidencia?: {
       evidencia_id: number;
       nomenclatura: string;
       descripcion: string;
+    };
+    process?: {
+      proceso_id: number;
+      ciclo_acreditacion_id?: number;
+    };
+  };
+
+  elemento_asignacion?: {
+    elemento_asignacion_id: number;
+    elemento_id: number;
+    proceso_id: number;
+    estado: string;
+    fecha_limite: string | null;
+    process?: {
+      proceso_id: number;
+      ciclo_acreditacion_id?: number;
     };
   };
 

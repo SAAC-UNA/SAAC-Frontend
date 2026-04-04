@@ -3,11 +3,13 @@
  * HU-016 - Vista de gestión para encargados de acreditación
  */
 
-import React, { useState, useEffect, useCallback } from 'react';
-import { PageHeader, ScreenContainer } from '@/Components/Ui/Index';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import { PageHeader, ScreenContainer, CustomSelect } from '@/Components/Ui/Index';
 import { SearchInput } from '@/Components/Ui/Forms/SearchInput';
 import { FilterButton, type FilterOption } from '@/Components/Ui/Buttons/FilterButton';
 import { extensionRequestService } from '@/Services/ExtensionRequestService';
+import { flexibleExtensionRequestService } from '@/Services/FlexibleExtensionRequestService';
+import { evidenceAssignmentService } from '@/Services/EvidenceAssignmentService';
 import { useToast } from '@/Context/ToastContext';
 import { useAuth } from '@/Context/AuthContext';
 import { getContextualInfo } from '@/Constants/ModuleInfo';
@@ -21,6 +23,8 @@ import type {
   ExtensionRequestStatus,
   ReviewFormData 
 } from '@/Types/ExtensionRequestTypes';
+import type { Process } from '@/Types/EvidenceAssignment';
+import type { SelectOption } from '@/Types/StructureTypes';
 import { SystemIcons } from '@/Components/Ui/Icons/SystemIcons';
 
 export const ManageExtensionRequestsPage: React.FC = () => {
@@ -30,14 +34,20 @@ export const ManageExtensionRequestsPage: React.FC = () => {
   // Obtener información del módulo desde ModuleInfo
   const moduleInfo = getContextualInfo('extension_requests', 'manage');
   
-  const [pageState, setPageState] = useState<{ solicitudes: ExtensionRequest[]; loading: boolean; error: string | null }>({ solicitudes: [], loading: true, error: null });
-  const solicitudes = pageState.solicitudes;
-  const loading = pageState.loading;
-  const error = pageState.error;
+  // ── Estado de datos ───────────────────────────────────────────────────────
+  const [tradState, setTradState] = useState<{ solicitudes: ExtensionRequest[]; loading: boolean; error: string | null }>({ solicitudes: [], loading: true, error: null });
+  const [flexState, setFlexState] = useState<{ solicitudes: ExtensionRequest[]; loading: boolean; error: string | null }>({ solicitudes: [], loading: false, error: null });
+  const [processes, setProcesses] = useState<Process[]>([]);
+
+  // ── Selector de ciclo de acreditación ────────────────────────────────────
+  const [selectedCycleId, setSelectedCycleId] = useState<number | null>(null);
+
+  const loading = tradState.loading || flexState.loading;
+  const error = tradState.error;
+
   const [searchQuery, setSearchQuery] = useState('');
-  const [filterState, setFilterState] = useState<{ filtroEstado: ExtensionRequestStatus | 'todos'; currentPage: number }>({ filtroEstado: 'todos', currentPage: 1 });
+  const [filterState, setFilterState] = useState<{ filtroEstado: ExtensionRequestStatus | 'todos' }>({ filtroEstado: 'todos' });
   const filtroEstado = filterState.filtroEstado;
-  const currentPage = filterState.currentPage;
 
   // Estado para el modal de revisión (detalles)
   const [selectedSolicitud, setSelectedSolicitud] = useState<ExtensionRequest | null>(null);
@@ -55,35 +65,100 @@ export const ManageExtensionRequestsPage: React.FC = () => {
 
   useEffect(() => {
     loadSolicitudes();
-  }, [filtroEstado, currentPage]);
+    loadProcesses();
+  }, [filtroEstado]);
 
   const loadSolicitudes = async () => {
     try {
-      setPageState(prev => ({...prev, loading: true, error: null}));
-      
+      setTradState(prev => ({ ...prev, loading: true, error: null }));
+      setFlexState(prev => ({ ...prev, loading: true, error: null }));
+
       const filters = {
         estado: filtroEstado === 'todos' ? undefined : filtroEstado,
-        page: currentPage,
-        per_page: 15
+        per_page: 100,
       };
 
-      const response = filtroEstado === 'pendiente' 
-        ? await extensionRequestService.getPendingRequests(filters)
-        : await extensionRequestService.getAllRequests(filters);
+      const [tradRes, flexRes] = await Promise.allSettled([
+        filtroEstado === 'pendiente'
+          ? extensionRequestService.getPendingRequests(filters)
+          : extensionRequestService.getAllRequests(filters),
+        filtroEstado === 'pendiente'
+          ? flexibleExtensionRequestService.getPendingRequests(filters)
+          : flexibleExtensionRequestService.getAllRequests(filters),
+      ]);
 
-      setPageState(prev => ({...prev, solicitudes: response.data}));
+      if (tradRes.status === 'fulfilled') {
+        setTradState(prev => ({ ...prev, solicitudes: tradRes.value.data, loading: false }));
+      } else {
+        setTradState(prev => ({ ...prev, error: tradRes.reason?.message ?? 'Error', loading: false }));
+      }
+
+      if (flexRes.status === 'fulfilled') {
+        setFlexState(prev => ({ ...prev, solicitudes: flexRes.value.data, loading: false }));
+      } else {
+        setFlexState(prev => ({ ...prev, error: flexRes.reason?.message ?? 'Error', loading: false }));
+      }
     } catch (error: any) {
-      const errorMessage = error.message || 'No se pudieron cargar las solicitudes';
-      setPageState(prev => ({...prev, error: errorMessage}));
-      showToast({
-        type: 'error',
-        title: 'Error al Cargar',
-        message: errorMessage
-      });
-    } finally {
-      setPageState(prev => ({...prev, loading: false}));
+      const msg = error.message || 'No se pudieron cargar las solicitudes';
+      setTradState(prev => ({ ...prev, error: msg, loading: false }));
+      setFlexState(prev => ({ ...prev, loading: false }));
+      showToast({ type: 'error', title: 'Error al Cargar', message: msg });
     }
   };
+
+  const loadProcesses = async () => {
+    try {
+      const data = await evidenceAssignmentService.getAllProcesses();
+      setProcesses(data);
+    } catch {
+      // silencioso: los nombres de ciclo se infieren con fallback
+    }
+  };
+
+  // ── Ciclos disponibles ────────────────────────────────────────────────────
+  const availableCycles = useMemo(() => {
+    const cycleMap = new Map<number, { nombre: string }>();
+
+    for (const s of tradState.solicitudes) {
+      const cicloId = s.evidencia_asignacion?.process?.ciclo_acreditacion_id;
+      if (cicloId && !cycleMap.has(cicloId)) {
+        const proc = processes.find(p => p.ciclo_acreditacion_id === cicloId);
+        cycleMap.set(cicloId, { nombre: proc?.ciclo_nombre ?? `Ciclo ${cicloId}` });
+      }
+    }
+
+    for (const s of flexState.solicitudes) {
+      const cicloId = s.elemento_asignacion?.process?.ciclo_acreditacion_id;
+      if (cicloId && !cycleMap.has(cicloId)) {
+        const proc = processes.find(p => p.ciclo_acreditacion_id === cicloId);
+        cycleMap.set(cicloId, { nombre: proc?.ciclo_nombre ?? `Ciclo ${cicloId}` });
+      }
+    }
+
+    return [...cycleMap.entries()].map(([id, info]) => ({ ciclo_id: id, ...info }));
+  }, [tradState.solicitudes, flexState.solicitudes, processes]);
+
+  useEffect(() => {
+    if (availableCycles.length > 0 && selectedCycleId === null) {
+      setSelectedCycleId(availableCycles[0].ciclo_id);
+    }
+  }, [availableCycles, selectedCycleId]);
+
+  const cycleOptions: SelectOption[] = availableCycles.map(c => ({
+    value: String(c.ciclo_id),
+    label: c.nombre,
+  }));
+
+  // ── Lista filtrada por ciclo ───────────────────────────────────────────────
+  const solicitudes = useMemo(() => {
+    const trad = selectedCycleId
+      ? tradState.solicitudes.filter(s => s.evidencia_asignacion?.process?.ciclo_acreditacion_id === selectedCycleId)
+      : tradState.solicitudes;
+    const flex = selectedCycleId
+      ? flexState.solicitudes.filter(s => s.elemento_asignacion?.process?.ciclo_acreditacion_id === selectedCycleId)
+      : flexState.solicitudes;
+    return [...trad, ...flex];
+  }, [tradState.solicitudes, flexState.solicitudes, selectedCycleId]);
 
   // Handlers
   const handleReviewRequest = useCallback((solicitud: ExtensionRequest) => {
@@ -128,10 +203,11 @@ export const ManageExtensionRequestsPage: React.FC = () => {
     if (!target) return;
 
     try {
-      await extensionRequestService.approveRequest(
-        target.solicitud_ampliacion_id,
-        data
-      );
+      if (target.elemento_asignacion_id) {
+        await flexibleExtensionRequestService.approveRequest(target.solicitud_ampliacion_id, data);
+      } else {
+        await extensionRequestService.approveRequest(target.solicitud_ampliacion_id, data);
+      }
 
       showToast({
         type: 'success',
@@ -156,10 +232,11 @@ export const ManageExtensionRequestsPage: React.FC = () => {
     if (!target) return;
 
     try {
-      await extensionRequestService.rejectRequest(
-        target.solicitud_ampliacion_id,
-        data
-      );
+      if (target.elemento_asignacion_id) {
+        await flexibleExtensionRequestService.rejectRequest(target.solicitud_ampliacion_id, data);
+      } else {
+        await extensionRequestService.rejectRequest(target.solicitud_ampliacion_id, data);
+      }
 
       showToast({
         type: 'warning',
@@ -192,6 +269,15 @@ export const ManageExtensionRequestsPage: React.FC = () => {
         headerExtra={
           isAuthenticated && hasPermission ? (
             <div className="flex flex-col sm:flex-row w-full gap-2 shrink-0 lg:w-auto">
+              {cycleOptions.length > 1 && (
+                <CustomSelect
+                  className="w-80"
+                  label="Ciclo de acreditación"
+                  options={cycleOptions}
+                  value={selectedCycleId ? String(selectedCycleId) : ""}
+                  onChange={(v) => setSelectedCycleId(Number(v))}
+                />
+              )}
               <SearchInput
                 placeholder="Buscar por solicitante, email o motivo..."
                 value={searchQuery}
@@ -203,7 +289,7 @@ export const ManageExtensionRequestsPage: React.FC = () => {
                 options={estadoOptions}
                 value={filtroEstado}
                 onChange={(value) => {
-                  setFilterState({ filtroEstado: value, currentPage: 1 });
+                  setFilterState({ filtroEstado: value });
                 }}
               />
             </div>
