@@ -23,7 +23,7 @@ interface ModalProps {
   heroIcon?: React.ReactNode;
 
   // ── Layout ──
-  size?: 'sm' | 'md' | 'lg' | 'xl' | 'full';
+  size?: 'sm' | 'md' | 'lg' | 'xl' | 'full' | 'auto';
   /** Altura máxima del modal. Por defecto crece con el contenido hasta el 90vh */
   maxHeight?: 'sm' | 'md' | 'lg' | 'xl' | 'full' | 'auto';
   /** Si se puede cerrar haciendo clic fuera o con Escape */
@@ -129,6 +129,7 @@ export const Modal: React.FC<ModalProps> = React.memo(({
     lg: 'sm:max-w-4xl',
     xl: 'sm:max-w-6xl',
     full: 'sm:max-w-full',
+    auto: 'sm:w-auto',
   };
 
   const maxHeightClasses: Record<NonNullable<ModalProps['maxHeight']>, string> = {

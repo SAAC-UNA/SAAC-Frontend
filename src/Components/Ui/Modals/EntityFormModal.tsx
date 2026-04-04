@@ -36,7 +36,7 @@ interface EntityFormModalProps {
   confirmLoading?: boolean;
   confirmDisabled?: boolean;
   isEditing?: boolean;
-  size?: 'sm' | 'md' | 'lg' | 'xl';
+  size?: 'sm' | 'md' | 'lg' | 'xl' | 'auto';
   /** Altura máxima del modal. Por defecto crece con el contenido hasta el 90vh */
   maxHeight?: 'sm' | 'md' | 'lg' | 'xl' | 'full' | 'auto';
   heroIcon?: React.ReactNode;

@@ -10,7 +10,6 @@ import { PageHeader, Button } from "@/Components/Ui/Index";
 import { DeleteConfirmationModal } from "@/Components/Ui/Modals/DeleteConfirmationModal";
 import { SuccessModal } from "@/Components/Ui/Modals/SuccessModal";
 import { getModuleInfo } from "@/Constants/ModuleInfo";
-import { SystemIcons } from "@/Components/Ui/Icons/SystemIcons";
 import { SearchInput } from "@/Components/Ui/Forms/SearchInput";
 import { accreditationProcessService } from "@/Services/AccreditationProcessService";
 import type {

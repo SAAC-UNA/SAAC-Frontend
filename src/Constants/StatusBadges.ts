@@ -66,7 +66,20 @@ export const BADGE_COLORS: Record<string, BadgeColorConfig> = {
   indigo:  { colorClasses: 'bg-indigo-ring text-indigo' },
 };
 
-/** Tipos de acción de la bitácora del sistema */
+/** Estado de selección de criterio en el wizard de compromisos */
+export const CRITERIO_SELECTION_STATUS_BADGE: Record<'seleccionado' | 'pendiente', StatusBadgeConfig> = {
+  seleccionado: { label: 'Seleccionado', colorClasses: 'text-verde bg-verde-ring' },
+  pendiente:    { label: 'Pendiente',    colorClasses: 'text-warning bg-warning-ring' },
+};
+
+/** Estado global del compromiso de mejora */
+export const COMPROMISO_STATUS_BADGE: Record<string, StatusBadgeConfig> = {
+  Pendiente:     { label: 'Pendiente',    colorClasses: 'text-warning-dark bg-warning-ring' },
+  'En Progreso': { label: 'En Progreso',  colorClasses: 'text-info-dark bg-info-ring' },
+  Completado:    { label: 'Completado',   colorClasses: 'text-verde-dark bg-verde-ring' },
+  Vencido:       { label: 'Vencido',      colorClasses: 'text-error-dark bg-error-ring' },
+};
+
 export const AUDIT_ACTION_BADGE: Record<string, StatusBadgeConfig> = {
   crear: { label: 'Crear', colorClasses: 'bg-teal-ring text-teal' },
   editar: { label: 'Editar', colorClasses: 'bg-warning-ring text-warning' },

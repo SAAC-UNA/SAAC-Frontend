@@ -7,9 +7,10 @@ import React, { useState, useEffect } from 'react';
 import { Modal } from '@/Components/Ui/Modals/Modal';
 import { SystemIcons } from '@/Components/Ui/Icons/SystemIcons';
 import { ICON_SIZES } from '@/Constants/Components';
-import { DataTable, type DataTableColumn } from '@/Components/Ui/Table/DataTable';
+import { DataTable, type DataTableColumn, ExpandableChildRow, type ExpandableChildItem } from '@/Components/Ui/Table/DataTable';
 import { StatusBadge } from '@/Components/Ui/Feedback/StatusBadge';
-import { FileList } from '@/Components/Ui/Upload/FileList';
+import { FileRowContent, FileDownloadAction } from '@/Components/Ui/Upload/FileList';
+import { LoadingSpinner } from '@/Components/Ui/Feedback/Loading';
 import { fileService } from '@/Services/FileService';
 import { evidenceAssignmentService } from '@/Services/EvidenceAssignmentService';
 import type { FileModel } from '@/Types/FileTypes';
@@ -39,60 +40,8 @@ export interface EvidenceResourcesModalProps {
 
 /** Carga lazy de responsables y archivos para una evidencia concreta */
 const EvidenciaResponsablesPanel: React.FC<{ evidenciaId: number }> = ({ evidenciaId }) => {
-  const firstColumn = useFirstColumnConfig();
   const [groups, setGroups] = useState<FilesByUser[]>([]);
   const [loading, setLoading] = useState(true);
-
-  const responsablesColumns: DataTableColumn<FilesByUser>[] = [
-    {
-      key: 'nombre',
-      header: 'Responsable',
-      align: 'left',
-      width: firstColumn.width,
-      render: (_, item) => (
-        <span className={`font-semibold text-negro-una-2 ${TYPOGRAPHY.modal.body}`}>
-          {item.nombre as string}
-        </span>
-      ),
-    },
-    {
-      key: 'fecha_asignacion',
-      header: 'Fecha Asignación',
-      align: 'center',
-      render: (_, item) => (
-        <span className={`text-gris-una-2 ${TYPOGRAPHY.modal.body}`}>
-          {formatDate(item.fecha_asignacion as string | null)}
-        </span>
-      ),
-    },
-    {
-      key: 'fecha_limite',
-      header: 'Fecha Límite',
-      align: 'center',
-      render: (_, item) => (
-        <span className={`text-gris-una-2 ${TYPOGRAPHY.modal.body}`}>
-          {formatDate(item.fecha_limite as string | null)}
-        </span>
-      ),
-    },
-    {
-      key: 'estado_asignacion',
-      header: 'Estado',
-      align: 'center',
-      render: (_, item) => {
-        const estado = item.estado_asignacion as AssignmentStatus | null;
-        if (!estado) return <span className={`text-gris-una-2 ${TYPOGRAPHY.modal.body}`}>—</span>;
-        return (
-          <div className="flex items-center justify-center">
-            <StatusBadge
-              label={ASSIGNMENT_STATUS_BADGE[estado].label}
-              colorClasses={ASSIGNMENT_STATUS_BADGE[estado].colorClasses}
-            />
-          </div>
-        );
-      },
-    },
-  ];
 
   useEffect(() => {
     setLoading(true);
@@ -143,25 +92,43 @@ const EvidenciaResponsablesPanel: React.FC<{ evidenciaId: number }> = ({ evidenc
       .finally(() => setLoading(false));
   }, [evidenciaId]);
 
+  if (loading) return <div className="relative min-h-[60px]"><LoadingSpinner variant="loader" /></div>;
+  if (groups.length === 0) return <p className={`text-gris-una px-3 py-1.5 ${TYPOGRAPHY.table.helper}`}>Sin responsables asignados</p>;
+
   return (
-    <DataTable<FilesByUser>
-      title=""
-      searchable={false}
-      loading={loading}
-      data={groups}
-      columns={responsablesColumns}
-      getRowKey={(item) => String(item.usuario_id)}
-      emptyMessage="Sin responsables asignados"
-      unstyled
-      expandableRow={(group) => (
-        <FileList
-          files={group.archivos as FileModel[]}
-          loading={false}
-          showActions={true}
-          emptyMessage="Sin archivos"
-        />
-      )}
-    />
+    <div className="space-y-1">
+      {groups.map(group => {
+        const estado = group.estado_asignacion;
+        const fileItems: ExpandableChildItem[] = group.archivos.map(file => ({
+          key: String(file.archivo_id),
+          content: <FileRowContent file={file} />,
+          action: <FileDownloadAction file={file} />,
+        }));
+        return (
+          <ExpandableChildRow
+            key={String(group.usuario_id)}
+            item={{
+              key: String(group.usuario_id),
+              emptyChildrenMessage: 'Sin archivos',
+              children: fileItems,
+              content: (
+                <div className="flex items-center gap-4 flex-1 min-w-0">
+                  <span className={`font-semibold text-negro-una-2 flex-1 min-w-0 truncate ${TYPOGRAPHY.table.helper}`}>{group.nombre}</span>
+                  <span className={`text-gris-una flex-shrink-0 ${TYPOGRAPHY.table.helper}`}>{formatDate(group.fecha_asignacion)}</span>
+                  <span className={`text-gris-una flex-shrink-0 ${TYPOGRAPHY.table.helper}`}>{formatDate(group.fecha_limite)}</span>
+                  {estado && (
+                    <StatusBadge
+                      label={ASSIGNMENT_STATUS_BADGE[estado].label}
+                      colorClasses={ASSIGNMENT_STATUS_BADGE[estado].colorClasses}
+                    />
+                  )}
+                </div>
+              ),
+            }}
+          />
+        );
+      })}
+    </div>
   );
 };
 
@@ -253,9 +220,11 @@ export const EvidenceResourcesModal: React.FC<EvidenceResourcesModalProps> = ({
           getRowKey={(item: any) => String(item.evidencia_id)}
           emptyMessage="No hay evidencias para este criterio"
           unstyled
-          expandableRow={(evidencia: any) => (
-            <EvidenciaResponsablesPanel evidenciaId={evidencia.evidencia_id} />
-          )}
+          expandableRow={(evidencia: any) => [{
+            key: String(evidencia.evidencia_id),
+            noBorder: true,
+            content: <EvidenciaResponsablesPanel evidenciaId={evidencia.evidencia_id} />,
+          }]}
         />
       </div>
     </Modal>

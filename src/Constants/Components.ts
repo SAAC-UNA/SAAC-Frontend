@@ -58,6 +58,25 @@ export const ICON_SIZES = {
 } as const;
 
 /**
+ * Anchos estandarizados para columnas fijas de tablas.
+ * Usar en columnas que no son la primera columna (que usa useFirstColumnConfig).
+ *
+ * Uso:
+ *   width: TABLE_COLUMN_WIDTHS.status
+ *   width: TABLE_COLUMN_WIDTHS.actions
+ */
+export const TABLE_COLUMN_WIDTHS = {
+  /** Columna de badge de estado */
+  status: '12%',
+  /** Columna de acciones (1-2 botones) */
+  actionsSmall: '8%',
+  /** Columna de acciones (3 botones) */
+  actions: '12%',
+  /** Columna de acciones (4 botones) */
+  actionsLarge: '15%',
+} as const;
+
+/**
  * Tamaños estandarizados para botones de paginación
  * Mismo tamaño que los botones de tabla (32px × 32px)
  */

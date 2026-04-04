@@ -119,7 +119,7 @@ const DropdownContent: React.FC<DropdownContentProps> = ({
       initial="hidden"
       animate="visible"
       exit="exit"
-      className="bg-blanco-una border border-gris-light rounded-corner shadow-lg overflow-hidden"
+      className="bg-blanco-una border-none rounded-corner shadow-lg overflow-hidden"
     >
       {/* Campo de búsqueda */}
       {showSearch && (
@@ -404,7 +404,7 @@ export const CustomSelect: React.FC<CustomSelectProps> = ({
               readonly && 'cursor-default',
               error
                 ? 'border-rojo-una-2'
-                : 'border-blanco-una-2 bg-blanco-una-2',
+                : 'border-gris-light bg-blanco-una',
               disabled
                 ? 'bg-blanco-una-2 border-blanco-una-2 text-gris-una'
                 : isOpen && !readonly && 'border-blanco-una-2/20'

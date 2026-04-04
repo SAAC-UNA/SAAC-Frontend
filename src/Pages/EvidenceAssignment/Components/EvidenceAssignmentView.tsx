@@ -19,6 +19,7 @@ import { TYPOGRAPHY } from "@/Constants/Typography";
 import type { DuplicateAssignment } from "@/Types/EvidenceAssignment";
 import type { EvidenceAssignmentViewProps, DuplicateGroupRow } from "../EvidenceAssignment";
 import { formatDateShort } from "@/Utils/DateUtils";
+import type { ExpandableChildItem } from "@/Components/Ui/Table/DataTable";
 
 // ---------------------------------------------------------------------------
 // EvidenceAssignmentView — componente de presentación puro
@@ -363,32 +364,21 @@ export const EvidenceAssignmentView: React.FC<EvidenceAssignmentViewProps> = ({
                     ]}
                     getRowKey={(row) => row.id.toString()}
                     searchable={false}
-                    expandableRow={(item) => (
-                      <div className="p-4 bg-blanco-una-2">
-                        <table className="w-full">
-                          <thead>
-                            <tr className="border-b border-gris-light">
-                              <th className={`text-left py-2 px-4 font-semibold text-negro-una ${TYPOGRAPHY.table.header}`}>Evidencia</th>
-                              <th className={`text-center py-2 px-4 font-semibold text-negro-una ${TYPOGRAPHY.table.header}`}>Fecha de Asignación</th>
-                            </tr>
-                          </thead>
-                          <tbody>
-                            {item.evidences.map((dup) => (
-                              <tr key={`act-sub-${dup.asignacion_id ?? dup.evidencia_id}`} className="border-b border-gris-light/50">
-                                <td className={`py-2 px-4 ${TYPOGRAPHY.table.cell}`}>
-                                  <span className="font-semibold text-negro-una">{evidenceById[dup.evidencia_id]?.nomenclatura ?? 'N/A'}</span>
-                                  <span className="text-gris-una mx-1.5">—</span>
-                                  <span className="font-semibold text-negro-una">{evidenceById[dup.evidencia_id]?.descripcion ?? ''}</span>
-                                </td>
-                                <td className={`py-2 px-4 text-gris-una text-center ${TYPOGRAPHY.table.cell}`}>
-                                  {formatDateShort(dup.fecha_asignacion)}
-                                </td>
-                              </tr>
-                            ))}
-                          </tbody>
-                        </table>
-                      </div>
-                    )}
+                    expandableRow={(item): ExpandableChildItem[] =>
+                      item.evidences.map((dup) => ({
+                        key: `act-sub-${dup.asignacion_id ?? dup.evidencia_id}`,
+                        content: (
+                          <div className={`flex items-center gap-2 flex-1 min-w-0 ${TYPOGRAPHY.table.cell}`}>
+                            <span className="font-semibold text-negro-una">{evidenceById[dup.evidencia_id]?.nomenclatura ?? 'N/A'}</span>
+                            <span className="text-gris-una">—</span>
+                            <span className="text-negro-una truncate">{evidenceById[dup.evidencia_id]?.descripcion ?? ''}</span>
+                          </div>
+                        ),
+                        action: (
+                          <span className={`text-gris-una flex-shrink-0 ${TYPOGRAPHY.table.cell}`}>{formatDateShort(dup.fecha_asignacion)}</span>
+                        ),
+                      }))
+                    }
                   />
                   <div className="px-6 pb-6">
                     <div className={`p-3 bg-warning-light rounded-corner border border-warning-ring ${TYPOGRAPHY.table.helper} text-warning-dark`}>
@@ -465,47 +455,33 @@ export const EvidenceAssignmentView: React.FC<EvidenceAssignmentViewProps> = ({
                     ]}
                     getRowKey={(row) => row.id.toString()}
                     searchable={false}
-                    expandableRow={(item) => (
-                      <div className="p-4 bg-blanco-una-2">
-                        <table className="w-full">
-                          <thead>
-                            <tr className="border-b border-gris-light">
-                              <th className="w-12 py-2 px-4"></th>
-                              <th className={`text-left py-2 px-4 font-semibold text-negro-una ${TYPOGRAPHY.table.header}`}>Evidencia</th>
-                              <th className={`text-center py-2 px-4 font-semibold text-negro-una ${TYPOGRAPHY.table.header}`}>Fecha Completado</th>
-                            </tr>
-                          </thead>
-                          <tbody>
-                            {item.evidences.map((dup: DuplicateAssignment) => {
-                              const isExcluded = excludedCompletedPairs.some(
-                                (p) => p.usuario_id === dup.usuario_id && p.evidencia_id === dup.evidencia_id
-                              );
-                              return (
-                                <tr key={`comp-sub-${dup.asignacion_id ?? dup.evidencia_id}`} className="border-b border-gris-light/50">
-                                  <td className="py-2 px-4 text-center">
-                                    <input
-                                      type="checkbox"
-                                      checked={!isExcluded}
-                                      onChange={() => toggleCompletedPair(dup.usuario_id, dup.evidencia_id)}
-                                      className="w-4 h-4 rounded border-info-ring text-info focus:ring-info cursor-pointer"
-                                      aria-label={`Reasignar ${evidenceById[dup.evidencia_id]?.nomenclatura}`}
-                                    />
-                                  </td>
-                                  <td className={`py-2 px-4 ${TYPOGRAPHY.table.cell}`}>
-                                    <span className="font-semibold text-negro-una">{evidenceById[dup.evidencia_id]?.nomenclatura ?? 'N/A'}</span>
-                                    <span className="text-gris-una mx-1.5">—</span>
-                                    <span className="font-semibold text-negro-una">{evidenceById[dup.evidencia_id]?.descripcion ?? ''}</span>
-                                  </td>
-                                  <td className={`py-2 px-4 text-negro-una text-center ${TYPOGRAPHY.table.cell}`}>
-                                    {formatDateShort(dup.fecha_asignacion)}
-                                  </td>
-                                </tr>
-                              );
-                            })}
-                          </tbody>
-                        </table>
-                      </div>
-                    )}
+                    expandableRow={(item): ExpandableChildItem[] =>
+                      item.evidences.map((dup: DuplicateAssignment) => {
+                        const isExcluded = excludedCompletedPairs.some(
+                          (p) => p.usuario_id === dup.usuario_id && p.evidencia_id === dup.evidencia_id
+                        );
+                        return {
+                          key: `comp-sub-${dup.asignacion_id ?? dup.evidencia_id}`,
+                          content: (
+                            <div className={`flex items-center gap-2 flex-1 min-w-0 ${TYPOGRAPHY.table.cell}`}>
+                              <input
+                                type="checkbox"
+                                checked={!isExcluded}
+                                onChange={() => toggleCompletedPair(dup.usuario_id, dup.evidencia_id)}
+                                className="w-4 h-4 rounded border-info-ring text-info focus:ring-info cursor-pointer flex-shrink-0"
+                                aria-label={`Reasignar ${evidenceById[dup.evidencia_id]?.nomenclatura}`}
+                              />
+                              <span className="font-semibold text-negro-una">{evidenceById[dup.evidencia_id]?.nomenclatura ?? 'N/A'}</span>
+                              <span className="text-gris-una">—</span>
+                              <span className="text-negro-una truncate">{evidenceById[dup.evidencia_id]?.descripcion ?? ''}</span>
+                            </div>
+                          ),
+                          action: (
+                            <span className={`text-negro-una flex-shrink-0 ${TYPOGRAPHY.table.cell}`}>{formatDateShort(dup.fecha_asignacion)}</span>
+                          ),
+                        };
+                      })
+                    }
                   />
                   <div className="px-6 pb-6">
                     <div className={`p-3 bg-info-light rounded-corner border border-info-ring ${TYPOGRAPHY.table.helper} text-info-dark`}>

@@ -398,7 +398,7 @@ line {
     border-radius: var(--radius-full);
     border: 2px solid var(--color-rojo-una);
     background: var(--color-rojo-una);
-    color: var(--color-blanco-una);
+    color: var(--color-blanco-una-2);
     cursor: pointer;
     position: relative;
     overflow: hidden;
@@ -572,14 +572,14 @@ line {
    * evitando el recuadro sólido que aparece al usar background-color sobre el borde del input */
   .floating-label-halo {
     text-shadow:
-      -1px -1px 0 var(--color-blanco-una-2),
-      1px -1px 0 var(--color-blanco-una-2),
-      -1px 1px 0 var(--color-blanco-una-2),
-      1px 1px 0 var(--color-blanco-una-2),
-      -2px 0 0 var(--color-blanco-una-2),
-      2px 0 0 var(--color-blanco-una-2),
-      0 -2px 0 var(--color-blanco-una-2),
-      0 2px 0 var(--color-blanco-una-2);
+      -1px -1px 0 var(--color-blanco-una),
+      1px -1px 0 var(--color-blanco-una),
+      -1px 1px 0 var(--color-blanco-una),
+      1px 1px 0 var(--color-blanco-una),
+      -2px 0 0 var(--color-blanco-una),
+      2px 0 0 var(--color-blanco-una),
+      0 -2px 0 var(--color-blanco-una),
+      0 2px 0 var(--color-blanco-una);
   }
 
   /*! ==== TAMAÑO DE BOTONES PRINCIPALES ===== 04-03-2026 */
