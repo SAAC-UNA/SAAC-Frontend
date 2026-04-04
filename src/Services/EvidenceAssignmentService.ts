@@ -16,7 +16,8 @@ import type {
   Criterion,
   Process,
   DuplicateValidationRequest,
-  DuplicateValidationResponse
+  DuplicateValidationResponse,
+  FlexibleAssignmentItem
 } from '@/Types/EvidenceAssignment';
 import type { FlexibleElement } from '@/Types/StructureModelTypes';
 import { devLog } from '@/Utils/devLogger';
@@ -348,6 +349,70 @@ class EvidenceAssignmentService {
   ): Promise<EvidenceAssignment> {
     const response = await axiosInstance.patch(`/evidencias-asignaciones/${assignmentId}`, data);
     return response.data.data;
+  }
+
+  /**
+   * Obtiene los elementos asignados al usuario (modelo flexible).
+   * GET /api/usuarios/{userId}/elementos-asignados
+   */
+  async getMyElementAssignments(userId: number): Promise<FlexibleAssignmentItem[]> {
+    try {
+      const response = await axiosInstance.get<{ data: FlexibleAssignmentItem[] }>(
+        `/usuarios/${userId}/elementos-asignados`
+      );
+      return response.data.data || [];
+    } catch (error: any) {
+      if (error.response?.status === 404) {
+        return [];
+      }
+      throw new Error(
+        error.response?.data?.message ||
+        error.message ||
+        'Error al obtener las pautas asignadas'
+      );
+    }
+  }
+
+  /**
+   * Actualiza el estado de una asignación de elemento (modelo flexible).
+   * PATCH /api/elementos-asignaciones/{id}
+   */
+  async updateElementStatus(
+    id: number,
+    estado: 'En Progreso' | 'Completado'
+  ): Promise<FlexibleAssignmentItem> {
+    try {
+      const response = await axiosInstance.patch<{ data: FlexibleAssignmentItem }>(
+        `/elementos-asignaciones/${id}`,
+        { estado }
+      );
+      return response.data.data;
+    } catch (error: any) {
+      throw new Error(
+        error.response?.data?.message ||
+        error.message ||
+        'Error al actualizar el estado'
+      );
+    }
+  }
+
+  /**
+   * Solicita ampliación de plazo para una asignación de elemento (modelo flexible).
+   * POST /api/elementos-asignaciones/{id}/solicitud-ampliacion
+   */
+  async requestElementExtension(
+    id: number,
+    data: { motivo: string; fecha_sugerida: string }
+  ): Promise<void> {
+    try {
+      await axiosInstance.post(`/elementos-asignaciones/${id}/solicitud-ampliacion`, data);
+    } catch (error: any) {
+      throw new Error(
+        error.response?.data?.message ||
+        error.message ||
+        'Error al enviar la solicitud de ampliación'
+      );
+    }
   }
 }
 

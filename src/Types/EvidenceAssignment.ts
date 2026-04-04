@@ -125,3 +125,36 @@ export interface DuplicateValidationResponse {
   duplicados: DuplicateAssignment[];
   total_duplicados: number;
 }
+
+/**
+ * Asignación de elemento (modelo flexible) — respuesta de
+ * GET /api/usuarios/{id}/elementos-asignados
+ */
+export interface FlexibleAssignmentItem extends Record<string, unknown> {
+  elemento_asignacion_id: number;
+  elemento_id: number;
+  usuario_id: number;
+  proceso_id: number;
+  /** PascalCase: 'Pendiente' | 'En Progreso' | 'Completado' | 'Vencido' | 'Observada' | 'Validada' */
+  estado: string;
+  fecha_limite: string | null;
+  comentario: string | null;
+  created_at: string;
+  updated_at: string;
+  has_pending_extension_request?: boolean;
+  element?: {
+    elemento_id: number;
+    nombre: string;
+    tipo: string;
+    descripcion?: string | null;
+    nomenclatura?: string | null;
+  };
+  process?: {
+    proceso_id: number;
+    nombre: string;
+  };
+  user?: {
+    usuario_id: number;
+    nombre: string;
+  };
+}

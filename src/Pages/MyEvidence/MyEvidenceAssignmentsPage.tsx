@@ -3,9 +3,10 @@
  * HU-029 - Mis Evidencias Asignadas
  */
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
-import { PageHeader, ScreenContainer } from "@/Components/Ui/Index";
+import { PageHeader, ScreenContainer, CustomSelect, LoadingSpinner } from "@/Components/Ui/Index";
+import type { SelectOption } from "@/Components/Ui/Index";
 import { BackendErrorAlert } from "@/Components/Ui/Feedback/BackendErrorAlert";
 import { SearchInput } from "@/Components/Ui/Forms/SearchInput";
 import { getModuleInfo } from "@/Constants/ModuleInfo";
@@ -21,9 +22,11 @@ import type {
 } from "@/Types/EvidenceAssignmentTypes";
 import { filterAndSortAssignments } from "@/Types/EvidenceAssignmentTypes";
 import type { CreateExtensionRequestData } from "@/Types/ExtensionRequestTypes";
+import type { FlexibleAssignmentItem, Process } from "@/Types/EvidenceAssignment";
 import {
   EvidenceAssignmentDetail,
   EvidenceAssignmentsTable,
+  ElementAssignmentsTable,
 } from "./Components";
 import { CreateExtensionRequestModal } from "@/Pages/MyEvidence/Components/CreateExtensionRequestModal";
 
@@ -48,6 +51,22 @@ export const MyEvidenceAssignmentsPage: React.FC = () => {
   });
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = TABLE_PAGE_SIZE.standard;
+
+  // Selector de proceso — detecta modelo según asignaciones cargadas
+  const [processes, setProcesses] = useState<Process[]>([]);
+  const [selectedProcessId, setSelectedProcessId] = useState<number | null>(null);
+
+  // Estado del modelo flexible
+  const [flexState, setFlexState] = useState<{
+    assignments: FlexibleAssignmentItem[];
+    loading: boolean;
+    error: string | null;
+  }>({ assignments: [], loading: false, error: null });
+  const [flexModal, setFlexModal] = useState<{
+    selected: FlexibleAssignmentItem | null;
+    showExtension: boolean;
+    selectedForExtension: FlexibleAssignmentItem | null;
+  }>({ selected: null, showExtension: false, selectedForExtension: null });
 
   // HU-016: modales de detalle y extensión
   const [modalState, setModalState] = useState<{
@@ -81,10 +100,13 @@ export const MyEvidenceAssignmentsPage: React.FC = () => {
   // Cargar asignaciones al montar y al volver a la pestaña
   useEffect(() => {
     loadAssignments();
+    loadFlexAssignments();
+    loadProcesses();
 
     const handleVisibilityChange = () => {
       if (document.visibilityState === "visible") {
         loadAssignments();
+        loadFlexAssignments();
       }
     };
     document.addEventListener("visibilitychange", handleVisibilityChange);
@@ -126,9 +148,138 @@ export const MyEvidenceAssignmentsPage: React.FC = () => {
     }
   };
 
+  const loadFlexAssignments = async () => {
+    const userWithOptionalId = user as { usuario_id?: number; id?: number } | null;
+    const userId = userWithOptionalId?.usuario_id ?? userWithOptionalId?.id;
+    if (!userId) return;
+
+    try {
+      setFlexState((prev) => ({ ...prev, loading: true, error: null }));
+      const data = await evidenceAssignmentService.getMyElementAssignments(userId);
+      setFlexState((prev) => ({ ...prev, assignments: data }));
+    } catch (error: unknown) {
+      setFlexState((prev) => ({
+        ...prev,
+        error: getErrorMessage(error, "No se pudieron obtener las pautas asignadas"),
+      }));
+    } finally {
+      setFlexState((prev) => ({ ...prev, loading: false }));
+    }
+  };
+
+  const loadProcesses = async () => {
+    try {
+      const data = await evidenceAssignmentService.getAllProcesses();
+      setProcesses(data);
+    } catch {
+      // silencioso: los nombres se pueden inferir desde las asignaciones
+    }
+  };
+
+  // Auto-seleccionar el primer proceso disponible al cargar
+  const availableProcesses = useMemo(() => {
+    const traditionalIds = new Set(assignments.map((a) => a.proceso_id));
+    const flexIds = new Set(flexState.assignments.map((a) => a.proceso_id));
+    const allIds = new Set([...traditionalIds, ...flexIds]);
+    const processMap = new Map(processes.map((p) => [p.proceso_id, p]));
+
+    return [...allIds].map((id) => {
+      const p = processMap.get(id);
+      const flexName = flexState.assignments.find(
+        (a) => a.proceso_id === id,
+      )?.process?.nombre;
+      return {
+        proceso_id: id,
+        nombre: p?.nombre ?? flexName ?? `Proceso ${id}`,
+        isFlexible: flexIds.has(id),
+      };
+    });
+  }, [assignments, flexState.assignments, processes]);
+
+  useEffect(() => {
+    if (availableProcesses.length > 0 && selectedProcessId === null) {
+      setSelectedProcessId(availableProcesses[0].proceso_id);
+    }
+  }, [availableProcesses, selectedProcessId]);
+
+  const selectedProcess = availableProcesses.find(
+    (p) => p.proceso_id === selectedProcessId,
+  ) ?? null;
+  const isFlexible = selectedProcess?.isFlexible ?? false;
+
+  const processOptions: SelectOption[] = availableProcesses.map((p) => ({
+    value: String(p.proceso_id),
+    label: p.nombre,
+  }));
+
   const handleViewDetails = (assignment: EvidenceAssignment) => {
     setModalState((prev) => ({ ...prev, selectedAssignment: assignment }));
   };
+
+  // ── Handlers modelo flexible ──────────────────────────────────────────────
+
+  const handleFlexViewDetails = (a: FlexibleAssignmentItem) => {
+    setFlexModal((prev) => ({ ...prev, selected: a }));
+  };
+
+  const handleFlexStatusChange = async (
+    a: FlexibleAssignmentItem,
+    newStatus: "En Progreso" | "Completado",
+  ) => {
+    try {
+      const updated = await evidenceAssignmentService.updateElementStatus(
+        a.elemento_asignacion_id,
+        newStatus,
+      );
+      setFlexState((prev) => ({
+        ...prev,
+        assignments: prev.assignments.map((x) =>
+          x.elemento_asignacion_id === updated.elemento_asignacion_id ? updated : x,
+        ),
+      }));
+      showToast({
+        type: "success",
+        title: "Estado actualizado",
+        message: `Pauta marcada como ${newStatus === "Completado" ? "completada" : "en progreso"}`,
+      });
+    } catch {
+      showToast({ type: "error", title: "Error", message: "No se pudo actualizar el estado" });
+    }
+  };
+
+  const handleFlexRequestExtension = (a: FlexibleAssignmentItem) => {
+    setFlexModal((prev) => ({ ...prev, selectedForExtension: a, showExtension: true }));
+  };
+
+  const handleFlexConfirmExtension = async (data: CreateExtensionRequestData) => {
+    const assignment = flexModal.selectedForExtension;
+    if (!assignment) return;
+    try {
+      await evidenceAssignmentService.requestElementExtension(
+        assignment.elemento_asignacion_id,
+        { motivo: data.motivo, fecha_sugerida: data.fecha_sugerida },
+      );
+      setFlexModal((prev) => ({ ...prev, showExtension: false, selectedForExtension: null }));
+      showToast({ type: "success", title: "Solicitud enviada", message: "Su solicitud de ampliación ha sido enviada" });
+      loadFlexAssignments();
+    } catch (error: unknown) {
+      const message = getErrorMessage(error, "No se pudo enviar la solicitud");
+      const isDuplicate = message.includes("Ya existe una solicitud pendiente");
+      showToast({
+        type: "error",
+        title: isDuplicate ? "Solicitud duplicada" : "Error",
+        message: isDuplicate ? "Ya tienes una solicitud pendiente para esta pauta" : message,
+      });
+      if (isDuplicate) {
+        setFlexModal((prev) => ({ ...prev, showExtension: false, selectedForExtension: null }));
+        loadFlexAssignments();
+      } else {
+        throw new Error(message);
+      }
+    }
+  };
+
+  // ─────────────────────────────────────────────────────────────────────────
 
   const handleCloseDetail = () => {
     setModalState((prev) => ({ ...prev, selectedAssignment: null }));
@@ -288,12 +439,23 @@ export const MyEvidenceAssignmentsPage: React.FC = () => {
     setCurrentPage(1);
   };
 
-  const filteredAssignments = filterAndSortAssignments(assignments, filters);
+  const filteredAssignments = filterAndSortAssignments(
+    assignments.filter((a) => a.proceso_id === selectedProcessId),
+    filters,
+  );
+  const filteredFlex = flexState.assignments.filter(
+    (a) => a.proceso_id === selectedProcessId,
+  );
   const moduleInfo = getModuleInfo("my_evidence_assignments");
 
-  // Paginación
-  const totalPages = Math.ceil(filteredAssignments.length / itemsPerPage);
+  // Paginación unificada por proceso
+  const activeList = isFlexible ? filteredFlex : filteredAssignments;
+  const totalPages = Math.ceil(activeList.length / itemsPerPage);
   const paginatedAssignments = filteredAssignments.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage,
+  );
+  const paginatedFlex = filteredFlex.slice(
     (currentPage - 1) * itemsPerPage,
     currentPage * itemsPerPage,
   );
@@ -304,42 +466,92 @@ export const MyEvidenceAssignmentsPage: React.FC = () => {
         title={moduleInfo.title}
         description={moduleInfo.description}
         headerExtra={
-          !error && assignments.length > 0 ? (
-            <SearchInput
-              placeholder="Buscar evidencias..."
-              value={filters.search || ""}
-              onChange={(value) =>
-                handleFiltersChange({ ...filters, search: value })
-              }
-            />
+          processOptions.length > 1 || (!isFlexible && !error && assignments.length > 0) ? (
+            <div className="flex items-end gap-3">
+              {processOptions.length > 1 && (
+                <CustomSelect className="w-80"
+                  label="Proceso"
+                  options={processOptions}
+                  value={selectedProcessId ? String(selectedProcessId) : ""}
+                  onChange={(v) => {
+                    setSelectedProcessId(Number(v));
+                    setCurrentPage(1);
+                  }}
+                />
+              )}
+              {!isFlexible && !error && assignments.length > 0 && (
+                <SearchInput
+                  placeholder="Buscar evidencias..."
+                  value={filters.search || ""}
+                  onChange={(value) =>
+                    handleFiltersChange({ ...filters, search: value })
+                  }
+                />
+              )}
+            </div>
           ) : undefined
         }
       ></PageHeader>
 
       <div className="space-y-6">
-        {/* Error del backend */}
-        {error && <BackendErrorAlert error={error} onRetry={loadAssignments} />}
+        {/* Carga inicial */}
+        {(loading || flexState.loading) && !selectedProcessId && (
+          <div className="flex justify-center py-10">
+            <LoadingSpinner />
+          </div>
+        )}
 
-        {/* Tabla de asignaciones */}
-        {!error && (
-          <EvidenceAssignmentsTable
-            assignments={paginatedAssignments}
-            loading={loading}
-            onViewDetails={handleViewDetails}
-            onUploadFiles={handleUploadFiles}
-            onStatusChange={handleTableStatusChange}
-            onRequestExtension={handleRequestExtension}
-            hasFilters={filters.estado !== "todos" || filters.search !== ""}
-            pagination={
-              totalPages > 1
-                ? {
-                    currentPage,
-                    totalPages,
-                    onPageChange: setCurrentPage,
-                  }
-                : undefined
-            }
-          />
+        {/* Sin procesos asignados */}
+        {!loading && !flexState.loading && availableProcesses.length === 0 && (
+          <p className="text-sm text-gris-una text-center py-10">
+            No tienes asignaciones en ningún proceso de acreditación.
+          </p>
+        )}
+
+        {/* ── Modelo tradicional (Criterios) ── */}
+        {selectedProcessId !== null && !isFlexible && (
+          <>
+            {error && <BackendErrorAlert error={error} onRetry={loadAssignments} />}
+            {!error && (
+              <EvidenceAssignmentsTable
+                assignments={paginatedAssignments}
+                loading={loading}
+                onViewDetails={handleViewDetails}
+                onUploadFiles={handleUploadFiles}
+                onStatusChange={handleTableStatusChange}
+                onRequestExtension={handleRequestExtension}
+                hasFilters={filters.estado !== "todos" || filters.search !== ""}
+                pagination={
+                  totalPages > 1
+                    ? { currentPage, totalPages, onPageChange: setCurrentPage }
+                    : undefined
+                }
+              />
+            )}
+          </>
+        )}
+
+        {/* ── Modelo flexible (Pautas) ── */}
+        {selectedProcessId !== null && isFlexible && (
+          <>
+            {flexState.error && (
+              <BackendErrorAlert error={flexState.error} onRetry={loadFlexAssignments} />
+            )}
+            {!flexState.error && (
+              <ElementAssignmentsTable
+                assignments={paginatedFlex}
+                loading={flexState.loading}
+                onViewDetails={handleFlexViewDetails}
+                onStatusChange={handleFlexStatusChange}
+                onRequestExtension={handleFlexRequestExtension}
+                pagination={
+                  totalPages > 1
+                    ? { currentPage, totalPages, onPageChange: setCurrentPage }
+                    : undefined
+                }
+              />
+            )}
+          </>
         )}
       </div>
 
@@ -363,6 +575,43 @@ export const MyEvidenceAssignmentsPage: React.FC = () => {
           fechaLimiteActual={
             selectedAssignmentForExtension.fecha_limite || undefined
           }
+        />
+      )}
+
+      {/* Modal de detalle flexible */}
+      {flexModal.selected && (
+        <Modal
+          isOpen
+          onClose={() => setFlexModal((prev) => ({ ...prev, selected: null }))}
+          title="Detalle de Pauta"
+          variant="info"
+          showConfirm={false}
+          showCancel
+          cancelLabel="Cerrar"
+        >
+          <div className="space-y-3 text-sm text-negro-una-2">
+            <p><span className="font-semibold">Pauta:</span> {flexModal.selected.element?.nombre ?? '—'}</p>
+            <p><span className="font-semibold">Tipo:</span> {flexModal.selected.element?.tipo ?? '—'}</p>
+            <p><span className="font-semibold">Proceso:</span> {flexModal.selected.process?.nombre ?? `Proceso ${flexModal.selected.proceso_id}`}</p>
+            <p><span className="font-semibold">Estado:</span> {flexModal.selected.estado}</p>
+            <p><span className="font-semibold">Fecha límite:</span> {flexModal.selected.fecha_limite ?? 'Sin límite'}</p>
+            {flexModal.selected.comentario && (
+              <p><span className="font-semibold">Comentario:</span> {flexModal.selected.comentario}</p>
+            )}
+          </div>
+        </Modal>
+      )}
+
+      {/* Modal ampliación flexible */}
+      {flexModal.showExtension && flexModal.selectedForExtension && (
+        <CreateExtensionRequestModal
+          isOpen={flexModal.showExtension}
+          onClose={() =>
+            setFlexModal((prev) => ({ ...prev, showExtension: false, selectedForExtension: null }))
+          }
+          onConfirm={handleFlexConfirmExtension}
+          evidenciaAsignacionId={flexModal.selectedForExtension.elemento_asignacion_id}
+          fechaLimiteActual={flexModal.selectedForExtension.fecha_limite || undefined}
         />
       )}
 

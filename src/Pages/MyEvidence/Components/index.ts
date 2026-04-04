@@ -4,3 +4,4 @@
 
 export { EvidenceAssignmentDetail } from './EvidenceAssignmentDetailModal';
 export { EvidenceAssignmentsTable } from './EvidenceAssignmentsTable';
+export { ElementAssignmentsTable } from './ElementAssignmentsTable';

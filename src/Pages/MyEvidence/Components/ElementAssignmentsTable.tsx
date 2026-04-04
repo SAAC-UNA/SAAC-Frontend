@@ -1,0 +1,186 @@
+/**
+ * ElementAssignmentsTable - Tabla de pautas asignadas (modelo flexible)
+ * Utilizada en MyEvidenceAssignmentsPage cuando el usuario tiene asignaciones
+ * de tipo ELEMENTO_ASIGNACION (modelo flexible SINAES 2025).
+ */
+
+import React, { useMemo } from 'react';
+import {
+  DataTable,
+  type DataTableColumn,
+} from '@/Components/Ui/Table/DataTable';
+import { TYPOGRAPHY } from '@/Constants/Typography';
+import { truncateText } from '@/Utils';
+import { TableActionButton } from '@/Components/Ui/Buttons/TableActionButton';
+import { StatusBadge } from '@/Components/Ui/Feedback/StatusBadge';
+import { EVIDENCE_STATUS_BADGE } from '@/Constants/StatusBadges';
+import type { FlexibleAssignmentItem } from '@/Types/EvidenceAssignment';
+import { useFirstColumnConfig } from '@/Hooks/UseFirstColumnConfig';
+import { formatDate } from '@/Utils/DateUtils';
+
+interface ElementAssignmentsTableProps {
+  assignments: FlexibleAssignmentItem[];
+  loading?: boolean;
+  hasFilters?: boolean;
+  onViewDetails: (assignment: FlexibleAssignmentItem) => void;
+  onStatusChange?: (
+    assignment: FlexibleAssignmentItem,
+    newStatus: 'En Progreso' | 'Completado'
+  ) => void;
+  onRequestExtension?: (assignment: FlexibleAssignmentItem) => void;
+  pagination?: {
+    currentPage: number;
+    totalPages: number;
+    onPageChange: (page: number) => void;
+  };
+}
+
+export const ElementAssignmentsTable: React.FC<ElementAssignmentsTableProps> = ({
+  assignments,
+  loading = false,
+  hasFilters = false,
+  onViewDetails,
+  onStatusChange,
+  onRequestExtension,
+  pagination,
+}) => {
+  const firstColumn = useFirstColumnConfig();
+
+  const columns = useMemo<DataTableColumn<FlexibleAssignmentItem>[]>(
+    () => [
+      {
+        key: 'element',
+        header: 'Pauta',
+        align: 'left',
+        width: firstColumn.width,
+        render: (_: unknown, assignment: FlexibleAssignmentItem) => {
+          const { element } = assignment;
+          const nombre = element?.nombre ?? 'Sin nombre';
+          const tipo = element?.tipo ?? '';
+          return (
+            <div className="flex flex-col pl-2">
+              <p
+                className={`block font-sans antialiased font-bold leading-normal text-negro-una-2 ${TYPOGRAPHY.table.cell}`}
+                title={nombre}
+              >
+                {truncateText(nombre, firstColumn.maxLength)}
+              </p>
+              {tipo && (
+                <p
+                  className={`block font-sans antialiased font-normal leading-normal text-gris-una ${TYPOGRAPHY.table.helper}`}
+                >
+                  {tipo}
+                </p>
+              )}
+            </div>
+          );
+        },
+      },
+      {
+        key: 'process',
+        header: 'Proceso',
+        align: 'left',
+        render: (_: unknown, assignment: FlexibleAssignmentItem) => (
+          <span className={`font-sans text-negro-una-2 ${TYPOGRAPHY.table.cell}`}>
+            {assignment.process?.nombre ?? `Proceso ${assignment.proceso_id}`}
+          </span>
+        ),
+      },
+      {
+        key: 'fecha_limite',
+        header: 'Fecha Límite',
+        align: 'left',
+        render: (_: unknown, assignment: FlexibleAssignmentItem) => {
+          const fecha = assignment.fecha_limite
+            ? formatDate(assignment.fecha_limite)
+            : 'Sin límite';
+          const vencido = assignment.estado === 'Vencido';
+          return (
+            <span
+              className={`font-sans rounded-corner select-none whitespace-nowrap ${TYPOGRAPHY.table.cell} ${vencido ? 'text-red-600 font-bold' : 'text-negro-una-2'}`}
+            >
+              {fecha}
+            </span>
+          );
+        },
+      },
+      {
+        key: 'estado',
+        header: 'Estado',
+        align: 'left',
+        render: (_: unknown, assignment: FlexibleAssignmentItem) => {
+          const badge = EVIDENCE_STATUS_BADGE[assignment.estado as keyof typeof EVIDENCE_STATUS_BADGE];
+          return (
+            <div className="flex justify-start">
+              <StatusBadge
+                label={badge?.label ?? assignment.estado}
+                colorClasses={badge?.colorClasses ?? 'bg-gris-light text-gris-una'}
+              />
+            </div>
+          );
+        },
+      },
+      {
+        key: 'actions',
+        header: 'Acciones',
+        align: 'center',
+        render: (_: unknown, assignment: FlexibleAssignmentItem) => {
+          const isCompleted = assignment.estado === 'Completado';
+          const isActionable = ['Pendiente', 'En Progreso'].includes(assignment.estado);
+          const hasPending = assignment.has_pending_extension_request === true;
+          const canExtend = !hasPending && isActionable;
+
+          let extensionTooltip = 'Solicitar ampliación';
+          if (hasPending) extensionTooltip = 'Ya hay una solicitud pendiente';
+          else if (!isActionable) extensionTooltip = 'No se puede solicitar ampliación';
+
+          return (
+            <div className="flex items-center justify-center gap-2 pr-2">
+              <TableActionButton
+                action="view"
+                tooltip="Ver detalles"
+                onClick={() => onViewDetails(assignment)}
+              />
+
+              {onStatusChange && isActionable && (
+                <TableActionButton
+                  action={isCompleted ? 'markInProgress' : 'markComplete'}
+                  tooltip={isCompleted ? 'Revertir a en progreso' : 'Marcar completado'}
+                  onClick={() =>
+                    onStatusChange(assignment, isCompleted ? 'En Progreso' : 'Completado')
+                  }
+                />
+              )}
+
+              {onRequestExtension && (
+                <TableActionButton
+                  action="clock"
+                  tooltip={extensionTooltip}
+                  onClick={() => onRequestExtension(assignment)}
+                  disabled={!canExtend}
+                />
+              )}
+            </div>
+          );
+        },
+      },
+    ],
+    [firstColumn, onViewDetails, onStatusChange, onRequestExtension]
+  );
+
+  return (
+    <DataTable
+      data={assignments as any}
+      columns={columns}
+      title=""
+      loading={loading}
+      searchable={false}
+      emptyMessage={
+        hasFilters
+          ? 'No se encontraron pautas que coincidan con los filtros aplicados.'
+          : 'No tienes pautas asignadas. Cuando se te asigne una pauta, aparecerá aquí.'
+      }
+      pagination={pagination}
+    />
+  );
+};
