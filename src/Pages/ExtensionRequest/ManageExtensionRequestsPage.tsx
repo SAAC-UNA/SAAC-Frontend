@@ -9,7 +9,6 @@ import { SearchInput } from '@/Components/Ui/Forms/SearchInput';
 import { FilterButton, type FilterOption } from '@/Components/Ui/Buttons/FilterButton';
 import { extensionRequestService } from '@/Services/ExtensionRequestService';
 import { flexibleExtensionRequestService } from '@/Services/FlexibleExtensionRequestService';
-import { evidenceAssignmentService } from '@/Services/EvidenceAssignmentService';
 import { useToast } from '@/Context/ToastContext';
 import { useAuth } from '@/Context/AuthContext';
 import { getContextualInfo } from '@/Constants/ModuleInfo';
@@ -20,10 +19,10 @@ import { CreateConfirmationModal } from '@/Components/Ui/Modals/CreateConfirmati
 import { DeleteConfirmationModal } from '@/Components/Ui/Modals/DeleteConfirmationModal';
 import type { 
   ExtensionRequest, 
+  ExtensionRequestPaginatedResponse,
   ExtensionRequestStatus,
   ReviewFormData 
 } from '@/Types/ExtensionRequestTypes';
-import type { Process } from '@/Types/EvidenceAssignment';
 import type { SelectOption } from '@/Types/StructureTypes';
 import { SystemIcons } from '@/Components/Ui/Icons/SystemIcons';
 
@@ -37,7 +36,6 @@ export const ManageExtensionRequestsPage: React.FC = () => {
   // ── Estado de datos ───────────────────────────────────────────────────────
   const [tradState, setTradState] = useState<{ solicitudes: ExtensionRequest[]; loading: boolean; error: string | null }>({ solicitudes: [], loading: true, error: null });
   const [flexState, setFlexState] = useState<{ solicitudes: ExtensionRequest[]; loading: boolean; error: string | null }>({ solicitudes: [], loading: false, error: null });
-  const [processes, setProcesses] = useState<Process[]>([]);
 
   // ── Selector de ciclo de acreditación ────────────────────────────────────
   const [selectedCycleId, setSelectedCycleId] = useState<number | null>(null);
@@ -65,36 +63,52 @@ export const ManageExtensionRequestsPage: React.FC = () => {
 
   useEffect(() => {
     loadSolicitudes();
-    loadProcesses();
   }, [filtroEstado]);
+
+  /** Obtener todas las páginas de un endpoint paginado */
+  const fetchAllPages = async (
+    fetcher: (filters: Record<string, unknown>) => Promise<ExtensionRequestPaginatedResponse>,
+    baseFilters: Record<string, unknown>,
+  ): Promise<ExtensionRequest[]> => {
+    const first = await fetcher({ ...baseFilters, per_page: 100, page: 1 });
+    const all = [...first.data];
+    const lastPage = first.meta?.last_page ?? 1;
+    for (let p = 2; p <= lastPage; p++) {
+      const next = await fetcher({ ...baseFilters, per_page: 100, page: p });
+      all.push(...next.data);
+    }
+    return all;
+  };
 
   const loadSolicitudes = async () => {
     try {
       setTradState(prev => ({ ...prev, loading: true, error: null }));
       setFlexState(prev => ({ ...prev, loading: true, error: null }));
 
-      const filters = {
+      const baseFilters = {
         estado: filtroEstado === 'todos' ? undefined : filtroEstado,
-        per_page: 100,
       };
 
+      const tradFetcher = filtroEstado === 'pendiente'
+        ? extensionRequestService.getPendingRequests.bind(extensionRequestService)
+        : extensionRequestService.getAllRequests.bind(extensionRequestService);
+      const flexFetcher = filtroEstado === 'pendiente'
+        ? flexibleExtensionRequestService.getPendingRequests.bind(flexibleExtensionRequestService)
+        : flexibleExtensionRequestService.getAllRequests.bind(flexibleExtensionRequestService);
+
       const [tradRes, flexRes] = await Promise.allSettled([
-        filtroEstado === 'pendiente'
-          ? extensionRequestService.getPendingRequests(filters)
-          : extensionRequestService.getAllRequests(filters),
-        filtroEstado === 'pendiente'
-          ? flexibleExtensionRequestService.getPendingRequests(filters)
-          : flexibleExtensionRequestService.getAllRequests(filters),
+        fetchAllPages(tradFetcher, baseFilters),
+        fetchAllPages(flexFetcher, baseFilters),
       ]);
 
       if (tradRes.status === 'fulfilled') {
-        setTradState(prev => ({ ...prev, solicitudes: tradRes.value.data, loading: false }));
+        setTradState(prev => ({ ...prev, solicitudes: tradRes.value, loading: false }));
       } else {
         setTradState(prev => ({ ...prev, error: tradRes.reason?.message ?? 'Error', loading: false }));
       }
 
       if (flexRes.status === 'fulfilled') {
-        setFlexState(prev => ({ ...prev, solicitudes: flexRes.value.data, loading: false }));
+        setFlexState(prev => ({ ...prev, solicitudes: flexRes.value, loading: false }));
       } else {
         setFlexState(prev => ({ ...prev, error: flexRes.reason?.message ?? 'Error', loading: false }));
       }
@@ -106,15 +120,6 @@ export const ManageExtensionRequestsPage: React.FC = () => {
     }
   };
 
-  const loadProcesses = async () => {
-    try {
-      const data = await evidenceAssignmentService.getAllProcesses();
-      setProcesses(data);
-    } catch {
-      // silencioso: los nombres de ciclo se infieren con fallback
-    }
-  };
-
   // ── Ciclos disponibles ────────────────────────────────────────────────────
   const availableCycles = useMemo(() => {
     const cycleMap = new Map<number, { nombre: string }>();
@@ -122,21 +127,21 @@ export const ManageExtensionRequestsPage: React.FC = () => {
     for (const s of tradState.solicitudes) {
       const cicloId = s.evidencia_asignacion?.process?.ciclo_acreditacion_id;
       if (cicloId && !cycleMap.has(cicloId)) {
-        const proc = processes.find(p => p.ciclo_acreditacion_id === cicloId);
-        cycleMap.set(cicloId, { nombre: proc?.ciclo_nombre ?? `Ciclo ${cicloId}` });
+        const nombre = s.evidencia_asignacion?.process?.nombre;
+        cycleMap.set(cicloId, { nombre: nombre ?? `Ciclo ${cicloId}` });
       }
     }
 
     for (const s of flexState.solicitudes) {
       const cicloId = s.elemento_asignacion?.process?.ciclo_acreditacion_id;
       if (cicloId && !cycleMap.has(cicloId)) {
-        const proc = processes.find(p => p.ciclo_acreditacion_id === cicloId);
-        cycleMap.set(cicloId, { nombre: proc?.ciclo_nombre ?? `Ciclo ${cicloId}` });
+        const nombre = s.elemento_asignacion?.process?.nombre;
+        cycleMap.set(cicloId, { nombre: nombre ?? `Ciclo ${cicloId}` });
       }
     }
 
     return [...cycleMap.entries()].map(([id, info]) => ({ ciclo_id: id, ...info }));
-  }, [tradState.solicitudes, flexState.solicitudes, processes]);
+  }, [tradState.solicitudes, flexState.solicitudes]);
 
   useEffect(() => {
     if (availableCycles.length > 0 && selectedCycleId === null) {

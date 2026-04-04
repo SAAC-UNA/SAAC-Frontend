@@ -95,5 +95,5 @@ if (isFlexible) {
 
 ## Pendiente
 
-- Agregar un **selector de proceso visible** en la vista `EvidenceAssignmentView`. Actualmente el proceso se autoselecciona al primero de la lista. El `isFlexible` funciona correctamente, pero el usuario no puede cambiar de proceso manualmente desde la pantalla.
-- Módulos adicionales que requieren el mismo cambio: **Búsqueda de Criterios** (`/evidencias/busqueda-avanzada`), **Mis Entregas** (`/mis-evidencias-asignadas`) y posiblemente **Solicitudes de Ampliación**.
+- ~~Módulos adicionales que requieren el mismo cambio: **Búsqueda de Criterios**, **Mis Entregas** y **Solicitudes de Ampliación**.~~ **Resuelto** — los tres módulos ya cuentan con soporte dual. Ver `BUSQUEDA_CRITERIOS_PAUTAS_MODELO_FLEXIBLE.md`, `MIS_ENTREGAS_MODELO_FLEXIBLE.md` y `SOLICITUDES_AMPLIACION_MODELO_FLEXIBLE.md`.
+- El **selector de proceso** no está visible en la vista `EvidenceAssignmentView`. Actualmente el proceso se autoselecciona al primero de la lista. Esto se resolverá con la futura **pantalla selectora de proceso** que establecerá el `proceso_id` en un contexto global antes de entrar a cada módulo; la lógica `isFlexible` ya está preparada para recibirlo.

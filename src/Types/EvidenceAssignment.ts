@@ -36,6 +36,13 @@ export interface Process {
   updated_at?: string;
 }
 
+/** Ciclo de acreditación con tipo de modelo, retornado por GET /api/usuarios/{id}/mis-ciclos */
+export interface UserCycle {
+  ciclo_acreditacion_id: number;
+  nombre: string;
+  tipo_modelo: 'tradicional' | 'elemento_flexible';
+}
+
 export interface EvidenceAssignmentFormData {
   proceso_id: number | null;
   criterio_id: number | null;

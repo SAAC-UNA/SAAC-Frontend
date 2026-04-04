@@ -36,6 +36,7 @@ export interface ExtensionRequest {
     };
     process?: {
       proceso_id: number;
+      nombre?: string;
       ciclo_acreditacion_id?: number;
     };
   };
@@ -48,6 +49,7 @@ export interface ExtensionRequest {
     fecha_limite: string | null;
     process?: {
       proceso_id: number;
+      nombre?: string;
       ciclo_acreditacion_id?: number;
     };
   };

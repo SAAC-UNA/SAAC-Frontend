@@ -22,7 +22,8 @@ import type {
 } from "@/Types/EvidenceAssignmentTypes";
 import { filterAndSortAssignments } from "@/Types/EvidenceAssignmentTypes";
 import type { CreateExtensionRequestData } from "@/Types/ExtensionRequestTypes";
-import type { FlexibleAssignmentItem, Process } from "@/Types/EvidenceAssignment";
+import type { FlexibleAssignmentItem } from "@/Types/EvidenceAssignment";
+import type { UserCycle } from "@/Types/EvidenceAssignment";
 import {
   EvidenceAssignmentDetail,
   EvidenceAssignmentsTable,
@@ -52,8 +53,8 @@ export const MyEvidenceAssignmentsPage: React.FC = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = TABLE_PAGE_SIZE.standard;
 
-  // Selector de ciclo — detecta modelo según asignaciones cargadas
-  const [processes, setProcesses] = useState<Process[]>([]);
+  // Selector de ciclo — datos vienen del endpoint mis-ciclos
+  const [userCycles, setUserCycles] = useState<UserCycle[]>([]);
   const [selectedCycleId, setSelectedCycleId] = useState<number | null>(null);
 
   // Estado del modelo flexible
@@ -101,7 +102,7 @@ export const MyEvidenceAssignmentsPage: React.FC = () => {
   useEffect(() => {
     loadAssignments();
     loadFlexAssignments();
-    loadProcesses();
+    loadUserCycles();
 
     const handleVisibilityChange = () => {
       if (document.visibilityState === "visible") {
@@ -167,10 +168,13 @@ export const MyEvidenceAssignmentsPage: React.FC = () => {
     }
   };
 
-  const loadProcesses = async () => {
+  const loadUserCycles = async () => {
+    const userWithOptionalId = user as { usuario_id?: number; id?: number } | null;
+    const userId = userWithOptionalId?.usuario_id ?? userWithOptionalId?.id;
+    if (!userId) return;
     try {
-      const data = await evidenceAssignmentService.getAllProcesses();
-      setProcesses(data);
+      const data = await evidenceAssignmentService.getUserCycles(userId);
+      setUserCycles(data);
     } catch {
       // silencioso: los nombres se pueden inferir desde las asignaciones
     }
@@ -178,14 +182,22 @@ export const MyEvidenceAssignmentsPage: React.FC = () => {
 
   // Auto-seleccionar el primer ciclo disponible al cargar
   const availableCycles = useMemo(() => {
+    if (userCycles.length > 0) {
+      return userCycles.map((c) => ({
+        ciclo_id: c.ciclo_acreditacion_id,
+        nombre: c.nombre,
+        isFlexible: c.tipo_modelo === 'elemento_flexible',
+      }));
+    }
+
+    // Fallback: inferir desde las asignaciones si el endpoint no responde
     const cycleMap = new Map<number, { nombre: string; isFlexible: boolean }>();
 
     for (const a of assignments) {
       const cicloId = a.proceso?.ciclo_acreditacion_id;
       if (cicloId && !cycleMap.has(cicloId)) {
-        const proc = processes.find((p) => p.ciclo_acreditacion_id === cicloId);
         cycleMap.set(cicloId, {
-          nombre: proc?.ciclo_nombre ?? `Ciclo ${cicloId}`,
+          nombre: `Ciclo ${cicloId}`,
           isFlexible: false,
         });
       }
@@ -194,16 +206,15 @@ export const MyEvidenceAssignmentsPage: React.FC = () => {
     for (const a of flexState.assignments) {
       const cicloId = a.process?.ciclo_acreditacion_id;
       if (cicloId && !cycleMap.has(cicloId)) {
-        const proc = processes.find((p) => p.ciclo_acreditacion_id === cicloId);
         cycleMap.set(cicloId, {
-          nombre: proc?.ciclo_nombre ?? `Ciclo ${cicloId}`,
+          nombre: `Ciclo ${cicloId}`,
           isFlexible: true,
         });
       }
     }
 
     return [...cycleMap.entries()].map(([id, info]) => ({ ciclo_id: id, ...info }));
-  }, [assignments, flexState.assignments, processes]);
+  }, [userCycles, assignments, flexState.assignments]);
 
   useEffect(() => {
     if (availableCycles.length > 0 && selectedCycleId === null) {

@@ -15,6 +15,7 @@ import type {
   Evidence,
   Criterion,
   Process,
+  UserCycle,
   DuplicateValidationRequest,
   DuplicateValidationResponse,
   FlexibleAssignmentItem
@@ -413,6 +414,22 @@ class EvidenceAssignmentService {
         error.message ||
         'Error al enviar la solicitud de ampliación'
       );
+    }
+  }
+
+  /**
+   * Obtener los ciclos de acreditación donde el usuario tiene asignaciones.
+   * GET /api/usuarios/{id}/mis-ciclos
+   */
+  async getUserCycles(userId: number): Promise<UserCycle[]> {
+    try {
+      const response = await axiosInstance.get<{ data: UserCycle[] }>(
+        `/usuarios/${userId}/mis-ciclos`
+      );
+      return response.data.data || [];
+    } catch (error) {
+      devLog.error('Error al obtener ciclos del usuario:', error);
+      throw error;
     }
   }
 }

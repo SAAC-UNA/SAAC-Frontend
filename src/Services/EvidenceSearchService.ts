@@ -267,80 +267,78 @@ export const evidenceSearchService = {
    * Exportar evidencias a Excel
    */
   async exportExcel(filters: EvidenceSearchFilters): Promise<void> {
-    const params: SearchParams = {};
-
-    // Aplicar mismos filtros que en search
-    if (filters.criterio) {
-      params.criterio_id = parseInt(filters.criterio);
-    }
-    if (filters.responsable_id) {
-      params.responsable_id = filters.responsable_id;
-    }
-    if (filters.fecha_publicacion_desde) {
-      params.fecha_desde = filters.fecha_publicacion_desde;
-    }
-    if (filters.fecha_publicacion_hasta) {
-      params.fecha_hasta = filters.fecha_publicacion_hasta;
-    }
-    if (filters.estado && filters.estado !== 'todos') {
-      params.estado = filters.estado;
-    }
-    if (filters.rol_id) {
-      params.rol_id = filters.rol_id;
+    if (filters.is_flexible) {
+      return evidenceSearchService._exportFlexible(filters, 'excel');
     }
 
-    // Descargar archivo
+    const params = evidenceSearchService._buildTraditionalExportParams(filters);
+
     const response = await axiosInstance.get('/estructura/evidencias/export/excel', {
       params,
       responseType: 'blob'
     });
 
-    // Crear URL de descarga
-    const url = window.URL.createObjectURL(new Blob([response.data]));
-    const link = document.createElement('a');
-    link.href = url;
-    link.setAttribute('download', `evidencias_${new Date().toISOString().split('T')[0]}.xlsx`);
-    document.body.appendChild(link);
-    link.click();
-    link.remove();
-    window.URL.revokeObjectURL(url);
+    evidenceSearchService._downloadBlob(response.data, `evidencias_${new Date().toISOString().split('T')[0]}.xlsx`);
   },
 
   /**
    * Exportar evidencias a PDF
    */
   async exportPDF(filters: EvidenceSearchFilters): Promise<void> {
-    const params: SearchParams = {};
+    if (filters.is_flexible) {
+      return evidenceSearchService._exportFlexible(filters, 'pdf');
+    }
 
-    // Aplicar mismos filtros
-    if (filters.criterio) {
-      params.criterio_id = parseInt(filters.criterio);
-    }
-    if (filters.responsable_id) {
-      params.responsable_id = filters.responsable_id;
-    }
-    if (filters.fecha_publicacion_desde) {
-      params.fecha_desde = filters.fecha_publicacion_desde;
-    }
-    if (filters.fecha_publicacion_hasta) {
-      params.fecha_hasta = filters.fecha_publicacion_hasta;
-    }
-    if (filters.estado && filters.estado !== 'todos') {
-      params.estado = filters.estado;
-    }
-    if (filters.rol_id) {
-      params.rol_id = filters.rol_id;
-    }
+    const params = evidenceSearchService._buildTraditionalExportParams(filters);
 
     const response = await axiosInstance.get('/estructura/evidencias/export/pdf', {
       params,
       responseType: 'blob'
     });
 
-    const url = window.URL.createObjectURL(new Blob([response.data]));
+    evidenceSearchService._downloadBlob(response.data, `evidencias_${new Date().toISOString().split('T')[0]}.pdf`);
+  },
+
+  /** Construir parámetros para export del modelo tradicional */
+  _buildTraditionalExportParams(filters: EvidenceSearchFilters): SearchParams {
+    const params: SearchParams = {};
+    if (filters.proceso_id) params.proceso_id = filters.proceso_id;
+    if (filters.dimension_id) params.dimension_id = filters.dimension_id;
+    if (filters.componente_id) params.componente_id = filters.componente_id;
+    if (filters.criterio) params.criterio_id = parseInt(filters.criterio);
+    if (filters.elemento_id) params.elemento_id = filters.elemento_id;
+    if (filters.responsable_id) params.responsable_id = filters.responsable_id;
+    if (filters.fecha_publicacion_desde) params.fecha_desde = filters.fecha_publicacion_desde;
+    if (filters.fecha_publicacion_hasta) params.fecha_hasta = filters.fecha_publicacion_hasta;
+    if (filters.estado && filters.estado !== 'todos') params.estado = filters.estado;
+    if (filters.rol_id) params.rol_id = filters.rol_id;
+    return params;
+  },
+
+  /** Exportar desde el modelo flexible (estructura/elementos/export) */
+  async _exportFlexible(filters: EvidenceSearchFilters, format: 'excel' | 'pdf'): Promise<void> {
+    const params: Record<string, unknown> = {};
+    if (filters.proceso_id) params.proceso_id = filters.proceso_id;
+    if (filters.elemento_id) params.elemento_id = filters.elemento_id;
+    if (filters.estado && filters.estado !== 'todos') params.estado = filters.estado;
+    if (filters.responsable_id) params.responsable_id = filters.responsable_id;
+    if (filters.rol_id) params.rol_id = filters.rol_id;
+
+    const response = await axiosInstance.get(`/estructura/elementos/export/${format}`, {
+      params,
+      responseType: 'blob'
+    });
+
+    const ext = format === 'excel' ? 'xlsx' : 'pdf';
+    evidenceSearchService._downloadBlob(response.data, `pautas_${new Date().toISOString().split('T')[0]}.${ext}`);
+  },
+
+  /** Descargar un blob como archivo */
+  _downloadBlob(data: BlobPart, filename: string): void {
+    const url = window.URL.createObjectURL(new Blob([data]));
     const link = document.createElement('a');
     link.href = url;
-    link.setAttribute('download', `evidencias_${new Date().toISOString().split('T')[0]}.pdf`);
+    link.setAttribute('download', filename);
     document.body.appendChild(link);
     link.click();
     link.remove();
