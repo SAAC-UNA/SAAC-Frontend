@@ -93,7 +93,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(({
               // State variants
               error
                 ? 'border-rojo-una-2' 
-                : 'border-gris-una bg-blanco-una-2',
+                : 'border-gris-light bg-blanco-una',
               
               // Custom classes
               className

@@ -90,37 +90,37 @@ const MODULE_INFO: Record<string, ModuleInfo> = {
 
   // Asignación de Evidencias
   evidence_assignment: {
-    title: "Asignación de Evidencias",
+    title: "Asignación de Entregables",
     subtitle: "Wizard de Asignación",
     description:
-      "Asigne evidencias específicas a usuarios y roles del sistema de manera guiada",
-    shortDescription: "Asignar evidencias a usuarios",
+      "Asigne entregables específicos a usuarios y roles del sistema de manera guiada",
+    shortDescription: "Asignar entregables a usuarios",
   },
 
   evidence_assignment_wizard: {
-    title: "Asignar Evidencias",
+    title: "Asignar Entregables",
     subtitle: "Proceso de Asignación Guiado",
     description:
-      "Complete el proceso de asignación de evidencias siguiendo los pasos",
-    shortDescription: "Wizard de asignación de evidencias",
+      "Complete el proceso de asignación de entregables siguiendo los pasos",
+    shortDescription: "Wizard de asignación de entregables",
   },
 
   // Mis Evidencias Asignadas
   my_evidence_assignments: {
-    title: "Mis Evidencias Asignadas",
-    subtitle: "Evidencias Pendientes y Completadas",
+    title: "Mis Entregables Asignados",
+    subtitle: "Entregables Pendientes y Completados",
     description:
-      "Visualice y administre las evidencias que le han sido asignadas",
-    shortDescription: "Ver evidencias asignadas a mí",
+      "Visualice y administre los entregables que le han sido asignados",
+    shortDescription: "Ver entregables asignados a mí",
   },
 
   // Subida de Evidencias
   evidence_upload: {
-    title: "Subir Evidencias",
+    title: "Subir Entregables",
     subtitle: "Carga de Archivos",
     description:
-      "Suba archivos digitales como respaldo de las evidencias del proceso de acreditación",
-    shortDescription: "Subir archivos de evidencias",
+      "Suba archivos digitales como respaldo de los entregables del proceso de acreditación",
+    shortDescription: "Subir archivos de entregables",
   },
 
   // Búsqueda Avanzada de Evidencias
@@ -205,7 +205,7 @@ const MODULE_INFO: Record<string, ModuleInfo> = {
     title: "Gestión de Estructura",
     subtitle: "Administración de Elementos del Repositorio",
     description:
-      "Crea, edita y administra los elementos de la estructura del repositorio",
+      "Cree, edite y administre los elementos de la estructura del repositorio",
     shortDescription: "Administrar elementos de la estructura",
   },
 
@@ -214,7 +214,7 @@ const MODULE_INFO: Record<string, ModuleInfo> = {
     title: "Aprobación de Bloques",
     subtitle: "Validación de Criterios",
     description:
-      "Seleccione un proceso para ver y aprobar los criterios correspondientes validando que todas las evidencias estén adjuntadas",
+      "Seleccione un proceso para ver y aprobar los criterios correspondientes validando que todos los entregables estén adjuntados",
     shortDescription: "Aprobar criterios por bloques",
   },
 
@@ -223,7 +223,7 @@ const MODULE_INFO: Record<string, ModuleInfo> = {
     title: "Gestión de Informes Finales",
     subtitle: "Enlaces Públicos y Exportación",
     description:
-      "Genere enlaces públicos para las evidencias de criterios aprobados y exporte informes",
+      "Genere enlaces públicos para los entregables de criterios aprobados y exporte informes",
     shortDescription: "Gestionar informes finales",
   },
 
@@ -231,7 +231,7 @@ const MODULE_INFO: Record<string, ModuleInfo> = {
     title: "Gestión de Estructura",
     subtitle: "Elementos de la Estructura",
     description:
-      "Visualiza y administra todos los elementos existentes en la estructura del repositorio",
+      "Visualice y administre todos los elementos existentes en la estructura del repositorio",
     shortDescription: "Ver todos los elementos",
   },
 
@@ -239,7 +239,7 @@ const MODULE_INFO: Record<string, ModuleInfo> = {
     title: "Crear Elemento de Estructura",
     subtitle: "Nueva Estructura",
     description:
-      "Agrega un nuevo elemento a la jerarquía del Sistema SAAC-UNA respetando las reglas de estructura.",
+      "Agregue un nuevo elemento a la jerarquía del Sistema SAAC-UNA respetando las reglas de estructura.",
     shortDescription: "Crear elemento de estructura",
   },
 
@@ -247,7 +247,7 @@ const MODULE_INFO: Record<string, ModuleInfo> = {
     title: "Compromisos de Mejora",
     subtitle: "Gestión de Compromisos",
     description:
-      "Gestione los compromisos de mejora vinculados a criterios y evidencias",
+      "Gestione los compromisos de mejora vinculados a criterios y entregables",
     shortDescription: "Gestionar compromisos de mejora",
   },
 

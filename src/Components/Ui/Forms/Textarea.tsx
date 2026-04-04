@@ -100,7 +100,7 @@ export const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(({
               // State variants - mismo estilo que Input
               error
                 ? 'border-rojo-una-2' 
-                : 'border-blanco-una-2 bg-blanco-una-2',
+                : 'border-gris-light bg-blanco-una',
               
               // Custom classes
               className

@@ -1,6 +1,8 @@
 import React from "react";
 import { DetailsModal } from "@/Components/Ui/Modals/DetailsModal";
+import { StatusBadge } from "@/Components/Ui/Feedback/StatusBadge";
 import { TYPOGRAPHY } from "@/Constants/Typography";
+import { BADGE_COLORS } from "@/Constants/StatusBadges";
 import { cn } from "@/Utils/ClassNames";
 import { formatDateShort } from "@/Utils/DateUtils";
 import type { AccreditationProcess } from "@/Types/AccreditationProcessTypes";
@@ -11,26 +13,21 @@ interface AccreditationProcessDetailsModalProps {
   process: AccreditationProcess | null;
 }
 
-const Label: React.FC<{ text: string }> = ({ text }) => (
-  <span
-    className={cn(
-      "uppercase tracking-wider font-medium text-gris-una-2 text-[11px]",
-      TYPOGRAPHY.table.header,
-    )}
-  >
-    {text}
-  </span>
+const InfoCell: React.FC<{ label: string; children: React.ReactNode; className?: string }> = ({
+  label, children, className,
+}) => (
+  <div className={cn('flex flex-col gap-1', className)}>
+    <span className={cn('uppercase tracking-wider font-semibold text-gris-una-2', TYPOGRAPHY.modal.subtitle)}>
+      {label}
+    </span>
+    <div>{children}</div>
+  </div>
 );
 
-const Value: React.FC<{ children: React.ReactNode }> = ({ children }) => (
-  <span
-    className={cn(
-      "text-negro-una-2 font-normal text-[13px]",
-      TYPOGRAPHY.table.cell,
-    )}
-  >
-    {children}
-  </span>
+const Separator: React.FC = () => (
+  <div className="col-span-6 py-1">
+    <hr className="border-gris-light" />
+  </div>
 );
 
 export const AccreditationProcessDetailsModal: React.FC<
@@ -48,46 +45,71 @@ export const AccreditationProcessDetailsModal: React.FC<
       size="lg"
       maxHeight="lg"
     >
-      <div className="flex flex-col gap-5">
-        <div className="border border-gray-200 rounded-corner p-4 grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-4">
-          <div className="flex flex-col gap-1.5">
-            <Label text="Tipo de proceso" />
-            <Value>{process.type}</Value>
-          </div>
+      <div className="grid grid-cols-6 gap-x-4 gap-y-3">
 
-          <div className="flex flex-col gap-1.5">
-            <Label text="Estado" />
-            <Value>{process.status === "activo" ? "Activo" : "Inactivo"}</Value>
-          </div>
+        {/* div3 — Tipo de proceso */}
+        <InfoCell label="Tipo de proceso" className="col-start-1 col-end-4">
+          <span className={cn(TYPOGRAPHY.modal.body, 'text-gris-una-2')}>
+            {process.type}
+          </span>
+        </InfoCell>
 
-          <div className="flex flex-col gap-1.5">
-            <Label text="Ciclo de acreditación" />
-            <Value>{process.accreditationCycleName}</Value>
-          </div>
+        {/* div4 — Ciclo de acreditación */}
+        <InfoCell label="Ciclo de acreditación" className="col-start-4 col-end-7">
+          <span className={cn(TYPOGRAPHY.modal.body, 'text-gris-una-2')}>
+            {process.accreditationCycleName}
+          </span>
+        </InfoCell>
 
-          <div className="flex flex-col gap-1.5">
-            <Label text="Carrera / Sede" />
-            <Value>
-              {process.careerName || "Sin carrera"}
-              {process.campusName ? ` - ${process.campusName}` : ""}
-            </Value>
-          </div>
+        <Separator />
 
-          <div className="flex flex-col gap-1.5">
-            <Label text="Fecha de inicio" />
-            <Value>{formatDateShort(process.startDate)}</Value>
-          </div>
+        {/* div5 — Estado */}
+        <InfoCell label="Estado" className="col-start-1 col-end-4 items-start">
+          <StatusBadge
+            label={process.status === 'activo' ? 'Activo' : 'Inactivo'}
+            colorClasses={process.status === 'activo' ? BADGE_COLORS.verde.colorClasses : BADGE_COLORS.error.colorClasses}
+          />
+        </InfoCell>
 
-          <div className="flex flex-col gap-1.5">
-            <Label text="Fecha estimada de finalización" />
-            <Value>{formatDateShort(process.estimatedEndDate)}</Value>
-          </div>
+        {/* div6 — Creado */}
+        <InfoCell label="Creado" className="col-start-4 col-end-7">
+          <span className={cn(TYPOGRAPHY.modal.body, 'text-gris-una-2')}>
+            {formatDateShort(process.createdAt)}
+          </span>
+        </InfoCell>
 
-          <div className="flex flex-col gap-1.5">
-            <Label text="Creado" />
-            <Value>{formatDateShort(process.createdAt)}</Value>
-          </div>
-        </div>
+        <Separator />
+
+        {/* div1 — Carrera */}
+        <InfoCell label="Carrera" className="col-start-1 col-end-4">
+          <span className={cn(TYPOGRAPHY.modal.body, 'text-gris-una-2')}>
+            {process.careerName || '—'}
+          </span>
+        </InfoCell>
+
+        {/* div2 — Sede */}
+        <InfoCell label="Sede" className="col-start-4 col-end-7">
+          <span className={cn(TYPOGRAPHY.modal.body, 'text-gris-una-2')}>
+            {process.campusName || '—'}
+          </span>
+        </InfoCell>
+
+        <Separator />
+
+        {/* div7 — Fecha de inicio */}
+        <InfoCell label="Fecha de inicio" className="col-start-1 col-end-4">
+          <span className={cn(TYPOGRAPHY.modal.body, 'text-gris-una-2')}>
+            {formatDateShort(process.startDate)}
+          </span>
+        </InfoCell>
+
+        {/* div8 — Fecha estimada de finalización */}
+        <InfoCell label="Fecha estimada de finalización" className="col-start-4 col-end-7">
+          <span className={cn(TYPOGRAPHY.modal.body, 'text-gris-una-2')}>
+            {formatDateShort(process.estimatedEndDate)}
+          </span>
+        </InfoCell>
+
       </div>
     </DetailsModal>
   );

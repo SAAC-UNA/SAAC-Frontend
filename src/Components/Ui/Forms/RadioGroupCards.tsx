@@ -70,12 +70,12 @@ export const RadioGroupCards: React.FC<RadioGroupCardsProps> = ({
               onMouseLeave={() => setHoveredItem(null)}
               className={cn(
                 'relative flex items-center gap-3 p-3 rounded-lg border cursor-pointer overflow-hidden',
-                isSelected ? 'border-azul-una' : 'border-gris-light',
+                isSelected ? 'border-none' : 'border-gris-light',
               )}
             >
               {/* Fondo animado */}
               <motion.div
-                className="absolute inset-0 bg-info-light rounded-lg"
+                className="absolute inset-0 bg-blanco-una-2 rounded-lg"
                 initial={false}
                 animate={{ opacity: showBg ? 1 : 0 }}
                 transition={{ duration: 0.18, ease: 'easeInOut' }}
@@ -113,7 +113,7 @@ export const RadioGroupCards: React.FC<RadioGroupCardsProps> = ({
                 value={option.value}
                 checked={isSelected}
                 onChange={() => onChange(option.value)}
-                className="relative z-10 accent-azul-una flex-shrink-0"
+                className="relative z-10 accent-gris-una-3 flex-shrink-0"
               />
             </motion.label>
           );

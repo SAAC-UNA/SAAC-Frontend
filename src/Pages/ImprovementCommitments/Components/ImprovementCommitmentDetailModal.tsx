@@ -5,11 +5,13 @@
 
 import React, { useEffect, useMemo, useState } from 'react';
 import { Modal } from '@/Components/Ui/Modals/Modal';
+import { DetailsModal } from '@/Components/Ui/Modals/DetailsModal';
 import { LoadingSpinner } from '@/Components/Ui/Feedback/Loading';
 import { SystemIcons } from '@/Components/Ui/Icons/SystemIcons';
 import { improvementCommitmentService } from '@/Services/ImprovementCommitmentService';
 import type { CompromisoMejora } from '@/Types/ImprovementCommitmentTypes';
-import { CompromisoStatusBadge } from './CompromisoStatusBadge';
+import { StatusBadge } from '@/Components/Ui/Feedback/StatusBadge';
+import { COMPROMISO_STATUS_BADGE } from '@/Constants/StatusBadges';
 import { DataTable } from '@/components/index';
 import type { DataTableColumn } from '@/Components/Ui/Table/DataTable';
 import { ButtonWithTooltip } from '@/Components/Ui/Buttons/ButtonWithTooltip';
@@ -17,6 +19,26 @@ import { TYPOGRAPHY } from '@/Constants/Typography';
 import { TABLE_ACTION_BUTTON, ICON_SIZES } from '@/Constants/Components';
 import { TABLE_PAGE_SIZE } from '@/Constants/TablePagination';
 import { formatDateShort } from '@/Utils/DateUtils';
+import { cn } from '@/Utils/ClassNames';
+
+// ── Helper components ─────────────────────────────────────────────────────────
+
+const InfoCell: React.FC<{ label: string; children: React.ReactNode; className?: string }> = ({
+  label, children, className,
+}) => (
+  <div className={cn('flex flex-col gap-1', className)}>
+    <span className={cn('uppercase tracking-wider font-semibold text-gris-una-2', TYPOGRAPHY.modal.subtitle)}>
+      {label}
+    </span>
+    <div>{children}</div>
+  </div>
+);
+
+const Separator: React.FC = () => (
+  <div className="col-span-6 py-1">
+    <hr className="border-gris-light" />
+  </div>
+);
 
 interface Props {
   id: number | null;
@@ -208,7 +230,7 @@ export const ImprovementCommitmentDetailModal: React.FC<Props> = ({ id, isOpen, 
       align: 'center',
       width: '150px',
       render: (_, item) => (
-        <p className={`block font-sans antialiased font-medium leading-normal text-negro-una ${TYPOGRAPHY.modal.body}`}>
+        <p className={cn('block font-sans antialiased font-medium leading-normal text-negro-una', TYPOGRAPHY.modal.body)}>
           {item.criterio?.nomenclatura || 'Criterio'}
         </p>
       ),
@@ -219,7 +241,7 @@ export const ImprovementCommitmentDetailModal: React.FC<Props> = ({ id, isOpen, 
       align: 'left',
       render: (_, item) => (
         <p
-          className={`block font-sans antialiased font-normal leading-normal text-gris-una max-w-2xl truncate ${TYPOGRAPHY.modal.body}`}
+          className={cn('block font-sans antialiased font-normal leading-normal text-gris-una max-w-2xl truncate', TYPOGRAPHY.modal.body)}
           title={item.criterio?.descripcion || 'Sin descripción'}
         >
           {item.criterio?.descripcion || 'Sin descripción'}
@@ -233,7 +255,10 @@ export const ImprovementCommitmentDetailModal: React.FC<Props> = ({ id, isOpen, 
       width: '150px',
       render: (_, item) => (
         <div className="flex justify-center">
-          <CompromisoStatusBadge estado={getCriterionStatus(item.criterio?.criterio_id)} />
+          <StatusBadge
+              label={COMPROMISO_STATUS_BADGE[getCriterionStatus(item.criterio?.criterio_id)]?.label ?? getCriterionStatus(item.criterio?.criterio_id)}
+              colorClasses={COMPROMISO_STATUS_BADGE[getCriterionStatus(item.criterio?.criterio_id)]?.colorClasses ?? 'text-warning-dark bg-warning-ring'}
+            />
         </div>
       ),
     },
@@ -258,65 +283,77 @@ export const ImprovementCommitmentDetailModal: React.FC<Props> = ({ id, isOpen, 
     },
   ];
 
+  const cicleName =
+    (compromiso as any)?.process?.accreditationCycle?.nombre ??
+    (compromiso as any)?.process?.accreditation_cycle?.nombre ??
+    '—';
+
   return (
     <>
-      <Modal
+      <DetailsModal
         isOpen={isOpen}
         onClose={onClose}
         title="Detalle del Compromiso"
         subtitle="Visualice criterios, encargados y fechas"
         size="xl"
         variant="info"
-        heroIcon={<SystemIcons.actions.view className={`${ICON_SIZES.md} text-blanco-una`} />}
-        showCancel
-        cancelLabel="Cerrar"
+        heroIcon={
+          <SystemIcons.modal.document className={cn(ICON_SIZES.md, 'text-blanco-una')} />
+        }
       >
         {loading ? (
           <div className="relative py-12 min-h-[300px]">
             <LoadingSpinner variant="loader" />
           </div>
         ) : error ? (
-          <p className="text-sm text-rojo-una-2 py-4">{error}</p>
+          <p className={cn(TYPOGRAPHY.modal.body, 'text-error py-4')}>{error}</p>
         ) : compromiso ? (
-          <div className="space-y-4">
-            {/* Descripción + Info general */}
-            <div className="flex items-start gap-4">
-              {compromiso.descripcion && (
-                <div className="px-1 flex-1 min-w-0">
-                  <p className="text-sm text-gris-una mb-1 font-medium">Descripción</p>
-                  <p className="text-sm text-negro-una">{compromiso.descripcion}</p>
-                </div>
-              )}
-              {/* Info general compacta */}
-              <div className="flex items-center gap-4 text-xs text-gris-una bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 shrink-0 ml-auto">
-                <div className="flex items-center gap-1.5">
-                  <SystemIcons.interface.calendar size="xs" className="w-3.5 h-3.5" />
-                  <span className="whitespace-nowrap">
-                    {formatDateShort(compromiso.fecha_inicio)} - {formatDateShort(compromiso.fecha_fin)}
-                  </span>
-                </div>
-                <div className="w-px h-4 bg-gray-300" />
-                <div className="flex items-center gap-1.5">
-                  <SystemIcons.modal.document size="xs" className="w-3.5 h-3.5" />
-                  <span className="whitespace-nowrap">
-                    {compromiso.process?.accreditationCycle?.nombre ||
-                      (compromiso.process as any)?.accreditation_cycle?.nombre ||
-                      'Sin ciclo'}
-                  </span>
-                </div>
-              </div>
-            </div>
+          <div className="grid grid-cols-6 gap-x-4 gap-y-3">
 
-            {/* Criterios */}
-            <div>
-              <div className="flex items-center justify-between mb-3 px-1">
-                <h2 className="text-sm font-semibold text-negro-una">Criterios incluidos</h2>
-                <span className="text-xs text-gris-una">
+            {/* div1 — Descripción */}
+            <InfoCell label="Descripción" className="col-start-1 col-end-7">
+              <span className={cn(TYPOGRAPHY.modal.body, 'text-gris-una-2')}>
+                {compromiso.descripcion || '—'}
+              </span>
+            </InfoCell>
+
+            <Separator />
+
+            {/* div2 — Fecha de inicio */}
+            <InfoCell label="Fecha de inicio" className="col-start-1 col-end-3">
+              <span className={cn(TYPOGRAPHY.modal.body, 'text-gris-una-2')}>
+                {formatDateShort(compromiso.fecha_inicio)}
+              </span>
+            </InfoCell>
+
+            {/* Fecha de finalización */}
+            <InfoCell label="Fecha de finalización" className="col-start-3 col-end-5">
+              <span className={cn(TYPOGRAPHY.modal.body, 'text-gris-una-2')}>
+                {formatDateShort(compromiso.fecha_fin)}
+              </span>
+            </InfoCell>
+
+            {/* div3 — Ciclo de acreditación */}
+            <InfoCell label="Ciclo de acreditación" className="col-start-5 col-end-7">
+              <span className={cn(TYPOGRAPHY.modal.body, 'text-gris-una-2')}>
+                {cicleName}
+              </span>
+            </InfoCell>
+
+            <Separator />
+
+            {/* div4 — Criterios incluidos */}
+            <div className="col-start-1 col-end-7">
+              <div className="flex items-center justify-between mb-3">
+                <span className={cn('uppercase tracking-wider font-semibold text-gris-una-2', TYPOGRAPHY.modal.subtitle)}>
+                  Criterios incluidos
+                </span>
+                <span className={cn(TYPOGRAPHY.form.helper, 'text-gris-una')}>
                   {selectedCriteria.length} {selectedCriteria.length === 1 ? 'criterio' : 'criterios'}
                 </span>
               </div>
               {selectedCriteria.length === 0 ? (
-                <p className="text-sm text-gris-una px-1">No hay criterios vinculados.</p>
+                <p className={cn(TYPOGRAPHY.modal.body, 'text-gris-una')}>No hay criterios vinculados.</p>
               ) : (
                 <DataTable
                   data={paginatedCriteria as any}
@@ -333,9 +370,10 @@ export const ImprovementCommitmentDetailModal: React.FC<Props> = ({ id, isOpen, 
                 />
               )}
             </div>
+
           </div>
         ) : null}
-      </Modal>
+      </DetailsModal>
 
       {/* Sub-modal: detalle de criterio */}
       {showCriterionModal && criterionDetail && (
@@ -345,7 +383,7 @@ export const ImprovementCommitmentDetailModal: React.FC<Props> = ({ id, isOpen, 
           title={`Detalle: ${criterionDetail?.criterio?.nomenclatura || 'Criterio'}`}
           size="lg"
           variant="neutral"
-          heroIcon={<SystemIcons.actions.view className={`${ICON_SIZES.md} text-blanco-una`} />}
+          heroIcon={<SystemIcons.modal.document className={cn(ICON_SIZES.md, 'text-blanco-una')} />}
           showCancel
           cancelLabel="Cerrar"
         >
@@ -354,20 +392,23 @@ export const ImprovementCommitmentDetailModal: React.FC<Props> = ({ id, isOpen, 
             <div className="grid grid-cols-1 lg:grid-cols-[1.1fr,1.4fr] gap-6">
               <div className="space-y-4">
                 <div>
-                  <p className="text-xs font-medium text-gris-una mb-1">Descripcion</p>
-                  <p className="text-sm text-negro-una">
-                    {criterionDetail?.criterio?.descripcion || 'Sin descripcion'}
+                  <p className={cn('uppercase tracking-wider font-semibold text-gris-una-2 mb-1', TYPOGRAPHY.modal.subtitle)}>Descripción</p>
+                  <p className={cn(TYPOGRAPHY.modal.body, 'text-negro-una')}>
+                    {criterionDetail?.criterio?.descripcion || 'Sin descripción'}
                   </p>
                 </div>
 
                 <div className="flex items-start gap-8">
                   <div>
-                    <p className="text-xs font-medium text-gris-una mb-1">Estado</p>
-                    <CompromisoStatusBadge estado={criterionStatus} />
+                    <p className={cn('uppercase tracking-wider font-semibold text-gris-una-2 mb-1', TYPOGRAPHY.modal.subtitle)}>Estado</p>
+                    <StatusBadge
+                      label={COMPROMISO_STATUS_BADGE[criterionStatus]?.label ?? criterionStatus}
+                      colorClasses={COMPROMISO_STATUS_BADGE[criterionStatus]?.colorClasses ?? 'text-warning-dark bg-warning-ring'}
+                    />
                   </div>
                   <div>
-                    <p className="text-xs font-medium text-gris-una mb-1">Fecha límite</p>
-                    <p className="text-sm text-negro-una">{criterionFechaLimite}</p>
+                    <p className={cn('uppercase tracking-wider font-semibold text-gris-una-2 mb-1', TYPOGRAPHY.modal.subtitle)}>Fecha límite</p>
+                    <p className={cn(TYPOGRAPHY.modal.body, 'text-negro-una')}>{criterionFechaLimite}</p>
                   </div>
                 </div>
 
@@ -382,8 +423,8 @@ export const ImprovementCommitmentDetailModal: React.FC<Props> = ({ id, isOpen, 
                   if (comentarios.length === 0) return null;
                   return (
                     <div>
-                      <p className="text-xs font-medium text-gris-una mb-1">Comentario</p>
-                      <p className="text-sm text-negro-una">
+                      <p className={cn('uppercase tracking-wider font-semibold text-gris-una-2 mb-1', TYPOGRAPHY.modal.subtitle)}>Comentario</p>
+                      <p className={cn(TYPOGRAPHY.modal.body, 'text-negro-una')}>
                         {comentarios.length === 1 ? comentarios[0] : 'Varios comentarios'}
                       </p>
                     </div>
@@ -392,34 +433,32 @@ export const ImprovementCommitmentDetailModal: React.FC<Props> = ({ id, isOpen, 
               </div>
 
               <div>
-                <div className="flex items-center justify-between mb-3">
-                  <p className="text-xs font-medium text-gris-una">
-                    Evidencias asignadas ({groupedByEvidence.length})
-                  </p>
-                </div>
+                <p className={cn('uppercase tracking-wider font-semibold text-gris-una-2 mb-3', TYPOGRAPHY.modal.subtitle)}>
+                  Evidencias asignadas ({groupedByEvidence.length})
+                </p>
 
                 {groupedByEvidence.length === 0 ? (
-                  <p className="text-sm text-gris-una">No hay asignaciones para este criterio.</p>
+                  <p className={cn(TYPOGRAPHY.modal.body, 'text-gris-una')}>No hay asignaciones para este criterio.</p>
                 ) : (
                   <div className="grid gap-3">
                     {groupedByEvidence.map((item) => (
-                      <div key={item.evidenciaId} className="border border-gray-200 rounded-lg p-3">
+                      <div key={item.evidenciaId} className="border border-gris-light rounded-lg p-3">
                         <div className="flex items-start justify-between">
                           <div className="space-y-1">
-                            <p className="text-sm font-semibold text-negro-una">{item.nomenclatura}</p>
-                            <p className="text-sm text-gris-una">{item.descripcion}</p>
-                            <p className="text-xs text-gris-una">{item.usuarios.length} usuario(s)</p>
-                            <p className="text-xs text-gris-una">{item.roles.length} rol(es)</p>
+                            <p className={cn(TYPOGRAPHY.modal.body, 'font-semibold text-negro-una')}>{item.nomenclatura}</p>
+                            <p className={cn(TYPOGRAPHY.modal.body, 'text-gris-una')}>{item.descripcion}</p>
+                            <p className={cn(TYPOGRAPHY.modal.subtitle, 'text-gris-una')}>{item.usuarios.length} usuario(s)</p>
+                            <p className={cn(TYPOGRAPHY.modal.subtitle, 'text-gris-una')}>{item.roles.length} rol(es)</p>
                           </div>
                           <div className="text-right">
-                            <p className="text-xs text-gris-una">Fecha limite</p>
-                            <p className="text-sm text-negro-una">{formatDateShort(item.fechaLimite)}</p>
-                            <p className="text-xs text-gris-una mt-2">Estado</p>
-                            <p className="text-sm text-negro-una">{item.estado}</p>
+                            <p className={cn(TYPOGRAPHY.modal.subtitle, 'text-gris-una')}>Fecha límite</p>
+                            <p className={cn(TYPOGRAPHY.modal.body, 'text-negro-una')}>{formatDateShort(item.fechaLimite)}</p>
+                            <p className={cn(TYPOGRAPHY.modal.subtitle, 'text-gris-una mt-2')}>Estado</p>
+                            <p className={cn(TYPOGRAPHY.modal.body, 'text-negro-una')}>{item.estado}</p>
                           </div>
                         </div>
                         {item.comentario && (
-                          <p className="text-xs text-gris-una mt-2">Comentario: {item.comentario}</p>
+                          <p className={cn(TYPOGRAPHY.modal.subtitle, 'text-gris-una mt-2')}>Comentario: {item.comentario}</p>
                         )}
                       </div>
                     ))}

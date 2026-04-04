@@ -17,8 +17,6 @@ import { axiosInstance } from '@/Config/axios';
 import { useToast } from '@/Context/ToastContext';
 import { TYPOGRAPHY } from '@/Constants/Typography';
 
-type Tab = 'archivos' | 'enlaces';
-
 interface AdminFileUploadModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -38,10 +36,9 @@ export const AdminFileUploadModal: React.FC<AdminFileUploadModalProps> = ({
   const { showToast } = useToast();
 
   const [modalState, setModalState] = useState<{
-    tab: Tab; selectedFiles: File[]; selectedLinks: string[];
+    selectedFiles: File[]; selectedLinks: string[];
     resolvedId: number; resolving: boolean; error: boolean;
-  }>({ tab: 'archivos', selectedFiles: [], selectedLinks: [], resolvedId: procesoIdProp, resolving: false, error: false });
-  const tab = modalState.tab;
+  }>({ selectedFiles: [], selectedLinks: [], resolvedId: procesoIdProp, resolving: false, error: false });
   const selectedFiles = modalState.selectedFiles;
   const selectedLinks = modalState.selectedLinks;
   const resolvedProcesoId = modalState.resolvedId;
@@ -68,58 +65,56 @@ export const AdminFileUploadModal: React.FC<AdminFileUploadModalProps> = ({
         }
       }
 
-      setModalState({ tab: 'archivos', selectedFiles: [], selectedLinks: [], resolvedId, resolving: false, error: hasError });
+      setModalState({ selectedFiles: [], selectedLinks: [], resolvedId, resolving: false, error: hasError });
     };
     resolve();
   }, [isOpen, evidenciaId, procesoIdProp]);
 
   const canSubmit = (): boolean => {
     if (resolveError || resolvingProceso || !resolvedProcesoId) return false;
-    if (tab === 'archivos') return selectedFiles.length > 0;
-    return selectedLinks.length > 0;
+    return selectedFiles.length > 0 || selectedLinks.length > 0;
   };
 
   const handleSubmit = async () => {
     if (!canSubmit()) return;
     setUploading(true);
     try {
-      if (tab === 'archivos') {
+      const results: { type: string; successful: number; failed: number; error?: string }[] = [];
+
+      if (selectedFiles.length > 0) {
         const { successful, failed } = await fileService.uploadMultipleFiles(
           selectedFiles,
           evidenciaId,
           resolvedProcesoId,
         );
-        if (failed.length > 0) {
-          showToast({
-            type: 'warning',
-            title: `${successful.length} archivo(s) subidos`,
-            message: `${failed.length} no pudieron subirse: ${failed[0].error}`,
-          });
-        } else {
-          showToast({
-            type: 'success',
-            title: `${successful.length} archivo(s) subidos correctamente`,
-          });
-        }
-      } else {
+        results.push({ type: 'archivos', successful: successful.length, failed: failed.length, error: failed[0]?.error });
+      }
+
+      if (selectedLinks.length > 0) {
         const { successful, failed } = await fileService.uploadMultipleLinks(
           selectedLinks,
           evidenciaId,
           resolvedProcesoId,
         );
-        if (failed.length > 0) {
-          showToast({
-            type: 'warning',
-            title: `${successful.length} enlace(s) guardados`,
-            message: `${failed.length} no pudieron guardarse: ${failed[0].error}`,
-          });
-        } else {
-          showToast({
-            type: 'success',
-            title: `${successful.length} enlace(s) guardados correctamente`,
-          });
-        }
+        results.push({ type: 'enlaces', successful: successful.length, failed: failed.length, error: failed[0]?.error });
       }
+
+      const totalFailed = results.reduce((acc, r) => acc + r.failed, 0);
+      const totalSuccess = results.reduce((acc, r) => acc + r.successful, 0);
+
+      if (totalFailed > 0) {
+        showToast({
+          type: 'warning',
+          title: `${totalSuccess} recurso(s) guardados`,
+          message: `${totalFailed} no pudieron guardarse: ${results.find(r => r.failed > 0)?.error}`,
+        });
+      } else {
+        showToast({
+          type: 'success',
+          title: `${totalSuccess} recurso(s) guardados correctamente`,
+        });
+      }
+
       onSuccess();
       onClose();
     } catch (error: any) {
@@ -162,24 +157,6 @@ export const AdminFileUploadModal: React.FC<AdminFileUploadModalProps> = ({
       }
     >
       <div className="flex flex-col gap-4 pb-2">
-        {/* Tabs archivos / enlaces */}
-        <div className="flex gap-1 border-b border-gris-una/20 pb-0">
-          {(['archivos', 'enlaces'] as Tab[]).map((t) => (
-            <button
-              key={t}
-              type="button"
-              onClick={() => setModalState(prev => ({ ...prev, tab: t }))}
-              className={`px-4 py-2 capitalize ${TYPOGRAPHY.modal.body} border-b-2 transition-colors ${
-                tab === t
-                  ? 'border-azul-una text-azul-una font-semibold'
-                  : 'border-transparent text-gris-una hover:text-negro-una-2'
-              }`}
-            >
-              {t === 'archivos' ? 'Archivos' : 'Enlaces'}
-            </button>
-          ))}
-        </div>
-
         {/* Estado de resolución de proceso */}
         {resolvingProceso && (
           <p className={`text-gris-una ${TYPOGRAPHY.modal.body}`}>
@@ -192,38 +169,43 @@ export const AdminFileUploadModal: React.FC<AdminFileUploadModalProps> = ({
           </p>
         )}
 
-        {/* Contenido según tab */}
         {!resolvingProceso && !resolveError && (
           <>
-            {tab === 'archivos' && (
+            {/* Archivos */}
+            <div className="flex flex-col gap-2">
+              <span className={`font-semibold text-negro-una-2 ${TYPOGRAPHY.modal.body}`}>Archivos</span>
               <DropZone
                 onFilesSelected={(files) => setModalState(prev => ({ ...prev, selectedFiles: files }))}
                 disabled={uploading}
               />
-            )}
-            {tab === 'archivos' && selectedFiles.length > 0 && (
-              <ul className={`space-y-1 ${TYPOGRAPHY.modal.body}`}>
-                {selectedFiles.map((f, i) => (
-                  <li key={f.name} className="flex items-center justify-between text-negro-una-2">
-                    <span className="truncate max-w-xs">{f.name}</span>
-                    <button
-                      type="button"
-                      onClick={() => setModalState(prev => ({ ...prev, selectedFiles: prev.selectedFiles.filter((_, j) => j !== i) }))}
-                      className="text-gris-una hover:text-rojo-una ml-2 flex-shrink-0"
-                    >
-                      ✕
-                    </button>
-                  </li>
-                ))}
-              </ul>
-            )}
+              {selectedFiles.length > 0 && (
+                <ul className={`space-y-1 ${TYPOGRAPHY.modal.body}`}>
+                  {selectedFiles.map((f, i) => (
+                    <li key={f.name} className="flex items-center justify-between text-negro-una-2">
+                      <span className="truncate max-w-xs">{f.name}</span>
+                      <button
+                        type="button"
+                        onClick={() => setModalState(prev => ({ ...prev, selectedFiles: prev.selectedFiles.filter((_, j) => j !== i) }))}
+                        className="text-gris-una hover:text-rojo-una ml-2 flex-shrink-0"
+                      >
+                        ✕
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
 
-            {tab === 'enlaces' && (
+            <hr className="border-gray-200" />
+
+            {/* Enlaces */}
+            <div className="flex flex-col gap-2">
+              <span className={`font-semibold text-negro-una-2 ${TYPOGRAPHY.modal.body}`}>Enlaces</span>
               <LinkInput
                 onLinksChange={(links) => setModalState(prev => ({ ...prev, selectedLinks: links }))}
                 disabled={uploading}
               />
-            )}
+            </div>
           </>
         )}
       </div>

@@ -402,15 +402,15 @@ export const DatePicker: React.FC<DatePickerProps> = ({
 
   const inputClasses = cn(
     'w-full h-10 rounded-corner border text-left cursor-pointer transition-all duration-200',
-    'focus:outline-none focus:ring-1 focus:ring-gris-una/20 focus:border-transparent',
+    'focus:outline-none focus:ring-1 focus:ring-gris-una focus:border-transparent',
     `flex items-center justify-between px-3 py-2 ${TYPOGRAPHY.form.input}`,
     'placeholder-gris-una/60',
     // Estados
     disabled
-      ? 'bg-gris-una/10 border-gris-una/5 text-gray-400 cursor-not-allowed'
+      ? 'bg-gris-una/10 border-gris-una/5 text-gris-light cursor-not-allowed'
       : error
         ? 'border-rojo-una-2 bg-blanco-una-2'
-        : 'border-gris-una bg-blanco-una-2 hover:border-gris-una/50',
+        : 'border-gris-light bg-blanco-una hover:border-gris-light',
     showPicker && !disabled && 'border-gris-una',
     className
   );
@@ -485,9 +485,7 @@ export const DatePicker: React.FC<DatePickerProps> = ({
                 ? 'top-0 scale-75 -translate-y-1/2'
                 : 'top-1/2 scale-100 -translate-y-1/2',
               // Fondo para cortar la línea del borde
-              hasValue || showPicker
-                ? 'bg-blanco-una-2 px-2'
-                : 'bg-transparent px-1',
+              'bg-transparent px-1 floating-label-halo',
               // Colores
               error
                 ? 'text-rojo-una-2'
@@ -523,7 +521,7 @@ export const DatePicker: React.FC<DatePickerProps> = ({
                   left: dropdownPosition.left,
                   zIndex: 9999,
                 }}
-                className="bg-blanco-una border border-gris-una rounded-corner shadow-lg p-3 w-72"
+                className="bg-blanco-una border border-none rounded-corner shadow-lg p-3 w-72"
               >
                 {renderCalendarBody()}
 

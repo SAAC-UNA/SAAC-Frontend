@@ -23,20 +23,20 @@ interface EvidenceAssignmentDetailProps {
   onClose: () => void;
 }
 
-const SectionLabel: React.FC<{ label: string }> = ({ label }) => (
-  <span className={cn('uppercase tracking-wider font-semibold text-gris-una-2 mb-2.5 block', TYPOGRAPHY.modal.subtitle)}>
-    {label}
-  </span>
-);
-
-const InfoCell: React.FC<{ label: string; children: React.ReactNode; className?: string; inline?: boolean }> = ({
-  label, children, className, inline = false,
+const InfoCell: React.FC<{ label: string; children: React.ReactNode; className?: string }> = ({
+  label, children, className,
 }) => (
-  <div className={cn(inline ? 'flex items-center gap-2.5 flex-wrap' : 'flex flex-col gap-1', className)}>
-    <span className={cn('uppercase tracking-wider font-semibold text-gris-una-2', inline && 'shrink-0', TYPOGRAPHY.modal.subtitle)}>
+  <div className={cn('flex flex-col gap-1', className)}>
+    <span className={cn('uppercase tracking-wider font-semibold text-gris-una-2', TYPOGRAPHY.modal.subtitle)}>
       {label}
     </span>
     <div>{children}</div>
+  </div>
+);
+
+const Separator: React.FC = () => (
+  <div className="col-span-6 py-1">
+    <hr className="border-gray-200" />
   </div>
 );
 
@@ -51,7 +51,7 @@ const DeadlineWarning: React.FC<DeadlineWarningProps> = ({ isOverdue, isNearDue,
   const Icon = isOverdue ? SystemIcons.interface.alert : SystemIcons.interface.clock;
   return (
     <div className={cn(
-      'flex items-center gap-2.5 px-4 py-3 rounded-corner mb-5 border',
+      'flex items-center gap-2.5 px-4 py-3 rounded-corner border',
       isOverdue ? 'bg-error-light border-error-ring' : 'bg-warning/10 border-warning/30',
     )}>
       <Icon className={cn(ICON_SIZES.sm, 'flex-shrink-0', isOverdue ? 'text-error' : 'text-warning')} />
@@ -194,73 +194,64 @@ export const EvidenceAssignmentDetail: React.FC<EvidenceAssignmentDetailProps> =
       variant={modalVariant}
       heroIcon={modalHeroIcon}
     >
-      <div className="flex flex-col gap-5">
+      <div className="grid grid-cols-6 gap-x-4 gap-y-3">
 
         {/* Alerta de urgencia */}
-        <DeadlineWarning isOverdue={isOverdue} isNearDue={!!isNearDue} daysUntilDeadline={daysUntilDeadline} />
-
-        {/* Estado y fechas — grid 3 columnas */}
-        <div>
-          <SectionLabel label="Estado y fechas" />
-          <div className="border border-gray-200 rounded-corner p-4 grid grid-cols-3 gap-x-6">
-            <InfoCell label="Estado" inline>
-              <StatusBadge
-                label={ASSIGNMENT_STATUS_BADGE[assignment.estado]?.label ?? assignment.estado}
-                colorClasses={ASSIGNMENT_STATUS_BADGE[assignment.estado]?.colorClasses ?? 'bg-gris-light text-gris-una'}
-              />
-            </InfoCell>
-            <InfoCell label="Fecha de asignación">
-              <span className={cn(TYPOGRAPHY.modal.body, 'text-gris-una-2')}>
-                {formatAssignmentDate(assignment.fecha_asignacion)}
-              </span>
-            </InfoCell>
-            <InfoCell label="Fecha límite">
-              <span className={cn(TYPOGRAPHY.modal.body, deadlineColorClass)}>
-                {deadlineDateText}
-              </span>
-            </InfoCell>
+        {(isOverdue || isNearDue) && (
+          <div className="col-span-6">
+            <DeadlineWarning isOverdue={isOverdue} isNearDue={!!isNearDue} daysUntilDeadline={daysUntilDeadline} />
           </div>
-        </div>
+        )}
 
-        {/* Criterio */}
+        {/* div1 — Estado */}
+        <InfoCell label="Estado" className="col-start-1 col-end-3 items-start">
+          <StatusBadge
+            label={ASSIGNMENT_STATUS_BADGE[assignment.estado]?.label ?? assignment.estado}
+            colorClasses={ASSIGNMENT_STATUS_BADGE[assignment.estado]?.colorClasses ?? 'bg-gris-light text-gris-una'}
+          />
+        </InfoCell>
+
+        {/* div2 — Fecha de asignación */}
+        <InfoCell label="Fecha de asignación" className="col-start-3 col-end-5">
+          <span className={cn(TYPOGRAPHY.modal.body, 'text-gris-una-2')}>
+            {formatAssignmentDate(assignment.fecha_asignacion)}
+          </span>
+        </InfoCell>
+
+        {/* div3 — Fecha límite */}
+        <InfoCell label="Fecha límite" className="col-start-5 col-end-7">
+          <span className={cn(TYPOGRAPHY.modal.body, deadlineColorClass)}>
+            {deadlineDateText}
+          </span>
+        </InfoCell>
+
+        <Separator />
+
+        {/* div4 — Criterio (nomenclatura + descripción) */}
         {assignment.evidencia?.criterion && (
-          <div>
-            <SectionLabel label="Criterio" />
-            <div className="border border-gray-200 rounded-corner p-4 flex flex-col gap-4">
-              <InfoCell label="Nomenclatura">
-                <span className={cn(TYPOGRAPHY.modal.body, 'text-gris-una-2 font-semibold')}>
-                  {assignment.evidencia.criterion.nomenclatura}
-                </span>
-              </InfoCell>
-              <InfoCell label="Descripción">
-                <span className={cn(TYPOGRAPHY.modal.body, 'text-gris-una-2')}>
-                  {assignment.evidencia.criterion.descripcion}
-                </span>
-              </InfoCell>
+          <>
+            <div className="col-span-6 flex flex-col gap-0.5">
+              <span className={cn(TYPOGRAPHY.modal.body, 'text-negro-una-2 font-semibold')}>
+                {assignment.evidencia.criterion.nomenclatura}
+              </span>
+              <span className={cn(TYPOGRAPHY.modal.body, 'text-gris-una-2')}>
+                {assignment.evidencia.criterion.descripcion}
+              </span>
             </div>
-          </div>
+            <Separator />
+          </>
         )}
 
-        {/* Comentarios */}
-        {assignment.comentario && (
-          <div>
-            <SectionLabel label="Comentarios" />
-            <div className="border border-gray-200 rounded-corner p-4 max-h-48 overflow-y-auto">
-              <p className={cn(TYPOGRAPHY.modal.body, 'text-gris-una-2 whitespace-pre-wrap')}>
-                {assignment.comentario}
-              </p>
-            </div>
-          </div>
-        )}
-
-        {/* Retroalimentación recibida */}
-        <div>
-          <SectionLabel label="Retroalimentación recibida" />
+        {/* div5 — Retroalimentación recibida */}
+        <div className="col-span-6 flex flex-col gap-2">
+          <span className={cn('uppercase tracking-wider font-semibold text-gris-una-2', TYPOGRAPHY.modal.subtitle)}>
+            Retroalimentación recibida
+          </span>
           {assignment.evidencia?.comentarios && assignment.evidencia.comentarios.length > 0 ? (
             <div className="flex flex-col gap-3">
               {assignment.evidencia.comentarios.map((comentario) => (
-                <div key={comentario.id} className="border border-gray-200 rounded-corner p-4">
-                  <div className="flex items-center justify-between mb-2">
+                <div key={comentario.id} className="flex flex-col gap-1">
+                  <div className="flex items-center justify-between">
                     <span className={cn(TYPOGRAPHY.modal.subtitle, 'font-semibold text-gris-una-1')}>
                       {comentario.autor ?? 'Encargado'}
                     </span>
@@ -275,7 +266,7 @@ export const EvidenceAssignmentDetail: React.FC<EvidenceAssignmentDetailProps> =
               ))}
             </div>
           ) : (
-            <div className="border border-gray-200 rounded-corner p-4 flex items-center gap-3">
+            <div className="flex items-center gap-3">
               <SystemIcons.actions.comment className={cn(ICON_SIZES.sm, 'text-gris-una-2 flex-shrink-0')} />
               <p className={cn(TYPOGRAPHY.modal.body, 'text-gris-una-2')}>
                 No hay retroalimentación aún
@@ -284,27 +275,29 @@ export const EvidenceAssignmentDetail: React.FC<EvidenceAssignmentDetailProps> =
           )}
         </div>
 
-        {/* Archivos subidos */}
-        <div>
-          <SectionLabel label="Archivos subidos" />
-          <div className="border border-gray-200 rounded-corner p-4">
-            {loadingFiles ? (
-              <div className="relative min-h-[80px]">
-                <LoadingSpinner />
-              </div>
-            ) : uploadedFiles.length > 0 ? (
-              <FileList
-                files={uploadedFiles}
-                loading={loadingFiles}
-                onDelete={handleDeleteFile}
-                showActions={true}
-              />
-            ) : (
-              <p className={cn(TYPOGRAPHY.modal.body, 'text-gris-una-2 text-center py-3')}>
-                No hay archivos subidos aún
-              </p>
-            )}
-          </div>
+        <Separator />
+
+        {/* div6 — Archivos subidos */}
+        <div className="col-span-6 flex flex-col gap-2">
+          <span className={cn('uppercase tracking-wider font-semibold text-gris-una-2', TYPOGRAPHY.modal.subtitle)}>
+            Archivos subidos
+          </span>
+          {loadingFiles ? (
+            <div className="relative min-h-[80px]">
+              <LoadingSpinner />
+            </div>
+          ) : uploadedFiles.length > 0 ? (
+            <FileList
+              files={uploadedFiles}
+              loading={loadingFiles}
+              onDelete={handleDeleteFile}
+              showActions={true}
+            />
+          ) : (
+            <p className={cn(TYPOGRAPHY.modal.body, 'text-gris-una-2 text-center py-3')}>
+              No hay archivos subidos aún
+            </p>
+          )}
         </div>
 
       </div>

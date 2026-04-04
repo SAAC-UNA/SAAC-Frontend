@@ -24,7 +24,11 @@ import type {
 
 // Importar componentes de los pasos
 import { CreationStep } from './Components/CreationStep';
+import type { StatusFilter } from './Components/CreationStep';
 import { ReviewStep } from './Components/ReviewStep';
+import { SearchInput } from '@/Components/Ui/Forms/SearchInput';
+import { FilterButton } from '@/Components/Ui/Buttons/FilterButton';
+import type { FilterOption } from '@/Components/Ui/Buttons/FilterButton';
 
 interface WizardStep {
   id: number;
@@ -53,6 +57,17 @@ const CreateImprovementCommitment: React.FC = () => {
   const [modals, setModals] = useState({ showSuccessModal: false, showConfirmModal: false });
   const showSuccessModal = modals.showSuccessModal;
   const showConfirmModal = modals.showConfirmModal;
+
+  const [creationFilter, setCreationFilter] = useState<{ searchTerm: string; statusFilter: StatusFilter }>({
+    searchTerm: '',
+    statusFilter: 'todos',
+  });
+
+  const filterOptions: FilterOption<StatusFilter>[] = [
+    { value: 'todos', label: 'Todos' },
+    { value: 'seleccionados', label: 'Seleccionados' },
+    { value: 'pendientes', label: 'Pendientes' },
+  ];
 
   const [formData, setFormData] = useState<CompromisoFormData>({
     ciclo_acreditacion_id: locationState.cicloId ? parseInt(locationState.cicloId) : null,
@@ -305,31 +320,35 @@ const CreateImprovementCommitment: React.FC = () => {
       <ScreenContainer>
         <div className="space-y-4">
           {/* Header */}
-          <div className="flex items-center gap-4">
-            <div className="flex-1">
-              <PageHeader
+          <PageHeader
                 title={`Crear ${moduleInfo.title.replace('Compromisos de Mejora', 'Compromiso de Mejora')}`}
                 description="Seleccione criterios y configure las asignaciones"
+                headerExtra={
+                  <div className="flex gap-4 items-center">
+                    <WizardProgress
+                      steps={steps}
+                      currentStep={currentStep}
+                      variant="compact"
+                    />
+                    {currentStep === 1 && (
+                      <>
+                        <SearchInput
+                          value={creationFilter.searchTerm}
+                          onChange={(v) => setCreationFilter(prev => ({ ...prev, searchTerm: v }))}
+                          placeholder="Buscar por nomenclatura o descripción..."
+                          className="w-72"
+                        />
+                        <FilterButton
+                          tooltipText="Filtrar por estado"
+                          options={filterOptions}
+                          value={creationFilter.statusFilter}
+                          onChange={(v) => setCreationFilter(prev => ({ ...prev, statusFilter: v as StatusFilter }))}
+                        />
+                      </>
+                    )}
+                  </div>
+                }
               />
-            </div>
-            
-            {/* Wizard Progress (desktop) */}
-            <div className="hidden md:block">
-              <WizardProgress 
-                steps={steps} 
-                currentStep={currentStep} 
-                variant="compact"
-              />
-            </div>
-          </div>
-
-          {/* Wizard Progress (mobile) */}
-          <div className="block md:hidden">
-            <WizardProgress 
-              steps={steps} 
-              currentStep={currentStep}
-            />
-          </div>
 
           {/* Step Content */}
           <div className="min-h-[400px]">
@@ -342,6 +361,8 @@ const CreateImprovementCommitment: React.FC = () => {
                 actualizarCriterio={updateCriterion}
                 errors={errors}
                 cicloFijo={fromProcess}
+                searchTerm={creationFilter.searchTerm}
+                statusFilter={creationFilter.statusFilter}
               />
             ) : currentStep === 2 ? (
               <ReviewStep

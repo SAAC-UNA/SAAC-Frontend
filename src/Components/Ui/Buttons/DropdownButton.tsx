@@ -23,6 +23,7 @@ import type { ReactNode } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from './Button';
 import { SystemIcons } from '../Icons/SystemIcons';
+import { Tooltip, TooltipTrigger, TooltipContent } from '@/Components/Ui/Index';
 import { cn } from '@/Utils/ClassNames';
 import { TYPOGRAPHY } from '@/Constants/Typography';
 import { ICON_SIZES } from '@/Constants/Components';
@@ -156,29 +157,37 @@ export const DropdownButton: React.FC<DropdownButtonProps> = ({
     <div ref={dropdownRef} className={cn("relative inline-block", className)}>
       {/* Botón trigger */}
       <div ref={buttonRef}>
-        <Button
-          variant={variant}
-          size={size}
-          onClick={() => {
-            if (!disabled) {
-              if (!isOpen) calculatePosition();
-              setIsOpen(!isOpen);
-            }
-          }}
-          disabled={disabled}
-          className="flex items-center gap-2"
-          title={tooltip}
-        >
-          {icon && <span className="flex-shrink-0">{icon}</span>}
-          <span className={TYPOGRAPHY.button}>{label}</span>
-          <motion.span
-            animate={{ rotate: isOpen ? 180 : 0 }}
-            transition={SPRING_CHEVRON}
-            style={{ display: 'flex' }}
-          >
-            <SystemIcons.interface.chevronDown className={ICON_SIZES.button} />
-          </motion.span>
-        </Button>
+        <Tooltip>
+          <TooltipTrigger>
+            <Button
+              variant={variant}
+              size={size}
+              onClick={() => {
+                if (!disabled) {
+                  if (!isOpen) calculatePosition();
+                  setIsOpen(!isOpen);
+                }
+              }}
+              disabled={disabled}
+              className="flex items-center gap-2"
+            >
+              {icon && <span className="flex-shrink-0">{icon}</span>}
+              <span className={TYPOGRAPHY.button}>{label}</span>
+              <motion.span
+                animate={{ rotate: isOpen ? 180 : 0 }}
+                transition={SPRING_CHEVRON}
+                style={{ display: 'flex' }}
+              >
+                <SystemIcons.interface.chevronDown className={ICON_SIZES.button} />
+              </motion.span>
+            </Button>
+          </TooltipTrigger>
+          {tooltip && (
+            <TooltipContent side="bottom">
+              <p>{tooltip}</p>
+            </TooltipContent>
+          )}
+        </Tooltip>
       </div>
 
       {/* Menú desplegable via portal para evitar saltos de layout */}

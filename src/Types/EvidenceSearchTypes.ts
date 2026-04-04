@@ -24,7 +24,11 @@ export type ExportFormat = 'pdf' | 'excel';
 
 // Estructura de filtros para búsqueda avanzada
 export interface EvidenceSearchFilters {
-  // Filtro por criterio (nomenclatura)
+  // Filtros jerárquicos SINAES
+  dimension_id?: number | null;
+  componente_id?: number | null;
+
+  // Filtro por criterio (ID como string para compatibilidad con el select)
   criterio?: string | null;
   
   // Filtro por responsable de publicación

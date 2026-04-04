@@ -14,7 +14,7 @@ const commitmentIcon = "system-icon:box-archive";
 const approvalIcon = "system-icon:check-circle";
 const extensionRequestIcon = "system-icon:clock";
 const calendarIcon = "system-icon:calendar";
-const reportsIcon = "system-icon:document-text";
+const reportsIcon = "system-icon:reports";
 const lightIcon = "system-icon:lightbulb";
 
 /**
@@ -33,7 +33,7 @@ export const getNavigationItems = (
 
   const isSuperUser = roles.includes("Superusuario");
   const isAdmin = roles.includes("Administrador");
-  const isEncargado = roles.includes("Encargado de Acreditaci\u00f3n");
+  const isEncargado = roles.includes("Encargado de Acreditación");
 
   const items: NavItem[] = [
     {
@@ -69,7 +69,7 @@ export const getNavigationItems = (
     if (isSuperUser) {
       adminChildren.push({
         id: "bitacora",
-        label: "Bitacora del Sistema",
+        label: "Bitácora del Sistema",
         icon: auditLogIcon,
         href: "/bitacora",
         isActive: false,
@@ -78,7 +78,7 @@ export const getNavigationItems = (
 
     items.push({
       id: "administracion",
-      label: "Administracion",
+      label: "Administración",
       icon: lightIcon,
       href: "#",
       isActive: false,
@@ -93,7 +93,7 @@ export const getNavigationItems = (
     if (isAdmin || isEncargado || isSuperUser) {
       evidenciaChildren.push({
         id: "evidenciasAsignar",
-        label: "Asignar Evidencias",
+        label: "Asignar Entregables",
         icon: evidenceIcon,
         href: "/evidencias/asignar",
         isActive: false,
@@ -103,7 +103,7 @@ export const getNavigationItems = (
     evidenciaChildren.push(
       {
         id: "misEvidenciasAsignadas",
-        label: "Mis Evidencias",
+        label: "Mis Entregas",
         icon: myEvidencesIcon,
         href: "/mis-evidencias-asignadas",
         isActive: false,
@@ -119,7 +119,7 @@ export const getNavigationItems = (
 
     items.push({
       id: "evidencias",
-      label: "Evidencias",
+      label: "Entregables",
       icon: evidenceIcon,
       href: "#",
       isActive: false,
@@ -151,7 +151,7 @@ export const getNavigationItems = (
 
     items.push({
       id: "solicitudesAmpliacion",
-      label: "Ampliacion",
+      label: "Ampliación",
       icon: calendarIcon,
       href: "#",
       isActive: false,
@@ -162,7 +162,7 @@ export const getNavigationItems = (
 
   items.push({
     id: "acreditacion",
-    label: "Acreditacion",
+    label: "Acreditación",
     icon: processIcon,
     href: "#",
     isActive: false,
@@ -170,14 +170,14 @@ export const getNavigationItems = (
     children: [
       {
         id: "procesos-acreditacion",
-        label: "Procesos de Acreditacion",
+        label: "Procesos de Acreditación",
         icon: processIcon,
         href: "/procesos-acreditacion/listar",
         isActive: false,
       },
       {
         id: "estructura",
-        label: "Gestion de Estructura",
+        label: "Gestión de Estructura",
         icon: nutIcon,
         href: "/estructura/listar",
         isActive: false,
@@ -205,7 +205,7 @@ export const getNavigationItems = (
 
   items.push({
     id: "evaluacion",
-    label: "Evaluacion",
+    label: "Evaluación",
     icon: auditLogIcon,
     href: "#",
     isActive: false,
@@ -220,14 +220,14 @@ export const getNavigationItems = (
       },
       {
         id: "aprobacion-bloques",
-        label: "Aprobacion de Bloques",
+        label: "Aprobación de Bloques",
         icon: approvalIcon,
         href: "/aprobacion-bloques",
         isActive: false,
       },
       {
         id: "gestion-informes",
-        label: "Gestion de Informes",
+        label: "Gestión de Informes",
         icon: reportsIcon,
         href: "/gestion-informes",
         isActive: false,

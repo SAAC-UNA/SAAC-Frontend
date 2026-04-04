@@ -10,12 +10,13 @@
  */
 
 import React, { useState, useEffect, useCallback } from 'react';
-import { PageHeader, ScreenContainer } from '@/Components/Ui/Index';
+import { PageHeader, ScreenContainer, Tooltip, TooltipTrigger, TooltipContent } from '@/Components/Ui/Index';
 import { SearchInput } from '@/Components/Ui/Forms/SearchInput';
+import { Button } from '@/Components/Ui/Buttons/Button';
 import { DropdownButton } from '@/Components/Ui/Buttons/DropdownButton';
 import type { DropdownOption } from '@/Components/Ui/Buttons/DropdownButton';
 import { SystemIcons } from '@/Components/Ui/Icons/SystemIcons';
-import { EvidenceSearchResultsTable, EvidenceDetailsModal } from './Components';
+import { EvidenceSearchResultsTable, EvidenceDetailsModal, EvidenceSearchFiltersPanel } from './Components';
 import { useToast } from '@/Context/ToastContext';
 import { useAuth } from '@/Context/AuthContext';
 import { getModuleInfo } from '@/Constants/ModuleInfo';
@@ -46,6 +47,9 @@ export const EvidenceSearchPage: React.FC = () => {
   const currentFilters = searchState.currentFilters;
   // Paginación
   const itemsPerPage = TABLE_PAGE_SIZE.standard;
+
+  // Visibilidad del panel de filtros
+  const [showFilters, setShowFilters] = useState(false);
 
   // Modal de detalles
   const [modalState, setModalState] = useState<{ isOpen: boolean; selectedCriterioId: number | null }>({ isOpen: false, selectedCriterioId: null });
@@ -193,9 +197,29 @@ export const EvidenceSearchPage: React.FC = () => {
               options={exportOptions}
               disabled={loading || displayedResults.length === 0}
             />
+            <Tooltip>
+              <TooltipTrigger>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  onClick={() => setShowFilters(prev => !prev)}
+                >
+                  <SystemIcons.interface.filter className={ICON_SIZES.md} color="currentColor" />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent side="top">
+                <p>Filtros</p>
+              </TooltipContent>
+            </Tooltip>
           </div>
         }
-      />
+      >
+        {showFilters && (
+          <EvidenceSearchFiltersPanel
+            onFiltersChange={(filters) => applyFilters({ ...currentFilters, ...filters })}
+          />
+        )}
+      </PageHeader>
 
       {/* Tabla de resultados */}
       <EvidenceSearchResultsTable

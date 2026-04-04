@@ -57,7 +57,7 @@ export function Tooltip({ children }: TooltipProps) {
 export function TooltipTrigger({ asChild = false, children }: TooltipTriggerProps) {
   const { setOpen, setTriggerRect } = React.useContext(TooltipContext);
   const wrapperRef = useRef<HTMLDivElement>(null);
-  const timeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const handleOpen = (rect: DOMRect) => {
     if (timeoutRef.current) clearTimeout(timeoutRef.current);
@@ -202,7 +202,7 @@ export function TooltipContent({
             className={cn(
               TYPOGRAPHY.tooltip,
               'font-medium text-blanco-una whitespace-nowrap font-poppins',
-              'bg-gris-una-2 backdrop-blur-md border border-gray-700/30',
+              'bg-gris-una backdrop-blur-md border-none',
               'rounded-corner shadow-lg px-1.5 py-1',
               className,
             )}

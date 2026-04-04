@@ -5,4 +5,5 @@
 export { EvidenceSearchResultsTable } from './EvidenceSearchResultsTable';
 export { EvidenceDetailsModal } from './EvidenceDetailsModal';
 export { FeedbackModal } from './FeedbackModal';
+export { EvidenceSearchFiltersPanel } from './EvidenceSearchFiltersPanel';
 export type { EvidenceSearchResultsTableProps } from './EvidenceSearchResultsTable';

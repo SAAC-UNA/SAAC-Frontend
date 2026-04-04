@@ -11,7 +11,6 @@ import { PageHeader, Button } from "@/Components/Ui/Index";
 import { DeleteConfirmationModal } from "@/Components/Ui/Modals/DeleteConfirmationModal";
 import { SuccessModal } from "@/Components/Ui/Modals/SuccessModal";
 import { getModuleInfo } from "@/Constants/ModuleInfo";
-import { SystemIcons } from "@/Components/Ui/Icons/SystemIcons";
 import { SearchInput } from "@/Components/Ui/Forms/SearchInput";
 import { accreditationProcessService } from "@/Services/AccreditationProcessService";
 import type {
@@ -237,17 +236,15 @@ export const AccreditationProcessList: React.FC = () => {
             <Button
               variant="secondary"
               onClick={handleCreateProcess}
-              className="gap-2 text-[13px] font-normal"
+              className="gap-2 text-[13px] font-semibold"
             >
-              <SystemIcons.actions.add className="w-4 h-4" size="sm" />
               Crear
             </Button>
           </div>
         }
       />
 
-      <div className="flex-1 flex flex-col items-center justify-center min-h-[60vh]">
-        <AccreditationProcessTable
+      <AccreditationProcessTable
           processes={processes}
           isLoading={isLoading}
           searchQuery={searchQuery}
@@ -256,7 +253,6 @@ export const AccreditationProcessList: React.FC = () => {
           onDelete={handleDeleteProcess}
           onConfigure={handleConfigureProcess}
         />
-      </div>
 
       <AccreditationProcessFormModal
         isOpen={formModalState.isOpen}
@@ -278,7 +274,7 @@ export const AccreditationProcessList: React.FC = () => {
         onConfirm={confirmDeleteProcess}
         title="Confirmar eliminación de proceso"
         itemName={deleteModalState.process?.type}
-        confirmLabel="Eliminar"
+        confirmLabel="Sí, eliminar"
         cancelLabel="Cancelar"
         variant="danger"
       />

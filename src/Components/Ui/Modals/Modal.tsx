@@ -23,7 +23,7 @@ interface ModalProps {
   heroIcon?: React.ReactNode;
 
   // ── Layout ──
-  size?: 'sm' | 'md' | 'lg' | 'xl' | 'full';
+  size?: 'sm' | 'md' | 'lg' | 'xl' | 'full' | 'auto';
   /** Altura máxima del modal. Por defecto crece con el contenido hasta el 90vh */
   maxHeight?: 'sm' | 'md' | 'lg' | 'xl' | 'full' | 'auto';
   /** Si se puede cerrar haciendo clic fuera o con Escape */
@@ -129,6 +129,7 @@ export const Modal: React.FC<ModalProps> = React.memo(({
     lg: 'sm:max-w-4xl',
     xl: 'sm:max-w-6xl',
     full: 'sm:max-w-full',
+    auto: 'sm:w-auto',
   };
 
   const maxHeightClasses: Record<NonNullable<ModalProps['maxHeight']>, string> = {
@@ -285,7 +286,7 @@ export const Modal: React.FC<ModalProps> = React.memo(({
                         onClick={handleClose}
                         disabled={isPending}
                         aria-label="Cerrar modal"
-                        className="w-7 h-7 rounded-corner flex items-center justify-center bg-white/15 border border-white/30 text-white/90 hover:bg-white/30 transition-colors duration-150 disabled:opacity-50 flex-shrink-0 self-start"
+                        className="w-7 h-7 rounded-corner flex items-center justify-center bg-white/15 border border-white/30 text-white/90 hover:bg-white/30 transition-colors duration-150 disabled:opacity-50 flex-shrink-0"
                       >
                         <SystemIcons.interface.closeCircle className={`${ICON_SIZES.md}`} />
                       </button>
@@ -311,7 +312,7 @@ export const Modal: React.FC<ModalProps> = React.memo(({
                     onClick={handleClose}
                     disabled={isPending}
                     aria-label="Cerrar modal"
-                    className="rounded-full bg-gray-100 p-1.5 text-gray-500 hover:bg-gray-200 hover:text-gray-700 transition-colors duration-150 disabled:opacity-50"
+                    className="rounded-full bg-gray-100 p-1.5 flex items-center justify-center text-gray-500 hover:bg-gray-200 hover:text-gray-700 transition-colors duration-150 disabled:opacity-50"
                   >
                     <SystemIcons.interface.closeCircle className="w-5 h-5" />
                   </button>

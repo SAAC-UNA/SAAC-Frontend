@@ -118,7 +118,7 @@ const DropdownContent: React.FC<DropdownContentProps> = ({
       initial="hidden"
       animate="visible"
       exit="exit"
-      className="bg-blanco-una border border-gris-light rounded-corner shadow-lg overflow-hidden"
+      className="bg-blanco-una border-none rounded-corner shadow-lg overflow-hidden"
     >
       {/* Campo de búsqueda */}
       {showSearch && (
@@ -126,7 +126,7 @@ const DropdownContent: React.FC<DropdownContentProps> = ({
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.05, duration: 0.15 }}
-          className="p-2 border-b border-gris-light bg-blanco-una-2/80 sticky top-0 z-10"
+          className="p-2 border-b border-gris-light bg-blanco-una sticky top-0 z-10"
         >
           <div className="relative">
             <SystemIcons.interface.search
@@ -457,11 +457,11 @@ export const MultiSelect: React.FC<MultiSelectProps> = ({
             className={cn(
               `relative w-full h-10 px-4 ${TYPOGRAPHY.form.input} border rounded-corner text-left cursor-pointer transition-all duration-300`,
               'focus:outline-none focus:border-gris-una',
-              'disabled:bg-blanco-una-2 disabled:cursor-not-allowed',
+              'disabled:bg-blanco-una disabled:cursor-not-allowed',
               'peer',
-              error ? 'border-rojo-una-2' : 'border-blanco-una bg-blanco-una-2',
+              error ? 'border-rojo-una-2' : 'border-gris-light bg-blanco-una',
               disabled
-                ? 'bg-gris-una/10 border-gris-una/5 text-gris-una'
+                ? 'bg-gris-una/10 border-gris-light text-gris-una'
                 : isOpen && 'border-gris-una/20'
             )}
             onClick={() => {

@@ -122,7 +122,7 @@ export const RolesTable: React.FC<RolesTableProps> = ({
                     <p className={`block font-sans antialiased font-bold leading-normal text-negro-una-2 ${TYPOGRAPHY.table.cell}`} title={String(value)}>
                         {truncateText(String(value), firstColumn.maxLength)}
                     </p>
-                    <p className={`block font-sans antialiased font-normal leading-normal text-gris-una-2 ${TYPOGRAPHY.table.cell}`} title={item.description || 'Sin descripción'}>
+                    <p className={`block font-sans antialiased font-normal leading-normal text-gris-una-2 ${TYPOGRAPHY.table.helper}`} title={item.description || 'Sin descripción'}>
                         {truncateText(item.description || 'Sin descripción', firstColumn.maxLength)}
                     </p>
                 </div>
@@ -132,9 +132,9 @@ export const RolesTable: React.FC<RolesTableProps> = ({
             key: 'permissions',
             header: 'Permisos',
             accessor: 'permissions',
-            align: 'center',
+            align: 'left',
             render: (_: unknown, role: Role) => (
-                <div className="flex justify-center">
+                <div className="flex items-start">
                     <StatusBadge
                         label={`${Array.isArray(role.permissions) ? role.permissions.length : 0} permisos`}
                         colorClasses={BADGE_COLORS.slate.colorClasses}

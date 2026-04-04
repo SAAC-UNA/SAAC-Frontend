@@ -21,7 +21,7 @@ import React, { useState } from 'react';
 import { cn } from '@/Utils/ClassNames';
 import { SystemIcons } from '@/Components/Ui/Icons/SystemIcons';
 import { TableActionButton } from '@/Components/Ui/Buttons/TableActionButton';
-import { DataTable, type DataTableColumn } from '@/Components/Ui/Table/DataTable';
+import { DataTable, type DataTableColumn, type ExpandableChildItem } from '@/Components/Ui/Table/DataTable';
 import { FileList } from './FileList';
 import type { FileModel } from '@/Types/FileTypes';
 import { TYPOGRAPHY } from '@/Constants/Typography';
@@ -139,15 +139,19 @@ const GroupsTable: React.FC<GroupsTableProps> = ({ evId, groups, onUpload, onDel
       data={groups as GroupRow[]}
       getRowKey={(item) => String((item as unknown as ResponsableGroup).usuario_id)}
       columns={columns}
-      expandableRow={(item) => (
-        <FileList
-          files={(item as unknown as ResponsableGroup).archivos}
-          loading={false}
-          onDelete={onDelete}
-          showActions={!!onDelete}
-          emptyMessage="Este responsable no ha subido archivos aún"
-        />
-      )}
+      expandableRow={(item): ExpandableChildItem[] => [{
+        key: 'files',
+        noBorder: true,
+        content: (
+          <FileList
+            files={(item as unknown as ResponsableGroup).archivos}
+            loading={false}
+            onDelete={onDelete}
+            showActions={!!onDelete}
+            emptyMessage="Este responsable no ha subido archivos aún"
+          />
+        ),
+      }]}
     />
   );
 };

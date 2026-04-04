@@ -1,39 +1,19 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { ScreenContainer, PageHeader } from '@/Components/Ui/Index';
-import { LoadingSpinner } from '@/Components/Ui/Index';
 import { useToast } from '@/Context/ToastContext';
 import { getModuleInfo } from '@/Constants/ModuleInfo';
-import { SystemIcons } from '@/Components/Ui/Icons/SystemIcons';
 import { axiosInstance } from '@/Config/axios';
 import { ApprovalModal } from './Components/ApprovalModal';
 import { EvidenceFilesModal } from './Components/EvidenceFilesModal';
 import { SuccessModal } from '@/Components/Ui/Modals/SuccessModal';
 import { CustomSelect } from '@/Components/Ui/Forms/SingleSelect';
 import { FilterButton, type FilterOption } from '@/Components/Ui/Buttons/FilterButton';
-import { ButtonWithTooltip } from '@/Components/Ui/Buttons/ButtonWithTooltip';
-import { TYPOGRAPHY } from '@/Constants/Typography';
 import { TABLE_PAGE_SIZE } from '@/Constants/TablePagination';
-import { DataTable } from '@/components/index';
-import type { DataTableColumn } from '@/Components/Ui/Table/DataTable';
-import { TABLE_ACTION_BUTTON } from '@/Constants/Components';
-import { StatusBadge } from '@/Components/Ui/Feedback/StatusBadge';
+import { BlockApprovalTable } from './Components/BlockApprovalTable';
+import type { Criterio, Evidencia } from './Components/BlockApprovalTable';
+import { Card } from '@/Components/Ui/Layout/Card';
 
 type ApprovalStatus = 'pendiente' | 'aprobado' | 'rechazado';
-
-interface Evidencia {
-  id: number;
-  nomenclatura: string;
-  descripcion: string;
-  criterio_id: number;
-  archivo_adjuntado?: boolean;
-}
-
-interface Criterio {
-  id: number;
-  nomenclatura: string;
-  descripcion: string;
-  estado_aprobacion?: ApprovalStatus;
-}
 
 interface Proceso {
   proceso_id: number;
@@ -144,121 +124,36 @@ const BlockApproval: React.FC = () => {
     }
   };
 
-  const getEvidencesByCriterion = (criterionId: number) => {
-    return evidences.filter(ev => ev.criterio_id === criterionId);
-  };
+  const getEvidencesByCriterion = useCallback((criterionId: number) =>
+    evidences.filter(ev => ev.criterio_id === criterionId),
+  [evidences]);
 
-  const handleViewFiles = (evidencia: Evidencia) => {
+  const handleViewFiles = useCallback((evidencia: Evidencia) => {
     setFilesModal({ open: true, evidencia });
-  };
+  }, []);
 
-  // Filter criteria by approval status
-  const filteredCriteria = criteria.filter(criterio => {
+  const filteredCriteria = useMemo(() => criteria.filter(criterio => {
     if (approvalFilter === 'todos') return true;
     return criterio.estado_aprobacion === approvalFilter;
-  });
+  }), [criteria, approvalFilter]);
 
-  // Calculate paginated data
   const totalPages = Math.ceil(filteredCriteria.length / itemsPerPage);
-  const paginatedCriteria = filteredCriteria.slice(
-    (currentPage - 1) * itemsPerPage,
-    currentPage * itemsPerPage
-  );
+  const paginatedCriteria = useMemo(() =>
+    filteredCriteria.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage),
+  [filteredCriteria, currentPage, itemsPerPage]);
 
   // Reset page when filtered criteria changes
   useEffect(() => {
     setFilterState(prev => ({...prev, currentPage: 1}));
   }, [filteredCriteria.length]);
 
-  const APPROVAL_STATUS_COLORS: Record<string, string> = {
-    pendiente:  'text-warning-dark bg-warning-ring',
-    aprobado:   'text-verde-dark bg-verde-ring',
-    rechazado:  'text-error-dark bg-error-ring',
-  };
-  const APPROVAL_STATUS_LABELS: Record<string, string> = {
-    pendiente: 'Pendiente',
-    aprobado:  'Aprobado',
-    rechazado: 'Rechazado',
-  };
-
-  const criteriaColumns: DataTableColumn<Criterio>[] = [
-    {
-      key: 'nomenclatura',
-      header: 'Criterio',
-      width: '140px',
-      render: (_, item) => (
-        <p className={`block font-sans antialiased font-bold leading-normal text-negro-una-2 ${TYPOGRAPHY.table.cell}`}>
-          {item.nomenclatura}
-        </p>
-      ),
-    },
-    {
-      key: 'descripcion',
-      header: 'Descripción',
-      align: 'left',
-      render: (_, item) => (
-        <p className={`block font-sans antialiased font-normal leading-normal text-gris-una max-w-2xl truncate ${TYPOGRAPHY.table.cell}`}
-          title={item.descripcion}>
-          {item.descripcion}
-        </p>
-      ),
-    },
-    {
-      key: 'estado_aprobacion',
-      header: 'Estado',
-      align: 'center',
-      width: '130px',
-      render: (_, item) => (
-        <div className="flex justify-center">
-          <StatusBadge
-            label={APPROVAL_STATUS_LABELS[item.estado_aprobacion ?? 'pendiente'] ?? 'Pendiente'}
-            colorClasses={APPROVAL_STATUS_COLORS[item.estado_aprobacion ?? 'pendiente'] ?? APPROVAL_STATUS_COLORS['pendiente']}
-          />
-        </div>
-      ),
-    },
-    {
-      key: 'actions',
-      header: 'Acciones',
-      align: 'center',
-      width: '110px',
-      render: (_, item) => {
-        const isPending = item.estado_aprobacion === 'pendiente';
-        return (
-          <div className="flex gap-1 justify-center" onClick={e => e.stopPropagation()}>
-            <ButtonWithTooltip
-              variant="tablePower"
-              size="sm"
-              tooltip={isPending ? 'Aprobar criterio' : 'Ya procesado'}
-              onClick={isPending ? () => handleAprobar(item) : undefined}
-              disabled={!isPending}
-              className={TABLE_ACTION_BUTTON.button}
-            >
-              <SystemIcons.interface.checkCircle className={TABLE_ACTION_BUTTON.icon} />
-            </ButtonWithTooltip>
-            <ButtonWithTooltip
-              variant="tableDelete"
-              size="sm"
-              tooltip={isPending ? 'Rechazar criterio' : 'Ya procesado'}
-              onClick={isPending ? () => handleRechazar(item) : undefined}
-              disabled={!isPending}
-              className={TABLE_ACTION_BUTTON.button}
-            >
-              <SystemIcons.interface.xCircle className={TABLE_ACTION_BUTTON.icon} />
-            </ButtonWithTooltip>
-          </div>
-        );
-      },
-    },
-  ];
-
-  const handleAprobar = (criterio: Criterio) => {
+  const handleAprobar = useCallback((criterio: Criterio) => {
     setApprovalState(prev => ({ ...prev, isOpen: true, action: 'aprobar', criterion: criterio }));
-  };
+  }, []);
 
-  const handleRechazar = (criterio: Criterio) => {
+  const handleRechazar = useCallback((criterio: Criterio) => {
     setApprovalState(prev => ({ ...prev, isOpen: true, action: 'rechazar', criterion: criterio }));
-  };
+  }, []);
 
   const handleConfirmAction = async (comentario: string) => {
     if (!selectedCriterion || !selectedProcesoId) return;
@@ -299,16 +194,9 @@ const BlockApproval: React.FC = () => {
       <PageHeader
         title={moduleInfo.title}
         description={moduleInfo.description}
-      />
-      {isLoading ? (
-        <div className="relative py-12 min-h-[400px]">
-          <LoadingSpinner variant="loader" />
-        </div>
-      ) : (
-        <>
-          {/* Selector de proceso y filtro */}
-          <div className="mb-6 flex gap-4 items-end">
-            <div className="flex-1">
+        headerExtra={
+          <div className="flex gap-4 items-end">
+            <Card className="w-80">
               <CustomSelect
                 label="Seleccionar Proceso"
                 value={selectedProcesoId?.toString() || ''}
@@ -316,8 +204,8 @@ const BlockApproval: React.FC = () => {
                 size="sm"
                 onChange={(value) => setFilterState(prev => ({...prev, selectedProcesoId: value ? Number(value) : null}))}
                 options={processes
-                  .filter(proceso => 
-                    proceso.accreditation_cycle?.career_campus?.career?.nombre && 
+                  .filter(proceso =>
+                    proceso.accreditation_cycle?.career_campus?.career?.nombre &&
                     proceso.accreditation_cycle?.career_campus?.campus?.nombre
                   )
                   .map((proceso) => ({
@@ -326,8 +214,7 @@ const BlockApproval: React.FC = () => {
                   }))}
                 maxVisibleItems={5}
               />
-            </div>
-            
+            </Card>
             <FilterButton
               tooltipText="Filtrar por estado"
               options={filtroOptions}
@@ -335,68 +222,21 @@ const BlockApproval: React.FC = () => {
               onChange={(value) => setFilterState(prev => ({...prev, approvalFilter: value}))}
             />
           </div>
+        }
+      />
 
-          {/* Tabla de criterios */}
-          {!selectedProcesoId ? (
-            <div className="bg-white rounded-lg border border-gray-200 py-16">
-              <div className="text-center">
-                <SystemIcons.modal.document size="lg" className="mx-auto text-gray-400 mb-3" />
-                <p className="text-sm font-medium text-negro-una mb-1">No hay datos disponibles</p>
-                <p className="text-sm text-gris-una">Seleccione un proceso para continuar</p>
-              </div>
-            </div>
-          ) : (
-            <DataTable
-              data={paginatedCriteria as any}
-              columns={criteriaColumns as any}
-              title=""
-              searchable={false}
-              loading={false}
-              emptyMessage="No hay criterios disponibles para el filtro seleccionado"
-              pagination={
-                totalPages > 1
-                  ? { currentPage, totalPages, onPageChange: (value) => setFilterState(prev => ({ ...prev, currentPage: value })) }
-                  : undefined
-              }
-              getRowKey={(item) => String(item.id)}
-              expandableRow={(criterio: any) => {
-                const criterionEvidences = getEvidencesByCriterion(criterio.id);
-                if (criterionEvidences.length === 0) {
-                  return <p className="text-sm text-gris-una py-2">No hay evidencias para este criterio.</p>;
-                }
-                return (
-                  <div className="space-y-1 py-1.5">
-                    {criterionEvidences.map((evidencia) => (
-                      <div
-                        key={evidencia.id}
-                        className="flex items-center justify-between px-3 py-1 bg-white rounded border border-gray-100"
-                        onClick={e => e.stopPropagation()}
-                      >
-                        <div className="flex-1 min-w-0">
-                          <p className={`truncate ${TYPOGRAPHY.table.helper}`}>
-                            <span className="font-medium text-negro-una">{evidencia.nomenclatura}</span>
-                            <span className="text-gris-una"> — {evidencia.descripcion}</span>
-                          </p>
-                        </div>
-                        <ButtonWithTooltip
-                          variant="tableView"
-                          size="sm"
-                          tooltip="Ver archivos asociados"
-                          tooltipPosition="left"
-                          onClick={(e) => { e.stopPropagation(); handleViewFiles(evidencia); }}
-                          className={TABLE_ACTION_BUTTON.button}
-                        >
-                          <SystemIcons.actions.view className={TABLE_ACTION_BUTTON.icon} />
-                        </ButtonWithTooltip>
-                      </div>
-                    ))}
-                  </div>
-                );
-              }}
-            />
-          )}
-        </>
-      )}
+      <BlockApprovalTable
+        criteria={paginatedCriteria}
+        evidences={evidences}
+        isLoading={isLoading}
+        currentPage={currentPage}
+        totalPages={totalPages}
+        selectedProcesoId={selectedProcesoId}
+        onPageChange={(value) => setFilterState(prev => ({ ...prev, currentPage: value }))}
+        onAprobar={handleAprobar}
+        onRechazar={handleRechazar}
+        onViewFiles={handleViewFiles}
+      />
       
       {/* Modal de confirmación */}
       {selectedCriterion && (

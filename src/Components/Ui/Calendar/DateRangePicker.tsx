@@ -360,7 +360,7 @@ export const DateRangePicker: React.FC<DateRangePickerProps> = ({
         <div className={cn(
           'bg-blanco-una border rounded-corner',
           compact ? 'p-3' : 'p-4',
-          error ? 'border-rojo-una-2' : 'border-blanco-una-2',
+          error ? 'border-rojo-una-2' : 'border-gris-light',
         )}>
           <div className="flex gap-0">
             {renderMonth(leftMonth, true, false)}

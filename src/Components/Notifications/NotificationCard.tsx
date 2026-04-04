@@ -69,7 +69,7 @@ export const NotificationCard: React.FC<NotificationCardProps> = ({
       case "assignment":
         return SystemIcons.modal.document;
       case "upload":
-        return SystemIcons.interface.upload;
+        return SystemIcons.interface.uploadArrow;
       case "alarm":
       case "schedule":
         return SystemIcons.interface.clock;

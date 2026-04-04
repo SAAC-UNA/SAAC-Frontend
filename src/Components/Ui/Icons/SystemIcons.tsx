@@ -29,7 +29,6 @@ export interface IconProps {
  * Retorna string vacío si size no fue pasado explícitamente,
  * para que className (con ICON_SIZES) sea el único que controla el tamaño.
  *
- * TODO: Una vez todos los íconos hayan migrado al nuevo estándar CSS (index.css),
  * eliminar esta función y el prop `size` de IconProps. Los tamaños se controlarán
  * únicamente mediante `className` con las clases CSS: size-icon-sm, size-icon-md,
  * size-icon-lg, size-icon-button (definidas en @layer utilities de index.css).
@@ -114,28 +113,7 @@ export const SystemIcons = {
         <path fillRule="evenodd" d="M7.345 4.017a42.253 42.253 0 0 1 9.31 0c1.713.192 3.095 1.541 3.296 3.26a40.66 40.66 0 0 1 0 9.445 3.734 3.734 0 0 1-3.296 3.26 42.123 42.123 0 0 1-9.31 0 3.734 3.734 0 0 1-3.296-3.26 40.652 40.652 0 0 1 0-9.444 3.734 3.734 0 0 1 3.295-3.26ZM12 7.007a.75.75 0 0 1 .75.75v3.493h3.493a.75.75 0 1 1 0 1.5H12.75v3.493a.75.75 0 0 1-1.5 0V12.75H7.757a.75.75 0 0 1 0-1.5h3.493V7.757a.75.75 0 0 1 .75-.75Z" clipRule="evenodd" />
       </svg>
     ),
-/*
-    addSquare: ({ className, size, color }: IconProps) => (
-      <svg
-        className={`${getSizeClasses(size)} ${className || ''}`}
-        viewBox="0 0 24 24"
-        fill={color || "currentColor"}
-      >
-        <g clipPath="url(#clip0_4418_4944)">
-          <path
-            opacity={0.4}
-            d="M16.19 2H7.81C4.17 2 2 4.17 2 7.81V16.18C2 19.83 4.17 22 7.81 22H16.18C19.82 22 21.99 19.83 21.99 16.19V7.81C22 4.17 19.83 2 16.19 2Z"
-          />
-          <path d="M16 11.25H12.75V8C12.75 7.59 12.41 7.25 12 7.25C11.59 7.25 11.25 7.59 11.25 8V11.25H8C7.59 11.25 7.25 11.59 7.25 12C7.25 12.41 7.59 12.75 8 12.75H11.25V16C11.25 16.41 11.59 16.75 12 16.75C12.41 16.75 12.75 16.41 12.75 16V12.75H16C16.41 12.75 16.75 12.41 16.75 12C16.75 11.59 16.41 11.25 16 11.25Z" />
-        </g>
-        <defs>
-          <clipPath id="clip0_4418_4944">
-            <rect width="24" height="24" fill="white" />
-          </clipPath>
-        </defs>
-      </svg>
-    ),
-*/
+
     save: ({ className, size, color = 'var(--color-verde)' }: IconProps) => (
       <svg
         className={`${getSizeClasses(size)} ${className || ''}`}
@@ -238,12 +216,9 @@ export const SystemIcons = {
         strokeLinejoin="round"
         strokeWidth="2"
       >
-        <path d="M9 6h11.25" />
-        <path d="M9 12h11.25" />
-        <path d="M9 18h11.25" />
-        <path d="M3.75 6h1.5" />
-        <path d="M3.75 12h1.5" />
-        <path d="M3.75 18h1.5" />
+        <path d="M3.75 12h16.5" />
+        <path d="M3.75 6h16.5" />
+        <path d="M3.75 18h16.5" />
       </svg>
     ),
 
@@ -310,50 +285,13 @@ export const SystemIcons = {
       <svg
         className={`${getSizeClasses(size)} ${className || ''}`}
         viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
+        fill="currentColor"
         strokeWidth={1.5}
         strokeLinecap="round"
         strokeLinejoin="round"
       >
-        <path d="M14.857 17.082a23.848 23.848 0 0 0 5.454-1.31A8.967 8.967 0 0 1 18 9.75V9A6 6 0 0 0 6 9v.75a8.967 8.967 0 0 1-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 0 1-5.714 0m5.714 0a3 3 0 1 1-5.714 0M3.124 7.5A8.969 8.969 0 0 1 5.292 3m13.416 0a8.969 8.969 0 0 1 2.168 4.5" />
-      </svg>
-    ),
-
-    infoCircle: ({ className, size }: IconProps) => (
-      <svg
-        className={`${getSizeClasses(size)} ${className || ''}`}
-        fill="none"
-        viewBox="0 0 24 24"
-        strokeWidth={1.5}
-        stroke="currentColor"
-      >
-        <path strokeLinecap="round" strokeLinejoin="round" d="m11.25 11.25.041-.02a.75.75 0 0 1 1.063.852l-.708 2.836a.75.75 0 0 0 1.063.853l.041-.021M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9-3.75h.008v.008H12V8.25Z" />
-      </svg>
-    ),
-
-    user: ({ className, size }: IconProps) => (
-      <svg
-        className={`${getSizeClasses(size)} ${className || ''}`}
-        fill="none"
-        viewBox="0 0 24 24"
-        strokeWidth={1.5}
-        stroke="currentColor"
-      >
-        <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z" />
-      </svg>
-    ),
-
-    lock: ({ className, size }: IconProps) => (
-      <svg
-        className={`${getSizeClasses(size)} ${className || ''}`}
-        fill="none"
-        viewBox="0 0 24 24"
-        strokeWidth={1.5}
-        stroke="currentColor"
-      >
-        <path strokeLinecap="round" strokeLinejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 1 0-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 0 0 2.25-2.25v-6.75a2.25 2.25 0 0 0-2.25-2.25H6.75a2.25 2.25 0 0 0-2.25 2.25v6.75a2.25 2.25 0 0 0 2.25 2.25Z" />
-      </svg>
+        <path d="M15.75 21a.75.75 0 0 1-.75.75H9a.75.75 0 1 1 0-1.5h6a.75.75 0 0 1 .75.75Zm3.731-10.5A7.472 7.472 0 0 0 12.056 3H12a7.49 7.49 0 0 0-7.481 7.5c0 3.215-.666 5.034-1.22 5.99A1.52 1.52 0 0 0 3.292 18a1.49 1.49 0 0 0 1.303.75h14.812a1.491 1.491 0 0 0 1.5-1.506 1.52 1.52 0 0 0-.206-.754c-.553-.956-1.219-2.775-1.219-5.99Zm1.94-4.631a10.472 10.472 0 0 0-3.824-4.257.752.752 0 0 0-.797 1.275 9.093 9.093 0 0 1 3.281 3.638.741.741 0 0 0 .675.422.872.872 0 0 0 .328-.075.75.75 0 0 0 .338-1.003ZM3.92 6.525A9.094 9.094 0 0 1 7.2 2.887a.752.752 0 1 0-.796-1.275A10.472 10.472 0 0 0 2.578 5.87a.75.75 0 0 0 .338 1.003.872.872 0 0 0 .328.075.74.74 0 0 0 .675-.422Z" />
+  </svg>
     ),
     
     back: ({ className, size, color = 'var(--color-rojo-una-2)' }: IconProps) => (
@@ -376,35 +314,6 @@ export const SystemIcons = {
       </svg>
     ),
 
-    expand: ({ className, size, color }: IconProps) => (
-      <svg
-        className={`${getSizeClasses(size)} ${className || ''}`}
-        viewBox="0 0 24 24"
-        fill={color || "currentColor"}
-      >
-        <path
-        fillRule="evenodd"
-        d="M13.664 6.343c0 .414.336.75.75.75h2.493v2.493a.75.75 0 0 0 1.5 0V6.343a.75.75 0 0 0-.75-.75h-3.243a.75.75 0 0 0-.75.75Z"
-        clipRule="evenodd"
-      />
-      <path
-        fillRule="evenodd"
-        d="M17.657 13.664a.75.75 0 0 0-.75.75v2.493h-2.493a.75.75 0 0 0 0 1.5h3.243a.75.75 0 0 0 .75-.75v-3.243a.75.75 0 0 0-.75-.75Z"
-        clipRule="evenodd"
-      />
-      <path
-        fillRule="evenodd"
-        d="M6.343 13.664a.75.75 0 0 1 .75.75v2.493h2.493a.75.75 0 0 1 0 1.5H6.343a.75.75 0 0 1-.75-.75v-3.243a.75.75 0 0 1 .75-.75Z"
-        clipRule="evenodd"
-      />
-      <path
-        fillRule="evenodd"
-        d="M10.336 6.343a.75.75 0 0 1-.75.75H7.093v2.493a.75.75 0 1 1-1.5 0V6.343a.75.75 0 0 1 .75-.75h3.243a.75.75 0 0 1 .75.75Z"
-        clipRule="evenodd"
-      />
-      </svg>
-    ),
-
     link: ({ className, size, color = 'currentColor' }: IconProps) => (
       <svg
         className={`${getSizeClasses(size)} ${className || ''}`}
@@ -417,60 +326,6 @@ export const SystemIcons = {
       >
         <path d="m12.421 5.746.9-.91a4.134 4.134 0 0 1 5.841 5.841l-2.84 2.832a4.116 4.116 0 0 1-5.832 0" />
         <path d="m11.578 18.255-.9.909a4.135 4.135 0 0 1-5.84-5.84l2.84-2.832a4.115 4.115 0 0 1 5.831 0" />
-      </svg>
-    ),
-
-    collapse: ({ className, size, color }: IconProps) => (
-      <svg
-        className={`${getSizeClasses(size)} ${className || ''}`}
-        viewBox="0 0 24 24"
-        fill={color || "currentColor"}
-      >
-        <path
-          fillRule="evenodd"
-          d="M18.028 9.964a.75.75 0 0 0-.75-.75h-2.492V6.722a.75.75 0 0 0-1.5 0v3.242c0 .415.335.75.75.75h3.242a.75.75 0 0 0 .75-.75Z"
-          clipRule="evenodd"
-        />
-        <path
-          fillRule="evenodd"
-          d="M14.036 18.028a.75.75 0 0 0 .75-.75v-2.493h2.492a.75.75 0 0 0 0-1.5h-3.242a.75.75 0 0 0-.75.75v3.243c0 .414.335.75.75.75Z"
-          clipRule="evenodd"
-        />
-        <path
-          fillRule="evenodd"
-          d="M9.964 18.028a.75.75 0 0 1-.75-.75v-2.493H6.722a.75.75 0 0 1 0-1.5h3.242a.75.75 0 0 1 .75.75v3.243a.75.75 0 0 1-.75.75Z"
-          clipRule="evenodd"
-        />
-        <path
-          fillRule="evenodd"
-          d="M5.972 9.964a.75.75 0 0 1 .75-.750h2.492V6.722a.75.75 0 0 1 1.5 0v3.242a.75.75 0 0 1-.75.75H6.722a.75.75 0 0 1-.75-.75Z"
-          clipRule="evenodd"
-        />
-      </svg>
-    ),
-    cloud: ({ className, size, color }: IconProps) => (
-      <svg
-        className={`${getSizeClasses(size)} ${className || ''}`}
-        viewBox="0 0 24 24"
-        fill={color || "currentColor"}
-
-      >
-          <path
-          fillRule="evenodd"
-          d="M21.03 4.83a.75.75 0 1 0-1.06-1.06l-16 16a.75.75 0 0 0 1.06 1.06l2.08-2.08h11.413a4.478 4.478 0 1 0-.19-8.951 5.38 5.38 0 0 0-.437-1.834L21.03 4.83Zm-4.31 4.312L8.61 17.25h9.912a2.978 2.978 0 1 0-.77-5.854.75.75 0 0 1-.939-.813 3.957 3.957 0 0 0-.095-1.44Z"
-          clipRule="evenodd"
-        />
-        <path d="M12.932 4.708c1.107 0 2.136.333 2.993.903a.24.24 0 0 1 .032.371l-.728.728a.261.261 0 0 1-.317.036 3.91 3.91 0 0 0-5.504 1.676.75.75 0 0 1-.947.373 4.375 4.375 0 0 0-3.708 7.906c.152.086.19.295.067.419l-.724.723a.243.243 0 0 1-.299.038A5.875 5.875 0 0 1 8.38 7.195a5.405 5.405 0 0 1 4.552-2.487Z" />
-      </svg>
-    ),
-
-    upload: ({ className, size, color }: IconProps) => (
-      <svg
-        className={`${getSizeClasses(size)} ${className || ''}`}
-        viewBox="0 0 24 24"
-        fill={color || "currentColor"}
-      >
-        <path d="M15.01 3.75a8.26 8.26 0 0 0-7.388 4.566 8.119 8.119 0 0 0-.872 3.656.769.769 0 0 1-.694.778.75.75 0 0 1-.806-.75c0-1.048.168-2.09.497-3.084a.375.375 0 0 0-.44-.488A6 6 0 0 0 .75 14.25c0 3.3 2.794 6 6.084 6H15a8.25 8.25 0 0 0 .01-16.5Zm2.952 10.463a.778.778 0 0 1-.534.215.75.75 0 0 1-.525-.216L15 12.31V18a.75.75 0 1 1-1.5 0v-5.69l-1.903 1.902a.75.75 0 0 1-1.06-1.059l3.179-3.187a.76.76 0 0 1 1.068 0l3.178 3.187a.75.75 0 0 1 0 1.06Z" />
       </svg>
     ),
 
@@ -680,21 +535,6 @@ export const SystemIcons = {
 
   // ===== NAVEGACIÓN =====
   navigation: {
-    menu: ({ className, size, color }: IconProps) => (
-      <svg
-        className={`${getSizeClasses(size)} ${className || ''}`}
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke={color || "currentColor"}
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        strokeWidth="2"
-      >
-        <path d="M3.75 12h16.5" />
-        <path d="M3.75 6h16.5" />
-        <path d="M3.75 18h16.5" />
-      </svg>
-    ),
 
     light: ({ className, size, color }: IconProps) => (
       <svg
@@ -752,7 +592,17 @@ export const SystemIcons = {
           <path fillRule="evenodd" d="M3.75 12a.75.75 0 01.75-.75h13.19l-5.47-5.47a.75.75 0 011.06-1.06l6.75 6.75a.75.75 0 010 1.06l-6.75 6.75a.75.75 0 11-1.06-1.06l5.47-5.47H4.5a.75.75 0 01-.75-.75z" clipRule="evenodd" />
         </svg>
       )
-    }
+    },
+
+    reports: ({ className, size, color }: IconProps) => (
+      <svg
+        className={`${getSizeClasses(size)} ${className || ''}`}
+        viewBox="0 0 24 24"
+        fill={color || "currentColor"}
+      >
+        <path d="M19.5 3h-15A1.5 1.5 0 0 0 3 4.5v15A1.5 1.5 0 0 0 4.5 21h15a1.5 1.5 0 0 0 1.5-1.5v-15A1.5 1.5 0 0 0 19.5 3Zm-12 16.5h-3v-15h3v15Zm9-5.25h-6a.75.75 0 1 1 0-1.5h6a.75.75 0 1 1 0 1.5Zm0-3h-6a.75.75 0 1 1 0-1.5h6a.75.75 0 1 1 0 1.5Z" />
+      </svg>
+    )
   },
 
   // ===== USUARIOS Y ROLES =====
@@ -765,16 +615,6 @@ export const SystemIcons = {
       >
         <path d="M12 3.75a3.75 3.75 0 1 0 0 7.5 3.75 3.75 0 0 0 0-7.5Z" />
         <path d="M8 13.25A3.75 3.75 0 0 0 4.25 17v1.188c0 .754.546 1.396 1.29 1.517 4.278.699 8.642.699 12.92 0a1.537 1.537 0 0 0 1.29-1.517V17A3.75 3.75 0 0 0 16 13.25h-.34c-.185 0-.369.03-.544.086l-.866.283a7.251 7.251 0 0 1-4.5 0l-.866-.283a1.752 1.752 0 0 0-.543-.086H8Z" />
-      </svg>
-    ),
-
-    contacts: ({ className, size, color }: IconProps) => (
-      <svg
-        className={`${getSizeClasses(size)} ${className || ''}`}
-        viewBox="0 0 24 24"
-        fill={color || "currentColor"}
-      >
-        <path fillRule="evenodd" d="M16.456 2.883a31.331 31.331 0 0 0-8.913 0 3.197 3.197 0 0 0-2.728 2.874l-.127 1.396a53.504 53.504 0 0 0 0 9.694l.127 1.396a3.197 3.197 0 0 0 2.728 2.874c2.956.425 5.958.425 8.913 0a3.197 3.197 0 0 0 2.73-2.874l.126-1.396c.293-3.225.293-6.47 0-9.694l-.127-1.396a3.196 3.196 0 0 0-2.729-2.874ZM10 9a2 2 0 1 1 4 0 2 2 0 0 1-4 0Zm-2 6.5a3 3 0 0 1 3-3h2a3 3 0 0 1 3 3 1 1 0 0 1-1 1H9a1 1 0 0 1-1-1Z" clipRule="evenodd" />
       </svg>
     ),
 
@@ -841,11 +681,11 @@ export const SystemIcons = {
   },
   // ===== MODALES =====
   modal:{
-    document: ({ className, size, color }: IconProps) => (
+    document: ({ className, size }: IconProps) => (
       <svg
         className={`${getSizeClasses(size)} ${className || ''}`}
         viewBox="0 0 24 24"
-        fill={color || "currentColor"}
+        fill="currentColor"
       >
         <path d="M15.75 13a.75.75 0 0 0-.75-.75H9a.75.75 0 0 0 0 1.5h6a.75.75 0 0 0 .75-.75Z" />
         <path d="M15.75 17a.75.75 0 0 0-.75-.75H9a.75.75 0 0 0 0 1.5h6a.75.75 0 0 0 .75-.75Z" />
@@ -887,7 +727,7 @@ export const SystemIcons = {
 
 // ===== AUTENTICACIÓN =====
   auth: {
-    Lock: ({ className, size, color }: IconProps) => (
+    lock: ({ className, size, color }: IconProps) => (
       <svg
         className={`${getSizeClasses(size)} ${className || ''}`}
         viewBox="0 0 24 24"
@@ -1091,7 +931,6 @@ export const getIconByName = (iconName: string, size: IconProps['size'] = 'md'):
 
     // Users
     'user': () => SystemIcons.users.user({ size }),
-    'contacts': () => SystemIcons.users.contacts({ size }),
 
     // Work & Security
     'shield': () => SystemIcons.users.roles({ size }), // Usando roles que tiene el shield
@@ -1110,12 +949,9 @@ export const getIconByName = (iconName: string, size: IconProps['size'] = 'md'):
     'logout': () => SystemIcons.actions.logout({ size }),
     'back': () => SystemIcons.interface.back({ size }),
     'refresh': () => SystemIcons.interface.refresh({ size }),
-    'expand': () => SystemIcons.interface.expand({ size }),
-    'collapse': () => SystemIcons.interface.collapse({ size }),
     'calendar': () => SystemIcons.interface.calendar({ size }),
     'chevron-down': () => SystemIcons.interface.chevronDown({ size }),
     'chevron-right': () => SystemIcons.interface.chevronRight({ size }),
-    'cloud': () => SystemIcons.interface.cloud({ size }),
     'upload-arrow': () => SystemIcons.interface.uploadArrow({ size }),
     'clock': () => SystemIcons.interface.clock({ size }),
     'hourglass': () => SystemIcons.interface.hourglass({ size }),
@@ -1126,8 +962,7 @@ export const getIconByName = (iconName: string, size: IconProps['size'] = 'md'):
     'information-circle': () => SystemIcons.interface.informationCircle({ size }),
     'check-circle': () => SystemIcons.interface.checkCircle({ size }),
     'key': () => SystemIcons.modal.key({ size }),
-    'document': () => SystemIcons.modal.document({ size }),
-    'document-text': () => SystemIcons.modal.document({ size }),
+    'reports': () => SystemIcons.navigation.reports({ size }),
 
     // Repository
     'box-archive': () => SystemIcons.repository.boxArchive({ size }),

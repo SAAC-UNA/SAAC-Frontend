@@ -8,62 +8,36 @@
  *  - Reactivar ciclo (solo Superusuario)
  */
 
-import React, { useMemo, useState, useRef } from 'react';
+import React, { useState, useRef, useMemo } from 'react';
 import { ScreenContainer } from '@/Components/Ui/Layout/ScreenContainer';
 import {
   PageHeader,
   Button,
-  StatusBadge,
   Tooltip,
   TooltipContent,
   TooltipTrigger,
 } from '@/Components/Ui/Index';
-import { DataTable } from '@/Components/Ui/Table/DataTable';
-import { TableActionButton } from '@/Components/Ui/Buttons/TableActionButton';
 import { Modal } from '@/Components/Ui/Modals/Modal';
 import { SuccessModal } from '@/Components/Ui/Modals/SuccessModal';
 import { AccreditationCycleFormModal } from './Components/AccreditationCycleFormModal';
 import { AccreditationCycleDeleteModal } from './Components/AccreditationCycleDeleteModal';
 import { AccreditationCycleDetailModal } from './Components/AccreditationCycleDetailModal';
+import { AccreditationCyclesTable } from './Components/AccreditationCyclesTable';
 import { useAccreditationCycles } from '@/Hooks/UseAccreditationCycles';
-import { useFirstColumnConfig } from '@/Hooks/UseFirstColumnConfig';
 import { useAuth } from '@/Context/AuthContext';
 import { useToast } from '@/Context/ToastContext';
-import { truncateText } from '@/Utils';
 import { TYPOGRAPHY } from '@/Constants/Typography';
-import { TABLE_TRUNCATE } from '@/Constants/TableTruncate';
-import { SystemIcons } from '@/Components/Ui/Icons/SystemIcons';
-import { TABLE_ACTION_BUTTON } from '@/Constants/Components';
-import { TABLE_PAGE_SIZE } from '@/Constants/TablePagination';
 import { cn } from '@/Utils/ClassNames';
-import type { DataTableColumn } from '@/Components/Ui/Table/DataTable';
+import { TABLE_PAGE_SIZE } from '@/Constants/TablePagination';
 import type {
   AccreditationCycle,
-  AccreditationCycleStatus,
   CreateAccreditationCycleForm,
   EditAccreditationCycleForm,
 } from '@/Types/AccreditationCycleTypes';
 
-// ── Status helpers ─────────────────────────────────────────────────────────────
-
-const STATUS_LABEL: Record<AccreditationCycleStatus, string> = {
-  activo: 'Activo',
-  inactivo: 'Inactivo',
-  completado: 'Completado',
-};
-
-const STATUS_COLOR: Record<AccreditationCycleStatus, string> = {
-  activo: 'text-verde-dark bg-verde-ring',
-  inactivo: 'text-error-dark bg-error-ring',
-  completado: 'text-info-dark bg-info-ring',
-};
-
-// ── Page ──────────────────────────────────────────────────────────────────────
-
 const AccreditationCyclesPage: React.FC = () => {
   const { isSuperUser, isAdmin } = useAuth();
   const { showToast } = useToast();
-  const firstColumn = useFirstColumnConfig();
 
   const {
     cycles,
@@ -167,133 +141,6 @@ const AccreditationCyclesPage: React.FC = () => {
     }
   };
 
-  // ── Table columns ─────────────────────────────────────────────────────────
-
-  const columns: DataTableColumn<AccreditationCycle>[] = useMemo(
-    () => [
-      {
-        key: 'nombre',
-        header: 'Nombre',
-        align: 'left',
-        width: firstColumn.width,
-        render: (_, item) => (
-          <div className="flex flex-col pl-2">
-            <p
-              className={cn(
-                'block font-sans antialiased font-bold leading-normal text-negro-una-2',
-                TYPOGRAPHY.table.cell,
-              )}
-              title={item.nombre}
-            >
-              {truncateText(item.nombre, firstColumn.maxLength)}
-            </p>
-          </div>
-        ),
-      },
-      {
-        key: 'carrera_sede',
-        header: 'Carrera – Sede',
-        align: 'left',
-        render: (_, item) => {
-          const cs = item.carrera_sede;
-          const carrera = cs?.carrera_nombre ?? '—';
-          const sede = cs?.sede_nombre ?? '—';
-          return (
-            <div className="flex flex-col">
-              <span
-                className={cn(
-                  'block font-sans antialiased font-normal leading-normal text-negro-una-2',
-                  TYPOGRAPHY.table.cell,
-                )}
-                title={`${carrera} – ${sede}`}
-              >
-                {truncateText(carrera, TABLE_TRUNCATE.name)}
-              </span>
-              <span
-                className={cn(
-                  'block font-sans antialiased font-normal leading-normal text-gris-una',
-                  TYPOGRAPHY.badge,
-                )}
-              >
-                {truncateText(sede, TABLE_TRUNCATE.name)}
-              </span>
-            </div>
-          );
-        },
-      },
-      {
-        key: 'modelo',
-        header: 'Modelo',
-        align: 'center',
-        render: (_, item) => (
-          <span
-            className={cn(
-              'block font-sans antialiased font-normal leading-normal text-negro-una-2',
-              TYPOGRAPHY.table.cell,
-            )}
-            title={item.modelo_estructura?.nombre}
-          >
-            {truncateText(item.modelo_estructura?.nombre ?? '—', TABLE_TRUNCATE.name)}
-          </span>
-        ),
-      },
-      {
-        key: 'estado',
-        header: 'Estado',
-        align: 'center',
-        render: (_, item) => (
-          <div className="flex justify-center">
-            <StatusBadge
-              label={STATUS_LABEL[item.estado]}
-              colorClasses={STATUS_COLOR[item.estado]}
-              size="sm"
-            />
-          </div>
-        ),
-      },
-      {
-        key: 'actions',
-        header: 'Acciones',
-        align: 'center',
-        render: (_, item) => (
-          <div className="flex items-center justify-center gap-2 pr-2">
-            <TableActionButton
-              action="view"
-              tooltip="Ver detalles"
-              onClick={() => setViewModal({ isOpen: true, cycle: item })}
-            />
-            {canEdit && (
-              <TableActionButton
-                action="edit"
-                tooltip={item.estado !== 'activo' ? 'Solo se puede editar un ciclo activo' : 'Editar ciclo'}
-                onClick={() => setFormModal({ isOpen: true, cycle: item })}
-                disabled={item.estado !== 'activo'}
-              />
-            )}
-            {canReactivate && (
-              <TableActionButton
-                action="custom"
-                customIcon={<SystemIcons.interface.refresh className={TABLE_ACTION_BUTTON.icon} />}
-                customVariant="tablePower"
-                tooltip={item.estado === 'activo' ? 'El ciclo ya está activo' : 'Reactivar ciclo'}
-                onClick={() => setReactivateModal({ isOpen: true, cycle: item, loading: false })}
-                disabled={item.estado === 'activo'}
-              />
-            )}
-            {canDelete && (
-              <TableActionButton
-                action="delete"
-                tooltip="Eliminar ciclo"
-                onClick={() => setDeleteModal({ isOpen: true, cycle: item, loading: false })}
-              />
-            )}
-          </div>
-        ),
-      },
-    ],
-    [firstColumn, canEdit, canReactivate, canDelete],
-  );
-
   // ── Render ────────────────────────────────────────────────────────────────
 
   return (
@@ -319,25 +166,19 @@ const AccreditationCyclesPage: React.FC = () => {
         }
       />
 
-      <DataTable
-        title=""
-        data={paginatedCycles as unknown as Record<string, unknown>[]}
-        columns={columns as unknown as DataTableColumn<Record<string, unknown>>[]}
-        loading={isLoading}
-        searchable={false}
-        emptyMessage="No hay ciclos de acreditación registrados."
-        pagination={
-          totalPages > 1
-            ? {
-                currentPage: boundedCurrentPage,
-                totalPages,
-                onPageChange: setCurrentPage,
-              }
-            : undefined
-        }
-        getRowKey={(item) =>
-          String((item as unknown as AccreditationCycle).ciclo_acreditacion_id)
-        }
+      <AccreditationCyclesTable
+        cycles={paginatedCycles}
+        isLoading={isLoading}
+        currentPage={boundedCurrentPage}
+        totalPages={totalPages}
+        onPageChange={setCurrentPage}
+        onView={(cycle) => setViewModal({ isOpen: true, cycle })}
+        onEdit={(cycle) => setFormModal({ isOpen: true, cycle })}
+        onDelete={(cycle) => setDeleteModal({ isOpen: true, cycle, loading: false })}
+        onReactivate={(cycle) => setReactivateModal({ isOpen: true, cycle, loading: false })}
+        canEdit={canEdit}
+        canDelete={canDelete}
+        canReactivate={canReactivate}
       />
 
       {/* Modal detalles */}

@@ -21,6 +21,7 @@ import {
   type FeedbackEstado,
 } from '@/Services/FeedbackService';
 import type { EvidenceSearchResult } from '@/Types/EvidenceSearchTypes';
+import { SystemIcons } from '@/Components/Ui/Icons/SystemIcons';
 
 interface FeedbackModalProps {
   isOpen: boolean;
@@ -35,23 +36,15 @@ const ESTADOS_OPCIONES: RadioCardOption[] = [
     value: 'Observada',
     label: 'Observada',
     description: 'Requiere corrección — el responsable debe subsanar las observaciones.',
-    iconBg: 'bg-warning-light',
-    icon: (
-      <svg className="w-4 h-4 text-warning-dark flex-shrink-0" viewBox="0 0 20 20" fill="currentColor">
-        <path fillRule="evenodd" d="M8.485 2.495c.673-1.167 2.357-1.167 3.03 0l6.28 10.875c.673 1.167-.17 2.625-1.516 2.625H3.72c-1.347 0-2.189-1.458-1.515-2.625L8.485 2.495ZM10 5a.75.75 0 0 1 .75.75v3.5a.75.75 0 0 1-1.5 0v-3.5A.75.75 0 0 1 10 5Zm0 9a1 1 0 1 0 0-2 1 1 0 0 0 0 2Z" clipRule="evenodd" />
-      </svg>
-    ),
+    iconBg: 'bg-info-ring',
+    icon: <SystemIcons.auth.Eye className="w-4 h-4 flex-shrink-0 text-info-dark" />,
   },
   {
     value: 'Validada',
     label: 'Validada',
     description: 'Aprobada formalmente — la evidencia cumple los criterios de evaluación.',
-    iconBg: 'bg-verde-light',
-    icon: (
-      <svg className="w-4 h-4 text-verde-dark flex-shrink-0" viewBox="0 0 20 20" fill="currentColor">
-        <path fillRule="evenodd" d="M10 18a8 8 0 1 0 0-16 8 8 0 0 0 0 16Zm3.857-9.809a.75.75 0 0 0-1.214-.882l-3.483 4.79-1.88-1.88a.75.75 0 1 0-1.06 1.061l2.5 2.5a.75.75 0 0 0 1.137-.089l4-5.5Z" clipRule="evenodd" />
-      </svg>
-    ),
+    iconBg: 'bg-verde-ring',
+    icon: <SystemIcons.interface.check className="w-4 h-4 flex-shrink-0 text-verde-dark" />,
   },
 ];
 
@@ -98,7 +91,7 @@ export const FeedbackModal: React.FC<FeedbackModalProps> = ({
   };
 
   const handleSubmit = useCallback(async () => {
-    if (!evidence || !estado) return;
+    if (!evidence) return;
     if (!validate()) return;
 
     setLoading(true);

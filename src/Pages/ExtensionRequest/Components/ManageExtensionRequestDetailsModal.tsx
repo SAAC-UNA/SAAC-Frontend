@@ -18,12 +18,6 @@ interface ReviewExtensionRequestModalProps {
   solicitud: ExtensionRequest;
 }
 
-const SectionLabel: React.FC<{ label: string }> = ({ label }) => (
-  <span className={cn('uppercase tracking-wider font-semibold text-gris-una-2 mb-2.5 block', TYPOGRAPHY.modal.subtitle)}>
-    {label}
-  </span>
-);
-
 const InfoCell: React.FC<{ label: string; children: React.ReactNode; className?: string }> = ({
   label, children, className,
 }) => (
@@ -32,6 +26,12 @@ const InfoCell: React.FC<{ label: string; children: React.ReactNode; className?:
       {label}
     </span>
     <div>{children}</div>
+  </div>
+);
+
+const Separator: React.FC = () => (
+  <div className="col-span-6 py-1">
+    <hr className="border-gray-200" />
   </div>
 );
 
@@ -51,77 +51,74 @@ export const ReviewExtensionRequestModal: React.FC<ReviewExtensionRequestModalPr
       variant="info"
       heroIcon={<SystemIcons.modal.document className={`${ICON_SIZES.md} text-blanco-una`} />}
     >
-      <div className="flex flex-col gap-5">
+      <div className="grid grid-cols-6 gap-x-4 gap-y-3">
 
-        {/* Solicitante */}
-        <div>
-          <SectionLabel label="Información del Solicitante" />
-          <div className="border border-gray-200 rounded-corner p-4 grid grid-cols-2 gap-x-6 gap-y-4">
-            <InfoCell label="Nombre">
-              <span className={cn(TYPOGRAPHY.modal.body, 'text-gris-una-2 font-semibold')}>
-                {solicitud.usuario?.nombre ?? '—'}
-              </span>
-            </InfoCell>
-            <InfoCell label="Email">
-              <span className={cn(TYPOGRAPHY.modal.body, 'text-gris-una-2')}>
-                {solicitud.usuario?.email ?? '—'}
-              </span>
-            </InfoCell>
-            <InfoCell label="Fecha de solicitud" className="col-span-2">
-              <span className={cn(TYPOGRAPHY.modal.body, 'text-gris-una-2')}>
-                {formatDateShort(solicitud.created_at, true)}
-              </span>
-            </InfoCell>
-          </div>
-        </div>
+        {/* div1 — Nombre */}
+        <InfoCell label="Nombre" className="col-start-1 col-end-3">
+          <span className={cn(TYPOGRAPHY.modal.body, 'text-gris-una-2 font-semibold')}>
+            {solicitud.usuario?.nombre ?? '—'}
+          </span>
+        </InfoCell>
 
-        {/* Evidencia */}
+        {/* div2 — Email */}
+        <InfoCell label="Email" className="col-start-3 col-end-5">
+          <span className={cn(TYPOGRAPHY.modal.body, 'text-gris-una-2')}>
+            {solicitud.usuario?.email ?? '—'}
+          </span>
+        </InfoCell>
+
+        {/* div3 — Fecha de solicitud */}
+        <InfoCell label="Fecha de solicitud" className="col-start-5 col-end-7">
+          <span className={cn(TYPOGRAPHY.modal.body, 'text-gris-una-2')}>
+            {formatDateShort(solicitud.created_at, true)}
+          </span>
+        </InfoCell>
+
+        <Separator />
+
+        {/* div4 — Evidencia (nomenclatura + descripción en una línea) */}
         {solicitud.evidencia_asignacion?.evidencia && (
-          <div>
-            <SectionLabel label="Evidencia" />
-            <div className="border border-gray-200 rounded-corner p-4 flex flex-col gap-4">
-              <InfoCell label="Nomenclatura">
-                <span className={cn(TYPOGRAPHY.modal.body, 'text-gris-una-2')}>
-                  {solicitud.evidencia_asignacion.evidencia.nomenclatura}
-                </span>
-              </InfoCell>
-              <InfoCell label="Descripción">
-                <span className={cn(TYPOGRAPHY.modal.body, 'text-gris-una-2')}>
-                  {solicitud.evidencia_asignacion.evidencia.descripcion}
-                </span>
-              </InfoCell>
-            </div>
+          <div className="col-span-6 flex flex-col gap-0.5">
+            <span className={cn(TYPOGRAPHY.modal.body, 'text-negro-una-2 font-semibold')}>
+              {solicitud.evidencia_asignacion.evidencia.nomenclatura}
+            </span>
+            <span className={cn(TYPOGRAPHY.modal.body, 'text-gris-una-2')}>
+              {solicitud.evidencia_asignacion.evidencia.descripcion}
+            </span>
           </div>
         )}
 
-        {/* Detalles */}
-        <div>
-          <SectionLabel label="Detalles de la Solicitud" />
-          <div className="border border-gray-200 rounded-corner p-4 flex flex-col gap-4">
-            <InfoCell label="Motivo">
-              <p className={cn(TYPOGRAPHY.modal.body, 'text-gris-una-2 whitespace-pre-wrap break-all')}>
-                {solicitud.motivo}
-              </p>
-            </InfoCell>
-            <div className="grid grid-cols-2 gap-x-6">
-              {solicitud.evidencia_asignacion && (
-                <InfoCell label="Fecha límite actual">
-                  <span className={cn(TYPOGRAPHY.modal.body, 'text-gris-una-2')}>
-                    {formatDateShort(solicitud.evidencia_asignacion.fecha_limite)}
-                  </span>
-                </InfoCell>
-              )}
-              <InfoCell label="Fecha nueva solicitada">
-                <span className={cn(TYPOGRAPHY.modal.body, 'text-info font-semibold')}>
-                  {formatDateShort(solicitud.fecha_sugerida)}
-                </span>
-              </InfoCell>
-            </div>
-          </div>
-        </div>
+        {solicitud.evidencia_asignacion?.evidencia && <Separator />}
 
-        {/* Aviso */}
-        <div className="flex items-start gap-2.5 px-4 py-3 rounded-corner border bg-info/10 border-info/30">
+        {/* div5 — Fecha límite actual */}
+        {solicitud.evidencia_asignacion && (
+          <InfoCell label="Fecha límite actual" className="col-start-1 col-end-4">
+            <span className={cn(TYPOGRAPHY.modal.body, 'text-gris-una-2')}>
+              {formatDateShort(solicitud.evidencia_asignacion.fecha_limite)}
+            </span>
+          </InfoCell>
+        )}
+
+        {/* div6 — Fecha nueva solicitada */}
+        <InfoCell label="Fecha nueva solicitada" className="col-start-4 col-end-7">
+          <span className={cn(TYPOGRAPHY.modal.body, 'text-info font-semibold')}>
+            {formatDateShort(solicitud.fecha_sugerida)}
+          </span>
+        </InfoCell>
+
+        <Separator />
+
+        {/* div7 — Motivo */}
+        <InfoCell label="Motivo" className="col-span-6">
+          <p className={cn(TYPOGRAPHY.modal.body, 'text-gris-una-2 whitespace-pre-wrap break-all')}>
+            {solicitud.motivo}
+          </p>
+        </InfoCell>
+
+        <Separator />
+
+        {/* div8 — Aviso */}
+        <div className="col-span-6 flex items-start gap-2.5 px-4 py-3 rounded-corner border bg-info/10 border-info/30">
           <SystemIcons.interface.informationCircle className={cn(ICON_SIZES.sm, 'flex-shrink-0 text-info mt-0.5')} />
           <p className={cn(TYPOGRAPHY.form.helper, 'text-info font-medium')}>
             <strong>Importante:</strong> Una vez aprobada o rechazada, la decisión no podrá revertirse.

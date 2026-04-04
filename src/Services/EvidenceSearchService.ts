@@ -10,7 +10,9 @@ import type {
 } from '@/Types/EvidenceSearchTypes';
 
 interface SearchParams {
-  // Filtros
+  // Filtros jerárquicos
+  dimension_id?: number;
+  componente_id?: number;
   criterio_id?: number;
   responsable_id?: number;
   fecha_desde?: string; // YYYY-MM-DD
@@ -95,8 +97,15 @@ export const evidenceSearchService = {
     };
 
     // Mapear filtros del frontend a parámetros del backend
+    if (filters.dimension_id) {
+      params.dimension_id = filters.dimension_id;
+    }
+
+    if (filters.componente_id) {
+      params.componente_id = filters.componente_id;
+    }
+
     if (filters.criterio) {
-      // El filtro debe contener el ID del criterio
       params.criterio_id = parseInt(filters.criterio);
     }
 
@@ -312,6 +321,47 @@ export const evidenceSearchFiltersService = {
         }));
     } catch (error) {
       console.error('❌ Error al cargar roles:', error);
+      return [];
+    }
+  },
+
+  /**
+   * Obtener lista de dimensiones para el filtro
+   */
+  async getDimensiones(): Promise<Array<{ value: string; label: string }>> {
+    try {
+      const response = await axiosInstance.get('/estructura/dimensiones');
+      const data = response.data.data || response.data || [];
+      if (!Array.isArray(data)) return [];
+      return data
+        .filter((d: any) => d && d.dimension_id)
+        .map((d: any) => ({
+          value: d.dimension_id.toString(),
+          label: `${d.nomenclatura} - ${d.nombre}`,
+        }));
+    } catch (error) {
+      console.error('❌ Error al cargar dimensiones:', error);
+      return [];
+    }
+  },
+
+  /**
+   * Obtener lista de componentes para el filtro
+   */
+  async getComponentes(): Promise<Array<{ value: string; label: string; dimension_id: number }>> {
+    try {
+      const response = await axiosInstance.get('/estructura/componentes');
+      const data = response.data.data || response.data || [];
+      if (!Array.isArray(data)) return [];
+      return data
+        .filter((c: any) => c && c.componente_id)
+        .map((c: any) => ({
+          value: c.componente_id.toString(),
+          label: `${c.nomenclatura} - ${c.nombre}`,
+          dimension_id: c.dimension_id,
+        }));
+    } catch (error) {
+      console.error('❌ Error al cargar componentes:', error);
       return [];
     }
   },

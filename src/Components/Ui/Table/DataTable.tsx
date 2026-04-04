@@ -14,6 +14,7 @@
 
 import React, { useState, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { SPRING_LAYOUT, TABLE_ROW_VARIANTS } from '@/Constants/Animations';
 import { cn } from '@/Utils/ClassNames';
 import { TYPOGRAPHY } from '@/Constants/Typography';
 import { ICON_SIZES } from '@/Constants/Components';
@@ -40,6 +41,15 @@ export interface DataTableAction<T = unknown> {
   onClick: (item: T) => void;
   className?: string;
   disabled?: (item: T) => boolean;
+}
+
+export interface ExpandableChildItem {
+  key: string;
+  content: React.ReactNode;
+  action?: React.ReactNode;
+  noBorder?: boolean;
+  emptyChildrenMessage?: string;
+  children?: ExpandableChildItem[];
 }
 
 export interface DataTableProps<T = unknown> {
@@ -78,13 +88,67 @@ export interface DataTableProps<T = unknown> {
   emptyMessage?: string | React.ReactNode;
 
   // Filas expandibles
-  expandableRow?: (item: T) => React.ReactNode;
+  expandableRow?: (item: T) => ExpandableChildItem[];
   getRowKey?: (item: T, index: number) => string;
 
   // Estilos
   className?: string;
   unstyled?: boolean; // Para usar sin contenedor cuando está dentro de otro contenedor
 }
+
+export const ExpandableChildRow: React.FC<{ item: ExpandableChildItem; depth?: number }> = ({ item, depth = 0 }) => {
+  const [open, setOpen] = useState(false);
+  const hasChildren = (item.children?.length ?? 0) > 0;
+
+  if (item.noBorder) return <>{item.content}</>;
+
+  return (
+    <>
+      <div
+        className={cn(
+          'flex items-center gap-2 px-3 py-1 bg-blanco-una rounded border border-gris-light',
+          hasChildren && 'cursor-pointer',
+          depth > 0 && 'ml-4'
+        )}
+        onClick={hasChildren ? () => setOpen(v => !v) : undefined}
+      >
+        {hasChildren && (
+          <motion.div
+            initial={false}
+            animate={{ rotate: open ? 180 : 0 }}
+            transition={{ type: 'spring', damping: 25, stiffness: 300, mass: 0.8 }}
+            className="flex-shrink-0"
+            onClick={e => { e.stopPropagation(); setOpen(v => !v); }}
+          >
+            <SystemIcons.interface.chevronDown className={`text-gris-una ${ICON_SIZES.sm}`} />
+          </motion.div>
+        )}
+        <div className="flex-1 min-w-0">{item.content}</div>
+        {item.action && (
+          <div onClick={e => e.stopPropagation()}>{item.action}</div>
+        )}
+      </div>
+      <AnimatePresence initial={false}>
+        {hasChildren && open && (
+          <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: 'auto', opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ type: 'spring', damping: 25, stiffness: 300, mass: 0.8 }}
+            className="overflow-hidden"
+          >
+            <div className="space-y-1 pt-1">
+              {item.children!.length === 0
+                ? <p className={`text-gris-una px-3 py-1 ${TYPOGRAPHY.table.helper}`}>{item.emptyChildrenMessage ?? 'Sin elementos'}</p>
+                : item.children!.map(child => <ExpandableChildRow key={child.key} item={child} depth={depth + 1} />)
+              }
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </>
+  );
+};
 
 export const DataTable = React.memo(<T extends Record<string, unknown>>({
   data,
@@ -107,6 +171,7 @@ export const DataTable = React.memo(<T extends Record<string, unknown>>({
 }: DataTableProps<T>) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [expandedRows, setExpandedRows] = useState<Set<string>>(new Set());
+  const hasExpandableRows = !!expandableRow;
 
   const handleSearch = useCallback((value: string) => {
     setSearchQuery(value);
@@ -212,7 +277,7 @@ export const DataTable = React.memo(<T extends Record<string, unknown>>({
           <table className="w-full text-left table-fixed min-w-[600px] lg:min-w-0">
             <thead>
               <tr>
-                {expandableRow && (
+                {hasExpandableRows && (
                   <th className="w-10 pl-4 pr-2 py-2 border-b border-blue-gray-100 bg-blanco-una-2 rounded-tl-corner" />
                 )}
                 {columns.map((column, index) => (
@@ -223,9 +288,9 @@ export const DataTable = React.memo(<T extends Record<string, unknown>>({
                     className={cn(
                       "py-2 border-b bg-blanco-una-2 border-blue-gray-100",
                       column.align === 'left' ? 'text-left' : column.align === 'right' ? 'text-right' : 'text-center',
-                      index === 0 ? (expandableRow ? "px-4" : "pl-8 pr-4") : "px-4",
+                      index === 0 ? (hasExpandableRows ? "px-4" : "pl-8 pr-4") : "px-4",
                       // Esquina superior izquierda si no hay expandable y es la primera columna
-                      index === 0 && !expandableRow && "rounded-tl-corner",
+                      index === 0 && !hasExpandableRows && "rounded-tl-corner",
                       // Esquina superior derecha si es la última columna y no hay acciones
                       index === columns.length - 1 && (!actions || actions.length === 0) && "rounded-tr-corner"
                     )}
@@ -244,20 +309,26 @@ export const DataTable = React.memo(<T extends Record<string, unknown>>({
                 )}
               </tr>
             </thead>
-            <tbody>
+            <motion.tbody
+              key={`${pagination?.currentPage ?? 0}-${data.length}-${(data[0] as Record<string, unknown>)?.id ?? ''}`}
+              initial="hidden"
+              animate="visible"
+            >
               {data.map((item, index) => {
                 const rowKey = getRowKey ? getRowKey(item, index) : String((item as Record<string, unknown>).id ?? index);
-                const isExpanded = expandableRow ? expandedRows.has(rowKey) : false;
+                const isExpanded = hasExpandableRows ? expandedRows.has(rowKey) : false;
                 const isLast = index === data.length - 1;
-                const totalCols = columns.length + (expandableRow ? 1 : 0) + (actions?.length ? 1 : 0);
+                const totalCols = columns.length + (hasExpandableRows ? 1 : 0) + (actions?.length ? 1 : 0);
                 return (
                   <React.Fragment key={`${rowKey}-${index}`}>
-                    <tr
-                      className={cn(expandableRow && "cursor-pointer transition-colors")}
-                      onClick={expandableRow ? () => toggleRow(rowKey) : undefined}
+                    <motion.tr
+                      variants={TABLE_ROW_VARIANTS}
+                      custom={index}
+                      className={cn(hasExpandableRows && "cursor-pointer transition-colors")}
+                      onClick={hasExpandableRows ? () => toggleRow(rowKey) : undefined}
                     >
-                      {expandableRow && (
-                        <td className={cn("pl-4 pr-2 py-2 w-10 text-center align-middle", !isLast && !isExpanded && "border-b border-blue-gray-50")}>
+                      {hasExpandableRows && (
+                        <td className={cn("pl-4 pr-2 py-2 h-16 w-10 text-center align-middle", !isLast && !isExpanded && "border-b border-blue-gray-50")}>
                           <motion.div
                             initial={false}
                             animate={{ rotate: isExpanded ? 180 : 0 }}
@@ -278,8 +349,8 @@ export const DataTable = React.memo(<T extends Record<string, unknown>>({
                         <td
                           key={column.key}
                           className={cn(
-                            "py-2",
-                            colIndex === 0 ? (expandableRow ? "px-4" : "pl-8 pr-4") : "px-4",
+                            "py-2 h-16 align-middle",
+                            colIndex === 0 ? (hasExpandableRows ? "px-4" : "pl-8 pr-4") : "px-4",
                             !isLast && !isExpanded && "border-b border-blue-gray-50"
                           )}
                         >
@@ -293,7 +364,7 @@ export const DataTable = React.memo(<T extends Record<string, unknown>>({
                       ))}
                       {actions && actions.length > 0 && (
                         <td className={cn(
-                          "pl-4 pr-8 py-2",
+                          "pl-4 pr-8 py-2 h-16 align-middle",
                           !isLast && !isExpanded && "border-b border-blue-gray-50"
                         )}>
                           <div className="flex items-center gap-2">
@@ -317,9 +388,9 @@ export const DataTable = React.memo(<T extends Record<string, unknown>>({
                           </div>
                         </td>
                       )}
-                    </tr>
+                    </motion.tr>
                     <AnimatePresence initial={false}>
-                      {expandableRow && isExpanded && (
+                      {hasExpandableRows && isExpanded && (
                         <tr className="bg-white">
                           <td colSpan={totalCols} className="p-0 border-0">
                             <motion.div
@@ -329,8 +400,13 @@ export const DataTable = React.memo(<T extends Record<string, unknown>>({
                               transition={{ type: 'spring', damping: 25, stiffness: 300, mass: 0.8 }}
                               className="overflow-hidden"
                             >
-                              <div className="px-4 pb-3 pt-1">
-                                {expandableRow(item)}
+                              <div className="px-4 py-2">
+                                {(() => {
+                                  const children = expandableRow!(item);
+                                  return children.length === 0
+                                    ? <p className={`text-gris-una ${TYPOGRAPHY.table.helper}`}>Sin elementos</p>
+                                    : <div className="space-y-1">{children.map(child => <ExpandableChildRow key={child.key} item={child} />)}</div>;
+                                })()}
                               </div>
                             </motion.div>
                           </td>
@@ -340,7 +416,7 @@ export const DataTable = React.memo(<T extends Record<string, unknown>>({
                   </React.Fragment>
                 );
               })}
-            </tbody>
+            </motion.tbody>
           </table>
         )}
       </div>
@@ -358,5 +434,9 @@ export const DataTable = React.memo(<T extends Record<string, unknown>>({
     </div>
   );
 
-  return unstyled ? tableContent : <Card className="p-4">{tableContent}</Card>;
+  return (
+    <motion.div layout="position" transition={SPRING_LAYOUT}>
+      {unstyled ? tableContent : <Card className="p-4">{tableContent}</Card>}
+    </motion.div>
+  );
 }) as <T extends Record<string, unknown>>(props: DataTableProps<T>) => React.ReactElement;

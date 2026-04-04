@@ -7,8 +7,13 @@ import React, { useState, useEffect } from 'react';
 import { Modal } from '@/Components/Ui/Modals/Modal';
 import { Button } from '@/Components/Ui/Index';
 import { SystemIcons } from '@/Components/Ui/Icons/SystemIcons';
+import { StatusBadge } from '@/Components/Ui/Feedback/StatusBadge';
 import { axiosInstance } from '@/Config/axios';
 import { useToast } from '@/Context/ToastContext';
+import { TYPOGRAPHY } from '@/Constants/Typography';
+import { ICON_SIZES } from '@/Constants/Components';
+import { BADGE_COLORS } from '@/Constants/StatusBadges';
+import { cn } from '@/Utils/ClassNames';
 
 interface Archivo {
   archivo_id: number;
@@ -53,7 +58,7 @@ export const PublicLinkModal: React.FC<PublicLinkModalProps> = ({
 
   if (!archivo || !evidencia) return null;
 
-  const publicUrl = archivo.token_publico 
+  const publicUrl = archivo.token_publico
     ? `${window.location.origin}/api/p/${archivo.token_publico}`
     : '';
 
@@ -63,7 +68,6 @@ export const PublicLinkModal: React.FC<PublicLinkModalProps> = ({
       await axiosInstance.post(`/archivos/${archivo.archivo_id}/make-public`);
       onSuccess();
     } catch (error: any) {
-      console.error('Error generando enlace:', error);
       showToast({
         type: 'error',
         title: 'Error al generar enlace',
@@ -83,7 +87,6 @@ export const PublicLinkModal: React.FC<PublicLinkModalProps> = ({
       await axiosInstance.post(`/archivos/${archivo.archivo_id}/revoke-public`);
       onSuccess();
     } catch (error: any) {
-      console.error('Error revocando enlace:', error);
       showToast({
         type: 'error',
         title: 'Error al revocar enlace',
@@ -99,8 +102,7 @@ export const PublicLinkModal: React.FC<PublicLinkModalProps> = ({
       await navigator.clipboard.writeText(publicUrl);
       setCopiedToClipboard(true);
       setTimeout(() => setCopiedToClipboard(false), 2000);
-    } catch (error) {
-      console.error('Error copiando al portapapeles:', error);
+    } catch {
       showToast({
         type: 'error',
         title: 'Error al copiar',
@@ -113,141 +115,124 @@ export const PublicLinkModal: React.FC<PublicLinkModalProps> = ({
     <Modal
       isOpen={isOpen}
       onClose={onClose}
-      title="Enlace Público"
+      title="Enlace público"
       size="md"
-      closable
+      variant="info"
+      heroIcon={<SystemIcons.modal.document className={cn(ICON_SIZES.md, 'text-blanco-una')} />}
     >
-      <div className="space-y-4">
+      <div className="flex flex-col gap-4">
+
         {/* Información del archivo */}
-        <div className="bg-gray-50 p-3 rounded-md">
-          <div className="text-sm font-medium text-gray-900 mb-1">
-            {evidencia.nomenclatura}
+        <div className="flex flex-col gap-1">
+          <div className="flex items-center gap-2">
+            <span className={cn(TYPOGRAPHY.modal.body, 'font-semibold text-negro-una')}>
+              {evidencia.nomenclatura}
+            </span>
+            <span className={cn(TYPOGRAPHY.modal.subtitle, 'text-gris-una-2')}>—</span>
+            <span className={cn(TYPOGRAPHY.modal.body, 'text-gris-una-2')}>
+              {evidencia.descripcion}
+            </span>
           </div>
-          <div className="text-sm text-gray-500 mb-2">
-            {evidencia.descripcion}
-          </div>
-          <div className="flex items-center gap-2 text-sm text-gray-700">
-            <SystemIcons.modal.document className="w-4 h-4" />
-            <span className="font-medium">{archivo.nombre_original}</span>
+          <div className="flex items-center gap-1.5">
+            <SystemIcons.modal.document className={cn(ICON_SIZES.sm, 'text-gris-una')} />
+            <span className={cn(TYPOGRAPHY.modal.body, 'text-gris-una-2')}>
+              {archivo.nombre_original}
+            </span>
           </div>
         </div>
 
+        <hr className="border-gris-light" />
+
         {/* Estado del enlace */}
         {archivo.is_publico && archivo.token_publico ? (
-          <>
-            {/* Enlace público activo */}
-            <div className="border border-green-200 bg-green-50 rounded-md p-4">
-              <div className="flex items-start gap-2 mb-3">
-                <SystemIcons.actions.linkIcon className="w-5 h-5 text-green-600 mt-0.5 flex-shrink-0" />
-                <div className="flex-1 min-w-0">
-                  <div className="text-sm font-medium text-green-900 mb-1">
-                    Enlace público activo
-                  </div>
-                  {archivo.link_expira_en && (
-                    <div className="text-xs text-green-700">
-                      Expira: {new Date(archivo.link_expira_en).toLocaleString()}
-                    </div>
-                  )}
-                </div>
+          <div className="flex flex-col gap-3">
+            {/* Encabezado estado activo */}
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <SystemIcons.actions.linkIcon className={cn(ICON_SIZES.sm, 'text-verde')} />
+                <span className={cn(TYPOGRAPHY.modal.body, 'font-semibold text-negro-una')}>
+                  Enlace público activo
+                </span>
               </div>
+              {archivo.link_expira_en && (
+                <span className={cn(TYPOGRAPHY.modal.subtitle, 'text-gris-una-2')}>
+                  Expira: {new Date(archivo.link_expira_en).toLocaleString()}
+                </span>
+              )}
+            </div>
 
-              {/* URL para copiar */}
-              <div className="bg-white border border-green-200 rounded p-2 mb-3">
-                <div className="text-xs text-gray-500 mb-1">URL pública:</div>
-                <div className="flex items-center gap-2">
-                  <input
-                    type="text"
-                    readOnly
-                    value={publicUrl}
-                    className="flex-1 text-sm bg-transparent border-none focus:outline-none text-gray-700"
-                    onClick={(e) => e.currentTarget.select()}
-                  />
-                </div>
-              </div>
-
-              {/* Botones de acción */}
-              <div className="flex gap-2">
-                <Button
-                  variant="primary"
-                  size="sm"
-                  onClick={handleCopyLink}
-                  className="flex-1"
-                >
-                  {copiedToClipboard ? (
-                    <>
-                      <SystemIcons.interface.check className="w-4 h-4" />
-                      Copiado!
-                    </>
-                  ) : (
-                    <>
-                      <SystemIcons.actions.copy className="w-4 h-4" />
-                      Copiar enlace
-                    </>
-                  )}
-                </Button>
-                <Button
-                  variant="error"
-                  size="sm"
-                  onClick={handleRevokeLink}
-                  disabled={isRevoking}
-                  className="flex-1"
-                >
-                  {isRevoking ? 'Revocando...' : 'Revocar enlace'}
-                </Button>
+            {/* URL */}
+            <div className="flex flex-col gap-1">
+              <span className={cn(TYPOGRAPHY.modal.subtitle, 'text-gris-una-2 uppercase tracking-wider font-semibold')}>
+                URL pública
+              </span>
+              <div className="flex items-center gap-2 border border-gris-light rounded px-3 py-2">
+                <input
+                  type="text"
+                  readOnly
+                  value={publicUrl}
+                  className={cn(TYPOGRAPHY.modal.body, 'flex-1 bg-transparent border-none focus:outline-none text-gris-una-2')}
+                  onClick={(e) => e.currentTarget.select()}
+                />
               </div>
             </div>
 
-            {/* Información adicional */}
-            <div className="text-xs text-gray-500 bg-blue-50 border border-blue-200 rounded p-3">
-              <div className="flex items-start gap-2">
-                <SystemIcons.interface.informationCircle className="w-4 h-4 text-blue-600 mt-0.5 flex-shrink-0" />
-                <div>
-                  <p className="font-medium text-blue-900 mb-1">Sobre los enlaces públicos:</p>
-                  <ul className="list-disc list-inside space-y-1 text-blue-800">
-                    <li>Cualquier persona con este enlace puede acceder al archivo</li>
-                    <li>No se requiere autenticación para ver el contenido</li>
-                    <li>Puede revocar el enlace en cualquier momento</li>
-                  </ul>
-                </div>
+            {/* Botones */}
+            <div className="flex gap-2">
+              <Button variant="primary" size="sm" onClick={handleCopyLink} className="flex-1">
+                {copiedToClipboard ? (
+                  <><SystemIcons.interface.check className={ICON_SIZES.sm} /> Copiado</>
+                ) : (
+                  <><SystemIcons.actions.copy className={ICON_SIZES.sm} /> Copiar enlace</>
+                )}
+              </Button>
+              <Button variant="error" size="sm" onClick={handleRevokeLink} disabled={isRevoking} className="flex-1">
+                {isRevoking ? 'Revocando...' : 'Revocar enlace'}
+              </Button>
+            </div>
+
+            {/* Aviso */}
+            <div className="flex items-start gap-2">
+              <SystemIcons.interface.informationCircle className={cn(ICON_SIZES.sm, 'text-info mt-0.5 shrink-0')} />
+              <div className="flex flex-col gap-0.5">
+                <span className={cn(TYPOGRAPHY.modal.subtitle, 'font-semibold text-negro-una')}>Sobre los enlaces públicos</span>
+                <ul className={cn(TYPOGRAPHY.modal.subtitle, 'text-gris-una-2 list-disc list-inside')}>
+                  <li>Cualquier persona con este enlace puede acceder al archivo</li>
+                  <li>No se requiere autenticación para ver el contenido</li>
+                  <li>Puede revocar el enlace en cualquier momento</li>
+                </ul>
               </div>
             </div>
-          </>
+          </div>
         ) : (
-          <>
-            {/* Sin enlace público */}
-            <div className="border border-gray-200 bg-gray-50 rounded-md p-4 text-center">
-              <SystemIcons.actions.linkIcon className="mx-auto h-10 w-10 text-gray-400 mb-2" />
-              <div className="text-sm font-medium text-gray-900 mb-1">
-                Este archivo no tiene enlace público
-              </div>
-              <div className="text-xs text-gray-500 mb-4">
-                Genere un enlace para compartir este archivo sin necesidad de autenticación
-              </div>
-              <Button
-                variant="primary"
-                size="sm"
-                onClick={handleGenerateLink}
-                disabled={isGenerating}
-              >
-                <SystemIcons.actions.linkIcon className="w-4 h-4" />
+          <div className="flex flex-col gap-3">
+            {/* Sin enlace */}
+            <div className="flex flex-col items-center gap-2 py-4">
+              <StatusBadge
+                label="Sin enlace público"
+                colorClasses={BADGE_COLORS.warning.colorClasses}
+              />
+              <span className={cn(TYPOGRAPHY.modal.body, 'text-gris-una-2 text-center')}>
+                Genere un enlace para compartir este archivo sin necesidad de autenticación.
+              </span>
+              <Button variant="primary" size="sm" onClick={handleGenerateLink} disabled={isGenerating}>
+                <SystemIcons.actions.linkIcon className={ICON_SIZES.sm} />
                 {isGenerating ? 'Generando...' : 'Generar enlace público'}
               </Button>
             </div>
 
-            {/* Información adicional */}
-            <div className="text-xs text-gray-500 bg-blue-50 border border-blue-200 rounded p-3">
-              <div className="flex items-start gap-2">
-                <SystemIcons.interface.informationCircle className="w-4 h-4 text-blue-600 mt-0.5 flex-shrink-0" />
-                <div>
-                  <p className="font-medium text-blue-900 mb-1">¿Qué es un enlace público?</p>
-                  <p className="text-blue-800">
-                    Un enlace público permite compartir este archivo con personas que no tienen
-                    acceso al sistema. El archivo será visible para cualquiera que tenga el enlace.
-                  </p>
-                </div>
+            {/* Aviso */}
+            <div className="flex items-start gap-2">
+              <SystemIcons.interface.informationCircle className={cn(ICON_SIZES.sm, 'text-info mt-0.5 shrink-0')} />
+              <div className="flex flex-col gap-0.5">
+                <span className={cn(TYPOGRAPHY.modal.subtitle, 'font-semibold text-negro-una')}>¿Qué es un enlace público?</span>
+                <p className={cn(TYPOGRAPHY.modal.subtitle, 'text-gris-una-2')}>
+                  Un enlace público permite compartir este archivo con personas que no tienen
+                  acceso al sistema. El archivo será visible para cualquiera que tenga el enlace.
+                </p>
               </div>
             </div>
-          </>
+          </div>
         )}
       </div>
     </Modal>

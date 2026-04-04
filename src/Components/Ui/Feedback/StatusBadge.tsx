@@ -15,8 +15,8 @@ export const StatusBadge: React.FC<StatusBadgeProps> = ({ label, colorClasses, b
     : `${TYPOGRAPHY.badge} px-2 py-1`;
 
   return (
-    <div className={`relative grid items-center w-max font-sans font-bold rounded-corner select-none whitespace-nowrap ${sizeClasses} ${colorClasses} ${badgeClassName ?? ''}`}>
-        <span>{label}</span>
+    <div className={`relative grid items-center w-max font-sans font-bold rounded-corner shadow-xl/20 select-none whitespace-nowrap ${sizeClasses} ${colorClasses} ${badgeClassName ?? ''}`}>
+        <span className="leading-none">{label}</span>
     </div>
   );
 };

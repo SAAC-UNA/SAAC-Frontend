@@ -1,6 +1,6 @@
 /**
- * EvidenceFilesModal - Modal para mostrar archivos asociados a una evidencia
- * HU010 - Aprobación por Bloques
+ * EvidenceFilesModal - Modal para mostrar archivos asociados a una evidencia.
+ * HU023 - Gestión de Informes Finales
  */
 
 import React from 'react';
@@ -25,7 +25,7 @@ interface EvidenceFilesModalProps {
 export const EvidenceFilesModal: React.FC<EvidenceFilesModalProps> = ({
   isOpen,
   onClose,
-  evidencia
+  evidencia,
 }) => {
   if (!evidencia) return null;
 
@@ -39,7 +39,6 @@ export const EvidenceFilesModal: React.FC<EvidenceFilesModalProps> = ({
       heroIcon={<SystemIcons.modal.document className={cn(ICON_SIZES.md, 'text-blanco-una')} />}
     >
       <div className="flex flex-col gap-4">
-        {/* Información de la evidencia */}
         <div className="flex items-center gap-2">
           <span className={cn(TYPOGRAPHY.modal.body, 'font-semibold text-negro-una')}>
             {evidencia.nomenclatura}
@@ -50,7 +49,6 @@ export const EvidenceFilesModal: React.FC<EvidenceFilesModalProps> = ({
           </span>
         </div>
 
-        {/* Lista de archivos - Por ahora vacío */}
         <div className="py-6 flex flex-col items-center gap-2">
           <SystemIcons.modal.document className={cn(ICON_SIZES.lg, 'text-gris-light')} />
           <p className={cn(TYPOGRAPHY.modal.body, 'font-medium text-negro-una')}>
