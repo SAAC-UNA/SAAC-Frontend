@@ -515,7 +515,7 @@ const CreateImprovementCommitment: React.FC = () => {
               />
 
           {/* Step Content */}
-          <div className="min-h-[400px]">
+          <div className="min-h-100">
             {currentStep === 1 ? (
               <CreationStep
                 formData={formData}

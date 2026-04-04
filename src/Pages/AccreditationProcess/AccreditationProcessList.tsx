@@ -236,12 +236,12 @@ export const AccreditationProcessList: React.FC = () => {
               placeholder="Buscar procesos..."
               value={searchQuery}
               onChange={setSearchQuery}
-              className="w-full sm:w-72 text-[13px]"
+              className="w-full sm:w-72 text-sidebar"
             />
             <Button
               variant="secondary"
               onClick={handleCreateProcess}
-              className="gap-2 text-[13px] font-semibold"
+              className="gap-2 text-sidebar font-semibold"
             >
               Crear
             </Button>

@@ -24,7 +24,6 @@ import { useDebounce } from '@/Hooks/UseDebounce';
 import { ELEMENT_TYPE_LABELS } from '@/Constants/StructureConstants';
 import { truncateText } from '@/Utils';
 import { TABLE_PAGE_SIZE } from '@/Constants/TablePagination';
-import { TABLE_TRUNCATE } from '@/Constants/TableTruncate';
 import { useFirstColumnConfig } from '@/Hooks/UseFirstColumnConfig';
 import type { DataTableColumn} from '@/Components/Ui/Table/DataTable';
 import type { StructureElement, ElementType } from '@/Types/StructureTypes';
