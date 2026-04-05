@@ -11,11 +11,12 @@
  */
 
 import React, { useState, useEffect } from 'react';
-import { Input, Textarea, MultiSelect } from '@/Components/Ui/Index';
+import { Card, Input, Textarea } from '@/Components/Ui/Index';
 import { useRoles } from '@/Hooks/UseRoles';
 import { validationRules, useValidation } from '@/Utils/Validation';
 import type { CreateRoleData, Role } from '@/Services/RoleService';
-import type { PermissionOption } from '@/Types/RoleTypes';
+import { PermissionMatrixField } from './PermissionMatrixField';
+import { TYPOGRAPHY } from '@/Constants/Typography';
 
 interface RoleFormData {
   name: string;
@@ -58,7 +59,7 @@ export const RoleFormContent: React.FC<RoleFormContentProps> = ({
   onHasChangesChange,
 }) => {
   const isEditing = !!initialData;
-  const { loadPermissions, availablePermissions, isLoading, error, clearError } = useRoles();
+  const { loadPermissions, availablePermissionGroups, isLoading, error, clearError } = useRoles();
 
   const [formData, setFormData] = useState<RoleFormData>({
     name: initialData?.name ?? '',
@@ -110,73 +111,65 @@ export const RoleFormContent: React.FC<RoleFormContentProps> = ({
     }
   };
 
-  const permissionsOptions = () => {
-    if (isLoading && availablePermissions.length === 0) {
-      return { options: [{ value: 'loading', label: 'Cargando permisos…', disabled: true }], placeholder: 'Cargando…' };
-    }
-    if (availablePermissions.length === 0) {
-      return { options: [{ value: 'empty', label: 'No hay permisos disponibles', disabled: true }], placeholder: 'Sin permisos' };
-    }
-    return {
-      options: availablePermissions.map((p: PermissionOption) => ({ value: p.value, label: p.label, disabled: false })),
-      placeholder: 'Seleccione los permisos…',
-    };
-  };
-
-  const { options, placeholder } = permissionsOptions();
-
   return (
     <form ref={formRef} onSubmit={handleSubmit} className="flex flex-col gap-5">
+      <div className="grid grid-cols-1 xl:grid-cols-[320px_minmax(0,1fr)] gap-5 items-start">
+        <Card className="p-4 border border-gris-una/15 shadow-sm">
+          <div className="space-y-4">
+            <div>
+              <h3 className="text-sm font-semibold text-negro-una">Datos del rol</h3>
+              <p className={`${TYPOGRAPHY.form.helper} mt-1 text-gris-una`}>
+                Define el nombre y una descripción corta antes de asignar permisos.
+              </p>
+            </div>
 
-      {/* Fila 1: Nombre + Permisos */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
-        <Input
-          label="Nombre del Rol"
-          placeholder="Ej: Administrador, Docente…"
-          value={formData.name}
-          onChange={e => handleChange('name', e.target.value)}
-          onFocus={() => advancedValidation.clearFieldError('name')}
-          onValidateChange={v => handleRealTime('name', v)}
-          error={advancedValidation.errors['name']}
-          required
-          maxLength={50}
-          characterCount
-          validateOnChange
-          size="sm"
-        />
-        <MultiSelect
-          label="Permisos del Rol"
-          options={options}
+            <Input
+              label="Nombre del Rol"
+              placeholder="Ej: Administrador, Docente…"
+              value={formData.name}
+              onChange={e => handleChange('name', e.target.value)}
+              onFocus={() => advancedValidation.clearFieldError('name')}
+              onValidateChange={v => handleRealTime('name', v)}
+              error={advancedValidation.errors['name']}
+              required
+              maxLength={50}
+              characterCount
+              validateOnChange
+              size="sm"
+            />
+
+            <Textarea
+              label="Descripción"
+              placeholder="Descripción del rol y sus responsabilidades…"
+              value={formData.description}
+              onChange={e => handleChange('description', e.target.value)}
+              onFocus={() => advancedValidation.clearFieldError('description')}
+              onValidateChange={v => handleRealTime('description', v)}
+              error={advancedValidation.errors['description']}
+              rows={6}
+              maxLength={255}
+              characterCount
+              helperText="Descripción opcional"
+              resize="vertical"
+              size="sm"
+              validateOnChange
+            />
+          </div>
+        </Card>
+
+        <PermissionMatrixField
+          groups={availablePermissionGroups}
           value={formData.permissions}
           onChange={v => handleChange('permissions', v)}
+          loading={isLoading}
           error={advancedValidation.errors['permissions']}
-          required
-          placeholder={placeholder}
         />
       </div>
 
-      {/* Fila 2: Descripción */}
-      <Textarea
-        label="Descripción"
-        placeholder="Descripción del rol y sus responsabilidades…"
-        value={formData.description}
-        onChange={e => handleChange('description', e.target.value)}
-        onFocus={() => advancedValidation.clearFieldError('description')}
-        onValidateChange={v => handleRealTime('description', v)}
-        error={advancedValidation.errors['description']}
-        rows={4}
-        maxLength={255}
-        characterCount
-        helperText="Descripción opcional"
-        resize="vertical"
-        size="sm"
-        validateOnChange
-      />
-
       {/* Error de API */}
       {error && (
-        <div className="p-3 bg-red-50 border border-red-200 rounded-corner">
-          <p className="text-sm text-rojo-una">{error}</p>
+        <div className={`${TYPOGRAPHY.form.helper} p-3 bg-rojo-una-2/5 border border-rojo-una-2/20 rounded-corner text-rojo-una-2`}>
+          {error}
         </div>
       )}
     </form>

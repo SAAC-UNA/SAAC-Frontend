@@ -1,4 +1,13 @@
 import type { NavItem } from "./Types/CommonTypes";
+import { evaluateAccess, type AccessRule } from "@/Utils/Authorization";
+import {
+  CAPABILITIES,
+  EVIDENCE_ASSIGNMENT_PERMISSIONS,
+  EVIDENCE_VIEW_PERMISSIONS,
+  REPORTS_ACCESS_PERMISSIONS,
+  ROLE_MANAGEMENT_PERMISSIONS,
+  USER_MANAGEMENT_PERMISSIONS,
+} from "@/Constants/PermissionCapabilities";
 
 // ===== ICONOS =====
 const homeIcon = "system-icon:home";
@@ -17,22 +26,39 @@ const reportsIcon = "system-icon:reports";
 const lightIcon = "system-icon:lightbulb";
 
 /**
- * Obtener items de navegacion filtrados por rol
- * @param userRoles - Array de roles del usuario autenticado o un solo rol como string
+ * Obtener items de navegacion filtrados por reglas de acceso.
  */
-export const getNavigationItems = (
-  userRoles?: string | string[],
-): NavItem[] => {
-  // Normalizar a array
-  const roles = Array.isArray(userRoles)
-    ? userRoles
-    : userRoles
-      ? [userRoles]
-      : [];
+interface NavigationAccessInput {
+  roles?: string[];
+  permissions?: string[];
+}
 
-  const isSuperUser = roles.includes("Superusuario");
-  const isAdmin = roles.includes("Administrador");
-  const isEncargado = roles.includes("Encargado de Acreditación");
+const normalizeAccessInput = (
+  input?: string | string[] | NavigationAccessInput,
+): NavigationAccessInput => {
+  if (!input) {
+    return { roles: [], permissions: [] };
+  }
+
+  if (typeof input === "string") {
+    return { roles: [input], permissions: [] };
+  }
+
+  if (Array.isArray(input)) {
+    return { roles: input, permissions: [] };
+  }
+
+  return {
+    roles: input.roles ?? [],
+    permissions: input.permissions ?? [],
+  };
+};
+
+export const getNavigationItems = (
+  accessInput?: string | string[] | NavigationAccessInput,
+): NavItem[] => {
+  const access = normalizeAccessInput(accessInput);
+  const hasAccess = (rule?: AccessRule) => evaluateAccess(access, rule);
 
   const items: NavItem[] = [
     {
@@ -47,7 +73,12 @@ export const getNavigationItems = (
   {
     const adminChildren: NavItem[] = [];
 
-    if (isSuperUser) {
+    if (
+      hasAccess({
+        requireAnyCapabilities: [CAPABILITIES.ADMIN_ROLES_MANAGE],
+        requireAnyPermissions: ROLE_MANAGEMENT_PERMISSIONS,
+      })
+    ) {
       adminChildren.push({
         id: "roles",
         label: "Roles",
@@ -57,15 +88,27 @@ export const getNavigationItems = (
       });
     }
 
-    adminChildren.push({
-      id: "usuarios",
-      label: "Usuarios",
-      icon: userIcon,
-      href: "/usuarios/listar",
-      isActive: false,
-    });
+    if (
+      hasAccess({
+        requireAnyCapabilities: [CAPABILITIES.ADMIN_USERS_MANAGE],
+        requireAnyPermissions: USER_MANAGEMENT_PERMISSIONS,
+      })
+    ) {
+      adminChildren.push({
+        id: "usuarios",
+        label: "Usuarios",
+        icon: userIcon,
+        href: "/usuarios/listar",
+        isActive: false,
+      });
+    }
 
-    if (isSuperUser) {
+    if (
+      hasAccess({
+        requireAnyCapabilities: [CAPABILITIES.AUDIT_VIEW],
+        requireAnyPermissions: ["bitacora.view"],
+      })
+    ) {
       adminChildren.push({
         id: "bitacora",
         label: "Bitácora del Sistema",
@@ -75,21 +118,28 @@ export const getNavigationItems = (
       });
     }
 
-    items.push({
-      id: "administracion",
-      label: "Administración",
-      icon: lightIcon,
-      href: "#",
-      isActive: false,
-      isExpandable: true,
-      children: adminChildren,
-    });
+    if (adminChildren.length > 0) {
+      items.push({
+        id: "administracion",
+        label: "Administración",
+        icon: lightIcon,
+        href: "#",
+        isActive: false,
+        isExpandable: true,
+        children: adminChildren,
+      });
+    }
   }
 
   {
     const evidenciaChildren: NavItem[] = [];
 
-    if (isAdmin || isEncargado || isSuperUser) {
+    if (
+      hasAccess({
+        requireAnyCapabilities: [CAPABILITIES.EVIDENCE_ASSIGN],
+        requireAnyPermissions: EVIDENCE_ASSIGNMENT_PERMISSIONS,
+      })
+    ) {
       evidenciaChildren.push({
         id: "evidenciasAsignar",
         label: "Asignar Entregables",
@@ -99,38 +149,61 @@ export const getNavigationItems = (
       });
     }
 
-    evidenciaChildren.push(
-      {
+    if (
+      hasAccess({
+        requireAnyCapabilities: [CAPABILITIES.EVIDENCE_VIEW],
+        requireAnyPermissions: EVIDENCE_VIEW_PERMISSIONS,
+      })
+    ) {
+      evidenciaChildren.push({
         id: "misEvidenciasAsignadas",
         label: "Mis Entregas",
         icon: myEvidencesIcon,
         href: "/mis-evidencias-asignadas",
         isActive: false,
-      },
-      {
+      });
+    }
+
+    if (
+      hasAccess({
+        requireAnyCapabilities: [CAPABILITIES.EVIDENCE_ASSIGN],
+        requireAnyPermissions: EVIDENCE_ASSIGNMENT_PERMISSIONS,
+      })
+    ) {
+      evidenciaChildren.push({
         id: "busquedaEvidencias",
         label: "Buscar Entregables",
         icon: searchEvidenceIcon,
         href: "/evidencias/busqueda-avanzada",
         isActive: false,
-      },
-    );
+      });
+    }
 
-    items.push({
-      id: "evidencias",
-      label: "Entregables",
-      icon: evidenceIcon,
-      href: "#",
-      isActive: false,
-      isExpandable: true,
-      children: evidenciaChildren,
-    });
+    if (evidenciaChildren.length > 0) {
+      items.push({
+        id: "evidencias",
+        label: "Entregables",
+        icon: evidenceIcon,
+        href: "#",
+        isActive: false,
+        isExpandable: true,
+        children: evidenciaChildren,
+      });
+    }
   }
 
   {
     const solicitudChildren: NavItem[] = [];
 
-    if (isEncargado || isSuperUser) {
+    if (
+      hasAccess({
+        requireAnyCapabilities: [CAPABILITIES.EXTENSION_MANAGE],
+        requireAnyPermissions: [
+          "solicitudes_ampliacion.approve",
+          "solicitudes_ampliacion.reject",
+        ],
+      })
+    ) {
       solicitudChildren.push({
         id: "gestionarSolicitudesAmpliacion",
         label: "Gestionar Solicitudes",
@@ -140,92 +213,155 @@ export const getNavigationItems = (
       });
     }
 
-    solicitudChildren.push({
-      id: "misSolicitudesAmpliacion",
-      label: "Mis Solicitudes",
-      icon: extensionRequestIcon,
-      href: "/solicitudes-ampliacion/mis-solicitudes",
-      isActive: false,
-    });
+    if (
+      hasAccess({
+        requireAnyCapabilities: [CAPABILITIES.EXTENSION_VIEW],
+        requireAnyPermissions: ["solicitudes_ampliacion.view"],
+      })
+    ) {
+      solicitudChildren.push({
+        id: "misSolicitudesAmpliacion",
+        label: "Mis Solicitudes",
+        icon: extensionRequestIcon,
+        href: "/solicitudes-ampliacion/mis-solicitudes",
+        isActive: false,
+      });
+    }
 
-    items.push({
-      id: "solicitudesAmpliacion",
-      label: "Ampliación",
-      icon: calendarIcon,
-      href: "#",
-      isActive: false,
-      isExpandable: true,
-      children: solicitudChildren,
-    });
+    if (solicitudChildren.length > 0) {
+      items.push({
+        id: "solicitudesAmpliacion",
+        label: "Ampliación",
+        icon: calendarIcon,
+        href: "#",
+        isActive: false,
+        isExpandable: true,
+        children: solicitudChildren,
+      });
+    }
   }
 
-  items.push({
-    id: "acreditacion",
-    label: "Acreditación",
-    icon: processIcon,
-    href: "#",
-    isActive: false,
-    isExpandable: true,
-    children: [
-      {
+  {
+    const acreditacionChildren: NavItem[] = [];
+
+    if (
+      hasAccess({
+        requireAnyCapabilities: [CAPABILITIES.ACCREDITATION_PROCESS_VIEW],
+        requireAnyPermissions: ["procesos.view"],
+      })
+    ) {
+      acreditacionChildren.push({
         id: "procesos-acreditacion",
         label: "Procesos de Acreditación",
         icon: processIcon,
         href: "/procesos-acreditacion/listar",
         isActive: false,
-      },
-      {
+      });
+    }
+
+    if (
+      hasAccess({
+        requireAnyCapabilities: [CAPABILITIES.ACCREDITATION_PROCESS_VIEW],
+        requireAnyPermissions: ["procesos.view"],
+      })
+    ) {
+      acreditacionChildren.push({
         id: "estructura",
         label: "Gestión de Estructura",
         icon: nutIcon,
         href: "/estructura/listar",
         isActive: false,
-      },
-      ...(isAdmin || isSuperUser
-        ? [
-            {
-              id: 'modelos-acreditacion',
-              label: 'Modelos de Acreditación',
-              icon: nutIcon,
-              href: '/estructura/modelos',
-              isActive: false,
-            },
-            {
-              id: 'ciclos-acreditacion',
-              label: 'Ciclos de Acreditación',
-              icon: calendarIcon,
-              href: '/ciclos-acreditacion',
-              isActive: false,
-            },
-          ]
-        : []),
-    ],
-  });
+      });
+    }
 
-  items.push({
-    id: "evaluacion",
-    label: "Evaluación",
-    icon: auditLogIcon,
-    href: "#",
-    isActive: false,
-    isExpandable: true,
-    children: [
-      {
+    if (
+      hasAccess({
+        requireAnyCapabilities: [CAPABILITIES.ACCREDITATION_MODEL_VIEW],
+        requireAnyPermissions: ["modelos.view"],
+      })
+    ) {
+      acreditacionChildren.push({
+        id: "modelos-acreditacion",
+        label: "Modelos de Acreditación",
+        icon: nutIcon,
+        href: "/estructura/modelos",
+        isActive: false,
+      });
+    }
+
+    if (
+      hasAccess({
+        requireAnyCapabilities: [CAPABILITIES.ACCREDITATION_CYCLE_VIEW],
+        requireAnyPermissions: ["ciclos.view"],
+      })
+    ) {
+      acreditacionChildren.push({
+        id: "ciclos-acreditacion",
+        label: "Ciclos de Acreditación",
+        icon: calendarIcon,
+        href: "/ciclos-acreditacion",
+        isActive: false,
+      });
+    }
+
+    if (acreditacionChildren.length > 0) {
+      items.push({
+        id: "acreditacion",
+        label: "Acreditación",
+        icon: processIcon,
+        href: "#",
+        isActive: false,
+        isExpandable: true,
+        children: acreditacionChildren,
+      });
+    }
+  }
+
+  {
+    const evaluacionChildren: NavItem[] = [];
+
+    if (
+      hasAccess({
+        requireAnyCapabilities: [CAPABILITIES.APPROVALS_VIEW],
+        requireAnyPermissions: ["aprobaciones.view"],
+      })
+    ) {
+      evaluacionChildren.push({
         id: "aprobacion-bloques",
         label: "Aprobación de Bloques",
         icon: approvalIcon,
         href: "/aprobacion-bloques",
         isActive: false,
-      },
-      {
+      });
+    }
+
+    if (
+      hasAccess({
+        requireAnyCapabilities: [CAPABILITIES.REPORTS_ACCESS],
+        requireAnyPermissions: REPORTS_ACCESS_PERMISSIONS,
+      })
+    ) {
+      evaluacionChildren.push({
         id: "gestion-informes",
         label: "Gestión de Informes",
         icon: reportsIcon,
         href: "/gestion-informes",
         isActive: false,
-      },
-    ],
-  });
+      });
+    }
+
+    if (evaluacionChildren.length > 0) {
+      items.push({
+        id: "evaluacion",
+        label: "Evaluación",
+        icon: auditLogIcon,
+        href: "#",
+        isActive: false,
+        isExpandable: true,
+        children: evaluacionChildren,
+      });
+    }
+  }
 
   return items;
 };

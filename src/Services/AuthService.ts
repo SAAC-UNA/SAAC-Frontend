@@ -20,6 +20,12 @@ export interface Role {
   name: string;
 }
 
+export interface UserPermission {
+  id: number;
+  name: string;
+  label: string;
+}
+
 export interface Career {
   carrera_id: number;
   carrera_sede_id: number;
@@ -39,8 +45,9 @@ export interface User {
   status: string;
   created_at: string;
   updated_at: string;
-  all_permissions: any[];
-  direct_permissions: any[];
+  all_permissions: UserPermission[];
+  direct_permissions: UserPermission[];
+  all_capabilities?: string[];
 }
 
 const AUTH_TOKEN_KEY = "auth_token";

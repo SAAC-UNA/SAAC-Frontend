@@ -7,31 +7,51 @@
  * - Roles con acceso
  */
 
-import React, { useState, useEffect } from 'react';
-import { Modal } from '@/Components/Ui/Modals/Modal';
-import { SystemIcons } from '@/Components/Ui/Icons/SystemIcons';
-import { DataTable, type DataTableColumn, ExpandableChildRow, type ExpandableChildItem } from '@/Components/Ui/Table/DataTable';
-import { StatusBadge } from '@/Components/Ui/Feedback/StatusBadge';
-import { FileRowContent, FileDownloadAction, FileDeleteAction } from '@/Components/Ui/Upload/FileList';
-import { LoadingSpinner } from '@/Components/Ui/Feedback/Loading';
-import { fileService } from '@/Services/FileService';
-import { evidenceSearchService, mapBackendToFrontend } from '@/Services/EvidenceSearchService';
-import { evidenceAssignmentService } from '@/Services/EvidenceAssignmentService';
-import { TableActionButton } from '@/Components/Ui/Buttons/TableActionButton';
-import type { FileModel } from '@/Types/FileTypes';
-import type { AssignmentStatus } from '@/Types/EvidenceAssignmentTypes';
-import { type EvidenceSearchResult } from '@/Types/EvidenceSearchTypes';
-import { useAuth } from '@/Context/AuthContext';
-import { AdminFileUploadModal } from './AdminFileUploadModal';
-import { FeedbackModal } from './FeedbackModal';
-import { type FeedbackEstado } from '@/Services/FeedbackService';
-import { TYPOGRAPHY } from '@/Constants/Typography';
-import { ICON_SIZES } from '@/Constants/Components';
-import { ASSIGNMENT_STATUS_BADGE, EVIDENCE_STATUS_BADGE, BADGE_COLORS } from '@/Constants/StatusBadges';
-import { Tooltip, TooltipTrigger, TooltipContent } from '@/Components/Ui/Feedback/Tooltip';
-import { cn } from '@/Utils/ClassNames';
-import { formatDate } from '@/Utils/DateUtils';
-import { TABLE_COLUMN_WIDTHS } from '@/Constants/Components';
+import React, { useState, useEffect } from "react";
+import { Modal } from "@/Components/Ui/Modals/Modal";
+import { SystemIcons } from "@/Components/Ui/Icons/SystemIcons";
+import {
+  DataTable,
+  type DataTableColumn,
+  ExpandableChildRow,
+  type ExpandableChildItem,
+} from "@/Components/Ui/Table/DataTable";
+import { StatusBadge } from "@/Components/Ui/Feedback/StatusBadge";
+import {
+  FileRowContent,
+  FileDownloadAction,
+  FileDeleteAction,
+} from "@/Components/Ui/Upload/FileList";
+import { LoadingSpinner } from "@/Components/Ui/Feedback/Loading";
+import { fileService } from "@/Services/FileService";
+import {
+  evidenceSearchService,
+  mapBackendToFrontend,
+} from "@/Services/EvidenceSearchService";
+import { evidenceAssignmentService } from "@/Services/EvidenceAssignmentService";
+import { TableActionButton } from "@/Components/Ui/Buttons/TableActionButton";
+import type { FileModel } from "@/Types/FileTypes";
+import type { AssignmentStatus } from "@/Types/EvidenceAssignmentTypes";
+import { type EvidenceSearchResult } from "@/Types/EvidenceSearchTypes";
+import { useAuth } from "@/Context/AuthContext";
+import { AdminFileUploadModal } from "./AdminFileUploadModal";
+import { FeedbackModal } from "./FeedbackModal";
+import { type FeedbackEstado } from "@/Services/FeedbackService";
+import { TYPOGRAPHY } from "@/Constants/Typography";
+import { ICON_SIZES } from "@/Constants/Components";
+import {
+  ASSIGNMENT_STATUS_BADGE,
+  EVIDENCE_STATUS_BADGE,
+  BADGE_COLORS,
+} from "@/Constants/StatusBadges";
+import {
+  Tooltip,
+  TooltipTrigger,
+  TooltipContent,
+} from "@/Components/Ui/Feedback/Tooltip";
+import { cn } from "@/Utils/ClassNames";
+import { formatDate } from "@/Utils/DateUtils";
+import { TABLE_COLUMN_WIDTHS } from "@/Constants/Components";
 
 interface EvidenceDetailsModalProps {
   isOpen: boolean;
@@ -58,20 +78,27 @@ interface EvidenciaResponsablesPanelAdminProps {
   onUpload: (group: FilesByUser) => void;
 }
 
-const EvidenciaResponsablesPanelAdmin: React.FC<EvidenciaResponsablesPanelAdminProps> = ({
-  groups,
-  loading,
-  onDelete,
-  onUpload,
-}) => {
-  if (loading) return <div className="relative min-h-[60px]"><LoadingSpinner variant="loader" /></div>;
-  if (groups.length === 0) return <p className={`text-gris-una px-3 py-1.5 ${TYPOGRAPHY.table.helper}`}>Sin responsables asignados</p>;
+const EvidenciaResponsablesPanelAdmin: React.FC<
+  EvidenciaResponsablesPanelAdminProps
+> = ({ groups, loading, onDelete, onUpload }) => {
+  if (loading)
+    return (
+      <div className="relative min-h-[60px]">
+        <LoadingSpinner variant="loader" />
+      </div>
+    );
+  if (groups.length === 0)
+    return (
+      <p className={`text-gris-una px-3 py-1.5 ${TYPOGRAPHY.table.helper}`}>
+        Sin responsables asignados
+      </p>
+    );
 
   return (
     <div className="space-y-1">
-      {groups.map(group => {
+      {groups.map((group) => {
         const estado = group.estado_asignacion as AssignmentStatus | null;
-        const fileItems: ExpandableChildItem[] = group.archivos.map(file => ({
+        const fileItems: ExpandableChildItem[] = group.archivos.map((file) => ({
           key: String(file.archivo_id),
           content: <FileRowContent file={file} />,
           action: (
@@ -86,7 +113,7 @@ const EvidenciaResponsablesPanelAdmin: React.FC<EvidenciaResponsablesPanelAdminP
             key={String(group.usuario_id)}
             item={{
               key: String(group.usuario_id),
-              emptyChildrenMessage: 'Sin archivos',
+              emptyChildrenMessage: "Sin archivos",
               children: fileItems,
               action: (
                 <TableActionButton
@@ -97,23 +124,39 @@ const EvidenciaResponsablesPanelAdmin: React.FC<EvidenciaResponsablesPanelAdminP
               ),
               content: (
                 <div className="flex items-center gap-4 flex-1 min-w-0">
-                  <span className={`font-semibold text-negro-una-2 flex-1 min-w-0 truncate ${TYPOGRAPHY.table.helper}`}>{group.nombre as string}</span>
+                  <span
+                    className={`font-semibold text-negro-una-2 flex-1 min-w-0 truncate ${TYPOGRAPHY.table.helper}`}
+                  >
+                    {group.nombre as string}
+                  </span>
                   <Tooltip>
                     <TooltipTrigger asChild>
-                      <span className={`text-gris-una flex-shrink-0 cursor-default ${TYPOGRAPHY.table.helper}`}>{formatDate(group.fecha_asignacion as string | null)}</span>
+                      <span
+                        className={`text-gris-una flex-shrink-0 cursor-default ${TYPOGRAPHY.table.helper}`}
+                      >
+                        {formatDate(group.fecha_asignacion as string | null)}
+                      </span>
                     </TooltipTrigger>
-                    <TooltipContent side="top">Fecha de asignación</TooltipContent>
+                    <TooltipContent side="top">
+                      Fecha de asignación
+                    </TooltipContent>
                   </Tooltip>
                   <Tooltip>
                     <TooltipTrigger asChild>
-                      <span className={`text-gris-una flex-shrink-0 cursor-default ${TYPOGRAPHY.table.helper}`}>{formatDate(group.fecha_limite as string | null)}</span>
+                      <span
+                        className={`text-gris-una flex-shrink-0 cursor-default ${TYPOGRAPHY.table.helper}`}
+                      >
+                        {formatDate(group.fecha_limite as string | null)}
+                      </span>
                     </TooltipTrigger>
                     <TooltipContent side="top">Fecha límite</TooltipContent>
                   </Tooltip>
                   {estado && (
                     <StatusBadge
                       label={ASSIGNMENT_STATUS_BADGE[estado].label}
-                      colorClasses={ASSIGNMENT_STATUS_BADGE[estado].colorClasses}
+                      colorClasses={
+                        ASSIGNMENT_STATUS_BADGE[estado].colorClasses
+                      }
                     />
                   )}
                 </div>
@@ -139,32 +182,48 @@ export const EvidenceDetailsModal: React.FC<EvidenceDetailsModalProps> = ({
   onClose,
   criterioId,
 }) => {
-  const { isSuperUser, isAdmin, user } = useAuth();
-  const isPrivileged = isSuperUser() || isAdmin();
-  const canRetroalimentar = user?.roles?.some(r =>
-    ['Encargado de Acreditación', 'Administrador', 'Superusuario'].includes(r.name)
-  ) ?? false;
+  const { canAccess } = useAuth();
+  const isPrivileged = canAccess({
+    requireAnyPermissions: ["archivos.make_public"],
+  });
+  const canRetroalimentar = canAccess({
+    requireAnyPermissions: ["evidencias.edit"],
+  });
 
   const [evidencias, setEvidencias] = useState<EvidenceSearchResult[]>([]);
-  const [filesByEvidencia, setFilesByEvidencia] = useState<Map<number, FilesByUser[]>>(new Map());
+  const [filesByEvidencia, setFilesByEvidencia] = useState<
+    Map<number, FilesByUser[]>
+  >(new Map());
   const [loadingFiles, setLoadingFiles] = useState(false);
-  const [adminUpload, setAdminUpload] = useState<{ isOpen: boolean; evidenciaId: number; procesoId: number }>({
-    isOpen: false, evidenciaId: 0, procesoId: 0,
+  const [adminUpload, setAdminUpload] = useState<{
+    isOpen: boolean;
+    evidenciaId: number;
+    procesoId: number;
+  }>({
+    isOpen: false,
+    evidenciaId: 0,
+    procesoId: 0,
   });
-  const [retroState, setRetroState] = useState<{ isOpen: boolean; evidence: EvidenceSearchResult | null }>({
-    isOpen: false, evidence: null,
+  const [retroState, setRetroState] = useState<{
+    isOpen: boolean;
+    evidence: EvidenceSearchResult | null;
+  }>({
+    isOpen: false,
+    evidence: null,
   });
 
   const criterio = evidencias[0] ?? null;
 
   const evidenceColumns: DataTableColumn<EvidenceSearchResult>[] = [
     {
-      key: 'evidencia',
-      header: 'Evidencia',
-      align: 'left',
+      key: "evidencia",
+      header: "Evidencia",
+      align: "left",
       render: (_, item) => (
         <div className="flex items-center gap-1.5 min-w-0 pl-2">
-          <span className={`font-bold text-negro-una-2 flex-shrink-0 ${TYPOGRAPHY.modal.body}`}>
+          <span
+            className={`font-bold text-negro-una-2 flex-shrink-0 ${TYPOGRAPHY.modal.body}`}
+          >
             {item.nomenclatura}
           </span>
           <span className="text-gris-una flex-shrink-0">—</span>
@@ -175,34 +234,37 @@ export const EvidenceDetailsModal: React.FC<EvidenceDetailsModalProps> = ({
       ),
     },
     {
-      key: 'recursos',
-      header: 'Recursos',
-      align: 'left',
+      key: "recursos",
+      header: "Recursos",
+      align: "left",
       width: TABLE_COLUMN_WIDTHS.status,
       render: (_, item) => (
         <div className="flex items-start">
           {item.archivos_count > 0 && (
             <StatusBadge
-              label={`${item.archivos_count} ${item.archivos_count === 1 ? 'archivo' : 'archivos'}`}
+              label={`${item.archivos_count} ${item.archivos_count === 1 ? "archivo" : "archivos"}`}
               colorClasses={BADGE_COLORS.info.colorClasses}
             />
           )}
           {item.enlaces_count > 0 && (
             <StatusBadge
-              label={`${item.enlaces_count} ${item.enlaces_count === 1 ? 'enlace' : 'enlaces'}`}
+              label={`${item.enlaces_count} ${item.enlaces_count === 1 ? "enlace" : "enlaces"}`}
               colorClasses={BADGE_COLORS.gris.colorClasses}
             />
           )}
           {item.archivos_count === 0 && item.enlaces_count === 0 && (
-            <StatusBadge label="Sin recursos" colorClasses={BADGE_COLORS.slate.colorClasses} />
+            <StatusBadge
+              label="Sin recursos"
+              colorClasses={BADGE_COLORS.slate.colorClasses}
+            />
           )}
         </div>
       ),
     },
     {
-      key: 'estado',
-      header: 'Estado',
-      align: 'left',
+      key: "estado",
+      header: "Estado",
+      align: "left",
       width: TABLE_COLUMN_WIDTHS.status,
       render: (_, item) => (
         <div className="flex items-start">
@@ -213,22 +275,32 @@ export const EvidenceDetailsModal: React.FC<EvidenceDetailsModalProps> = ({
         </div>
       ),
     },
-    ...(canRetroalimentar ? [{
-      key: 'acciones_retro',
-      header: 'Retroalimentación',
-      align: 'center' as const,
-      width: TABLE_COLUMN_WIDTHS.actions,
-      render: (_: unknown, item: EvidenceSearchResult) => (
-        <div className="flex items-center justify-center">
-          <TableActionButton
-            action="comment"
-            tooltip={item.estado === 'Pendiente' ? 'Sin recursos para retroalimentar' : 'Retroalimentar evidencia'}
-            disabled={item.estado === 'Pendiente'}
-            onClick={() => setRetroState({ isOpen: true, evidence: item })}
-          />
-        </div>
-      ),
-    }] : []),
+    ...(canRetroalimentar
+      ? [
+          {
+            key: "acciones_retro",
+            header: "Retroalimentación",
+            align: "center" as const,
+            width: TABLE_COLUMN_WIDTHS.actions,
+            render: (_: unknown, item: EvidenceSearchResult) => (
+              <div className="flex items-center justify-center">
+                <TableActionButton
+                  action="comment"
+                  tooltip={
+                    item.estado === "Pendiente"
+                      ? "Sin recursos para retroalimentar"
+                      : "Retroalimentar evidencia"
+                  }
+                  disabled={item.estado === "Pendiente"}
+                  onClick={() =>
+                    setRetroState({ isOpen: true, evidence: item })
+                  }
+                />
+              </div>
+            ),
+          },
+        ]
+      : []),
   ];
 
   useEffect(() => {
@@ -243,14 +315,19 @@ export const EvidenceDetailsModal: React.FC<EvidenceDetailsModalProps> = ({
   const reloadFilesForEvidencia = async (evidenciaId: number) => {
     const [files, assignments] = await Promise.all([
       fileService.listFiles({ evidencia_id: evidenciaId }),
-      evidenceAssignmentService.getAssignmentsByEvidence(evidenciaId).catch(() => []),
+      evidenceAssignmentService
+        .getAssignmentsByEvidence(evidenciaId)
+        .catch(() => []),
     ]);
     const assignmentMap = new Map(
-      assignments.map(a => [a.usuario_id, {
-        fecha_asignacion: a.fecha_asignacion,
-        fecha_limite: a.fecha_limite ?? null,
-        estado: a.estado,
-      }])
+      assignments.map((a) => [
+        a.usuario_id,
+        {
+          fecha_asignacion: a.fecha_asignacion,
+          fecha_limite: a.fecha_limite ?? null,
+          estado: a.estado,
+        },
+      ]),
     );
     const groupMap = new Map<number, FilesByUser>();
     files.forEach((f: FileModel) => {
@@ -259,7 +336,7 @@ export const EvidenceDetailsModal: React.FC<EvidenceDetailsModalProps> = ({
         groupMap.set(f.usuario_id, {
           usuario_id: f.usuario_id,
           nombre: f.usuario?.nombre_completo || `Usuario ${f.usuario_id}`,
-          email: f.usuario?.email || '',
+          email: f.usuario?.email || "",
           archivos: [],
           fecha_asignacion: asig?.fecha_asignacion ?? null,
           fecha_limite: asig?.fecha_limite ?? null,
@@ -268,12 +345,12 @@ export const EvidenceDetailsModal: React.FC<EvidenceDetailsModalProps> = ({
       }
       groupMap.get(f.usuario_id)!.archivos.push(f);
     });
-    assignments.forEach(a => {
+    assignments.forEach((a) => {
       if (!groupMap.has(a.usuario_id)) {
         groupMap.set(a.usuario_id, {
           usuario_id: a.usuario_id,
           nombre: a.usuario?.nombre ?? `Usuario ${a.usuario_id}`,
-          email: a.usuario?.email ?? '',
+          email: a.usuario?.email ?? "",
           archivos: [],
           fecha_asignacion: a.fecha_asignacion,
           fecha_limite: a.fecha_limite ?? null,
@@ -281,7 +358,7 @@ export const EvidenceDetailsModal: React.FC<EvidenceDetailsModalProps> = ({
         });
       }
     });
-    setFilesByEvidencia(prev => {
+    setFilesByEvidencia((prev) => {
       const next = new Map(prev);
       next.set(evidenciaId, Array.from(groupMap.values()));
       return next;
@@ -291,7 +368,9 @@ export const EvidenceDetailsModal: React.FC<EvidenceDetailsModalProps> = ({
   const handleDeleteFile = async (fileId: number) => {
     await fileService.deleteFile(fileId);
     for (const [evId, groups] of filesByEvidencia.entries()) {
-      const found = groups.some(g => g.archivos.some(f => f.archivo_id === fileId));
+      const found = groups.some((g) =>
+        g.archivos.some((f) => f.archivo_id === fileId),
+      );
       if (found) {
         await reloadFilesForEvidencia(evId);
         break;
@@ -300,13 +379,18 @@ export const EvidenceDetailsModal: React.FC<EvidenceDetailsModalProps> = ({
   };
 
   const handleOpenUpload = (evidenciaId: number, group: FilesByUser) => {
-    const procesoId = group.archivos.find(f => f.proceso_id)?.proceso_id ?? 0;
+    const procesoId = group.archivos.find((f) => f.proceso_id)?.proceso_id ?? 0;
     setAdminUpload({ isOpen: true, evidenciaId, procesoId });
   };
 
-  const handleFeedbackSuccess = (evidenciaId: number, nuevoEstado: FeedbackEstado) => {
-    setEvidencias(prev =>
-      prev.map(e => e.evidencia_id === evidenciaId ? { ...e, estado: nuevoEstado } : e)
+  const handleFeedbackSuccess = (
+    evidenciaId: number,
+    nuevoEstado: FeedbackEstado,
+  ) => {
+    setEvidencias((prev) =>
+      prev.map((e) =>
+        e.evidencia_id === evidenciaId ? { ...e, estado: nuevoEstado } : e,
+      ),
     );
   };
 
@@ -324,19 +408,32 @@ export const EvidenceDetailsModal: React.FC<EvidenceDetailsModalProps> = ({
 
       if (mapped.length > 0 && isPrivileged) {
         const [filesResults, assignmentsResults] = await Promise.all([
-          Promise.all(mapped.map(ev => fileService.listFiles({ evidencia_id: ev.evidencia_id }))),
-          Promise.all(mapped.map(ev => evidenceAssignmentService.getAssignmentsByEvidence(ev.evidencia_id).catch(() => []))),
+          Promise.all(
+            mapped.map((ev) =>
+              fileService.listFiles({ evidencia_id: ev.evidencia_id }),
+            ),
+          ),
+          Promise.all(
+            mapped.map((ev) =>
+              evidenceAssignmentService
+                .getAssignmentsByEvidence(ev.evidencia_id)
+                .catch(() => []),
+            ),
+          ),
         ]);
         const map = new Map<number, FilesByUser[]>();
         mapped.forEach((ev, idx) => {
           const files = filesResults[idx];
           const assignments = assignmentsResults[idx];
           const assignmentMap = new Map(
-            assignments.map(a => [a.usuario_id, {
-              fecha_asignacion: a.fecha_asignacion,
-              fecha_limite: a.fecha_limite ?? null,
-              estado: a.estado,
-            }])
+            assignments.map((a) => [
+              a.usuario_id,
+              {
+                fecha_asignacion: a.fecha_asignacion,
+                fecha_limite: a.fecha_limite ?? null,
+                estado: a.estado,
+              },
+            ]),
           );
           const groupMap = new Map<number, FilesByUser>();
           files.forEach((f: FileModel) => {
@@ -345,7 +442,7 @@ export const EvidenceDetailsModal: React.FC<EvidenceDetailsModalProps> = ({
               groupMap.set(f.usuario_id, {
                 usuario_id: f.usuario_id,
                 nombre: f.usuario?.nombre_completo || `Usuario ${f.usuario_id}`,
-                email: f.usuario?.email || '',
+                email: f.usuario?.email || "",
                 archivos: [],
                 fecha_asignacion: asig?.fecha_asignacion ?? null,
                 fecha_limite: asig?.fecha_limite ?? null,
@@ -354,12 +451,12 @@ export const EvidenceDetailsModal: React.FC<EvidenceDetailsModalProps> = ({
             }
             groupMap.get(f.usuario_id)!.archivos.push(f);
           });
-          assignments.forEach(a => {
+          assignments.forEach((a) => {
             if (!groupMap.has(a.usuario_id)) {
               groupMap.set(a.usuario_id, {
                 usuario_id: a.usuario_id,
                 nombre: a.usuario?.nombre ?? `Usuario ${a.usuario_id}`,
-                email: a.usuario?.email ?? '',
+                email: a.usuario?.email ?? "",
                 archivos: [],
                 fecha_asignacion: a.fecha_asignacion,
                 fecha_limite: a.fecha_limite ?? null,
@@ -372,7 +469,7 @@ export const EvidenceDetailsModal: React.FC<EvidenceDetailsModalProps> = ({
         setFilesByEvidencia(map);
       }
     } catch (error) {
-      console.error('Error al cargar datos del criterio:', error);
+      console.error("Error al cargar datos del criterio:", error);
       setEvidencias([]);
     } finally {
       setLoadingFiles(false);
@@ -383,122 +480,158 @@ export const EvidenceDetailsModal: React.FC<EvidenceDetailsModalProps> = ({
 
   return (
     <>
-    <Modal
-      isOpen={isOpen}
-      onClose={onClose}
-      title="Detalles del Criterio"
-      subtitle={criterio?.criterio_nomenclatura}
-      variant="info"
-      size="xl"
-      maxHeight="xl"
-      heroIcon={<SystemIcons.modal.document className={`${ICON_SIZES.md} text-blanco-una`} />}
-      showCancel={false}
-      showConfirm={false}
-    >
-      {loadingFiles && evidencias.length === 0 ? (
-        <div className={cn('flex items-center justify-center py-12 text-gris-una', TYPOGRAPHY.modal.body)}>
-          Cargando información del criterio…
-        </div>
-      ) : (
-        <div className="grid grid-cols-5 gap-x-4 gap-y-3">
-
-          {/* div1 — Nomenclatura + Descripción */}
-          {criterio && (
-            <div className="col-start-1 col-end-4 flex flex-col gap-0.5">
-              <span className={cn(TYPOGRAPHY.modal.body, 'text-negro-una-2 font-semibold')}>
-                {criterio.criterio_nomenclatura}
-              </span>
-              <span className={cn(TYPOGRAPHY.modal.body, 'text-gris-una-2')}>
-                {criterio.criterio_descripcion}
-              </span>
-            </div>
-          )}
-
-          {/* div2 — Evidencias asociadas (pequeño, derecha) */}
-          {criterio && (
-            <div className="col-start-4 col-end-6 flex flex-col items-start gap-0.5">
-              <span className={cn('uppercase tracking-wider font-semibold text-gris-una-2', TYPOGRAPHY.modal.subtitle)}>
-                Evidencias asociadas
-              </span>
-              <span className={cn(TYPOGRAPHY.modal.subtitle, 'text-gris-una-2')}>
-                {evidencias.length}
-              </span>
-            </div>
-          )}
-
-          {criterio && <Separator />}
-
-          {/* div3 — Roles con acceso */}
-          {criterio && criterio.roles_acceso && criterio.roles_acceso.length > 0 && (
-            <div className="col-span-5 flex flex-wrap gap-2">
-              {criterio.roles_acceso.map((rol) => (
+      <Modal
+        isOpen={isOpen}
+        onClose={onClose}
+        title="Detalles del Criterio"
+        subtitle={criterio?.criterio_nomenclatura}
+        variant="info"
+        size="xl"
+        maxHeight="xl"
+        heroIcon={
+          <SystemIcons.modal.document
+            className={`${ICON_SIZES.md} text-blanco-una`}
+          />
+        }
+        showCancel={false}
+        showConfirm={false}
+      >
+        {loadingFiles && evidencias.length === 0 ? (
+          <div
+            className={cn(
+              "flex items-center justify-center py-12 text-gris-una",
+              TYPOGRAPHY.modal.body,
+            )}
+          >
+            Cargando información del criterio…
+          </div>
+        ) : (
+          <div className="grid grid-cols-5 gap-x-4 gap-y-3">
+            {/* div1 — Nomenclatura + Descripción */}
+            {criterio && (
+              <div className="col-start-1 col-end-4 flex flex-col gap-0.5">
                 <span
-                  key={rol}
                   className={cn(
-                    'inline-flex px-2.5 py-1 font-semibold rounded-full',
-                    'bg-info-light text-info',
-                    TYPOGRAPHY.badge,
+                    TYPOGRAPHY.modal.body,
+                    "text-negro-una-2 font-semibold",
                   )}
                 >
-                  {rol}
+                  {criterio.criterio_nomenclatura}
                 </span>
-              ))}
-            </div>
-          )}
+                <span className={cn(TYPOGRAPHY.modal.body, "text-gris-una-2")}>
+                  {criterio.criterio_descripcion}
+                </span>
+              </div>
+            )}
 
-          {criterio && criterio.roles_acceso && criterio.roles_acceso.length > 0 && <Separator />}
+            {/* div2 — Evidencias asociadas (pequeño, derecha) */}
+            {criterio && (
+              <div className="col-start-4 col-end-6 flex flex-col items-start gap-0.5">
+                <span
+                  className={cn(
+                    "uppercase tracking-wider font-semibold text-gris-una-2",
+                    TYPOGRAPHY.modal.subtitle,
+                  )}
+                >
+                  Evidencias asociadas
+                </span>
+                <span
+                  className={cn(TYPOGRAPHY.modal.subtitle, "text-gris-una-2")}
+                >
+                  {evidencias.length}
+                </span>
+              </div>
+            )}
 
-          {/* div4 — Gestión de recursos (solo Superusuario / Administrador) */}
-          {isPrivileged && (
-            <div className="col-span-5">
-              <DataTable
-                title=""
-                searchable={false}
-                loading={loadingFiles}
-                data={evidencias as any}
-                columns={evidenceColumns as any}
-                getRowKey={(item: any) => String(item.evidencia_id)}
-                emptyMessage="No hay evidencias para este criterio"
-                unstyled
-                expandableRow={(ev: any) => [{
-                  key: String((ev as EvidenceSearchResult).evidencia_id),
-                  noBorder: true,
-                  content: (
-                    <EvidenciaResponsablesPanelAdmin
-                      evidenciaId={(ev as EvidenceSearchResult).evidencia_id}
-                      groups={filesByEvidencia.get((ev as EvidenceSearchResult).evidencia_id) ?? []}
-                      loading={false}
-                      onDelete={handleDeleteFile}
-                      onUpload={(group) => handleOpenUpload((ev as EvidenceSearchResult).evidencia_id, group)}
-                    />
-                  ),
-                }]}
-              />
-            </div>
-          )}
+            {criterio && <Separator />}
 
-        </div>
+            {/* div3 — Roles con acceso */}
+            {criterio &&
+              criterio.roles_acceso &&
+              criterio.roles_acceso.length > 0 && (
+                <div className="col-span-5 flex flex-wrap gap-2">
+                  {criterio.roles_acceso.map((rol) => (
+                    <span
+                      key={rol}
+                      className={cn(
+                        "inline-flex px-2.5 py-1 font-semibold rounded-full",
+                        "bg-info-light text-info",
+                        TYPOGRAPHY.badge,
+                      )}
+                    >
+                      {rol}
+                    </span>
+                  ))}
+                </div>
+              )}
+
+            {criterio &&
+              criterio.roles_acceso &&
+              criterio.roles_acceso.length > 0 && <Separator />}
+
+            {/* div4 — Gestión de recursos (solo Superusuario / Administrador) */}
+            {isPrivileged && (
+              <div className="col-span-5">
+                <DataTable
+                  title=""
+                  searchable={false}
+                  loading={loadingFiles}
+                  data={evidencias as any}
+                  columns={evidenceColumns as any}
+                  getRowKey={(item: any) => String(item.evidencia_id)}
+                  emptyMessage="No hay evidencias para este criterio"
+                  unstyled
+                  expandableRow={(ev: any) => [
+                    {
+                      key: String((ev as EvidenceSearchResult).evidencia_id),
+                      noBorder: true,
+                      content: (
+                        <EvidenciaResponsablesPanelAdmin
+                          evidenciaId={
+                            (ev as EvidenceSearchResult).evidencia_id
+                          }
+                          groups={
+                            filesByEvidencia.get(
+                              (ev as EvidenceSearchResult).evidencia_id,
+                            ) ?? []
+                          }
+                          loading={false}
+                          onDelete={handleDeleteFile}
+                          onUpload={(group) =>
+                            handleOpenUpload(
+                              (ev as EvidenceSearchResult).evidencia_id,
+                              group,
+                            )
+                          }
+                        />
+                      ),
+                    },
+                  ]}
+                />
+              </div>
+            )}
+          </div>
+        )}
+      </Modal>
+
+      {isPrivileged && (
+        <AdminFileUploadModal
+          isOpen={adminUpload.isOpen}
+          onClose={() => setAdminUpload((prev) => ({ ...prev, isOpen: false }))}
+          evidenciaId={adminUpload.evidenciaId}
+          procesoId={adminUpload.procesoId}
+          onSuccess={() => reloadFilesForEvidencia(adminUpload.evidenciaId)}
+        />
       )}
-    </Modal>
 
-    {isPrivileged && (
-      <AdminFileUploadModal
-        isOpen={adminUpload.isOpen}
-        onClose={() => setAdminUpload(prev => ({ ...prev, isOpen: false }))}
-        evidenciaId={adminUpload.evidenciaId}
-        procesoId={adminUpload.procesoId}
-        onSuccess={() => reloadFilesForEvidencia(adminUpload.evidenciaId)}
-      />
-    )}
-
-    {canRetroalimentar && (
-      <FeedbackModal
-        isOpen={retroState.isOpen}
-        onClose={() => setRetroState({ isOpen: false, evidence: null })}
-        evidence={retroState.evidence}
-        onSuccess={handleFeedbackSuccess}
-      />
-    )}
-  </>
+      {canRetroalimentar && (
+        <FeedbackModal
+          isOpen={retroState.isOpen}
+          onClose={() => setRetroState({ isOpen: false, evidence: null })}
+          evidence={retroState.evidence}
+          onSuccess={handleFeedbackSuccess}
+        />
+      )}
+    </>
   );
 };

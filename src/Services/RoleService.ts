@@ -10,7 +10,11 @@
  */
 
 import { axiosInstance } from '@/Config/axios';
-import type { PermissionOption } from '@/types/RoleTypes';
+import type {
+  PermissionCatalog,
+  PermissionGroupOption,
+  PermissionOption,
+} from '@/types/RoleTypes';
 
 /**
  * Datos requeridos para crear un nuevo rol
@@ -77,6 +81,41 @@ const transformBackendRole = (backendRole: BackendRole): Role => {
   };
 };
 
+interface RawPermissionGroup {
+  group?: string;
+  module?: string;
+  name?: string;
+  label?: string;
+  description?: string | null;
+  permissions?: Array<{ name?: string; value?: string; label?: string }>;
+}
+
+interface PermissionGroupBucket {
+  key: string;
+  label: string;
+  description: string;
+  modules: string[];
+}
+
+const PERMISSION_GROUP_BUCKETS: PermissionGroupBucket[] = [
+  {
+    key: 'estructura_universitaria',
+    label: 'Estructura universitaria',
+    description: 'Universidades, sedes y carreras.',
+    modules: ['universidades', 'campuses', 'carreras'],
+  },
+  {
+    key: 'estructura_acreditacion',
+    label: 'Estructura de acreditación',
+    description: 'Dimensiones, componentes, criterios, estándares y elementos.',
+    modules: ['dimensiones', 'componentes', 'criterios', 'estandares', 'elemento'],
+  },
+];
+
+const getBucketForModule = (moduleName: string): PermissionGroupBucket | null => {
+  return PERMISSION_GROUP_BUCKETS.find((bucket) => bucket.modules.includes(moduleName)) ?? null;
+};
+
 /**
  * Servicio para gestión de roles
  */
@@ -110,35 +149,18 @@ class RoleService {
   /**
    * Listar permisos disponibles
    */
-  async listarPermisos(): Promise<ApiResponse<PermissionOption[]>> {
+  async listarPermisos(): Promise<ApiResponse<PermissionOption[]> & { groups?: PermissionGroupOption[] }> {
     try {
-      const response = await axiosInstance.get('/roles/permisos');
+      const response = await axiosInstance.get('/roles/modules');
       const data = response.data;
       
-      // El backend ahora devuelve objetos con {id, name, label}
-      // Necesitamos transformar a PermissionOption {value, label}
       if (data.data && Array.isArray(data.data)) {
-        if (typeof data.data[0] === 'string') {
-          // Fallback: el backend aún envía solo strings - transformar manualmente
-          const transformedPermissions = data.data.map((name: string) => ({
-            value: name,
-            label: name
-          }));
-          return {
-            ...data,
-            data: transformedPermissions
-          };
-        } else if (data.data[0] && typeof data.data[0] === 'object' && 'name' in data.data[0]) {
-          // El backend envía objetos con {id, name, label}
-          const transformedPermissions = data.data.map((permission: any) => ({
-            value: permission.name,
-            label: permission.label
-          }));
-          return {
-            ...data,
-            data: transformedPermissions
-          };
-        }
+        const catalog = this.transformPermissionCatalog(data.data);
+        return {
+          ...data,
+          data: catalog.permissions,
+          groups: catalog.groups,
+        };
       }
 
       return data;
@@ -146,6 +168,56 @@ class RoleService {
       console.error('Error obteniendo permisos:', error);
       throw new Error(error.response?.data?.errorMessage || error.message || 'Error al obtener permisos');
     }
+  }
+
+  private transformPermissionCatalog(rawGroups: RawPermissionGroup[]): PermissionCatalog {
+    const groupedBuckets = new Map<string, PermissionGroupOption>();
+    const fallbackGroups: PermissionGroupOption[] = [];
+
+    rawGroups.forEach((group) => {
+      const moduleName = String(group.group ?? group.module ?? group.name ?? '').trim();
+      const bucket = getBucketForModule(moduleName);
+      const permissions = Array.isArray(group.permissions)
+        ? group.permissions.map((permission: any) => ({
+            value: String(permission.name ?? permission.value ?? ''),
+            label: String(permission.label ?? permission.name ?? permission.value ?? ''),
+          })).filter((permission) => permission.value !== '')
+        : [];
+
+      if (bucket) {
+        const current = groupedBuckets.get(bucket.key);
+        const nextPermissions = current ? [...current.permissions, ...permissions] : permissions;
+
+        groupedBuckets.set(bucket.key, {
+          key: bucket.key,
+          label: bucket.label,
+          description: bucket.description,
+          permissions: nextPermissions,
+        });
+        return;
+      }
+
+      fallbackGroups.push({
+        key: moduleName,
+        label: moduleName === 'campuses'
+          ? 'campuses'
+          : String(group.name ?? group.label ?? group.module ?? group.group ?? ''),
+        description: typeof group.description === 'string' ? group.description : undefined,
+        permissions,
+      });
+    });
+
+    const groups = [
+      ...PERMISSION_GROUP_BUCKETS
+        .map((bucket) => groupedBuckets.get(bucket.key))
+        .filter((group): group is PermissionGroupOption => Boolean(group && group.permissions.length > 0)),
+      ...fallbackGroups,
+    ];
+
+    return {
+      groups,
+      permissions: groups.flatMap((group) => group.permissions),
+    };
   }
 
   /**

@@ -43,30 +43,30 @@ export const useFirstColumnConfig = (): FirstColumnConfig => {
 
   return useMemo((): FirstColumnConfig => {
     switch (currentSize) {
-      case 'xs':
-      case 'sm':
-        return { width: '40%', maxLength: 22 };
+      case "xs":
+      case "sm":
+        return { width: "40%", maxLength: 22 };
 
-      case 'md':
-        return { width: '38%', maxLength: 26 };
+      case "md":
+        return { width: "38%", maxLength: 26 };
 
-      case 'lg':
+      case "lg":
         return isCollapsed
-          ? { width: '36%', maxLength: 36 }
-          : { width: '32%', maxLength: 30 };
+          ? { width: "36%", maxLength: 36 }
+          : { width: "32%", maxLength: 30 };
 
-      case 'xl':
+      case "xl":
         return isCollapsed
-          ? { width: '40%', maxLength: 50 }
-          : { width: '35%', maxLength: 40 };
+          ? { width: "40%", maxLength: 50 }
+          : { width: "35%", maxLength: 40 };
 
-      case '2xl':
+      case "2xl":
         return isCollapsed
-          ? { width: '43%', maxLength: 65 }
-          : { width: '38%', maxLength: 55 };
+          ? { width: "43%", maxLength: 65 }
+          : { width: "38%", maxLength: 55 };
 
       default:
-        return { width: '35%', maxLength: 35 };
+        return { width: "35%", maxLength: 35 };
     }
   }, [currentSize, isCollapsed]);
 };

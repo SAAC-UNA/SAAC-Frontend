@@ -12,13 +12,21 @@ import { LoadingSpinner } from "./Feedback/Loading";
 interface ProtectedRouteProps {
   children: ReactNode;
   requireRoles?: string[];
+  requirePermissions?: string[];
+  requireAllPermissions?: string[];
+  requireCapabilities?: string[];
+  requireAllCapabilities?: string[];
 }
 
 export const ProtectedRoute = ({
   children,
   requireRoles,
+  requirePermissions,
+  requireAllPermissions,
+  requireCapabilities,
+  requireAllCapabilities,
 }: ProtectedRouteProps) => {
-  const { isAuthenticated, user, authChecked } = useAuth();
+  const { isAuthenticated, authChecked, canAccess } = useAuth();
 
   // Mientras se verifica la sesión, mostrar un loader
   if (!authChecked) {
@@ -35,26 +43,28 @@ export const ProtectedRoute = ({
   }
 
   // Si requiere roles específicos, validar
-  if (requireRoles && requireRoles.length > 0) {
-    // Superusuario tiene acceso a todo
-    const isSuperUser = user?.roles?.some((r) => r.name === "Superusuario");
-    const hasRole = user?.roles?.some((r) => requireRoles.includes(r.name));
-
-    if (!isSuperUser && !hasRole) {
-      return (
-        <div
-          style={{
-            padding: "40px",
-            textAlign: "center",
-            maxWidth: "500px",
-            margin: "100px auto",
-          }}
-        >
-          <h2>Acceso Denegado</h2>
-          <p>No tiene permisos para acceder a esta sección.</p>
-        </div>
-      );
-    }
+  if (
+    !canAccess({
+      requireRoles,
+      requireAnyPermissions: requirePermissions,
+      requireAllPermissions,
+      requireAnyCapabilities: requireCapabilities,
+      requireAllCapabilities,
+    })
+  ) {
+    return (
+      <div
+        style={{
+          padding: "40px",
+          textAlign: "center",
+          maxWidth: "500px",
+          margin: "100px auto",
+        }}
+      >
+        <h2>Acceso Denegado</h2>
+        <p>No tiene permisos para acceder a esta sección.</p>
+      </div>
+    );
   }
 
   return <>{children}</>;
