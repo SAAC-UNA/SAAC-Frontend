@@ -11,6 +11,7 @@ import { SearchInput } from "@/Components/Ui/Forms/SearchInput";
 import { getModuleInfo } from "@/Constants/ModuleInfo";
 import { SystemIcons } from "@/Components/Ui/Icons/SystemIcons";
 import { improvementCommitmentService } from "@/Services/ImprovementCommitmentService";
+import { getOperationalContextSnapshot } from "@/Services/OperationalContextStore";
 import type { CompromisoMejora } from "@/Types/ImprovementCommitmentTypes";
 import { TABLE_PAGE_SIZE } from "@/Constants/TablePagination";
 import { ImprovementCommitmentDetailModal } from "./Components/ImprovementCommitmentDetailModal";
@@ -28,6 +29,8 @@ export const ImprovementCommitmentsList: React.FC = () => {
   const [currentPage, setCurrentPage] = useState(1);
 
   const itemsPerPage = TABLE_PAGE_SIZE.standard;
+  const contextSnapshot = getOperationalContextSnapshot();
+  const cycleId = contextSnapshot.cycleId;
 
   useEffect(() => {
     fetchCompromisos();
@@ -40,6 +43,7 @@ export const ImprovementCommitmentsList: React.FC = () => {
 
       const response = await improvementCommitmentService.listarCompromisos({
         per_page: 50,
+        ciclo_acreditacion_id: cycleId ?? undefined,
       });
 
       setCommitments(response.data || []);
@@ -48,14 +52,20 @@ export const ImprovementCommitmentsList: React.FC = () => {
 
       if (error.response) {
         if (error.response.status === 500) {
-          setError("Error en el servidor. Por favor, contacte al administrador.");
+          setError(
+            "Error en el servidor. Por favor, contacte al administrador.",
+          );
         } else if (error.response.status === 403) {
           setError("No tiene permisos para ver los compromisos de mejora.");
         } else {
-          setError(`Error ${error.response.status}: No se pudieron cargar los compromisos`);
+          setError(
+            `Error ${error.response.status}: No se pudieron cargar los compromisos`,
+          );
         }
       } else {
-        setError("Error de conexión. Verifique que el servidor esté funcionando.");
+        setError(
+          "Error de conexión. Verifique que el servidor esté funcionando.",
+        );
       }
       setCommitments([]);
     } finally {
@@ -63,11 +73,22 @@ export const ImprovementCommitmentsList: React.FC = () => {
     }
   };
 
-  const filteredCommitments = useMemo(() => {
-    const term = searchQuery.trim().toLowerCase();
-    if (!term) return commitments;
+  const cycleFilteredCommitments = useMemo(() => {
+    if (cycleId === null) {
+      return commitments;
+    }
 
     return commitments.filter((compromiso) => {
+      const commitmentCycleId = compromiso.process?.ciclo_acreditacion_id;
+      return commitmentCycleId === cycleId;
+    });
+  }, [commitments, cycleId]);
+
+  const filteredCommitments = useMemo(() => {
+    const term = searchQuery.trim().toLowerCase();
+    if (!term) return cycleFilteredCommitments;
+
+    return cycleFilteredCommitments.filter((compromiso) => {
       const searchableText = [
         compromiso.descripcion || "",
         compromiso.fecha_inicio || "",
@@ -81,7 +102,7 @@ export const ImprovementCommitmentsList: React.FC = () => {
 
       return searchableText.includes(term);
     });
-  }, [commitments, searchQuery]);
+  }, [cycleFilteredCommitments, searchQuery]);
 
   useEffect(() => {
     setCurrentPage(1);
@@ -103,6 +124,7 @@ export const ImprovementCommitmentsList: React.FC = () => {
       <PageHeader
         title={moduleInfo.title}
         description={moduleInfo.description}
+        breadcrumbMode="cycle-only"
         headerExtra={
           <div className="flex flex-col sm:flex-row w-full gap-2 shrink-0 lg:w-auto">
             <SearchInput

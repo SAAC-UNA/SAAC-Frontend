@@ -4,7 +4,7 @@
  * Basada en el patron de Gestion de Estructura: header con acciones y tabla separada.
  */
 
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { ScreenContainer } from "@/Components/Ui/Layout/ScreenContainer";
 import { PageHeader, Button } from "@/Components/Ui/Index";
 import { DeleteConfirmationModal } from "@/Components/Ui/Modals/DeleteConfirmationModal";
@@ -12,6 +12,11 @@ import { SuccessModal } from "@/Components/Ui/Modals/SuccessModal";
 import { getModuleInfo } from "@/Constants/ModuleInfo";
 import { SearchInput } from "@/Components/Ui/Forms/SearchInput";
 import { accreditationProcessService } from "@/Services/AccreditationProcessService";
+import {
+  globalFilterContextService,
+  GLOBAL_FILTER_CONTEXT_CHANGED_EVENT,
+} from "@/Services/GlobalFilterContextService";
+import { getOperationalContextSnapshot } from "@/Services/OperationalContextStore";
 import type {
   AccreditationCycle,
   AccreditationProcess,
@@ -30,6 +35,9 @@ export const AccreditationProcessList: React.FC = () => {
   // Datos
   const [cycles, setCycles] = useState<AccreditationCycle[]>([]);
   const [processes, setProcesses] = useState<AccreditationProcess[]>([]);
+  const [selectedContextCycleId, setSelectedContextCycleId] = useState<
+    string | null
+  >(null);
   const [isLoading, setIsLoading] = useState(true);
 
   // Modales
@@ -57,17 +65,34 @@ export const AccreditationProcessList: React.FC = () => {
     setIsLoading(true);
 
     try {
-      const [loadedCycles, loadedProcesses] = await Promise.all([
+      const [loadedCycles, loadedProcesses, catalog] = await Promise.all([
         accreditationProcessService.getCycles(),
         accreditationProcessService.getProcesses(),
+        globalFilterContextService.getCatalog(),
       ]);
+      const contextSnapshot = getOperationalContextSnapshot();
 
       setCycles(loadedCycles);
       setProcesses(loadedProcesses);
+      setSelectedContextCycleId(
+        contextSnapshot.cycleId ? String(contextSnapshot.cycleId) : null,
+      );
+
+      // Sync context snapshot with cycle label for breadcrumb and emit change event
+      const selectedCycle = catalog.cycles.find(
+        (cycle) => cycle.ciclo_acreditacion_id === contextSnapshot.cycleId,
+      );
+      globalFilterContextService.syncContextSnapshot({
+        careerCampusId: contextSnapshot.careerCampusId,
+        cycleId: contextSnapshot.cycleId,
+        processId: contextSnapshot.processId,
+        cycleLabel: selectedCycle?.nombre ?? null,
+      });
     } catch (error) {
       console.error("No se pudo cargar procesos/ciclos desde backend:", error);
       setCycles([]);
       setProcesses([]);
+      setSelectedContextCycleId(null);
     } finally {
       setIsLoading(false);
     }
@@ -76,6 +101,54 @@ export const AccreditationProcessList: React.FC = () => {
   useEffect(() => {
     loadData();
   }, [loadData]);
+
+  useEffect(() => {
+    if (typeof window === "undefined") {
+      return;
+    }
+
+    const refreshByContext = () => {
+      void loadData();
+    };
+
+    window.addEventListener(
+      GLOBAL_FILTER_CONTEXT_CHANGED_EVENT,
+      refreshByContext,
+    );
+
+    return () => {
+      window.removeEventListener(
+        GLOBAL_FILTER_CONTEXT_CHANGED_EVENT,
+        refreshByContext,
+      );
+    };
+  }, [loadData]);
+
+  const visibleProcesses = useMemo(() => {
+    if (!selectedContextCycleId) {
+      return processes;
+    }
+
+    return processes.filter(
+      (process) => process.accreditationCycleId === selectedContextCycleId,
+    );
+  }, [processes, selectedContextCycleId]);
+
+  const selectedCycle = useMemo(
+    () =>
+      selectedContextCycleId
+        ? (cycles.find((cycle) => cycle.id === selectedContextCycleId) ?? null)
+        : null,
+    [cycles, selectedContextCycleId],
+  );
+
+  const selectableCycles = useMemo(() => {
+    if (!selectedContextCycleId) {
+      return cycles;
+    }
+
+    return cycles.filter((cycle) => cycle.id === selectedContextCycleId);
+  }, [cycles, selectedContextCycleId]);
 
   const validateBusinessRules = (
     formData: AccreditationProcessFormData,
@@ -212,18 +285,19 @@ export const AccreditationProcessList: React.FC = () => {
       <PageHeader
         title={moduleInfo.title}
         description={moduleInfo.description}
+        breadcrumbMode="cycle-only"
         headerExtra={
           <div className="flex flex-col sm:flex-row w-full gap-2 shrink-0 lg:w-auto">
             <SearchInput
               placeholder="Buscar procesos..."
               value={searchQuery}
               onChange={setSearchQuery}
-              className="w-full sm:w-72 text-[13px]"
+              className="w-full sm:w-72 text-sm"
             />
             <Button
               variant="secondary"
               onClick={handleCreateProcess}
-              className="gap-2 text-[13px] font-semibold"
+              className="gap-2 text-sm font-semibold"
             >
               Crear
             </Button>
@@ -232,18 +306,18 @@ export const AccreditationProcessList: React.FC = () => {
       />
 
       <AccreditationProcessTable
-          processes={processes}
-          isLoading={isLoading}
-          searchQuery={searchQuery}
-          onView={handleViewProcess}
-          onEdit={handleEditProcess}
-          onDelete={handleDeleteProcess}
-        />
+        processes={visibleProcesses}
+        isLoading={isLoading}
+        searchQuery={searchQuery}
+        onView={handleViewProcess}
+        onEdit={handleEditProcess}
+        onDelete={handleDeleteProcess}
+      />
 
       <AccreditationProcessFormModal
         isOpen={formModalState.isOpen}
         onClose={() => setFormModalState({ isOpen: false, process: null })}
-        cycles={cycles}
+        cycles={selectableCycles}
         initialData={formModalState.process}
         onSave={handleSaveProcess}
       />

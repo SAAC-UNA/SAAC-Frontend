@@ -3,6 +3,8 @@ import { useLocation } from "react-router-dom";
 import type { ReactNode } from "react";
 import { getNavigationItems } from "@/Navigation";
 import { useAuth } from "@/Context/AuthContext";
+import { useOperationalContextStatus } from "@/Hooks/useOperationalContextStatus";
+import { useOperationalContextSnapshot } from "@/Hooks/useOperationalContextSnapshot";
 
 /**
  * CONTEXTO DE NAVEGACIÓN DEL SIDEBAR
@@ -33,11 +35,18 @@ export const NavigationProvider: React.FC<NavigationProviderProps> = ({
 }) => {
   const location = useLocation();
   const { user } = useAuth();
+  const { hasOperationalContext } = useOperationalContextStatus();
+  const operationalContext = useOperationalContextSnapshot();
 
   // Obtener items filtrados por reglas de acceso (roles + permisos)
   const navigationItems = getNavigationItems({
     roles: user?.roles?.map((r) => r.name),
     permissions: user?.all_permissions?.map((p) => p.name),
+    context: {
+      hasOperationalContext,
+      cycleId: operationalContext.cycleId,
+      processId: operationalContext.processId,
+    },
   });
 
   // Función para encontrar el item activo y su grupo padre basado en la ruta actual
@@ -109,7 +118,12 @@ export const NavigationProvider: React.FC<NavigationProviderProps> = ({
     if (parentId) {
       setExpandedItemId(parentId);
     }
-  }, [location.pathname]);
+  }, [
+    location.pathname,
+    hasOperationalContext,
+    operationalContext.cycleId,
+    operationalContext.processId,
+  ]);
 
   const setActiveItem = (itemId: string) => {
     setActiveItemId(itemId);

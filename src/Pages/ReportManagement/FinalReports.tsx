@@ -5,36 +5,28 @@ import { ButtonWithTooltip } from "@/Components/Ui/Buttons/ButtonWithTooltip";
 import { getModuleInfo } from "@/Constants/ModuleInfo";
 import { SystemIcons } from "@/Components/Ui/Icons/SystemIcons";
 import { axiosInstance } from "@/Config/axios";
-import { CustomSelect } from "@/Components/Ui/Forms/SingleSelect";
 import { PublicLinkModal } from "./Components/PublicLinkModal";
 import { CriterionDetailModal } from "./Components/CriterionDetailModal";
 import { GenerateLinksConfirmModal } from "./Components/GenerateLinksConfirmModal";
 import { DropdownButton } from "@/Components/Ui/Buttons/DropdownButton";
 import type { DropdownOption } from "@/Components/Ui/Buttons/DropdownButton";
 import { FinalReportsTable } from "./Components/FinalReportsTable";
-import type { Criterio, Evidencia, Archivo } from "./Components/FinalReportsTable";
+import type {
+  Criterio,
+  Evidencia,
+  Archivo,
+} from "./Components/FinalReportsTable";
 import { usePdfExport } from "@/Hooks/usePdfExport";
 import { useToast } from "@/Context/ToastContext";
 import { ICON_SIZES } from "@/Constants/Components";
-import { Card } from "@/Components/Ui/Layout/Card";
+import { globalFilterContextService } from "@/Services/GlobalFilterContextService";
 
 type ApprovalStatus = "pendiente" | "aprobado" | "rechazado";
 
-interface Proceso {
-  proceso_id: number;
-  tipo_proceso: string;
-  accreditation_cycle: {
-    ciclo_acreditacion_id: number;
-    nombre: string;
-    career_campus: {
-      career: {
-        nombre: string;
-      };
-      campus: {
-        nombre: string;
-      };
-    };
-  };
+interface ContextInfo {
+  careerLabel: string;
+  cycleLabel: string;
+  processLabel: string;
 }
 
 type ExportFormat = "pdf" | "excel";
@@ -48,17 +40,22 @@ const FinalReports: React.FC = () => {
     isLoading: boolean;
     criteria: Criterio[];
     evidences: Evidencia[];
-    processes: Proceso[];
-  }>({ isLoading: true, criteria: [], evidences: [], processes: [] });
+  }>({ isLoading: true, criteria: [], evidences: [] });
   const isLoading = dataState.isLoading;
   const criteria = dataState.criteria;
   const evidences = dataState.evidences;
-  const processes = dataState.processes;
+  const [selectedProcesoId, setSelectedProcesoId] = useState<number | null>(
+    null,
+  );
+  const [contextInfo, setContextInfo] = useState<ContextInfo>({
+    careerLabel: "",
+    cycleLabel: "",
+    processLabel: "",
+  });
+  const [contextLoading, setContextLoading] = useState<boolean>(true);
   const [uiState, setUiState] = useState<{
-    selectedProcesoId: number | null;
     loadingFiles: Set<number>;
-  }>({ selectedProcesoId: null, loadingFiles: new Set() });
-  const selectedProcesoId = uiState.selectedProcesoId;
+  }>({ loadingFiles: new Set() });
   const loadingFiles = uiState.loadingFiles;
 
   // Modal de detalle de criterio
@@ -86,29 +83,77 @@ const FinalReports: React.FC = () => {
   const isGeneratingLinks = confirmModal.isGeneratingLinks;
 
   useEffect(() => {
+    loadContext();
+  }, []);
+
+  useEffect(() => {
     fetchData();
   }, [selectedProcesoId]);
+
+  const loadContext = async () => {
+    setContextLoading(true);
+    try {
+      const catalog = await globalFilterContextService.getCatalog();
+      const procesoId = catalog.context.proceso_id ?? null;
+      const cicloId = catalog.context.ciclo_acreditacion_id ?? null;
+      const carreraId = catalog.context.career_campus_id ?? null;
+
+      setSelectedProcesoId(procesoId);
+
+      const selectedProcess = catalog.processes.find(
+        (process) => process.proceso_id === procesoId,
+      );
+      const selectedCycle = catalog.cycles.find(
+        (cycle) => cycle.ciclo_acreditacion_id === cicloId,
+      );
+      const selectedCareer = catalog.careers.find(
+        (career) => career.carrera_sede_id === carreraId,
+      );
+
+      const careerLabel = selectedCareer
+        ? `${selectedCareer.carrera_nombre} - ${selectedCareer.sede_nombre}`
+        : "";
+      const cycleLabel = selectedCycle?.nombre ?? "";
+      const processLabel = selectedProcess
+        ? `${selectedProcess.tipo_proceso} (${selectedProcess.proceso_id})`
+        : "";
+
+      setContextInfo({
+        careerLabel,
+        cycleLabel,
+        processLabel,
+      });
+
+      // Sync context snapshot for breadcrumb and emit change event
+      globalFilterContextService.syncContextSnapshot({
+        careerCampusId: carreraId,
+        cycleId: cicloId,
+        processId: procesoId,
+        careerLabel,
+        cycleLabel,
+        processLabel,
+      });
+    } catch {
+      setSelectedProcesoId(null);
+      setContextInfo({ careerLabel: "", cycleLabel: "", processLabel: "" });
+    } finally {
+      setContextLoading(false);
+    }
+  };
 
   const fetchData = async () => {
     try {
       setDataState((prev) => ({ ...prev, isLoading: true }));
-      const [
-        criteriaResponse,
-        evidencesResponse,
-        processesResponse,
-        approvalsResponse,
-      ] = await Promise.all([
-        axiosInstance.get("/estructura/criterios"),
-        axiosInstance.get("/estructura/evidencias"),
-        axiosInstance.get("/estructura/procesos"),
-        axiosInstance.get("/aprobaciones-criterios"),
-      ]);
+      const [criteriaResponse, evidencesResponse, approvalsResponse] =
+        await Promise.all([
+          axiosInstance.get("/estructura/criterios"),
+          axiosInstance.get("/estructura/evidencias"),
+          axiosInstance.get("/aprobaciones-criterios"),
+        ]);
 
       const criteriaArray = criteriaResponse.data.data || criteriaResponse.data;
       const evidencesArray =
         evidencesResponse.data.data || evidencesResponse.data;
-      const processesArray =
-        processesResponse.data.data || processesResponse.data;
       const approvalsArray =
         approvalsResponse.data.data || approvalsResponse.data;
 
@@ -139,7 +184,6 @@ const FinalReports: React.FC = () => {
         ...prev,
         criteria: approvedCriteria,
         evidences: evidencesArray,
-        processes: processesArray,
       }));
     } catch (error: any) {
       console.error("Error:", error);
@@ -336,16 +380,14 @@ const FinalReports: React.FC = () => {
   const exportToPdf = (
     rows: Array<{ criterio: string; evidencia: string; link: string }>,
   ) => {
-    const procesoSeleccionado = processes.find(
-      (p) => p.proceso_id === selectedProcesoId,
-    );
-    if (!procesoSeleccionado) return;
+    if (!selectedProcesoId) return;
 
     generatePdfReport({
       title: "Informe de Evidencias con Enlaces",
       metadata: {
-        Proceso: `${procesoSeleccionado.accreditation_cycle.career_campus.career.nombre} - ${procesoSeleccionado.accreditation_cycle.career_campus.campus.nombre}`,
-        Tipo: `${procesoSeleccionado.tipo_proceso} | Ciclo: ${procesoSeleccionado.accreditation_cycle.nombre}`,
+        Carrera: contextInfo.careerLabel || "No definida",
+        Ciclo: contextInfo.cycleLabel || "No definido",
+        Proceso: contextInfo.processLabel || "No definido",
         Generado: new Date().toLocaleString(),
       },
       columns: [
@@ -381,33 +423,29 @@ const FinalReports: React.FC = () => {
       <PageHeader
         title={moduleInfo.title}
         description={moduleInfo.description}
+        breadcrumbMode="contextual"
         headerExtra={
           <div className="flex items-center gap-2">
-            <Card className="w-80">
-              <CustomSelect
-                label="Seleccione proceso"
-                value={selectedProcesoId?.toString() || ""}
-                placeholder="Seleccione un proceso"
-                size="sm"
-                onChange={(value) =>
-                  setUiState((prev) => ({
-                    ...prev,
-                    selectedProcesoId: value ? Number(value) : null,
-                  }))
-                }
-                options={processes
-                  .filter(
-                    (proceso: Proceso) =>
-                      proceso.accreditation_cycle?.career_campus?.career?.nombre &&
-                      proceso.accreditation_cycle?.career_campus?.campus?.nombre,
-                  )
-                  .map((proceso: Proceso) => ({
-                    value: proceso.proceso_id.toString(),
-                    label: `${proceso.accreditation_cycle.career_campus.career.nombre} - ${proceso.accreditation_cycle.career_campus.campus.nombre} (${proceso.tipo_proceso})`,
-                  }))}
-                maxVisibleItems={5}
-              />
-            </Card>
+            {contextLoading ? (
+              <span className="text-sm text-gris-una">
+                Cargando contexto...
+              </span>
+            ) : (
+              <div className="text-xs sm:text-sm text-gris-una leading-tight">
+                <div>
+                  <span className="font-semibold text-negro-una">Carrera:</span>{" "}
+                  {contextInfo.careerLabel || "No definida"}
+                </div>
+                <div>
+                  <span className="font-semibold text-negro-una">Ciclo:</span>{" "}
+                  {contextInfo.cycleLabel || "No definido"}
+                </div>
+                <div>
+                  <span className="font-semibold text-negro-una">Proceso:</span>{" "}
+                  {contextInfo.processLabel || "No definido"}
+                </div>
+              </div>
+            )}
             {selectedProcesoId && criteria.length > 0 && (
               <>
                 <ButtonWithTooltip
@@ -424,19 +462,25 @@ const FinalReports: React.FC = () => {
                   label="Exportar"
                   variant="outline"
                   size="sm"
-                  icon={<SystemIcons.actions.export className={ICON_SIZES.sm} />}
+                  icon={
+                    <SystemIcons.actions.export className={ICON_SIZES.sm} />
+                  }
                   options={
                     [
                       {
                         id: "pdf",
                         label: "Exportar a PDF",
-                        icon: <SystemIcons.modal.pdf className={ICON_SIZES.sm} />,
+                        icon: (
+                          <SystemIcons.modal.pdf className={ICON_SIZES.sm} />
+                        ),
                         onClick: () => handleExportInforme("pdf"),
                       },
                       {
                         id: "excel",
                         label: "Exportar a Excel",
-                        icon: <SystemIcons.modal.excel className={ICON_SIZES.sm} />,
+                        icon: (
+                          <SystemIcons.modal.excel className={ICON_SIZES.sm} />
+                        ),
                         onClick: () => handleExportInforme("excel"),
                       },
                     ] as DropdownOption[]
@@ -447,8 +491,8 @@ const FinalReports: React.FC = () => {
           </div>
         }
       />
-      {isLoading ? (
-        <div className="relative py-12 min-h-[400px]">
+      {isLoading || contextLoading ? (
+        <div className="relative py-12 min-h-100">
           <LoadingSpinner variant="loader" />
         </div>
       ) : (
@@ -465,7 +509,7 @@ const FinalReports: React.FC = () => {
                   No hay datos disponibles
                 </p>
                 <p className="text-sm text-gris-una">
-                  Seleccione un proceso para continuar
+                  Defina ciclo y proceso en Inicio para continuar
                 </p>
               </div>
             </div>
@@ -490,7 +534,9 @@ const FinalReports: React.FC = () => {
                   loadingFiles={loadingFiles}
                   onLoadFile={loadEvidenceFiles}
                   onOpenLink={handleAbrirEnlaceEvidencia}
-                  onViewDetail={(criterio) => setDetailModal({ open: true, criterio })}
+                  onViewDetail={(criterio) =>
+                    setDetailModal({ open: true, criterio })
+                  }
                 />
               )}
             </>

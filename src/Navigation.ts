@@ -33,26 +33,48 @@ const lightIcon = "system-icon:lightbulb";
 interface NavigationAccessInput {
   roles?: string[];
   permissions?: string[];
+  context?: {
+    hasOperationalContext?: boolean;
+    cycleId?: number | null;
+    processId?: number | null;
+  };
 }
 
 const normalizeAccessInput = (
   input?: string | string[] | NavigationAccessInput,
 ): NavigationAccessInput => {
   if (!input) {
-    return { roles: [], permissions: [] };
+    return {
+      roles: [],
+      permissions: [],
+      context: { hasOperationalContext: true },
+    };
   }
 
   if (typeof input === "string") {
-    return { roles: [input], permissions: [] };
+    return {
+      roles: [input],
+      permissions: [],
+      context: { hasOperationalContext: true, cycleId: null, processId: null },
+    };
   }
 
   if (Array.isArray(input)) {
-    return { roles: input, permissions: [] };
+    return {
+      roles: input,
+      permissions: [],
+      context: { hasOperationalContext: true, cycleId: null, processId: null },
+    };
   }
 
   return {
     roles: input.roles ?? [],
     permissions: input.permissions ?? [],
+    context: {
+      hasOperationalContext: input.context?.hasOperationalContext ?? true,
+      cycleId: input.context?.cycleId ?? null,
+      processId: input.context?.processId ?? null,
+    },
   };
 };
 
@@ -61,6 +83,9 @@ export const getNavigationItems = (
 ): NavItem[] => {
   const access = normalizeAccessInput(accessInput);
   const hasAccess = (rule?: AccessRule) => evaluateAccess(access, rule);
+  const hasCycleSelection = access.context?.cycleId !== null;
+  const hasProcessSelection = access.context?.processId !== null;
+  const hasContextualSelection = hasCycleSelection && hasProcessSelection;
 
   const items: NavItem[] = [
     {
@@ -133,7 +158,7 @@ export const getNavigationItems = (
     }
   }
 
-  {
+  if (hasContextualSelection) {
     const evidenciaChildren: NavItem[] = [];
 
     if (
@@ -194,7 +219,7 @@ export const getNavigationItems = (
     }
   }
 
-  {
+  if (hasContextualSelection) {
     const solicitudChildren: NavItem[] = [];
 
     if (
@@ -319,7 +344,7 @@ export const getNavigationItems = (
     }
   }
 
-  {
+  if (hasContextualSelection) {
     const evaluacionChildren: NavItem[] = [];
 
     if (
