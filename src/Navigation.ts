@@ -246,15 +246,15 @@ export const getNavigationItems = (
 
     if (
       hasAccess({
-        requireAnyCapabilities: [CAPABILITIES.ACCREDITATION_PROCESS_VIEW],
-        requireAnyPermissions: ["procesos.view"],
+        requireAnyCapabilities: [CAPABILITIES.ACCREDITATION_MODEL_VIEW],
+        requireAnyPermissions: ["modelos.view"],
       })
     ) {
       acreditacionChildren.push({
-        id: "procesos-acreditacion",
-        label: "Procesos de Acreditación",
-        icon: processIcon,
-        href: "/procesos-acreditacion/listar",
+        id: "modelos-acreditacion",
+        label: "Modelos de Acreditación",
+        icon: nutIcon,
+        href: "/estructura/modelos",
         isActive: false,
       });
     }
@@ -276,21 +276,6 @@ export const getNavigationItems = (
 
     if (
       hasAccess({
-        requireAnyCapabilities: [CAPABILITIES.ACCREDITATION_MODEL_VIEW],
-        requireAnyPermissions: ["modelos.view"],
-      })
-    ) {
-      acreditacionChildren.push({
-        id: "modelos-acreditacion",
-        label: "Modelos de Acreditación",
-        icon: nutIcon,
-        href: "/estructura/modelos",
-        isActive: false,
-      });
-    }
-
-    if (
-      hasAccess({
         requireAnyCapabilities: [CAPABILITIES.ACCREDITATION_CYCLE_VIEW],
         requireAnyPermissions: ["ciclos.view"],
       })
@@ -300,6 +285,21 @@ export const getNavigationItems = (
         label: "Ciclos de Acreditación",
         icon: calendarIcon,
         href: "/ciclos-acreditacion",
+        isActive: false,
+      });
+    }
+
+    if (
+      hasAccess({
+        requireAnyCapabilities: [CAPABILITIES.ACCREDITATION_PROCESS_VIEW],
+        requireAnyPermissions: ["procesos.view"],
+      })
+    ) {
+      acreditacionChildren.push({
+        id: "procesos-acreditacion",
+        label: "Procesos de Acreditación",
+        icon: processIcon,
+        href: "/procesos-acreditacion/listar",
         isActive: false,
       });
     }
