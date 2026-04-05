@@ -284,7 +284,7 @@ export const FlexibleElementTable: React.FC<FlexibleElementTableProps> = ({
                       : 'bg-error-light text-error-dark border border-error-ring',
                   )}>
                     <span className={cn(
-                      'w-1.5 h-1.5 rounded-full flex-shrink-0',
+                      'w-1.5 h-1.5 rounded-full shrink-0',
                       detailModal.element.activo ? 'bg-verde' : 'bg-error'
                     )} />
                     {detailModal.element.activo ? 'Activo' : 'Inactivo'}
@@ -326,7 +326,7 @@ export const FlexibleElementTable: React.FC<FlexibleElementTableProps> = ({
               <div className="border border-gray-200 rounded-corner p-4">
                 <DetailInfoCell label="Elemento padre">
                   <div className="flex items-center gap-2">
-                    <span className="w-1.5 h-1.5 rounded-full bg-azul-una flex-shrink-0" />
+                    <span className="w-1.5 h-1.5 rounded-full bg-azul-una shrink-0" />
                     <span className={cn(TYPOGRAPHY.table.cell, 'text-gris-una-2')}>
                       {getParentLabel(detailModal.element)}
                     </span>

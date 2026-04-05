@@ -14,10 +14,10 @@ import { UserAvatars } from "@/Components/Ui/UserAvatars/UserAvatars";
 import { SuccessModal } from "@/Components/Ui/Modals/SuccessModal.tsx";
 import { EditConfirmationModal } from "@/Components/Ui/Modals/EditConfirmationModal.tsx";
 import { Textarea } from "@/Components/Ui/Forms/Textarea";
-import { BackendErrorAlert } from "@/Components/Ui/Feedback/BackendErrorAlert";
 import { TreeSelect } from "@/Components/Ui/Forms/TreeSelect";
+import { BackendErrorAlert } from "@/Components/Ui/Feedback/BackendErrorAlert";
 import { TYPOGRAPHY } from "@/Constants/Typography";
-import type { DuplicateAssignment } from "@/Types/EvidenceAssignment";
+import type { DuplicateAssignment, Criterion } from "@/Types/EvidenceAssignment";
 import type { EvidenceAssignmentViewProps, DuplicateGroupRow } from "../EvidenceAssignment";
 import { formatDateShort } from "@/Utils/DateUtils";
 import type { ExpandableChildItem } from "@/Components/Ui/Table/DataTable";
@@ -50,6 +50,7 @@ export const EvidenceAssignmentView: React.FC<EvidenceAssignmentViewProps> = ({
   activeDuplicateRows,
   completedDuplicateRows,
   evidenceById,
+  criterionById,
   excludedCompletedPairs,
   toggleCompletedPair,
   toggleAllCompletedPairsForUser,
@@ -66,7 +67,17 @@ export const EvidenceAssignmentView: React.FC<EvidenceAssignmentViewProps> = ({
   selectedAvatars,
   isFlexible,
   flexElements,
+  flexElementsLoading,
 }) => {
+  const getEvidenceBreadcrumb = (evidenciaId: number): string => {
+    const ev = evidenceById[evidenciaId];
+    if (!ev) return 'N/A';
+    const criterion = criterionById[ev.criterio_id] as Criterion | undefined;
+    return criterion
+      ? `${criterion.nomenclatura} > ${ev.nomenclatura} — ${ev.descripcion}`
+      : `${ev.nomenclatura} — ${ev.descripcion}`;
+  };
+
   return (
     <ScreenContainer>
       <PageHeader
@@ -145,12 +156,12 @@ export const EvidenceAssignmentView: React.FC<EvidenceAssignmentViewProps> = ({
                     onChange={(ids) => updateFormData({ selectedElements: ids })}
                     mode="select"
                     multiple
-                    showPath
+                    loading={flexElementsLoading}
                     placeholder="Seleccione elementos..."
                     required
                   />
                   <p className={`mt-1.5 ${TYPOGRAPHY.form.helper} text-gris-una`}>
-                    Navegue la jerarquía del modelo para seleccionar elementos a asignar.
+                    Elementos del modelo de acreditación a asignar.
                   </p>
                 </div>
               ) : (
@@ -375,7 +386,7 @@ export const EvidenceAssignmentView: React.FC<EvidenceAssignmentViewProps> = ({
 
               {/* Tabla amarilla — duplicados activos */}
               {activeDuplicates.length > 0 && (
-                <Card className="overflow-hidden border-2 border-warning-ring bg-warning-light">
+                <Card className="overflow-hidden border-2 border-warning-ring bg-blanco-una">
                   <div className="px-6 pt-6 pb-2">
                     <h2 className={`${TYPOGRAPHY.table.caption} font-semibold text-negro-una`}>Asignaciones Duplicadas</h2>
                     <p className={`mt-1 ${TYPOGRAPHY.table.helper} text-gris-una`}>Usuarios con asignaciones pendientes en progreso. No se pueden reasignar.</p>
@@ -390,10 +401,10 @@ export const EvidenceAssignmentView: React.FC<EvidenceAssignmentViewProps> = ({
                         align: 'left',
                         render: (_, row) => (
                           <div className="flex items-center gap-3">
-                            <div className="flex items-center justify-center w-8 h-8 rounded-full bg-warning text-white font-bold text-xs shrink-0">
+                            <div className="flex items-center justify-center w-8 h-8 rounded-full bg-warning-light text-warning font-bold text-xs shrink-0">
                               {row.evidences.length}
                             </div>
-                            <p className={`${TYPOGRAPHY.table.cell} font-semibold text-warning-dark`}>{row.usuario_nombre}</p>
+                            <p className={`${TYPOGRAPHY.table.cell} font-semibold text-warning`}>{row.usuario_nombre}</p>
                           </div>
                         ),
                       },
@@ -405,9 +416,7 @@ export const EvidenceAssignmentView: React.FC<EvidenceAssignmentViewProps> = ({
                         key: `act-sub-${dup.asignacion_id ?? dup.evidencia_id}`,
                         content: (
                           <div className={`flex items-center gap-2 flex-1 min-w-0 ${TYPOGRAPHY.table.cell}`}>
-                            <span className="font-semibold text-negro-una">{evidenceById[dup.evidencia_id]?.nomenclatura ?? 'N/A'}</span>
-                            <span className="text-gris-una">—</span>
-                            <span className="text-negro-una truncate">{evidenceById[dup.evidencia_id]?.descripcion ?? ''}</span>
+                              <span className="text-negro-una truncate">{getEvidenceBreadcrumb(dup.evidencia_id)}</span>
                           </div>
                         ),
                         action: (
@@ -428,7 +437,7 @@ export const EvidenceAssignmentView: React.FC<EvidenceAssignmentViewProps> = ({
 
               {/* Tabla azul — completados */}
               {completedDuplicates.length > 0 && (
-                <Card className="overflow-hidden border-2 border-info-ring bg-info-light">
+                <Card className="overflow-hidden border-2 border-info-ring bg-blanco-una">
                   <div className="px-6 pt-6 pb-2">
                     <h2 className={`${TYPOGRAPHY.table.caption} font-semibold text-negro-una`}>Evidencias Ya Completadas</h2>
                     <div className="flex items-center justify-between gap-4 mt-1">
@@ -481,7 +490,7 @@ export const EvidenceAssignmentView: React.FC<EvidenceAssignmentViewProps> = ({
                         align: 'left',
                         render: (_, row) => (
                           <div className="flex items-center gap-3">
-                            <div className="flex items-center justify-center w-8 h-8 rounded-full bg-info text-white font-bold text-xs shrink-0">
+                            <div className="flex items-center justify-center w-8 h-8 rounded-full bg-info-light text-info font-bold text-xs shrink-0">
                               {row.evidences.length}
                             </div>
                             <p className={`${TYPOGRAPHY.table.cell} font-semibold text-info-dark`}>{row.usuario_nombre}</p>
@@ -507,9 +516,7 @@ export const EvidenceAssignmentView: React.FC<EvidenceAssignmentViewProps> = ({
                                 className="w-4 h-4 rounded border-info-ring text-info focus:ring-info cursor-pointer shrink-0"
                                 aria-label={`Reasignar ${evidenceById[dup.evidencia_id]?.nomenclatura}`}
                               />
-                              <span className="font-semibold text-negro-una">{evidenceById[dup.evidencia_id]?.nomenclatura ?? 'N/A'}</span>
-                              <span className="text-gris-una">—</span>
-                              <span className="text-negro-una truncate">{evidenceById[dup.evidencia_id]?.descripcion ?? ''}</span>
+                              <span className="text-negro-una truncate">{getEvidenceBreadcrumb(dup.evidencia_id)}</span>
                             </div>
                           ),
                           action: (

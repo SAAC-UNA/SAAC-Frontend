@@ -163,7 +163,7 @@ export const LinkInput: React.FC<LinkInputProps> = ({
                 <div className="flex items-center gap-2 flex-1 min-w-0">
                   <SystemIcons.interface.link 
                     size="md" 
-                    className="text-azul-una flex-shrink-0" 
+                    className="text-azul-una shrink-0" 
                   />
                   <a
                     href={link}
@@ -184,7 +184,7 @@ export const LinkInput: React.FC<LinkInputProps> = ({
                 >
                   <SystemIcons.actions.cancel 
                     size="md"
-                    className="text-gray-400 group-hover:text-rojo-una-2 flex-shrink-0"
+                    className="text-gray-400 group-hover:text-rojo-una-2 shrink-0"
                   />
                 </button>
               </li>

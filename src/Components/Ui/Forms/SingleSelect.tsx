@@ -228,7 +228,7 @@ const DropdownContent: React.FC<DropdownContentProps> = ({
                 {isSelected && (
                   <motion.div
                     layoutId={`${uniqueId}-leftbar`}
-                    className="absolute left-0 top-0 bottom-0 my-auto w-[3px] h-5 rounded-full bg-info"
+                    className="absolute left-0 top-0 bottom-0 my-auto w-0.75 h-5 rounded-full bg-info"
                     transition={SPRING_HOVER}
                   />
                 )}
@@ -478,7 +478,7 @@ export const CustomSelect: React.FC<CustomSelectProps> = ({
         {error && (
           <p className={`text-rojo-una-2 ${TYPOGRAPHY.form.helper} flex items-center gap-2`}>
             <SystemIcons.interface.alert
-              className={`${ICON_SIZES.sm} flex-shrink-0 text-rojo-una-2`}
+              className={`${ICON_SIZES.sm} shrink-0 text-rojo-una-2`}
             />
             {error}
           </p>
@@ -561,7 +561,7 @@ export const CustomSelect: React.FC<CustomSelectProps> = ({
       {error && (
         <p className={`text-rojo-una-2 ${TYPOGRAPHY.form.helper} flex items-center gap-2`}>
           <SystemIcons.interface.alert
-            className={`${ICON_SIZES.sm} flex-shrink-0 text-rojo-una-2`}
+            className={`${ICON_SIZES.sm} shrink-0 text-rojo-una-2`}
           />
           {error}
         </p>

@@ -8,6 +8,7 @@ import { PageHeader, ScreenContainer } from '@/Components/Ui/Index';
 import { SearchInput } from '@/Components/Ui/Forms/SearchInput';
 import { FilterButton, type FilterOption } from '@/Components/Ui/Buttons/FilterButton';
 import { extensionRequestService } from '@/Services/ExtensionRequestService';
+import { flexibleExtensionRequestService } from '@/Services/FlexibleExtensionRequestService';
 import { useToast } from '@/Context/ToastContext';
 import { getContextualInfo } from '@/Constants/ModuleInfo';
 import { TABLE_PAGE_SIZE } from '@/Constants/TablePagination';
@@ -29,9 +30,8 @@ export const MyExtensionRequestsPage: React.FC = () => {
   const loading = pageState.loading;
   const error = pageState.error;
   const [searchQuery, setSearchQuery] = useState('');
-  const [filterState, setFilterState] = useState<{ filtroEstado: ExtensionRequestStatus | 'todos'; currentPage: number }>({ filtroEstado: 'todos', currentPage: 1 });
+  const [filterState, setFilterState] = useState<{ filtroEstado: ExtensionRequestStatus | 'todos' }>({ filtroEstado: 'todos' });
   const filtroEstado = filterState.filtroEstado;
-  const currentPage = filterState.currentPage;
 
   // Estado para el modal de detalles
   const [selectedSolicitud, setSelectedSolicitud] = useState<ExtensionRequest | null>(null);
@@ -46,29 +46,34 @@ export const MyExtensionRequestsPage: React.FC = () => {
 
   useEffect(() => {
     loadSolicitudes();
-  }, [currentPage]);
+  }, []);
 
   const loadSolicitudes = async () => {
     try {
-      setPageState(prev => ({...prev, loading: true, error: null}));
-      
-      const filters = {
-        page: currentPage,
-        per_page: 15
-      };
+      setPageState(prev => ({ ...prev, loading: true, error: null }));
 
-      const response = await extensionRequestService.getMyRequests(filters);
-      setPageState(prev => ({...prev, solicitudes: response.data}));
+      const [tradRes, flexRes] = await Promise.allSettled([
+        extensionRequestService.getMyRequests({ per_page: 100 }),
+        flexibleExtensionRequestService.getMyRequests({ per_page: 100 }),
+      ]);
+
+      const trad = tradRes.status === 'fulfilled' ? tradRes.value.data : [];
+      const flex = flexRes.status === 'fulfilled' ? flexRes.value.data : [];
+
+      const errorMsg =
+        tradRes.status === 'rejected' && flexRes.status === 'rejected'
+          ? 'No se pudieron cargar las solicitudes'
+          : null;
+
+      setPageState({ solicitudes: [...trad, ...flex], loading: false, error: errorMsg });
+
+      if (errorMsg) {
+        showToast({ type: 'error', title: 'Error al Cargar', message: errorMsg });
+      }
     } catch (error: any) {
       const errorMessage = error.message || 'No se pudieron cargar las solicitudes';
-      setPageState(prev => ({...prev, error: errorMessage}));
-      showToast({
-        type: 'error',
-        title: 'Error al Cargar',
-        message: errorMessage
-      });
-    } finally {
-      setPageState(prev => ({...prev, loading: false}));
+      setPageState(prev => ({ ...prev, error: errorMessage, loading: false }));
+      showToast({ type: 'error', title: 'Error al Cargar', message: errorMessage });
     }
   };
 
@@ -99,7 +104,7 @@ export const MyExtensionRequestsPage: React.FC = () => {
               options={estadoOptions}
               value={filtroEstado}
               onChange={(value) => {
-                setFilterState({ filtroEstado: value, currentPage: 1 });
+                setFilterState({ filtroEstado: value });
               }}
             />
           </div>

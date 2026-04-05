@@ -41,6 +41,7 @@ export interface TreeSelectProps {
   placeholder?: string;
   label?: string;
   disabled?: boolean;
+  loading?: boolean;
   error?: string;
   className?: string;
   required?: boolean;
@@ -58,6 +59,7 @@ export const TreeSelect: React.FC<TreeSelectProps> = ({
   placeholder,
   label,
   disabled = false,
+  loading = false,
   error,
   className,
   required = false,
@@ -85,7 +87,8 @@ export const TreeSelect: React.FC<TreeSelectProps> = ({
       showPath={showPath}
       placeholder={placeholder}
       label={label}
-      disabled={disabled}
+      disabled={disabled || loading}
+      loading={loading}
       error={error}
       className={className}
       required={required}
@@ -106,6 +109,7 @@ interface TreeSelectCascadeProps {
   placeholder?: string;
   label?: string;
   disabled: boolean;
+  loading: boolean;
   error?: string;
   className?: string;
   required: boolean;
@@ -120,6 +124,7 @@ const TreeSelectCascade: React.FC<TreeSelectCascadeProps> = ({
   placeholder = 'Seleccionar elementos...',
   label,
   disabled,
+  loading,
   error,
   className,
   required,
@@ -250,10 +255,10 @@ const TreeSelectCascade: React.FC<TreeSelectCascadeProps> = ({
       {label && (
         <label
           htmlFor={uniqueId}
-          className={`block mb-1 ${TXT_SM} font-medium text-negro-una`}
+          className={`block font-medium ${TYPOGRAPHY.form.label} mb-2 text-negro-una`}
         >
           {label}
-          {required && <span className="text-red-500 ml-0.5">*</span>}
+          {required && <span className="ml-1 text-rojo-una-2">*</span>}
         </label>
       )}
 
@@ -265,21 +270,29 @@ const TreeSelectCascade: React.FC<TreeSelectCascadeProps> = ({
         disabled={disabled}
         onClick={() => setIsOpen(!isOpen)}
         className={cn(
-          'w-full min-h-10.5 px-3 py-2 border rounded-lg text-left flex items-center gap-2 transition-colors',
-          TXT_SM,
+          'relative w-full min-h-10 px-3 py-2 border rounded-corner text-left flex items-center gap-2 transition-all duration-300',
+          TYPOGRAPHY.form.input,
+          'focus:outline-none',
           disabled
-            ? 'bg-gray-100 cursor-not-allowed border-gray-200'
+            ? 'bg-gris-una/10 border-gris-una/5 text-gris-una cursor-not-allowed'
             : error
-              ? 'border-red-400 bg-white hover:border-red-500'
-              : 'border-gray-300 bg-white hover:border-azul-una',
+              ? 'border-rojo-una-2 bg-blanco-una-2'
+              : isOpen
+                ? 'border-gris-una/20 bg-blanco-una-2'
+                : 'border-gris-una bg-blanco-una-2 hover:border-gris-una/50',
         )}
       >
         <div className="flex-1 flex flex-wrap gap-1 min-w-0">
-          {hasValue ? (
+          {loading ? (
+            <span className="text-gris-una/50 flex items-center gap-1.5">
+              <span className="inline-block w-3 h-3 border-2 border-gris-una/40 border-t-azul-una rounded-full animate-spin" />
+              Cargando elementos...
+            </span>
+          ) : hasValue ? (
             selectedLabels.map((label, i) => (
               <span
                 key={value[i]}
-                className="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-azul-una/10 text-azul-una text-xs max-w-full"
+                className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-corner-sm bg-azul-una/10 text-azul-una ${TYPOGRAPHY.badge} max-w-full`}
               >
                 <span className="truncate">{label}</span>
                 <button
@@ -308,7 +321,7 @@ const TreeSelectCascade: React.FC<TreeSelectCascadeProps> = ({
         </motion.span>
       </button>
 
-      {error && <p className="mt-1 text-xs text-red-500">{error}</p>}
+      {error && <p className={`mt-1 ${TYPOGRAPHY.form.helper} text-rojo-una-2`}>{error}</p>}
 
       {/* Dropdown Portal */}
       <AnimatePresence>
@@ -318,33 +331,34 @@ const TreeSelectCascade: React.FC<TreeSelectCascadeProps> = ({
               ref={dropdownRef}
               initial="hidden"
               animate="visible"
-              exit="hidden"
+              exit="exit"
               variants={DROPDOWN_VARIANTS}
-              className="fixed z-9999 bg-white rounded-lg shadow-xl border border-gray-200 overflow-hidden"
+              className="fixed bg-blanco-una border-none rounded-corner shadow-lg overflow-hidden"
               style={{
                 top: dropdownPos.top,
                 left: dropdownPos.left,
                 width: dropdownPos.width,
+                zIndex: 9999,
               }}
             >
               {/* Barra de búsqueda */}
-              <div className="p-2 border-b border-gray-100">
+              <div className="p-2 border-b border-gris-light bg-blanco-una sticky top-0 z-10">
                 <input
                   type="text"
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                   placeholder="Buscar elementos..."
-                  className={`w-full px-3 py-1.5 border border-gray-200 rounded-md ${TXT_SM} focus:outline-none focus:border-azul-una`}
+                  className={`w-full px-3 py-2 rounded-corner-sm border border-gris-una/20 ${TYPOGRAPHY.form.input} text-negro-una placeholder:text-gris-una/50 bg-blanco-una-2 focus:outline-none focus:border-gris-una/40 transition-colors`}
                 />
               </div>
 
               {/* Breadcrumb de navegación */}
               {breadcrumb.length > 0 && !filteredLeaves && (
-                <div className="px-3 py-1.5 border-b border-gray-100 flex items-center gap-1 flex-wrap">
+                <div className="px-3 py-1.5 border-b border-gris-light flex items-center gap-1 flex-wrap">
                   <button
                     type="button"
                     onClick={() => navigateBack(0)}
-                    className="text-azul-una hover:underline text-xs font-medium"
+                    className={`${TYPOGRAPHY.form.helper} text-azul-una hover:underline font-medium`}
                   >
                     Inicio
                   </button>
@@ -353,12 +367,12 @@ const TreeSelectCascade: React.FC<TreeSelectCascadeProps> = ({
                     const elLabel = el?.nombre ?? el?.nomenclatura ?? el?.tipo ?? '';
                     return (
                       <React.Fragment key={id}>
-                        <span className="text-gris-una text-xs">›</span>
+                        <span className={`${TYPOGRAPHY.form.helper} text-gris-una`}>›</span>
                         <button
                           type="button"
                           onClick={() => navigateBack(idx + 1)}
                           className={cn(
-                            'text-xs font-medium',
+                            `${TYPOGRAPHY.form.helper} font-medium`,
                             idx === breadcrumb.length - 1
                               ? 'text-negro-una cursor-default'
                               : 'text-azul-una hover:underline',
@@ -373,16 +387,16 @@ const TreeSelectCascade: React.FC<TreeSelectCascadeProps> = ({
               )}
 
               {/* Contenido: nodos o resultados de búsqueda */}
-              <div className="max-h-64 overflow-y-auto">
+              <div className="max-h-64 overflow-y-auto custom-scrollbar">
                 {filteredLeaves ? (
                   // Modo búsqueda: mostrar hojas filtradas
                   <>
                     {multiple && filteredLeaves.length > 0 && (
-                      <div className="px-3 py-1.5 border-b border-gray-100">
+                      <div className="px-3 py-1.5 border-b border-gris-light">
                         <button
                           type="button"
                           onClick={selectAll}
-                          className="text-xs text-azul-una hover:underline"
+                          className={`${TYPOGRAPHY.form.helper} text-azul-una hover:underline`}
                         >
                           {filteredLeaves.every((l) => valueSet.has(l.elemento_id))
                             ? 'Deseleccionar todos'
@@ -391,7 +405,7 @@ const TreeSelectCascade: React.FC<TreeSelectCascadeProps> = ({
                       </div>
                     )}
                     {filteredLeaves.length === 0 ? (
-                      <p className="p-3 text-center text-gris-una text-sm">
+                      <p className={`p-4 text-center text-gris-una ${TYPOGRAPHY.form.helper}`}>
                         Sin resultados para "{searchTerm}"
                       </p>
                     ) : (
@@ -411,11 +425,11 @@ const TreeSelectCascade: React.FC<TreeSelectCascadeProps> = ({
                   // Modo navegación: nodos del nivel actual
                   <>
                     {multiple && visibleNodes.some((n) => n.children.length === 0) && (
-                      <div className="px-3 py-1.5 border-b border-gray-100">
+                      <div className="px-3 py-1.5 border-b border-gris-light">
                         <button
                           type="button"
                           onClick={selectAll}
-                          className="text-xs text-azul-una hover:underline"
+                          className={`${TYPOGRAPHY.form.helper} text-azul-una hover:underline`}
                         >
                           {visibleNodes
                             .filter((n) => n.children.length === 0 && n.activo)
@@ -424,6 +438,16 @@ const TreeSelectCascade: React.FC<TreeSelectCascadeProps> = ({
                             : 'Seleccionar todas las hojas'}
                         </button>
                       </div>
+                    )}
+                    {visibleNodes.length === 0 && elements.length === 0 && (
+                      <p className={`p-4 text-center text-gris-una ${TYPOGRAPHY.form.helper}`}>
+                        Cargando elementos...
+                      </p>
+                    )}
+                    {visibleNodes.length === 0 && elements.length > 0 && (
+                      <p className={`p-4 text-center text-gris-una ${TYPOGRAPHY.form.helper}`}>
+                        No hay elementos disponibles
+                      </p>
                     )}
                     {visibleNodes.map((node) =>
                       node.children.length > 0 ? (
@@ -448,14 +472,14 @@ const TreeSelectCascade: React.FC<TreeSelectCascadeProps> = ({
               </div>
 
               {/* Footer con conteo */}
-              <div className="px-3 py-1.5 border-t border-gray-100 bg-gray-50 flex justify-between items-center">
-                <span className="text-xs text-gris-una">
+              <div className="px-3 py-1.5 border-t border-gris-light bg-blanco-una-2 flex justify-between items-center">
+                <span className={`${TYPOGRAPHY.form.helper} text-gris-una`}>
                   {value.length} de {leaves.filter((l) => l.activo).length} seleccionados
                 </span>
                 <button
                   type="button"
                   onClick={() => setIsOpen(false)}
-                  className="text-xs text-azul-una hover:underline font-medium"
+                  className={`${TYPOGRAPHY.form.helper} text-azul-una hover:underline font-medium`}
                 >
                   Cerrar
                 </button>
@@ -574,10 +598,10 @@ const TreeSelectFilter: React.FC<TreeSelectFilterProps> = ({
               }}
               disabled={disabled || level.nodes.length === 0}
               className={cn(
-                'w-full px-3 py-2 border rounded-lg text-sm transition-colors',
+                `w-full px-3 py-2 border rounded-corner ${TYPOGRAPHY.form.input} transition-all duration-200`,
                 disabled
-                  ? 'bg-gray-100 cursor-not-allowed border-gray-200'
-                  : 'border-gray-300 bg-white hover:border-azul-una focus:outline-none focus:border-azul-una',
+                  ? 'bg-gris-una/10 cursor-not-allowed border-gris-una/5 text-gris-una'
+                  : 'border-gris-una bg-blanco-una-2 hover:border-gris-una/50 focus:outline-none focus:border-gris-una/40',
               )}
             >
               <option value="">Todos</option>
@@ -594,7 +618,7 @@ const TreeSelectFilter: React.FC<TreeSelectFilterProps> = ({
           </div>
         ))}
       </div>
-      {error && <p className="mt-1 text-xs text-red-500">{error}</p>}
+      {error && <p className={`mt-1 ${TYPOGRAPHY.form.helper} text-rojo-una-2`}>{error}</p>}
     </div>
   );
 };
@@ -616,15 +640,15 @@ const BranchItem: React.FC<BranchItemProps> = ({ node, selectedCount, totalLeave
     onClick={onClick}
     whileHover={{ backgroundColor: 'rgba(0,0,0,0.03)' }}
     transition={SPRING_HOVER}
-    className="w-full px-3 py-2 flex items-center gap-2 text-left"
+    className="w-full px-4 py-2.5 flex items-center gap-3 text-left"
   >
     <SystemIcons.interface.chevronRight className={`${ICON_SIZES.sm} text-gris-una shrink-0`} />
     <div className="flex-1 min-w-0">
-      <p className={`${TXT_SM} text-negro-una font-medium truncate`}>
+      <p className={`${TYPOGRAPHY.form.input} text-negro-una font-medium truncate`}>
         {node.nomenclatura ? `${node.nomenclatura} - ` : ''}
         {node.nombre ?? node.tipo}
       </p>
-      <p className={`${TXT_XS} text-gris-una`}>
+      <p className={`${TYPOGRAPHY.form.helper} text-gris-una`}>
         {node.children.length} sub-elementos
         {selectedCount > 0 && (
           <span className="text-azul-una ml-1">
@@ -650,21 +674,21 @@ const LeafItem: React.FC<LeafItemProps> = ({ element, selected, path, showPath, 
     onClick={onToggle}
     whileHover={{ backgroundColor: 'rgba(0,0,0,0.03)' }}
     transition={SPRING_HOVER}
-    className="w-full px-3 py-2 flex items-center gap-2 text-left"
+    className="w-full px-4 py-2.5 flex items-center gap-3 text-left"
   >
     <input
       type="checkbox"
       checked={selected}
       readOnly
-      className="h-4 w-4 rounded border-gray-300 text-azul-una focus:ring-azul-una shrink-0"
+      className="h-4 w-4 rounded border-gris-una/30 text-azul-una focus:ring-azul-una shrink-0"
     />
     <div className="flex-1 min-w-0">
-      <p className={`${TXT_SM} text-negro-una truncate`}>
+      <p className={`${TYPOGRAPHY.form.input} text-negro-una truncate`}>
         {element.nomenclatura ? `${element.nomenclatura} - ` : ''}
         {element.nombre ?? element.descripcion ?? element.tipo}
       </p>
       {showPath && path && (
-        <p className={`${TXT_XS} text-gris-una truncate`} title={path}>
+        <p className={`${TYPOGRAPHY.form.helper} text-gris-una truncate`} title={path}>
           {path}
         </p>
       )}
