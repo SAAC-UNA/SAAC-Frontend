@@ -179,10 +179,10 @@ export const SidebarNavProvider: React.FC<SidebarNavProviderProps> = ({ children
               onMouseEnter={clearClose}
               onMouseLeave={scheduleClose}
               style={{ left: panelPos.left }}
-              className="fixed z-50 min-w-[200px] max-w-[260px] rounded-lg bg-blanco-una-2 shadow-2xl overflow-visible"
+              className="fixed z-50 min-w-50 max-w-65 rounded-lg bg-blanco-una-2 shadow-2xl overflow-visible"
             >
               {/* Bridge: área invisible que cubre el hueco entre trigger y panel */}
-              <div className="absolute -left-[16px] top-0 h-full w-[16px]" />
+              <div className="absolute -left-4 top-0 h-full w-4" />
 
               {/*
                * Nub — rombo que apunta al trigger activo.
@@ -249,7 +249,7 @@ export const SidebarNavProvider: React.FC<SidebarNavProviderProps> = ({ children
                           />
                         )}
                         {iconName && (
-                          <span className={cn('flex-shrink-0 flex items-center justify-center', ICON_SIZES.sm)}>
+                          <span className={cn('shrink-0 flex items-center justify-center', ICON_SIZES.sm)}>
                             {getIconByName(iconName, 'sm')}
                           </span>
                         )}

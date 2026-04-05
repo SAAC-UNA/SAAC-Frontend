@@ -24,13 +24,22 @@ export type ExportFormat = 'pdf' | 'excel';
 
 // Estructura de filtros para búsqueda avanzada
 export interface EvidenceSearchFilters {
+  // Proceso de acreditación (determina el modelo tradicional o flexible)
+  proceso_id?: number | null;
+
+  // Indica al service que use el endpoint del modelo flexible
+  is_flexible?: boolean;
+
   // Filtros jerárquicos SINAES
   dimension_id?: number | null;
   componente_id?: number | null;
 
   // Filtro por criterio (ID como string para compatibilidad con el select)
   criterio?: string | null;
-  
+
+  // Filtro por elemento (modelo flexible)
+  elemento_id?: number | null;
+
   // Filtro por responsable de publicación
   responsable_id?: number | null;
   

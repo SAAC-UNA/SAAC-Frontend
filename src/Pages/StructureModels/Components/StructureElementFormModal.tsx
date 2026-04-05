@@ -38,6 +38,7 @@ interface Props {
 
 interface FormData {
   tipo: string;
+  nombre: string;
   nomenclatura: string;
   descripcion: string;
   categoria: string;
@@ -46,11 +47,12 @@ interface FormData {
 
 interface FormErrors {
   tipo?: string;
+  nombre?: string;
   nomenclatura?: string;
   descripcion?: string;
 }
 
-const EMPTY: FormData = { tipo: '', nomenclatura: '', descripcion: '', categoria: '', padre_id: '' };
+const EMPTY: FormData = { tipo: '', nombre: '', nomenclatura: '', descripcion: '', categoria: '', padre_id: '' };
 
 const CATEGORIA_OPTIONS = [
   { value: '', label: 'Sin categoría' },
@@ -96,6 +98,7 @@ export const StructureElementFormModal: React.FC<Props> = ({
       if (element) {
         setForm({
           tipo: element.tipo,
+          nombre: element.nombre ?? '',
           nomenclatura: element.nomenclatura ?? '',
           descripcion: element.descripcion ?? '',
           categoria: element.categoria ?? '',
@@ -116,6 +119,7 @@ export const StructureElementFormModal: React.FC<Props> = ({
     const next: FormErrors = {};
     if (!form.tipo.trim()) next.tipo = 'El tipo es obligatorio.';
     else if (form.tipo.trim().length > 30) next.tipo = 'Máximo 30 caracteres.';
+    if (form.nombre.length > 100) next.nombre = 'Máximo 100 caracteres.';
     if (form.nomenclatura.length > 20) next.nomenclatura = 'Máximo 20 caracteres.';
     if (form.descripcion.length > 500) next.descripcion = 'Máximo 500 caracteres.';
     setErrors(next);
@@ -132,6 +136,7 @@ export const StructureElementFormModal: React.FC<Props> = ({
     if (isEditing) {
       const payload: EditFlexibleElementForm = {
         tipo: form.tipo.trim(),
+        nombre: form.nombre.trim() || undefined,
         nomenclatura: form.nomenclatura.trim() || undefined,
         descripcion: form.descripcion.trim() || undefined,
         categoria: (form.categoria as 'A' | 'B' | 'C' | 'D') || null,
@@ -142,6 +147,7 @@ export const StructureElementFormModal: React.FC<Props> = ({
         modelo_estructura_id: modelId,
         padre_id: form.padre_id ? Number(form.padre_id) : null,
         tipo: form.tipo.trim(),
+        nombre: form.nombre.trim() || undefined,
         nomenclatura: form.nomenclatura.trim() || undefined,
         descripcion: form.descripcion.trim() || undefined,
         categoria: (form.categoria as 'A' | 'B' | 'C' | 'D') || null,
@@ -184,6 +190,15 @@ export const StructureElementFormModal: React.FC<Props> = ({
             maxLength={30}
             characterCount
             placeholder="Ej: Pauta, Componente, Criterio…"
+          />
+          <Input
+            label="Nombre"
+            value={form.nombre}
+            onChange={e => setForm(p => ({ ...p, nombre: e.target.value }))}
+            error={errors.nombre}
+            maxLength={100}
+            characterCount
+            placeholder="Ej: Gestión Institucional"
           />
           <Input
             label="Nomenclatura"

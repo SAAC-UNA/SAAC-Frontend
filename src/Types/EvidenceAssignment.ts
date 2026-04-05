@@ -27,9 +27,20 @@ export interface Evidence {
 
 export interface Process {
   proceso_id: number;
+  nombre: string;
   ciclo_acreditacion_id: number;
+  ciclo_nombre?: string;
+  modelo_estructura_id?: number;
+  modelo_estructura_tipo?: string;
   created_at?: string;
   updated_at?: string;
+}
+
+/** Ciclo de acreditación con tipo de modelo, retornado por GET /api/usuarios/{id}/mis-ciclos */
+export interface UserCycle {
+  ciclo_acreditacion_id: number;
+  nombre: string;
+  tipo_modelo: 'tradicional' | 'elemento_flexible';
 }
 
 export interface EvidenceAssignmentFormData {
@@ -37,6 +48,8 @@ export interface EvidenceAssignmentFormData {
   criterio_id: number | null;
   selectedCriteria: number[];
   selectedEvidences: number[];
+  /** Modo flexible: IDs de elementos seleccionados para asignar */
+  selectedElements: number[];
   selectedUsers: number[];
   selectedRoles: number[];
   fecha_limite?: string;
@@ -119,4 +132,38 @@ export interface DuplicateValidationResponse {
   tiene_duplicados: boolean;
   duplicados: DuplicateAssignment[];
   total_duplicados: number;
+}
+
+/**
+ * Asignación de elemento (modelo flexible) — respuesta de
+ * GET /api/usuarios/{id}/elementos-asignados
+ */
+export interface FlexibleAssignmentItem extends Record<string, unknown> {
+  elemento_asignacion_id: number;
+  elemento_id: number;
+  usuario_id: number;
+  proceso_id: number;
+  /** PascalCase: 'Pendiente' | 'En Progreso' | 'Completado' | 'Vencido' | 'Observada' | 'Validada' */
+  estado: string;
+  fecha_limite: string | null;
+  comentario: string | null;
+  created_at: string;
+  updated_at: string;
+  has_pending_extension_request?: boolean;
+  element?: {
+    elemento_id: number;
+    nombre: string;
+    tipo: string;
+    descripcion?: string | null;
+    nomenclatura?: string | null;
+  };
+  process?: {
+    proceso_id: number;
+    nombre: string;
+    ciclo_acreditacion_id?: number;
+  };
+  user?: {
+    usuario_id: number;
+    nombre: string;
+  };
 }

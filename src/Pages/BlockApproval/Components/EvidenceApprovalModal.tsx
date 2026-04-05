@@ -5,36 +5,22 @@ import { Input } from '@/Components/Ui/Forms/Input';
 import { TYPOGRAPHY } from '@/Constants/Typography';
 import { cn } from '@/Utils/ClassNames';
 
-interface Criterio {
-  id: number;
-  nomenclatura: string;
-  descripcion: string;
-}
-
-interface Evidencia {
-  id: number;
-  nomenclatura: string;
-  descripcion: string;
-  criterio_id?: number;
-  archivo_adjuntado?: boolean;
-}
-
-interface ApprovalModalProps {
+interface EvidenceApprovalModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onConfirm: (comentario: string, nuevaFechaLimite?: string) => void;
+  onConfirm: (comentario?: string, nuevaFechaLimite?: string) => void;
   action: 'aprobar' | 'rechazar';
-  criterio: Criterio | null;
-  evidencias: Evidencia[];
+  criterio: { nomenclatura: string; descripcion: string } | null;
+  evidencia: { nomenclatura: string; descripcion: string } | null;
 }
 
-export const ApprovalModal: React.FC<ApprovalModalProps> = ({
+export const EvidenceApprovalModal: React.FC<EvidenceApprovalModalProps> = ({
   isOpen,
   onClose,
   onConfirm,
   action,
   criterio,
-  evidencias
+  evidencia,
 }) => {
   const [comment, setComment] = useState('');
   const [nuevaFechaLimite, setNuevaFechaLimite] = useState('');
@@ -48,25 +34,24 @@ export const ApprovalModal: React.FC<ApprovalModalProps> = ({
     }
   }, [isOpen]);
 
-  if (!criterio) return null;
+  if (!criterio || !evidencia) return null;
 
   const handleSubmit = async () => {
     setIsSubmitting(true);
     try {
-      await onConfirm(comment, nuevaFechaLimite || undefined);
+      await onConfirm(comment || undefined, nuevaFechaLimite || undefined);
     } finally {
       setIsSubmitting(false);
     }
   };
 
   const isAprobar = action === 'aprobar';
-  const title = isAprobar ? 'Aprobar Bloque' : 'Rechazar Bloque';
 
   return (
     <Modal
       isOpen={isOpen}
       onClose={onClose}
-      title={title}
+      title={isAprobar ? 'Aprobar Evidencia' : 'Rechazar Evidencia'}
       size="md"
       variant={isAprobar ? 'info' : 'danger'}
       showConfirm
@@ -78,29 +63,29 @@ export const ApprovalModal: React.FC<ApprovalModalProps> = ({
     >
       <div className="flex flex-col gap-3">
 
-        {/* Pregunta de confirmación */}
+        {/* Confirmación */}
         <p className={cn(TYPOGRAPHY.modal.body, 'text-gris-una-2 leading-relaxed')}>
           {isAprobar
-            ? '¿Está seguro que desea aprobar este bloque? Todas las evidencias pendientes serán aprobadas en cascada.'
-            : '¿Está seguro que desea rechazar este bloque? Todas las evidencias serán marcadas como rechazadas.'}
+            ? '¿Está seguro que desea aprobar esta evidencia individualmente?'
+            : '¿Está seguro que desea rechazar esta evidencia? El responsable recibirá una notificación y deberá reenviarla.'}
         </p>
 
-        {/* Información del criterio */}
-        <div className="flex flex-col gap-0.5 border-l-2 border-gris-light pl-3">
+        {/* Información */}
+        <div className="flex flex-col gap-1 border-l-2 border-gris-light pl-3">
+          <span className={cn(TYPOGRAPHY.modal.subtitle, 'text-gris-una')}>
+            Criterio: <span className="font-semibold text-negro-una">{criterio.nomenclatura}</span>
+          </span>
           <span className={cn(TYPOGRAPHY.modal.body, 'font-semibold text-negro-una')}>
-            {criterio.nomenclatura}
+            {evidencia.nomenclatura}
           </span>
           <span className={cn(TYPOGRAPHY.modal.body, 'text-gris-una-2')}>
-            {criterio.descripcion}
-          </span>
-          <span className={cn(TYPOGRAPHY.modal.subtitle, 'text-gris-una mt-1')}>
-            {evidencias.length} {evidencias.length === 1 ? 'evidencia asociada' : 'evidencias asociadas'}
+            {evidencia.descripcion}
           </span>
         </div>
 
-        {/* Comentario */}
+        {/* Comentario (opcional para aprobar, recomendado para rechazar) */}
         <Textarea
-          label="Comentario (opcional)"
+          label={isAprobar ? 'Comentario (opcional)' : 'Observación (opcional)'}
           value={comment}
           onChange={(e) => setComment(e.target.value)}
           rows={3}
@@ -108,8 +93,8 @@ export const ApprovalModal: React.FC<ApprovalModalProps> = ({
           characterCount
           placeholder={
             isAprobar
-              ? 'Agregue un comentario adicional si lo desea...'
-              : 'Agregue un comentario sobre el rechazo...'
+              ? 'Agregue un comentario si lo desea...'
+              : 'Indique el motivo del rechazo o los ajustes necesarios...'
           }
         />
 
@@ -121,7 +106,7 @@ export const ApprovalModal: React.FC<ApprovalModalProps> = ({
             value={nuevaFechaLimite}
             onChange={(e) => setNuevaFechaLimite(e.target.value)}
             min={new Date(Date.now() + 86400000).toISOString().split('T')[0]}
-            helperText="Si se indica, la fecha límite de todas las evidencias será actualizada"
+            helperText="Si se indica, se actualizará la fecha límite del responsable"
           />
         )}
 

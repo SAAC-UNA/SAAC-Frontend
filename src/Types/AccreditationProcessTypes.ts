@@ -3,6 +3,8 @@ export interface AccreditationCycle {
   name: string;
   careerName?: string;
   campusName?: string;
+  modeloEstructuraId?: string;
+  modeloEstructuraTipo?: string;
   [key: string]: unknown;
 }
 
@@ -20,6 +22,8 @@ export interface AccreditationProcess {
   estimatedEndDate: string;
   createdAt: string;
   updatedAt?: string;
+  modeloEstructuraId?: string;
+  modeloEstructuraTipo?: string;
   [key: string]: unknown;
 }
 

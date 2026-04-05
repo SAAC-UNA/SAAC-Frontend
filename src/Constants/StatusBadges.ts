@@ -95,3 +95,9 @@ export const AUDIT_ACTION_BADGE: Record<string, StatusBadgeConfig> = {
   exportar: { label: 'Exportar', colorClasses: 'bg-teal-ring text-teal' },
   asignar: { label: 'Asignar', colorClasses: 'bg-info-ring text-info' },
 };
+
+/** Tipo de modelo de estructura (tradicional vs flexible) */
+export const MODELO_TIPO_BADGE: Record<string, StatusBadgeConfig> = {
+  tradicional:       { label: 'Tradicional',      colorClasses: 'bg-info-ring text-info-dark' },
+  elemento_flexible: { label: 'Elemento flexible', colorClasses: 'bg-morado-ring text-morado-dark' },
+};

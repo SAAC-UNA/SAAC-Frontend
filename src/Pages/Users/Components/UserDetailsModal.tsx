@@ -94,7 +94,7 @@ export const UserDetailsModal: React.FC<UserDetailsModalProps> = ({
             <div className="col-span-4 grid grid-cols-2 gap-x-4 gap-y-2 max-h-52 overflow-y-auto">
               {user.allPermissions.map(p => (
                 <div key={p.label} className="flex items-center gap-2">
-                  <span className="w-1.5 h-1.5 rounded-full bg-verde flex-shrink-0" />
+                  <span className="w-1.5 h-1.5 rounded-full bg-verde shrink-0" />
                   <span className={cn(TYPOGRAPHY.modal.body, 'text-gris-una-2 truncate')}>{p.label}</span>
                 </div>
               ))}

@@ -24,7 +24,6 @@ import { useDebounce } from '@/Hooks/UseDebounce';
 import { ELEMENT_TYPE_LABELS } from '@/Constants/StructureConstants';
 import { truncateText } from '@/Utils';
 import { TABLE_PAGE_SIZE } from '@/Constants/TablePagination';
-import { TABLE_TRUNCATE } from '@/Constants/TableTruncate';
 import { useFirstColumnConfig } from '@/Hooks/UseFirstColumnConfig';
 import type { DataTableColumn} from '@/Components/Ui/Table/DataTable';
 import type { StructureElement, ElementType } from '@/Types/StructureTypes';
@@ -191,17 +190,40 @@ export const StructureTable: React.FC<StructureTableProps> = ({
     const columns: DataTableColumn<StructureElement>[] = useMemo(() => [
         {
             key: 'name',
-            header: 'Nombre',
+            header: 'Identificador',
             align: 'left',
             width: firstColumn.width,
-            render: (_, element) => (
-                <p
-                    className={`block font-sans antialiased font-bold leading-normal text-negro-una-2 ${TYPOGRAPHY.table.cell}`}
-                    title={element.name || '-'}
-                >
-                    {truncateText(element.name, firstColumn.maxLength) || '-'}
-                </p>
-            )
+            render: (_, element) => {
+                const hasName = Boolean(element.name);
+                const hasDesc = Boolean(element.description);
+                if (hasName && hasDesc) {
+                    return (
+                        <div className="flex flex-col">
+                            <p className={`block font-sans antialiased font-bold leading-normal text-negro-una-2 ${TYPOGRAPHY.table.cell}`} title={element.name}>
+                                {truncateText(element.name, firstColumn.maxLength)}
+                            </p>
+                            <p className={`${TYPOGRAPHY.table.helper} text-gris-una mt-0.5`} title={element.description}>
+                                {truncateText(element.description, firstColumn.maxLength)}
+                            </p>
+                        </div>
+                    );
+                }
+                if (hasName) {
+                    return (
+                        <p className={`block font-sans antialiased font-bold leading-normal text-negro-una-2 ${TYPOGRAPHY.table.cell}`} title={element.name}>
+                            {truncateText(element.name, firstColumn.maxLength)}
+                        </p>
+                    );
+                }
+                if (hasDesc) {
+                    return (
+                        <p className={`block font-sans antialiased font-normal leading-normal text-negro-una-2 ${TYPOGRAPHY.table.cell}`} title={element.description}>
+                            {truncateText(element.description, firstColumn.maxLength)}
+                        </p>
+                    );
+                }
+                return <span className={`${TYPOGRAPHY.table.cell} text-gris-una`}>—</span>;
+            }
         },
         {
             key: 'type',
@@ -220,19 +242,7 @@ export const StructureTable: React.FC<StructureTableProps> = ({
                 </div>
             )
         },
-        {
-            key: 'description',
-            header: 'Descripción',
-            align: 'left',
-            render: (_, element) => (
-                <p
-                    className={`block font-sans antialiased font-normal leading-normal text-negro-una-2 ${TYPOGRAPHY.table.cell}`}
-                    title={element.description || undefined}
-                >
-                    {truncateText(element.description, TABLE_TRUNCATE.text) || 'N/A'}
-                </p>
-            )
-        },
+
         {
             key: 'status',
             header: 'Estado',

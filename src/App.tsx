@@ -11,7 +11,6 @@ import {
   CAPABILITIES,
   EVIDENCE_ASSIGNMENT_PERMISSIONS,
   EVIDENCE_VIEW_PERMISSIONS,
-  IMPROVEMENT_COMMITMENT_ACCESS_PERMISSIONS,
   REPORTS_ACCESS_PERMISSIONS,
   ROLE_MANAGEMENT_PERMISSIONS,
   USER_MANAGEMENT_PERMISSIONS,
@@ -59,18 +58,8 @@ const MyEvidenceAssignmentsPage = lazy(() =>
   })),
 );
 const AuditLogPage = lazy(() => import("@/Pages/AuditLog/AuditLogPage"));
-const ImprovementCommitmentsList = lazy(() =>
-  import("./Pages/ImprovementCommitments/ImprovementCommitmentsList").then(
-    (m) => ({ default: m.ImprovementCommitmentsList }),
-  ),
-);
 const CreateImprovementCommitment = lazy(
   () => import("./Pages/ImprovementCommitments/CreateImprovementCommitment"),
-);
-const ImprovementCommitmentDetail = lazy(() =>
-  import("./Pages/ImprovementCommitments/ImprovementCommitmentDetail").then(
-    (m) => ({ default: m.ImprovementCommitmentDetail }),
-  ),
 );
 const AccreditationProcessList = lazy(() =>
   import("./Pages/AccreditationProcess/AccreditationProcessList").then((m) => ({

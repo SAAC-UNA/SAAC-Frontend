@@ -15,9 +15,12 @@ import type {
   Evidence,
   Criterion,
   Process,
+  UserCycle,
   DuplicateValidationRequest,
-  DuplicateValidationResponse
+  DuplicateValidationResponse,
+  FlexibleAssignmentItem
 } from '@/Types/EvidenceAssignment';
+import type { FlexibleElement } from '@/Types/StructureModelTypes';
 import { devLog } from '@/Utils/devLogger';
 
 export interface AssignmentCatalogRole {
@@ -222,24 +225,86 @@ class EvidenceAssignmentService {
   }
 
   /**
-   * Obtener todos los procesos desde el backend
+   * Obtener todos los procesos desde el backend.
+   * Incluye tipo de modelo del ciclo para bifurcar tradicional / elemento_flexible.
    */
   async getAllProcesses(): Promise<Process[]> {
     try {
       const response = await axiosInstance.get<{ data: any[] }>('/estructura/procesos');
       
       const rawProcesses = response.data.data || response.data || [];
-      
-      // Mapear respuesta del backend: id -> proceso_id
-      return rawProcesses.map((item: any) => ({
-        proceso_id: item.id || item.proceso_id,
-        ciclo_acreditacion_id: item.ciclo_acreditacion_id,
-        created_at: item.created_at,
-        updated_at: item.updated_at,
-      }));
+
+      return rawProcesses.map((item: any) => {
+        const cycle =
+          item.accreditation_cycle ||
+          item.accreditationCycle ||
+          {};
+        const modelo = cycle.modelo_estructura || {};
+
+        return {
+          proceso_id: item.id || item.proceso_id,
+          nombre: item.nombre ?? `Proceso ${item.id || item.proceso_id}`,
+          ciclo_acreditacion_id: item.ciclo_acreditacion_id ?? cycle.ciclo_acreditacion_id,
+          ciclo_nombre: cycle.nombre ?? undefined,
+          modelo_estructura_id: modelo.modelo_estructura_id ?? cycle.modelo_estructura_id ?? undefined,
+          modelo_estructura_tipo: modelo.tipo ?? undefined,
+          created_at: item.created_at,
+          updated_at: item.updated_at,
+        };
+      });
     } catch (error) {
       devLog.error('Error al obtener procesos:', error);
       throw error;
+    }
+  }
+
+  /**
+   * Obtener elementos de estructura para un modelo flexible.
+   * GET /api/estructura/elementos?modelo_estructura_id={id}
+   */
+  async getElementsByModel(modeloId: number): Promise<FlexibleElement[]> {
+    try {
+      const response = await axiosInstance.get<any[]>('/estructura/elementos', {
+        params: { modelo_estructura_id: modeloId },
+      });
+      const raw: any[] = Array.isArray(response.data)
+        ? response.data
+        : (response.data as any)?.data ?? [];
+      return raw.map((item: any) => ({
+        elemento_id:          item.elemento_id ?? item.id,
+        modelo_estructura_id: item.modelo_estructura_id,
+        padre_id:             item.padre_id ?? null,
+        tipo:                 item.tipo ?? '',
+        nombre:               item.nombre ?? null,
+        categoria:            item.categoria ?? null,
+        nomenclatura:         item.nomenclatura ?? null,
+        descripcion:          item.descripcion ?? null,
+        activo:               item.activo ?? true,
+        created_at:           item.created_at ?? '',
+        updated_at:           item.updated_at ?? '',
+      }));
+    } catch (error) {
+      devLog.error('Error al obtener elementos:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Crear asignación de elemento (modelo flexible).
+   * POST /api/elementos-asignaciones
+   */
+  async createElementAssignment(data: {
+    elemento_id: number;
+    proceso_id: number;
+    usuarios?: number[];
+    roles?: number[];
+    fecha_limite?: string;
+    comentario?: string;
+  }): Promise<void> {
+    try {
+      await axiosInstance.post('/elementos-asignaciones', data);
+    } catch (error: any) {
+      throw new Error(error.response?.data?.message || 'Error al asignar elemento.');
     }
   }
 
@@ -330,6 +395,86 @@ class EvidenceAssignmentService {
   ): Promise<EvidenceAssignment> {
     const response = await axiosInstance.patch(`/evidencias-asignaciones/${assignmentId}`, data);
     return response.data.data;
+  }
+
+  /**
+   * Obtiene los elementos asignados al usuario (modelo flexible).
+   * GET /api/usuarios/{userId}/elementos-asignados
+   */
+  async getMyElementAssignments(userId: number): Promise<FlexibleAssignmentItem[]> {
+    try {
+      const response = await axiosInstance.get<{ data: FlexibleAssignmentItem[] }>(
+        `/usuarios/${userId}/elementos-asignados`
+      );
+      return response.data.data || [];
+    } catch (error: any) {
+      if (error.response?.status === 404) {
+        return [];
+      }
+      throw new Error(
+        error.response?.data?.message ||
+        error.message ||
+        'Error al obtener las pautas asignadas'
+      );
+    }
+  }
+
+  /**
+   * Actualiza el estado de una asignación de elemento (modelo flexible).
+   * PATCH /api/elementos-asignaciones/{id}
+   */
+  async updateElementStatus(
+    id: number,
+    estado: 'En Progreso' | 'Completado'
+  ): Promise<FlexibleAssignmentItem> {
+    try {
+      const response = await axiosInstance.patch<{ data: FlexibleAssignmentItem }>(
+        `/elementos-asignaciones/${id}`,
+        { estado }
+      );
+      return response.data.data;
+    } catch (error: any) {
+      throw new Error(
+        error.response?.data?.message ||
+        error.message ||
+        'Error al actualizar el estado'
+      );
+    }
+  }
+
+  /**
+   * Solicita ampliación de plazo para una asignación de elemento (modelo flexible).
+   * POST /api/elementos-asignaciones/{id}/solicitud-ampliacion
+   */
+  async requestElementExtension(
+    id: number,
+    data: { motivo: string; fecha_sugerida: string }
+  ): Promise<void> {
+    try {
+      await axiosInstance.post(`/elementos-asignaciones/${id}/solicitud-ampliacion`, data);
+    } catch (error: any) {
+      throw new Error(
+        error.response?.data?.message ||
+        error.message ||
+        'Error al enviar la solicitud de ampliación'
+      );
+    }
+  }
+
+  /**
+   * Obtener los ciclos de acreditación donde el usuario tiene asignaciones.
+   * GET /api/usuarios/{id}/mis-ciclos
+   */
+  async getUserCycles(userId: number): Promise<UserCycle[]> {
+    try {
+      const response = await axiosInstance.get<{ data: UserCycle[] }>(
+        `/usuarios/${userId}/mis-ciclos`
+      );
+      return response.data.data || [];
+    } catch (error) {
+      devLog.error('Error al obtener ciclos del usuario:', error);
+      throw error;
+    }
   }
 }
 

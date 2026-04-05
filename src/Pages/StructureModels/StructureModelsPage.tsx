@@ -9,6 +9,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ScreenContainer } from '@/Components/Ui/Layout/ScreenContainer';
 import { PageHeader, Button, LoadingSpinner, StatusBadge, TableActionButton, Tooltip, TooltipContent, TooltipTrigger } from '@/Components/Ui/Index';
+import { MODELO_TIPO_BADGE } from '@/Constants/StatusBadges';
 import { Modal } from '@/Components/Ui/Modals/Modal';
 import { SuccessModal } from '@/Components/Ui/Modals/SuccessModal';
 import { StructureModelFormModal } from './Components/StructureModelFormModal';
@@ -237,12 +238,8 @@ const ModelCard: React.FC<ModelCardProps> = ({
         </div>
         <div className="flex flex-col items-end gap-1 shrink-0">
           <StatusBadge
-            label={isTradicional ? 'Tradicional' : 'Flexible'}
-            colorClasses={
-              isTradicional
-                ? 'bg-azul-una/10 text-azul-una'
-                : 'bg-purple-100 text-purple-700'
-            }
+            label={MODELO_TIPO_BADGE[model.tipo]?.label ?? model.tipo}
+            colorClasses={MODELO_TIPO_BADGE[model.tipo]?.colorClasses ?? 'bg-gris-light text-gris-una'}
             size="sm"
           />
           <StatusBadge

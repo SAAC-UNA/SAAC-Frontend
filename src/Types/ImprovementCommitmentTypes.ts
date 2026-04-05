@@ -23,6 +23,11 @@ export interface CicloAcreditacion {
   anio?: number;
   nombre?: string;
   activo: boolean;
+  modelo_estructura_id?: number;
+  modelo_estructura?: {
+    modelo_estructura_id: number;
+    tipo: string;
+  };
   careerCampus?: {
     carrera_campus_id: number;
     career?: {
@@ -166,12 +171,23 @@ export interface CriterioSeleccionado {
   comentario?: string;
 }
 
+export interface ElementoSeleccionado {
+  elemento_id: number;
+  elemento: import('@/Types/StructureModelTypes').FlexibleElement;
+  encargados_usuarios: number[];
+  encargados_roles: number[];
+  fecha_limite?: string;
+  comentario?: string;
+}
+
 export interface CompromisoFormData {
   ciclo_acreditacion_id: number | null;
   descripcion: string;
   fecha_inicio: string;
   fecha_fin: string;
   criterios_seleccionados: CriterioSeleccionado[];
+  elementos_seleccionados?: ElementoSeleccionado[];
+  proceso_id?: number;
 }
 
 // ============================================
@@ -185,6 +201,22 @@ export interface CrearCompromisoPayload {
   fecha_fin: string;
   selecciones: SeleccionFormulario[];
   evidencias_asignar: EvidenciaAsignar[];
+  proceso_id?: number;
+}
+
+export interface CrearCompromisoElementoPayload {
+  proceso_id: number;
+  elemento_id: number;
+  descripcion: string;
+  fecha_inicio: string;
+  fecha_fin: string;
+  elementos_asignar: {
+    elemento_id: number;
+    usuarios: number[];
+    roles: number[];
+    fecha_limite?: string;
+    comentario?: string;
+  }[];
 }
 
 export interface ActualizarCompromisoPayload {
@@ -192,6 +224,7 @@ export interface ActualizarCompromisoPayload {
   fecha_inicio?: string;
   fecha_fin?: string;
   estado?: CompromisoEstado;
+  selecciones?: SeleccionFormulario[];
   evidencias_asignar?: EvidenciaAsignar[];
 }
 

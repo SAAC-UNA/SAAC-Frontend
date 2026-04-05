@@ -4,7 +4,6 @@ import {
   CAPABILITIES,
   EVIDENCE_ASSIGNMENT_PERMISSIONS,
   EVIDENCE_VIEW_PERMISSIONS,
-  IMPROVEMENT_COMMITMENT_ACCESS_PERMISSIONS,
   REPORTS_ACCESS_PERMISSIONS,
   ROLE_MANAGEMENT_PERMISSIONS,
   USER_MANAGEMENT_PERMISSIONS,
@@ -20,7 +19,6 @@ const evidenceIcon = "system-icon:assignEvidence";
 const myEvidencesIcon = "system-icon:myEvidences";
 const searchEvidenceIcon = "system-icon:search";
 const auditLogIcon = "system-icon:edit-element";
-const commitmentIcon = "system-icon:box-archive";
 const approvalIcon = "system-icon:check-circle";
 const extensionRequestIcon = "system-icon:clock";
 const calendarIcon = "system-icon:calendar";
@@ -199,7 +197,7 @@ export const getNavigationItems = (
     ) {
       evidenciaChildren.push({
         id: "busquedaEvidencias",
-        label: "Busqueda de Criterios",
+        label: "Buscar Entregables",
         icon: searchEvidenceIcon,
         href: "/evidencias/busqueda-avanzada",
         isActive: false,
@@ -346,21 +344,6 @@ export const getNavigationItems = (
 
   if (hasContextualSelection) {
     const evaluacionChildren: NavItem[] = [];
-
-    if (
-      hasAccess({
-        requireAnyCapabilities: [CAPABILITIES.IMPROVEMENT_ACCESS],
-        requireAnyPermissions: IMPROVEMENT_COMMITMENT_ACCESS_PERMISSIONS,
-      })
-    ) {
-      evaluacionChildren.push({
-        id: "compromisos-mejora",
-        label: "Compromisos de Mejora",
-        icon: commitmentIcon,
-        href: "/compromisos/listar",
-        isActive: false,
-      });
-    }
 
     if (
       hasAccess({

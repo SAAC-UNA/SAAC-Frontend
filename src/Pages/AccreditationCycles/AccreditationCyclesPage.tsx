@@ -8,26 +8,27 @@
  *  - Reactivar ciclo (solo Superusuario)
  */
 
-import React, { useState } from "react";
-import { ScreenContainer } from "@/Components/Ui/Layout/ScreenContainer";
+import React, { useState, useRef, useMemo } from 'react';
+import { ScreenContainer } from '@/Components/Ui/Layout/ScreenContainer';
 import {
   PageHeader,
   Button,
   Tooltip,
   TooltipContent,
   TooltipTrigger,
-} from "@/Components/Ui/Index";
-import { Modal } from "@/Components/Ui/Modals/Modal";
-import { SuccessModal } from "@/Components/Ui/Modals/SuccessModal";
-import { AccreditationCycleFormModal } from "./Components/AccreditationCycleFormModal";
-import { AccreditationCycleDeleteModal } from "./Components/AccreditationCycleDeleteModal";
-import { AccreditationCycleDetailModal } from "./Components/AccreditationCycleDetailModal";
-import { AccreditationCyclesTable } from "./Components/AccreditationCyclesTable";
-import { useAccreditationCycles } from "@/Hooks/UseAccreditationCycles";
-import { useAuth } from "@/Context/AuthContext";
-import { useToast } from "@/Context/ToastContext";
-import { TYPOGRAPHY } from "@/Constants/Typography";
-import { cn } from "@/Utils/ClassNames";
+} from '@/Components/Ui/Index';
+import { Modal } from '@/Components/Ui/Modals/Modal';
+import { SuccessModal } from '@/Components/Ui/Modals/SuccessModal';
+import { AccreditationCycleFormModal } from './Components/AccreditationCycleFormModal';
+import { AccreditationCycleDeleteModal } from './Components/AccreditationCycleDeleteModal';
+import { AccreditationCycleDetailModal } from './Components/AccreditationCycleDetailModal';
+import { AccreditationCyclesTable } from './Components/AccreditationCyclesTable';
+import { useAccreditationCycles } from '@/Hooks/UseAccreditationCycles';
+import { useAuth } from '@/Context/AuthContext';
+import { useToast } from '@/Context/ToastContext';
+import { TYPOGRAPHY } from '@/Constants/Typography';
+import { cn } from '@/Utils/ClassNames';
+import { TABLE_PAGE_SIZE } from '@/Constants/TablePagination';
 import type {
   AccreditationCycle,
   CreateAccreditationCycleForm,
@@ -41,14 +42,34 @@ const AccreditationCyclesPage: React.FC = () => {
   const {
     cycles,
     isLoading,
-    currentPage,
-    totalPages,
-    loadCycles,
     createCycle,
     updateCycle,
     deleteCycle,
     reactivateCycle,
   } = useAccreditationCycles();
+
+  const [currentPage, setCurrentPage] = useState(1);
+  const prevCyclesLength = useRef(cycles.length);
+
+  const itemsPerPage = TABLE_PAGE_SIZE.standard;
+  const totalPages = Math.max(1, Math.ceil(cycles.length / itemsPerPage));
+  const boundedCurrentPage = Math.min(currentPage, totalPages);
+  if (boundedCurrentPage !== currentPage) {
+    setCurrentPage(boundedCurrentPage);
+  }
+
+  // When cycles are added, go to page 1 to show the new item at the top
+  if (cycles.length > prevCyclesLength.current) {
+    prevCyclesLength.current = cycles.length;
+    setCurrentPage(1);
+  } else {
+    prevCyclesLength.current = cycles.length;
+  }
+
+  const paginatedCycles = useMemo(() => {
+    const start = (boundedCurrentPage - 1) * itemsPerPage;
+    return cycles.slice(start, start + itemsPerPage);
+  }, [cycles, boundedCurrentPage, itemsPerPage]);
 
   const canCreate = canAccess({ requireAnyPermissions: ["ciclos.create"] });
   const canEdit = canAccess({ requireAnyPermissions: ["ciclos.edit"] });
@@ -89,9 +110,8 @@ const AccreditationCyclesPage: React.FC = () => {
 
   // ── Handlers ──────────────────────────────────────────────────────────────
 
-  const handleCreateConfirm = async (
-    form: CreateAccreditationCycleForm | EditAccreditationCycleForm,
-  ) => createCycle(form as CreateAccreditationCycleForm);
+  const handleCreateConfirm = async (form: CreateAccreditationCycleForm | EditAccreditationCycleForm) =>
+    await createCycle(form as CreateAccreditationCycleForm);
 
   const handleEditConfirm = async (
     form: CreateAccreditationCycleForm | EditAccreditationCycleForm,
@@ -174,11 +194,11 @@ const AccreditationCyclesPage: React.FC = () => {
       />
 
       <AccreditationCyclesTable
-        cycles={cycles}
+        cycles={paginatedCycles}
         isLoading={isLoading}
-        currentPage={currentPage}
+        currentPage={boundedCurrentPage}
         totalPages={totalPages}
-        onPageChange={(page) => loadCycles(page)}
+        onPageChange={setCurrentPage}
         onView={(cycle) => setViewModal({ isOpen: true, cycle })}
         onEdit={(cycle) => setFormModal({ isOpen: true, cycle })}
         onDelete={(cycle) =>

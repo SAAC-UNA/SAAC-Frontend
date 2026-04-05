@@ -54,7 +54,7 @@ const DeadlineWarning: React.FC<DeadlineWarningProps> = ({ isOverdue, isNearDue,
       'flex items-center gap-2.5 px-4 py-3 rounded-corner border',
       isOverdue ? 'bg-error-light border-error-ring' : 'bg-warning/10 border-warning/30',
     )}>
-      <Icon className={cn(ICON_SIZES.sm, 'flex-shrink-0', isOverdue ? 'text-error' : 'text-warning')} />
+      <Icon className={cn(ICON_SIZES.sm, 'shrink-0', isOverdue ? 'text-error' : 'text-warning')} />
       <p className={cn(TYPOGRAPHY.modal.body, 'font-semibold', isOverdue ? 'text-error' : 'text-warning')}>
         {isOverdue
           ? `¡Fecha límite vencida hace ${Math.abs(daysUntilDeadline!)} días!`
@@ -153,7 +153,7 @@ export const EvidenceAssignmentDetail: React.FC<EvidenceAssignmentDetailProps> =
         variant="neutral"
         heroIcon={<SystemIcons.work.myEvidences className={`${ICON_SIZES.md} text-blanco-una`} />}
       >
-        <div className="relative py-12 min-h-[300px]">
+        <div className="relative py-12 min-h-75">
           <LoadingSpinner variant="loader" />
         </div>
       </DetailsModal>
@@ -267,7 +267,7 @@ export const EvidenceAssignmentDetail: React.FC<EvidenceAssignmentDetailProps> =
             </div>
           ) : (
             <div className="flex items-center gap-3">
-              <SystemIcons.actions.comment className={cn(ICON_SIZES.sm, 'text-gris-una-2 flex-shrink-0')} />
+              <SystemIcons.actions.comment className={cn(ICON_SIZES.sm, 'text-gris-una-2 shrink-0')} />
               <p className={cn(TYPOGRAPHY.modal.body, 'text-gris-una-2')}>
                 No hay retroalimentación aún
               </p>
@@ -283,7 +283,7 @@ export const EvidenceAssignmentDetail: React.FC<EvidenceAssignmentDetailProps> =
             Archivos subidos
           </span>
           {loadingFiles ? (
-            <div className="relative min-h-[80px]">
+            <div className="relative min-h-20">
               <LoadingSpinner />
             </div>
           ) : uploadedFiles.length > 0 ? (

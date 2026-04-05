@@ -5,6 +5,7 @@
  */
 
 import React, { useCallback, useEffect, useMemo, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { ScreenContainer } from "@/Components/Ui/Layout/ScreenContainer";
 import { PageHeader, Button } from "@/Components/Ui/Index";
 import { DeleteConfirmationModal } from "@/Components/Ui/Modals/DeleteConfirmationModal";
@@ -28,6 +29,7 @@ import { AccreditationProcessFormModal } from "./Components/AccreditationProcess
 
 export const AccreditationProcessList: React.FC = () => {
   const moduleInfo = getModuleInfo("accreditation_processes");
+  const navigate = useNavigate();
 
   // Filtros
   const [searchQuery, setSearchQuery] = useState("");
@@ -252,6 +254,26 @@ export const AccreditationProcessList: React.FC = () => {
     setDetailsModalState({ isOpen: true, process });
   };
 
+  const handleConfigureProcess = (process: AccreditationProcess) => {
+    const matchedCycle = cycles.find(
+      (c) => c.id === process.accreditationCycleId,
+    );
+    const modeloTipo =
+      process.modeloEstructuraTipo ?? matchedCycle?.modeloEstructuraTipo;
+    const modeloId =
+      process.modeloEstructuraId ?? matchedCycle?.modeloEstructuraId;
+    navigate("/compromisos/crear", {
+      state: {
+        procesoId: process.id,
+        cicloId: process.accreditationCycleId,
+        startDate: process.startDate,
+        estimatedEndDate: process.estimatedEndDate,
+        modeloTipo,
+        modeloId: modeloId ? parseInt(modeloId) : undefined,
+      },
+    });
+  };
+
   const handleEditProcess = (process: AccreditationProcess) => {
     setFormModalState({ isOpen: true, process });
   };
@@ -292,12 +314,12 @@ export const AccreditationProcessList: React.FC = () => {
               placeholder="Buscar procesos..."
               value={searchQuery}
               onChange={setSearchQuery}
-              className="w-full sm:w-72 text-sm"
+              className="w-full sm:w-72 text-sidebar"
             />
             <Button
               variant="secondary"
               onClick={handleCreateProcess}
-              className="gap-2 text-sm font-semibold"
+              className="gap-2 text-sidebar font-semibold"
             >
               Crear
             </Button>
@@ -312,6 +334,7 @@ export const AccreditationProcessList: React.FC = () => {
         onView={handleViewProcess}
         onEdit={handleEditProcess}
         onDelete={handleDeleteProcess}
+        onConfigure={handleConfigureProcess}
       />
 
       <AccreditationProcessFormModal

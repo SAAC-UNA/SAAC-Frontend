@@ -55,12 +55,22 @@ const mapProcess = (item: RawRecord): AccreditationProcess => {
       : "",
     createdAt: item.created_at ? String(item.created_at) : "",
     updatedAt: item.updated_at ? String(item.updated_at) : "",
+    modeloEstructuraId: String(
+      (cycleData.modelo_estructura_id as number | undefined) ??
+      ((cycleData.modelo_estructura as RawRecord)?.modelo_estructura_id as number | undefined) ??
+      ""
+    ) || undefined,
+    modeloEstructuraTipo: ((cycleData.modelo_estructura as RawRecord)?.tipo as string | undefined),
   };
 };
 
 const mapCycle = (item: RawRecord): AccreditationCycle => {
+  // Backend returns key `carrera_sede` (AccreditationCycleResource)
   const careerCampus =
-    (item.career_campus as RawRecord) || (item.careerCampus as RawRecord) || {};
+    (item.career_campus as RawRecord) ||
+    (item.careerCampus as RawRecord) ||
+    (item.carrera_sede as RawRecord) ||
+    {};
   const career = (careerCampus.career as RawRecord) || {};
   const campus = (careerCampus.campus as RawRecord) || {};
 
@@ -71,10 +81,14 @@ const mapCycle = (item: RawRecord): AccreditationCycle => {
       `Ciclo ${String(item.ciclo_acreditacion_id ?? item.id)}`,
     careerName:
       (career.nombre as string | undefined) ||
+      (careerCampus.carrera_nombre as string | undefined) ||
       (item.carrera_nombre as string | undefined),
     campusName:
       (campus.nombre as string | undefined) ||
+      (careerCampus.sede_nombre as string | undefined) ||
       (item.sede_nombre as string | undefined),
+    modeloEstructuraId: String(item.modelo_estructura_id ?? "") || undefined,
+    modeloEstructuraTipo: ((item.modelo_estructura as RawRecord)?.tipo as string | undefined),
   };
 };
 
@@ -120,7 +134,9 @@ class AccreditationProcessService {
 
   async getCycles(): Promise<AccreditationCycle[]> {
     try {
-      const response = await axiosInstance.get<ApiListResponse>(CYCLE_ENDPOINT);
+      const response = await axiosInstance.get<ApiListResponse>(CYCLE_ENDPOINT, {
+        params: { per_page: 50 },
+      });
       const raw = response.data?.data ?? response.data ?? [];
       return toArray(raw).map(mapCycle);
     } catch (error: unknown) {

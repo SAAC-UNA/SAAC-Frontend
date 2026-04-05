@@ -10,6 +10,7 @@ import { SystemIcons } from '@/Components/Ui/Icons/SystemIcons';
 import { cn } from '@/Utils/ClassNames';
 import { TYPOGRAPHY } from '@/Constants/Typography';
 import { ICON_SIZES } from '@/Constants/Components';
+import { MODELO_TIPO_BADGE } from '@/Constants/StatusBadges';
 import type { AccreditationCycle, AccreditationCycleStatus } from '@/Types/AccreditationCycleTypes';
 
 // ── Status helpers ─────────────────────────────────────────────────────────────
@@ -138,9 +139,14 @@ export const AccreditationCycleDetailModal: React.FC<AccreditationCycleDetailMod
 
         {/* div6 — Tipo */}
         <InfoCell label="Tipo" className="col-start-3 col-end-5">
-          <span className={cn(TYPOGRAPHY.modal.body, 'text-gris-una-2')}>
-            {modelo?.tipo ?? '—'}
-          </span>
+          {modelo?.tipo && MODELO_TIPO_BADGE[modelo.tipo] ? (
+            <StatusBadge
+              label={MODELO_TIPO_BADGE[modelo.tipo].label}
+              colorClasses={MODELO_TIPO_BADGE[modelo.tipo].colorClasses}
+            />
+          ) : (
+            <span className={cn(TYPOGRAPHY.modal.body, 'text-gris-una-2')}>—</span>
+          )}
         </InfoCell>
 
         {/* div7 — Versión */}

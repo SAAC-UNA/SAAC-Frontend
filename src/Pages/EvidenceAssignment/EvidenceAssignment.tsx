@@ -6,18 +6,22 @@ import type {
   ValidationErrors,
   Criterion,
   Evidence,
+  Process,
   DuplicateAssignment,
 } from "@/Types/EvidenceAssignment";
+import type { FlexibleElement } from "@/Types/StructureModelTypes";
+import { getElementPath } from "@/Utils/elementTreeUtils";
 import {
   evidenceAssignmentService,
   type AssignmentCatalogRoleOption,
   type AssignmentCatalogUser,
 } from "@/Services/EvidenceAssignmentService";
 import type { MultiSelectOption } from "@/Components/Ui/Forms/MultiSelect";
-import { useFirstColumnConfig } from "@/Hooks/UseFirstColumnConfig";
 import type { UserAvatarsUser } from "@/Components/Ui/UserAvatars/UserAvatars";
 import type { DataTableColumn } from "@/Components/Ui/Index";
+import { Tooltip, TooltipTrigger, TooltipContent } from "@/Components/Ui/Feedback/Tooltip";
 import { TYPOGRAPHY } from "@/Constants/Typography";
+import { TABLE_COLUMN_WIDTHS } from "@/Constants/Components";
 import { formatDateShort } from "@/Utils/DateUtils";
 
 import { EvidenceAssignmentView } from "./Components/EvidenceAssignmentView";
@@ -71,6 +75,7 @@ export interface EvidenceAssignmentViewProps {
   activeDuplicateRows: DuplicateGroupRow[];
   completedDuplicateRows: DuplicateGroupRow[];
   evidenceById: Record<number, Evidence>;
+  criterionById: Record<number, Criterion>;
   excludedCompletedPairs: Array<{ usuario_id: number; evidencia_id: number }>;
   toggleCompletedPair: (usuario_id: number, evidencia_id: number) => void;
   toggleAllCompletedPairsForUser: (evidences: DuplicateAssignment[]) => void;
@@ -87,6 +92,10 @@ export interface EvidenceAssignmentViewProps {
   // Criteria evidences para el onChange de criterios
   criteriaEvidences: Evidence[];
   selectedAvatars: UserAvatarsUser[];
+  // Modo flexible
+  isFlexible: boolean;
+  flexElements: FlexibleElement[];
+  flexElementsLoading: boolean;
 }
 
 // ---------------------------------------------------------------------------
@@ -103,6 +112,7 @@ const EvidenceAssignment: React.FC = () => {
     criterio_id: null,
     selectedCriteria: [],
     selectedEvidences: [],
+    selectedElements: [],
     selectedUsers: [],
     selectedRoles: [],
     fecha_limite: "",
@@ -110,9 +120,34 @@ const EvidenceAssignment: React.FC = () => {
     excludedUsers: [],
   });
 
+  // ── Tipo de modelo del proceso seleccionado ──────────────────────────────
+  const [processes, setProcesses] = useState<Process[]>([]);
+  const [flexElements, setFlexElements] = useState<FlexibleElement[]>([]);
+  const [flexElementsLoading, setFlexElementsLoading] = useState(false);
+
+  const selectedProcess = useMemo(
+    () => processes.find((p) => p.proceso_id === formData.proceso_id) ?? null,
+    [processes, formData.proceso_id],
+  );
+
+  const isFlexible = selectedProcess?.modelo_estructura_tipo === 'elemento_flexible';
+
   const updateFormData = useCallback((updates: Partial<EvidenceAssignmentFormData>) => {
+    // Al cambiar de proceso, limpiar selecciones que dependen del modelo
+    if ('proceso_id' in updates && updates.proceso_id !== formData.proceso_id) {
+      setFormData((prev) => ({
+        ...prev,
+        ...updates,
+        criterio_id: null,
+        selectedCriteria: [],
+        selectedEvidences: [],
+        selectedElements: [],
+        excludedUsers: [],
+      }));
+      return;
+    }
     setFormData((prev) => ({ ...prev, ...updates }));
-  }, []);
+  }, [formData.proceso_id]);
 
   // ── Catálogos ────────────────────────────────────────────────────────────
   const [criteriaState, setCriteriaState] = useState<{
@@ -178,6 +213,7 @@ const EvidenceAssignment: React.FC = () => {
           evidenceAssignmentService.getAllProcesses(),
         ]);
         setCriteriaState({ criteria: criteriaData, evidences: evidencesData, loading: false });
+        setProcesses(processesData);
         if (processesData.length > 0 && !formData.proceso_id) {
           updateFormData({ proceso_id: processesData[0].proceso_id });
         }
@@ -191,6 +227,20 @@ const EvidenceAssignment: React.FC = () => {
     };
     load();
   }, [dataLoaded]);
+
+  // Cargar elementos cuando cambia el proceso a uno de tipo flexible
+  useEffect(() => {
+    if (!isFlexible || !selectedProcess?.modelo_estructura_id) {
+      setFlexElements([]);
+      setFlexElementsLoading(false);
+      return;
+    }
+    setFlexElementsLoading(true);
+    evidenceAssignmentService
+      .getElementsByModel(selectedProcess.modelo_estructura_id)
+      .then((els) => { setFlexElements(els); setFlexElementsLoading(false); })
+      .catch(() => { setFlexElements([]); setFlexElementsLoading(false); });
+  }, [isFlexible, selectedProcess?.modelo_estructura_id]);
 
   // ── Duplicados ───────────────────────────────────────────────────────────
   const [duplicatesState, setDuplicatesState] = useState<{
@@ -316,43 +366,85 @@ const EvidenceAssignment: React.FC = () => {
     return [...userAvatars, ...roleAvatars];
   }, [formData.selectedUsers, formData.selectedRoles, catalogState.availableUsers, catalogState.availableRoles]);
 
-  const firstColumn = useFirstColumnConfig();
-
-  const assignmentTableRows = useMemo<AssignmentTableRow[]>(() =>
-    formData.selectedEvidences.map((id) => {
+  
+  const assignmentTableRows = useMemo<AssignmentTableRow[]>(() => {
+    if (isFlexible) {
+      return formData.selectedElements.map((id) => {
+        const el = flexElements.find((e) => e.elemento_id === id);
+        const path = getElementPath(id, flexElements);
+        return {
+          id: `el-${id}`,
+          evidencia_id: id,
+          nomenclatura: el?.nomenclatura ?? "—",
+          descripcion: path || (el?.descripcion ?? el?.tipo ?? "—"),
+          destinatarios: "—",
+          fecha_limite: formData.fecha_limite ?? "",
+          comentario: formData.comentario ?? "",
+        };
+      });
+    }
+    return formData.selectedEvidences.map((id) => {
       const ev = evidenceById[id];
+      const criterion = ev ? criterionById[ev.criterio_id] : null;
+      const path = criterion
+        ? `${criterion.nomenclatura} > ${ev!.nomenclatura} — ${ev!.descripcion}`
+        : ev ? `${ev.nomenclatura} — ${ev.descripcion}` : '—';
       return {
         id: id.toString(),
         evidencia_id: id,
         nomenclatura: ev?.nomenclatura ?? "—",
-        descripcion: ev?.descripcion ?? "—",
+        descripcion: path,
         destinatarios: "—",
         fecha_limite: formData.fecha_limite ?? "",
         comentario: formData.comentario ?? "",
       };
-    }), [formData.selectedEvidences, evidenceById, formData.fecha_limite, formData.comentario]
-  );
+    });
+  }, [isFlexible, formData.selectedElements, formData.selectedEvidences, flexElements, evidenceById, formData.fecha_limite, formData.comentario]);
 
   const assignmentColumns = useMemo<DataTableColumn<AssignmentTableRow>[]>(() => [
     {
       key: "evidencia",
-      header: "Evidencia",
-      width: firstColumn.width,
-      render: (_val: unknown, row: AssignmentTableRow) => (
-        <div className={`${TYPOGRAPHY.table.cell} text-negro-una`}>
-          <span className="font-semibold">{row.nomenclatura as string}</span>
-          <span className="text-gris-una mx-1.5">—</span>
-          <span className="text-negro-una font-semibold">{row.descripcion as string}</span>
-        </div>
-      ),
+      header: isFlexible ? "Elemento" : "Evidencia",
+      align: "left" as const,
+      render: (_val: unknown, row: AssignmentTableRow) => {
+        const displayText = row.descripcion as string;
+        const comentario = row.comentario as string;
+        return (
+          <div className="min-w-0">
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <span className={`${TYPOGRAPHY.table.cell} font-semibold truncate block cursor-default text-negro-una`} title="">
+                  {displayText}
+                </span>
+              </TooltipTrigger>
+              <TooltipContent side="top" align="start" className="whitespace-normal max-w-xs">
+                {displayText}
+              </TooltipContent>
+            </Tooltip>
+            {comentario && (
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <span className={`${TYPOGRAPHY.table.helper} truncate block cursor-default text-gris-una mt-0.5`} title="">
+                    {comentario}
+                  </span>
+                </TooltipTrigger>
+                <TooltipContent side="top" align="start" className="whitespace-normal max-w-xs">
+                  {comentario}
+                </TooltipContent>
+              </Tooltip>
+            )}
+          </div>
+        );
+      },
     },
     {
       key: "destinatarios",
       header: "Destinatarios",
-      align: "center" as const,
+      align: "left" as const,
+      width: TABLE_COLUMN_WIDTHS.status,
       render: () =>
         selectedAvatars.length > 0 ? (
-          <div className="flex justify-center">
+          <div className="flex justify-start">
             {/* UserAvatars se renderiza en la vista */}
             <span data-avatars={JSON.stringify(selectedAvatars)} />
           </div>
@@ -363,7 +455,8 @@ const EvidenceAssignment: React.FC = () => {
     {
       key: "fecha",
       header: "Fecha límite",
-      align: "center" as const,
+      align: "left" as const,
+      width: TABLE_COLUMN_WIDTHS.status,
       render: (_val: unknown, row: AssignmentTableRow) => {
         const fecha = row.fecha_limite as string;
         return fecha
@@ -371,18 +464,7 @@ const EvidenceAssignment: React.FC = () => {
           : <span className={`${TYPOGRAPHY.table.cell} text-gris-una/50`}>—</span>;
       },
     },
-    {
-      key: "comentario",
-      header: "Comentario",
-      align: "center" as const,
-      render: (_val: unknown, row: AssignmentTableRow) => {
-        const comentario = row.comentario as string;
-        return comentario
-          ? <p className={`${TYPOGRAPHY.table.cell} text-gris-una truncate max-w-xs`} title={comentario}>{comentario}</p>
-          : <span className={`${TYPOGRAPHY.table.cell} text-gris-una/50`}>—</span>;
-      },
-    },
-  ], [selectedAvatars, firstColumn.width, TYPOGRAPHY]);
+  ], [isFlexible, selectedAvatars, TYPOGRAPHY]);
 
   // ── Duplicados agrupados ─────────────────────────────────────────────────
   const activeDuplicates = duplicatesState.duplicates.filter((d) => d.estado !== "completado");
@@ -447,7 +529,13 @@ const EvidenceAssignment: React.FC = () => {
   const validate = (): boolean => {
     const newErrors: ValidationErrors = {};
     if (!formData.proceso_id) newErrors.proceso = "Debe seleccionar un proceso";
-    if (formData.selectedEvidences.length === 0) newErrors.evidences = "Debe seleccionar al menos una evidencia";
+    if (isFlexible) {
+      if (formData.selectedElements.length === 0)
+        newErrors.evidences = "Debe seleccionar al menos un elemento";
+    } else {
+      if (formData.selectedEvidences.length === 0)
+        newErrors.evidences = "Debe seleccionar al menos una evidencia";
+    }
     if (formData.selectedUsers.length === 0 && formData.selectedRoles.length === 0) {
       newErrors.destinatarios = "Debe seleccionar al menos un usuario o rol";
     }
@@ -474,42 +562,72 @@ const EvidenceAssignment: React.FC = () => {
     if (submitState.isSubmitting) return;
     setSubmitState((prev) => ({ ...prev, isSubmitting: true }));
     try {
-      for (const evidenciaId of formData.selectedEvidences) {
-        const finalUsers = formData.selectedUsers.filter(
-          (id) =>
-            !excludedUsersSet.has(id) &&
-            !excludedCompletedPairs.some((p) => p.usuario_id === id && p.evidencia_id === evidenciaId)
-        );
-        await evidenceAssignmentService.createAssignment({
-          proceso_id: formData.proceso_id!,
-          evidencia_id: evidenciaId,
-          usuarios: finalUsers.length > 0 ? finalUsers : undefined,
-          roles: formData.selectedRoles.length > 0 ? formData.selectedRoles : undefined,
-          fecha_limite: formData.fecha_limite || undefined,
-          comentario: formData.comentario || undefined,
+      if (isFlexible) {
+        // Modelo flexible: un POST por cada elemento seleccionado
+        for (const elementoId of formData.selectedElements) {
+          await evidenceAssignmentService.createElementAssignment({
+            proceso_id: formData.proceso_id!,
+            elemento_id: elementoId,
+            usuarios: formData.selectedUsers.length > 0 ? formData.selectedUsers : undefined,
+            roles: formData.selectedRoles.length > 0 ? formData.selectedRoles : undefined,
+            fecha_limite: formData.fecha_limite || undefined,
+            comentario: formData.comentario || undefined,
+          });
+        }
+        setModalState({
+          showSuccessModal: true,
+          showConfirmModal: false,
+          assignedEvidencesCount: formData.selectedElements.length,
+        });
+        setFormData((prev) => ({
+          ...prev,
+          selectedElements: [],
+          selectedUsers: [],
+          selectedRoles: [],
+          fecha_limite: "",
+          comentario: "",
+          excludedUsers: [],
+        }));
+      } else {
+        // Modelo tradicional: un POST por cada evidencia seleccionada
+        for (const evidenciaId of formData.selectedEvidences) {
+          const finalUsers = formData.selectedUsers.filter(
+            (id) =>
+              !excludedUsersSet.has(id) &&
+              !excludedCompletedPairs.some((p) => p.usuario_id === id && p.evidencia_id === evidenciaId)
+          );
+          await evidenceAssignmentService.createAssignment({
+            proceso_id: formData.proceso_id!,
+            evidencia_id: evidenciaId,
+            usuarios: finalUsers.length > 0 ? finalUsers : undefined,
+            roles: formData.selectedRoles.length > 0 ? formData.selectedRoles : undefined,
+            fecha_limite: formData.fecha_limite || undefined,
+            comentario: formData.comentario || undefined,
+          });
+        }
+        setModalState({
+          showSuccessModal: true,
+          showConfirmModal: false,
+          assignedEvidencesCount: formData.selectedEvidences.length,
+        });
+        setFormData({
+          proceso_id: formData.proceso_id,
+          criterio_id: null,
+          selectedCriteria: [],
+          selectedEvidences: [],
+          selectedElements: [],
+          selectedUsers: [],
+          selectedRoles: [],
+          fecha_limite: "",
+          comentario: "",
+          excludedUsers: [],
         });
       }
-      setModalState({
-        showSuccessModal: true,
-        showConfirmModal: false,
-        assignedEvidencesCount: formData.selectedEvidences.length,
-      });
-      setFormData({
-        proceso_id: formData.proceso_id,
-        criterio_id: null,
-        selectedCriteria: [],
-        selectedEvidences: [],
-        selectedUsers: [],
-        selectedRoles: [],
-        fecha_limite: "",
-        comentario: "",
-        excludedUsers: [],
-      });
       setSubmitState({ isSubmitting: false, errors: {} });
     } catch (error) {
       showToast({
         type: "error",
-        title: "Error al asignar evidencias",
+        title: "Error al asignar",
         message: error instanceof Error ? error.message : "Error desconocido",
       });
       setSubmitState((prev) => ({ ...prev, isSubmitting: false }));
@@ -543,6 +661,7 @@ const EvidenceAssignment: React.FC = () => {
     activeDuplicateRows,
     completedDuplicateRows,
     evidenceById,
+    criterionById,
     excludedCompletedPairs,
     toggleCompletedPair,
     toggleAllCompletedPairsForUser,
@@ -557,6 +676,9 @@ const EvidenceAssignment: React.FC = () => {
     onCloseSuccessModal: () => setModalState((prev) => ({ ...prev, showSuccessModal: false })),
     criteriaEvidences: criteriaState.evidences,
     selectedAvatars,
+    isFlexible,
+    flexElements,
+    flexElementsLoading,
   };
 
   return <EvidenceAssignmentView {...viewProps} />;
