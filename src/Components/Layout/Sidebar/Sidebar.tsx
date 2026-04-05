@@ -34,7 +34,7 @@ export const ModernSidebar: React.FC<SidebarProps> = ({
   // Contenido completo para mobile (Sheet expandido)
   const mobileContent = (
     <div className="flex flex-col h-full">
-      <div className="flex-shrink-0 h-20 flex justify-center items-center overflow-hidden px-3">
+      <div className="shrink-0 h-20 flex justify-center items-center overflow-hidden px-3">
         <a
           href="https://www.una.ac.cr/"
           target="_blank"
@@ -43,7 +43,7 @@ export const ModernSidebar: React.FC<SidebarProps> = ({
         >
           <IsotipoSAAC
             aria-label="Universidad Nacional de Costa Rica"
-            className="flex-shrink-0 size-icon-logo cursor-pointer text-rojo-una-2"
+            className="shrink-0 size-icon-logo cursor-pointer text-rojo-una-2"
           />
           <h1 className={cn(`${TYPOGRAPHY.pageTitle} text-rojo-una-2 font-semibold whitespace-nowrap`)}>
             {title}
@@ -66,7 +66,7 @@ export const ModernSidebar: React.FC<SidebarProps> = ({
   const desktopContent = (
     <div className="flex flex-col h-full">
       {/* Logo — solo ícono */}
-      <div className="flex-shrink-0 h-20 flex justify-center items-center">
+      <div className="shrink-0 h-20 flex justify-center items-center">
         <a
           href="https://www.una.ac.cr/"
           target="_blank"
@@ -74,7 +74,7 @@ export const ModernSidebar: React.FC<SidebarProps> = ({
         >
           <IsotipoSAAC
             aria-label="Universidad Nacional de Costa Rica"
-            className="flex-shrink-0 size-icon-logo cursor-pointer text-rojo-una-2"
+            className="shrink-0 size-icon-logo cursor-pointer text-rojo-una-2"
           />
         </a>
       </div>
@@ -91,7 +91,7 @@ export const ModernSidebar: React.FC<SidebarProps> = ({
       </nav>
 
       {/* Botones de usuario — al fondo */}
-      <div className="flex-shrink-0 pb-6 flex flex-col items-center">
+      <div className="shrink-0 pb-6 flex flex-col items-center">
         <UserWidget collapsed showNotifications />
       </div>
 
@@ -103,7 +103,7 @@ export const ModernSidebar: React.FC<SidebarProps> = ({
       <Sheet open={openMobile} onOpenChange={setOpenMobile}>
         <SheetContent
           side={side}
-          className="bg-rojo-una-2 text-blanco-una w-[var(--sidebar-width-mobile)] p-0"
+          className="bg-rojo-una-2 text-blanco-una w-(--sidebar-width-mobile) p-0"
         >
           <SheetHeader className="sr-only">
             <SheetTitle>Sidebar</SheetTitle>
@@ -131,7 +131,7 @@ export const ModernSidebar: React.FC<SidebarProps> = ({
         <div
           className={cn(
             'fixed z-10 hidden md:flex',
-            'w-[var(--sidebar-width-icon)]',
+            'w-(--sidebar-width-icon)',
             side === 'left' ? 'inset-y-3 left-3' : 'inset-y-3 right-3',
             className
           )}

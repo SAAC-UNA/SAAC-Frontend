@@ -136,7 +136,7 @@ export const AccreditationProcessFormContent: React.FC<
           onChange={(value) => handleFieldChange("accreditationCycleId", value)}
           placeholder="Seleccione un ciclo..."
           error={errors.accreditationCycleId}
-          className="text-[13px]"
+          className="text-sidebar"
           required
         />
 
@@ -147,7 +147,7 @@ export const AccreditationProcessFormContent: React.FC<
           onChange={(value) => handleFieldChange("type", value)}
           placeholder="Seleccione un tipo..."
           error={errors.type}
-          className="text-[13px]"
+          className="text-sidebar"
           required
           disabled={isEditing}
         />
@@ -159,7 +159,7 @@ export const AccreditationProcessFormContent: React.FC<
           value={formData.startDate}
           onChange={(value) => handleFieldChange("startDate", value)}
           error={errors.startDate}
-          className="text-[13px]"
+          className="text-sidebar"
           required
         />
 
@@ -169,7 +169,7 @@ export const AccreditationProcessFormContent: React.FC<
           onChange={(value) => handleFieldChange("estimatedEndDate", value)}
           error={errors.estimatedEndDate}
           minDate={formData.startDate || undefined}
-          className="text-[13px]"
+          className="text-sidebar"
           required
         />
       </div>
@@ -185,7 +185,7 @@ export const AccreditationProcessFormContent: React.FC<
           )
         }
         placeholder="Seleccione estado..."
-        className="text-[13px]"
+        className="text-sidebar"
         required
       />
     </form>

@@ -100,8 +100,8 @@ export const ExtensionRequestDetailsModal: React.FC<ExtensionRequestDetailsModal
           )}>
             <div className="flex items-center gap-2">
               {isApproved
-                ? <SystemIcons.interface.checkCircle className={cn(ICON_SIZES.sm, 'text-info flex-shrink-0')} />
-                : <SystemIcons.interface.xCircle className={cn(ICON_SIZES.sm, 'text-error flex-shrink-0')} />
+                ? <SystemIcons.interface.checkCircle className={cn(ICON_SIZES.sm, 'text-info shrink-0')} />
+                : <SystemIcons.interface.xCircle className={cn(ICON_SIZES.sm, 'text-error shrink-0')} />
               }
               <span className={cn(TYPOGRAPHY.modal.body, 'font-semibold', isApproved ? 'text-info' : 'text-error')}>
                 {isApproved ? 'Solicitud aprobada' : 'Solicitud rechazada'}
@@ -125,7 +125,7 @@ export const ExtensionRequestDetailsModal: React.FC<ExtensionRequestDetailsModal
           </div>
         ) : (
           <div className="col-span-6 flex items-start gap-2.5 px-4 py-3 rounded-corner border bg-info/10 border-info/30">
-            <SystemIcons.interface.informationCircle className={cn(ICON_SIZES.sm, 'flex-shrink-0 text-info mt-0.5')} />
+            <SystemIcons.interface.informationCircle className={cn(ICON_SIZES.sm, 'shrink-0 text-info mt-0.5')} />
             <p className={cn(TYPOGRAPHY.form.helper, 'text-info font-medium')}>
               Su solicitud está siendo revisada. Recibirá una notificación cuando sea resuelta.
             </p>

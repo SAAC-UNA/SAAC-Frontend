@@ -198,11 +198,11 @@ export const StructureElementsView: React.FC<Props> = ({ model, onBack }) => {
                         if (hasNombre && hasDesc) return (
                           <div className="flex flex-col">
                             <span className="font-medium text-negro-una">{el.nombre}</span>
-                            <span className="text-xs text-gris-una mt-0.5 truncate max-w-[200px]">{el.descripcion}</span>
+                            <span className="text-xs text-gris-una mt-0.5 truncate max-w-50">{el.descripcion}</span>
                           </div>
                         );
                         if (hasNombre) return <span className="font-medium text-negro-una">{el.nombre}</span>;
-                        if (hasDesc) return <span className="text-gris-una max-w-[200px] truncate block">{el.descripcion}</span>;
+                        if (hasDesc) return <span className="text-gris-una max-w-50 truncate block">{el.descripcion}</span>;
                         return <span className="text-gris-una">—</span>;
                       })()}
                     </td>

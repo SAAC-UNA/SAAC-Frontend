@@ -119,7 +119,7 @@ export const ReviewExtensionRequestModal: React.FC<ReviewExtensionRequestModalPr
 
         {/* div8 — Aviso */}
         <div className="col-span-6 flex items-start gap-2.5 px-4 py-3 rounded-corner border bg-info/10 border-info/30">
-          <SystemIcons.interface.informationCircle className={cn(ICON_SIZES.sm, 'flex-shrink-0 text-info mt-0.5')} />
+          <SystemIcons.interface.informationCircle className={cn(ICON_SIZES.sm, 'shrink-0 text-info mt-0.5')} />
           <p className={cn(TYPOGRAPHY.form.helper, 'text-info font-medium')}>
             <strong>Importante:</strong> Una vez aprobada o rechazada, la decisión no podrá revertirse.
             {solicitud.evidencia_asignacion && ' Si se aprueba, la fecha límite de la asignación se actualizará automáticamente.'}
