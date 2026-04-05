@@ -8,7 +8,7 @@ import React, { useCallback, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { ScreenContainer } from "@/Components/Ui/Layout/ScreenContainer";
 import { PageHeader, Button } from "@/Components/Ui/Index";
-import { DeleteConfirmationModal } from "@/Components/Ui/Modals/DeleteConfirmationModal";
+import { AccreditationProcessDeleteModal } from "./Components/AccreditationProcessDeleteModal";
 import { SuccessModal } from "@/Components/Ui/Modals/SuccessModal";
 import { getModuleInfo } from "@/Constants/ModuleInfo";
 import { SearchInput } from "@/Components/Ui/Forms/SearchInput";
@@ -54,6 +54,8 @@ export const AccreditationProcessList: React.FC = () => {
     isOpen: boolean;
     processType: string;
   }>({ isOpen: false, processType: "" });
+
+  const [isDeleting, setIsDeleting] = useState(false);
 
   const loadData = useCallback(async () => {
     setIsLoading(true);
@@ -209,20 +211,23 @@ export const AccreditationProcessList: React.FC = () => {
     setFormModalState({ isOpen: true, process: null });
   };
 
-  const confirmDeleteProcess = async () => {
+  const confirmDeleteProcess = async (confirmacion: string) => {
     if (!deleteModalState.process) return;
 
     const processToDelete = deleteModalState.process;
-
-    await accreditationProcessService.deleteProcess(processToDelete.id, {
-      confirmacion: processToDelete.type,
-    });
-
-    setProcesses((prev) =>
-      prev.filter((process) => process.id !== processToDelete.id),
-    );
-    setDeleteModalState({ isOpen: false, process: null });
-    setDeleteSuccessState({ isOpen: true, processType: processToDelete.type });
+    setIsDeleting(true);
+    try {
+      await accreditationProcessService.deleteProcess(processToDelete.id, {
+        confirmacion,
+      });
+      setProcesses((prev) =>
+        prev.filter((process) => process.id !== processToDelete.id),
+      );
+      setDeleteModalState({ isOpen: false, process: null });
+      setDeleteSuccessState({ isOpen: true, processType: processToDelete.type });
+    } finally {
+      setIsDeleting(false);
+    }
   };
 
   return (
@@ -240,8 +245,9 @@ export const AccreditationProcessList: React.FC = () => {
             />
             <Button
               variant="secondary"
+              size="sm"
               onClick={handleCreateProcess}
-              className="gap-2 text-sidebar font-semibold"
+              className="gap-2"
             >
               Crear
             </Button>
@@ -273,15 +279,12 @@ export const AccreditationProcessList: React.FC = () => {
         process={detailsModalState.process}
       />
 
-      <DeleteConfirmationModal
+      <AccreditationProcessDeleteModal
         isOpen={deleteModalState.isOpen}
         onClose={() => setDeleteModalState({ isOpen: false, process: null })}
         onConfirm={confirmDeleteProcess}
-        title="Confirmar eliminación de proceso"
-        itemName={deleteModalState.process?.type}
-        confirmLabel="Sí, eliminar"
-        cancelLabel="Cancelar"
-        variant="danger"
+        process={deleteModalState.process}
+        isLoading={isDeleting}
       />
 
       <SuccessModal

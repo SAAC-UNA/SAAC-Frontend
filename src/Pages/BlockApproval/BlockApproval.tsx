@@ -246,11 +246,17 @@ const BlockApproval: React.FC = () => {
                 size="sm"
                 onChange={(value) => setFilterState(prev => ({ ...prev, selectedProcesoId: value ? Number(value) : null }))}
                 options={processes
-                  .filter(p => p.accreditation_cycle?.career_campus?.career?.nombre && p.accreditation_cycle?.career_campus?.campus?.nombre)
-                  .map((p) => ({
-                    value: p.proceso_id.toString(),
-                    label: `${p.accreditation_cycle.career_campus.career.nombre} - ${p.accreditation_cycle.career_campus.campus.nombre} (${p.tipo_proceso})`,
-                  }))}
+                  .map((p) => {
+                    const career = p.accreditation_cycle?.career_campus?.career?.nombre;
+                    const campus = p.accreditation_cycle?.career_campus?.campus?.nombre;
+                    const cycleLabel = career && campus
+                      ? `${career} - ${campus}`
+                      : p.accreditation_cycle?.nombre ?? `Proceso ${p.proceso_id}`;
+                    return {
+                      value: p.proceso_id.toString(),
+                      label: `${cycleLabel} (${p.tipo_proceso})`,
+                    };
+                  })}
                 maxVisibleItems={5}
               />
             </Card>
