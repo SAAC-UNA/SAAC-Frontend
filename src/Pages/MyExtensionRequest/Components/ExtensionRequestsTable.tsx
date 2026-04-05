@@ -98,6 +98,16 @@ export const ExtensionRequestsTable: React.FC<ExtensionRequestsTableProps> = ({
           <p className={`block font-sans antialiased font-bold leading-normal text-negro-una-2 ${TYPOGRAPHY.table.cell}`} title={item.motivo}>
             {truncateText(item.motivo, firstColumn.maxLength)}
           </p>
+          {/* Mostrar contexto: evidencia o elemento */}
+          {item.evidencia_asignacion?.evidencia ? (
+            <p className={`block font-sans antialiased font-normal leading-normal text-gris-una ${TYPOGRAPHY.table.helper}`}>
+              {item.evidencia_asignacion.evidencia.nomenclatura}
+            </p>
+          ) : item.elemento_asignacion ? (
+            <p className={`block font-sans antialiased font-normal leading-normal text-gris-una ${TYPOGRAPHY.table.helper}`}>
+              {(item.elemento_asignacion as any).element?.nombre ?? `Elemento #${item.elemento_asignacion.elemento_id}`}
+            </p>
+          ) : null}
         </div>
       )
     },

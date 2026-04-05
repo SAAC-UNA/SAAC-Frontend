@@ -66,7 +66,9 @@ export const ExtensionRequestDetailsModal: React.FC<ExtensionRequestDetailsModal
           <span className={cn(TYPOGRAPHY.modal.body, 'text-gris-una-2')}>
             {solicitud.evidencia_asignacion
               ? formatDateShort(solicitud.evidencia_asignacion.fecha_limite)
-              : '—'}
+              : solicitud.elemento_asignacion?.fecha_limite
+                ? formatDateShort(solicitud.elemento_asignacion.fecha_limite)
+                : '—'}
           </span>
         </InfoCell>
 

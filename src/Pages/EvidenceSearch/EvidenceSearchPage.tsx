@@ -283,6 +283,7 @@ export const EvidenceSearchPage: React.FC = () => {
             selectedProcessId={selectedProcessId}
             onProcessChange={handleProcessChange}
             elementOptions={elementOptions}
+            flexElements={flexElements}
           />
         )}
       </PageHeader>

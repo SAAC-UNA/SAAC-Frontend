@@ -15,6 +15,7 @@ import { SuccessModal } from "@/Components/Ui/Modals/SuccessModal.tsx";
 import { EditConfirmationModal } from "@/Components/Ui/Modals/EditConfirmationModal.tsx";
 import { Textarea } from "@/Components/Ui/Forms/Textarea";
 import { BackendErrorAlert } from "@/Components/Ui/Feedback/BackendErrorAlert";
+import { TreeSelect } from "@/Components/Ui/Forms/TreeSelect";
 import { TYPOGRAPHY } from "@/Constants/Typography";
 import type { DuplicateAssignment } from "@/Types/EvidenceAssignment";
 import type { EvidenceAssignmentViewProps, DuplicateGroupRow } from "../EvidenceAssignment";
@@ -64,7 +65,7 @@ export const EvidenceAssignmentView: React.FC<EvidenceAssignmentViewProps> = ({
   criteriaEvidences,
   selectedAvatars,
   isFlexible,
-  elementOptions,
+  flexElements,
 }) => {
   return (
     <ScreenContainer>
@@ -137,21 +138,19 @@ export const EvidenceAssignmentView: React.FC<EvidenceAssignmentViewProps> = ({
               {/* Selectores: modo flexible vs tradicional */}
               {isFlexible ? (
                 <div>
-                  <MultiSelect
+                  <TreeSelect
                     label="Elementos a asignar"
-                    options={elementOptions}
-                    value={formData.selectedElements.map(String)}
-                    onChange={(vals) =>
-                      updateFormData({ selectedElements: vals.map((v) => parseInt(v, 10)) })
-                    }
+                    elements={flexElements}
+                    value={formData.selectedElements}
+                    onChange={(ids) => updateFormData({ selectedElements: ids })}
+                    mode="select"
+                    multiple
+                    showPath
                     placeholder="Seleccione elementos..."
                     required
-                    selectAllText="Seleccionar todos"
-                    deselectAllText="Deseleccionar todos"
-                    showSelectAll
                   />
                   <p className={`mt-1.5 ${TYPOGRAPHY.form.helper} text-gris-una`}>
-                    Elementos del modelo de acreditación a asignar.
+                    Navegue la jerarquía del modelo para seleccionar elementos a asignar.
                   </p>
                 </div>
               ) : (

@@ -10,6 +10,7 @@ import type {
   DuplicateAssignment,
 } from "@/Types/EvidenceAssignment";
 import type { FlexibleElement } from "@/Types/StructureModelTypes";
+import { getElementPath } from "@/Utils/elementTreeUtils";
 import { evidenceAssignmentService } from "@/Services/EvidenceAssignmentService";
 import { userService, type User } from "@/Services/UserService";
 import { roleService, type Role } from "@/Services/RoleService";
@@ -90,6 +91,7 @@ export interface EvidenceAssignmentViewProps {
   // Modo flexible
   isFlexible: boolean;
   elementOptions: MultiSelectOption[];
+  flexElements: FlexibleElement[];
 }
 
 // ---------------------------------------------------------------------------
@@ -385,11 +387,12 @@ const EvidenceAssignment: React.FC = () => {
     if (isFlexible) {
       return formData.selectedElements.map((id) => {
         const el = flexElements.find((e) => e.elemento_id === id);
+        const path = getElementPath(id, flexElements);
         return {
           id: `el-${id}`,
           evidencia_id: id,
           nomenclatura: el?.nomenclatura ?? "—",
-          descripcion: el?.descripcion ?? el?.tipo ?? "—",
+          descripcion: path || (el?.descripcion ?? el?.tipo ?? "—"),
           destinatarios: "—",
           fecha_limite: formData.fecha_limite ?? "",
           comentario: formData.comentario ?? "",
@@ -672,6 +675,7 @@ const EvidenceAssignment: React.FC = () => {
     selectedAvatars,
     isFlexible,
     elementOptions,
+    flexElements,
   };
 
   return <EvidenceAssignmentView {...viewProps} />;

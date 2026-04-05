@@ -15,6 +15,8 @@ import { TableActionButton } from '@/Components/Ui/Buttons/TableActionButton';
 import { StatusBadge } from '@/Components/Ui/Feedback/StatusBadge';
 import { EVIDENCE_STATUS_BADGE } from '@/Constants/StatusBadges';
 import type { FlexibleAssignmentItem } from '@/Types/EvidenceAssignment';
+import type { FlexibleElement } from '@/Types/StructureModelTypes';
+import { getElementPath } from '@/Utils/elementTreeUtils';
 import { useFirstColumnConfig } from '@/Hooks/UseFirstColumnConfig';
 import { formatDate } from '@/Utils/DateUtils';
 
@@ -28,6 +30,7 @@ interface ElementAssignmentsTableProps {
     newStatus: 'En Progreso' | 'Completado'
   ) => void;
   onRequestExtension?: (assignment: FlexibleAssignmentItem) => void;
+  allElements?: FlexibleElement[];
   pagination?: {
     currentPage: number;
     totalPages: number;
@@ -42,6 +45,7 @@ export const ElementAssignmentsTable: React.FC<ElementAssignmentsTableProps> = (
   onViewDetails,
   onStatusChange,
   onRequestExtension,
+  allElements,
   pagination,
 }) => {
   const firstColumn = useFirstColumnConfig();
@@ -57,21 +61,31 @@ export const ElementAssignmentsTable: React.FC<ElementAssignmentsTableProps> = (
           const { element } = assignment;
           const nombre = element?.nombre ?? 'Sin nombre';
           const tipo = element?.tipo ?? '';
+          const path = allElements && element
+            ? getElementPath(element.elemento_id, allElements)
+            : null;
           return (
             <div className="flex flex-col pl-2">
               <p
                 className={`block font-sans antialiased font-bold leading-normal text-negro-una-2 ${TYPOGRAPHY.table.cell}`}
-                title={nombre}
+                title={path ?? nombre}
               >
                 {truncateText(nombre, firstColumn.maxLength)}
               </p>
-              {tipo && (
+              {path ? (
+                <p
+                  className={`block font-sans antialiased font-normal leading-normal text-gris-una ${TYPOGRAPHY.table.helper}`}
+                  title={path}
+                >
+                  {truncateText(path, firstColumn.maxLength + 20)}
+                </p>
+              ) : tipo ? (
                 <p
                   className={`block font-sans antialiased font-normal leading-normal text-gris-una ${TYPOGRAPHY.table.helper}`}
                 >
                   {tipo}
                 </p>
-              )}
+              ) : null}
             </div>
           );
         },

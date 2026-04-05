@@ -10,8 +10,10 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { CustomSelect, type SelectOption } from '@/Components/Ui/Index';
 import { Card } from '@/Components/Ui/Layout/Card';
+import { TreeSelect } from '@/Components/Ui/Forms/TreeSelect';
 import { evidenceSearchFiltersService } from '@/Services/EvidenceSearchService';
 import type { EvidenceSearchFilters } from '@/Types/EvidenceSearchTypes';
+import type { FlexibleElement } from '@/Types/StructureModelTypes';
 
 interface ComponenteOption extends SelectOption {
   dimension_id: number;
@@ -24,6 +26,7 @@ interface EvidenceSearchFiltersPanelProps {
   selectedProcessId: string;
   onProcessChange: (value: string) => void;
   elementOptions: SelectOption[];
+  flexElements: FlexibleElement[];
 }
 
 export const EvidenceSearchFiltersPanel: React.FC<EvidenceSearchFiltersPanelProps> = ({
@@ -32,7 +35,7 @@ export const EvidenceSearchFiltersPanel: React.FC<EvidenceSearchFiltersPanelProp
   processOptions,
   selectedProcessId,
   onProcessChange,
-  elementOptions,
+  flexElements,
 }) => {
   // ── Opciones con entrada "Todos/Todas" para selects
   const opcionesProceso = useMemo<SelectOption[]>(
@@ -124,16 +127,6 @@ export const EvidenceSearchFiltersPanel: React.FC<EvidenceSearchFiltersPanelProp
     [dimensionId, componenteId, emitChange]
   );
 
-  // ── Handlers modo flexible ───────────────────────────────────────────────
-  const handlePautaChange = useCallback(
-    (value: string) => {
-      const next = value === '__all__' ? '' : value;
-      setPautaId(next);
-      onFiltersChange({ elemento_id: next ? parseInt(next) : null });
-    },
-    [onFiltersChange]
-  );
-
   // ── Limpiar todos los filtros ────────────────────────────────────────────
   const handleLimpiar = useCallback(() => {
     setDimensionId('');
@@ -160,11 +153,6 @@ export const EvidenceSearchFiltersPanel: React.FC<EvidenceSearchFiltersPanelProp
     () => [{ value: '__all__', label: 'Todos los criterios' }, ...criteriosFiltrados],
     [criteriosFiltrados]
   );
-  const opcionesPauta = useMemo<SelectOption[]>(
-    () => [{ value: '__all__', label: 'Todas las pautas' }, ...elementOptions],
-    [elementOptions]
-  );
-
   return (
     <Card className="p-4 w-full">
       <div className="flex items-end gap-4">
@@ -183,18 +171,20 @@ export const EvidenceSearchFiltersPanel: React.FC<EvidenceSearchFiltersPanelProp
             />
           </div>
 
-          {/* Modo flexible: solo selector de Pauta */}
+          {/* Modo flexible: filtros jerárquicos por nivel */}
           {isFlexible ? (
-            <div>
-              <CustomSelect
-                label="Pauta"
-                value={pautaId || '__all__'}
-                options={opcionesPauta}
-                onChange={handlePautaChange}
-                disabled={elementOptions.length === 0}
-                searchable
-                minItemsForSearch={4}
-                size="sm"
+            <div className="md:col-span-1 xl:col-span-3">
+              <TreeSelect
+                elements={flexElements}
+                value={pautaId ? [parseInt(pautaId, 10)] : []}
+                onChange={(ids) => {
+                  const next = ids.length > 0 ? ids[ids.length - 1].toString() : '';
+                  setPautaId(next);
+                  onFiltersChange({ elemento_id: next ? parseInt(next, 10) : null });
+                }}
+                mode="filter"
+                label="Filtrar por nivel"
+                disabled={flexElements.length === 0}
               />
             </div>
           ) : (

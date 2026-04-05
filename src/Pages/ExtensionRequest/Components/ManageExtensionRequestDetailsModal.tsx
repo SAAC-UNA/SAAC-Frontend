@@ -88,13 +88,31 @@ export const ReviewExtensionRequestModal: React.FC<ReviewExtensionRequestModalPr
           </div>
         )}
 
-        {solicitud.evidencia_asignacion?.evidencia && <Separator />}
+        {/* Modelo flexible: mostrar info del elemento asignado */}
+        {!solicitud.evidencia_asignacion?.evidencia && solicitud.elemento_asignacion && (
+          <div className="col-span-6 flex flex-col gap-0.5">
+            <span className={cn(TYPOGRAPHY.modal.body, 'text-negro-una-2 font-semibold')}>
+              {(solicitud.elemento_asignacion as any).element?.nombre ?? `Elemento ${solicitud.elemento_asignacion.elemento_id}`}
+            </span>
+            {(solicitud.elemento_asignacion as any).element?.tipo && (
+              <span className={cn(TYPOGRAPHY.modal.body, 'text-gris-una-2')}>
+                {(solicitud.elemento_asignacion as any).element.tipo}
+              </span>
+            )}
+          </div>
+        )}
+
+        {(solicitud.evidencia_asignacion?.evidencia || solicitud.elemento_asignacion) && <Separator />}
 
         {/* div5 — Fecha límite actual */}
-        {solicitud.evidencia_asignacion && (
+        {(solicitud.evidencia_asignacion || solicitud.elemento_asignacion) && (
           <InfoCell label="Fecha límite actual" className="col-start-1 col-end-4">
             <span className={cn(TYPOGRAPHY.modal.body, 'text-gris-una-2')}>
-              {formatDateShort(solicitud.evidencia_asignacion.fecha_limite)}
+              {formatDateShort(
+                solicitud.evidencia_asignacion?.fecha_limite
+                ?? solicitud.elemento_asignacion?.fecha_limite
+                ?? ''
+              )}
             </span>
           </InfoCell>
         )}
