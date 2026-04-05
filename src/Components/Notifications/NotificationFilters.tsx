@@ -9,7 +9,7 @@
 
 import React, { useState } from 'react';
 import { CustomSelect } from '@/Components/Ui/Forms/SingleSelect';
-import { SystemIcons } from '@/Components/Ui/Icons/SystemIcons';
+import { SearchInput } from '@/Components/Ui/Forms/SearchInput';
 import type { NotificationFilters } from '@/Types/NotificationTypes';
 
 const EMPTY_FILTERS: NotificationFilters = {};
@@ -60,19 +60,15 @@ export const NotificationFiltersComponent: React.FC<NotificationFiltersProps> = 
       </div>
 
       {/* Búsqueda por texto */}
-      <div className="relative">
-        <SystemIcons.interface.search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400 pointer-events-none" />
-        <input
-          type="text"
-          value={search}
-          onChange={(e) => {
-            setSearch(e.target.value);
-            onSearchChange?.(e.target.value);
-          }}
-          placeholder="Buscar notificación..."
-          className="pl-8 pr-3 py-1.5 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-azul-una w-56"
-        />
-      </div>
+      <SearchInput
+        placeholder="Buscar notificación..."
+        value={search}
+        onChange={(value) => {
+          setSearch(value);
+          onSearchChange?.(value);
+        }}
+        className="w-56"
+      />
     </div>
   );
 };
