@@ -218,49 +218,45 @@ const ModelCard: React.FC<ModelCardProps> = ({
   return (
     <div
       className={cn(
-        'flex flex-col gap-2 p-4 rounded-corner bg-blanco-una border border-blanco-una shadow-md',
+        'grid p-4 rounded-corner bg-blanco-una border border-blanco-una shadow-md gap-x-2',
+        'grid-cols-5 grid-rows-4',
         'transition-shadow hover:shadow-lg',
         !model.activo && 'opacity-60'
       )}
+      style={{ gridTemplateRows: 'auto auto 1fr auto' }}
     >
-      {/* Header: nombre + badges */}
-      <div className="flex items-start justify-between gap-2">
-        <div className="flex-1 min-w-0">
-          <h3
-            className={cn(TYPOGRAPHY.pageSubtitle, 'font-bold text-negro-una truncate')}
-            title={model.nombre}
-          >
-            {model.nombre}
-          </h3>
-          {model.version && (
-            <span className={cn(TYPOGRAPHY.form.helper, 'text-gris-una')}>v{model.version}</span>
-          )}
-        </div>
-        <div className="flex flex-col items-end gap-1 shrink-0">
-          <StatusBadge
-            label={MODELO_TIPO_BADGE[model.tipo]?.label ?? model.tipo}
-            colorClasses={MODELO_TIPO_BADGE[model.tipo]?.colorClasses ?? 'bg-gris-light text-gris-una'}
-            size="sm"
-          />
-          <StatusBadge
-            label={model.activo ? 'Activo' : 'Inactivo'}
-            colorClasses={
-              model.activo ? 'text-verde-dark bg-verde-ring' : 'text-error-dark bg-error-ring'
-            }
-            size="sm"
-          />
-        </div>
+      {/* div1 — Nombre */}
+      <div className="col-start-1 col-end-4 row-start-1 row-end-2 min-w-0">
+        <h3
+          className={cn(TYPOGRAPHY.pageSubtitle, 'font-bold text-negro-una truncate')}
+          title={model.nombre}
+        >
+          {model.nombre}
+        </h3>
       </div>
 
-      {/* Descripción */}
-      {model.descripcion && (
-        <p className={cn(TYPOGRAPHY.form.helper, 'text-gris-una line-clamp-2')}>
-          {model.descripcion}
-        </p>
-      )}
+      {/* div2 — Versión */}
+      <div className="col-start-1 col-end-4 row-start-2 row-end-3 min-w-0">
+        {model.version ? (
+          <span className={cn(TYPOGRAPHY.form.helper, 'text-gris-una')}>v{model.version}</span>
+        ) : (
+          <span className={cn(TYPOGRAPHY.form.helper, 'text-gris-una/40 italic')}>Sin versión</span>
+        )}
+      </div>
 
-      {/* Acciones */}
-      <div className="flex items-center justify-end gap-1 pt-1">
+      {/* div3 — Descripción */}
+      <div className="col-start-1 col-end-6 row-start-3 row-end-4 py-1">
+        {model.descripcion ? (
+          <p className={cn(TYPOGRAPHY.form.helper, 'text-gris-una line-clamp-2')}>
+            {model.descripcion}
+          </p>
+        ) : (
+          <p className={cn(TYPOGRAPHY.form.helper, 'text-gris-una/40 italic')}>Sin descripción</p>
+        )}
+      </div>
+
+      {/* div4 — Acciones */}
+      <div className="col-start-1 col-end-6 row-start-4 row-end-5 flex items-center justify-end gap-1 pt-2">
         <TableActionButton
           action="view"
           tooltip="Ver estructura"
@@ -304,6 +300,22 @@ const ModelCard: React.FC<ModelCardProps> = ({
           className={CARD_ACTION_BTN}
           onClick={onDelete}
           disabled={isTradicional || hasCiclos}
+        />
+      </div>
+
+      {/* div5 — Badges */}
+      <div className="col-start-4 col-end-6 row-start-1 row-end-3 flex flex-col items-end gap-1">
+        <StatusBadge
+          label={MODELO_TIPO_BADGE[model.tipo]?.label ?? model.tipo}
+          colorClasses={MODELO_TIPO_BADGE[model.tipo]?.colorClasses ?? 'bg-gris-light text-gris-una'}
+          size="sm"
+        />
+        <StatusBadge
+          label={model.activo ? 'Activo' : 'Inactivo'}
+          colorClasses={
+            model.activo ? 'text-verde-dark bg-verde-ring' : 'text-error-dark bg-error-ring'
+          }
+          size="sm"
         />
       </div>
     </div>

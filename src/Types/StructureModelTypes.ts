@@ -2,6 +2,11 @@
  * StructureModelTypes - Tipos para modelos de estructura y elementos flexibles
  */
 
+export interface TipoJerarquia {
+  tipo: string;
+  padre_tipo: string | null;
+}
+
 export interface StructureModel {
   modelo_estructura_id: number;
   nombre: string;
@@ -9,6 +14,8 @@ export interface StructureModel {
   tipo: 'tradicional' | 'elemento_flexible';
   version: string | null;
   activo: boolean;
+  tipos_jerarquia: TipoJerarquia[] | null;
+  tipos_asignables: string[] | null;
   created_at: string;
   updated_at: string;
 }
@@ -31,12 +38,15 @@ export interface CreateModelForm {
   nombre: string;
   descripcion?: string;
   version?: string;
+  tipos_jerarquia?: TipoJerarquia[];
+  tipos_asignables?: string[];
 }
 
 export interface EditModelForm {
   nombre?: string;
   descripcion?: string;
   version?: string;
+  tipos_jerarquia?: TipoJerarquia[];
 }
 
 export interface CreateFlexibleElementForm {

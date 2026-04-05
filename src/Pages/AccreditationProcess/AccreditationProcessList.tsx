@@ -139,7 +139,7 @@ export const AccreditationProcessList: React.FC = () => {
         estimatedEndDate: created.estimatedEndDate || formData.estimatedEndDate,
         accreditationCycleId:
           created.accreditationCycleId || formData.accreditationCycleId,
-        accreditationCycleName: created.accreditationCycleName || cycleName,
+        accreditationCycleName: cycleName,
         careerName: created.careerName ?? careerName,
         campusName: created.campusName ?? campusName,
       };
@@ -165,7 +165,7 @@ export const AccreditationProcessList: React.FC = () => {
       estimatedEndDate: updated.estimatedEndDate || formData.estimatedEndDate,
       accreditationCycleId:
         updated.accreditationCycleId || formData.accreditationCycleId,
-      accreditationCycleName: updated.accreditationCycleName || cycleName,
+      accreditationCycleName: cycleName,
       careerName: updated.careerName ?? careerName,
       campusName: updated.campusName ?? campusName,
     };

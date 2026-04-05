@@ -93,6 +93,11 @@ const StructureList: React.FC = () => {
       .map(m => ({ value: String(m.modelo_estructura_id), label: m.nombre })),
   ], [models]);
 
+  const selectedModel = useMemo(
+    () => models.find(m => m.modelo_estructura_id === selectedModelId) ?? null,
+    [models, selectedModelId]
+  );
+
   const handleModelChange = (val: string) => {
     const newId = val === '0' ? null : Number(val);
     setSelectedModelId(newId);
@@ -482,6 +487,7 @@ const StructureList: React.FC = () => {
           isOpen={flexFormModal.isOpen}
           onClose={() => setFlexFormModal({ isOpen: false, element: null })}
           modelId={selectedModelId}
+          tiposJerarquia={selectedModel?.tipos_jerarquia}
           element={flexFormModal.element}
           allElements={elements}
           isLoadingElements={elemLoading}

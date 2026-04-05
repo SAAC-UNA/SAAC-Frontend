@@ -17,12 +17,15 @@ import type {
   FlexibleElement,
   CreateFlexibleElementForm,
   EditFlexibleElementForm,
+  TipoJerarquia,
 } from '@/Types/StructureModelTypes';
 
 interface Props {
   isOpen: boolean;
   onClose: () => void;
   modelId: number;
+  /** Jerarquía de tipos del modelo. Si es null/vacío, el tipo es libre (texto). */
+  tiposJerarquia?: TipoJerarquia[] | null;
   /** Si se pasa, el modal está en modo edición */
   element?: FlexibleElement | null;
   /** Padre preseleccionado para creación de hijos */
@@ -66,6 +69,7 @@ export const StructureElementFormModal: React.FC<Props> = ({
   isOpen,
   onClose,
   modelId,
+  tiposJerarquia,
   element,
   defaultParentId,
   allElements,
@@ -75,23 +79,44 @@ export const StructureElementFormModal: React.FC<Props> = ({
   const isEditing = !!element;
   const { showToast } = useToast();
 
+  // Si el modelo tiene jerarquía definida, el tipo es dropdown; si no, texto libre
+  const tipoOptions = useMemo(() => {
+    if (!tiposJerarquia?.length) return null;
+    return tiposJerarquia.map(t => ({ value: t.tipo, label: t.tipo }));
+  }, [tiposJerarquia]);
+
   const [form, setForm] = useState<FormData>(EMPTY);
   const [errors, setErrors] = useState<FormErrors>({});
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [opLoading, setOpLoading] = useState(false);
   const [success, setSuccess] = useState({ isOpen: false, name: '' });
 
-  // Opciones de padre: todos los elementos activos excepto el actual
+  // Opciones de padre: filtradas por jerarquía si está definida
   const parentOptions = useMemo(() => {
+    let available = allElements.filter(
+      el => el.activo && el.elemento_id !== element?.elemento_id
+    );
+
+    // Con jerarquía: solo mostrar elementos del tipo-padre correcto
+    if (tiposJerarquia?.length && form.tipo) {
+      const jerarquiaEntry = tiposJerarquia.find(t => t.tipo === form.tipo);
+      if (jerarquiaEntry) {
+        if (!jerarquiaEntry.padre_tipo) {
+          // Tipo raíz → no puede tener padre
+          return [{ value: '', label: 'Sin padre (tipo raíz)' }];
+        }
+        // Filtrar solo elementos del tipo-padre correcto
+        available = available.filter(el => el.tipo === jerarquiaEntry.padre_tipo);
+      }
+    }
+
     const base = [{ value: '', label: 'Ninguno (elemento raíz)' }];
-    const available = allElements
-      .filter(el => el.activo && el.elemento_id !== element?.elemento_id)
-      .map(el => ({
-        value: String(el.elemento_id),
-        label: `${el.nomenclatura ? el.nomenclatura + ' – ' : ''}${el.tipo}${el.descripcion ? ': ' + el.descripcion.slice(0, 40) : ''}`,
-      }));
-    return [...base, ...available];
-  }, [allElements, element]);
+    const mapped = available.map(el => ({
+      value: String(el.elemento_id),
+      label: `${el.nomenclatura ? el.nomenclatura + ' – ' : ''}${el.tipo}${el.descripcion ? ': ' + el.descripcion.slice(0, 40) : ''}`,
+    }));
+    return [...base, ...mapped];
+  }, [allElements, element, tiposJerarquia, form.tipo]);
 
   useEffect(() => {
     if (isOpen) {
@@ -181,16 +206,28 @@ export const StructureElementFormModal: React.FC<Props> = ({
         size="md"
       >
         <div className="flex flex-col gap-4">
-          <Input
-            label="Tipo"
-            required
-            value={form.tipo}
-            onChange={e => setForm(p => ({ ...p, tipo: e.target.value }))}
-            error={errors.tipo}
-            maxLength={30}
-            characterCount
-            placeholder="Ej: Pauta, Componente, Criterio…"
-          />
+          {tipoOptions ? (
+            <CustomSelect
+              label="Tipo"
+              required
+              value={form.tipo}
+              onChange={val => setForm(p => ({ ...p, tipo: val, padre_id: '' }))}
+              options={tipoOptions}
+              error={errors.tipo}
+              placeholder="Seleccionar tipo…"
+            />
+          ) : (
+            <Input
+              label="Tipo"
+              required
+              value={form.tipo}
+              onChange={e => setForm(p => ({ ...p, tipo: e.target.value }))}
+              error={errors.tipo}
+              maxLength={30}
+              characterCount
+              placeholder="Ej: Pauta, Componente, Criterio…"
+            />
+          )}
           <Input
             label="Nombre"
             value={form.nombre}

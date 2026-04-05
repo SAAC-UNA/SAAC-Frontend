@@ -261,21 +261,6 @@ export const getNavigationItems = (
 
     if (
       hasAccess({
-        requireAnyCapabilities: [CAPABILITIES.ACCREDITATION_PROCESS_VIEW],
-        requireAnyPermissions: ["procesos.view"],
-      })
-    ) {
-      acreditacionChildren.push({
-        id: "estructura",
-        label: "Gestión de Estructura",
-        icon: nutIcon,
-        href: "/estructura/listar",
-        isActive: false,
-      });
-    }
-
-    if (
-      hasAccess({
         requireAnyCapabilities: [CAPABILITIES.ACCREDITATION_CYCLE_VIEW],
         requireAnyPermissions: ["ciclos.view"],
       })

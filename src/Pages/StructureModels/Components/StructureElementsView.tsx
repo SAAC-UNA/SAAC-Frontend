@@ -277,6 +277,7 @@ export const StructureElementsView: React.FC<Props> = ({ model, onBack }) => {
         isOpen={formModal.isOpen}
         onClose={() => setFormModal({ isOpen: false, element: null, defaultParentId: null })}
         modelId={model.modelo_estructura_id}
+        tiposJerarquia={model.tipos_jerarquia}
         element={formModal.element}
         defaultParentId={formModal.defaultParentId}
         allElements={elements}
