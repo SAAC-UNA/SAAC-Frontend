@@ -16,6 +16,8 @@ import { TooltipProvider } from "@/Components/Ui/Feedback/Tooltip";
 import { useAuth } from "@/Context/AuthContext";
 import { TYPOGRAPHY } from "@/Constants/Typography";
 import { UserWidget } from "./UserBar";
+import { useOperationalContextStatus } from "@/Hooks/useOperationalContextStatus";
+import { useOperationalContextSnapshot } from "@/Hooks/useOperationalContextSnapshot";
 
 interface SidebarProps {
   side?: "left" | "right";
@@ -34,10 +36,17 @@ export const ModernSidebar: React.FC<SidebarProps> = ({
 }) => {
   const { isMobile, openMobile, setOpenMobile } = useSidebar();
   const { user } = useAuth();
+  const { hasOperationalContext } = useOperationalContextStatus();
+  const operationalContext = useOperationalContextSnapshot();
 
   const navItems = getNavigationItems({
     roles: user?.roles?.map((r) => r.name),
     permissions: user?.all_permissions?.map((p) => p.name),
+    context: {
+      hasOperationalContext,
+      cycleId: operationalContext.cycleId,
+      processId: operationalContext.processId,
+    },
   });
 
   // Contenido completo para mobile (Sheet expandido)
@@ -144,10 +153,10 @@ export const ModernSidebar: React.FC<SidebarProps> = ({
         {/* Sidebar sin contenedor: solo íconos flotantes */}
         <div
           className={cn(
-            'fixed z-10 hidden md:flex',
-            'w-(--sidebar-width-icon)',
-            side === 'left' ? 'inset-y-3 left-3' : 'inset-y-3 right-3',
-            className
+            "fixed z-10 hidden md:flex",
+            "w-(--sidebar-width-icon)",
+            side === "left" ? "inset-y-3 left-3" : "inset-y-3 right-3",
+            className,
           )}
         >
           <div className="flex h-full w-full flex-col overflow-hidden bg-transparent">

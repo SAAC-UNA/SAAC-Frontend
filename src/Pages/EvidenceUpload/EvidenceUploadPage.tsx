@@ -3,21 +3,29 @@
  * HU008 - Subida de Evidencias al Sistema
  */
 
-import React, { useState, useEffect } from 'react';
-import { useSearchParams, useNavigate } from 'react-router-dom';
-import { PageHeader, ScreenContainer } from '@/Components/Ui/Index';
-import { Button } from '@/Components/Ui/Buttons/Button';
-import { SystemIcons } from '@/Components/Ui/Icons/SystemIcons';
-import { Tooltip, TooltipTrigger, TooltipContent } from '@/Components/Ui/Feedback/Tooltip';
-import { FileUploader, FileUploadProgress, FileList } from '@/Components/Ui/Upload';
-import type { FileUploadProgressItem } from '@/Components/Ui/Upload';
-import { LinkInput } from '@/Components/Ui/Forms/LinkInput';
-import { fileService } from '@/Services/FileService';
-import { useToast } from '@/Context/ToastContext';
-import { getModuleInfo } from '@/Constants/ModuleInfo';
-import type { FileModel } from '@/Types/FileTypes';
-import { TYPOGRAPHY } from '@/constants/Typography';
-import { Card } from '@/Components/Ui/Layout/Card';
+import React, { useState, useEffect } from "react";
+import { useSearchParams, useNavigate } from "react-router-dom";
+import { PageHeader, ScreenContainer } from "@/Components/Ui/Index";
+import { Button } from "@/Components/Ui/Buttons/Button";
+import { SystemIcons } from "@/Components/Ui/Icons/SystemIcons";
+import {
+  Tooltip,
+  TooltipTrigger,
+  TooltipContent,
+} from "@/Components/Ui/Feedback/Tooltip";
+import {
+  FileUploader,
+  FileUploadProgress,
+  FileList,
+} from "@/Components/Ui/Upload";
+import type { FileUploadProgressItem } from "@/Components/Ui/Upload";
+import { LinkInput } from "@/Components/Ui/Forms/LinkInput";
+import { fileService } from "@/Services/FileService";
+import { useToast } from "@/Context/ToastContext";
+import { getModuleInfo } from "@/Constants/ModuleInfo";
+import type { FileModel } from "@/Types/FileTypes";
+import { TYPOGRAPHY } from "@/constants/Typography";
+import { Card } from "@/Components/Ui/Layout/Card";
 
 interface EvidenceUploadPageProps {
   evidenciaId?: number;
@@ -28,19 +36,34 @@ interface EvidenceUploadPageProps {
 export const EvidenceUploadPage: React.FC<EvidenceUploadPageProps> = ({
   evidenciaId: propEvidenciaId,
   procesoId: propProcesoId,
-  evidenciaNombre: propEvidenciaNombre
+  evidenciaNombre: propEvidenciaNombre,
 }) => {
   const { showToast } = useToast();
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
-  
+
   // Obtener IDs desde props o desde URL query params
-  const evidenciaId = propEvidenciaId ?? (Number(searchParams.get('evidenciaId')) || undefined);
-  const procesoId = propProcesoId ?? (Number(searchParams.get('procesoId')) || undefined);
-  const evidenciaNombre = propEvidenciaNombre ?? searchParams.get('nombre') ?? 'Evidencia';
-  
+  const evidenciaId =
+    propEvidenciaId ?? (Number(searchParams.get("evidenciaId")) || undefined);
+  const procesoId =
+    propProcesoId ?? (Number(searchParams.get("procesoId")) || undefined);
+  const evidenciaNombre =
+    propEvidenciaNombre ?? searchParams.get("nombre") ?? "Evidencia";
+
   // Estados
-  const [uploadState, setUploadState] = useState<{ selectedFiles: File[]; selectedLinks: string[]; uploadProgress: FileUploadProgressItem[]; isUploading: boolean; uploaderKey: number }>({ selectedFiles: [], selectedLinks: [], uploadProgress: [], isUploading: false, uploaderKey: 0 });
+  const [uploadState, setUploadState] = useState<{
+    selectedFiles: File[];
+    selectedLinks: string[];
+    uploadProgress: FileUploadProgressItem[];
+    isUploading: boolean;
+    uploaderKey: number;
+  }>({
+    selectedFiles: [],
+    selectedLinks: [],
+    uploadProgress: [],
+    isUploading: false,
+    uploaderKey: 0,
+  });
   const selectedFiles = uploadState.selectedFiles;
   const selectedLinks = uploadState.selectedLinks;
   const uploadProgress = uploadState.uploadProgress;
@@ -56,16 +79,17 @@ export const EvidenceUploadPage: React.FC<EvidenceUploadPageProps> = ({
 
   const loadFiles = async () => {
     if (!evidenciaId) return;
-    
+
     try {
       setLoadingFiles(true);
       const files = await fileService.listFiles({ evidencia_id: evidenciaId });
       setUploadedFiles(files);
     } catch (error: any) {
       showToast({
-        type: 'error',
-        title: 'Error al cargar archivos',
-        message: error.message || 'No se pudieron cargar los archivos existentes'
+        type: "error",
+        title: "Error al cargar archivos",
+        message:
+          error.message || "No se pudieron cargar los archivos existentes",
       });
     } finally {
       setLoadingFiles(false);
@@ -73,41 +97,43 @@ export const EvidenceUploadPage: React.FC<EvidenceUploadPageProps> = ({
   };
 
   const handleFilesSelected = (files: File[]) => {
-    setUploadState(prev => ({...prev, selectedFiles: files}));
+    setUploadState((prev) => ({ ...prev, selectedFiles: files }));
   };
 
   const handleStartUpload = async () => {
     if (!evidenciaId || !procesoId) {
       showToast({
-        type: 'error',
-        title: 'Información incompleta',
-        message: 'Se requiere el ID de evidencia y proceso para subir archivos'
+        type: "error",
+        title: "Información incompleta",
+        message: "Se requiere el ID de evidencia y proceso para subir archivos",
       });
       return;
     }
 
     if (selectedFiles.length === 0 && selectedLinks.length === 0) {
       showToast({
-        type: 'warning',
-        title: 'No hay evidencias seleccionadas',
-        message: 'Por favor, seleccione archivos o agregue enlaces para subir'
+        type: "warning",
+        title: "No hay evidencias seleccionadas",
+        message: "Por favor, seleccione archivos o agregue enlaces para subir",
       });
       return;
     }
 
-    setUploadState(prev => ({...prev, isUploading: true}));
+    setUploadState((prev) => ({ ...prev, isUploading: true }));
 
     // Inicializar el progreso con todos los archivos en "pending"
-    const initialProgress: FileUploadProgressItem[] = selectedFiles.map(file => ({
-      file,
-      status: 'pending',
-      progress: 0
-    }));
-    setUploadState(prev => ({...prev, uploadProgress: initialProgress}));
+    const initialProgress: FileUploadProgressItem[] = selectedFiles.map(
+      (file) => ({
+        file,
+        status: "pending",
+        progress: 0,
+      }),
+    );
+    setUploadState((prev) => ({ ...prev, uploadProgress: initialProgress }));
 
     try {
       let result;
-      
+
       // Decidir qué método usar según lo que hay seleccionado
       if (selectedFiles.length > 0 && selectedLinks.length > 0) {
         // Ambos: archivos y enlaces
@@ -117,12 +143,18 @@ export const EvidenceUploadPage: React.FC<EvidenceUploadPageProps> = ({
           evidenciaId,
           procesoId,
           (progress) => {
-            setUploadState(prev => ({...prev, uploadProgress: prev.uploadProgress.map(item => ({
+            setUploadState((prev) => ({
+              ...prev,
+              uploadProgress: prev.uploadProgress.map((item) => ({
                 ...item,
-                status: item.status === 'pending' ? 'uploading' : item.status,
-                progress: item.status === 'success' || item.status === 'error' ? item.progress : progress
-              }))}));
-          }
+                status: item.status === "pending" ? "uploading" : item.status,
+                progress:
+                  item.status === "success" || item.status === "error"
+                    ? item.progress
+                    : progress,
+              })),
+            }));
+          },
         );
       } else if (selectedFiles.length > 0) {
         // Solo archivos
@@ -131,59 +163,72 @@ export const EvidenceUploadPage: React.FC<EvidenceUploadPageProps> = ({
           evidenciaId,
           procesoId,
           (progress) => {
-            setUploadState(prev => ({...prev, uploadProgress: prev.uploadProgress.map(item => ({
+            setUploadState((prev) => ({
+              ...prev,
+              uploadProgress: prev.uploadProgress.map((item) => ({
                 ...item,
-                status: item.status === 'pending' ? 'uploading' : item.status,
-                progress: item.status === 'success' || item.status === 'error' ? item.progress : progress
-              }))}));
-          }
+                status: item.status === "pending" ? "uploading" : item.status,
+                progress:
+                  item.status === "success" || item.status === "error"
+                    ? item.progress
+                    : progress,
+              })),
+            }));
+          },
         );
       } else {
         // Solo enlaces
         result = await fileService.uploadMultipleLinks(
           selectedLinks,
           evidenciaId,
-          procesoId
+          procesoId,
         );
       }
 
       // Actualizar estado de cada archivo según el resultado
-      setUploadState(prev => ({...prev, uploadProgress: prev.uploadProgress.map((item, index) => {
+      setUploadState((prev) => ({
+        ...prev,
+        uploadProgress: prev.uploadProgress.map((item, index) => {
           // Buscar si este archivo está en successful o failed
           const successFile = result.successful.find(
-            (_, i) => i === index && index < result.successful.length
+            (_, i) => i === index && index < result.successful.length,
           );
-          
+
           // Para resultado mixto (archivos y enlaces)
           let failedFile;
           if (result.failed.length > 0) {
             const firstFailed = result.failed[0];
-            if ('type' in firstFailed) {
+            if ("type" in firstFailed) {
               // Resultado mixto con tipo
-              failedFile = result.failed.find(f => 'type' in f && 'item' in f && f.item === item.file);
-            } else if ('file' in firstFailed) {
+              failedFile = result.failed.find(
+                (f) => "type" in f && "item" in f && f.item === item.file,
+              );
+            } else if ("file" in firstFailed) {
               // Resultado solo archivos
-              failedFile = result.failed.find(f => 'file' in f && f.file === item.file);
+              failedFile = result.failed.find(
+                (f) => "file" in f && f.file === item.file,
+              );
             }
           }
 
           if (successFile) {
             return {
               ...item,
-              status: 'success',
+              status: "success",
               progress: 100,
-              uploadedFileName: successFile.nombre_original
+              uploadedFileName: successFile.nombre_original,
             };
           } else if (failedFile) {
             return {
               ...item,
-              status: 'error',
+              status: "error",
               progress: 0,
-              error: failedFile.error
+              error: failedFile.error,
             };
           }
           return item;
-        })}));
+        }),
+      }));
 
       // Mostrar resumen de la subida
       const successCount = result.successful.length;
@@ -192,24 +237,27 @@ export const EvidenceUploadPage: React.FC<EvidenceUploadPageProps> = ({
       if (successCount > 0 && failedCount === 0) {
         // Todos exitosos
         showToast({
-          type: 'success',
-          title: 'Subida completada',
-          message: `${successCount} evidencia(s) subida(s) exitosamente`
+          type: "success",
+          title: "Subida completada",
+          message: `${successCount} evidencia(s) subida(s) exitosamente`,
         });
       } else if (successCount > 0 && failedCount > 0) {
         // Algunos exitosos, algunos fallidos
         showToast({
-          type: 'warning',
-          title: 'Subida parcial',
-          message: `${successCount} exitosas, ${failedCount} fallidas`
+          type: "warning",
+          title: "Subida parcial",
+          message: `${successCount} exitosas, ${failedCount} fallidas`,
         });
       } else if (failedCount > 0) {
         // Todos fallidos
-        const firstError = result.failed[0]?.error || 'Error desconocido';
+        const firstError = result.failed[0]?.error || "Error desconocido";
         showToast({
-          type: 'error',
-          title: 'Subida fallida',
-          message: failedCount === 1 ? firstError : `${failedCount} evidencias fallaron`
+          type: "error",
+          title: "Subida fallida",
+          message:
+            failedCount === 1
+              ? firstError
+              : `${failedCount} evidencias fallaron`,
         });
       }
 
@@ -220,56 +268,70 @@ export const EvidenceUploadPage: React.FC<EvidenceUploadPageProps> = ({
 
       // Limpiar selección si todos fueron exitosos
       if (failedCount === 0) {
-        setUploadState(prev => ({ ...prev, selectedFiles: [], selectedLinks: [], uploaderKey: prev.uploaderKey + 1 }));
+        setUploadState((prev) => ({
+          ...prev,
+          selectedFiles: [],
+          selectedLinks: [],
+          uploaderKey: prev.uploaderKey + 1,
+        }));
         setTimeout(() => {
-          setUploadState(prev => ({ ...prev, uploadProgress: [] }));
+          setUploadState((prev) => ({ ...prev, uploadProgress: [] }));
         }, 3000); // Mantener el progreso visible por 3 segundos
       }
     } catch (error: any) {
       // Error crítico (autenticación, permisos, etc)
       showToast({
-        type: 'error',
-        title: 'Error al subir archivos',
-        message: error.message || 'Ocurrió un error durante la subida'
+        type: "error",
+        title: "Error al subir archivos",
+        message: error.message || "Ocurrió un error durante la subida",
       });
-      
+
       // Marcar todos como error
-      setUploadState(prev => ({...prev, uploadProgress: prev.uploadProgress.map(item => ({
+      setUploadState((prev) => ({
+        ...prev,
+        uploadProgress: prev.uploadProgress.map((item) => ({
           ...item,
-          status: 'error',
-          error: error.message || 'Error desconocido'
-        }))}));
+          status: "error",
+          error: error.message || "Error desconocido",
+        })),
+      }));
     } finally {
-      setUploadState(prev => ({...prev, isUploading: false}));
+      setUploadState((prev) => ({ ...prev, isUploading: false }));
     }
   };
 
   const handleCancelUpload = () => {
-    setUploadState(prev => ({ ...prev, selectedFiles: [], selectedLinks: [], uploadProgress: [], uploaderKey: prev.uploaderKey + 1 }));
+    setUploadState((prev) => ({
+      ...prev,
+      selectedFiles: [],
+      selectedLinks: [],
+      uploadProgress: [],
+      uploaderKey: prev.uploaderKey + 1,
+    }));
   };
 
   const handleDeleteFile = async (fileId: number) => {
     try {
       await fileService.deleteFile(fileId);
       showToast({
-        type: 'success',
-        title: 'Archivo eliminado',
-        message: 'El archivo se eliminó correctamente'
+        type: "success",
+        title: "Archivo eliminado",
+        message: "El archivo se eliminó correctamente",
       });
       await loadFiles();
     } catch (error: any) {
       showToast({
-        type: 'error',
-        title: 'Error al eliminar',
-        message: error.message || 'No se pudo eliminar el archivo'
+        type: "error",
+        title: "Error al eliminar",
+        message: error.message || "No se pudo eliminar el archivo",
       });
     }
   };
 
-  const moduleInfo = getModuleInfo('evidence_upload');
+  const moduleInfo = getModuleInfo("evidence_upload");
 
   const handleGoBack = () => {
-    navigate('/mis-evidencias-asignadas');
+    navigate("/mis-evidencias-asignadas");
   };
 
   return (
@@ -277,16 +339,19 @@ export const EvidenceUploadPage: React.FC<EvidenceUploadPageProps> = ({
       <PageHeader
         title={moduleInfo.title}
         description={`${moduleInfo.description}\nEvidencia: ${evidenciaNombre}`}
+        breadcrumbMode="none"
       />
-      
+
       <div className="space-y-6">
         {/* Sección de subida */}
         <Card className="p-6 space-y-6">
           <div>
-            <h2 className={` ${TYPOGRAPHY.pageSubtitle} font-semibold text-negro-una-2`}>
+            <h2
+              className={` ${TYPOGRAPHY.pageSubtitle} font-semibold text-negro-una-2`}
+            >
               Seleccione archivos
             </h2>
-            
+
             <FileUploader
               key={`file-uploader-${uploaderKey}`}
               onFilesSelected={handleFilesSelected}
@@ -296,41 +361,46 @@ export const EvidenceUploadPage: React.FC<EvidenceUploadPageProps> = ({
 
           {/* Sección de enlaces */}
           <div>
-            <h2 className={` ${TYPOGRAPHY.pageSubtitle} font-semibold text-negro-una-2`}>
+            <h2
+              className={` ${TYPOGRAPHY.pageSubtitle} font-semibold text-negro-una-2`}
+            >
               Enlaces externos
             </h2>
-            
+
             <LinkInput
               key={`link-input-${uploaderKey}`}
-              onLinksChange={(links) => setUploadState(prev => ({...prev, selectedLinks: links}))}
+              onLinksChange={(links) =>
+                setUploadState((prev) => ({ ...prev, selectedLinks: links }))
+              }
               disabled={isUploading}
               className="w-full"
             />
           </div>
 
           {/* Botones de acción */}
-          {(selectedFiles.length > 0 || selectedLinks.length > 0) && !isUploading && (
-            <div className="mt-4 flex gap-3 justify-end">
-              <Button
-                type="button"
-                onClick={handleCancelUpload}
-                variant="secondary"
-                standardWidth={true}
-                size="sm"
-              >
-                Cancelar
-              </Button>
-              <Button
-                type="button"
-                onClick={handleStartUpload}
-                variant="primary"
-                standardWidth={true}
-                size="sm"
-              >
-                Subir
-              </Button>
-            </div>
-          )}
+          {(selectedFiles.length > 0 || selectedLinks.length > 0) &&
+            !isUploading && (
+              <div className="mt-4 flex gap-3 justify-end">
+                <Button
+                  type="button"
+                  onClick={handleCancelUpload}
+                  variant="secondary"
+                  standardWidth={true}
+                  size="sm"
+                >
+                  Cancelar
+                </Button>
+                <Button
+                  type="button"
+                  onClick={handleStartUpload}
+                  variant="primary"
+                  standardWidth={true}
+                  size="sm"
+                >
+                  Subir
+                </Button>
+              </div>
+            )}
         </Card>
 
         {/* Progreso de subida */}
@@ -343,21 +413,23 @@ export const EvidenceUploadPage: React.FC<EvidenceUploadPageProps> = ({
         {/* Lista de archivos subidos */}
         <Card className="p-4">
           <div className="flex items-center justify-between mb-4">
-            <h2 className={` ${TYPOGRAPHY.pageSubtitle} font-semibold text-negro-una-2`}>
+            <h2
+              className={` ${TYPOGRAPHY.pageSubtitle} font-semibold text-negro-una-2`}
+            >
               Archivos subidos
             </h2>
             <Tooltip>
               <TooltipTrigger asChild>
                 <Button
-                  type='button'
+                  type="button"
                   onClick={loadFiles}
                   disabled={loadingFiles}
                   variant="ghost"
                   size="sm"
                 >
-                  {SystemIcons.interface.refresh({ 
-                    size: 'sm', 
-                    className: loadingFiles ? 'animate-spin' : '' 
+                  {SystemIcons.interface.refresh({
+                    size: "sm",
+                    className: loadingFiles ? "animate-spin" : "",
                   })}
                 </Button>
               </TooltipTrigger>
@@ -377,13 +449,13 @@ export const EvidenceUploadPage: React.FC<EvidenceUploadPageProps> = ({
         {/* Botón para volver a Mis Evidencias */}
         <div className="mt-6 flex justify-center">
           <Button
-                type="button"
-                onClick={handleGoBack}
-                variant="secondary"
-                standardWidth={true}
-                size="sm"
-              >
-                Regresar
+            type="button"
+            onClick={handleGoBack}
+            variant="secondary"
+            standardWidth={true}
+            size="sm"
+          >
+            Regresar
           </Button>
         </div>
       </div>

@@ -1,17 +1,17 @@
 /**
  * SystemIcons - Sistema centralizado de iconos para toda la aplicación
- * 
+ *
  * Beneficios:
  * - Un solo lugar para todos los iconos del sistema
  * - Consistencia automática en toda la app
  * - Fácil cambio de biblioteca de iconos
  * - Control de tamaños y colores centralizado
  * - Tree-shaking automático
- * 
+ *
  * ESTANDARIZACIÓN DE COLORES:
  * Solo los iconos de ACCIONES (view, edit, delete, add, cancel, informationCircle)
  * tienen colores por defecto para uso en tablas y listas.
- * 
+ *
  * Los iconos del SIDEBAR (home, nut, plus, edit-element, trash-can, shield, box-archive, logout)
  * NO tienen colores por defecto porque usan currentColor para adaptarse dinámicamente
  * al estado activo/inactivo (blanco/rojo UNA).
@@ -19,7 +19,7 @@
 
 export interface IconProps {
   className?: string;
-  size?: 'xs' | 'sm' | 'md' | 'lg' | 'xl' | '2xl' | '3xl';
+  size?: "xs" | "sm" | "md" | "lg" | "xl" | "2xl" | "3xl";
   color?: string;
 }
 
@@ -34,16 +34,16 @@ export interface IconProps {
  * size-icon-lg, size-icon-button (definidas en @layer utilities de index.css).
  * También eliminar los tamaños sin variable CSS: 'xs', 'xl', '2xl', '3xl'.
  */
-const getSizeClasses = (size?: IconProps['size']): string => {
-  if (!size) return 'flex-shrink-0';
-  const sizes: Record<NonNullable<IconProps['size']>, string> = {
-    xs: 'w-3 h-3 flex-shrink-0',
-    sm: 'w-4 h-4 flex-shrink-0',
-    md: 'w-5 h-5 flex-shrink-0',
-    lg: 'w-6 h-6 flex-shrink-0',
-    xl: 'w-8 h-8 flex-shrink-0',
-    '2xl': 'w-12 h-12 flex-shrink-0',
-    '3xl': 'w-16 h-16 flex-shrink-0'
+const getSizeClasses = (size?: IconProps["size"]): string => {
+  if (!size) return "flex-shrink-0";
+  const sizes: Record<NonNullable<IconProps["size"]>, string> = {
+    xs: "w-3 h-3 flex-shrink-0",
+    sm: "w-4 h-4 flex-shrink-0",
+    md: "w-5 h-5 flex-shrink-0",
+    lg: "w-6 h-6 flex-shrink-0",
+    xl: "w-8 h-8 flex-shrink-0",
+    "2xl": "w-12 h-12 flex-shrink-0",
+    "3xl": "w-16 h-16 flex-shrink-0",
   };
   return sizes[size];
 };
@@ -58,18 +58,22 @@ export const SystemIcons = {
   actions: {
     view: ({ className, size }: IconProps) => (
       <svg
-        className={`${getSizeClasses(size)} ${className || ''}`}
+        className={`${getSizeClasses(size)} ${className || ""}`}
         viewBox="0 0 22 22"
         fill="currentColor"
       >
         <path d="M12 9.75a2.25 2.25 0 1 0 0 4.5 2.25 2.25 0 0 0 0-4.5Z" />
-        <path fillRule="evenodd" d="M12 5.5c-2.618 0-4.972 1.051-6.668 2.353-.85.652-1.547 1.376-2.036 2.08-.48.692-.796 1.418-.796 2.067 0 .649.317 1.375.796 2.066.49.705 1.186 1.429 2.036 2.08C7.028 17.45 9.382 18.5 12 18.5c2.618 0 4.972-1.051 6.668-2.353.85-.652 1.547-1.376 2.035-2.08.48-.692.797-1.418.797-2.067 0-.649-.317-1.375-.797-2.066-.488-.705-1.185-1.429-2.035-2.08C16.972 6.55 14.618 5.5 12 5.5ZM8.25 12a3.75 3.75 0 1 1 7.5 0 3.75 3.75 0 0 1-7.5 0Z" clipRule="evenodd" />
+        <path
+          fillRule="evenodd"
+          d="M12 5.5c-2.618 0-4.972 1.051-6.668 2.353-.85.652-1.547 1.376-2.036 2.08-.48.692-.796 1.418-.796 2.067 0 .649.317 1.375.796 2.066.49.705 1.186 1.429 2.036 2.08C7.028 17.45 9.382 18.5 12 18.5c2.618 0 4.972-1.051 6.668-2.353.85-.652 1.547-1.376 2.035-2.08.48-.692.797-1.418.797-2.067 0-.649-.317-1.375-.797-2.066-.488-.705-1.185-1.429-2.035-2.08C16.972 6.55 14.618 5.5 12 5.5ZM8.25 12a3.75 3.75 0 1 1 7.5 0 3.75 3.75 0 0 1-7.5 0Z"
+          clipRule="evenodd"
+        />
       </svg>
     ),
 
     edit: ({ className, size }: IconProps) => (
       <svg
-        className={`${getSizeClasses(size)} ${className || ''}`}
+        className={`${getSizeClasses(size)} ${className || ""}`}
         viewBox="0 0 22 22"
         fill="currentColor"
       >
@@ -80,63 +84,78 @@ export const SystemIcons = {
 
     delete: ({ className, size }: IconProps) => (
       <svg
-        className={`${getSizeClasses(size)} ${className || ''}`}
+        className={`${getSizeClasses(size)} ${className || ""}`}
         viewBox="0 0 22 22"
         fill="currentColor"
       >
         <path d="M9.25 3a.75.75 0 0 1 .75-.75h4a.75.75 0 0 1 .75.75v.75H19a.75.75 0 0 1 0 1.5H5a.75.75 0 0 1 0-1.5h4.25V3Z" />
-        <path fillRule="evenodd" d="M6.24 7.945a.5.5 0 0 1 .497-.445h10.526a.5.5 0 0 1 .497.445l.2 1.801a44.213 44.213 0 0 1 0 9.771l-.02.177a2.603 2.603 0 0 1-2.226 2.29 26.788 26.788 0 0 1-7.428 0 2.603 2.603 0 0 1-2.227-2.29l-.02-.177a44.239 44.239 0 0 1 0-9.77l.2-1.802Zm4.51 3.455a.75.75 0 0 0-1.5 0v7a.75.75 0 0 0 1.5 0v-7Zm4 0a.75.75 0 0 0-1.5 0v7a.75.75 0 0 0 1.5 0v-7Z" clipRule="evenodd" />
+        <path
+          fillRule="evenodd"
+          d="M6.24 7.945a.5.5 0 0 1 .497-.445h10.526a.5.5 0 0 1 .497.445l.2 1.801a44.213 44.213 0 0 1 0 9.771l-.02.177a2.603 2.603 0 0 1-2.226 2.29 26.788 26.788 0 0 1-7.428 0 2.603 2.603 0 0 1-2.227-2.29l-.02-.177a44.239 44.239 0 0 1 0-9.77l.2-1.802Zm4.51 3.455a.75.75 0 0 0-1.5 0v7a.75.75 0 0 0 1.5 0v-7Zm4 0a.75.75 0 0 0-1.5 0v7a.75.75 0 0 0 1.5 0v-7Z"
+          clipRule="evenodd"
+        />
       </svg>
     ),
 
     power: ({ className, size }: IconProps) => (
       <svg
-        className={`${getSizeClasses(size)} ${className || ''}`}
+        className={`${getSizeClasses(size)} ${className || ""}`}
         viewBox="0 0 22 22"
         fill="currentColor"
       >
         <path
-      fillRule="evenodd"
-      d="M3.25 12a8.75 8.75 0 1 1 17.5 0 8.75 8.75 0 0 1-17.5 0ZM12 6.25a.75.75 0 0 1 .75.75v5a.75.75 0 0 1-1.5 0V7a.75.75 0 0 1 .75-.75Zm-2 1.832c0-.183-.19-.302-.348-.212a4.75 4.75 0 1 0 4.696 0c-.159-.09-.348.03-.348.212v1.234c0 .077.036.15.095.199a3.25 3.25 0 1 1-4.19 0A.261.261 0 0 0 10 9.316V8.082Z"
-      clipRule="evenodd"
-    />
-  </svg>
-
+          fillRule="evenodd"
+          d="M3.25 12a8.75 8.75 0 1 1 17.5 0 8.75 8.75 0 0 1-17.5 0ZM12 6.25a.75.75 0 0 1 .75.75v5a.75.75 0 0 1-1.5 0V7a.75.75 0 0 1 .75-.75Zm-2 1.832c0-.183-.19-.302-.348-.212a4.75 4.75 0 1 0 4.696 0c-.159-.09-.348.03-.348.212v1.234c0 .077.036.15.095.199a3.25 3.25 0 1 1-4.19 0A.261.261 0 0 0 10 9.316V8.082Z"
+          clipRule="evenodd"
+        />
+      </svg>
     ),
 
     add: ({ className, size }: IconProps) => (
       <svg
-        className={`${getSizeClasses(size)} ${className || ''}`}
+        className={`${getSizeClasses(size)} ${className || ""}`}
         viewBox="0 0 24 24"
         fill="currentColor"
       >
-        <path fillRule="evenodd" d="M7.345 4.017a42.253 42.253 0 0 1 9.31 0c1.713.192 3.095 1.541 3.296 3.26a40.66 40.66 0 0 1 0 9.445 3.734 3.734 0 0 1-3.296 3.26 42.123 42.123 0 0 1-9.31 0 3.734 3.734 0 0 1-3.296-3.26 40.652 40.652 0 0 1 0-9.444 3.734 3.734 0 0 1 3.295-3.26ZM12 7.007a.75.75 0 0 1 .75.75v3.493h3.493a.75.75 0 1 1 0 1.5H12.75v3.493a.75.75 0 0 1-1.5 0V12.75H7.757a.75.75 0 0 1 0-1.5h3.493V7.757a.75.75 0 0 1 .75-.75Z" clipRule="evenodd" />
+        <path
+          fillRule="evenodd"
+          d="M7.345 4.017a42.253 42.253 0 0 1 9.31 0c1.713.192 3.095 1.541 3.296 3.26a40.66 40.66 0 0 1 0 9.445 3.734 3.734 0 0 1-3.296 3.26 42.123 42.123 0 0 1-9.31 0 3.734 3.734 0 0 1-3.296-3.26 40.652 40.652 0 0 1 0-9.444 3.734 3.734 0 0 1 3.295-3.26ZM12 7.007a.75.75 0 0 1 .75.75v3.493h3.493a.75.75 0 1 1 0 1.5H12.75v3.493a.75.75 0 0 1-1.5 0V12.75H7.757a.75.75 0 0 1 0-1.5h3.493V7.757a.75.75 0 0 1 .75-.75Z"
+          clipRule="evenodd"
+        />
       </svg>
     ),
 
-    save: ({ className, size, color = 'var(--color-verde)' }: IconProps) => (
+    save: ({ className, size, color = "var(--color-verde)" }: IconProps) => (
       <svg
-        className={`${getSizeClasses(size)} ${className || ''}`}
+        className={`${getSizeClasses(size)} ${className || ""}`}
         viewBox="0 0 24 24"
         fill={color || "currentColor"}
       >
-        <path fillRule="evenodd" d="M19.916 4.626a.75.75 0 01.208 1.04l-9 13.5a.75.75 0 01-1.154.114l-6-6a.75.75 0 011.06-1.06l5.353 5.353 8.493-12.739a.75.75 0 011.04-.208z" clipRule="evenodd" />
+        <path
+          fillRule="evenodd"
+          d="M19.916 4.626a.75.75 0 01.208 1.04l-9 13.5a.75.75 0 01-1.154.114l-6-6a.75.75 0 011.06-1.06l5.353 5.353 8.493-12.739a.75.75 0 011.04-.208z"
+          clipRule="evenodd"
+        />
       </svg>
     ),
 
     cancel: ({ className, size, color }: IconProps) => (
       <svg
-        className={`${getSizeClasses(size)} ${className || ''}`}
+        className={`${getSizeClasses(size)} ${className || ""}`}
         viewBox="0 0 24 24"
         fill={color || "currentColor"}
       >
-        <path fillRule="evenodd" d="M5.47 5.47a.75.75 0 011.06 0L12 10.94l5.47-5.47a.75.75 0 111.06 1.06L13.06 12l5.47 5.47a.75.75 0 11-1.06 1.06L12 13.06l-5.47 5.47a.75.75 0 01-1.06-1.06L10.94 12 5.47 6.53a.75.75 0 010-1.06z" clipRule="evenodd" />
+        <path
+          fillRule="evenodd"
+          d="M5.47 5.47a.75.75 0 011.06 0L12 10.94l5.47-5.47a.75.75 0 111.06 1.06L13.06 12l5.47 5.47a.75.75 0 11-1.06 1.06L12 13.06l-5.47 5.47a.75.75 0 01-1.06-1.06L10.94 12 5.47 6.53a.75.75 0 010-1.06z"
+          clipRule="evenodd"
+        />
       </svg>
     ),
 
     logout: ({ className, size, color }: IconProps) => (
       <svg
-        className={`${getSizeClasses(size)} ${className || ''}`}
+        className={`${getSizeClasses(size)} ${className || ""}`}
         viewBox="0 0 24 24"
         fill={color || "currentColor"}
       >
@@ -147,7 +166,7 @@ export const SystemIcons = {
 
     export: ({ className, size, color }: IconProps) => (
       <svg
-        className={`${getSizeClasses(size)} ${className || ''}`}
+        className={`${getSizeClasses(size)} ${className || ""}`}
         viewBox="0 0 24 24"
         fill="none"
         stroke={color || "currentColor"}
@@ -163,7 +182,7 @@ export const SystemIcons = {
 
     download: ({ className, size, color }: IconProps) => (
       <svg
-        className={`${getSizeClasses(size)} ${className || ''}`}
+        className={`${getSizeClasses(size)} ${className || ""}`}
         viewBox="0 0 24 24"
         fill="none"
         stroke={color || "currentColor"}
@@ -178,7 +197,7 @@ export const SystemIcons = {
 
     copy: ({ className, size, color }: IconProps) => (
       <svg
-        className={`${getSizeClasses(size)} ${className || ''}`}
+        className={`${getSizeClasses(size)} ${className || ""}`}
         viewBox="0 0 24 24"
         fill="none"
         stroke={color || "currentColor"}
@@ -193,7 +212,7 @@ export const SystemIcons = {
 
     linkIcon: ({ className, size, color }: IconProps) => (
       <svg
-        className={`${getSizeClasses(size)} ${className || ''}`}
+        className={`${getSizeClasses(size)} ${className || ""}`}
         viewBox="0 0 24 24"
         fill="none"
         stroke={color || "currentColor"}
@@ -208,7 +227,7 @@ export const SystemIcons = {
 
     list: ({ className, size, color }: IconProps) => (
       <svg
-        className={`${getSizeClasses(size)} ${className || ''}`}
+        className={`${getSizeClasses(size)} ${className || ""}`}
         viewBox="0 0 24 24"
         fill="none"
         stroke={color || "currentColor"}
@@ -224,46 +243,66 @@ export const SystemIcons = {
 
     comment: ({ className, size, color }: IconProps) => (
       <svg
-        className={`${getSizeClasses(size)} ${className || ''}`}
-            viewBox="0 0 24 24"
-            fill="currentColor"
-            stroke={color || "currentColor"}
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth="2"
+        className={`${getSizeClasses(size)} ${className || ""}`}
+        viewBox="0 0 24 24"
+        fill="currentColor"
+        stroke={color || "currentColor"}
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth="2"
       >
         <path d="M20.25 4.5H3.75A1.5 1.5 0 0 0 2.25 6v14.887a1.472 1.472 0 0 0 .872 1.36 1.5 1.5 0 0 0 1.594-.206l2.972-2.503L20.25 19.5a1.5 1.5 0 0 0 1.5-1.5V6a1.5 1.5 0 0 0-1.5-1.5Z" />
       </svg>
-    )
+    ),
   },
 
   // ===== INTERFAZ =====
   interface: {
-    search: ({ className, size, color = 'currentColor' }: IconProps) => (
+    search: ({ className, size, color = "currentColor" }: IconProps) => (
       <svg
-        className={`${getSizeClasses(size)} ${className || ''}`}
+        className={`${getSizeClasses(size)} ${className || ""}`}
         viewBox="0 0 24 24"
         fill="none"
         stroke={color}
       >
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
+        <path
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          strokeWidth="2"
+          d="m21 21-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z"
+        />
       </svg>
     ),
 
-    loading: ({ className, size, color = 'var(--color-rojo-una-2)' }: IconProps) => (
+    loading: ({
+      className,
+      size,
+      color = "var(--color-rojo-una-2)",
+    }: IconProps) => (
       <svg
-        className={`${getSizeClasses(size)} ${className || ''} animate-spin`}
+        className={`${getSizeClasses(size)} ${className || ""} animate-spin`}
         viewBox="0 0 24 24"
         fill="none"
       >
-        <circle cx="12" cy="12" r="10" stroke={color} strokeWidth="4" className="opacity-25" />
-        <path fill={color} className="opacity-75" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+        <circle
+          cx="12"
+          cy="12"
+          r="10"
+          stroke={color}
+          strokeWidth="4"
+          className="opacity-25"
+        />
+        <path
+          fill={color}
+          className="opacity-75"
+          d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+        />
       </svg>
     ),
 
     closeCircle: ({ className, size }: IconProps) => (
       <svg
-        className={`${getSizeClasses(size)} ${className || ''}`}
+        className={`${getSizeClasses(size)} ${className || ""}`}
         viewBox="0 0 24 24"
         fill="currentColor"
       >
@@ -273,17 +312,21 @@ export const SystemIcons = {
 
     alert: ({ className, size }: IconProps) => (
       <svg
-        className={`${getSizeClasses(size)} ${className || ''}`}
+        className={`${getSizeClasses(size)} ${className || ""}`}
         viewBox="0 0 24 24"
         fill="currentColor"
       >
-        <path fillRule="evenodd" d="M9.73 3.993a2.749 2.749 0 0 1 4.54 0l.432.632a75.951 75.951 0 0 1 6.944 12.563l.09.208a2.511 2.511 0 0 1-2.024 3.497 69.43 69.43 0 0 1-15.424 0 2.511 2.511 0 0 1-2.024-3.497l.09-.208A75.95 75.95 0 0 1 9.298 4.625l.432-.632ZM13 9a1 1 0 1 1-2 0 1 1 0 0 1 2 0Zm-1 2.75a.75.75 0 0 1 .75.75v5a.75.75 0 1 1-1.5 0v-5a.75.75 0 0 1 .75-.75Z" clipRule="evenodd" />
+        <path
+          fillRule="evenodd"
+          d="M9.73 3.993a2.749 2.749 0 0 1 4.54 0l.432.632a75.951 75.951 0 0 1 6.944 12.563l.09.208a2.511 2.511 0 0 1-2.024 3.497 69.43 69.43 0 0 1-15.424 0 2.511 2.511 0 0 1-2.024-3.497l.09-.208A75.95 75.95 0 0 1 9.298 4.625l.432-.632ZM13 9a1 1 0 1 1-2 0 1 1 0 0 1 2 0Zm-1 2.75a.75.75 0 0 1 .75.75v5a.75.75 0 1 1-1.5 0v-5a.75.75 0 0 1 .75-.75Z"
+          clipRule="evenodd"
+        />
       </svg>
     ),
 
     bell: ({ className, size }: IconProps) => (
       <svg
-        className={`${getSizeClasses(size)} ${className || ''}`}
+        className={`${getSizeClasses(size)} ${className || ""}`}
         viewBox="0 0 24 24"
         fill="currentColor"
         strokeWidth={1.5}
@@ -291,32 +334,40 @@ export const SystemIcons = {
         strokeLinejoin="round"
       >
         <path d="M15.75 21a.75.75 0 0 1-.75.75H9a.75.75 0 1 1 0-1.5h6a.75.75 0 0 1 .75.75Zm3.731-10.5A7.472 7.472 0 0 0 12.056 3H12a7.49 7.49 0 0 0-7.481 7.5c0 3.215-.666 5.034-1.22 5.99A1.52 1.52 0 0 0 3.292 18a1.49 1.49 0 0 0 1.303.75h14.812a1.491 1.491 0 0 0 1.5-1.506 1.52 1.52 0 0 0-.206-.754c-.553-.956-1.219-2.775-1.219-5.99Zm1.94-4.631a10.472 10.472 0 0 0-3.824-4.257.752.752 0 0 0-.797 1.275 9.093 9.093 0 0 1 3.281 3.638.741.741 0 0 0 .675.422.872.872 0 0 0 .328-.075.75.75 0 0 0 .338-1.003ZM3.92 6.525A9.094 9.094 0 0 1 7.2 2.887a.752.752 0 1 0-.796-1.275A10.472 10.472 0 0 0 2.578 5.87a.75.75 0 0 0 .338 1.003.872.872 0 0 0 .328.075.74.74 0 0 0 .675-.422Z" />
-  </svg>
+      </svg>
     ),
-    
-    back: ({ className, size, color = 'var(--color-rojo-una-2)' }: IconProps) => (
+
+    back: ({
+      className,
+      size,
+      color = "var(--color-rojo-una-2)",
+    }: IconProps) => (
       <svg
-        className={`${getSizeClasses(size)} ${className || ''}`}
+        className={`${getSizeClasses(size)} ${className || ""}`}
         viewBox="0 0 24 24"
         fill={color}
       >
         <path d="M20.446 16.06a.5.5 0 0 1-.655.68l-2.5-1.153a14.381 14.381 0 0 0-6.681-1.309 61.43 61.43 0 0 1-.121 2.204l-.069.938a.754.754 0 0 1-1.158.581 19.55 19.55 0 0 1-5.351-5.068l-.46-.64a.5.5 0 0 1 0-.584l.46-.64A19.55 19.55 0 0 1 9.262 6a.754.754 0 0 1 1.158.58l.069.94c.046.63.082 1.26.108 1.89h.644a9.5 9.5 0 0 1 8.475 5.209l.73 1.442Z" />
-        </svg>
+      </svg>
     ),
 
     refresh: ({ className, size, color }: IconProps) => (
       <svg
-        className={`${getSizeClasses(size)} ${className || ''}`}
+        className={`${getSizeClasses(size)} ${className || ""}`}
         viewBox="0 0 24 24"
         fill={color || "currentColor"}
       >
-        <path fillRule="evenodd" d="M4.755 10.059a7.5 7.5 0 0112.548-3.364l1.903 1.903h-3.183a.75.75 0 100 1.5h4.992a.75.75 0 00.75-.75V4.356a.75.75 0 00-1.5 0v3.18l-1.9-1.9A9 9 0 003.306 9.67a.75.75 0 101.45.388zm15.408 3.352a.75.75 0 00-.919.53 7.5 7.5 0 01-12.548 3.364l-1.902-1.903h3.183a.75.75 0 000-1.5H2.984a.75.75 0 00-.75.75v4.992a.75.75 0 001.5 0v-3.18l1.9 1.9a9 9 0 0015.059-4.035.75.75 0 00-.53-.918z" clipRule="evenodd" />
+        <path
+          fillRule="evenodd"
+          d="M4.755 10.059a7.5 7.5 0 0112.548-3.364l1.903 1.903h-3.183a.75.75 0 100 1.5h4.992a.75.75 0 00.75-.75V4.356a.75.75 0 00-1.5 0v3.18l-1.9-1.9A9 9 0 003.306 9.67a.75.75 0 101.45.388zm15.408 3.352a.75.75 0 00-.919.53 7.5 7.5 0 01-12.548 3.364l-1.902-1.903h3.183a.75.75 0 000-1.5H2.984a.75.75 0 00-.75.75v4.992a.75.75 0 001.5 0v-3.18l1.9 1.9a9 9 0 0015.059-4.035.75.75 0 00-.53-.918z"
+          clipRule="evenodd"
+        />
       </svg>
     ),
 
-    link: ({ className, size, color = 'currentColor' }: IconProps) => (
+    link: ({ className, size, color = "currentColor" }: IconProps) => (
       <svg
-        className={`${getSizeClasses(size)} ${className || ''}`}
+        className={`${getSizeClasses(size)} ${className || ""}`}
         viewBox="0 0 24 24"
         fill="none"
         stroke={color}
@@ -330,27 +381,27 @@ export const SystemIcons = {
     ),
 
     uploadArrow: ({ className, size, color }: IconProps) => (
-        <svg
-          className={`${getSizeClasses(size)} ${className || ''}`}
-          viewBox="0 0 24 24"
-          fill={color || "currentColor"}
-        >
-          <path
-            fillRule="evenodd"
-            d="M5 16.25a.75.75 0 0 1 .75.75v2c0 .138.112.25.25.25h12a.25.25 0 0 0 .25-.25v-2a.75.75 0 0 1 1.5 0v2A1.75 1.75 0 0 1 18 20.75H6A1.75 1.75 0 0 1 4.25 19v-2a.75.75 0 0 1 .75-.75Z"
-            clipRule="evenodd"
-          />
-          <path
-            fillRule="evenodd"
-            d="M10.738 16.127a.992.992 0 0 1-.989-.905 36.618 36.618 0 0 1-.08-5.27c-.248-.014-.495-.03-.741-.048l-1.49-.109a.76.76 0 0 1-.585-1.167 15.555 15.555 0 0 1 4.032-4.258l.597-.429a.888.888 0 0 1 1.036 0l.597.43a15.556 15.556 0 0 1 4.032 4.257.76.76 0 0 1-.585 1.167l-1.49.109c-.246.018-.493.034-.74.047.1 1.757.072 3.518-.082 5.27a.992.992 0 0 1-.988.906h-2.524Z"
-            clipRule="evenodd"
-          />
-        </svg>
+      <svg
+        className={`${getSizeClasses(size)} ${className || ""}`}
+        viewBox="0 0 24 24"
+        fill={color || "currentColor"}
+      >
+        <path
+          fillRule="evenodd"
+          d="M5 16.25a.75.75 0 0 1 .75.75v2c0 .138.112.25.25.25h12a.25.25 0 0 0 .25-.25v-2a.75.75 0 0 1 1.5 0v2A1.75 1.75 0 0 1 18 20.75H6A1.75 1.75 0 0 1 4.25 19v-2a.75.75 0 0 1 .75-.75Z"
+          clipRule="evenodd"
+        />
+        <path
+          fillRule="evenodd"
+          d="M10.738 16.127a.992.992 0 0 1-.989-.905 36.618 36.618 0 0 1-.08-5.27c-.248-.014-.495-.03-.741-.048l-1.49-.109a.76.76 0 0 1-.585-1.167 15.555 15.555 0 0 1 4.032-4.258l.597-.429a.888.888 0 0 1 1.036 0l.597.43a15.556 15.556 0 0 1 4.032 4.257.76.76 0 0 1-.585 1.167l-1.49.109c-.246.018-.493.034-.74.047.1 1.757.072 3.518-.082 5.27a.992.992 0 0 1-.988.906h-2.524Z"
+          clipRule="evenodd"
+        />
+      </svg>
     ),
 
     calendar: ({ className, size }: IconProps) => (
       <svg
-        className={`${getSizeClasses(size)} ${className || ''}`}
+        className={`${getSizeClasses(size)} ${className || ""}`}
         viewBox="0 0 24 24"
         fill="currentColor"
       >
@@ -362,7 +413,7 @@ export const SystemIcons = {
     /** Reloj - Para estados pendientes y tiempos de espera */
     clock: ({ className, size, color }: IconProps) => (
       <svg
-        className={`${getSizeClasses(size)} ${className || ''}`}
+        className={`${getSizeClasses(size)} ${className || ""}`}
         viewBox="0 0 24 24"
         fill={color || "currentColor"}
       >
@@ -372,7 +423,7 @@ export const SystemIcons = {
 
     hourglass: ({ className, size, color }: IconProps) => (
       <svg
-        className={`${getSizeClasses(size)} ${className || ''}`}
+        className={`${getSizeClasses(size)} ${className || ""}`}
         viewBox="0 0 24 24"
         fill={color || "currentColor"}
       >
@@ -383,7 +434,7 @@ export const SystemIcons = {
     /** Ciclo/reinicio - Para marcar como en progreso */
     inProgress: ({ className, size, color }: IconProps) => (
       <svg
-        className={`${getSizeClasses(size)} ${className || ''}`}
+        className={`${getSizeClasses(size)} ${className || ""}`}
         viewBox="0 0 24 24"
         fill="none"
         stroke={color || "currentColor"}
@@ -402,7 +453,7 @@ export const SystemIcons = {
     /** Chevron down - Para dropdowns y secciones colapsables */
     chevronDown: ({ className, size, color }: IconProps) => (
       <svg
-        className={`${getSizeClasses(size)} ${className || ''}`}
+        className={`${getSizeClasses(size)} ${className || ""}`}
         viewBox="0 0 24 24"
         fill="none"
         stroke={color || "currentColor"}
@@ -419,7 +470,7 @@ export const SystemIcons = {
     /** Chevron up - Para dropdowns y ordenamiento ascendente */
     chevronUp: ({ className, size, color }: IconProps) => (
       <svg
-        className={`${getSizeClasses(size)} ${className || ''}`}
+        className={`${getSizeClasses(size)} ${className || ""}`}
         viewBox="0 0 24 24"
         fill="none"
         stroke={color || "currentColor"}
@@ -436,7 +487,7 @@ export const SystemIcons = {
     /** Chevron left - Para navegación hacia atrás y paginación */
     chevronLeft: ({ className, size, color }: IconProps) => (
       <svg
-        className={`${getSizeClasses(size)} ${className || ''}`}
+        className={`${getSizeClasses(size)} ${className || ""}`}
         viewBox="0 0 24 24"
         fill="none"
         stroke={color || "currentColor"}
@@ -453,7 +504,7 @@ export const SystemIcons = {
     /** Chevron right - Para navegación hacia adelante y paginación */
     chevronRight: ({ className, size, color }: IconProps) => (
       <svg
-        className={`${getSizeClasses(size)} ${className || ''}`}
+        className={`${getSizeClasses(size)} ${className || ""}`}
         viewBox="0 0 24 24"
         fill="none"
         stroke={color || "currentColor"}
@@ -470,20 +521,20 @@ export const SystemIcons = {
     /** Filter - Para filtros y opciones de filtrado */
     filter: ({ className, size, color }: IconProps) => (
       <svg
-        className={`${getSizeClasses(size)} ${className || ''}`}
+        className={`${getSizeClasses(size)} ${className || ""}`}
         viewBox="0 0 24 24"
         fill={color || "currentColor"}
       >
         <path d="M18.523 4.226a58.727 58.727 0 0 0-13.046 0 1.373 1.373 0 0 0-.915 2.229l3.769 4.659A7.5 7.5 0 0 1 10 15.83v3.142a.75.75 0 0 0 .306.605l2.77 2.032a.58.58 0 0 0 .924-.468V15.83a7.5 7.5 0 0 1 1.669-4.717l3.769-4.66a1.373 1.373 0 0 0-.915-2.228Z" />
-  </svg>
+      </svg>
     ),
 
     // ===== ICONOS ESPECÍFICOS PARA MODALES =====
-    
+
     /** Círculo de información - Para mensajes informativos */
     informationCircle: ({ className, size }: IconProps) => (
       <svg
-        className={`${getSizeClasses(size)} ${className || ''}`}
+        className={`${getSizeClasses(size)} ${className || ""}`}
         viewBox="0 0 24 24"
         fill="currentColor"
       >
@@ -498,7 +549,7 @@ export const SystemIcons = {
     /** Círculo con check - Para mensajes de éxito */
     checkCircle: ({ className, size }: IconProps) => (
       <svg
-        className={`${getSizeClasses(size)} ${className || ''}`}
+        className={`${getSizeClasses(size)} ${className || ""}`}
         viewBox="0 0 24 24"
         fill="currentColor"
       >
@@ -509,7 +560,7 @@ export const SystemIcons = {
     /** Círculo con X - Para mensajes de error o rechazo */
     xCircle: ({ className, size }: IconProps) => (
       <svg
-        className={`${getSizeClasses(size)} ${className || ''}`}
+        className={`${getSizeClasses(size)} ${className || ""}`}
         viewBox="0 0 24 24"
         fill="currentColor"
       >
@@ -520,7 +571,7 @@ export const SystemIcons = {
     /** Check simple - Para items seleccionados en dropdowns/listas */
     check: ({ className, size, color }: IconProps) => (
       <svg
-        className={`${getSizeClasses(size)} ${className || ''}`}
+        className={`${getSizeClasses(size)} ${className || ""}`}
         fill={color || "currentColor"}
         viewBox="0 0 20 20"
       >
@@ -530,15 +581,14 @@ export const SystemIcons = {
           clipRule="evenodd"
         />
       </svg>
-    )
+    ),
   },
 
   // ===== NAVEGACIÓN =====
   navigation: {
-
     light: ({ className, size, color }: IconProps) => (
       <svg
-        className={`${getSizeClasses(size)} ${className || ''}`}
+        className={`${getSizeClasses(size)} ${className || ""}`}
         viewBox="0 0 24 24"
         fill={color || "currentColor"}
       >
@@ -548,7 +598,7 @@ export const SystemIcons = {
 
     home: ({ className, size, color }: IconProps) => (
       <svg
-        className={`${getSizeClasses(size)} ${className || ''}`}
+        className={`${getSizeClasses(size)} ${className || ""}`}
         viewBox="0 0 24 24"
         fill={color || "currentColor"}
       >
@@ -558,7 +608,7 @@ export const SystemIcons = {
 
     auditLog: ({ className, size, color }: IconProps) => (
       <svg
-        className={`${getSizeClasses(size)} ${className || ''}`}
+        className={`${getSizeClasses(size)} ${className || ""}`}
         viewBox="0 0 24 24"
         fill={color || "currentColor"}
       >
@@ -569,7 +619,7 @@ export const SystemIcons = {
     arrow: {
       left: ({ className, size, color }: IconProps) => (
         <svg
-          className={`${getSizeClasses(size)} ${className || ''}`}
+          className={`${getSizeClasses(size)} ${className || ""}`}
           viewBox="0 0 24 24"
           fill="none"
           stroke={color || "currentColor"}
@@ -585,31 +635,35 @@ export const SystemIcons = {
 
       right: ({ className, size, color }: IconProps) => (
         <svg
-          className={`${getSizeClasses(size)} ${className || ''}`}
+          className={`${getSizeClasses(size)} ${className || ""}`}
           viewBox="0 0 24 24"
           fill={color || "currentColor"}
         >
-          <path fillRule="evenodd" d="M3.75 12a.75.75 0 01.75-.75h13.19l-5.47-5.47a.75.75 0 011.06-1.06l6.75 6.75a.75.75 0 010 1.06l-6.75 6.75a.75.75 0 11-1.06-1.06l5.47-5.47H4.5a.75.75 0 01-.75-.75z" clipRule="evenodd" />
+          <path
+            fillRule="evenodd"
+            d="M3.75 12a.75.75 0 01.75-.75h13.19l-5.47-5.47a.75.75 0 011.06-1.06l6.75 6.75a.75.75 0 010 1.06l-6.75 6.75a.75.75 0 11-1.06-1.06l5.47-5.47H4.5a.75.75 0 01-.75-.75z"
+            clipRule="evenodd"
+          />
         </svg>
-      )
+      ),
     },
 
     reports: ({ className, size, color }: IconProps) => (
       <svg
-        className={`${getSizeClasses(size)} ${className || ''}`}
+        className={`${getSizeClasses(size)} ${className || ""}`}
         viewBox="0 0 24 24"
         fill={color || "currentColor"}
       >
         <path d="M19.5 3h-15A1.5 1.5 0 0 0 3 4.5v15A1.5 1.5 0 0 0 4.5 21h15a1.5 1.5 0 0 0 1.5-1.5v-15A1.5 1.5 0 0 0 19.5 3Zm-12 16.5h-3v-15h3v15Zm9-5.25h-6a.75.75 0 1 1 0-1.5h6a.75.75 0 1 1 0 1.5Zm0-3h-6a.75.75 0 1 1 0-1.5h6a.75.75 0 1 1 0 1.5Z" />
       </svg>
-    )
+    ),
   },
 
   // ===== USUARIOS Y ROLES =====
   users: {
     user: ({ className, size, color }: IconProps) => (
       <svg
-        className={`${getSizeClasses(size)} ${className || ''}`}
+        className={`${getSizeClasses(size)} ${className || ""}`}
         viewBox="0 0 24 24"
         fill={color || "currentColor"}
       >
@@ -620,31 +674,35 @@ export const SystemIcons = {
 
     roles: ({ className, size, color }: IconProps) => (
       <svg
-        className={`${getSizeClasses(size)} ${className || ''}`}
+        className={`${getSizeClasses(size)} ${className || ""}`}
         viewBox="0 0 24 24"
         fill={color || "currentColor"}
       >
         <path d="M13.16 4.407a2.25 2.25 0 0 0-2.32 0l-.517.311a9.75 9.75 0 0 1-4.115 1.354l-.325.031A1.25 1.25 0 0 0 4.75 7.347v1.644a10.25 10.25 0 0 0 3.126 7.37l3.255 3.147a1.25 1.25 0 0 0 1.738 0l3.255-3.147a10.25 10.25 0 0 0 3.126-7.37V7.347a1.25 1.25 0 0 0-1.133-1.244l-.325-.03a9.75 9.75 0 0 1-4.115-1.355l-.516-.31Z" />
       </svg>
-    )
+    ),
   },
 
   // ===== TRABAJO Y REPORTES =====
   work: {
     bag: ({ className, size, color }: IconProps) => (
       <svg
-        className={`${getSizeClasses(size)} ${className || ''}`}
+        className={`${getSizeClasses(size)} ${className || ""}`}
         viewBox="0 0 24 24"
         fill={color || "currentColor"}
       >
-        <path fillRule="evenodd" d="M7.25 5.461v1.42l-1.694.138a2.61 2.61 0 0 0-2.367 2.184c-.041.258-.08.516-.114.775a.298.298 0 0 0 .169.308l.077.036c5.429 2.57 11.93 2.57 17.358 0l.077-.036a.298.298 0 0 0 .168-.308 26.748 26.748 0 0 0-.113-.775 2.61 2.61 0 0 0-2.367-2.184l-1.694-.137v-1.42a1.75 1.75 0 0 0-1.49-1.731l-1.22-.183a13.75 13.75 0 0 0-4.08 0l-1.22.183a1.75 1.75 0 0 0-1.49 1.73Zm6.567-.43a12.25 12.25 0 0 0-3.634 0l-1.22.183a.25.25 0 0 0-.213.247v1.315a56.826 56.826 0 0 1 6.5 0V5.461a.25.25 0 0 0-.213-.247l-1.22-.183Z" clipRule="evenodd" />
+        <path
+          fillRule="evenodd"
+          d="M7.25 5.461v1.42l-1.694.138a2.61 2.61 0 0 0-2.367 2.184c-.041.258-.08.516-.114.775a.298.298 0 0 0 .169.308l.077.036c5.429 2.57 11.93 2.57 17.358 0l.077-.036a.298.298 0 0 0 .168-.308 26.748 26.748 0 0 0-.113-.775 2.61 2.61 0 0 0-2.367-2.184l-1.694-.137v-1.42a1.75 1.75 0 0 0-1.49-1.731l-1.22-.183a13.75 13.75 0 0 0-4.08 0l-1.22.183a1.75 1.75 0 0 0-1.49 1.73Zm6.567-.43a12.25 12.25 0 0 0-3.634 0l-1.22.183a.25.25 0 0 0-.213.247v1.315a56.826 56.826 0 0 1 6.5 0V5.461a.25.25 0 0 0-.213-.247l-1.22-.183Z"
+          clipRule="evenodd"
+        />
         <path d="M21.118 12.07a.2.2 0 0 0-.282-.17c-5.571 2.467-12.101 2.467-17.672 0a.2.2 0 0 0-.282.17 26.88 26.88 0 0 0 .307 5.727 2.61 2.61 0 0 0 2.367 2.184l1.872.152c3.043.245 6.1.245 9.144 0l1.872-.151a2.61 2.61 0 0 0 2.367-2.185c.306-1.895.41-3.815.307-5.726Z" />
       </svg>
     ),
 
     assignEvidence: ({ className, size, color }: IconProps) => (
       <svg
-        className={`${getSizeClasses(size)} ${className || ''}`}
+        className={`${getSizeClasses(size)} ${className || ""}`}
         viewBox="0 0 24 24"
         fill={color || "currentColor"}
       >
@@ -655,19 +713,19 @@ export const SystemIcons = {
 
     myEvidences: ({ className, size, color }: IconProps) => (
       <svg
-        className={`${getSizeClasses(size)} ${className || ''}`}
+        className={`${getSizeClasses(size)} ${className || ""}`}
         viewBox="0 0 24 24"
         fill={color || "currentColor"}
       >
         <path d="m20.034 6.216-3.75-3.75a.76.76 0 0 0-.534-.216h-7.5a1.5 1.5 0 0 0-1.5 1.5v1.5h-1.5a1.5 1.5 0 0 0-1.5 1.5v13.5a1.5 1.5 0 0 0 1.5 1.5h10.5a1.5 1.5 0 0 0 1.5-1.5v-1.5h1.5a1.5 1.5 0 0 0 1.5-1.5V6.75a.76.76 0 0 0-.216-.534ZM12.75 18h-4.5a.75.75 0 1 1 0-1.5h4.5a.75.75 0 1 1 0 1.5Zm0-3h-4.5a.75.75 0 1 1 0-1.5h4.5a.75.75 0 1 1 0 1.5Zm6 2.25h-1.5v-7.5a.76.76 0 0 0-.216-.534l-3.75-3.75a.76.76 0 0 0-.534-.216h-4.5v-1.5h7.19l3.31 3.31v10.19Z" />
       </svg>
-    )
+    ),
   },
   // ===== REPOSITORIO =====
   repository: {
     boxArchive: ({ className, size, color }: IconProps) => (
       <svg
-        className={`${getSizeClasses(size)} ${className || ''}`}
+        className={`${getSizeClasses(size)} ${className || ""}`}
         viewBox="0 0 24 24"
         fill={color || "currentColor"}
       >
@@ -677,13 +735,13 @@ export const SystemIcons = {
           clipRule="evenodd"
         />
       </svg>
-    )
+    ),
   },
   // ===== MODALES =====
-  modal:{
+  modal: {
     document: ({ className, size }: IconProps) => (
       <svg
-        className={`${getSizeClasses(size)} ${className || ''}`}
+        className={`${getSizeClasses(size)} ${className || ""}`}
         viewBox="0 0 24 24"
         fill="currentColor"
       >
@@ -698,7 +756,7 @@ export const SystemIcons = {
     ),
     pdf: ({ className, size, color }: IconProps) => (
       <svg
-        className={`${getSizeClasses(size)} ${className || ''}`}
+        className={`${getSizeClasses(size)} ${className || ""}`}
         viewBox="0 0 24 24"
         fill={color || "currentColor"}
       >
@@ -707,7 +765,7 @@ export const SystemIcons = {
     ),
     excel: ({ className, size, color }: IconProps) => (
       <svg
-        className={`${getSizeClasses(size)} ${className || ''}`}
+        className={`${getSizeClasses(size)} ${className || ""}`}
         viewBox="0 0 24 24"
         fill={color || "currentColor"}
       >
@@ -716,20 +774,20 @@ export const SystemIcons = {
     ),
     key: ({ className, size, color }: IconProps) => (
       <svg
-        className={`${getSizeClasses(size)} ${className || ''}`}
+        className={`${getSizeClasses(size)} ${className || ""}`}
         viewBox="0 0 24 24"
         fill={color || "currentColor"}
       >
-          <path d="M12 2.25A9.75 9.75 0 1 0 21.75 12 9.769 9.769 0 0 0 12 2.25Zm0 18A8.25 8.25 0 1 1 20.25 12 8.26 8.26 0 0 1 12 20.25Zm1.725-7.669 1.172 2.728a1.125 1.125 0 0 1-1.031 1.566h-3.732a1.125 1.125 0 0 1-1.03-1.566l1.171-2.728a3 3 0 0 1 .822-5.315 3 3 0 0 1 2.628 5.315Z" />
+        <path d="M12 2.25A9.75 9.75 0 1 0 21.75 12 9.769 9.769 0 0 0 12 2.25Zm0 18A8.25 8.25 0 1 1 20.25 12 8.26 8.26 0 0 1 12 20.25Zm1.725-7.669 1.172 2.728a1.125 1.125 0 0 1-1.031 1.566h-3.732a1.125 1.125 0 0 1-1.03-1.566l1.171-2.728a3 3 0 0 1 .822-5.315 3 3 0 0 1 2.628 5.315Z" />
       </svg>
     ),
   },
 
-// ===== AUTENTICACIÓN =====
+  // ===== AUTENTICACIÓN =====
   auth: {
     lock: ({ className, size, color }: IconProps) => (
       <svg
-        className={`${getSizeClasses(size)} ${className || ''}`}
+        className={`${getSizeClasses(size)} ${className || ""}`}
         viewBox="0 0 24 24"
         fill={color || "currentColor"}
       >
@@ -743,7 +801,7 @@ export const SystemIcons = {
 
     Eye: ({ className, size, color }: IconProps) => (
       <svg
-        className={`${getSizeClasses(size)} ${className || ''}`}
+        className={`${getSizeClasses(size)} ${className || ""}`}
         viewBox="0 0 24 24"
         fill={color || "currentColor"}
       >
@@ -758,7 +816,7 @@ export const SystemIcons = {
 
     EyeSlash: ({ className, size, color }: IconProps) => (
       <svg
-        className={`${getSizeClasses(size)} ${className || ''}`}
+        className={`${getSizeClasses(size)} ${className || ""}`}
         viewBox="0 0 24 24"
         fill={color || "currentColor"}
       >
@@ -770,7 +828,7 @@ export const SystemIcons = {
 
     AlertCircle: ({ className, size, color }: IconProps) => (
       <svg
-        className={`${getSizeClasses(size)} ${className || ''}`}
+        className={`${getSizeClasses(size)} ${className || ""}`}
         viewBox="0 0 24 24"
         fill={color || "currentColor"}
       >
@@ -787,7 +845,7 @@ export const SystemIcons = {
   structure: {
     trashCan: ({ className, size, color }: IconProps) => (
       <svg
-        className={`${getSizeClasses(size)} ${className || ''}`}
+        className={`${getSizeClasses(size)} ${className || ""}`}
         viewBox="0 0 24 24"
         fill={color || "currentColor"}
       >
@@ -797,17 +855,18 @@ export const SystemIcons = {
           d="M6.24 7.945a.5.5 0 0 1 .497-.445h10.526a.5.5 0 0 1 .497.445l.2 1.801a44.213 44.213 0 0 1 0 9.771l-.02.177a2.603 2.603 0 0 1-2.226 2.29 26.788 26.788 0 0 1-7.428 0 2.603 2.603 0 0 1-2.227-2.29l-.02-.177a44.239 44.239 0 0 1 0-9.77l.2-1.802Zm8.29 4.525a.75.75 0 0 1 0 1.06L13.06 15l1.47 1.47a.75.75 0 1 1-1.06 1.06L12 16.06l-1.47 1.47a.75.75 0 1 1-1.06-1.06L10.94 15l-1.47-1.47a.75.75 0 1 1 1.06-1.06L12 13.94l1.47-1.47a.75.75 0 0 1 1.06 0Z"
           clipRule="evenodd"
         />
-
       </svg>
     ),
 
     create: ({ className, size, color }: IconProps) => (
       <svg
-        className={`${getSizeClasses(size)} ${className || ''}`}
+        className={`${getSizeClasses(size)} ${className || ""}`}
         viewBox="0 0 24 24"
         fill={color || "currentColor"}
       >
-        <path fillRule="evenodd" d="M7.345 4.017a42.253 42.253 0 0 1 9.31 0c1.713.192 3.095 1.541 3.296 3.26a40.66 40.66 0 0 1 0 9.445 3.734 3.734 0 0 1-3.296 3.26 42.123 42.123 0 0 1-9.31 0 3.734 3.734 0 0 1-3.296-3.26 40.652 40.652 0 0 1 0-9.444 3.734 3.734 0 0 1 3.295-3.26ZM12 7.007a.75.75 0 0 1 .75.75v3.493h3.493a.75.75 0 1 1 0 1.5H12.75v3.493a.75.75 0 0 1-1.5 0V12.75H7.757a.75.75 0 0 1 0-1.5h3.493V7.757a.75.75 0 0 1 .75-.75Z"
+        <path
+          fillRule="evenodd"
+          d="M7.345 4.017a42.253 42.253 0 0 1 9.31 0c1.713.192 3.095 1.541 3.296 3.26a40.66 40.66 0 0 1 0 9.445 3.734 3.734 0 0 1-3.296 3.26 42.123 42.123 0 0 1-9.31 0 3.734 3.734 0 0 1-3.296-3.26 40.652 40.652 0 0 1 0-9.444 3.734 3.734 0 0 1 3.295-3.26ZM12 7.007a.75.75 0 0 1 .75.75v3.493h3.493a.75.75 0 1 1 0 1.5H12.75v3.493a.75.75 0 0 1-1.5 0V12.75H7.757a.75.75 0 0 1 0-1.5h3.493V7.757a.75.75 0 0 1 .75-.75Z"
           clipRule="evenodd"
         />
       </svg>
@@ -815,7 +874,7 @@ export const SystemIcons = {
 
     editElement: ({ className, size, color }: IconProps) => (
       <svg
-        className={`${getSizeClasses(size)} ${className || ''}`}
+        className={`${getSizeClasses(size)} ${className || ""}`}
         viewBox="0 0 24 24"
         fill={color || "currentColor"}
       >
@@ -826,7 +885,7 @@ export const SystemIcons = {
 
     nut: ({ className, size, color }: IconProps) => (
       <svg
-        className={`${getSizeClasses(size)} ${className || ''}`}
+        className={`${getSizeClasses(size)} ${className || ""}`}
         viewBox="0 0 24 24"
         fill={color || "currentColor"}
       >
@@ -838,49 +897,138 @@ export const SystemIcons = {
         />
       </svg>
     ),
+
+    hierarchy: ({ className, size, color }: IconProps) => (
+      <svg
+        className={`${getSizeClasses(size)} ${className || ""}`}
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke={color || "currentColor"}
+        strokeWidth={1.5}
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      >
+        <path
+          d="M8.571 2.857h6.858v5.714H8.57V2.857Z"
+          clipRule="evenodd"
+        ></path>
+        <path
+          d="M14.286 15.429h6.857v5.714h-6.857v-5.714Z"
+          clipRule="evenodd"
+        ></path>
+        <path
+          d="M2.857 15.429h6.857v5.714H2.857v-5.714Z"
+          clipRule="evenodd"
+        ></path>
+        <path d="M6.283 15.429V12h11.429v3.429"></path>
+        <path d="M12 12V8.571"></path>
+      </svg>
+    ),
   },
 
   // ===== TIPOS DE ARCHIVO =====
   fileTypes: {
     document: ({ className, size }: IconProps) => (
-      <svg className={`${getSizeClasses(size)} text-red-500 ${className || ''}`} fill="currentColor" viewBox="0 0 20 20">
-        <path fillRule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4zm2 6a1 1 0 011-1h6a1 1 0 110 2H7a1 1 0 01-1-1zm1 3a1 1 0 100 2h6a1 1 0 100-2H7z" clipRule="evenodd" />
+      <svg
+        className={`${getSizeClasses(size)} text-red-500 ${className || ""}`}
+        fill="currentColor"
+        viewBox="0 0 20 20"
+      >
+        <path
+          fillRule="evenodd"
+          d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4zm2 6a1 1 0 011-1h6a1 1 0 110 2H7a1 1 0 01-1-1zm1 3a1 1 0 100 2h6a1 1 0 100-2H7z"
+          clipRule="evenodd"
+        />
       </svg>
     ),
     spreadsheet: ({ className, size }: IconProps) => (
-      <svg className={`${getSizeClasses(size)} text-green-600 ${className || ''}`} fill="currentColor" viewBox="0 0 20 20">
-        <path fillRule="evenodd" d="M4 4a2 2 0 012-2h8a2 2 0 012 2v12a2 2 0 01-2 2H6a2 2 0 01-2-2V4zm2 0h8v4H6V4zm0 6h3v6H6v-6zm5 0h3v6h-3v-6z" clipRule="evenodd" />
+      <svg
+        className={`${getSizeClasses(size)} text-green-600 ${className || ""}`}
+        fill="currentColor"
+        viewBox="0 0 20 20"
+      >
+        <path
+          fillRule="evenodd"
+          d="M4 4a2 2 0 012-2h8a2 2 0 012 2v12a2 2 0 01-2 2H6a2 2 0 01-2-2V4zm2 0h8v4H6V4zm0 6h3v6H6v-6zm5 0h3v6h-3v-6z"
+          clipRule="evenodd"
+        />
       </svg>
     ),
     presentation: ({ className, size }: IconProps) => (
-      <svg className={`${getSizeClasses(size)} text-orange-500 ${className || ''}`} fill="currentColor" viewBox="0 0 20 20">
-        <path fillRule="evenodd" d="M3 5a2 2 0 012-2h10a2 2 0 012 2v8a2 2 0 01-2 2h-2.22l.123.489.804.804A1 1 0 0113 18H7a1 1 0 01-.707-1.707l.804-.804L7.22 15H5a2 2 0 01-2-2V5zm5.771 7H5V5h10v7H8.771z" clipRule="evenodd" />
+      <svg
+        className={`${getSizeClasses(size)} text-orange-500 ${className || ""}`}
+        fill="currentColor"
+        viewBox="0 0 20 20"
+      >
+        <path
+          fillRule="evenodd"
+          d="M3 5a2 2 0 012-2h10a2 2 0 012 2v8a2 2 0 01-2 2h-2.22l.123.489.804.804A1 1 0 0113 18H7a1 1 0 01-.707-1.707l.804-.804L7.22 15H5a2 2 0 01-2-2V5zm5.771 7H5V5h10v7H8.771z"
+          clipRule="evenodd"
+        />
       </svg>
     ),
     image: ({ className, size }: IconProps) => (
-      <svg className={`${getSizeClasses(size)} text-purple-500 ${className || ''}`} fill="currentColor" viewBox="0 0 20 20">
-        <path fillRule="evenodd" d="M4 3a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V5a2 2 0 00-2-2H4zm12 12H4l4-8 3 6 2-4 3 6z" clipRule="evenodd" />
+      <svg
+        className={`${getSizeClasses(size)} text-purple-500 ${className || ""}`}
+        fill="currentColor"
+        viewBox="0 0 20 20"
+      >
+        <path
+          fillRule="evenodd"
+          d="M4 3a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V5a2 2 0 00-2-2H4zm12 12H4l4-8 3 6 2-4 3 6z"
+          clipRule="evenodd"
+        />
       </svg>
     ),
     video: ({ className, size }: IconProps) => (
-      <svg className={`${getSizeClasses(size)} text-pink-500 ${className || ''}`} fill="currentColor" viewBox="0 0 20 20">
+      <svg
+        className={`${getSizeClasses(size)} text-pink-500 ${className || ""}`}
+        fill="currentColor"
+        viewBox="0 0 20 20"
+      >
         <path d="M2 6a2 2 0 012-2h6a2 2 0 012 2v8a2 2 0 01-2 2H4a2 2 0 01-2-2V6zM14.553 7.106A1 1 0 0014 8v4a1 1 0 00.553.894l2 1A1 1 0 0018 13V7a1 1 0 00-1.447-.894l-2 1z" />
       </svg>
     ),
     archive: ({ className, size }: IconProps) => (
-      <svg className={`${getSizeClasses(size)} text-yellow-500 ${className || ''}`} fill="currentColor" viewBox="0 0 20 20">
+      <svg
+        className={`${getSizeClasses(size)} text-yellow-500 ${className || ""}`}
+        fill="currentColor"
+        viewBox="0 0 20 20"
+      >
         <path d="M4 3a2 2 0 100 4h12a2 2 0 100-4H4z" />
-        <path fillRule="evenodd" d="M3 8h14v7a2 2 0 01-2 2H5a2 2 0 01-2-2V8zm5 3a1 1 0 011-1h2a1 1 0 110 2H9a1 1 0 01-1-1z" clipRule="evenodd" />
+        <path
+          fillRule="evenodd"
+          d="M3 8h14v7a2 2 0 01-2 2H5a2 2 0 01-2-2V8zm5 3a1 1 0 011-1h2a1 1 0 110 2H9a1 1 0 01-1-1z"
+          clipRule="evenodd"
+        />
       </svg>
     ),
     link: ({ className, size }: IconProps) => (
-      <svg className={`${getSizeClasses(size)} text-azul-una ${className || ''}`} fill="none" stroke="currentColor" viewBox="0 0 20 20">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M11.536 8.464a4 4 0 00-5.657 0l-3 3a4 4 0 005.657 5.657l1.5-1.5m-.586-4.242a4 4 0 005.657 0l3-3a4 4 0 00-5.657-5.657l-1.5 1.5" />
+      <svg
+        className={`${getSizeClasses(size)} text-azul-una ${className || ""}`}
+        fill="none"
+        stroke="currentColor"
+        viewBox="0 0 20 20"
+      >
+        <path
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          strokeWidth={1.8}
+          d="M11.536 8.464a4 4 0 00-5.657 0l-3 3a4 4 0 005.657 5.657l1.5-1.5m-.586-4.242a4 4 0 005.657 0l3-3a4 4 0 00-5.657-5.657l-1.5 1.5"
+        />
       </svg>
     ),
     other: ({ className, size }: IconProps) => (
-      <svg className={`${getSizeClasses(size)} text-gris-una ${className || ''}`} fill="currentColor" viewBox="0 0 20 20">
-        <path fillRule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4z" clipRule="evenodd" />
+      <svg
+        className={`${getSizeClasses(size)} text-gris-una ${className || ""}`}
+        fill="currentColor"
+        viewBox="0 0 20 20"
+      >
+        <path
+          fillRule="evenodd"
+          d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4z"
+          clipRule="evenodd"
+        />
       </svg>
     ),
   },
@@ -889,88 +1037,173 @@ export const SystemIcons = {
   // Íconos circulares con color de fondo para las notificaciones toast
   toasts: {
     success: ({ className }: IconProps) => (
-      <div style={{ width: 20, height: 20, borderRadius: '50%', background: '#16a34a', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }} className={className}>
-        <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2 6l3 3 5-5" stroke="white" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/></svg>
+      <div
+        style={{
+          width: 20,
+          height: 20,
+          borderRadius: "50%",
+          background: "#16a34a",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          flexShrink: 0,
+        }}
+        className={className}
+      >
+        <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+          <path
+            d="M2 6l3 3 5-5"
+            stroke="white"
+            strokeWidth="1.8"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
+        </svg>
       </div>
     ),
     error: ({ className }: IconProps) => (
-      <div style={{ width: 20, height: 20, borderRadius: '50%', background: '#dc2626', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }} className={className}>
-        <svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M2 2l6 6M8 2l-6 6" stroke="white" strokeWidth="1.8" strokeLinecap="round"/></svg>
+      <div
+        style={{
+          width: 20,
+          height: 20,
+          borderRadius: "50%",
+          background: "#dc2626",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          flexShrink: 0,
+        }}
+        className={className}
+      >
+        <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
+          <path
+            d="M2 2l6 6M8 2l-6 6"
+            stroke="white"
+            strokeWidth="1.8"
+            strokeLinecap="round"
+          />
+        </svg>
       </div>
     ),
     warning: ({ className }: IconProps) => (
-      <div style={{ width: 20, height: 20, borderRadius: '50%', background: '#f59e0b', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }} className={className}>
-        <span style={{ color: 'white', fontSize: '13px', fontWeight: 'bold', lineHeight: 1 }}>!</span>
+      <div
+        style={{
+          width: 20,
+          height: 20,
+          borderRadius: "50%",
+          background: "#f59e0b",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          flexShrink: 0,
+        }}
+        className={className}
+      >
+        <span
+          style={{
+            color: "white",
+            fontSize: "13px",
+            fontWeight: "bold",
+            lineHeight: 1,
+          }}
+        >
+          !
+        </span>
       </div>
     ),
     info: ({ className }: IconProps) => (
-      <div style={{ width: 20, height: 20, borderRadius: '50%', background: '#3b82f6', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }} className={className}>
-        <span style={{ color: 'white', fontSize: '12px', fontWeight: 'bold', lineHeight: 1 }}>i</span>
+      <div
+        style={{
+          width: 20,
+          height: 20,
+          borderRadius: "50%",
+          background: "#3b82f6",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          flexShrink: 0,
+        }}
+        className={className}
+      >
+        <span
+          style={{
+            color: "white",
+            fontSize: "12px",
+            fontWeight: "bold",
+            lineHeight: 1,
+          }}
+        >
+          i
+        </span>
       </div>
     ),
   },
 };
 
 // Función auxiliar para obtener iconos por nombre (usado en navegación)
-export const getIconByName = (iconName: string, size: IconProps['size'] = 'md'): React.ReactElement | null => {
+export const getIconByName = (
+  iconName: string,
+  size: IconProps["size"] = "md",
+): React.ReactElement | null => {
   const iconMap: Record<string, () => React.ReactElement> = {
     // Navigation
-    'home': () => SystemIcons.navigation.home({ size }),
-    'lightbulb': () => SystemIcons.navigation.light({ size }),
-    'caret-left': () => SystemIcons.navigation.arrow.left({ size }),
-    'auditLog': () => SystemIcons.navigation.auditLog({ size }),
+    home: () => SystemIcons.navigation.home({ size }),
+    lightbulb: () => SystemIcons.navigation.light({ size }),
+    "caret-left": () => SystemIcons.navigation.arrow.left({ size }),
+    auditLog: () => SystemIcons.navigation.auditLog({ size }),
 
     // Actions
-    'add': () => SystemIcons.actions.add({ size }),
-    'edit-alt': () => SystemIcons.actions.edit({ size }),
-    'trash': () => SystemIcons.actions.delete({ size }),
-    'eye': () => SystemIcons.actions.view({ size }),
-    'power': () => SystemIcons.actions.power({ size }),
-    'list': () => SystemIcons.actions.list({ size }),
-    'comment': () => SystemIcons.actions.comment({ size }),
+    add: () => SystemIcons.actions.add({ size }),
+    "edit-alt": () => SystemIcons.actions.edit({ size }),
+    trash: () => SystemIcons.actions.delete({ size }),
+    eye: () => SystemIcons.actions.view({ size }),
+    power: () => SystemIcons.actions.power({ size }),
+    list: () => SystemIcons.actions.list({ size }),
+    comment: () => SystemIcons.actions.comment({ size }),
 
     // Users
-    'user': () => SystemIcons.users.user({ size }),
+    user: () => SystemIcons.users.user({ size }),
 
     // Work & Security
-    'shield': () => SystemIcons.users.roles({ size }), // Usando roles que tiene el shield
-    'bag': () => SystemIcons.work.bag({ size }),
-    'assignEvidence': () => SystemIcons.work.assignEvidence({ size }),
-    'myEvidences': () => SystemIcons.work.myEvidences({ size }),
+    shield: () => SystemIcons.users.roles({ size }), // Usando roles que tiene el shield
+    bag: () => SystemIcons.work.bag({ size }),
+    assignEvidence: () => SystemIcons.work.assignEvidence({ size }),
+    myEvidences: () => SystemIcons.work.myEvidences({ size }),
 
     // Structure - nuevos iconos
-    'nut': () => SystemIcons.structure.nut({ size }),
-    'plus': () => SystemIcons.structure.create({ size }),
-    'trash-can': () => SystemIcons.structure.trashCan({ size }),
-    'edit-element': () => SystemIcons.structure.editElement({ size }),
+    nut: () => SystemIcons.structure.nut({ size }),
+    plus: () => SystemIcons.structure.create({ size }),
+    "trash-can": () => SystemIcons.structure.trashCan({ size }),
+    "edit-element": () => SystemIcons.structure.editElement({ size }),
 
     // Interface
-    'info-triangle': () => SystemIcons.interface.alert({ size }),
-    'logout': () => SystemIcons.actions.logout({ size }),
-    'back': () => SystemIcons.interface.back({ size }),
-    'refresh': () => SystemIcons.interface.refresh({ size }),
-    'calendar': () => SystemIcons.interface.calendar({ size }),
-    'chevron-down': () => SystemIcons.interface.chevronDown({ size }),
-    'chevron-right': () => SystemIcons.interface.chevronRight({ size }),
-    'upload-arrow': () => SystemIcons.interface.uploadArrow({ size }),
-    'clock': () => SystemIcons.interface.clock({ size }),
-    'hourglass': () => SystemIcons.interface.hourglass({ size }),
-    'search': () => SystemIcons.interface.search({ size }),
+    "info-triangle": () => SystemIcons.interface.alert({ size }),
+    logout: () => SystemIcons.actions.logout({ size }),
+    back: () => SystemIcons.interface.back({ size }),
+    refresh: () => SystemIcons.interface.refresh({ size }),
+    calendar: () => SystemIcons.interface.calendar({ size }),
+    "chevron-down": () => SystemIcons.interface.chevronDown({ size }),
+    "chevron-right": () => SystemIcons.interface.chevronRight({ size }),
+    "upload-arrow": () => SystemIcons.interface.uploadArrow({ size }),
+    clock: () => SystemIcons.interface.clock({ size }),
+    hourglass: () => SystemIcons.interface.hourglass({ size }),
+    search: () => SystemIcons.interface.search({ size }),
 
     // Modal icons
-    'exclamation-triangle': () => SystemIcons.interface.alert({ size }),
-    'information-circle': () => SystemIcons.interface.informationCircle({ size }),
-    'check-circle': () => SystemIcons.interface.checkCircle({ size }),
-    'key': () => SystemIcons.modal.key({ size }),
-    'reports': () => SystemIcons.navigation.reports({ size }),
+    "exclamation-triangle": () => SystemIcons.interface.alert({ size }),
+    "information-circle": () =>
+      SystemIcons.interface.informationCircle({ size }),
+    "check-circle": () => SystemIcons.interface.checkCircle({ size }),
+    key: () => SystemIcons.modal.key({ size }),
+    reports: () => SystemIcons.navigation.reports({ size }),
 
     // Repository
-    'box-archive': () => SystemIcons.repository.boxArchive({ size }),
-    
+    "box-archive": () => SystemIcons.repository.boxArchive({ size }),
+
     // Work
-    'clipboard-list': () => SystemIcons.work.myEvidences({ size }),
-    'clipboard-check': () => SystemIcons.work.assignEvidence({ size }),
-    'magnifying-glass': () => SystemIcons.interface.search({ size })
+    "clipboard-list": () => SystemIcons.work.myEvidences({ size }),
+    "clipboard-check": () => SystemIcons.work.assignEvidence({ size }),
+    "magnifying-glass": () => SystemIcons.interface.search({ size }),
   };
 
   return iconMap[iconName] ? iconMap[iconName]() : null;

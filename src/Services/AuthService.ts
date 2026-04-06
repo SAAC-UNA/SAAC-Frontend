@@ -5,6 +5,7 @@
 
 import { config } from "@/Config/app.config";
 import { axiosInstance } from "@/Config/axios";
+import { clearOperationalContextIds } from "@/Services/OperationalContextStore";
 
 export class ValidationError extends Error {
   messages: string[];
@@ -165,6 +166,7 @@ export const authService = {
       sessionStorage.removeItem(AUTH_TOKEN_KEY);
       sessionStorage.removeItem(USER_DATA_KEY);
       sessionStorage.removeItem(SESSION_EXPIRATION_KEY);
+      clearOperationalContextIds();
       localStorage.removeItem(AUTH_TOKEN_KEY);
       localStorage.removeItem(USER_DATA_KEY);
     }

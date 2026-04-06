@@ -9,6 +9,7 @@ export const ROLE_MANAGEMENT_PERMISSIONS = [
 ];
 
 export const USER_MANAGEMENT_PERMISSIONS = [
+  "usuarios.view",
   "usuarios.create",
   "usuarios.edit",
   "usuarios.delete",

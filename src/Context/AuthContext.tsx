@@ -6,6 +6,7 @@
 import { createContext, useContext, useState, useEffect, useMemo } from "react";
 import type { ReactNode } from "react";
 import { authService, type User, type Career } from "@/Services/AuthService";
+import { clearOperationalContextIds } from "@/Services/OperationalContextStore";
 import { useSessionWatcher } from "@/Hooks/useSessionWatcher";
 import {
   evaluateAccess,
@@ -61,13 +62,17 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
     () => getUserPermissionNames(user?.all_permissions),
     [user],
   );
-  const userCapabilityNames = useMemo(() => user?.all_capabilities ?? [], [user]);
+  const userCapabilityNames = useMemo(
+    () => user?.all_capabilities ?? [],
+    [user],
+  );
 
   // Verificación de sesión al montar el provider
   useEffect(() => {
     const checkSession = async () => {
       const sessionUser = await authService.checkAuthStatus();
       setUser(sessionUser);
+
       setAuthChecked(true); // Marcamos que la verificación inicial terminó
     };
     checkSession();
@@ -94,6 +99,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
     setLoading(true);
     try {
       await authService.logout();
+      clearOperationalContextIds();
       setUser(null);
       setError(null);
     } catch (e) {

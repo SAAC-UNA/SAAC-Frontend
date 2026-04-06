@@ -125,11 +125,11 @@ const MODULE_INFO: Record<string, ModuleInfo> = {
 
   // Búsqueda Avanzada de Evidencias
   evidence_search: {
-    title: "Explorador de Criterios",
+    title: "Buscar Entregables",
     subtitle: "Criterios y Evidencias",
     description:
-      "Explore los criterios de acreditación, sus evidencias y recursos asociados",
-    shortDescription: "Explorar criterios y evidencias",
+      "Busque entregables, criterios y evidencias asociadas al proceso activo",
+    shortDescription: "Buscar entregables y evidencias",
   },
 
   // Solicitudes de Ampliación

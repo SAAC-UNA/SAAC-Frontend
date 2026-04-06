@@ -28,6 +28,7 @@ export interface Evidence {
 export interface Process {
   proceso_id: number;
   nombre: string;
+  tipo_proceso?: string;
   ciclo_acreditacion_id: number;
   ciclo_nombre?: string;
   modelo_estructura_id?: number;
@@ -40,7 +41,7 @@ export interface Process {
 export interface UserCycle {
   ciclo_acreditacion_id: number;
   nombre: string;
-  tipo_modelo: 'tradicional' | 'elemento_flexible';
+  tipo_modelo: "tradicional" | "elemento_flexible";
 }
 
 export interface EvidenceAssignmentFormData {

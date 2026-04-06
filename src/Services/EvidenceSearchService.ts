@@ -9,11 +9,11 @@
  * El modo se determina por la presencia de `is_flexible` en los filtros.
  */
 
-import { axiosInstance } from '../Config/axios';
+import { axiosInstance } from "../Config/axios";
 import type {
   EvidenceSearchFilters,
-  EvidencePublicationStatus
-} from '@/Types/EvidenceSearchTypes';
+  EvidencePublicationStatus,
+} from "@/Types/EvidenceSearchTypes";
 
 interface SearchParams {
   // Proceso de acreditación
@@ -28,13 +28,13 @@ interface SearchParams {
   fecha_hasta?: string; // YYYY-MM-DD
   estado?: string; // PascalCase — valor del enum EVIDENCIA.estado
   rol_id?: number;
-  
+
   elemento_id?: number;
 
   // Ordenamiento
-  sort_by?: 'nomenclatura' | 'descripcion' | 'fecha' | 'estado';
-  sort_order?: 'asc' | 'desc';
-  
+  sort_by?: "nomenclatura" | "descripcion" | "fecha" | "estado";
+  sort_order?: "asc" | "desc";
+
   // Paginación
   per_page?: number;
   page?: number;
@@ -53,7 +53,8 @@ interface BackendEvidenceResult {
   descripcion: string;
   // El backend devuelve estado como string PascalCase (EVIDENCIA.estado enum)
   estado?: string;
-  criterion?: {  // Backend usa 'criterion' no 'criterio'
+  criterion?: {
+    // Backend usa 'criterion' no 'criterio'
     id: number;
     nomenclatura: string;
     descripcion: string;
@@ -124,8 +125,14 @@ interface FlexiblePaginatedResponse {
 
 // Valores válidos del enum EVIDENCIA.estado (PascalCase)
 const ESTADOS_VALIDOS = new Set<string>([
-  'Pendiente', 'En Proceso', 'Completado', 'Vencido',
-  'Aprobado', 'Rechazado', 'Observada', 'Validada'
+  "Pendiente",
+  "En Proceso",
+  "Completado",
+  "Vencido",
+  "Aprobado",
+  "Rechazado",
+  "Observada",
+  "Validada",
 ]);
 
 export const evidenceSearchService = {
@@ -140,7 +147,7 @@ export const evidenceSearchService = {
   async search(
     filters: EvidenceSearchFilters,
     page: number = 1,
-    perPage: number = 10
+    perPage: number = 10,
   ): Promise<PaginatedResponse> {
     if (filters.is_flexible) {
       return evidenceSearchService.searchFlexible(filters, page, perPage);
@@ -184,7 +191,7 @@ export const evidenceSearchService = {
       params.fecha_hasta = filters.fecha_publicacion_hasta;
     }
 
-    if (filters.estado && filters.estado !== 'todos') {
+    if (filters.estado && filters.estado !== "todos") {
       params.estado = filters.estado;
     }
 
@@ -192,13 +199,16 @@ export const evidenceSearchService = {
       params.rol_id = filters.rol_id;
     }
 
-    const response = await axiosInstance.get<PaginatedResponse>('/estructura/evidencias/filter', { 
-      params,
-      headers: {
-        'Cache-Control': 'no-cache',
-        'Pragma': 'no-cache'
-      }
-    });
+    const response = await axiosInstance.get<PaginatedResponse>(
+      "/estructura/evidencias/filter",
+      {
+        params,
+        headers: {
+          "Cache-Control": "no-cache",
+          Pragma: "no-cache",
+        },
+      },
+    );
     return response.data;
   },
 
@@ -211,54 +221,61 @@ export const evidenceSearchService = {
   async searchFlexible(
     filters: EvidenceSearchFilters,
     page: number = 1,
-    perPage: number = 10
+    perPage: number = 10,
   ): Promise<PaginatedResponse> {
     const params: Record<string, unknown> = { page, per_page: perPage };
 
     if (filters.proceso_id) params.proceso_id = filters.proceso_id;
     if (filters.elemento_id) params.elemento_id = filters.elemento_id;
-    if (filters.estado && filters.estado !== 'todos') params.estado = filters.estado;
+    if (filters.estado && filters.estado !== "todos")
+      params.estado = filters.estado;
 
     const response = await axiosInstance.get<FlexiblePaginatedResponse>(
-      '/elementos-asignaciones/filtrar',
-      { params }
+      "/elementos-asignaciones/filtrar",
+      { params },
     );
 
     const raw = response.data;
 
     // Adaptar al shape BackendEvidenceResult para reutilizar el resto del flujo
     const mapped: BackendEvidenceResult[] = raw.data.map((ea) => ({
-      evidencia_id:    ea.elemento_asignacion_id,
-      criterio_id:     ea.elemento_id,
-      nomenclatura:    ea.element?.nomenclatura ?? '',
-      descripcion:     ea.element?.descripcion ?? ea.element?.nombre ?? '',
-      estado:          ea.estado,
+      evidencia_id: ea.elemento_asignacion_id,
+      criterio_id: ea.elemento_id,
+      nomenclatura: ea.element?.nomenclatura ?? "",
+      descripcion: ea.element?.descripcion ?? ea.element?.nombre ?? "",
+      estado: ea.estado,
       criterion: {
-        id:          ea.elemento_id,
-        nomenclatura: ea.element?.nomenclatura ?? '',
-        descripcion:  ea.element?.descripcion ?? ea.element?.nombre ?? '',
+        id: ea.elemento_id,
+        nomenclatura: ea.element?.nomenclatura ?? "",
+        descripcion: ea.element?.descripcion ?? ea.element?.nombre ?? "",
       },
       responsables: ea.user
-        ? [{ usuario_id: ea.user.usuario_id, nombre: ea.user.nombre ?? ea.user.name ?? '', email: ea.user.email ?? '' }]
+        ? [
+            {
+              usuario_id: ea.user.usuario_id,
+              nombre: ea.user.nombre ?? ea.user.name ?? "",
+              email: ea.user.email ?? "",
+            },
+          ]
         : [],
       fecha_publicacion: ea.created_at,
-      created_at:        ea.created_at,
-      updated_at:        ea.updated_at,
-      archivos_count:    0,
-      enlaces_count:     0,
+      created_at: ea.created_at,
+      updated_at: ea.updated_at,
+      archivos_count: 0,
+      enlaces_count: 0,
     }));
 
     return {
       data: mapped,
-      links: { first: '', last: '', prev: null, next: null },
+      links: { first: "", last: "", prev: null, next: null },
       meta: {
         current_page: raw.meta.current_page,
-        from:         0,
-        last_page:    raw.meta.last_page,
-        path:         '',
-        per_page:     raw.meta.per_page,
-        to:           0,
-        total:        raw.meta.total,
+        from: 0,
+        last_page: raw.meta.last_page,
+        path: "",
+        per_page: raw.meta.per_page,
+        to: 0,
+        total: raw.meta.total,
       },
     };
   },
@@ -268,17 +285,23 @@ export const evidenceSearchService = {
    */
   async exportExcel(filters: EvidenceSearchFilters): Promise<void> {
     if (filters.is_flexible) {
-      return evidenceSearchService._exportFlexible(filters, 'excel');
+      return evidenceSearchService._exportFlexible(filters, "excel");
     }
 
     const params = evidenceSearchService._buildTraditionalExportParams(filters);
 
-    const response = await axiosInstance.get('/estructura/evidencias/export/excel', {
-      params,
-      responseType: 'blob'
-    });
+    const response = await axiosInstance.get(
+      "/estructura/evidencias/export/excel",
+      {
+        params,
+        responseType: "blob",
+      },
+    );
 
-    evidenceSearchService._downloadBlob(response.data, `evidencias_${new Date().toISOString().split('T')[0]}.xlsx`);
+    evidenceSearchService._downloadBlob(
+      response.data,
+      `evidencias_${new Date().toISOString().split("T")[0]}.xlsx`,
+    );
   },
 
   /**
@@ -286,17 +309,23 @@ export const evidenceSearchService = {
    */
   async exportPDF(filters: EvidenceSearchFilters): Promise<void> {
     if (filters.is_flexible) {
-      return evidenceSearchService._exportFlexible(filters, 'pdf');
+      return evidenceSearchService._exportFlexible(filters, "pdf");
     }
 
     const params = evidenceSearchService._buildTraditionalExportParams(filters);
 
-    const response = await axiosInstance.get('/estructura/evidencias/export/pdf', {
-      params,
-      responseType: 'blob'
-    });
+    const response = await axiosInstance.get(
+      "/estructura/evidencias/export/pdf",
+      {
+        params,
+        responseType: "blob",
+      },
+    );
 
-    evidenceSearchService._downloadBlob(response.data, `evidencias_${new Date().toISOString().split('T')[0]}.pdf`);
+    evidenceSearchService._downloadBlob(
+      response.data,
+      `evidencias_${new Date().toISOString().split("T")[0]}.pdf`,
+    );
   },
 
   /** Construir parámetros para export del modelo tradicional */
@@ -308,42 +337,55 @@ export const evidenceSearchService = {
     if (filters.criterio) params.criterio_id = parseInt(filters.criterio);
     if (filters.elemento_id) params.elemento_id = filters.elemento_id;
     if (filters.responsable_id) params.responsable_id = filters.responsable_id;
-    if (filters.fecha_publicacion_desde) params.fecha_desde = filters.fecha_publicacion_desde;
-    if (filters.fecha_publicacion_hasta) params.fecha_hasta = filters.fecha_publicacion_hasta;
-    if (filters.estado && filters.estado !== 'todos') params.estado = filters.estado;
+    if (filters.fecha_publicacion_desde)
+      params.fecha_desde = filters.fecha_publicacion_desde;
+    if (filters.fecha_publicacion_hasta)
+      params.fecha_hasta = filters.fecha_publicacion_hasta;
+    if (filters.estado && filters.estado !== "todos")
+      params.estado = filters.estado;
     if (filters.rol_id) params.rol_id = filters.rol_id;
     return params;
   },
 
   /** Exportar desde el modelo flexible (estructura/elementos/export) */
-  async _exportFlexible(filters: EvidenceSearchFilters, format: 'excel' | 'pdf'): Promise<void> {
+  async _exportFlexible(
+    filters: EvidenceSearchFilters,
+    format: "excel" | "pdf",
+  ): Promise<void> {
     const params: Record<string, unknown> = {};
     if (filters.proceso_id) params.proceso_id = filters.proceso_id;
     if (filters.elemento_id) params.elemento_id = filters.elemento_id;
-    if (filters.estado && filters.estado !== 'todos') params.estado = filters.estado;
+    if (filters.estado && filters.estado !== "todos")
+      params.estado = filters.estado;
     if (filters.responsable_id) params.responsable_id = filters.responsable_id;
     if (filters.rol_id) params.rol_id = filters.rol_id;
 
-    const response = await axiosInstance.get(`/estructura/elementos/export/${format}`, {
-      params,
-      responseType: 'blob'
-    });
+    const response = await axiosInstance.get(
+      `/estructura/elementos/export/${format}`,
+      {
+        params,
+        responseType: "blob",
+      },
+    );
 
-    const ext = format === 'excel' ? 'xlsx' : 'pdf';
-    evidenceSearchService._downloadBlob(response.data, `pautas_${new Date().toISOString().split('T')[0]}.${ext}`);
+    const ext = format === "excel" ? "xlsx" : "pdf";
+    evidenceSearchService._downloadBlob(
+      response.data,
+      `pautas_${new Date().toISOString().split("T")[0]}.${ext}`,
+    );
   },
 
   /** Descargar un blob como archivo */
   _downloadBlob(data: BlobPart, filename: string): void {
     const url = window.URL.createObjectURL(new Blob([data]));
-    const link = document.createElement('a');
+    const link = document.createElement("a");
     link.href = url;
-    link.setAttribute('download', filename);
+    link.setAttribute("download", filename);
     document.body.appendChild(link);
     link.click();
     link.remove();
     window.URL.revokeObjectURL(url);
-  }
+  },
 };
 
 /**
@@ -353,21 +395,22 @@ export function mapBackendToFrontend(backendData: BackendEvidenceResult) {
   return {
     evidencia_id: backendData.evidencia_id,
     criterio_id: backendData.criterio_id ?? 0,
-    nomenclatura: backendData.nomenclatura || '',
-    criterio_nomenclatura: backendData.criterion?.nomenclatura || 'N/A',
-    criterio_descripcion: backendData.criterion?.descripcion || 'Sin descripción',
+    nomenclatura: backendData.nomenclatura || "",
+    criterio_nomenclatura: backendData.criterion?.nomenclatura || "N/A",
+    criterio_descripcion:
+      backendData.criterion?.descripcion || "Sin descripción",
     descripcion: backendData.descripcion,
     responsables: backendData.responsables || [], // Array completo de responsables
     fecha_publicacion: backendData.created_at || backendData.fecha_publicacion,
     // estado viene como string PascalCase del enum EVIDENCIA.estado
     estado: (backendData.estado && ESTADOS_VALIDOS.has(backendData.estado)
       ? backendData.estado
-      : 'Pendiente') as EvidencePublicationStatus,
+      : "Pendiente") as EvidencePublicationStatus,
     archivos_count: backendData.archivos_count || 0,
     enlaces_count: backendData.enlaces_count || 0,
     roles_acceso: backendData.roles_acceso || [],
     created_at: backendData.created_at,
-    updated_at: backendData.updated_at
+    updated_at: backendData.updated_at,
   };
 }
 
@@ -380,21 +423,31 @@ export const evidenceSearchFiltersService = {
    */
   async getCriterios(): Promise<Array<{ value: string; label: string }>> {
     try {
-      const response = await axiosInstance.get('/estructura/criterios');
+      const response = await axiosInstance.get("/estructura/criterios");
       const data = response.data.data || response.data || [];
-      
+
       if (!Array.isArray(data)) {
         return [];
       }
-      
+
+      const seen = new Set<string>();
+
       return data
         .filter((criterio: any) => criterio && criterio.id)
         .map((criterio: any) => ({
           value: criterio.id.toString(),
-          label: `${criterio.nomenclatura || 'Sin nomenclatura'} - ${criterio.descripcion || 'Sin descripción'}`,
-        }));
+          label: `${criterio.nomenclatura || "Sin nomenclatura"} - ${criterio.descripcion || "Sin descripción"}`,
+        }))
+        .filter((criterio) => {
+          const key = criterio.label.trim().toLowerCase();
+          if (seen.has(key)) {
+            return false;
+          }
+          seen.add(key);
+          return true;
+        });
     } catch (error) {
-      console.error('❌ Error al cargar criterios:', error);
+      console.error("❌ Error al cargar criterios:", error);
       return [];
     }
   },
@@ -404,21 +457,21 @@ export const evidenceSearchFiltersService = {
    */
   async getUsuarios(): Promise<Array<{ value: number; label: string }>> {
     try {
-      const response = await axiosInstance.get('/admin/users');
+      const response = await axiosInstance.get("/admin/users");
       const data = response.data.data || response.data || [];
-      
+
       if (!Array.isArray(data)) {
         return [];
       }
-      
+
       return data
         .filter((usuario: any) => usuario && usuario.id)
         .map((usuario: any) => ({
           value: usuario.id,
-          label: usuario.name || usuario.email || 'Sin nombre',
+          label: usuario.name || usuario.email || "Sin nombre",
         }));
     } catch (error) {
-      console.error('❌ Error al cargar usuarios:', error);
+      console.error("❌ Error al cargar usuarios:", error);
       return [];
     }
   },
@@ -428,21 +481,21 @@ export const evidenceSearchFiltersService = {
    */
   async getRoles(): Promise<Array<{ value: number; label: string }>> {
     try {
-      const response = await axiosInstance.get('/roles');
+      const response = await axiosInstance.get("/roles");
       const data = response.data.data || response.data || [];
-      
+
       if (!Array.isArray(data)) {
         return [];
       }
-      
+
       return data
         .filter((role: any) => role && role.id)
         .map((role: any) => ({
           value: role.id,
-          label: role.name || 'Sin nombre',
+          label: role.name || "Sin nombre",
         }));
     } catch (error) {
-      console.error('❌ Error al cargar roles:', error);
+      console.error("❌ Error al cargar roles:", error);
       return [];
     }
   },
@@ -452,7 +505,7 @@ export const evidenceSearchFiltersService = {
    */
   async getDimensiones(): Promise<Array<{ value: string; label: string }>> {
     try {
-      const response = await axiosInstance.get('/estructura/dimensiones');
+      const response = await axiosInstance.get("/estructura/dimensiones");
       const data = response.data.data || response.data || [];
       if (!Array.isArray(data)) return [];
       return data
@@ -462,7 +515,7 @@ export const evidenceSearchFiltersService = {
           label: `${d.nomenclatura} - ${d.nombre}`,
         }));
     } catch (error) {
-      console.error('❌ Error al cargar dimensiones:', error);
+      console.error("❌ Error al cargar dimensiones:", error);
       return [];
     }
   },
@@ -470,9 +523,11 @@ export const evidenceSearchFiltersService = {
   /**
    * Obtener lista de componentes para el filtro
    */
-  async getComponentes(): Promise<Array<{ value: string; label: string; dimension_id: number }>> {
+  async getComponentes(): Promise<
+    Array<{ value: string; label: string; dimension_id: number }>
+  > {
     try {
-      const response = await axiosInstance.get('/estructura/componentes');
+      const response = await axiosInstance.get("/estructura/componentes");
       const data = response.data.data || response.data || [];
       if (!Array.isArray(data)) return [];
       return data
@@ -483,7 +538,7 @@ export const evidenceSearchFiltersService = {
           dimension_id: c.dimension_id,
         }));
     } catch (error) {
-      console.error('❌ Error al cargar componentes:', error);
+      console.error("❌ Error al cargar componentes:", error);
       return [];
     }
   },
@@ -493,14 +548,14 @@ export const evidenceSearchFiltersService = {
    */
   getEstados(): Array<{ value: string; label: string }> {
     return [
-      { value: 'Pendiente',   label: 'Pendiente' },
-      { value: 'En Proceso',  label: 'En proceso' },
-      { value: 'Completado',  label: 'Completado' },
-      { value: 'Vencido',     label: 'Vencido' },
-      { value: 'Aprobado',    label: 'Aprobado' },
-      { value: 'Rechazado',   label: 'Rechazado' },
-      { value: 'Observada',   label: 'Observada' },
-      { value: 'Validada',    label: 'Validada' },
+      { value: "Pendiente", label: "Pendiente" },
+      { value: "En Proceso", label: "En proceso" },
+      { value: "Completado", label: "Completado" },
+      { value: "Vencido", label: "Vencido" },
+      { value: "Aprobado", label: "Aprobado" },
+      { value: "Rechazado", label: "Rechazado" },
+      { value: "Observada", label: "Observada" },
+      { value: "Validada", label: "Validada" },
     ];
-  }
+  },
 };

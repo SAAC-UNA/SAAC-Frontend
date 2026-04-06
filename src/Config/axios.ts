@@ -1,5 +1,6 @@
 import axios from "axios";
 import { authService } from "@/Services/AuthService";
+import { getOperationalContextSnapshot } from "@/Services/OperationalContextStore";
 
 // Crear instancia con configuración personalizada
 // IMPORTANTE: Usar 'localhost' (no 127.0.0.1) para consistencia con cookies
@@ -11,6 +12,66 @@ const axiosInstance = axios.create({
     "Content-Type": "application/json",
     "X-Requested-With": "XMLHttpRequest", // Laravel detecta SPA
   },
+});
+
+const shouldAttachOperationalContext = (url?: string): boolean => {
+  if (!url) {
+    return false;
+  }
+
+  return !(
+    url.startsWith("/contexto/filtros-globales") ||
+    url.startsWith("/auth/") ||
+    url.startsWith("/sanctum/")
+  );
+};
+
+axiosInstance.interceptors.request.use((config) => {
+  if (!shouldAttachOperationalContext(config.url)) {
+    return config;
+  }
+
+  const contextIds = getOperationalContextSnapshot();
+  if (!contextIds) {
+    return config;
+  }
+
+  const headerPatch: Record<string, string> = {};
+
+  if (contextIds.careerCampusId !== null) {
+    headerPatch["X-Context-Career-Campus-Id"] = String(
+      contextIds.careerCampusId,
+    );
+  }
+  if (contextIds.cycleId !== null) {
+    headerPatch["X-Context-Cycle-Id"] = String(contextIds.cycleId);
+  }
+  if (contextIds.processId !== null) {
+    headerPatch["X-Context-Process-Id"] = String(contextIds.processId);
+  }
+
+  config.headers = {
+    ...(config.headers ?? {}),
+    ...headerPatch,
+  };
+
+  if (String(config.method || "get").toLowerCase() === "get") {
+    const params = (config.params ?? {}) as Record<string, unknown>;
+    config.params = {
+      ...params,
+      ...(contextIds.careerCampusId !== null
+        ? { career_campus_id: contextIds.careerCampusId }
+        : {}),
+      ...(contextIds.cycleId !== null
+        ? { ciclo_acreditacion_id: contextIds.cycleId }
+        : {}),
+      ...(contextIds.processId !== null
+        ? { proceso_id: contextIds.processId }
+        : {}),
+    };
+  }
+
+  return config;
 });
 
 // Interceptor para manejar errores de autenticación (sesión expirada)
@@ -31,8 +92,9 @@ axiosInstance.interceptors.response.use(
         authService.logoutAndRedirect();
       }
 
-      // Evita que la vista actual pinte errores transitorios antes del modal.
-      return new Promise(() => {});
+      // Importante: no dejar la promesa pendiente, para evitar loaders infinitos.
+      // Se mantiene la redirección, pero el caller puede ejecutar catch/finally.
+      return Promise.reject(error);
     }
     return Promise.reject(error);
   },

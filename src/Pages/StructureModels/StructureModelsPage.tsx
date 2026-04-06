@@ -5,25 +5,44 @@
  * Vista "elementos": árbol de elementos del modelo flexible seleccionado.
  */
 
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { ScreenContainer } from '@/Components/Ui/Layout/ScreenContainer';
-import { PageHeader, Button, LoadingSpinner, StatusBadge, TableActionButton, Tooltip, TooltipContent, TooltipTrigger } from '@/Components/Ui/Index';
-import { MODELO_TIPO_BADGE } from '@/Constants/StatusBadges';
-import { Modal } from '@/Components/Ui/Modals/Modal';
-import { SuccessModal } from '@/Components/Ui/Modals/SuccessModal';
-import { StructureModelFormModal } from './Components/StructureModelFormModal';
-import { StructureModelDeleteModal } from './Components/StructureModelDeleteModal';
-import { useStructureModels } from '@/Hooks/UseStructureModels';
-import { useToast } from '@/Context/ToastContext';
-import type { StructureModel, CreateModelForm, EditModelForm } from '@/Types/StructureModelTypes';
-import { cn } from '@/Utils/ClassNames';
-import { TYPOGRAPHY } from '@/Constants/Typography';
+import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { ScreenContainer } from "@/Components/Ui/Layout/ScreenContainer";
+import {
+  PageHeader,
+  Button,
+  LoadingSpinner,
+  StatusBadge,
+  TableActionButton,
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/Components/Ui/Index";
+import { MODELO_TIPO_BADGE } from "@/Constants/StatusBadges";
+import { Modal } from "@/Components/Ui/Modals/Modal";
+import { SuccessModal } from "@/Components/Ui/Modals/SuccessModal";
+import { StructureModelFormModal } from "./Components/StructureModelFormModal";
+import { StructureModelDeleteModal } from "./Components/StructureModelDeleteModal";
+import { useStructureModels } from "@/Hooks/UseStructureModels";
+import { useToast } from "@/Context/ToastContext";
+import type {
+  StructureModel,
+  CreateModelForm,
+  EditModelForm,
+} from "@/Types/StructureModelTypes";
+import { cn } from "@/Utils/ClassNames";
+import { TYPOGRAPHY } from "@/Constants/Typography";
 
 const StructureModelsPage: React.FC = () => {
   const { showToast } = useToast();
-  const { models, isLoading, createModel, updateModel, toggleActive, deleteModel } =
-    useStructureModels();
+  const {
+    models,
+    isLoading,
+    createModel,
+    updateModel,
+    toggleActive,
+    deleteModel,
+  } = useStructureModels();
 
   const [formModal, setFormModal] = useState<{
     isOpen: boolean;
@@ -37,7 +56,11 @@ const StructureModelsPage: React.FC = () => {
     hasCiclos: boolean;
   }>({ isOpen: false, model: null, loading: false, hasCiclos: false });
 
-  const [successModal, setSuccessModal] = useState({ isOpen: false, title: '', message: '' });
+  const [successModal, setSuccessModal] = useState({
+    isOpen: false,
+    title: "",
+    message: "",
+  });
 
   const [toggleModal, setToggleModal] = useState<{
     isOpen: boolean;
@@ -52,8 +75,12 @@ const StructureModelsPage: React.FC = () => {
   };
 
   const handleEditConfirm = async (form: CreateModelForm | EditModelForm) => {
-    if (!formModal.model) return { success: false, error: 'Sin modelo seleccionado' };
-    return updateModel(formModal.model.modelo_estructura_id, form as EditModelForm);
+    if (!formModal.model)
+      return { success: false, error: "Sin modelo seleccionado" };
+    return updateModel(
+      formModal.model.modelo_estructura_id,
+      form as EditModelForm,
+    );
   };
 
   const handleToggleActive = (model: StructureModel) => {
@@ -62,31 +89,49 @@ const StructureModelsPage: React.FC = () => {
 
   const confirmToggleActive = async () => {
     if (!toggleModal.model) return;
-    setToggleModal(p => ({ ...p, loading: true }));
+    setToggleModal((p) => ({ ...p, loading: true }));
     const m = toggleModal.model;
     const result = await toggleActive(m.modelo_estructura_id, !m.activo);
     setToggleModal({ isOpen: false, model: null, loading: false });
     if (result.success) {
-      const action = m.activo ? 'inactivado' : 'activado';
+      const action = m.activo ? "inactivado" : "activado";
       setSuccessModal({
         isOpen: true,
-        title: m.activo ? 'Modelo inactivado' : 'Modelo activado',
+        title: m.activo ? "Modelo inactivado" : "Modelo activado",
         message: `El modelo "${m.nombre}" ha sido ${action} correctamente.`,
       });
     } else {
-      showToast({ type: 'error', title: result.error ?? 'Error al cambiar el estado' });
+      showToast({
+        type: "error",
+        title: result.error ?? "Error al cambiar el estado",
+      });
     }
   };
 
   const handleDeleteConfirm = async (confirmacion: string) => {
     if (!deleteModal.model) return;
-    setDeleteModal(p => ({ ...p, loading: true }));
-    const result = await deleteModel(deleteModal.model!.modelo_estructura_id, confirmacion);
-    setDeleteModal({ isOpen: false, model: null, loading: false, hasCiclos: false });
+    setDeleteModal((p) => ({ ...p, loading: true }));
+    const result = await deleteModel(
+      deleteModal.model!.modelo_estructura_id,
+      confirmacion,
+    );
+    setDeleteModal({
+      isOpen: false,
+      model: null,
+      loading: false,
+      hasCiclos: false,
+    });
     if (result.success) {
-      setSuccessModal({ isOpen: true, title: 'Modelo eliminado', message: 'El modelo fue eliminado exitosamente.' });
+      setSuccessModal({
+        isOpen: true,
+        title: "Modelo eliminado",
+        message: "El modelo fue eliminado exitosamente.",
+      });
     } else {
-      showToast({ type: 'error', title: result.error ?? 'Error al eliminar el modelo' });
+      showToast({
+        type: "error",
+        title: result.error ?? "Error al eliminar el modelo",
+      });
     }
   };
 
@@ -97,6 +142,7 @@ const StructureModelsPage: React.FC = () => {
       <PageHeader
         title="Modelos de Acreditación"
         description="Gestiona los modelos de estructura que definen cómo se organiza el proceso de acreditación."
+        breadcrumbMode="none"
         headerExtra={
           <Tooltip>
             <TooltipTrigger asChild>
@@ -117,18 +163,30 @@ const StructureModelsPage: React.FC = () => {
         <LoadingSpinner variant="loader" />
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
-          {models.map(model => (
+          {models.map((model) => (
             <ModelCard
               key={model.modelo_estructura_id}
               model={model}
               onEdit={() => setFormModal({ isOpen: true, model })}
               onToggleActive={() => handleToggleActive(model)}
-              onDelete={() => setDeleteModal({ isOpen: true, model, loading: false, hasCiclos: false })}
+              onDelete={() =>
+                setDeleteModal({
+                  isOpen: true,
+                  model,
+                  loading: false,
+                  hasCiclos: false,
+                })
+              }
             />
           ))}
 
           {models.length === 0 && (
-            <p className={cn(TYPOGRAPHY.body, 'text-gris-una col-span-full text-center py-12')}>
+            <p
+              className={cn(
+                TYPOGRAPHY.body,
+                "text-gris-una col-span-full text-center py-12",
+              )}
+            >
               No hay modelos configurados.
             </p>
           )}
@@ -153,7 +211,14 @@ const StructureModelsPage: React.FC = () => {
       {/* Modal eliminar */}
       <StructureModelDeleteModal
         isOpen={deleteModal.isOpen}
-        onClose={() => setDeleteModal({ isOpen: false, model: null, loading: false, hasCiclos: false })}
+        onClose={() =>
+          setDeleteModal({
+            isOpen: false,
+            model: null,
+            loading: false,
+            hasCiclos: false,
+          })
+        }
         model={deleteModal.model}
         onConfirm={handleDeleteConfirm}
         isLoading={deleteModal.loading}
@@ -164,20 +229,41 @@ const StructureModelsPage: React.FC = () => {
       {toggleModal.model && (
         <Modal
           isOpen={toggleModal.isOpen}
-          onClose={() => setToggleModal({ isOpen: false, model: null, loading: false })}
+          onClose={() =>
+            setToggleModal({ isOpen: false, model: null, loading: false })
+          }
           onConfirm={confirmToggleActive}
-          variant={toggleModal.model.activo ? 'info' : 'success'}
-          title={toggleModal.model.activo ? 'Confirmar inactivación' : 'Confirmar activación'}
-          confirmLabel={toggleModal.model.activo ? 'Sí, inactivar' : 'Sí, activar'}
+          variant={toggleModal.model.activo ? "info" : "success"}
+          title={
+            toggleModal.model.activo
+              ? "Confirmar inactivación"
+              : "Confirmar activación"
+          }
+          confirmLabel={
+            toggleModal.model.activo ? "Sí, inactivar" : "Sí, activar"
+          }
           cancelLabel="Cancelar"
           confirmLoading={toggleModal.loading}
           showCancel
           showConfirm
-          footerMeta={toggleModal.model.activo ? 'Esta acción puede ser revertida' : undefined}
+          footerMeta={
+            toggleModal.model.activo
+              ? "Esta acción puede ser revertida"
+              : undefined
+          }
         >
-          <p className={cn(TYPOGRAPHY.modal.body, 'text-gris-una-2 leading-relaxed')}>
-            ¿Está seguro de que desea {toggleModal.model.activo ? 'inactivar' : 'activar'} el modelo{' '}
-            <strong className="text-negro-una">"{toggleModal.model.nombre}"</strong>?
+          <p
+            className={cn(
+              TYPOGRAPHY.modal.body,
+              "text-gris-una-2 leading-relaxed",
+            )}
+          >
+            ¿Está seguro de que desea{" "}
+            {toggleModal.model.activo ? "inactivar" : "activar"} el modelo{" "}
+            <strong className="text-negro-una">
+              "{toggleModal.model.nombre}"
+            </strong>
+            ?
           </p>
         </Modal>
       )}
@@ -186,7 +272,9 @@ const StructureModelsPage: React.FC = () => {
         isOpen={successModal.isOpen}
         title={successModal.title}
         message={successModal.message}
-        onClose={() => setSuccessModal({ isOpen: false, title: '', message: '' })}
+        onClose={() =>
+          setSuccessModal({ isOpen: false, title: "", message: "" })
+        }
       />
     </ScreenContainer>
   );
@@ -195,7 +283,7 @@ const StructureModelsPage: React.FC = () => {
 // ── ModelCard ─────────────────────────────────────────────────────────────────
 
 /** Tamaño ligeramente mayor al estándar de tabla (32px → 36px) */
-const CARD_ACTION_BTN = '!size-9 !p-1.5';
+const CARD_ACTION_BTN = "!size-9 !p-1.5";
 
 interface ModelCardProps {
   model: StructureModel;
@@ -213,39 +301,49 @@ const ModelCard: React.FC<ModelCardProps> = ({
   hasCiclos = false,
 }) => {
   const navigate = useNavigate();
-  const isTradicional = model.tipo === 'tradicional';
+  const isTradicional = model.tipo === "tradicional";
 
   return (
     <div
       className={cn(
-        'flex flex-col gap-2 p-4 rounded-corner bg-blanco-una border border-blanco-una shadow-md',
-        'transition-shadow hover:shadow-lg',
-        !model.activo && 'opacity-60'
+        "flex flex-col gap-2 p-4 rounded-corner bg-blanco-una border border-blanco-una shadow-md",
+        "transition-shadow hover:shadow-lg",
+        !model.activo && "opacity-60",
       )}
     >
       {/* Header: nombre + badges */}
       <div className="flex items-start justify-between gap-2">
         <div className="flex-1 min-w-0">
           <h3
-            className={cn(TYPOGRAPHY.pageSubtitle, 'font-bold text-negro-una truncate')}
+            className={cn(
+              TYPOGRAPHY.pageSubtitle,
+              "font-bold text-negro-una truncate",
+            )}
             title={model.nombre}
           >
             {model.nombre}
           </h3>
           {model.version && (
-            <span className={cn(TYPOGRAPHY.form.helper, 'text-gris-una')}>v{model.version}</span>
+            <span className={cn(TYPOGRAPHY.form.helper, "text-gris-una")}>
+              v{model.version}
+            </span>
           )}
         </div>
         <div className="flex flex-col items-end gap-1 shrink-0">
           <StatusBadge
             label={MODELO_TIPO_BADGE[model.tipo]?.label ?? model.tipo}
-            colorClasses={MODELO_TIPO_BADGE[model.tipo]?.colorClasses ?? 'bg-gris-light text-gris-una'}
+            colorClasses={
+              MODELO_TIPO_BADGE[model.tipo]?.colorClasses ??
+              "bg-gris-light text-gris-una"
+            }
             size="sm"
           />
           <StatusBadge
-            label={model.activo ? 'Activo' : 'Inactivo'}
+            label={model.activo ? "Activo" : "Inactivo"}
             colorClasses={
-              model.activo ? 'text-verde-dark bg-verde-ring' : 'text-error-dark bg-error-ring'
+              model.activo
+                ? "text-verde-dark bg-verde-ring"
+                : "text-error-dark bg-error-ring"
             }
             size="sm"
           />
@@ -254,7 +352,7 @@ const ModelCard: React.FC<ModelCardProps> = ({
 
       {/* Descripción */}
       {model.descripcion && (
-        <p className={cn(TYPOGRAPHY.form.helper, 'text-gris-una line-clamp-2')}>
+        <p className={cn(TYPOGRAPHY.form.helper, "text-gris-una line-clamp-2")}>
           {model.descripcion}
         </p>
       )}
@@ -265,15 +363,19 @@ const ModelCard: React.FC<ModelCardProps> = ({
           action="view"
           tooltip="Ver estructura"
           className={CARD_ACTION_BTN}
-          onClick={() => navigate(
-            isTradicional
-              ? '/estructura/listar'
-              : `/estructura/listar?modelo=${model.modelo_estructura_id}`
-          )}
+          onClick={() =>
+            navigate(
+              isTradicional
+                ? "/estructura/listar"
+                : `/estructura/listar?modelo=${model.modelo_estructura_id}`,
+            )
+          }
         />
         <TableActionButton
           action="edit"
-          tooltip={isTradicional ? 'Este modelo no se puede editar' : 'Editar modelo'}
+          tooltip={
+            isTradicional ? "Este modelo no se puede editar" : "Editar modelo"
+          }
           className={CARD_ACTION_BTN}
           onClick={onEdit}
           disabled={isTradicional}
@@ -283,10 +385,10 @@ const ModelCard: React.FC<ModelCardProps> = ({
           isActive={model.activo}
           tooltip={
             isTradicional
-              ? 'Este modelo no se puede desactivar'
+              ? "Este modelo no se puede desactivar"
               : model.activo
-              ? 'Desactivar modelo'
-              : 'Activar modelo'
+                ? "Desactivar modelo"
+                : "Activar modelo"
           }
           className={CARD_ACTION_BTN}
           onClick={onToggleActive}
@@ -296,10 +398,10 @@ const ModelCard: React.FC<ModelCardProps> = ({
           action="delete"
           tooltip={
             isTradicional
-              ? 'Este modelo no se puede eliminar'
+              ? "Este modelo no se puede eliminar"
               : hasCiclos
-              ? 'Eliminar bloqueado, tiene ciclos asociados'
-              : 'Eliminar modelo'
+                ? "Eliminar bloqueado, tiene ciclos asociados"
+                : "Eliminar modelo"
           }
           className={CARD_ACTION_BTN}
           onClick={onDelete}

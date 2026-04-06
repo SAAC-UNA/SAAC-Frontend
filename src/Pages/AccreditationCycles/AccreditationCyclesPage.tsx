@@ -8,27 +8,27 @@
  *  - Reactivar ciclo (solo Superusuario)
  */
 
-import React, { useState, useRef, useMemo } from 'react';
-import { ScreenContainer } from '@/Components/Ui/Layout/ScreenContainer';
+import React, { useState, useRef, useMemo } from "react";
+import { ScreenContainer } from "@/Components/Ui/Layout/ScreenContainer";
 import {
   PageHeader,
   Button,
   Tooltip,
   TooltipContent,
   TooltipTrigger,
-} from '@/Components/Ui/Index';
-import { Modal } from '@/Components/Ui/Modals/Modal';
-import { SuccessModal } from '@/Components/Ui/Modals/SuccessModal';
-import { AccreditationCycleFormModal } from './Components/AccreditationCycleFormModal';
-import { AccreditationCycleDeleteModal } from './Components/AccreditationCycleDeleteModal';
-import { AccreditationCycleDetailModal } from './Components/AccreditationCycleDetailModal';
-import { AccreditationCyclesTable } from './Components/AccreditationCyclesTable';
-import { useAccreditationCycles } from '@/Hooks/UseAccreditationCycles';
-import { useAuth } from '@/Context/AuthContext';
-import { useToast } from '@/Context/ToastContext';
-import { TYPOGRAPHY } from '@/Constants/Typography';
-import { cn } from '@/Utils/ClassNames';
-import { TABLE_PAGE_SIZE } from '@/Constants/TablePagination';
+} from "@/Components/Ui/Index";
+import { Modal } from "@/Components/Ui/Modals/Modal";
+import { SuccessModal } from "@/Components/Ui/Modals/SuccessModal";
+import { AccreditationCycleFormModal } from "./Components/AccreditationCycleFormModal";
+import { AccreditationCycleDeleteModal } from "./Components/AccreditationCycleDeleteModal";
+import { AccreditationCycleDetailModal } from "./Components/AccreditationCycleDetailModal";
+import { AccreditationCyclesTable } from "./Components/AccreditationCyclesTable";
+import { useAccreditationCycles } from "@/Hooks/UseAccreditationCycles";
+import { useAuth } from "@/Context/AuthContext";
+import { useToast } from "@/Context/ToastContext";
+import { TYPOGRAPHY } from "@/Constants/Typography";
+import { cn } from "@/Utils/ClassNames";
+import { TABLE_PAGE_SIZE } from "@/Constants/TablePagination";
 import type {
   AccreditationCycle,
   CreateAccreditationCycleForm,
@@ -110,8 +110,9 @@ const AccreditationCyclesPage: React.FC = () => {
 
   // ── Handlers ──────────────────────────────────────────────────────────────
 
-  const handleCreateConfirm = async (form: CreateAccreditationCycleForm | EditAccreditationCycleForm) =>
-    await createCycle(form as CreateAccreditationCycleForm);
+  const handleCreateConfirm = async (
+    form: CreateAccreditationCycleForm | EditAccreditationCycleForm,
+  ) => await createCycle(form as CreateAccreditationCycleForm);
 
   const handleEditConfirm = async (
     form: CreateAccreditationCycleForm | EditAccreditationCycleForm,
@@ -173,6 +174,7 @@ const AccreditationCyclesPage: React.FC = () => {
       <PageHeader
         title="Ciclos de Acreditación"
         description="Gestiona los ciclos de acreditación por carrera y sede."
+        breadcrumbMode="none"
         headerExtra={
           canCreate ? (
             <Tooltip>
