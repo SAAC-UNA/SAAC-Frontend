@@ -4,13 +4,13 @@
  * Refactorizado para usar axiosInstance y nuevos tipos TypeScript
  */
 
-import { axiosInstance } from "@/Config/axios";
+import { axiosInstance } from '@/Config/axios';
 import type {
   EvidenceAssignment,
-  UpdateAssignmentParams,
-} from "@/Types/EvidenceAssignmentTypes";
-import type {
-  EvidenceAssignmentRequest,
+  UpdateAssignmentParams
+} from '@/Types/EvidenceAssignmentTypes';
+import type { 
+  EvidenceAssignmentRequest, 
   EvidenceAssignmentApiResponse,
   Evidence,
   Criterion,
@@ -18,10 +18,10 @@ import type {
   UserCycle,
   DuplicateValidationRequest,
   DuplicateValidationResponse,
-  FlexibleAssignmentItem,
-} from "@/Types/EvidenceAssignment";
-import type { FlexibleElement } from "@/Types/StructureModelTypes";
-import { devLog } from "@/Utils/devLogger";
+  FlexibleAssignmentItem
+} from '@/Types/EvidenceAssignment';
+import type { FlexibleElement } from '@/Types/StructureModelTypes';
+import { devLog } from '@/Utils/devLogger';
 
 export interface AssignmentCatalogRole {
   id: number;
@@ -32,7 +32,7 @@ export interface AssignmentCatalogUser {
   id: number;
   name: string;
   email: string;
-  status: "active" | "inactive";
+  status: 'active' | 'inactive';
   roles: AssignmentCatalogRole[];
 }
 
@@ -49,14 +49,10 @@ class EvidenceAssignmentService {
    */
   async getAssignmentUsersCatalog(): Promise<AssignmentCatalogUser[]> {
     try {
-      const response = await axiosInstance.get<{
-        data: AssignmentCatalogUser[];
-      }>("/evidencias-asignaciones/catalogo/usuarios");
+      const response = await axiosInstance.get<{ data: AssignmentCatalogUser[] }>('/evidencias-asignaciones/catalogo/usuarios');
       return response.data.data || [];
     } catch (error) {
-      throw new Error(
-        "Error al obtener catálogo de usuarios para asignaciones",
-      );
+      throw new Error('Error al obtener catálogo de usuarios para asignaciones');
     }
   }
 
@@ -65,31 +61,27 @@ class EvidenceAssignmentService {
    */
   async getAssignmentRolesCatalog(): Promise<AssignmentCatalogRoleOption[]> {
     try {
-      const response = await axiosInstance.get<{
-        data: AssignmentCatalogRoleOption[];
-      }>("/evidencias-asignaciones/catalogo/roles");
+      const response = await axiosInstance.get<{ data: AssignmentCatalogRoleOption[] }>('/evidencias-asignaciones/catalogo/roles');
       return response.data.data || [];
     } catch (error) {
-      throw new Error("Error al obtener catálogo de roles para asignaciones");
+      throw new Error('Error al obtener catálogo de roles para asignaciones');
     }
   }
 
   /**
    * Validar asignaciones duplicadas antes de crear
    */
-  async validateDuplicates(
-    data: DuplicateValidationRequest,
-  ): Promise<DuplicateValidationResponse> {
+  async validateDuplicates(data: DuplicateValidationRequest): Promise<DuplicateValidationResponse> {
     try {
       const response = await axiosInstance.post<DuplicateValidationResponse>(
-        "/evidencias-asignaciones/validar-duplicados",
-        data,
+        '/evidencias-asignaciones/validar-duplicados',
+        data
       );
       return response.data;
     } catch (error: any) {
       throw new Error(
-        error.response?.data?.message ||
-          "Error al validar asignaciones duplicadas",
+        error.response?.data?.message || 
+        'Error al validar asignaciones duplicadas'
       );
     }
   }
@@ -97,17 +89,15 @@ class EvidenceAssignmentService {
   /**
    * Crear nuevas asignaciones de evidencias
    */
-  async createAssignment(
-    data: EvidenceAssignmentRequest,
-  ): Promise<EvidenceAssignmentApiResponse> {
+  async createAssignment(data: EvidenceAssignmentRequest): Promise<EvidenceAssignmentApiResponse> {
     try {
       const response = await axiosInstance.post<EvidenceAssignmentApiResponse>(
-        "/evidencias-asignaciones",
-        data,
+        '/evidencias-asignaciones',
+        data
       );
       return response.data;
     } catch (error: any) {
-      throw new Error(error.response?.data?.message || "Error de validación.");
+      throw new Error(error.response?.data?.message || 'Error de validación.');
     }
   }
 
@@ -116,37 +106,35 @@ class EvidenceAssignmentService {
    */
   async getAllAssignments(): Promise<EvidenceAssignment[]> {
     try {
-      const response = await axiosInstance.get<{ data: EvidenceAssignment[] }>(
-        "/evidencias-asignaciones",
-      );
+      const response = await axiosInstance.get<{ data: EvidenceAssignment[] }>('/evidencias-asignaciones');
       return response.data.data || [];
     } catch (error) {
-      throw new Error("Error al obtener las asignaciones");
+      throw new Error('Error al obtener las asignaciones');
     }
   }
 
   /**
    * Obtiene todas las evidencias asignadas a un usuario específico
    * GET /api/usuarios/{usuarioId}/evidencias-asignadas
-   *
+   * 
    * Usa los nuevos tipos de HU-029 para mejor type-safety
    */
   async getMyAssignments(userId: number): Promise<EvidenceAssignment[]> {
     try {
       const response = await axiosInstance.get<{ data: EvidenceAssignment[] }>(
-        `/usuarios/${userId}/evidencias-asignadas`,
+        `/usuarios/${userId}/evidencias-asignadas`
       );
-
+      
       return response.data.data || [];
     } catch (error: any) {
       if (error.response?.status === 404) {
         return [];
       }
-
+      
       throw new Error(
-        error.response?.data?.message ||
-          error.message ||
-          "Error al obtener las asignaciones de evidencias",
+        error.response?.data?.message || 
+        error.message || 
+        'Error al obtener las asignaciones de evidencias'
       );
     }
   }
@@ -156,41 +144,31 @@ class EvidenceAssignmentService {
    * @deprecated Usar getMyAssignments en su lugar
    */
   async getAssignmentsByUser(userId: number): Promise<EvidenceAssignment[]> {
-    const response = await axiosInstance.get(
-      `/usuarios/${userId}/evidencias-asignadas`,
-    );
+    const response = await axiosInstance.get(`/usuarios/${userId}/evidencias-asignadas`);
     return response.data.data || [];
   }
 
   /**
    * Obtener asignaciones por evidencia
    */
-  async getAssignmentsByEvidence(
-    evidenceId: number,
-  ): Promise<EvidenceAssignment[]> {
+  async getAssignmentsByEvidence(evidenceId: number): Promise<EvidenceAssignment[]> {
     try {
-      const response = await axiosInstance.get<{ data: EvidenceAssignment[] }>(
-        `/evidencias/${evidenceId}/asignaciones`,
-      );
+      const response = await axiosInstance.get<{ data: EvidenceAssignment[] }>(`/evidencias/${evidenceId}/asignaciones`);
       return response.data.data || [];
     } catch (error) {
-      throw new Error("Error al obtener las asignaciones de la evidencia");
+      throw new Error('Error al obtener las asignaciones de la evidencia');
     }
   }
 
   /**
    * Obtener asignaciones por proceso
    */
-  async getAssignmentsByProcess(
-    processId: number,
-  ): Promise<EvidenceAssignment[]> {
+  async getAssignmentsByProcess(processId: number): Promise<EvidenceAssignment[]> {
     try {
-      const response = await axiosInstance.get<{ data: EvidenceAssignment[] }>(
-        `/procesos/${processId}/asignaciones`,
-      );
+      const response = await axiosInstance.get<{ data: EvidenceAssignment[] }>(`/procesos/${processId}/asignaciones`);
       return response.data.data || [];
     } catch (error) {
-      throw new Error("Error al obtener las asignaciones del proceso");
+      throw new Error('Error al obtener las asignaciones del proceso');
     }
   }
 
@@ -199,12 +177,10 @@ class EvidenceAssignmentService {
    */
   async getAllEvidences(): Promise<Evidence[]> {
     try {
-      const response = await axiosInstance.get<{ data: any[] }>(
-        "/estructura/evidencias",
-      );
-
+      const response = await axiosInstance.get<{ data: any[] }>('/estructura/evidencias');
+      
       const rawEvidences = response.data.data || response.data || [];
-
+      
       // Mapear respuesta del backend: id -> evidencia_id
       return rawEvidences.map((item: any) => ({
         evidencia_id: item.id || item.evidencia_id,
@@ -217,7 +193,7 @@ class EvidenceAssignmentService {
         updated_at: item.updated_at,
       }));
     } catch (error) {
-      devLog.error("Error al obtener evidencias:", error);
+      devLog.error('Error al obtener evidencias:', error);
       throw error;
     }
   }
@@ -227,12 +203,10 @@ class EvidenceAssignmentService {
    */
   async getAllCriteria(): Promise<Criterion[]> {
     try {
-      const response = await axiosInstance.get<{ data: any[] }>(
-        "/estructura/criterios",
-      );
-
+      const response = await axiosInstance.get<{ data: any[] }>('/estructura/criterios');
+      
       const rawCriteria = response.data.data || response.data || [];
-
+      
       // Mapear respuesta del backend: id -> criterio_id
       return rawCriteria.map((item: any) => ({
         criterio_id: item.id || item.criterio_id,
@@ -245,7 +219,7 @@ class EvidenceAssignmentService {
         updated_at: item.updated_at,
       }));
     } catch (error) {
-      devLog.error("Error al obtener criterios:", error);
+      devLog.error('Error al obtener criterios:', error);
       throw error;
     }
   }
@@ -256,34 +230,33 @@ class EvidenceAssignmentService {
    */
   async getAllProcesses(): Promise<Process[]> {
     try {
-      const response = await axiosInstance.get<{ data: any[] }>(
-        "/estructura/procesos",
-      );
-
+      const response = await axiosInstance.get<{ data: any[] }>('/estructura/procesos');
+      
       const rawProcesses = response.data.data || response.data || [];
 
       return rawProcesses.map((item: any) => {
-        const cycle = item.accreditation_cycle || item.accreditationCycle || {};
+        const cycle =
+          item.accreditation_cycle ||
+          item.accreditationCycle ||
+          {};
         const modelo = cycle.modelo_estructura || {};
 
         return {
           proceso_id: item.id || item.proceso_id,
-          nombre: item.nombre ?? `Proceso ${item.id || item.proceso_id}`,
-          tipo_proceso: item.tipo_proceso ?? cycle.tipo_proceso ?? undefined,
-          ciclo_acreditacion_id:
-            item.ciclo_acreditacion_id ?? cycle.ciclo_acreditacion_id,
+          nombre: item.nombre
+            ?? (cycle.nombre && item.tipo_proceso
+              ? `${cycle.nombre} — ${item.tipo_proceso}`
+              : cycle.nombre ?? `Proceso ${item.id || item.proceso_id}`),
+          ciclo_acreditacion_id: item.ciclo_acreditacion_id ?? cycle.ciclo_acreditacion_id,
           ciclo_nombre: cycle.nombre ?? undefined,
-          modelo_estructura_id:
-            modelo.modelo_estructura_id ??
-            cycle.modelo_estructura_id ??
-            undefined,
+          modelo_estructura_id: modelo.modelo_estructura_id ?? cycle.modelo_estructura_id ?? undefined,
           modelo_estructura_tipo: modelo.tipo ?? undefined,
           created_at: item.created_at,
           updated_at: item.updated_at,
         };
       });
     } catch (error) {
-      devLog.error("Error al obtener procesos:", error);
+      devLog.error('Error al obtener procesos:', error);
       throw error;
     }
   }
@@ -294,27 +267,27 @@ class EvidenceAssignmentService {
    */
   async getElementsByModel(modeloId: number): Promise<FlexibleElement[]> {
     try {
-      const response = await axiosInstance.get<any[]>("/estructura/elementos", {
+      const response = await axiosInstance.get<any[]>('/estructura/elementos', {
         params: { modelo_estructura_id: modeloId },
       });
       const raw: any[] = Array.isArray(response.data)
         ? response.data
-        : ((response.data as any)?.data ?? []);
+        : (response.data as any)?.data ?? [];
       return raw.map((item: any) => ({
-        elemento_id: item.elemento_id ?? item.id,
+        elemento_id:          item.elemento_id ?? item.id,
         modelo_estructura_id: item.modelo_estructura_id,
-        padre_id: item.padre_id ?? null,
-        tipo: item.tipo ?? "",
-        nombre: item.nombre ?? null,
-        categoria: item.categoria ?? null,
-        nomenclatura: item.nomenclatura ?? null,
-        descripcion: item.descripcion ?? null,
-        activo: item.activo ?? true,
-        created_at: item.created_at ?? "",
-        updated_at: item.updated_at ?? "",
+        padre_id:             item.padre_id ?? null,
+        tipo:                 item.tipo ?? '',
+        nombre:               item.nombre ?? null,
+        categoria:            item.categoria ?? null,
+        nomenclatura:         item.nomenclatura ?? null,
+        descripcion:          item.descripcion ?? null,
+        activo:               item.activo ?? true,
+        created_at:           item.created_at ?? '',
+        updated_at:           item.updated_at ?? '',
       }));
     } catch (error) {
-      devLog.error("Error al obtener elementos:", error);
+      devLog.error('Error al obtener elementos:', error);
       throw error;
     }
   }
@@ -332,11 +305,9 @@ class EvidenceAssignmentService {
     comentario?: string;
   }): Promise<void> {
     try {
-      await axiosInstance.post("/elementos-asignaciones", data);
+      await axiosInstance.post('/elementos-asignaciones', data);
     } catch (error: any) {
-      throw new Error(
-        error.response?.data?.message || "Error al asignar elemento.",
-      );
+      throw new Error(error.response?.data?.message || 'Error al asignar elemento.');
     }
   }
 
@@ -347,50 +318,48 @@ class EvidenceAssignmentService {
     try {
       await axiosInstance.delete(`/evidencias-asignaciones/${assignmentId}`);
     } catch (error: any) {
-      throw new Error(
-        error.response?.data?.message || "Error al eliminar la asignación",
-      );
+      throw new Error(error.response?.data?.message || 'Error al eliminar la asignación');
     }
   }
 
   /**
    * Actualiza el estado de una asignación
    * PUT /api/evidencias-asignaciones/{id}
-   *
+   * 
    * Usa los nuevos tipos de HU-029
    */
   async updateStatus(
     assignmentId: number,
-    params: UpdateAssignmentParams,
+    params: UpdateAssignmentParams
   ): Promise<EvidenceAssignment> {
     try {
       const response = await axiosInstance.put<{ data: EvidenceAssignment }>(
         `/evidencias-asignaciones/${assignmentId}`,
-        params,
+        params
       );
-
+      
       return response.data.data;
     } catch (error: any) {
       if (error.response?.status === 404) {
-        throw new Error("La asignación no fue encontrada.");
+        throw new Error('La asignación no fue encontrada.');
       }
-
+      
       if (error.response?.status === 403) {
-        throw new Error("No tiene permisos para actualizar esta asignación.");
+        throw new Error('No tiene permisos para actualizar esta asignación.');
       }
-
+      
       if (error.response?.status === 422) {
         const validationErrors = error.response.data.errors;
         const firstError = Object.values(validationErrors || {})[0];
         throw new Error(
-          Array.isArray(firstError) ? firstError[0] : "Error de validación",
+          Array.isArray(firstError) ? firstError[0] : 'Error de validación'
         );
       }
-
+      
       throw new Error(
-        error.response?.data?.message ||
-          error.message ||
-          "Error al actualizar la asignación",
+        error.response?.data?.message || 
+        error.message || 
+        'Error al actualizar la asignación'
       );
     }
   }
@@ -402,19 +371,19 @@ class EvidenceAssignmentService {
   async getById(assignmentId: number): Promise<EvidenceAssignment> {
     try {
       const response = await axiosInstance.get<{ data: EvidenceAssignment }>(
-        `/evidencias-asignaciones/${assignmentId}`,
+        `/evidencias-asignaciones/${assignmentId}`
       );
-
+      
       return response.data.data;
     } catch (error: any) {
       if (error.response?.status === 404) {
-        throw new Error("La asignación no fue encontrada.");
+        throw new Error('La asignación no fue encontrada.');
       }
-
+      
       throw new Error(
-        error.response?.data?.message ||
-          error.message ||
-          "Error al obtener la asignación",
+        error.response?.data?.message || 
+        error.message || 
+        'Error al obtener la asignación'
       );
     }
   }
@@ -424,13 +393,10 @@ class EvidenceAssignmentService {
    * @deprecated Usar updateStatus en su lugar
    */
   async updateAssignment(
-    assignmentId: number,
-    data: Partial<Pick<EvidenceAssignment, "estado" | "fecha_limite">>,
+    assignmentId: number, 
+    data: Partial<Pick<EvidenceAssignment, 'estado' | 'fecha_limite'>>
   ): Promise<EvidenceAssignment> {
-    const response = await axiosInstance.patch(
-      `/evidencias-asignaciones/${assignmentId}`,
-      data,
-    );
+    const response = await axiosInstance.patch(`/evidencias-asignaciones/${assignmentId}`, data);
     return response.data.data;
   }
 
@@ -438,13 +404,11 @@ class EvidenceAssignmentService {
    * Obtiene los elementos asignados al usuario (modelo flexible).
    * GET /api/usuarios/{userId}/elementos-asignados
    */
-  async getMyElementAssignments(
-    userId: number,
-  ): Promise<FlexibleAssignmentItem[]> {
+  async getMyElementAssignments(userId: number): Promise<FlexibleAssignmentItem[]> {
     try {
-      const response = await axiosInstance.get<{
-        data: FlexibleAssignmentItem[];
-      }>(`/usuarios/${userId}/elementos-asignados`);
+      const response = await axiosInstance.get<{ data: FlexibleAssignmentItem[] }>(
+        `/usuarios/${userId}/elementos-asignados`
+      );
       return response.data.data || [];
     } catch (error: any) {
       if (error.response?.status === 404) {
@@ -452,8 +416,8 @@ class EvidenceAssignmentService {
       }
       throw new Error(
         error.response?.data?.message ||
-          error.message ||
-          "Error al obtener las pautas asignadas",
+        error.message ||
+        'Error al obtener las pautas asignadas'
       );
     }
   }
@@ -464,18 +428,19 @@ class EvidenceAssignmentService {
    */
   async updateElementStatus(
     id: number,
-    estado: "En Progreso" | "Completado",
+    estado: 'En Progreso' | 'Completado'
   ): Promise<FlexibleAssignmentItem> {
     try {
-      const response = await axiosInstance.patch<{
-        data: FlexibleAssignmentItem;
-      }>(`/elementos-asignaciones/${id}`, { estado });
+      const response = await axiosInstance.patch<{ data: FlexibleAssignmentItem }>(
+        `/elementos-asignaciones/${id}`,
+        { estado }
+      );
       return response.data.data;
     } catch (error: any) {
       throw new Error(
         error.response?.data?.message ||
-          error.message ||
-          "Error al actualizar el estado",
+        error.message ||
+        'Error al actualizar el estado'
       );
     }
   }
@@ -486,18 +451,15 @@ class EvidenceAssignmentService {
    */
   async requestElementExtension(
     id: number,
-    data: { motivo: string; fecha_sugerida: string },
+    data: { motivo: string; fecha_sugerida: string }
   ): Promise<void> {
     try {
-      await axiosInstance.post(
-        `/elementos-asignaciones/${id}/solicitud-ampliacion`,
-        data,
-      );
+      await axiosInstance.post(`/elementos-asignaciones/${id}/solicitud-ampliacion`, data);
     } catch (error: any) {
       throw new Error(
         error.response?.data?.message ||
-          error.message ||
-          "Error al enviar la solicitud de ampliación",
+        error.message ||
+        'Error al enviar la solicitud de ampliación'
       );
     }
   }
@@ -509,11 +471,11 @@ class EvidenceAssignmentService {
   async getUserCycles(userId: number): Promise<UserCycle[]> {
     try {
       const response = await axiosInstance.get<{ data: UserCycle[] }>(
-        `/usuarios/${userId}/mis-ciclos`,
+        `/usuarios/${userId}/mis-ciclos`
       );
       return response.data.data || [];
     } catch (error) {
-      devLog.error("Error al obtener ciclos del usuario:", error);
+      devLog.error('Error al obtener ciclos del usuario:', error);
       throw error;
     }
   }
