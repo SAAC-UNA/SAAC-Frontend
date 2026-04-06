@@ -217,10 +217,36 @@ export const GlobalContextSelectionPage = () => {
     setSaving(true);
 
     try {
+      const selectedCareer =
+        catalog?.careers.find(
+          (career) =>
+            career.carrera_sede_id === Number(selection.careerCampusId),
+        ) ?? null;
+      const selectedCycle =
+        catalog?.cycles.find(
+          (cycle) => String(cycle.ciclo_acreditacion_id) === selection.cycleId,
+        ) ?? null;
+      const selectedProcess =
+        catalog?.processes.find(
+          (process) => String(process.proceso_id) === selection.processId,
+        ) ?? null;
+
       await globalFilterContextService.updateContext({
         career_campus_id: Number(selection.careerCampusId),
         ciclo_acreditacion_id: Number(selection.cycleId),
         proceso_id: Number(selection.processId),
+      });
+
+      globalFilterContextService.syncContextSnapshot({
+        careerCampusId: Number(selection.careerCampusId),
+        cycleId: Number(selection.cycleId),
+        processId: Number(selection.processId),
+        careerLabel: selectedCareer
+          ? `${selectedCareer.carrera_nombre} - ${selectedCareer.sede_nombre}`
+          : null,
+        campusLabel: selectedCareer?.sede_nombre ?? null,
+        cycleLabel: selectedCycle?.nombre ?? null,
+        processLabel: selectedProcess?.tipo_proceso ?? null,
       });
 
       const fromPath = (location.state as NavigationState | null)?.from;
@@ -262,6 +288,7 @@ export const GlobalContextSelectionPage = () => {
         <PageHeader
           title="Seleccion de contexto de trabajo"
           description="Antes de continuar, seleccione la carrera, el ciclo y el proceso que desea trabajar en esta sesion."
+          breadcrumbMode="none"
           className="mb-6"
         />
 

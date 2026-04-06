@@ -45,9 +45,17 @@ interface ApiData<T> {
 export const GLOBAL_FILTER_CONTEXT_CHANGED_EVENT =
   "saac:global-filter-context-changed";
 
+export const MANUAL_CONTEXT_APPLIED_EVENT = "saac:manual-context-applied";
+
 const emitContextChanged = () => {
   if (typeof window !== "undefined") {
     window.dispatchEvent(new Event(GLOBAL_FILTER_CONTEXT_CHANGED_EVENT));
+  }
+};
+
+export const emitManualContextApplied = () => {
+  if (typeof window !== "undefined") {
+    window.dispatchEvent(new Event(MANUAL_CONTEXT_APPLIED_EVENT));
   }
 };
 

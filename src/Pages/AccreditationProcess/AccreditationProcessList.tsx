@@ -136,14 +136,6 @@ export const AccreditationProcessList: React.FC = () => {
     );
   }, [processes, selectedContextCycleId]);
 
-  const selectedCycle = useMemo(
-    () =>
-      selectedContextCycleId
-        ? (cycles.find((cycle) => cycle.id === selectedContextCycleId) ?? null)
-        : null,
-    [cycles, selectedContextCycleId],
-  );
-
   const selectableCycles = useMemo(() => {
     if (!selectedContextCycleId) {
       return cycles;

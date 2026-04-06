@@ -87,8 +87,12 @@ const FinalReports: React.FC = () => {
   }, []);
 
   useEffect(() => {
+    if (contextLoading) {
+      return;
+    }
+
     fetchData();
-  }, [selectedProcesoId]);
+  }, [selectedProcesoId, contextLoading]);
 
   const loadContext = async () => {
     setContextLoading(true);
@@ -114,9 +118,7 @@ const FinalReports: React.FC = () => {
         ? `${selectedCareer.carrera_nombre} - ${selectedCareer.sede_nombre}`
         : "";
       const cycleLabel = selectedCycle?.nombre ?? "";
-      const processLabel = selectedProcess
-        ? `${selectedProcess.tipo_proceso} (${selectedProcess.proceso_id})`
-        : "";
+      const processLabel = selectedProcess ? selectedProcess.tipo_proceso : "";
 
       setContextInfo({
         careerLabel,
@@ -142,6 +144,11 @@ const FinalReports: React.FC = () => {
   };
 
   const fetchData = async () => {
+    if (!selectedProcesoId) {
+      setDataState({ isLoading: false, criteria: [], evidences: [] });
+      return;
+    }
+
     try {
       setDataState((prev) => ({ ...prev, isLoading: true }));
       const [criteriaResponse, evidencesResponse, approvalsResponse] =
@@ -157,6 +164,28 @@ const FinalReports: React.FC = () => {
       const approvalsArray =
         approvalsResponse.data.data || approvalsResponse.data;
 
+      const normalizedCriteria: Criterio[] = (criteriaArray as any[])
+        .map((item) => ({
+          ...item,
+          id: item.id ?? item.criterio_id,
+          nomenclatura: item.nomenclatura,
+          descripcion: item.descripcion,
+        }))
+        .filter((item) => typeof item.id === "number");
+
+      const normalizedEvidences: Evidencia[] = (evidencesArray as any[])
+        .map((item) => ({
+          ...item,
+          id: item.id ?? item.evidencia_id,
+          criterio_id: item.criterio_id,
+          nomenclatura: item.nomenclatura,
+          descripcion: item.descripcion,
+        }))
+        .filter(
+          (item) =>
+            typeof item.id === "number" && typeof item.criterio_id === "number",
+        );
+
       // Create approvals map by criterio_id + proceso_id
       const approvalsMap = new Map<string, ApprovalStatus>();
       approvalsArray.forEach((aprobacion: any) => {
@@ -165,7 +194,7 @@ const FinalReports: React.FC = () => {
       });
 
       // Assign approval status according to selected process
-      const criteriaWithStatus = criteriaArray.map((c: any) => {
+      const criteriaWithStatus = normalizedCriteria.map((c: any) => {
         const key = selectedProcesoId ? `${c.id}-${selectedProcesoId}` : "";
         const approvalStatus = approvalsMap.get(key) || "pendiente";
 
@@ -183,7 +212,7 @@ const FinalReports: React.FC = () => {
       setDataState((prev) => ({
         ...prev,
         criteria: approvedCriteria,
-        evidences: evidencesArray,
+        evidences: normalizedEvidences,
       }));
     } catch (error: any) {
       console.error("Error:", error);
@@ -205,6 +234,10 @@ const FinalReports: React.FC = () => {
   };
 
   const loadEvidenceFiles = async (evidenciaId: number) => {
+    if (!Number.isInteger(evidenciaId) || evidenciaId <= 0) {
+      return;
+    }
+
     if (loadingFiles.has(evidenciaId)) return;
 
     setUiState((prev) => ({
@@ -227,6 +260,14 @@ const FinalReports: React.FC = () => {
       }));
     } catch (error) {
       console.error("Error cargando archivos:", error);
+
+      // Evita reintentos automáticos infinitos al expandir filas con error
+      setDataState((prev) => ({
+        ...prev,
+        evidences: prev.evidences.map((ev) =>
+          ev.id === evidenciaId ? { ...ev, archivos: [] } : ev,
+        ),
+      }));
     } finally {
       setUiState((prev) => {
         const newSet = new Set(prev.loadingFiles);
@@ -426,26 +467,6 @@ const FinalReports: React.FC = () => {
         breadcrumbMode="contextual"
         headerExtra={
           <div className="flex items-center gap-2">
-            {contextLoading ? (
-              <span className="text-sm text-gris-una">
-                Cargando contexto...
-              </span>
-            ) : (
-              <div className="text-xs sm:text-sm text-gris-una leading-tight">
-                <div>
-                  <span className="font-semibold text-negro-una">Carrera:</span>{" "}
-                  {contextInfo.careerLabel || "No definida"}
-                </div>
-                <div>
-                  <span className="font-semibold text-negro-una">Ciclo:</span>{" "}
-                  {contextInfo.cycleLabel || "No definido"}
-                </div>
-                <div>
-                  <span className="font-semibold text-negro-una">Proceso:</span>{" "}
-                  {contextInfo.processLabel || "No definido"}
-                </div>
-              </div>
-            )}
             {selectedProcesoId && criteria.length > 0 && (
               <>
                 <ButtonWithTooltip
@@ -491,7 +512,7 @@ const FinalReports: React.FC = () => {
           </div>
         }
       />
-      {isLoading ? (
+      {contextLoading || isLoading ? (
         <div className="relative py-12 min-h-100">
           <LoadingSpinner variant="loader" />
         </div>

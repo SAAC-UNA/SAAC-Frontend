@@ -7,7 +7,6 @@ import { ApprovalModal } from "./Components/ApprovalModal";
 import { EvidenceApprovalModal } from "./Components/EvidenceApprovalModal";
 import { EvidenceFilesModal } from "./Components/EvidenceFilesModal";
 import { SuccessModal } from "@/Components/Ui/Modals/SuccessModal";
-import { CustomSelect } from "@/Components/Ui/Forms/SingleSelect";
 import {
   FilterButton,
   type FilterOption,
@@ -19,26 +18,14 @@ import type {
   Evidencia,
   EvidenceApprovalItem,
 } from "./Components/BlockApprovalTable";
-import { Card } from "@/Components/Ui/Layout/Card";
+import { GLOBAL_FILTER_CONTEXT_CHANGED_EVENT } from "@/Services/GlobalFilterContextService";
+import { getOperationalContextSnapshot } from "@/Services/OperationalContextStore";
 
 type BlockApprovalStatus =
   | "pendiente"
   | "aprobado"
   | "rechazado"
   | "incompleto";
-
-interface Proceso {
-  proceso_id: number;
-  tipo_proceso: string;
-  accreditation_cycle: {
-    ciclo_acreditacion_id: number;
-    nombre: string;
-    career_campus: {
-      career: { nombre: string };
-      campus: { nombre: string };
-    };
-  };
-}
 
 const BlockApproval: React.FC = () => {
   const moduleInfo = getModuleInfo("block_approval");
@@ -47,8 +34,7 @@ const BlockApproval: React.FC = () => {
     isLoading: boolean;
     criteria: Criterio[];
     evidences: Evidencia[];
-    processes: Proceso[];
-  }>({ isLoading: true, criteria: [], evidences: [], processes: [] });
+  }>({ isLoading: true, criteria: [], evidences: [] });
 
   const [filterState, setFilterState] = useState<{
     selectedProcesoId: number | null;
@@ -92,7 +78,7 @@ const BlockApproval: React.FC = () => {
     evidencia: Evidencia | null;
   }>({ open: false, evidencia: null });
 
-  const { isLoading, criteria, evidences, processes } = dataState;
+  const { isLoading, criteria, evidences } = dataState;
   const { selectedProcesoId, currentPage, approvalFilter } = filterState;
   const itemsPerPage = TABLE_PAGE_SIZE.standard;
 
@@ -111,28 +97,80 @@ const BlockApproval: React.FC = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedProcesoId]);
 
+  useEffect(() => {
+    const syncSelectedProcessFromContext = () => {
+      const snapshot = getOperationalContextSnapshot();
+      const nextProcessId = snapshot.processId;
+
+      setFilterState((prev) => {
+        if (prev.selectedProcesoId === nextProcessId) {
+          return prev;
+        }
+
+        return {
+          ...prev,
+          selectedProcesoId: nextProcessId,
+          currentPage: 1,
+        };
+      });
+    };
+
+    syncSelectedProcessFromContext();
+
+    if (typeof window === "undefined") {
+      return;
+    }
+
+    window.addEventListener(
+      GLOBAL_FILTER_CONTEXT_CHANGED_EVENT,
+      syncSelectedProcessFromContext,
+    );
+
+    return () => {
+      window.removeEventListener(
+        GLOBAL_FILTER_CONTEXT_CHANGED_EVENT,
+        syncSelectedProcessFromContext,
+      );
+    };
+  }, []);
+
   const fetchData = async () => {
     setDataState((prev) => ({ ...prev, isLoading: true }));
     try {
-      const [
-        criteriaResponse,
-        evidencesResponse,
-        processesResponse,
-        approvalsResponse,
-      ] = await Promise.all([
-        axiosInstance.get("/estructura/criterios"),
-        axiosInstance.get("/estructura/evidencias"),
-        axiosInstance.get("/estructura/procesos"),
-        axiosInstance.get("/aprobaciones-criterios"),
-      ]);
+      const [criteriaResponse, evidencesResponse, approvalsResponse] =
+        await Promise.all([
+          axiosInstance.get("/estructura/criterios"),
+          axiosInstance.get("/estructura/evidencias"),
+          axiosInstance.get("/aprobaciones-criterios"),
+        ]);
 
       const criteriaArray = criteriaResponse.data.data || criteriaResponse.data;
       const evidencesArray =
         evidencesResponse.data.data || evidencesResponse.data;
-      const processesArray =
-        processesResponse.data.data || processesResponse.data;
       const approvalsArray =
         approvalsResponse.data.data || approvalsResponse.data;
+
+      const normalizedCriteria: Criterio[] = (criteriaArray as any[])
+        .map((item) => ({
+          ...item,
+          id: item.id ?? item.criterio_id,
+          nomenclatura: item.nomenclatura,
+          descripcion: item.descripcion,
+        }))
+        .filter((item) => typeof item.id === "number");
+
+      const normalizedEvidences: Evidencia[] = (evidencesArray as any[])
+        .map((item) => ({
+          ...item,
+          id: item.id ?? item.evidencia_id,
+          criterio_id: item.criterio_id,
+          nomenclatura: item.nomenclatura,
+          descripcion: item.descripcion,
+        }))
+        .filter(
+          (item) =>
+            typeof item.id === "number" && typeof item.criterio_id === "number",
+        );
 
       const approvalsMap = new Map<string, BlockApprovalStatus>();
       approvalsArray.forEach((aprobacion: any) => {
@@ -140,7 +178,7 @@ const BlockApproval: React.FC = () => {
         approvalsMap.set(key, aprobacion.estado as BlockApprovalStatus);
       });
 
-      const criteriaWithStatus = criteriaArray.map((c: any) => {
+      const criteriaWithStatus = normalizedCriteria.map((c: any) => {
         const key = selectedProcesoId ? `${c.id}-${selectedProcesoId}` : "";
         return {
           ...c,
@@ -151,8 +189,7 @@ const BlockApproval: React.FC = () => {
 
       setDataState({
         criteria: criteriaWithStatus,
-        evidences: evidencesArray,
-        processes: processesArray,
+        evidences: normalizedEvidences,
         isLoading: false,
       });
     } catch (error: any) {
@@ -377,31 +414,6 @@ const BlockApproval: React.FC = () => {
         breadcrumbMode="contextual"
         headerExtra={
           <div className="flex gap-4 items-end">
-            <Card className="w-80">
-              <CustomSelect
-                label="Seleccionar Proceso"
-                value={selectedProcesoId?.toString() || ""}
-                placeholder="Seleccione un proceso"
-                size="sm"
-                onChange={(value) =>
-                  setFilterState((prev) => ({
-                    ...prev,
-                    selectedProcesoId: value ? Number(value) : null,
-                  }))
-                }
-                options={processes
-                  .filter(
-                    (p) =>
-                      p.accreditation_cycle?.career_campus?.career?.nombre &&
-                      p.accreditation_cycle?.career_campus?.campus?.nombre,
-                  )
-                  .map((p) => ({
-                    value: p.proceso_id.toString(),
-                    label: `${p.accreditation_cycle.career_campus.career.nombre} - ${p.accreditation_cycle.career_campus.campus.nombre} (${p.tipo_proceso})`,
-                  }))}
-                maxVisibleItems={5}
-              />
-            </Card>
             <FilterButton
               tooltipText="Filtrar por estado"
               options={filtroOptions}

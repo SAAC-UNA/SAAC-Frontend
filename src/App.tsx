@@ -1,4 +1,4 @@
-import { lazy, Suspense } from "react";
+import { lazy, Suspense, useEffect, useState } from "react";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider } from "@/Context/AuthContext";
 import { NavigationProvider } from "@/Context/NavigationContext";
@@ -7,10 +7,12 @@ import { ProtectedRoute } from "@/Components/Ui/ProtectedRoute";
 import { RequireOperationalContext } from "@/Components/Ui/RequireOperationalContext";
 import { Layout } from "./Components/Layout/Index";
 import { LoadingSpinner } from "@/Components/Ui/Feedback/Loading";
+import { MANUAL_CONTEXT_APPLIED_EVENT } from "@/Services/GlobalFilterContextService";
 import {
   CAPABILITIES,
   EVIDENCE_ASSIGNMENT_PERMISSIONS,
   EVIDENCE_VIEW_PERMISSIONS,
+  IMPROVEMENT_COMMITMENT_ACCESS_PERMISSIONS,
   REPORTS_ACCESS_PERMISSIONS,
   ROLE_MANAGEMENT_PERMISSIONS,
   USER_MANAGEMENT_PERMISSIONS,
@@ -61,6 +63,12 @@ const AuditLogPage = lazy(() => import("@/Pages/AuditLog/AuditLogPage"));
 const CreateImprovementCommitment = lazy(
   () => import("./Pages/ImprovementCommitments/CreateImprovementCommitment"),
 );
+const ImprovementCommitmentsList = lazy(
+  () => import("./Pages/ImprovementCommitments/CompromisosList"),
+);
+const ImprovementCommitmentDetail = lazy(
+  () => import("./Pages/ImprovementCommitments/CompromisoDetalle"),
+);
 const AccreditationProcessList = lazy(() =>
   import("./Pages/AccreditationProcess/AccreditationProcessList").then((m) => ({
     default: m.AccreditationProcessList,
@@ -91,6 +99,34 @@ const PageLoader = () => (
 );
 
 function App() {
+  const [contextRenderKey, setContextRenderKey] = useState(0);
+
+  useEffect(() => {
+    if (typeof window === "undefined") {
+      return undefined;
+    }
+
+    const handleManualContextApplied = () => {
+      if (window.location.pathname === "/") {
+        return;
+      }
+
+      setContextRenderKey((prev) => prev + 1);
+    };
+
+    window.addEventListener(
+      MANUAL_CONTEXT_APPLIED_EVENT,
+      handleManualContextApplied,
+    );
+
+    return () => {
+      window.removeEventListener(
+        MANUAL_CONTEXT_APPLIED_EVENT,
+        handleManualContextApplied,
+      );
+    };
+  }, []);
+
   return (
     <BrowserRouter>
       <AuthProvider>
@@ -109,7 +145,7 @@ function App() {
                     <RequireOperationalContext>
                       <Layout>
                         <Suspense fallback={<PageLoader />}>
-                          <Routes>
+                          <Routes key={`context-${contextRenderKey}`}>
                             {/* Pagina de inicio */}
                             <Route path="/" element={<HomePage />} />
 

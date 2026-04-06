@@ -81,9 +81,16 @@ export const getNavigationItems = (
 ): NavItem[] => {
   const access = normalizeAccessInput(accessInput);
   const hasAccess = (rule?: AccessRule) => evaluateAccess(access, rule);
+  const isSuperUser = (access.roles ?? []).some((role) => {
+    const normalizedRole = role.toLowerCase();
+    return (
+      normalizedRole === "superusuario" || normalizedRole === "super usuario"
+    );
+  });
   const hasCycleSelection = access.context?.cycleId !== null;
   const hasProcessSelection = access.context?.processId !== null;
-  const hasContextualSelection = hasCycleSelection && hasProcessSelection;
+  const hasContextualSelection =
+    isSuperUser || (hasCycleSelection && hasProcessSelection);
 
   const items: NavItem[] = [
     {
@@ -156,23 +163,8 @@ export const getNavigationItems = (
     }
   }
 
-  if (hasContextualSelection) {
+  {
     const evidenciaChildren: NavItem[] = [];
-
-    if (
-      hasAccess({
-        requireAnyCapabilities: [CAPABILITIES.EVIDENCE_ASSIGN],
-        requireAnyPermissions: EVIDENCE_ASSIGNMENT_PERMISSIONS,
-      })
-    ) {
-      evidenciaChildren.push({
-        id: "evidenciasAsignar",
-        label: "Asignar Entregables",
-        icon: evidenceIcon,
-        href: "/evidencias/asignar",
-        isActive: false,
-      });
-    }
 
     if (
       hasAccess({
@@ -190,6 +182,23 @@ export const getNavigationItems = (
     }
 
     if (
+      hasContextualSelection &&
+      hasAccess({
+        requireAnyCapabilities: [CAPABILITIES.EVIDENCE_ASSIGN],
+        requireAnyPermissions: EVIDENCE_ASSIGNMENT_PERMISSIONS,
+      })
+    ) {
+      evidenciaChildren.push({
+        id: "evidenciasAsignar",
+        label: "Asignar Entregables",
+        icon: evidenceIcon,
+        href: "/evidencias/asignar",
+        isActive: false,
+      });
+    }
+
+    if (
+      hasContextualSelection &&
       hasAccess({
         requireAnyCapabilities: [CAPABILITIES.EVIDENCE_ASSIGN],
         requireAnyPermissions: EVIDENCE_ASSIGNMENT_PERMISSIONS,
@@ -217,10 +226,26 @@ export const getNavigationItems = (
     }
   }
 
-  if (hasContextualSelection) {
+  {
     const solicitudChildren: NavItem[] = [];
 
     if (
+      hasAccess({
+        requireAnyCapabilities: [CAPABILITIES.EXTENSION_VIEW],
+        requireAnyPermissions: ["solicitudes_ampliacion.view"],
+      })
+    ) {
+      solicitudChildren.push({
+        id: "misSolicitudesAmpliacion",
+        label: "Mis Solicitudes",
+        icon: extensionRequestIcon,
+        href: "/solicitudes-ampliacion/mis-solicitudes",
+        isActive: false,
+      });
+    }
+
+    if (
+      hasContextualSelection &&
       hasAccess({
         requireAnyCapabilities: [CAPABILITIES.EXTENSION_MANAGE],
         requireAnyPermissions: [
@@ -234,21 +259,6 @@ export const getNavigationItems = (
         label: "Gestionar Solicitudes",
         icon: extensionRequestIcon,
         href: "/solicitudes-ampliacion/gestionar",
-        isActive: false,
-      });
-    }
-
-    if (
-      hasAccess({
-        requireAnyCapabilities: [CAPABILITIES.EXTENSION_VIEW],
-        requireAnyPermissions: ["solicitudes_ampliacion.view"],
-      })
-    ) {
-      solicitudChildren.push({
-        id: "misSolicitudesAmpliacion",
-        label: "Mis Solicitudes",
-        icon: extensionRequestIcon,
-        href: "/solicitudes-ampliacion/mis-solicitudes",
         isActive: false,
       });
     }

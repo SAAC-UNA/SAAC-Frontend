@@ -73,9 +73,6 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
       const sessionUser = await authService.checkAuthStatus();
       setUser(sessionUser);
 
-      // On full page reload, force a clean operational context.
-      clearOperationalContextIds();
-
       setAuthChecked(true); // Marcamos que la verificación inicial terminó
     };
     checkSession();
