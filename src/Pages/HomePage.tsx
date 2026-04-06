@@ -376,10 +376,7 @@ const HomePage: React.FC = () => {
 
   const processOptions = useMemo<SelectOption[]>(() => {
     return availableProcesses.map((process) =>
-      toOption(
-        process.proceso_id,
-        `${process.tipo_proceso} (${process.proceso_id})`,
-      ),
+      toOption(process.proceso_id, process.tipo_proceso),
     );
   }, [availableProcesses]);
 
