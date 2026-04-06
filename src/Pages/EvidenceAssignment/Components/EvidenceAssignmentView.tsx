@@ -16,6 +16,8 @@ import { EditConfirmationModal } from "@/Components/Ui/Modals/EditConfirmationMo
 import { Textarea } from "@/Components/Ui/Forms/Textarea";
 import { TreeSelect } from "@/Components/Ui/Forms/TreeSelect";
 import { BackendErrorAlert } from "@/Components/Ui/Feedback/BackendErrorAlert";
+import { Breadcrumb } from "@/Components/Ui/Feedback/Breadcrumb";
+import type { BreadcrumbItem } from "@/Components/Ui/Feedback/Breadcrumb";
 import { TYPOGRAPHY } from "@/Constants/Typography";
 import type {
   DuplicateAssignment,
@@ -75,13 +77,13 @@ export const EvidenceAssignmentView: React.FC<EvidenceAssignmentViewProps> = ({
   flexElements,
   flexElementsLoading,
 }) => {
-  const getEvidenceBreadcrumb = (evidenciaId: number): string => {
+  const getEvidenceBreadcrumb = (evidenciaId: number): BreadcrumbItem[] => {
     const ev = evidenceById[evidenciaId];
-    if (!ev) return "N/A";
+    if (!ev) return [{ label: 'N/A' }];
     const criterion = criterionById[ev.criterio_id] as Criterion | undefined;
     return criterion
-      ? `${criterion.nomenclatura} > ${ev.nomenclatura} — ${ev.descripcion}`
-      : `${ev.nomenclatura} — ${ev.descripcion}`;
+      ? [{ label: criterion.nomenclatura }, { label: `${ev.nomenclatura} — ${ev.descripcion}` }]
+      : [{ label: `${ev.nomenclatura} — ${ev.descripcion}` }];
   };
 
   return (
@@ -529,9 +531,7 @@ export const EvidenceAssignmentView: React.FC<EvidenceAssignmentViewProps> = ({
                             <div
                               className={`flex items-center gap-2 flex-1 min-w-0 ${TYPOGRAPHY.table.cell}`}
                             >
-                              <span className="text-negro-una truncate">
-                                {getEvidenceBreadcrumb(dup.evidencia_id)}
-                              </span>
+                              <Breadcrumb items={getEvidenceBreadcrumb(dup.evidencia_id)} />
                             </div>
                           ),
                           action: (
@@ -683,9 +683,7 @@ export const EvidenceAssignmentView: React.FC<EvidenceAssignmentViewProps> = ({
                                   className="w-4 h-4 rounded border-info-ring text-info focus:ring-info cursor-pointer shrink-0"
                                   aria-label={`Reasignar ${evidenceById[dup.evidencia_id]?.nomenclatura}`}
                                 />
-                                <span className="text-negro-una truncate">
-                                  {getEvidenceBreadcrumb(dup.evidencia_id)}
-                                </span>
+                                <Breadcrumb variant="table" items={getEvidenceBreadcrumb(dup.evidencia_id)} />
                               </div>
                             ),
                             action: (

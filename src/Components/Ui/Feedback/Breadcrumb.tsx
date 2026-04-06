@@ -20,13 +20,14 @@ export interface BreadcrumbItem {
 interface BreadcrumbProps {
   items: BreadcrumbItem[];
   className?: string;
+  variant?: "default" | "table";
 }
 
 const ChevronSeparator = () => (
   <SystemIcons.interface.chevronBreadcrumb className="text-gris-una" size="sm" />
 );
 
-export const Breadcrumb: React.FC<BreadcrumbProps> = ({ items, className }) => {
+export const Breadcrumb: React.FC<BreadcrumbProps> = ({ items, className, variant = "default" }) => {
   if (items.length === 0) {
     return null;
   }
@@ -43,7 +44,7 @@ export const Breadcrumb: React.FC<BreadcrumbProps> = ({ items, className }) => {
               "block truncate transition-colors",
               isCurrent
                 ? "font-semibold text-negro-una"
-                : "hover:text-negro-una",
+                : variant === "table" ? "text-gris-una" : "hover:text-negro-una",
             );
 
             const content = item.href ? (
