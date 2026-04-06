@@ -10,7 +10,7 @@
 import React, { useState, useEffect, useCallback, useMemo } from "react";
 import { CustomSelect, type SelectOption } from "@/Components/Ui/Index";
 import { Card } from "@/Components/Ui/Layout/Card";
-import { TreeSelect } from "@/Components/Ui/Forms/TreeSelect";
+import { ChainedSingleSelect } from "@/Components/Ui/Forms/ChainedSingleSelect";
 import { evidenceSearchFiltersService } from "@/Services/EvidenceSearchService";
 import type { EvidenceSearchFilters } from "@/Types/EvidenceSearchTypes";
 import type { FlexibleElement } from "@/Types/StructureModelTypes";
@@ -183,19 +183,16 @@ export const EvidenceSearchFiltersPanel: React.FC<
           {/* Modo flexible: filtros jerárquicos por nivel */}
           {isFlexible ? (
             <div className="md:col-span-1 xl:col-span-3">
-              <TreeSelect
+              <ChainedSingleSelect
                 elements={flexElements}
-                value={pautaId ? [parseInt(pautaId, 10)] : []}
-                onChange={(ids) => {
-                  const next =
-                    ids.length > 0 ? ids[ids.length - 1].toString() : "";
+                value={pautaId ? parseInt(pautaId, 10) : null}
+                onChange={(id) => {
+                  const next = id !== null ? id.toString() : "";
                   setPautaId(next);
                   onFiltersChange({
-                    elemento_id: next ? parseInt(next, 10) : null,
+                    elemento_id: id,
                   });
                 }}
-                mode="filter"
-                label="Filtrar por nivel"
                 disabled={flexElements.length === 0}
               />
             </div>
