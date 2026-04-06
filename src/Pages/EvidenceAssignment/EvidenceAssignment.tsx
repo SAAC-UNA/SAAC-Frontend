@@ -19,6 +19,7 @@ import {
 import type { MultiSelectOption } from "@/Components/Ui/Forms/MultiSelect";
 import type { UserAvatarsUser } from "@/Components/Ui/UserAvatars/UserAvatars";
 import type { DataTableColumn } from "@/Components/Ui/Index";
+import { Breadcrumb } from "@/Components/Ui/Feedback/Breadcrumb";
 import {
   Tooltip,
   TooltipTrigger,
@@ -109,6 +110,8 @@ export interface EvidenceAssignmentViewProps {
   flexElementsLoading: boolean;
   // Proceso seleccionado para breadcrumbs
   selectedProcess: Process | null;
+  // Selector de proceso
+  processes: Process[];
 }
 
 // ---------------------------------------------------------------------------
@@ -505,36 +508,20 @@ const EvidenceAssignment: React.FC = () => {
             <div className="min-w-0">
               <Tooltip>
                 <TooltipTrigger asChild>
-                  <span
-                    className={`${TYPOGRAPHY.table.cell} font-semibold truncate block cursor-default text-negro-una`}
-                    title=""
-                  >
-                    {displayText}
-                  </span>
+                  <div><Breadcrumb variant="table" items={displayText.split(' > ').map(label => ({ label }))} /></div>
                 </TooltipTrigger>
-                <TooltipContent
-                  side="top"
-                  align="start"
-                  className="whitespace-normal max-w-xs"
-                >
+                <TooltipContent side="top" align="start" className="whitespace-normal max-w-xs">
                   {displayText}
                 </TooltipContent>
               </Tooltip>
               {comentario && (
                 <Tooltip>
                   <TooltipTrigger asChild>
-                    <span
-                      className={`${TYPOGRAPHY.table.helper} truncate block cursor-default text-gris-una mt-0.5`}
-                      title=""
-                    >
+                    <span className={`${TYPOGRAPHY.table.helper} truncate block cursor-default text-gris-una mt-0.5`}>
                       {comentario}
                     </span>
                   </TooltipTrigger>
-                  <TooltipContent
-                    side="top"
-                    align="start"
-                    className="whitespace-normal max-w-xs"
-                  >
+                  <TooltipContent side="top" align="start" className="whitespace-normal max-w-xs">
                     {comentario}
                   </TooltipContent>
                 </Tooltip>
@@ -867,6 +854,8 @@ const EvidenceAssignment: React.FC = () => {
     isFlexible,
     flexElements,
     flexElementsLoading,
+    selectedProcess,
+    processes,
   };
 
   return <EvidenceAssignmentView {...viewProps} />;

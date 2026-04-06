@@ -16,6 +16,9 @@ import { EditConfirmationModal } from "@/Components/Ui/Modals/EditConfirmationMo
 import { Textarea } from "@/Components/Ui/Forms/Textarea";
 import { TreeSelect } from "@/Components/Ui/Forms/TreeSelect";
 import { BackendErrorAlert } from "@/Components/Ui/Feedback/BackendErrorAlert";
+import { Breadcrumb } from "@/Components/Ui/Feedback/Breadcrumb";
+import type { BreadcrumbItem } from "@/Components/Ui/Feedback/Breadcrumb";
+import { CustomSelect } from "@/Components/Ui/Forms/SingleSelect";
 import { TYPOGRAPHY } from "@/Constants/Typography";
 import type {
   DuplicateAssignment,
@@ -74,14 +77,15 @@ export const EvidenceAssignmentView: React.FC<EvidenceAssignmentViewProps> = ({
   isFlexible,
   flexElements,
   flexElementsLoading,
+  processes,
 }) => {
-  const getEvidenceBreadcrumb = (evidenciaId: number): string => {
+  const getEvidenceBreadcrumb = (evidenciaId: number): BreadcrumbItem[] => {
     const ev = evidenceById[evidenciaId];
-    if (!ev) return "N/A";
+    if (!ev) return [{ label: 'N/A' }];
     const criterion = criterionById[ev.criterio_id] as Criterion | undefined;
     return criterion
-      ? `${criterion.nomenclatura} > ${ev.nomenclatura} — ${ev.descripcion}`
-      : `${ev.nomenclatura} — ${ev.descripcion}`;
+      ? [{ label: criterion.nomenclatura }, { label: `${ev.nomenclatura} — ${ev.descripcion}` }]
+      : [{ label: `${ev.nomenclatura} — ${ev.descripcion}` }];
   };
 
   return (
@@ -90,6 +94,18 @@ export const EvidenceAssignmentView: React.FC<EvidenceAssignmentViewProps> = ({
         title={moduleInfo.title}
         description={moduleInfo.description}
         breadcrumbMode="contextual"
+        headerExtra={
+          <Card className="w-80">
+          <CustomSelect
+            label="Proceso"
+            value={formData.proceso_id?.toString() ?? ""}
+            options={processes.map((p) => ({ value: p.proceso_id.toString(), label: p.nombre }))}
+            onChange={(val) => updateFormData({ proceso_id: Number(val) })}
+            searchable
+            variant="floating"
+          />
+          </Card>
+        }
       />
 
       {criteriaLoading ? (
@@ -529,9 +545,7 @@ export const EvidenceAssignmentView: React.FC<EvidenceAssignmentViewProps> = ({
                             <div
                               className={`flex items-center gap-2 flex-1 min-w-0 ${TYPOGRAPHY.table.cell}`}
                             >
-                              <span className="text-negro-una truncate">
-                                {getEvidenceBreadcrumb(dup.evidencia_id)}
-                              </span>
+                              <Breadcrumb items={getEvidenceBreadcrumb(dup.evidencia_id)} />
                             </div>
                           ),
                           action: (
@@ -683,9 +697,7 @@ export const EvidenceAssignmentView: React.FC<EvidenceAssignmentViewProps> = ({
                                   className="w-4 h-4 rounded border-info-ring text-info focus:ring-info cursor-pointer shrink-0"
                                   aria-label={`Reasignar ${evidenceById[dup.evidencia_id]?.nomenclatura}`}
                                 />
-                                <span className="text-negro-una truncate">
-                                  {getEvidenceBreadcrumb(dup.evidencia_id)}
-                                </span>
+                                <Breadcrumb variant="table" items={getEvidenceBreadcrumb(dup.evidencia_id)} />
                               </div>
                             ),
                             action: (

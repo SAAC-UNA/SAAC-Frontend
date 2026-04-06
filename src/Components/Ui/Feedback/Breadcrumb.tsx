@@ -7,6 +7,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/Components/Ui/Feedback/Tooltip";
+import { SystemIcons } from "@/Components/Ui/Icons/SystemIcons";
 
 export interface BreadcrumbItem {
   label: string;
@@ -19,25 +20,14 @@ export interface BreadcrumbItem {
 interface BreadcrumbProps {
   items: BreadcrumbItem[];
   className?: string;
+  variant?: "default" | "table";
 }
 
 const ChevronSeparator = () => (
-  <svg
-    xmlns="http://www.w3.org/2000/svg"
-    className="size-4 text-gris-una"
-    viewBox="0 0 20 20"
-    fill="currentColor"
-    aria-hidden="true"
-  >
-    <path
-      fillRule="evenodd"
-      d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z"
-      clipRule="evenodd"
-    />
-  </svg>
+  <SystemIcons.interface.chevronBreadcrumb className="text-gris-una" size="sm" />
 );
 
-export const Breadcrumb: React.FC<BreadcrumbProps> = ({ items, className }) => {
+export const Breadcrumb: React.FC<BreadcrumbProps> = ({ items, className, variant = "default" }) => {
   if (items.length === 0) {
     return null;
   }
@@ -54,7 +44,7 @@ export const Breadcrumb: React.FC<BreadcrumbProps> = ({ items, className }) => {
               "block truncate transition-colors",
               isCurrent
                 ? "font-semibold text-negro-una"
-                : "hover:text-negro-una",
+                : variant === "table" ? "text-negro-una font-semibold" : "hover:text-negro-una",
             );
 
             const content = item.href ? (
