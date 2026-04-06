@@ -11,7 +11,7 @@ import { CustomSelect } from '@/Components/Ui/Forms/SingleSelect';
 import { FilterButton, type FilterOption } from '@/Components/Ui/Buttons/FilterButton';
 import { TABLE_PAGE_SIZE } from '@/Constants/TablePagination';
 import { BlockApprovalTable } from './Components/BlockApprovalTable';
-import type { Criterio, Evidencia, EvidenceApprovalItem } from './Components/BlockApprovalTable';
+import type { Criterio, Evidencia, EvidenceApprovalItem, EvidenceApprovalStatus } from './Components/BlockApprovalTable';
 import { Card } from '@/Components/Ui/Layout/Card';
 
 type BlockApprovalStatus = 'pendiente' | 'aprobado' | 'rechazado' | 'incompleto';
@@ -25,6 +25,10 @@ interface Proceso {
     career_campus: {
       career: { nombre: string };
       campus: { nombre: string };
+    };
+    modelo_estructura?: {
+      modelo_estructura_id: number;
+      tipo: string;
     };
   };
 }
@@ -67,12 +71,22 @@ const BlockApproval: React.FC = () => {
     successOpen: boolean;
   }>({ isOpen: false, action: 'aprobar', criterio: null, evidencia: null, successOpen: false });
 
-  // Modal de archivos
-  const [filesModal, setFilesModal] = useState<{ open: boolean; evidencia: Evidencia | null }>({ open: false, evidencia: null });
+  // Modal de archivos (flexible: includes criterio + approvalItem for inline review)
+  const [filesModal, setFilesModal] = useState<{
+    open: boolean;
+    evidencia: Evidencia | null;
+    criterio: Criterio | null;
+    approvalItem: EvidenceApprovalItem | null;
+  }>({ open: false, evidencia: null, criterio: null, approvalItem: null });
 
   const { isLoading, criteria, evidences, processes } = dataState;
   const { selectedProcesoId, currentPage, approvalFilter } = filterState;
   const itemsPerPage = TABLE_PAGE_SIZE.standard;
+
+  const selectedProcess = useMemo(
+    () => processes.find(p => p.proceso_id === selectedProcesoId) ?? null,
+    [processes, selectedProcesoId]);
+  const isFlexible = selectedProcess?.accreditation_cycle?.modelo_estructura?.tipo === 'elemento_flexible';
 
   const filtroOptions: FilterOption<BlockApprovalStatus | 'todos'>[] = [
     { value: 'pendiente',   label: 'Pendientes' },
@@ -92,35 +106,143 @@ const BlockApproval: React.FC = () => {
   const fetchData = async () => {
     setDataState(prev => ({ ...prev, isLoading: true }));
     try {
-      const [criteriaResponse, evidencesResponse, processesResponse, approvalsResponse] = await Promise.all([
-        axiosInstance.get('/estructura/criterios'),
-        axiosInstance.get('/estructura/evidencias'),
-        axiosInstance.get('/estructura/procesos'),
-        axiosInstance.get('/aprobaciones-criterios'),
-      ]);
+      const processesResponse = await axiosInstance.get('/estructura/procesos');
+      const processesArray: Proceso[] = processesResponse.data.data || processesResponse.data;
 
-      const criteriaArray  = criteriaResponse.data.data  || criteriaResponse.data;
-      const evidencesArray = evidencesResponse.data.data || evidencesResponse.data;
-      const processesArray = processesResponse.data.data || processesResponse.data;
-      const approvalsArray = approvalsResponse.data.data || approvalsResponse.data;
+      // Detect model type from the currently selected process
+      const selectedRaw = processesArray.find(p => p.proceso_id === selectedProcesoId);
+      const modeloEstructura = selectedRaw?.accreditation_cycle?.modelo_estructura;
+      const isSelectedFlexible = modeloEstructura?.tipo === 'elemento_flexible';
+      const selectedModeloId = modeloEstructura?.modelo_estructura_id;
 
-      const approvalsMap = new Map<string, BlockApprovalStatus>();
-      approvalsArray.forEach((aprobacion: any) => {
-        const key = `${aprobacion.criterio_id}-${aprobacion.proceso_id}`;
-        approvalsMap.set(key, aprobacion.estado as BlockApprovalStatus);
-      });
+      if (isSelectedFlexible && selectedModeloId && selectedProcesoId) {
+        // ── Flexible mode: load elements + assignments + element approvals ────
+        const [elementsResponse, assignmentsResponse, approvalsResponse] = await Promise.all([
+          axiosInstance.get('/estructura/elementos', { params: { modelo_estructura_id: selectedModeloId } }),
+          axiosInstance.get(`/procesos/${selectedProcesoId}/elementos-asignaciones`),
+          axiosInstance.get('/aprobaciones-elementos', { params: { proceso_id: selectedProcesoId } }),
+        ]);
 
-      const criteriaWithStatus = criteriaArray.map((c: any) => {
-        const key = selectedProcesoId ? `${c.id}-${selectedProcesoId}` : '';
-        return {
-          ...c,
-          estado_aprobacion: (approvalsMap.get(key) ?? 'pendiente') as BlockApprovalStatus,
-        };
-      });
+        const allElements: any[] = Array.isArray(elementsResponse.data)
+          ? elementsResponse.data
+          : elementsResponse.data?.data ?? [];
+        const allAssignments: any[] = assignmentsResponse.data.data ?? assignmentsResponse.data ?? [];
+        const allApprovals: any[] = approvalsResponse.data.data || approvalsResponse.data;
 
-      setDataState({ criteria: criteriaWithStatus, evidences: evidencesArray, processes: processesArray, isLoading: false });
+        const approvalsMap = new Map<number, { estado: BlockApprovalStatus; comentario: string | null }>();
+        allApprovals.forEach((a: any) => {
+          approvalsMap.set(a.elemento_id, { estado: a.estado as BlockApprovalStatus, comentario: a.comentario ?? null });
+        });
+
+        // Only include assignments that are ready for review (Completado, Observada, Validada)
+        const REVIEWABLE_ESTADOS = ['Completado', 'Observada', 'Validada'];
+        const reviewableAssignments: any[] = allAssignments.filter((a: any) => REVIEWABLE_ESTADOS.includes(a.estado));
+
+        // Group reviewable assignments by elemento_id
+        const assignmentsByElement = new Map<number, any[]>();
+        reviewableAssignments.forEach((asgn: any) => {
+          const eid = asgn.elemento_id;
+          if (!assignmentsByElement.has(eid)) assignmentsByElement.set(eid, []);
+          assignmentsByElement.get(eid)!.push(asgn);
+        });
+
+        // Only show blocks whose children have reviewable assignments
+        const assignedElementIds = new Set<number>(reviewableAssignments.map((a: any) => a.elemento_id));
+
+        const assignedLeaves = allElements.filter(
+          (e: any) => assignedElementIds.has(e.elemento_id) && e.activo !== false,
+        );
+        const relevantParentIds = new Set<number>(
+          assignedLeaves
+            .map((e: any) => e.padre_id)
+            .filter((id: any): id is number => id !== null && id !== undefined),
+        );
+        const blocks = allElements.filter((e: any) => relevantParentIds.has(e.elemento_id) && e.activo !== false);
+
+        const criteriaFromBlocks: Criterio[] = blocks.map((b: any) => {
+          // Collect unique users across all reviewable child assignments of this block
+          const childElementIds = new Set(
+            assignedLeaves
+              .filter((e: any) => e.padre_id === b.elemento_id)
+              .map((e: any) => e.elemento_id),
+          );
+          const responsableMap = new Map<number, string>();
+          reviewableAssignments
+            .filter((a: any) => childElementIds.has(a.elemento_id))
+            .forEach((a: any) => {
+              const uid = a.usuario_id;
+              if (uid && !responsableMap.has(uid)) {
+                responsableMap.set(uid, a.user?.nombre ?? a.user?.name ?? String(uid));
+              }
+            });
+          return {
+            id: b.elemento_id,
+            nomenclatura: b.nomenclatura ?? '',
+            descripcion: b.nombre ?? b.descripcion ?? '',
+            estado_aprobacion: approvalsMap.get(b.elemento_id)?.estado ?? 'pendiente',
+            responsables: Array.from(responsableMap.entries()).map(([id, name]) => ({ id, name })),
+          };
+        });
+
+        const childrenByBlock: Record<number, EvidenceApprovalItem[]> = {};
+        blocks.forEach((b: any) => {
+          childrenByBlock[b.elemento_id] = allElements
+            .filter((e: any) => e.padre_id === b.elemento_id && assignedElementIds.has(e.elemento_id) && e.activo !== false)
+            .map((child: any) => {
+              const childId = child.elemento_id;
+              const apr = approvalsMap.get(childId);
+              const childAssignments = assignmentsByElement.get(childId) ?? [];
+              const firstAssignment = childAssignments[0];
+              const validStatuses: EvidenceApprovalStatus[] = ['pendiente', 'aprobado', 'rechazado'];
+              return {
+                evidencia_id: childId,
+                nomenclatura: child.nomenclatura ?? '',
+                descripcion: child.nombre ?? child.descripcion ?? '',
+                approval_status: (validStatuses.includes(apr?.estado as EvidenceApprovalStatus) ? apr!.estado : 'pendiente') as EvidenceApprovalStatus,
+                comentario_rechazo: apr?.comentario ?? null,
+                asignacion: firstAssignment ? {
+                  estado: firstAssignment.estado,
+                  fecha_limite: firstAssignment.fecha_limite,
+                  usuario_id: firstAssignment.usuario_id,
+                } : null,
+                asignacion_id: firstAssignment?.elemento_asignacion_id,
+              };
+            });
+        });
+
+        setDataState({ isLoading: false, criteria: criteriaFromBlocks, evidences: [], processes: processesArray });
+        setEvidenceApprovalsByCriterion(childrenByBlock);
+
+      } else {
+        // ── Traditional mode: load criteria + evidences + criterion approvals ─
+        const [criteriaResponse, evidencesResponse, approvalsResponse] = await Promise.all([
+          axiosInstance.get('/estructura/criterios'),
+          axiosInstance.get('/estructura/evidencias'),
+          axiosInstance.get('/aprobaciones-criterios'),
+        ]);
+
+        const criteriaArray  = criteriaResponse.data.data  || criteriaResponse.data;
+        const evidencesArray = evidencesResponse.data.data || evidencesResponse.data;
+        const approvalsArray = approvalsResponse.data.data || approvalsResponse.data;
+
+        const approvalsMap = new Map<string, BlockApprovalStatus>();
+        approvalsArray.forEach((aprobacion: any) => {
+          const key = `${aprobacion.criterio_id}-${aprobacion.proceso_id}`;
+          approvalsMap.set(key, aprobacion.estado as BlockApprovalStatus);
+        });
+
+        const criteriaWithStatus = criteriaArray.map((c: any) => {
+          const key = selectedProcesoId ? `${c.id}-${selectedProcesoId}` : '';
+          return {
+            ...c,
+            estado_aprobacion: (approvalsMap.get(key) ?? 'pendiente') as BlockApprovalStatus,
+          };
+        });
+
+        setDataState({ criteria: criteriaWithStatus, evidences: evidencesArray, processes: processesArray, isLoading: false });
+      }
     } catch (error: any) {
-      showToast({ type: 'error', title: 'Error al cargar datos', message: error?.response?.data?.message || error?.message || 'No se pudieron cargar los criterios' });
+      showToast({ type: 'error', title: 'Error al cargar datos', message: error?.response?.data?.message || error?.message || 'No se pudieron cargar los datos' });
       setDataState(prev => ({ ...prev, isLoading: false }));
     }
   };
@@ -173,9 +295,13 @@ const BlockApproval: React.FC = () => {
     if (!criterion || !selectedProcesoId) return;
 
     try {
-      const endpoint = action === 'aprobar'
-        ? `/criterios/${criterion.id}/aprobar`
-        : `/criterios/${criterion.id}/rechazar`;
+      const endpoint = isFlexible
+        ? action === 'aprobar'
+          ? `/elementos/${criterion.id}/aprobar`
+          : `/elementos/${criterion.id}/rechazar`
+        : action === 'aprobar'
+          ? `/criterios/${criterion.id}/aprobar`
+          : `/criterios/${criterion.id}/rechazar`;
 
       await axiosInstance.post(endpoint, {
         proceso_id: selectedProcesoId,
@@ -207,9 +333,13 @@ const BlockApproval: React.FC = () => {
     if (!criterio || !evidencia || !selectedProcesoId) return;
 
     try {
-      const endpoint = action === 'aprobar'
-        ? `/criterios/${criterio.id}/evidencias/${evidencia.evidencia_id}/aprobar`
-        : `/criterios/${criterio.id}/evidencias/${evidencia.evidencia_id}/rechazar`;
+      const endpoint = isFlexible
+        ? action === 'aprobar'
+          ? `/elementos/${criterio.id}/hijos/${evidencia.evidencia_id}/aprobar`
+          : `/elementos/${criterio.id}/hijos/${evidencia.evidencia_id}/rechazar`
+        : action === 'aprobar'
+          ? `/criterios/${criterio.id}/evidencias/${evidencia.evidencia_id}/aprobar`
+          : `/criterios/${criterio.id}/evidencias/${evidencia.evidencia_id}/rechazar`;
 
       await axiosInstance.post(endpoint, {
         proceso_id: selectedProcesoId,
@@ -228,8 +358,33 @@ const BlockApproval: React.FC = () => {
   };
 
   const handleViewFiles = useCallback((evidencia: Evidencia) => {
-    setFilesModal({ open: true, evidencia });
+    setFilesModal({ open: true, evidencia, criterio: null, approvalItem: null });
   }, []);
+
+  const handleViewElementRow = useCallback((criterio: Criterio, ev: EvidenceApprovalItem) => {
+    setFilesModal({
+      open: true,
+      evidencia: { id: ev.asignacion_id ?? ev.evidencia_id, nomenclatura: ev.nomenclatura, descripcion: ev.descripcion, criterio_id: criterio.id },
+      criterio,
+      approvalItem: ev,
+    });
+  }, []);
+
+  const handleFilesModalAction = useCallback(async (action: 'aprobar' | 'rechazar', comentario?: string) => {
+    const { criterio, approvalItem } = filesModal;
+    if (!criterio || !approvalItem || !selectedProcesoId) return;
+    const endpoint = action === 'aprobar'
+      ? `/elementos/${criterio.id}/hijos/${approvalItem.evidencia_id}/aprobar`
+      : `/elementos/${criterio.id}/hijos/${approvalItem.evidencia_id}/rechazar`;
+    await axiosInstance.post(endpoint, {
+      proceso_id: selectedProcesoId,
+      ...(comentario ? { comentario } : {}),
+    });
+    setFilesModal({ open: false, evidencia: null, criterio: null, approvalItem: null });
+    setEvidenceApprovalsByCriterion(prev => { const n = { ...prev }; delete n[criterio.id]; return n; });
+    await fetchData();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [filesModal, selectedProcesoId]);
 
   return (
     <ScreenContainer>
@@ -279,6 +434,7 @@ const BlockApproval: React.FC = () => {
         currentPage={currentPage}
         totalPages={totalPages}
         selectedProcesoId={selectedProcesoId}
+        isFlexible={isFlexible}
         onPageChange={(value) => setFilterState(prev => ({ ...prev, currentPage: value }))}
         onAprobar={handleAprobar}
         onRechazar={handleRechazar}
@@ -286,6 +442,7 @@ const BlockApproval: React.FC = () => {
         onAprobarEvidencia={handleAprobarEvidencia}
         onRechazarEvidencia={handleRechazarEvidencia}
         onExpandCriterion={handleExpandCriterion}
+        onViewElementRow={handleViewElementRow}
       />
 
       {/* Modal de bloque */}
@@ -326,11 +483,19 @@ const BlockApproval: React.FC = () => {
         message={`La evidencia ha sido ${evidenceModal.action === 'aprobar' ? 'aprobada' : 'rechazada'} exitosamente.`}
       />
 
-      {/* Modal de archivos */}
+      {/* Modal de archivos (y revisión en modo flexible) */}
       <EvidenceFilesModal
         isOpen={filesModal.open}
-        onClose={() => setFilesModal({ open: false, evidencia: null })}
+        onClose={() => setFilesModal({ open: false, evidencia: null, criterio: null, approvalItem: null })}
         evidencia={filesModal.evidencia}
+        approvalStatus={filesModal.approvalItem?.approval_status}
+        blockIsApproved={filesModal.criterio?.estado_aprobacion === 'aprobado'}
+        onAprobar={filesModal.criterio && filesModal.approvalItem
+          ? (comentario) => handleFilesModalAction('aprobar', comentario)
+          : undefined}
+        onRechazar={filesModal.criterio && filesModal.approvalItem
+          ? (comentario) => handleFilesModalAction('rechazar', comentario)
+          : undefined}
       />
     </ScreenContainer>
   );

@@ -5,6 +5,8 @@ import { ButtonWithTooltip } from '@/Components/Ui/Buttons/ButtonWithTooltip';
 import { StatusBadge } from '@/Components/Ui/Feedback/StatusBadge';
 import { SystemIcons } from '@/Components/Ui/Icons/SystemIcons';
 import { LoadingSpinner } from '@/Components/Ui/Feedback/Loading';
+import { UserAvatars } from '@/Components/Ui/UserAvatars/UserAvatars';
+import type { UserAvatarsUser } from '@/Components/Ui/UserAvatars/UserAvatars';
 
 import { TYPOGRAPHY } from '@/Constants/Typography';
 import { TABLE_ACTION_BUTTON, TABLE_COLUMN_WIDTHS } from '@/Constants/Components';
@@ -35,6 +37,7 @@ export interface EvidenceApprovalItem {
   approval_status: EvidenceApprovalStatus;
   comentario_rechazo?: string | null;
   asignacion?: { estado: string; fecha_limite: string | null; usuario_id: number } | null;
+  asignacion_id?: number;
 }
 
 export interface Evidencia {
@@ -50,6 +53,7 @@ export interface Criterio {
   nomenclatura: string;
   descripcion: string;
   estado_aprobacion?: BlockApprovalStatus;
+  responsables?: UserAvatarsUser[];
 }
 
 interface BlockApprovalTableProps {
@@ -61,6 +65,7 @@ interface BlockApprovalTableProps {
   currentPage: number;
   totalPages: number;
   selectedProcesoId: number | null;
+  isFlexible?: boolean;
   onPageChange: (page: number) => void;
   onAprobar: (criterio: Criterio) => void;
   onRechazar: (criterio: Criterio) => void;
@@ -68,6 +73,7 @@ interface BlockApprovalTableProps {
   onAprobarEvidencia: (criterio: Criterio, evidencia: EvidenceApprovalItem) => void;
   onRechazarEvidencia: (criterio: Criterio, evidencia: EvidenceApprovalItem) => void;
   onExpandCriterion: (criterionId: number) => void;
+  onViewElementRow?: (criterio: Criterio, ev: EvidenceApprovalItem) => void;
 }
 
 export const BlockApprovalTable: React.FC<BlockApprovalTableProps> = ({
@@ -79,6 +85,7 @@ export const BlockApprovalTable: React.FC<BlockApprovalTableProps> = ({
   currentPage,
   totalPages,
   selectedProcesoId,
+  isFlexible = false,
   onPageChange,
   onAprobar,
   onRechazar,
@@ -86,6 +93,7 @@ export const BlockApprovalTable: React.FC<BlockApprovalTableProps> = ({
   onAprobarEvidencia,
   onRechazarEvidencia,
   onExpandCriterion,
+  onViewElementRow,
 }) => {
   const getEvidencesByCriterion = (criterionId: number) =>
     evidences.filter(ev => ev.criterio_id === criterionId);
@@ -93,7 +101,7 @@ export const BlockApprovalTable: React.FC<BlockApprovalTableProps> = ({
   const columns: DataTableColumn<Criterio>[] = useMemo(() => [
     {
       key: 'nomenclatura',
-      header: 'Criterio',
+      header: isFlexible ? 'Elemento' : 'Criterio',
       align: 'left',
       render: (_, item) => (
         <div className="flex flex-col pl-2">
@@ -107,6 +115,21 @@ export const BlockApprovalTable: React.FC<BlockApprovalTableProps> = ({
         </div>
       ),
     },
+    ...(isFlexible ? [{
+      key: 'responsables',
+      header: 'Responsables',
+      align: 'center' as const,
+      width: '140px',
+      render: (_: unknown, item: Criterio) => {
+        const users = item.responsables ?? [];
+        if (users.length === 0) return <span className={`${TYPOGRAPHY.table.helper} text-gris-una/50`}>—</span>;
+        return (
+          <div className="flex justify-center">
+            <UserAvatars users={users} size={28} maxVisible={4} tooltipPlacement="bottom" />
+          </div>
+        );
+      },
+    }] : []),
     {
       key: 'estado_aprobacion',
       header: 'Estado',
@@ -152,7 +175,7 @@ export const BlockApprovalTable: React.FC<BlockApprovalTableProps> = ({
         );
       },
     },
-  ], [onAprobar, onRechazar]);
+  ], [onAprobar, onRechazar, isFlexible, TYPOGRAPHY]);
 
   if (!selectedProcesoId) {
     return (
@@ -174,7 +197,7 @@ export const BlockApprovalTable: React.FC<BlockApprovalTableProps> = ({
         title=""
         searchable={false}
         loading={isLoading}
-        emptyMessage="No hay criterios disponibles para el filtro seleccionado"
+        emptyMessage={isFlexible ? 'No hay elementos disponibles para el filtro seleccionado' : 'No hay criterios disponibles para el filtro seleccionado'}
         pagination={totalPages > 1 ? { currentPage, totalPages, onPageChange } : undefined}
         getRowKey={(item) => String((item as unknown as Criterio).id)}
         onRowExpand={(rowKey, isExpanding) => {
@@ -210,7 +233,17 @@ export const BlockApprovalTable: React.FC<BlockApprovalTableProps> = ({
               return {
                 key: String(ev.evidencia_id),
                 content: (
-                  <div className="flex items-center gap-2 min-w-0">
+                  <div
+                    className="flex items-center gap-2 min-w-0 cursor-pointer"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      if (isFlexible) {
+                        onViewElementRow?.(criterio, ev);
+                      } else {
+                        onViewFiles({ id: ev.evidencia_id, nomenclatura: ev.nomenclatura, descripcion: ev.descripcion, criterio_id: criterio.id });
+                      }
+                    }}
+                  >
                     <StatusBadge label={statusConfig.label} colorClasses={statusConfig.colorClasses} />
                     <p className={`truncate ${TYPOGRAPHY.table.helper}`}>
                       <span className="font-medium text-negro-una">{ev.nomenclatura}</span>
@@ -223,12 +256,25 @@ export const BlockApprovalTable: React.FC<BlockApprovalTableProps> = ({
                     )}
                   </div>
                 ),
-                action: (
+                action: isFlexible ? (
+                  <div className="flex items-center gap-1">
+                    <ButtonWithTooltip
+                      variant="tableView"
+                      size="sm"
+                      tooltip="Ver archivos y revisar"
+                      tooltipPosition="left"
+                      onClick={(e) => { e.stopPropagation(); onViewElementRow?.(criterio, ev); }}
+                      className={TABLE_ACTION_BUTTON.button}
+                    >
+                      <SystemIcons.actions.view className={ICON} />
+                    </ButtonWithTooltip>
+                  </div>
+                ) : (
                   <div className="flex items-center gap-1">
                     <ButtonWithTooltip
                       variant="tablePower"
                       size="sm"
-                      tooltip={isLocked ? 'Evidencia aprobada (bloqueada)' : canApprove ? 'Aprobar evidencia' : 'Ya aprobada'}
+                      tooltip={isLocked ? 'Elemento aprobado (bloqueado)' : canApprove ? 'Aprobar evidencia' : 'Ya aprobado'}
                       tooltipPosition="left"
                       disabled={!canApprove}
                       onClick={(e) => { e.stopPropagation(); onAprobarEvidencia(criterio, ev); }}
@@ -239,7 +285,7 @@ export const BlockApprovalTable: React.FC<BlockApprovalTableProps> = ({
                     <ButtonWithTooltip
                       variant="tableDelete"
                       size="sm"
-                      tooltip={isLocked ? 'Evidencia aprobada (bloqueada)' : canReject ? 'Rechazar evidencia' : 'Ya rechazada'}
+                      tooltip={isLocked ? 'Elemento aprobado (bloqueado)' : canReject ? 'Rechazar evidencia' : 'Ya rechazado'}
                       tooltipPosition="left"
                       disabled={!canReject}
                       onClick={(e) => { e.stopPropagation(); onRechazarEvidencia(criterio, ev); }}
@@ -247,46 +293,25 @@ export const BlockApprovalTable: React.FC<BlockApprovalTableProps> = ({
                     >
                       <SystemIcons.interface.xCircle className={ICON} />
                     </ButtonWithTooltip>
-                    <ButtonWithTooltip
-                      variant="tableView"
-                      size="sm"
-                      tooltip="Ver archivos asociados"
-                      tooltipPosition="left"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        onViewFiles({ id: ev.evidencia_id, nomenclatura: ev.nomenclatura, descripcion: ev.descripcion, criterio_id: criterio.id });
-                      }}
-                      className={TABLE_ACTION_BUTTON.button}
-                    >
-                      <SystemIcons.actions.view className={ICON} />
-                    </ButtonWithTooltip>
                   </div>
                 ),
               };
             });
           }
 
-          // Fallback: evidencias sin estado de aprobación individual (solo ver archivos)
+          // Fallback: evidencias without individual approval status (traditional mode — click to view)
           return getEvidencesByCriterion(criterio.id).map(evidencia => ({
             key: String(evidencia.id),
             content: (
-              <p className={`truncate ${TYPOGRAPHY.table.helper}`}>
+              <p
+                className={`truncate cursor-pointer ${TYPOGRAPHY.table.helper}`}
+                onClick={(e) => { e.stopPropagation(); onViewFiles(evidencia); }}
+              >
                 <span className="font-medium text-negro-una">{evidencia.nomenclatura}</span>
                 <span className="text-gris-una"> — {evidencia.descripcion}</span>
               </p>
             ),
-            action: (
-              <ButtonWithTooltip
-                variant="tableView"
-                size="sm"
-                tooltip="Ver archivos asociados"
-                tooltipPosition="left"
-                onClick={(e) => { e.stopPropagation(); onViewFiles(evidencia); }}
-                className={TABLE_ACTION_BUTTON.button}
-              >
-                <SystemIcons.actions.view className={ICON} />
-              </ButtonWithTooltip>
-            ),
+            action: null,
           }));
         }}
       />
