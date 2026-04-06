@@ -44,7 +44,7 @@ export const Breadcrumb: React.FC<BreadcrumbProps> = ({ items, className, varian
               "block truncate transition-colors",
               isCurrent
                 ? "font-semibold text-negro-una"
-                : variant === "table" ? "text-gris-una" : "hover:text-negro-una",
+                : variant === "table" ? "text-negro-una font-semibold" : "hover:text-negro-una",
             );
 
             const content = item.href ? (
