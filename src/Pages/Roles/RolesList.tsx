@@ -1,49 +1,61 @@
 /**
  * RolesRepository - Página principal de listado de roles
- * 
+ *
  * Esta página coordina el componente RolesTable y maneja la navegación
  * entre las diferentes acciones (crear, editar, eliminar).
  */
 
-import React, { useState, useEffect, lazy, Suspense } from 'react';
-import { RolesTable } from './Components/RolesTable';
-import { PageHeader, ScreenContainer } from '@/Components/Ui/Index';
-import { SearchInput } from '@/Components/Ui/Forms/SearchInput';
-import { Button } from '@/Components/Ui/Buttons/Button';
-import { RoleFormModal } from './Components/RoleFormModal';
-import { useRoles } from '@/Hooks/UseRoles';
-import { useToast } from '@/Context/ToastContext';
-import { getContextualInfo } from '@/Constants/ModuleInfo';
-import type { Role } from '@/Services/RoleService';
+import React, { useState, useEffect, lazy, Suspense } from "react";
+import { RolesTable } from "./Components/RolesTable";
+import { PageHeader, ScreenContainer } from "@/Components/Ui/Index";
+import { SearchInput } from "@/Components/Ui/Forms/SearchInput";
+import { Button } from "@/Components/Ui/Buttons/Button";
+import { RoleFormModal } from "./Components/RoleFormModal";
+import { useRoles } from "@/Hooks/UseRoles";
+import { useToast } from "@/Context/ToastContext";
+import { getContextualInfo } from "@/Constants/ModuleInfo";
+import type { Role } from "@/Services/RoleService";
 
 // Lazy load de modales
-const DeleteConfirmationModal = lazy(() => import('@/Components/Ui/Modals/DeleteConfirmationModal').then(m => ({ default: m.DeleteConfirmationModal })));
-const PermissionsModal = lazy(() => import('@/Pages/Roles/Components/PermissionsRoleModal').then(m => ({ default: m.PermissionsModal })));
-const SuccessModal = lazy(() => import('@/Components/Ui/Modals/SuccessModal').then(m => ({ default: m.SuccessModal })));
+const DeleteConfirmationModal = lazy(() =>
+  import("@/Components/Ui/Modals/DeleteConfirmationModal").then((m) => ({
+    default: m.DeleteConfirmationModal,
+  })),
+);
+const PermissionsModal = lazy(() =>
+  import("@/Pages/Roles/Components/PermissionsRoleModal").then((m) => ({
+    default: m.PermissionsModal,
+  })),
+);
+const SuccessModal = lazy(() =>
+  import("@/Components/Ui/Modals/SuccessModal").then((m) => ({
+    default: m.SuccessModal,
+  })),
+);
 
 const RolesRepository: React.FC = () => {
   const { deleteRole, roles, loadRoles, isLoading, error } = useRoles();
   const { showToast } = useToast();
-  
+
   // Obtener información del módulo desde ModuleInfo
-  const moduleInfo = getContextualInfo('roles', 'list');
-  
+  const moduleInfo = getContextualInfo("roles", "list");
+
   // Estado para búsqueda
-  const [searchQuery, setSearchQuery] = useState('');
+  const [searchQuery, setSearchQuery] = useState("");
 
   // Estado para el modal de creación/edición de rol
   const [roleFormModalState, setRoleFormModalState] = useState<{
     isOpen: boolean;
     role: Role | null;
   }>({ isOpen: false, role: null });
-  
+
   // Estado para el modal de confirmación de eliminación
   const [deleteModalState, setDeleteModalState] = useState<{
     isOpen: boolean;
     role: Role | null;
   }>({
     isOpen: false,
-    role: null
+    role: null,
   });
 
   // Estado para el modal de permisos
@@ -52,7 +64,7 @@ const RolesRepository: React.FC = () => {
     role: Role | null;
   }>({
     isOpen: false,
-    role: null
+    role: null,
   });
 
   // Estado para el modal de éxito (eliminación)
@@ -61,11 +73,11 @@ const RolesRepository: React.FC = () => {
     roleName: string;
   }>({
     isOpen: false,
-    roleName: ''
+    roleName: "",
   });
 
   const handleSuccessModalClose = () => {
-    setSuccessModalState({ isOpen: false, roleName: '' });
+    setSuccessModalState({ isOpen: false, roleName: "" });
   };
 
   const handleEditRole = (role: Role) => {
@@ -100,9 +112,12 @@ const RolesRepository: React.FC = () => {
         }
       } catch (error) {
         showToast({
-          type: 'error',
-          title: 'Error al eliminar rol',
-          message: error instanceof Error ? error.message : 'No se pudo eliminar el rol'
+          type: "error",
+          title: "Error al eliminar rol",
+          message:
+            error instanceof Error
+              ? error.message
+              : "No se pudo eliminar el rol",
         });
         setDeleteModalState({ isOpen: false, role: null });
       }
@@ -128,6 +143,7 @@ const RolesRepository: React.FC = () => {
         <PageHeader
           title={moduleInfo.title}
           description={moduleInfo.description}
+          breadcrumbMode="none"
           headerExtra={
             <div className="flex flex-col sm:flex-row w-full gap-2 shrink-0 lg:w-auto">
               <SearchInput
@@ -145,64 +161,63 @@ const RolesRepository: React.FC = () => {
               </Button>
             </div>
           }
-        >
-        </PageHeader>
+        ></PageHeader>
 
-          <RolesTable
-            onEdit={handleEditRole}
-            onDelete={handleDeleteRole}
-            onViewPermissions={handleViewPermissions}
-            roles={roles}
-            isLoading={isLoading}
-            error={error}
-            searchQuery={searchQuery}
-          />
-        </ScreenContainer>
-
-        {/* Modal de confirmación de eliminación */}
-        <Suspense fallback={null}>
-          <DeleteConfirmationModal
-            isOpen={deleteModalState.isOpen}
-            onClose={cancelDeleteRole}
-            onConfirm={confirmDeleteRole}
-            title="Confirmar Eliminación"
-            itemName={deleteModalState.role?.name}
-            confirmLabel="Sí, eliminar"
-            cancelLabel="Cancelar"
-            variant="danger"
-          />
-        </Suspense>
-
-        {/* Modal de permisos del rol */}
-        {permissionsModalState.role && (
-          <Suspense fallback={null}>
-            <PermissionsModal
-              isOpen={permissionsModalState.isOpen}
-              onClose={closePermissionsModal}
-              roleName={permissionsModalState.role?.name || ''}
-              roleDescription={permissionsModalState.role?.description || ''}
-              permissions={permissionsModalState.role?.permissions || []}
-            />
-          </Suspense>
-        )}
-        {/* Modal de éxito (eliminación) */}
-        <Suspense fallback={null}>
-          <SuccessModal
-            isOpen={successModalState.isOpen}
-            title="¡Rol eliminado exitosamente!"
-            message={`El rol "${successModalState.roleName}" ha sido eliminado correctamente`}
-            onClose={handleSuccessModalClose}
-            autoClose={true}
-          />
-        </Suspense>
-
-        {/* Modal de creación / edición de rol */}
-        <RoleFormModal
-          isOpen={roleFormModalState.isOpen}
-          onClose={() => setRoleFormModalState({ isOpen: false, role: null })}
-          initialData={roleFormModalState.role ?? undefined}
-          onSuccess={handleRoleFormSuccess}
+        <RolesTable
+          onEdit={handleEditRole}
+          onDelete={handleDeleteRole}
+          onViewPermissions={handleViewPermissions}
+          roles={roles}
+          isLoading={isLoading}
+          error={error}
+          searchQuery={searchQuery}
         />
+      </ScreenContainer>
+
+      {/* Modal de confirmación de eliminación */}
+      <Suspense fallback={null}>
+        <DeleteConfirmationModal
+          isOpen={deleteModalState.isOpen}
+          onClose={cancelDeleteRole}
+          onConfirm={confirmDeleteRole}
+          title="Confirmar Eliminación"
+          itemName={deleteModalState.role?.name}
+          confirmLabel="Sí, eliminar"
+          cancelLabel="Cancelar"
+          variant="danger"
+        />
+      </Suspense>
+
+      {/* Modal de permisos del rol */}
+      {permissionsModalState.role && (
+        <Suspense fallback={null}>
+          <PermissionsModal
+            isOpen={permissionsModalState.isOpen}
+            onClose={closePermissionsModal}
+            roleName={permissionsModalState.role?.name || ""}
+            roleDescription={permissionsModalState.role?.description || ""}
+            permissions={permissionsModalState.role?.permissions || []}
+          />
+        </Suspense>
+      )}
+      {/* Modal de éxito (eliminación) */}
+      <Suspense fallback={null}>
+        <SuccessModal
+          isOpen={successModalState.isOpen}
+          title="¡Rol eliminado exitosamente!"
+          message={`El rol "${successModalState.roleName}" ha sido eliminado correctamente`}
+          onClose={handleSuccessModalClose}
+          autoClose={true}
+        />
+      </Suspense>
+
+      {/* Modal de creación / edición de rol */}
+      <RoleFormModal
+        isOpen={roleFormModalState.isOpen}
+        onClose={() => setRoleFormModalState({ isOpen: false, role: null })}
+        initialData={roleFormModalState.role ?? undefined}
+        onSuccess={handleRoleFormSuccess}
+      />
     </>
   );
 };

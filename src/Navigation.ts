@@ -31,26 +31,48 @@ const lightIcon = "system-icon:lightbulb";
 interface NavigationAccessInput {
   roles?: string[];
   permissions?: string[];
+  context?: {
+    hasOperationalContext?: boolean;
+    cycleId?: number | null;
+    processId?: number | null;
+  };
 }
 
 const normalizeAccessInput = (
   input?: string | string[] | NavigationAccessInput,
 ): NavigationAccessInput => {
   if (!input) {
-    return { roles: [], permissions: [] };
+    return {
+      roles: [],
+      permissions: [],
+      context: { hasOperationalContext: true },
+    };
   }
 
   if (typeof input === "string") {
-    return { roles: [input], permissions: [] };
+    return {
+      roles: [input],
+      permissions: [],
+      context: { hasOperationalContext: true, cycleId: null, processId: null },
+    };
   }
 
   if (Array.isArray(input)) {
-    return { roles: input, permissions: [] };
+    return {
+      roles: input,
+      permissions: [],
+      context: { hasOperationalContext: true, cycleId: null, processId: null },
+    };
   }
 
   return {
     roles: input.roles ?? [],
     permissions: input.permissions ?? [],
+    context: {
+      hasOperationalContext: input.context?.hasOperationalContext ?? true,
+      cycleId: input.context?.cycleId ?? null,
+      processId: input.context?.processId ?? null,
+    },
   };
 };
 
@@ -59,6 +81,16 @@ export const getNavigationItems = (
 ): NavItem[] => {
   const access = normalizeAccessInput(accessInput);
   const hasAccess = (rule?: AccessRule) => evaluateAccess(access, rule);
+  const isSuperUser = (access.roles ?? []).some((role) => {
+    const normalizedRole = role.toLowerCase();
+    return (
+      normalizedRole === "superusuario" || normalizedRole === "super usuario"
+    );
+  });
+  const hasCycleSelection = access.context?.cycleId !== null;
+  const hasProcessSelection = access.context?.processId !== null;
+  const hasContextualSelection =
+    isSuperUser || (hasCycleSelection && hasProcessSelection);
 
   const items: NavItem[] = [
     {
@@ -136,21 +168,6 @@ export const getNavigationItems = (
 
     if (
       hasAccess({
-        requireAnyCapabilities: [CAPABILITIES.EVIDENCE_ASSIGN],
-        requireAnyPermissions: EVIDENCE_ASSIGNMENT_PERMISSIONS,
-      })
-    ) {
-      evidenciaChildren.push({
-        id: "evidenciasAsignar",
-        label: "Asignar Entregables",
-        icon: evidenceIcon,
-        href: "/evidencias/asignar",
-        isActive: false,
-      });
-    }
-
-    if (
-      hasAccess({
         requireAnyCapabilities: [CAPABILITIES.EVIDENCE_VIEW],
         requireAnyPermissions: EVIDENCE_VIEW_PERMISSIONS,
       })
@@ -165,6 +182,23 @@ export const getNavigationItems = (
     }
 
     if (
+      hasContextualSelection &&
+      hasAccess({
+        requireAnyCapabilities: [CAPABILITIES.EVIDENCE_ASSIGN],
+        requireAnyPermissions: EVIDENCE_ASSIGNMENT_PERMISSIONS,
+      })
+    ) {
+      evidenciaChildren.push({
+        id: "evidenciasAsignar",
+        label: "Asignar Entregables",
+        icon: evidenceIcon,
+        href: "/evidencias/asignar",
+        isActive: false,
+      });
+    }
+
+    if (
+      hasContextualSelection &&
       hasAccess({
         requireAnyCapabilities: [CAPABILITIES.EVIDENCE_ASSIGN],
         requireAnyPermissions: EVIDENCE_ASSIGNMENT_PERMISSIONS,
@@ -197,6 +231,22 @@ export const getNavigationItems = (
 
     if (
       hasAccess({
+        requireAnyCapabilities: [CAPABILITIES.EXTENSION_VIEW],
+        requireAnyPermissions: ["solicitudes_ampliacion.view"],
+      })
+    ) {
+      solicitudChildren.push({
+        id: "misSolicitudesAmpliacion",
+        label: "Mis Solicitudes",
+        icon: extensionRequestIcon,
+        href: "/solicitudes-ampliacion/mis-solicitudes",
+        isActive: false,
+      });
+    }
+
+    if (
+      hasContextualSelection &&
+      hasAccess({
         requireAnyCapabilities: [CAPABILITIES.EXTENSION_MANAGE],
         requireAnyPermissions: [
           "solicitudes_ampliacion.approve",
@@ -209,21 +259,6 @@ export const getNavigationItems = (
         label: "Gestionar Solicitudes",
         icon: extensionRequestIcon,
         href: "/solicitudes-ampliacion/gestionar",
-        isActive: false,
-      });
-    }
-
-    if (
-      hasAccess({
-        requireAnyCapabilities: [CAPABILITIES.EXTENSION_VIEW],
-        requireAnyPermissions: ["solicitudes_ampliacion.view"],
-      })
-    ) {
-      solicitudChildren.push({
-        id: "misSolicitudesAmpliacion",
-        label: "Mis Solicitudes",
-        icon: extensionRequestIcon,
-        href: "/solicitudes-ampliacion/mis-solicitudes",
         isActive: false,
       });
     }
@@ -302,7 +337,7 @@ export const getNavigationItems = (
     }
   }
 
-  {
+  if (hasContextualSelection) {
     const evaluacionChildren: NavItem[] = [];
 
     if (

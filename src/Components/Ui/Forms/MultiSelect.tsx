@@ -259,7 +259,7 @@ const DropdownContent: React.FC<DropdownContentProps> = ({
                       exit={{ opacity: 0, scaleY: 0 }}
                       transition={{ type: 'spring', damping: 20, stiffness: 400 }}
                       style={{ transformOrigin: 'center' }}
-                      className="absolute left-0 top-0 bottom-0 my-auto w-[3px] h-5 rounded-full bg-info"
+                      className="absolute left-0 top-0 bottom-0 my-auto w-0.75 h-5 rounded-full bg-info"
                     />
                   )}
                 </AnimatePresence>
@@ -268,7 +268,7 @@ const DropdownContent: React.FC<DropdownContentProps> = ({
                 <span className="relative z-10 flex items-center gap-2 flex-1 min-w-0">
                   <span className="truncate">{option.label}</span>
                   {option.metadata && (
-                    <span className={`${TYPOGRAPHY.form.helper} text-gris-una font-normal bg-gris-una/10 px-2 py-0.5 rounded-full flex-shrink-0`}>
+                    <span className={`${TYPOGRAPHY.form.helper} text-gris-una font-normal bg-gris-una/10 px-2 py-0.5 rounded-full shrink-0`}>
                       {option.metadata}
                     </span>
                   )}
@@ -526,7 +526,7 @@ export const MultiSelect: React.FC<MultiSelectProps> = ({
         {/* Error */}
         {error && (
           <p className={`text-rojo-una-2 ${TYPOGRAPHY.form.helper} flex items-center gap-2`}>
-            <SystemIcons.interface.alert className={`${ICON_SIZES.sm} flex-shrink-0 text-rojo-una-2`} />
+            <SystemIcons.interface.alert className={`${ICON_SIZES.sm} shrink-0 text-rojo-una-2`} />
             {error}
           </p>
         )}
@@ -595,7 +595,7 @@ export const MultiSelect: React.FC<MultiSelectProps> = ({
 
       {error && (
         <p className={`text-rojo-una-2 ${TYPOGRAPHY.form.helper} flex items-center gap-2 mt-2`}>
-          <SystemIcons.interface.alert className={`${ICON_SIZES.sm} flex-shrink-0 text-rojo-una-2`} />
+          <SystemIcons.interface.alert className={`${ICON_SIZES.sm} shrink-0 text-rojo-una-2`} />
           {error}
         </p>
       )}

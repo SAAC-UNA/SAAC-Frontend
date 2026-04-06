@@ -3,48 +3,59 @@
  * HU-016 - Vista de gestión para encargados de acreditación
  */
 
-import React, { useState, useEffect, useCallback, useMemo } from 'react';
-import { PageHeader, ScreenContainer, CustomSelect } from '@/Components/Ui/Index';
-import { SearchInput } from '@/Components/Ui/Forms/SearchInput';
-import { FilterButton, type FilterOption } from '@/Components/Ui/Buttons/FilterButton';
-import { extensionRequestService } from '@/Services/ExtensionRequestService';
-import { flexibleExtensionRequestService } from '@/Services/FlexibleExtensionRequestService';
-import { useToast } from '@/Context/ToastContext';
-import { useAuth } from '@/Context/AuthContext';
-import { getContextualInfo } from '@/Constants/ModuleInfo';
-import { TABLE_PAGE_SIZE } from '@/Constants/TablePagination';
-import { ManageExtensionRequestsTable } from './Components/ManageExtensionRequestsTable';
-import { ReviewExtensionRequestModal } from '@/Pages/ExtensionRequest/Components/ManageExtensionRequestDetailsModal';
-import { CreateConfirmationModal } from '@/Components/Ui/Modals/CreateConfirmationModal';
-import { DeleteConfirmationModal } from '@/Components/Ui/Modals/DeleteConfirmationModal';
-import type { 
-  ExtensionRequest, 
+import React, { useState, useEffect, useCallback, useMemo } from "react";
+import { PageHeader, ScreenContainer } from "@/Components/Ui/Index";
+import { SearchInput } from "@/Components/Ui/Forms/SearchInput";
+import {
+  FilterButton,
+  type FilterOption,
+} from "@/Components/Ui/Buttons/FilterButton";
+import { extensionRequestService } from "@/Services/ExtensionRequestService";
+import { flexibleExtensionRequestService } from "@/Services/FlexibleExtensionRequestService";
+import { useToast } from "@/Context/ToastContext";
+import { useAuth } from "@/Context/AuthContext";
+import { useOperationalContextSnapshot } from "@/Hooks/useOperationalContextSnapshot";
+import { getContextualInfo } from "@/Constants/ModuleInfo";
+import { TABLE_PAGE_SIZE } from "@/Constants/TablePagination";
+import { ManageExtensionRequestsTable } from "./Components/ManageExtensionRequestsTable";
+import { ReviewExtensionRequestModal } from "@/Pages/ExtensionRequest/Components/ManageExtensionRequestDetailsModal";
+import { CreateConfirmationModal } from "@/Components/Ui/Modals/CreateConfirmationModal";
+import { DeleteConfirmationModal } from "@/Components/Ui/Modals/DeleteConfirmationModal";
+import type {
+  ExtensionRequest,
   ExtensionRequestPaginatedResponse,
   ExtensionRequestStatus,
-  ReviewFormData 
-} from '@/Types/ExtensionRequestTypes';
-import type { SelectOption } from '@/Types/StructureTypes';
-import { SystemIcons } from '@/Components/Ui/Icons/SystemIcons';
+  ReviewFormData,
+} from "@/Types/ExtensionRequestTypes";
+import { SystemIcons } from "@/Components/Ui/Icons/SystemIcons";
 
 export const ManageExtensionRequestsPage: React.FC = () => {
   const { showToast } = useToast();
   const { isAuthenticated, canAccess } = useAuth();
+  const contextSnapshot = useOperationalContextSnapshot();
 
   // Obtener información del módulo desde ModuleInfo
-  const moduleInfo = getContextualInfo('extension_requests', 'manage');
-  
-  // ── Estado de datos ───────────────────────────────────────────────────────
-  const [tradState, setTradState] = useState<{ solicitudes: ExtensionRequest[]; loading: boolean; error: string | null }>({ solicitudes: [], loading: true, error: null });
-  const [flexState, setFlexState] = useState<{ solicitudes: ExtensionRequest[]; loading: boolean; error: string | null }>({ solicitudes: [], loading: false, error: null });
+  const moduleInfo = getContextualInfo("extension_requests", "manage");
 
-  // ── Selector de ciclo de acreditación ────────────────────────────────────
-  const [selectedCycleId, setSelectedCycleId] = useState<number | null>(null);
+  // ── Estado de datos ───────────────────────────────────────────────────────
+  const [tradState, setTradState] = useState<{
+    solicitudes: ExtensionRequest[];
+    loading: boolean;
+    error: string | null;
+  }>({ solicitudes: [], loading: true, error: null });
+  const [flexState, setFlexState] = useState<{
+    solicitudes: ExtensionRequest[];
+    loading: boolean;
+    error: string | null;
+  }>({ solicitudes: [], loading: false, error: null });
 
   const loading = tradState.loading || flexState.loading;
   const error = tradState.error;
 
-  const [searchQuery, setSearchQuery] = useState('');
-  const [filterState, setFilterState] = useState<{ filtroEstado: ExtensionRequestStatus | 'todos' }>({ filtroEstado: 'todos' });
+  const [searchQuery, setSearchQuery] = useState("");
+  const [filterState, setFilterState] = useState<{
+    filtroEstado: ExtensionRequestStatus | "todos";
+  }>({ filtroEstado: "todos" });
   const filtroEstado = filterState.filtroEstado;
 
   // Estado para el modal de revisión (detalles)
@@ -72,7 +83,9 @@ export const ManageExtensionRequestsPage: React.FC = () => {
 
   /** Obtener todas las páginas de un endpoint paginado */
   const fetchAllPages = async (
-    fetcher: (filters: Record<string, unknown>) => Promise<ExtensionRequestPaginatedResponse>,
+    fetcher: (
+      filters: Record<string, unknown>,
+    ) => Promise<ExtensionRequestPaginatedResponse>,
     baseFilters: Record<string, unknown>,
   ): Promise<ExtensionRequest[]> => {
     const first = await fetcher({ ...baseFilters, per_page: 100, page: 1 });
@@ -87,88 +100,117 @@ export const ManageExtensionRequestsPage: React.FC = () => {
 
   const loadSolicitudes = async () => {
     try {
-      setTradState(prev => ({ ...prev, loading: true, error: null }));
-      setFlexState(prev => ({ ...prev, loading: true, error: null }));
+      setTradState((prev) => ({ ...prev, loading: true, error: null }));
+      setFlexState((prev) => ({ ...prev, loading: true, error: null }));
 
       const baseFilters = {
-        estado: filtroEstado === 'todos' ? undefined : filtroEstado,
+        estado: filtroEstado === "todos" ? undefined : filtroEstado,
       };
 
-      const tradFetcher = filtroEstado === 'pendiente'
-        ? extensionRequestService.getPendingRequests.bind(extensionRequestService)
-        : extensionRequestService.getAllRequests.bind(extensionRequestService);
-      const flexFetcher = filtroEstado === 'pendiente'
-        ? flexibleExtensionRequestService.getPendingRequests.bind(flexibleExtensionRequestService)
-        : flexibleExtensionRequestService.getAllRequests.bind(flexibleExtensionRequestService);
+      const tradFetcher =
+        filtroEstado === "pendiente"
+          ? extensionRequestService.getPendingRequests.bind(
+              extensionRequestService,
+            )
+          : extensionRequestService.getAllRequests.bind(
+              extensionRequestService,
+            );
+      const flexFetcher =
+        filtroEstado === "pendiente"
+          ? flexibleExtensionRequestService.getPendingRequests.bind(
+              flexibleExtensionRequestService,
+            )
+          : flexibleExtensionRequestService.getAllRequests.bind(
+              flexibleExtensionRequestService,
+            );
 
       const [tradRes, flexRes] = await Promise.allSettled([
         fetchAllPages(tradFetcher, baseFilters),
         fetchAllPages(flexFetcher, baseFilters),
       ]);
 
-      if (tradRes.status === 'fulfilled') {
-        setTradState(prev => ({ ...prev, solicitudes: tradRes.value, loading: false }));
+      if (tradRes.status === "fulfilled") {
+        setTradState((prev) => ({
+          ...prev,
+          solicitudes: tradRes.value,
+          loading: false,
+        }));
       } else {
-        setTradState(prev => ({ ...prev, error: tradRes.reason?.message ?? 'Error', loading: false }));
+        setTradState((prev) => ({
+          ...prev,
+          error: tradRes.reason?.message ?? "Error",
+          loading: false,
+        }));
       }
 
-      if (flexRes.status === 'fulfilled') {
-        setFlexState(prev => ({ ...prev, solicitudes: flexRes.value, loading: false }));
+      if (flexRes.status === "fulfilled") {
+        setFlexState((prev) => ({
+          ...prev,
+          solicitudes: flexRes.value,
+          loading: false,
+        }));
       } else {
-        setFlexState(prev => ({ ...prev, error: flexRes.reason?.message ?? 'Error', loading: false }));
+        setFlexState((prev) => ({
+          ...prev,
+          error: flexRes.reason?.message ?? "Error",
+          loading: false,
+        }));
       }
     } catch (error: any) {
-      const msg = error.message || 'No se pudieron cargar las solicitudes';
-      setTradState(prev => ({ ...prev, error: msg, loading: false }));
-      setFlexState(prev => ({ ...prev, loading: false }));
-      showToast({ type: 'error', title: 'Error al Cargar', message: msg });
+      const msg = error.message || "No se pudieron cargar las solicitudes";
+      setTradState((prev) => ({ ...prev, error: msg, loading: false }));
+      setFlexState((prev) => ({ ...prev, loading: false }));
+      showToast({ type: "error", title: "Error al Cargar", message: msg });
     }
   };
 
-  // ── Ciclos disponibles ────────────────────────────────────────────────────
-  const availableCycles = useMemo(() => {
-    const cycleMap = new Map<number, { nombre: string }>();
-
-    for (const s of tradState.solicitudes) {
-      const cicloId = s.evidencia_asignacion?.process?.ciclo_acreditacion_id;
-      if (cicloId && !cycleMap.has(cicloId)) {
-        const nombre = s.evidencia_asignacion?.process?.nombre;
-        cycleMap.set(cicloId, { nombre: nombre ?? `Ciclo ${cicloId}` });
-      }
-    }
-
-    for (const s of flexState.solicitudes) {
-      const cicloId = s.elemento_asignacion?.process?.ciclo_acreditacion_id;
-      if (cicloId && !cycleMap.has(cicloId)) {
-        const nombre = s.elemento_asignacion?.process?.nombre;
-        cycleMap.set(cicloId, { nombre: nombre ?? `Ciclo ${cicloId}` });
-      }
-    }
-
-    return [...cycleMap.entries()].map(([id, info]) => ({ ciclo_id: id, ...info }));
-  }, [tradState.solicitudes, flexState.solicitudes]);
-
-  useEffect(() => {
-    if (availableCycles.length > 0 && selectedCycleId === null) {
-      setSelectedCycleId(availableCycles[0].ciclo_id);
-    }
-  }, [availableCycles, selectedCycleId]);
-
-  const cycleOptions: SelectOption[] = availableCycles.map(c => ({
-    value: String(c.ciclo_id),
-    label: c.nombre,
-  }));
-
-  // ── Lista filtrada por ciclo ───────────────────────────────────────────────
   const solicitudes = useMemo(() => {
-    const trad = selectedCycleId
-      ? tradState.solicitudes.filter(s => s.evidencia_asignacion?.process?.ciclo_acreditacion_id === selectedCycleId)
-      : tradState.solicitudes;
-    const flex = selectedCycleId
-      ? flexState.solicitudes.filter(s => s.elemento_asignacion?.process?.ciclo_acreditacion_id === selectedCycleId)
-      : flexState.solicitudes;
-    return [...trad, ...flex];
-  }, [tradState.solicitudes, flexState.solicitudes, selectedCycleId]);
+    const selectedCycleId = contextSnapshot.cycleId;
+    const selectedProcessId = contextSnapshot.processId;
+
+    const matchesContext = (solicitud: ExtensionRequest): boolean => {
+      const requestContext = (
+        solicitud as ExtensionRequest & {
+          context?: {
+            proceso_id?: number | null;
+            ciclo_acreditacion_id?: number | null;
+          };
+        }
+      ).context;
+
+      const requestProcessId =
+        requestContext?.proceso_id ??
+        solicitud.evidencia_asignacion?.process?.proceso_id ??
+        solicitud.evidencia_asignacion?.proceso_id ??
+        solicitud.elemento_asignacion?.process?.proceso_id ??
+        solicitud.elemento_asignacion?.proceso_id ??
+        null;
+      const requestCycleId =
+        requestContext?.ciclo_acreditacion_id ??
+        solicitud.evidencia_asignacion?.process?.ciclo_acreditacion_id ??
+        solicitud.elemento_asignacion?.process?.ciclo_acreditacion_id ??
+        null;
+
+      if (selectedProcessId !== null) {
+        return requestProcessId === selectedProcessId;
+      }
+
+      if (selectedCycleId !== null) {
+        return requestCycleId === selectedCycleId;
+      }
+
+      return true;
+    };
+
+    return [...tradState.solicitudes, ...flexState.solicitudes].filter(
+      matchesContext,
+    );
+  }, [
+    tradState.solicitudes,
+    flexState.solicitudes,
+    contextSnapshot.cycleId,
+    contextSnapshot.processId,
+  ]);
 
   // Handlers
   const handleReviewRequest = useCallback((solicitud: ExtensionRequest) => {
@@ -217,9 +259,15 @@ export const ManageExtensionRequestsPage: React.FC = () => {
 
     try {
       if (target.elemento_asignacion_id) {
-        await flexibleExtensionRequestService.approveRequest(target.solicitud_ampliacion_id, data);
+        await flexibleExtensionRequestService.approveRequest(
+          target.solicitud_ampliacion_id,
+          data,
+        );
       } else {
-        await extensionRequestService.approveRequest(target.solicitud_ampliacion_id, data);
+        await extensionRequestService.approveRequest(
+          target.solicitud_ampliacion_id,
+          data,
+        );
       }
 
       showToast({
@@ -250,9 +298,15 @@ export const ManageExtensionRequestsPage: React.FC = () => {
 
     try {
       if (target.elemento_asignacion_id) {
-        await flexibleExtensionRequestService.rejectRequest(target.solicitud_ampliacion_id, data);
+        await flexibleExtensionRequestService.rejectRequest(
+          target.solicitud_ampliacion_id,
+          data,
+        );
       } else {
-        await extensionRequestService.rejectRequest(target.solicitud_ampliacion_id, data);
+        await extensionRequestService.rejectRequest(
+          target.solicitud_ampliacion_id,
+          data,
+        );
       }
 
       showToast({
@@ -285,18 +339,10 @@ export const ManageExtensionRequestsPage: React.FC = () => {
       <PageHeader
         title={moduleInfo.title}
         description={moduleInfo.description}
+        breadcrumbMode="contextual"
         headerExtra={
           isAuthenticated && canManageRequests ? (
             <div className="flex flex-col sm:flex-row w-full gap-2 shrink-0 lg:w-auto">
-              {cycleOptions.length > 1 && (
-                <CustomSelect
-                  className="w-80"
-                  label="Ciclo de acreditación"
-                  options={cycleOptions}
-                  value={selectedCycleId ? String(selectedCycleId) : ""}
-                  onChange={(v) => setSelectedCycleId(Number(v))}
-                />
-              )}
               <SearchInput
                 placeholder="Buscar por solicitante, email o motivo..."
                 value={searchQuery}

@@ -264,72 +264,76 @@ export const FlexibleElementTable: React.FC<FlexibleElementTableProps> = ({
           showCancel={false}
           showConfirm={false}
         >
-          <div className="grid grid-cols-6 gap-x-4 gap-y-3">
+          <div className="flex flex-col gap-4">
 
-            {/* Tipo */}
-            <DetailInfoCell label="Tipo de elemento" className="col-start-1 col-end-4">
-              <span className={cn(TYPOGRAPHY.table.cell, 'text-gris-una-2 font-medium')}>
-                {detailModal.element.tipo}
-              </span>
-            </DetailInfoCell>
-
-            {/* Estado */}
-            <DetailInfoCell label="Estado" className="col-start-4 col-end-7 items-start">
-              <span className={cn(
-                'inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full font-semibold',
-                TYPOGRAPHY.badge,
-                detailModal.element.activo
-                  ? 'bg-verde-light text-verde-dark border border-verde-ring'
-                  : 'bg-error-light text-error-dark border border-error-ring',
-              )}>
-                <span className={cn(
-                  'w-1.5 h-1.5 rounded-full flex-shrink-0',
-                  detailModal.element.activo ? 'bg-verde' : 'bg-error'
-                )} />
-                {detailModal.element.activo ? 'Activo' : 'Inactivo'}
-              </span>
-            </DetailInfoCell>
-
-            <DetailSeparator />
-
-            {/* Nomenclatura */}
-            <DetailInfoCell label="Nomenclatura" className="col-start-1 col-end-4">
-              <span className={cn(TYPOGRAPHY.table.cell, 'text-gris-una-2')}>
-                {detailModal.element.nomenclatura || '—'}
-              </span>
-            </DetailInfoCell>
-
-            {/* Categoría */}
-            <DetailInfoCell label="Categoría" className="col-start-4 col-end-7 items-start">
-              {detailModal.element.categoria
-                ? <StatusBadge label={detailModal.element.categoria} colorClasses="bg-azul-una/10 text-azul-una" />
-                : <span className={cn(TYPOGRAPHY.table.cell, 'text-gris-una-2')}>—</span>
-              }
-            </DetailInfoCell>
-
-            <DetailSeparator />
-
-            {/* Elemento padre */}
-            <DetailInfoCell label="Elemento padre" className="col-span-6">
-              <div className="flex items-center gap-2">
-                <span className="w-1.5 h-1.5 rounded-full bg-azul-una flex-shrink-0" />
-                <span className={cn(TYPOGRAPHY.table.cell, 'text-gris-una-2')}>
-                  {getParentLabel(detailModal.element)}
-                </span>
+            {/* IDENTIFICACIÓN */}
+            <div>
+              <DetailSectionLabel label="Identificación" />
+              <div className="border border-gray-200 rounded-corner p-4 grid grid-cols-2 gap-x-6 gap-y-4">
+                <DetailInfoCell label="Tipo de elemento">
+                  <span className={cn(TYPOGRAPHY.table.cell, 'text-gris-una-2 font-medium')}>
+                    {detailModal.element.tipo}
+                  </span>
+                </DetailInfoCell>
+                <DetailInfoCell label="Estado">
+                  <span className={cn(
+                    'inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full font-semibold',
+                    TYPOGRAPHY.badge,
+                    detailModal.element.activo
+                      ? 'bg-verde-light text-verde-dark border border-verde-ring'
+                      : 'bg-error-light text-error-dark border border-error-ring',
+                  )}>
+                    <span className={cn(
+                      'w-1.5 h-1.5 rounded-full shrink-0',
+                      detailModal.element.activo ? 'bg-verde' : 'bg-error'
+                    )} />
+                    {detailModal.element.activo ? 'Activo' : 'Inactivo'}
+                  </span>
+                </DetailInfoCell>
+                {detailModal.element.nomenclatura && (
+                  <DetailInfoCell label="Nomenclatura">
+                    <span className={cn(TYPOGRAPHY.table.cell, 'text-gris-una-2')}>
+                      {detailModal.element.nomenclatura}
+                    </span>
+                  </DetailInfoCell>
+                )}
+                {detailModal.element.categoria && (
+                  <DetailInfoCell label="Categoría">
+                    <StatusBadge
+                      label={detailModal.element.categoria}
+                      colorClasses="bg-azul-una/10 text-azul-una"
+                    />
+                  </DetailInfoCell>
+                )}
               </div>
-            </DetailInfoCell>
+            </div>
 
             {/* Descripción (opcional) */}
             {detailModal.element.descripcion && (
-              <>
-                <DetailSeparator />
-                <DetailInfoCell label="Descripción" className="col-span-6">
+              <div>
+                <DetailSectionLabel label="Descripción" />
+                <div className="border border-gray-200 rounded-corner p-4">
                   <p className={cn(TYPOGRAPHY.table.cell, 'text-gris-una-2 leading-relaxed')}>
                     {detailModal.element.descripcion}
                   </p>
-                </DetailInfoCell>
-              </>
+                </div>
+              </div>
             )}
+
+            {/* JERARQUÍA */}
+            <div>
+              <DetailSectionLabel label="Jerarquía" />
+              <div className="border border-gray-200 rounded-corner p-4">
+                <DetailInfoCell label="Elemento padre">
+                  <div className="flex items-center gap-2">
+                    <span className="w-1.5 h-1.5 rounded-full bg-azul-una shrink-0" />
+                    <span className={cn(TYPOGRAPHY.table.cell, 'text-gris-una-2')}>
+                      {getParentLabel(detailModal.element)}
+                    </span>
+                  </div>
+                </DetailInfoCell>
+              </div>
+            </div>
 
           </div>
         </Modal>
@@ -340,12 +344,6 @@ export const FlexibleElementTable: React.FC<FlexibleElementTableProps> = ({
 
 // ── Sub-components for detail modal layout ────────────────────────────────────
 
-const DetailSeparator: React.FC = () => (
-  <div className="col-span-6 py-1">
-    <hr className="border-gris-light" />
-  </div>
-);
-
 const DetailInfoCell: React.FC<{ label: string; children: React.ReactNode; className?: string }> = ({ label, children, className }) => (
   <div className={cn('flex flex-col gap-1', className)}>
     <span className={cn('uppercase tracking-wider font-semibold text-gris-una-2', TYPOGRAPHY.table.header)}>
@@ -353,4 +351,10 @@ const DetailInfoCell: React.FC<{ label: string; children: React.ReactNode; class
     </span>
     <div>{children}</div>
   </div>
+);
+
+const DetailSectionLabel: React.FC<{ label: string }> = ({ label }) => (
+  <p className={cn('text-xs font-semibold text-gris-una uppercase tracking-wider mb-1.5', TYPOGRAPHY.table.header)}>
+    {label}
+  </p>
 );

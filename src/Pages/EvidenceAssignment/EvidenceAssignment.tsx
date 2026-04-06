@@ -17,10 +17,15 @@ import {
   type AssignmentCatalogUser,
 } from "@/Services/EvidenceAssignmentService";
 import type { MultiSelectOption } from "@/Components/Ui/Forms/MultiSelect";
-import { useFirstColumnConfig } from "@/Hooks/UseFirstColumnConfig";
 import type { UserAvatarsUser } from "@/Components/Ui/UserAvatars/UserAvatars";
 import type { DataTableColumn } from "@/Components/Ui/Index";
+import {
+  Tooltip,
+  TooltipTrigger,
+  TooltipContent,
+} from "@/Components/Ui/Feedback/Tooltip";
 import { TYPOGRAPHY } from "@/Constants/Typography";
+import { TABLE_COLUMN_WIDTHS } from "@/Constants/Components";
 import { formatDateShort } from "@/Utils/DateUtils";
 
 import { EvidenceAssignmentView } from "./Components/EvidenceAssignmentView";
@@ -53,7 +58,12 @@ export interface EvidenceAssignmentViewProps {
   criterionOptions: MultiSelectOption[];
   evidenceOptions: MultiSelectOption[];
   userOptions: Array<{ id: number; value: string; label: string }>;
-  roleOptions: Array<{ id: number; value: string; label: string; metadata: string }>;
+  roleOptions: Array<{
+    id: number;
+    value: string;
+    label: string;
+    metadata: string;
+  }>;
   userError: string | null;
   roleError: string | null;
   onRetryUsers: () => void;
@@ -74,10 +84,13 @@ export interface EvidenceAssignmentViewProps {
   activeDuplicateRows: DuplicateGroupRow[];
   completedDuplicateRows: DuplicateGroupRow[];
   evidenceById: Record<number, Evidence>;
+  criterionById: Record<number, Criterion>;
   excludedCompletedPairs: Array<{ usuario_id: number; evidencia_id: number }>;
   toggleCompletedPair: (usuario_id: number, evidencia_id: number) => void;
   toggleAllCompletedPairsForUser: (evidences: DuplicateAssignment[]) => void;
-  setExcludedCompletedPairs: React.Dispatch<React.SetStateAction<Array<{ usuario_id: number; evidencia_id: number }>>>;
+  setExcludedCompletedPairs: React.Dispatch<
+    React.SetStateAction<Array<{ usuario_id: number; evidencia_id: number }>>
+  >;
   // Envío
   isSubmitting: boolean;
   showSuccessModal: boolean;
@@ -92,8 +105,10 @@ export interface EvidenceAssignmentViewProps {
   selectedAvatars: UserAvatarsUser[];
   // Modo flexible
   isFlexible: boolean;
-  elementOptions: MultiSelectOption[];
   flexElements: FlexibleElement[];
+  flexElementsLoading: boolean;
+  // Proceso seleccionado para breadcrumbs
+  selectedProcess: Process | null;
 }
 
 // ---------------------------------------------------------------------------
@@ -121,30 +136,38 @@ const EvidenceAssignment: React.FC = () => {
   // ── Tipo de modelo del proceso seleccionado ──────────────────────────────
   const [processes, setProcesses] = useState<Process[]>([]);
   const [flexElements, setFlexElements] = useState<FlexibleElement[]>([]);
+  const [flexElementsLoading, setFlexElementsLoading] = useState(false);
 
   const selectedProcess = useMemo(
     () => processes.find((p) => p.proceso_id === formData.proceso_id) ?? null,
     [processes, formData.proceso_id],
   );
 
-  const isFlexible = selectedProcess?.modelo_estructura_tipo === 'elemento_flexible';
+  const isFlexible =
+    selectedProcess?.modelo_estructura_tipo === "elemento_flexible";
 
-  const updateFormData = useCallback((updates: Partial<EvidenceAssignmentFormData>) => {
-    // Al cambiar de proceso, limpiar selecciones que dependen del modelo
-    if ('proceso_id' in updates && updates.proceso_id !== formData.proceso_id) {
-      setFormData((prev) => ({
-        ...prev,
-        ...updates,
-        criterio_id: null,
-        selectedCriteria: [],
-        selectedEvidences: [],
-        selectedElements: [],
-        excludedUsers: [],
-      }));
-      return;
-    }
-    setFormData((prev) => ({ ...prev, ...updates }));
-  }, [formData.proceso_id]);
+  const updateFormData = useCallback(
+    (updates: Partial<EvidenceAssignmentFormData>) => {
+      // Al cambiar de proceso, limpiar selecciones que dependen del modelo
+      if (
+        "proceso_id" in updates &&
+        updates.proceso_id !== formData.proceso_id
+      ) {
+        setFormData((prev) => ({
+          ...prev,
+          ...updates,
+          criterio_id: null,
+          selectedCriteria: [],
+          selectedEvidences: [],
+          selectedElements: [],
+          excludedUsers: [],
+        }));
+        return;
+      }
+      setFormData((prev) => ({ ...prev, ...updates }));
+    },
+    [formData.proceso_id],
+  );
 
   // ── Catálogos ────────────────────────────────────────────────────────────
   const [criteriaState, setCriteriaState] = useState<{
@@ -187,16 +210,26 @@ const EvidenceAssignment: React.FC = () => {
         userError: null,
       }));
     } catch {
-      setCatalogState((prev) => ({ ...prev, userError: "Error al cargar la lista de usuarios" }));
+      setCatalogState((prev) => ({
+        ...prev,
+        userError: "Error al cargar la lista de usuarios",
+      }));
     }
   }, []);
 
   const loadRoles = useCallback(async () => {
     try {
       const roles = await evidenceAssignmentService.getAssignmentRolesCatalog();
-      setCatalogState((prev) => ({ ...prev, availableRoles: roles, roleError: null }));
+      setCatalogState((prev) => ({
+        ...prev,
+        availableRoles: roles,
+        roleError: null,
+      }));
     } catch {
-      setCatalogState((prev) => ({ ...prev, roleError: "Error al cargar la lista de roles" }));
+      setCatalogState((prev) => ({
+        ...prev,
+        roleError: "Error al cargar la lista de roles",
+      }));
     }
   }, []);
 
@@ -209,7 +242,11 @@ const EvidenceAssignment: React.FC = () => {
           evidenceAssignmentService.getAllEvidences(),
           evidenceAssignmentService.getAllProcesses(),
         ]);
-        setCriteriaState({ criteria: criteriaData, evidences: evidencesData, loading: false });
+        setCriteriaState({
+          criteria: criteriaData,
+          evidences: evidencesData,
+          loading: false,
+        });
         setProcesses(processesData);
         if (processesData.length > 0 && !formData.proceso_id) {
           updateFormData({ proceso_id: processesData[0].proceso_id });
@@ -229,12 +266,20 @@ const EvidenceAssignment: React.FC = () => {
   useEffect(() => {
     if (!isFlexible || !selectedProcess?.modelo_estructura_id) {
       setFlexElements([]);
+      setFlexElementsLoading(false);
       return;
     }
+    setFlexElementsLoading(true);
     evidenceAssignmentService
       .getElementsByModel(selectedProcess.modelo_estructura_id)
-      .then(setFlexElements)
-      .catch(() => setFlexElements([]));
+      .then((els) => {
+        setFlexElements(els);
+        setFlexElementsLoading(false);
+      })
+      .catch(() => {
+        setFlexElements([]);
+        setFlexElementsLoading(false);
+      });
   }, [isFlexible, selectedProcess?.modelo_estructura_id]);
 
   // ── Duplicados ───────────────────────────────────────────────────────────
@@ -259,7 +304,11 @@ const EvidenceAssignment: React.FC = () => {
         setExcludedCompletedPairs([]);
         return;
       }
-      setDuplicatesState((prev) => ({ ...prev, validating: true, duplicates: [] }));
+      setDuplicatesState((prev) => ({
+        ...prev,
+        validating: true,
+        duplicates: [],
+      }));
       setExcludedCompletedPairs([]);
       const found: DuplicateAssignment[] = [];
       try {
@@ -270,17 +319,30 @@ const EvidenceAssignment: React.FC = () => {
             usuarios: formData.selectedUsers,
           });
           if (res.tiene_duplicados) {
-            found.push(...res.duplicados.map((d) => ({ ...d, evidencia_id: evidenciaId })));
+            found.push(
+              ...res.duplicados.map((d) => ({
+                ...d,
+                evidencia_id: evidenciaId,
+              })),
+            );
           }
         }
       } catch {
         // silenciar error de validación
       }
       setDuplicatesState({ duplicates: found, validating: false });
-      updateFormData({ excludedUsers: found.filter((d) => d.estado !== "completado").map((d) => d.usuario_id) });
+      updateFormData({
+        excludedUsers: found
+          .filter((d) => d.estado !== "completado")
+          .map((d) => d.usuario_id),
+      });
     };
     validate();
-  }, [formData.proceso_id, JSON.stringify(formData.selectedEvidences), JSON.stringify(formData.selectedUsers)]);
+  }, [
+    formData.proceso_id,
+    JSON.stringify(formData.selectedEvidences),
+    JSON.stringify(formData.selectedUsers),
+  ]);
 
   // ── Modales y envío ──────────────────────────────────────────────────────
   const [submitState, setSubmitState] = useState<{
@@ -295,33 +357,22 @@ const EvidenceAssignment: React.FC = () => {
   });
 
   // ── Opciones derivadas ───────────────────────────────────────────────────
-  const criterionOptions = useMemo<MultiSelectOption[]>(() =>
-    criteriaState.criteria.map((c) => ({
-      value: c.criterio_id.toString(),
-      label: `${c.nomenclatura} — ${c.descripcion.substring(0, 100)}${c.descripcion.length > 100 ? '...' : ''}`,
-    })), [criteriaState.criteria]
+  const criterionOptions = useMemo<MultiSelectOption[]>(
+    () =>
+      criteriaState.criteria.map((c) => ({
+        value: c.criterio_id.toString(),
+        label: `${c.nomenclatura} — ${c.descripcion.substring(0, 100)}${c.descripcion.length > 100 ? "..." : ""}`,
+      })),
+    [criteriaState.criteria],
   );
 
-  // Elementos del modelo flexible: solo hojas (sin hijos) para poder asignarlos
-  const elementOptions = useMemo<MultiSelectOption[]>(() => {
-    const parentIds = new Set(
-      flexElements.filter((e) => e.padre_id !== null).map((e) => e.padre_id as number)
-    );
-    return flexElements
-      .filter((e) => !parentIds.has(e.elemento_id) && e.activo)
-      .map((e) => ({
-        value: e.elemento_id.toString(),
-        label: e.nomenclatura
-          ? `${e.nomenclatura} — ${e.descripcion ?? e.tipo}`
-          : e.descripcion ?? e.tipo,
-      }));
-  }, [flexElements]);
-
-  const criterionById = useMemo(() =>
-    criteriaState.criteria.reduce<Record<number, Criterion>>((acc, c) => {
-      acc[c.criterio_id] = c;
-      return acc;
-    }, {}), [criteriaState.criteria]
+  const criterionById = useMemo(
+    () =>
+      criteriaState.criteria.reduce<Record<number, Criterion>>((acc, c) => {
+        acc[c.criterio_id] = c;
+        return acc;
+      }, {}),
+    [criteriaState.criteria],
   );
 
   const availableEvidences = useMemo(() => {
@@ -330,53 +381,72 @@ const EvidenceAssignment: React.FC = () => {
     return criteriaState.evidences.filter((e) => set.has(e.criterio_id));
   }, [criteriaState.evidences, formData.selectedCriteria]);
 
-  const evidenceOptions = useMemo<MultiSelectOption[]>(() =>
-    availableEvidences.map((e) => ({
-      value: e.evidencia_id.toString(),
-      label: `${e.nomenclatura} — ${e.descripcion}`,
-      metadata: criterionById[e.criterio_id]?.nomenclatura ?? `Criterio ${e.criterio_id}`,
-    })), [availableEvidences, criterionById]
+  const evidenceOptions = useMemo<MultiSelectOption[]>(
+    () =>
+      availableEvidences.map((e) => ({
+        value: e.evidencia_id.toString(),
+        label: `${e.nomenclatura} — ${e.descripcion}`,
+        metadata:
+          criterionById[e.criterio_id]?.nomenclatura ??
+          `Criterio ${e.criterio_id}`,
+      })),
+    [availableEvidences, criterionById],
   );
 
-  const userOptions = useMemo(() =>
-    catalogState.availableUsers.map((u) => ({
-      id: u.id,
-      value: u.id.toString(),
-      label: `${u.name} (${u.email})`,
-    })), [catalogState.availableUsers]
+  const userOptions = useMemo(
+    () =>
+      catalogState.availableUsers.map((u) => ({
+        id: u.id,
+        value: u.id.toString(),
+        label: `${u.name} (${u.email})`,
+      })),
+    [catalogState.availableUsers],
   );
 
-  const roleOptions = useMemo(() =>
-    catalogState.availableRoles.map((r) => ({
-      id: r.id,
-      value: r.id.toString(),
-      label: r.name,
-      metadata: `${catalogState.userCountByRole[r.id] ?? 0} ${
-        (catalogState.userCountByRole[r.id] ?? 0) === 1 ? "usuario" : "usuarios"
-      }`,
-    })), [catalogState.availableRoles, catalogState.userCountByRole]
+  const roleOptions = useMemo(
+    () =>
+      catalogState.availableRoles.map((r) => ({
+        id: r.id,
+        value: r.id.toString(),
+        label: r.name,
+        metadata: `${catalogState.userCountByRole[r.id] ?? 0} ${
+          (catalogState.userCountByRole[r.id] ?? 0) === 1
+            ? "usuario"
+            : "usuarios"
+        }`,
+      })),
+    [catalogState.availableRoles, catalogState.userCountByRole],
   );
 
-  const evidenceById = useMemo(() =>
-    criteriaState.evidences.reduce<Record<number, Evidence>>((acc, e) => {
-      acc[e.evidencia_id] = e;
-      return acc;
-    }, {}), [criteriaState.evidences]
+  const evidenceById = useMemo(
+    () =>
+      criteriaState.evidences.reduce<Record<number, Evidence>>((acc, e) => {
+        acc[e.evidencia_id] = e;
+        return acc;
+      }, {}),
+    [criteriaState.evidences],
   );
 
   const selectedAvatars = useMemo<UserAvatarsUser[]>(() => {
-    const userAvatars: UserAvatarsUser[] = formData.selectedUsers.flatMap((id) => {
-      const u = catalogState.availableUsers.find((u) => u.id === id);
-      return u ? [{ id: u.id, name: u.name }] : [];
-    });
-    const roleAvatars: UserAvatarsUser[] = formData.selectedRoles.flatMap((id) => {
-      const r = catalogState.availableRoles.find((r) => r.id === id);
-      return r ? [{ id: `role-${r.id}`, name: r.name }] : [];
-    });
+    const userAvatars: UserAvatarsUser[] = formData.selectedUsers.flatMap(
+      (id) => {
+        const u = catalogState.availableUsers.find((u) => u.id === id);
+        return u ? [{ id: u.id, name: u.name }] : [];
+      },
+    );
+    const roleAvatars: UserAvatarsUser[] = formData.selectedRoles.flatMap(
+      (id) => {
+        const r = catalogState.availableRoles.find((r) => r.id === id);
+        return r ? [{ id: `role-${r.id}`, name: r.name }] : [];
+      },
+    );
     return [...userAvatars, ...roleAvatars];
-  }, [formData.selectedUsers, formData.selectedRoles, catalogState.availableUsers, catalogState.availableRoles]);
-
-  const firstColumn = useFirstColumnConfig();
+  }, [
+    formData.selectedUsers,
+    formData.selectedRoles,
+    catalogState.availableUsers,
+    catalogState.availableRoles,
+  ]);
 
   const assignmentTableRows = useMemo<AssignmentTableRow[]>(() => {
     if (isFlexible) {
@@ -396,72 +466,129 @@ const EvidenceAssignment: React.FC = () => {
     }
     return formData.selectedEvidences.map((id) => {
       const ev = evidenceById[id];
+      const criterion = ev ? criterionById[ev.criterio_id] : null;
+      const path = criterion
+        ? `${criterion.nomenclatura} > ${ev!.nomenclatura} — ${ev!.descripcion}`
+        : ev
+          ? `${ev.nomenclatura} — ${ev.descripcion}`
+          : "—";
       return {
         id: id.toString(),
         evidencia_id: id,
         nomenclatura: ev?.nomenclatura ?? "—",
-        descripcion: ev?.descripcion ?? "—",
+        descripcion: path,
         destinatarios: "—",
         fecha_limite: formData.fecha_limite ?? "",
         comentario: formData.comentario ?? "",
       };
     });
-  }, [isFlexible, formData.selectedElements, formData.selectedEvidences, flexElements, evidenceById, formData.fecha_limite, formData.comentario]);
+  }, [
+    isFlexible,
+    formData.selectedElements,
+    formData.selectedEvidences,
+    flexElements,
+    evidenceById,
+    formData.fecha_limite,
+    formData.comentario,
+  ]);
 
-  const assignmentColumns = useMemo<DataTableColumn<AssignmentTableRow>[]>(() => [
-    {
-      key: "evidencia",
-      header: "Evidencia",
-      width: firstColumn.width,
-      render: (_val: unknown, row: AssignmentTableRow) => (
-        <div className={`${TYPOGRAPHY.table.cell} text-negro-una`}>
-          <span className="font-semibold">{row.nomenclatura as string}</span>
-          <span className="text-gris-una mx-1.5">—</span>
-          <span className="text-negro-una font-semibold">{row.descripcion as string}</span>
-        </div>
-      ),
-    },
-    {
-      key: "destinatarios",
-      header: "Destinatarios",
-      align: "center" as const,
-      render: () =>
-        selectedAvatars.length > 0 ? (
-          <div className="flex justify-center">
-            {/* UserAvatars se renderiza en la vista */}
-            <span data-avatars={JSON.stringify(selectedAvatars)} />
-          </div>
-        ) : (
-          <span className={`${TYPOGRAPHY.table.cell} text-gris-una/50`}>Sin destinatarios</span>
-        ),
-    },
-    {
-      key: "fecha",
-      header: "Fecha límite",
-      align: "center" as const,
-      render: (_val: unknown, row: AssignmentTableRow) => {
-        const fecha = row.fecha_limite as string;
-        return fecha
-          ? <p className={`${TYPOGRAPHY.table.cell} text-gris-una`}>{formatDateShort(fecha)}</p>
-          : <span className={`${TYPOGRAPHY.table.cell} text-gris-una/50`}>—</span>;
+  const assignmentColumns = useMemo<DataTableColumn<AssignmentTableRow>[]>(
+    () => [
+      {
+        key: "evidencia",
+        header: isFlexible ? "Elemento" : "Evidencia",
+        align: "left" as const,
+        render: (_val: unknown, row: AssignmentTableRow) => {
+          const displayText = row.descripcion as string;
+          const comentario = row.comentario as string;
+          return (
+            <div className="min-w-0">
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <span
+                    className={`${TYPOGRAPHY.table.cell} font-semibold truncate block cursor-default text-negro-una`}
+                    title=""
+                  >
+                    {displayText}
+                  </span>
+                </TooltipTrigger>
+                <TooltipContent
+                  side="top"
+                  align="start"
+                  className="whitespace-normal max-w-xs"
+                >
+                  {displayText}
+                </TooltipContent>
+              </Tooltip>
+              {comentario && (
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <span
+                      className={`${TYPOGRAPHY.table.helper} truncate block cursor-default text-gris-una mt-0.5`}
+                      title=""
+                    >
+                      {comentario}
+                    </span>
+                  </TooltipTrigger>
+                  <TooltipContent
+                    side="top"
+                    align="start"
+                    className="whitespace-normal max-w-xs"
+                  >
+                    {comentario}
+                  </TooltipContent>
+                </Tooltip>
+              )}
+            </div>
+          );
+        },
       },
-    },
-    {
-      key: "comentario",
-      header: "Comentario",
-      align: "center" as const,
-      render: (_val: unknown, row: AssignmentTableRow) => {
-        const comentario = row.comentario as string;
-        return comentario
-          ? <p className={`${TYPOGRAPHY.table.cell} text-gris-una truncate max-w-xs`} title={comentario}>{comentario}</p>
-          : <span className={`${TYPOGRAPHY.table.cell} text-gris-una/50`}>—</span>;
+      {
+        key: "destinatarios",
+        header: "Destinatarios",
+        align: "left" as const,
+        width: TABLE_COLUMN_WIDTHS.status,
+        render: () =>
+          selectedAvatars.length > 0 ? (
+            <div className="flex justify-start">
+              {/* UserAvatars se renderiza en la vista */}
+              <span data-avatars={JSON.stringify(selectedAvatars)} />
+            </div>
+          ) : (
+            <span className={`${TYPOGRAPHY.table.cell} text-gris-una/50`}>
+              Sin destinatarios
+            </span>
+          ),
       },
-    },
-  ], [selectedAvatars, firstColumn.width, TYPOGRAPHY]);
+      {
+        key: "fecha",
+        header: "Fecha límite",
+        align: "left" as const,
+        width: TABLE_COLUMN_WIDTHS.status,
+        render: (_val: unknown, row: AssignmentTableRow) => {
+          const fecha = row.fecha_limite as string;
+          return fecha ? (
+            <p className={`${TYPOGRAPHY.table.cell} text-gris-una`}>
+              {formatDateShort(fecha)}
+            </p>
+          ) : (
+            <span className={`${TYPOGRAPHY.table.cell} text-gris-una/50`}>
+              —
+            </span>
+          );
+        },
+      },
+    ],
+    [isFlexible, selectedAvatars, TYPOGRAPHY],
+  );
 
   // ── Duplicados agrupados ─────────────────────────────────────────────────
-  const activeDuplicates = duplicatesState.duplicates.filter((d) => d.estado !== "completado");
-  const completedDuplicates = duplicatesState.duplicates.filter((d) => d.estado === "completado");
+  const activeDuplicates = duplicatesState.duplicates.filter(
+    (d) => d.estado !== "completado",
+  );
+  const completedDuplicates = duplicatesState.duplicates.filter(
+    (d) => d.estado === "completado",
+  );
 
   const duplicatesByUser = (dups: DuplicateAssignment[]) =>
     dups.reduce<Record<string, DuplicateAssignment[]>>((acc, dup) => {
@@ -471,52 +598,93 @@ const EvidenceAssignment: React.FC = () => {
       return acc;
     }, {});
 
-  const activeDuplicateRows = useMemo<DuplicateGroupRow[]>(() =>
-    Object.values(duplicatesByUser(activeDuplicates)).map((userDups) => ({
-      id: userDups[0].usuario_id,
-      usuario_nombre: userDups[0].usuario_nombre,
-      evidences: userDups,
-    } as DuplicateGroupRow)),
-    [activeDuplicates]
+  const activeDuplicateRows = useMemo<DuplicateGroupRow[]>(
+    () =>
+      Object.values(duplicatesByUser(activeDuplicates)).map(
+        (userDups) =>
+          ({
+            id: userDups[0].usuario_id,
+            usuario_nombre: userDups[0].usuario_nombre,
+            evidences: userDups,
+          }) as DuplicateGroupRow,
+      ),
+    [activeDuplicates],
   );
 
-  const completedDuplicateRows = useMemo<DuplicateGroupRow[]>(() =>
-    Object.values(duplicatesByUser(completedDuplicates)).map((userDups) => ({
-      id: userDups[0].usuario_id,
-      usuario_nombre: userDups[0].usuario_nombre,
-      evidences: userDups,
-    } as DuplicateGroupRow)),
-    [completedDuplicates]
+  const completedDuplicateRows = useMemo<DuplicateGroupRow[]>(
+    () =>
+      Object.values(duplicatesByUser(completedDuplicates)).map(
+        (userDups) =>
+          ({
+            id: userDups[0].usuario_id,
+            usuario_nombre: userDups[0].usuario_nombre,
+            evidences: userDups,
+          }) as DuplicateGroupRow,
+      ),
+    [completedDuplicates],
   );
 
   // ── Handlers de pares completados ────────────────────────────────────────
-  const toggleCompletedPair = useCallback((usuario_id: number, evidencia_id: number) => {
-    setExcludedCompletedPairs((prev) => {
-      const exists = prev.some((p) => p.usuario_id === usuario_id && p.evidencia_id === evidencia_id);
-      if (exists) return prev.filter((p) => !(p.usuario_id === usuario_id && p.evidencia_id === evidencia_id));
-      return [...prev, { usuario_id, evidencia_id }];
-    });
-  }, []);
+  const toggleCompletedPair = useCallback(
+    (usuario_id: number, evidencia_id: number) => {
+      setExcludedCompletedPairs((prev) => {
+        const exists = prev.some(
+          (p) => p.usuario_id === usuario_id && p.evidencia_id === evidencia_id,
+        );
+        if (exists)
+          return prev.filter(
+            (p) =>
+              !(p.usuario_id === usuario_id && p.evidencia_id === evidencia_id),
+          );
+        return [...prev, { usuario_id, evidencia_id }];
+      });
+    },
+    [],
+  );
 
-  const toggleAllCompletedPairsForUser = useCallback((evidences: DuplicateAssignment[]) => {
-    setExcludedCompletedPairs((prev) => {
-      const allExcluded = evidences.every((d) =>
-        prev.some((p) => p.usuario_id === d.usuario_id && p.evidencia_id === d.evidencia_id)
-      );
-      if (allExcluded) {
-        return prev.filter((p) => !evidences.some((d) => d.usuario_id === p.usuario_id && d.evidencia_id === p.evidencia_id));
-      }
-      const newPairs = evidences
-        .filter((d) => !prev.some((p) => p.usuario_id === d.usuario_id && p.evidencia_id === d.evidencia_id))
-        .map((d) => ({ usuario_id: d.usuario_id, evidencia_id: d.evidencia_id }));
-      return [...prev, ...newPairs];
-    });
-  }, []);
+  const toggleAllCompletedPairsForUser = useCallback(
+    (evidences: DuplicateAssignment[]) => {
+      setExcludedCompletedPairs((prev) => {
+        const allExcluded = evidences.every((d) =>
+          prev.some(
+            (p) =>
+              p.usuario_id === d.usuario_id &&
+              p.evidencia_id === d.evidencia_id,
+          ),
+        );
+        if (allExcluded) {
+          return prev.filter(
+            (p) =>
+              !evidences.some(
+                (d) =>
+                  d.usuario_id === p.usuario_id &&
+                  d.evidencia_id === p.evidencia_id,
+              ),
+          );
+        }
+        const newPairs = evidences
+          .filter(
+            (d) =>
+              !prev.some(
+                (p) =>
+                  p.usuario_id === d.usuario_id &&
+                  p.evidencia_id === d.evidencia_id,
+              ),
+          )
+          .map((d) => ({
+            usuario_id: d.usuario_id,
+            evidencia_id: d.evidencia_id,
+          }));
+        return [...prev, ...newPairs];
+      });
+    },
+    [],
+  );
 
   // ── Validación y envío ───────────────────────────────────────────────────
   const excludedUsersSet = useMemo(
     () => new Set(formData.excludedUsers ?? []),
-    [formData.excludedUsers]
+    [formData.excludedUsers],
   );
 
   const validate = (): boolean => {
@@ -529,7 +697,10 @@ const EvidenceAssignment: React.FC = () => {
       if (formData.selectedEvidences.length === 0)
         newErrors.evidences = "Debe seleccionar al menos una evidencia";
     }
-    if (formData.selectedUsers.length === 0 && formData.selectedRoles.length === 0) {
+    if (
+      formData.selectedUsers.length === 0 &&
+      formData.selectedRoles.length === 0
+    ) {
       newErrors.destinatarios = "Debe seleccionar al menos un usuario o rol";
     }
     if (formData.fecha_limite) {
@@ -537,7 +708,8 @@ const EvidenceAssignment: React.FC = () => {
       const selected = new Date(y, m - 1, d);
       const today = new Date();
       today.setHours(0, 0, 0, 0);
-      if (selected <= today) newErrors.fecha_limite = "La fecha límite debe ser posterior a hoy";
+      if (selected <= today)
+        newErrors.fecha_limite = "La fecha límite debe ser posterior a hoy";
     }
     setSubmitState((prev) => ({ ...prev, errors: newErrors }));
     return Object.keys(newErrors).length === 0;
@@ -545,7 +717,11 @@ const EvidenceAssignment: React.FC = () => {
 
   const handleFormSubmit = () => {
     if (!validate()) {
-      showToast({ type: "error", title: "Error de validación", message: "Por favor, revise los datos ingresados" });
+      showToast({
+        type: "error",
+        title: "Error de validación",
+        message: "Por favor, revise los datos ingresados",
+      });
       return;
     }
     setModalState((prev) => ({ ...prev, showConfirmModal: true }));
@@ -561,8 +737,14 @@ const EvidenceAssignment: React.FC = () => {
           await evidenceAssignmentService.createElementAssignment({
             proceso_id: formData.proceso_id!,
             elemento_id: elementoId,
-            usuarios: formData.selectedUsers.length > 0 ? formData.selectedUsers : undefined,
-            roles: formData.selectedRoles.length > 0 ? formData.selectedRoles : undefined,
+            usuarios:
+              formData.selectedUsers.length > 0
+                ? formData.selectedUsers
+                : undefined,
+            roles:
+              formData.selectedRoles.length > 0
+                ? formData.selectedRoles
+                : undefined,
             fecha_limite: formData.fecha_limite || undefined,
             comentario: formData.comentario || undefined,
           });
@@ -587,13 +769,18 @@ const EvidenceAssignment: React.FC = () => {
           const finalUsers = formData.selectedUsers.filter(
             (id) =>
               !excludedUsersSet.has(id) &&
-              !excludedCompletedPairs.some((p) => p.usuario_id === id && p.evidencia_id === evidenciaId)
+              !excludedCompletedPairs.some(
+                (p) => p.usuario_id === id && p.evidencia_id === evidenciaId,
+              ),
           );
           await evidenceAssignmentService.createAssignment({
             proceso_id: formData.proceso_id!,
             evidencia_id: evidenciaId,
             usuarios: finalUsers.length > 0 ? finalUsers : undefined,
-            roles: formData.selectedRoles.length > 0 ? formData.selectedRoles : undefined,
+            roles:
+              formData.selectedRoles.length > 0
+                ? formData.selectedRoles
+                : undefined,
             fecha_limite: formData.fecha_limite || undefined,
             comentario: formData.comentario || undefined,
           });
@@ -639,8 +826,14 @@ const EvidenceAssignment: React.FC = () => {
     roleOptions,
     userError: catalogState.userError,
     roleError: catalogState.roleError,
-    onRetryUsers: () => { setCatalogState((prev) => ({ ...prev, userError: null })); loadUsers(); },
-    onRetryRoles: () => { setCatalogState((prev) => ({ ...prev, roleError: null })); loadRoles(); },
+    onRetryUsers: () => {
+      setCatalogState((prev) => ({ ...prev, userError: null }));
+      loadUsers();
+    },
+    onRetryRoles: () => {
+      setCatalogState((prev) => ({ ...prev, roleError: null }));
+      loadRoles();
+    },
     availableEvidencesCount: availableEvidences.length,
     formData,
     updateFormData,
@@ -654,6 +847,7 @@ const EvidenceAssignment: React.FC = () => {
     activeDuplicateRows,
     completedDuplicateRows,
     evidenceById,
+    criterionById,
     excludedCompletedPairs,
     toggleCompletedPair,
     toggleAllCompletedPairsForUser,
@@ -664,13 +858,15 @@ const EvidenceAssignment: React.FC = () => {
     assignedEvidencesCount: modalState.assignedEvidencesCount,
     onFormSubmit: handleFormSubmit,
     onConfirmedSubmit: handleConfirmedSubmit,
-    onCloseConfirmModal: () => setModalState((prev) => ({ ...prev, showConfirmModal: false })),
-    onCloseSuccessModal: () => setModalState((prev) => ({ ...prev, showSuccessModal: false })),
+    onCloseConfirmModal: () =>
+      setModalState((prev) => ({ ...prev, showConfirmModal: false })),
+    onCloseSuccessModal: () =>
+      setModalState((prev) => ({ ...prev, showSuccessModal: false })),
     criteriaEvidences: criteriaState.evidences,
     selectedAvatars,
     isFlexible,
-    elementOptions,
     flexElements,
+    flexElementsLoading,
   };
 
   return <EvidenceAssignmentView {...viewProps} />;

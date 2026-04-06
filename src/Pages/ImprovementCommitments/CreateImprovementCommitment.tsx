@@ -1,6 +1,6 @@
 /**
  * CrearCompromiso - Wizard para crear compromisos de mejora
- * 
+ *
  * Flujo de 2 pasos:
  * 1. Selección de ciclo y criterios (con modal para cada criterio)
  * 2. Revisión y confirmación
@@ -25,8 +25,8 @@ import type {
   CrearCompromisoPayload,
   CrearCompromisoElementoPayload,
   Criterio,
-} from '@/Types/ImprovementCommitmentTypes';
-import type { FlexibleElement } from '@/Types/StructureModelTypes';
+} from "@/Types/ImprovementCommitmentTypes";
+import type { FlexibleElement } from "@/Types/StructureModelTypes";
 // Importar componentes de los pasos
 import { CreationStep } from './Components/CreationStep';
 import type { StatusFilter } from './Components/CreationStep';
@@ -38,7 +38,7 @@ import type { SelectOption } from '@/Components/Ui/Forms/SingleSelect';
 
 
 const CreateImprovementCommitment: React.FC = () => {
-  const moduleInfo = getModuleInfo('improvement_commitments');
+  const moduleInfo = getModuleInfo("improvement_commitments");
   const { showToast } = useToast();
   const navigate = useNavigate();
   const location = useLocation();
@@ -67,13 +67,19 @@ const CreateImprovementCommitment: React.FC = () => {
   const [submitState, setSubmitState] = useState<{ isSubmitting: boolean; errors: ValidationErrors }>({ isSubmitting: false, errors: {} });
   const isSubmitting = submitState.isSubmitting;
   const errors = submitState.errors;
-  const [modals, setModals] = useState({ showSuccessModal: false, showConfirmModal: false });
+  const [modals, setModals] = useState({
+    showSuccessModal: false,
+    showConfirmModal: false,
+  });
   const showSuccessModal = modals.showSuccessModal;
   const showConfirmModal = modals.showConfirmModal;
 
-  const [creationFilter, setCreationFilter] = useState<{ searchTerm: string; statusFilter: StatusFilter }>({
-    searchTerm: '',
-    statusFilter: 'todos',
+  const [creationFilter, setCreationFilter] = useState<{
+    searchTerm: string;
+    statusFilter: StatusFilter;
+  }>({
+    searchTerm: "",
+    statusFilter: "todos",
   });
 
   const [cicloOptions, setCicloOptions] = useState<SelectOption[]>([]);
@@ -83,9 +89,9 @@ const CreateImprovementCommitment: React.FC = () => {
   };
 
   const filterOptions: FilterOption<StatusFilter>[] = [
-    { value: 'todos', label: 'Todos' },
-    { value: 'seleccionados', label: 'Seleccionados' },
-    { value: 'pendientes', label: 'Pendientes' },
+    { value: "todos", label: "Todos" },
+    { value: "seleccionados", label: "Seleccionados" },
+    { value: "pendientes", label: "Pendientes" },
   ];
 
   const [formData, setFormData] = useState<CompromisoFormData>({
@@ -98,8 +104,13 @@ const CreateImprovementCommitment: React.FC = () => {
     elementos_seleccionados: [],
   });
 
-  const [existingCompromisoId, setExistingCompromisoId] = useState<number | null>(null);
-  const [existingElementIdMap, setExistingElementIdMap] = useState<Record<number, number>>({});
+  const [existingCompromisoId, setExistingCompromisoId] = useState<
+    number | null
+  >(null);
+  const [existingElementIdMap, setExistingElementIdMap] = useState<
+    Record<number, number>
+  >({});
+
 
   // Cargar datos existentes al abrir si el proceso ya tiene compromiso configurado
   useEffect(() => {
@@ -159,7 +170,10 @@ const CreateImprovementCommitment: React.FC = () => {
           });
           setExistingElementIdMap(idMap);
           if (elementosSeleccionados.length) {
-            setFormData(prev => ({ ...prev, elementos_seleccionados: elementosSeleccionados }));
+            setFormData((prev) => ({
+              ...prev,
+              elementos_seleccionados: elementosSeleccionados,
+            }));
           }
         })
         .catch(() => {});
@@ -168,8 +182,11 @@ const CreateImprovementCommitment: React.FC = () => {
         .then(commitment => {
           if (!commitment) return;
           setExistingCompromisoId(commitment.compromiso_mejora_id);
-          const assignedEvidences: any[] = (commitment as any).assigned_evidences ?? [];
-          const criteriosSeleccionados: CriterioSeleccionado[] = ((commitment as any).selecciones ?? []).map((sel: any) => {
+          const assignedEvidences: any[] =
+            (commitment as any).assigned_evidences ?? [];
+          const criteriosSeleccionados: CriterioSeleccionado[] = (
+            (commitment as any).selecciones ?? []
+          ).map((sel: any) => {
             const criterioId: number = sel.criterio?.criterio_id;
             const evidenciaIds: number[] = (sel.evidencias ?? []).map((e: any) => e.evidencia_id);
             const matchingAssignments = assignedEvidences.filter(ae => evidenciaIds.includes(ae.evidencia_id));
@@ -181,8 +198,8 @@ const CreateImprovementCommitment: React.FC = () => {
               criterio_id: criterioId,
               criterio: {
                 criterio_id: criterioId,
-                nomenclatura: sel.criterio?.nomenclatura ?? '',
-                descripcion: sel.criterio?.descripcion ?? '',
+                nomenclatura: sel.criterio?.nomenclatura ?? "",
+                descripcion: sel.criterio?.descripcion ?? "",
                 componente_id: 0,
                 activo: true,
               } as Criterio,
@@ -194,9 +211,9 @@ const CreateImprovementCommitment: React.FC = () => {
               comentario: matchingAssignments[0]?.pivot?.comentario ?? matchingAssignments[0]?.comentario ?? '',
             } as CriterioSeleccionado;
           });
-          setFormData(prev => ({
+          setFormData((prev) => ({
             ...prev,
-            descripcion: (commitment as any).descripcion ?? '',
+            descripcion: (commitment as any).descripcion ?? "",
             fecha_inicio: (commitment as any).fecha_inicio ?? prev.fecha_inicio,
             fecha_fin: (commitment as any).fecha_fin ?? prev.fecha_fin,
             criterios_seleccionados: criteriosSeleccionados,
@@ -213,16 +230,16 @@ const CreateImprovementCommitment: React.FC = () => {
    * Actualizar datos del formulario
    */
   const updateFormData = (updates: Partial<CompromisoFormData>) => {
-    setFormData(prev => ({ ...prev, ...updates }));
+    setFormData((prev) => ({ ...prev, ...updates }));
   };
 
   /**
    * Agregar un criterio seleccionado
    */
   const addCriterion = (criterio: CriterioSeleccionado) => {
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      criterios_seleccionados: [...prev.criterios_seleccionados, criterio]
+      criterios_seleccionados: [...prev.criterios_seleccionados, criterio],
     }));
   };
 
@@ -230,11 +247,11 @@ const CreateImprovementCommitment: React.FC = () => {
    * Eliminar un criterio seleccionado
    */
   const deleteCriterion = (criterioId: number) => {
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
       criterios_seleccionados: prev.criterios_seleccionados.filter(
-        c => c.criterio_id !== criterioId
-      )
+        (c) => c.criterio_id !== criterioId,
+      ),
     }));
   };
 
@@ -242,11 +259,13 @@ const CreateImprovementCommitment: React.FC = () => {
    * Actualizar un criterio existente
    */
   const updateCriterion = (criterioActualizado: CriterioSeleccionado) => {
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      criterios_seleccionados: prev.criterios_seleccionados.map(c =>
-        c.criterio_id === criterioActualizado.criterio_id ? criterioActualizado : c
-      )
+      criterios_seleccionados: prev.criterios_seleccionados.map((c) =>
+        c.criterio_id === criterioActualizado.criterio_id
+          ? criterioActualizado
+          : c,
+      ),
     }));
   };
 
@@ -254,9 +273,12 @@ const CreateImprovementCommitment: React.FC = () => {
    * Agregar un elemento seleccionado (modelo flexible)
    */
   const addElemento = (elemento: ElementoSeleccionado) => {
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      elementos_seleccionados: [...(prev.elementos_seleccionados ?? []), elemento],
+      elementos_seleccionados: [
+        ...(prev.elementos_seleccionados ?? []),
+        elemento,
+      ],
     }));
   };
 
@@ -264,10 +286,10 @@ const CreateImprovementCommitment: React.FC = () => {
    * Eliminar un elemento seleccionado (modelo flexible)
    */
   const deleteElemento = (elementoId: number) => {
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
       elementos_seleccionados: (prev.elementos_seleccionados ?? []).filter(
-        e => e.elemento_id !== elementoId
+        (e) => e.elemento_id !== elementoId,
       ),
     }));
   };
@@ -276,10 +298,12 @@ const CreateImprovementCommitment: React.FC = () => {
    * Actualizar un elemento existente (modelo flexible)
    */
   const updateElemento = (elementoActualizado: ElementoSeleccionado) => {
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      elementos_seleccionados: (prev.elementos_seleccionados ?? []).map(e =>
-        e.elemento_id === elementoActualizado.elemento_id ? elementoActualizado : e
+      elementos_seleccionados: (prev.elementos_seleccionados ?? []).map((e) =>
+        e.elemento_id === elementoActualizado.elemento_id
+          ? elementoActualizado
+          : e,
       ),
     }));
   };
@@ -315,8 +339,8 @@ const CreateImprovementCommitment: React.FC = () => {
     if (formData.descripcion && formData.descripcion.length > 100) {
       newErrors.descripcion = 'La descripción no puede exceder 100 caracteres';
     }
-    
-    setSubmitState(prev => ({...prev, errors: newErrors}));
+
+    setSubmitState((prev) => ({ ...prev, errors: newErrors }));
     return Object.keys(newErrors).length === 0 ? null : newErrors;
   };
 
@@ -329,13 +353,15 @@ const CreateImprovementCommitment: React.FC = () => {
       return;
     }
 
-    setSubmitState(prev => ({...prev, isSubmitting: true}));
-    
+    setSubmitState((prev) => ({ ...prev, isSubmitting: true }));
+
     try {
       if (isFlexible) {
         // Modelo flexible — un compromiso por elemento seleccionado
         const elementosSeleccionados = formData.elementos_seleccionados ?? [];
-        const descripcionBase = formData.descripcion || `Compromiso de mejora ${new Date().toLocaleDateString()}`;
+        const descripcionBase =
+          formData.descripcion ||
+          `Compromiso de mejora ${new Date().toLocaleDateString()}`;
 
         for (const elemento of elementosSeleccionados) {
           const payload: CrearCompromisoElementoPayload = {
@@ -344,75 +370,96 @@ const CreateImprovementCommitment: React.FC = () => {
             descripcion: descripcionBase,
             fecha_inicio: formData.fecha_inicio,
             fecha_fin: formData.fecha_fin,
-            elementos_asignar: improvementCommitmentService.transformarElementosParaBackend(elemento),
+            elementos_asignar:
+              improvementCommitmentService.transformarElementosParaBackend(
+                elemento,
+              ),
           };
           const existingId = existingElementIdMap[elemento.elemento_id];
           if (existingId) {
-            await improvementCommitmentService.actualizarCompromisoElemento(existingId, {
-              elementos_asignar: improvementCommitmentService.transformarElementosParaBackend(elemento),
-              descripcion: descripcionBase,
-              fecha_inicio: formData.fecha_inicio,
-              fecha_fin: formData.fecha_fin,
-              elemento_id: elemento.elemento_id,
-            });
+            await improvementCommitmentService.actualizarCompromisoElemento(
+              existingId,
+              {
+                elementos_asignar:
+                  improvementCommitmentService.transformarElementosParaBackend(
+                    elemento,
+                  ),
+                descripcion: descripcionBase,
+                fecha_inicio: formData.fecha_inicio,
+                fecha_fin: formData.fecha_fin,
+                elemento_id: elemento.elemento_id,
+              },
+            );
           } else {
             await improvementCommitmentService.crearCompromisoElemento(payload);
           }
         }
       } else {
         // Modelo tradicional — un único compromiso con todos los criterios
-        const selecciones = improvementCommitmentService.transformarCriteriosParaBackend(
-          formData.criterios_seleccionados
-        );
-        const evidencias_asignar = improvementCommitmentService.transformarEvidenciasParaBackend(
-          formData.criterios_seleccionados
-        );
+        const selecciones =
+          improvementCommitmentService.transformarCriteriosParaBackend(
+            formData.criterios_seleccionados,
+          );
+        const evidencias_asignar =
+          improvementCommitmentService.transformarEvidenciasParaBackend(
+            formData.criterios_seleccionados,
+          );
         const payload: CrearCompromisoPayload = {
           ciclo_acreditacion_id: formData.ciclo_acreditacion_id!,
-          ...(formData.proceso_id !== undefined && { proceso_id: formData.proceso_id }),
-          descripcion: formData.descripcion || `Compromiso de mejora ${new Date().toLocaleDateString()}`,
+          ...(formData.proceso_id !== undefined && {
+            proceso_id: formData.proceso_id,
+          }),
+          descripcion:
+            formData.descripcion ||
+            `Compromiso de mejora ${new Date().toLocaleDateString()}`,
           fecha_inicio: formData.fecha_inicio,
           fecha_fin: formData.fecha_fin,
           selecciones,
           evidencias_asignar,
         };
         if (existingCompromisoId) {
-          await improvementCommitmentService.actualizarCompromiso(existingCompromisoId, {
-            selecciones,
-            evidencias_asignar,
-            descripcion: payload.descripcion,
-            fecha_inicio: payload.fecha_inicio,
-            fecha_fin: payload.fecha_fin,
-          });
+          await improvementCommitmentService.actualizarCompromiso(
+            existingCompromisoId,
+            {
+              selecciones,
+              evidencias_asignar,
+              descripcion: payload.descripcion,
+              fecha_inicio: payload.fecha_inicio,
+              fecha_fin: payload.fecha_fin,
+            },
+          );
         } else {
           await improvementCommitmentService.crearCompromiso(payload);
         }
       }
-      
+
       setModals({ showSuccessModal: true, showConfirmModal: false });
     } catch (error: any) {
-      console.error('Error completo:', error);
-      
+      console.error("Error completo:", error);
+
       if (error.response?.data?.errors) {
         // Errores de validación del backend
-        const backendErrors = error.response.data.errors as Record<string, string[]>;
+        const backendErrors = error.response.data.errors as Record<
+          string,
+          string[]
+        >;
         const mappedErrors: ValidationErrors = {};
 
         const allowedFields = new Set([
-          'ciclo_acreditacion_id',
-          'proceso_id',
-          'descripcion',
-          'fecha_inicio',
-          'fecha_fin',
-          'criterios',
-          'evidencias_asignar',
-          'selecciones'
+          "ciclo_acreditacion_id",
+          "proceso_id",
+          "descripcion",
+          "fecha_inicio",
+          "fecha_fin",
+          "criterios",
+          "evidencias_asignar",
+          "selecciones",
         ]);
 
         Object.entries(backendErrors).forEach(([field, messages]) => {
-          const message = messages?.[0] || '';
+          const message = messages?.[0] || "";
           // ciclo_acreditacion_id errors go only to toast, not to inline state
-          if (field === 'ciclo_acreditacion_id' || field === 'proceso_id') {
+          if (field === "ciclo_acreditacion_id" || field === "proceso_id") {
             if (!mappedErrors.general) mappedErrors.general = message;
           } else if (allowedFields.has(field)) {
             (mappedErrors as any)[field] = message;
@@ -422,39 +469,49 @@ const CreateImprovementCommitment: React.FC = () => {
         });
 
         if (!mappedErrors.general) {
-          mappedErrors.general = Object.values(backendErrors).flat().join(', ');
+          mappedErrors.general = Object.values(backendErrors).flat().join(", ");
         }
 
-        setSubmitState(prev => ({...prev, errors: mappedErrors}));
+        setSubmitState((prev) => ({ ...prev, errors: mappedErrors }));
 
         showToast({
-          type: 'error',
-          title: 'Error al configurar el compromiso',
-          message: mappedErrors.general || error.response?.data?.message || 'Error de validación'
+          type: "error",
+          title: "Error al configurar el compromiso",
+          message:
+            mappedErrors.general ||
+            error.response?.data?.message ||
+            "Error de validación",
         });
       } else {
         const status = error.response?.status;
-        let toastTitle = 'Error al configurar el compromiso';
+        let toastTitle = "Error al configurar el compromiso";
         let toastMessage: string;
 
         if (status === 409) {
-          toastTitle = 'Conflicto al configurar el compromiso';
-          toastMessage = error.response?.data?.message || 'Ya existe un registro con los mismos datos.';
+          toastTitle = "Conflicto al configurar el compromiso";
+          toastMessage =
+            error.response?.data?.message ||
+            "Ya existe un registro con los mismos datos.";
         } else if (status === 500) {
-          toastMessage = 'Error interno al configurar el compromiso. Intente nuevamente.';
+          toastMessage =
+            "Error interno al configurar el compromiso. Intente nuevamente.";
         } else if (status === 403) {
-          toastTitle = 'Sin permisos';
-          toastMessage = 'No tiene permisos para configurar compromisos de mejora.';
+          toastTitle = "Sin permisos";
+          toastMessage =
+            "No tiene permisos para configurar compromisos de mejora.";
         } else {
-          toastMessage = error.response?.data?.message || error.message || 'Error inesperado. Intente nuevamente.';
+          toastMessage =
+            error.response?.data?.message ||
+            error.message ||
+            "Error inesperado. Intente nuevamente.";
         }
 
-        showToast({ type: 'error', title: toastTitle, message: toastMessage });
+        showToast({ type: "error", title: toastTitle, message: toastMessage });
       }
 
-      setModals(prev => ({...prev, showConfirmModal: false}));
+      setModals((prev) => ({ ...prev, showConfirmModal: false }));
     } finally {
-      setSubmitState(prev => ({...prev, isSubmitting: false}));
+      setSubmitState((prev) => ({ ...prev, isSubmitting: false }));
     }
   };
 
@@ -466,16 +523,15 @@ const CreateImprovementCommitment: React.FC = () => {
       showToast({ type: 'error', title: 'Hay errores en el formulario' });
       return;
     }
-    setModals(prev => ({...prev, showConfirmModal: true}));
+    setModals((prev) => ({ ...prev, showConfirmModal: true }));
   };
-
 
   /**
    * Manejar cierre del modal de éxito
    */
   const handleSuccessClose = () => {
-    setModals(prev => ({...prev, showSuccessModal: false}));
-    navigate('/procesos-acreditacion/listar');
+    setModals((prev) => ({ ...prev, showSuccessModal: false }));
+    navigate("/procesos-acreditacion/listar");
   };
 
   /**
@@ -491,6 +547,7 @@ const CreateImprovementCommitment: React.FC = () => {
           <PageHeader
             title={`Configurar ${moduleInfo.title.replace('Compromisos de Mejora', 'Compromiso de Mejora')}`}
             description="Seleccione criterios y configure las asignaciones"
+            breadcrumbMode="cycle-only"
             headerExtra={
               <div className="flex gap-4 items-center">
                 <CustomSelect
@@ -598,7 +655,9 @@ const CreateImprovementCommitment: React.FC = () => {
       {/* Modal de Confirmación */}
       <CreateConfirmationModal
         isOpen={showConfirmModal}
-        onClose={() => setModals(prev => ({...prev, showConfirmModal: false}))}
+        onClose={() =>
+          setModals((prev) => ({ ...prev, showConfirmModal: false }))
+        }
         onConfirm={handleSubmit}
         title="Confirmar configuración de compromiso"
         message="¿Está seguro de que desea configurar este compromiso de mejora? Se guardarán todas las asignaciones y notificaciones a los encargados."

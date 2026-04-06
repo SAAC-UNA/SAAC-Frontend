@@ -1,6 +1,6 @@
 /**
  * AuditLogPage - Página principal de la Bitácora del Sistema (HU-005)
- * 
+ *
  * Funcionalidades:
  * - Consulta de registros con filtros avanzados
  * - Visualización en tabla paginada
@@ -9,34 +9,58 @@
  * - Acceso restringido solo a Superusuario
  */
 
-import React, { useState, useEffect, useCallback, useRef } from 'react';
-import { AnimatePresence, motion } from 'framer-motion';
-import { PageHeader, ScreenContainer, Tooltip, TooltipTrigger } from '@/Components/Ui/Index';
-import { BackendErrorAlert } from '@/Components/Ui/Feedback/BackendErrorAlert';
-import { SystemIcons } from '@/Components/Ui/Icons/SystemIcons';
-import { SearchInput } from '@/Components/Ui/Forms/SearchInput';
-import { DropdownButton } from '@/Components/Ui/Buttons/DropdownButton';
-import { Button } from '@/Components/Ui/Buttons/Button';
-import type { DropdownOption } from '@/Components/Ui/Buttons/DropdownButton';
-import { getModuleInfo } from '@/Constants/ModuleInfo';
-import { AuditLogFilters } from './Components/AuditLogFilters';
-import { AuditLogTable } from './Components/AuditLogTable';
-import { AuditLogDetailModal } from './Components/AuditLogDetailModal';
-import AuditLogService from '@/Services/AuditLogService';
-import type { AuditLog, AuditLogFilters as Filters, ExportFormat } from '@/Types/AuditLogTypes';
-import { useToast } from '@/Context/ToastContext';
-import { TYPOGRAPHY } from '@/Constants/Typography';
-import { ICON_SIZES } from '@/Constants/Components';
-import { TABLE_PAGE_SIZE } from '@/Constants/TablePagination';
-import { TooltipContent } from '@/Components/Ui/Index';
-import { COLLAPSIBLE_PANEL, COLLAPSIBLE_PANEL_INNER } from '@/Constants/Animations';
+import React, { useState, useEffect, useCallback, useRef } from "react";
+import { AnimatePresence, motion } from "framer-motion";
+import {
+  PageHeader,
+  ScreenContainer,
+  Tooltip,
+  TooltipTrigger,
+} from "@/Components/Ui/Index";
+import { BackendErrorAlert } from "@/Components/Ui/Feedback/BackendErrorAlert";
+import { SystemIcons } from "@/Components/Ui/Icons/SystemIcons";
+import { SearchInput } from "@/Components/Ui/Forms/SearchInput";
+import { DropdownButton } from "@/Components/Ui/Buttons/DropdownButton";
+import { Button } from "@/Components/Ui/Buttons/Button";
+import type { DropdownOption } from "@/Components/Ui/Buttons/DropdownButton";
+import { getModuleInfo } from "@/Constants/ModuleInfo";
+import { AuditLogFilters } from "./Components/AuditLogFilters";
+import { AuditLogTable } from "./Components/AuditLogTable";
+import { AuditLogDetailModal } from "./Components/AuditLogDetailModal";
+import AuditLogService from "@/Services/AuditLogService";
+import type {
+  AuditLog,
+  AuditLogFilters as Filters,
+  ExportFormat,
+} from "@/Types/AuditLogTypes";
+import { useToast } from "@/Context/ToastContext";
+import { TYPOGRAPHY } from "@/Constants/Typography";
+import { ICON_SIZES } from "@/Constants/Components";
+import { TABLE_PAGE_SIZE } from "@/Constants/TablePagination";
+import { TooltipContent } from "@/Components/Ui/Index";
+import {
+  COLLAPSIBLE_PANEL,
+  COLLAPSIBLE_PANEL_INNER,
+} from "@/Constants/Animations";
 
 const AuditLogPage: React.FC = () => {
   // Hook de toast
   const { showToast } = useToast();
 
   // Estado de los registros y paginación
-  const [logsState, setLogsState] = useState<{ logs: AuditLog[]; isLoading: boolean; error: string | null; currentPage: number; totalPages: number }>({ logs: [], isLoading: false, error: null, currentPage: 1, totalPages: 1 });
+  const [logsState, setLogsState] = useState<{
+    logs: AuditLog[];
+    isLoading: boolean;
+    error: string | null;
+    currentPage: number;
+    totalPages: number;
+  }>({
+    logs: [],
+    isLoading: false,
+    error: null,
+    currentPage: 1,
+    totalPages: 1,
+  });
   const logs = logsState.logs;
   const isLoading = logsState.isLoading;
   const error = logsState.error;
@@ -46,9 +70,9 @@ const AuditLogPage: React.FC = () => {
 
   // Estado de filtros aplicados
   const [appliedFilters, setAppliedFilters] = useState<Filters>({});
-  
+
   // Estado de búsqueda
-  const [searchTerm, setSearchTerm] = useState('');
+  const [searchTerm, setSearchTerm] = useState("");
   const appliedFiltersRef = useRef(appliedFilters);
   const isInitialMount = useRef(true);
 
@@ -67,22 +91,36 @@ const AuditLogPage: React.FC = () => {
   /**
    * Cargar registros de bitácora
    */
-  const loadAuditLogs = useCallback(async (filters: Filters = {}, page: number = 1) => {
-    setLogsState(prev => ({ ...prev, isLoading: true, error: null }));
+  const loadAuditLogs = useCallback(
+    async (filters: Filters = {}, page: number = 1) => {
+      setLogsState((prev) => ({ ...prev, isLoading: true, error: null }));
 
-    try {
-      const response = await AuditLogService.getAuditLogs({
-        ...filters,
-        page,
-        per_page: perPage,
-      });
+      try {
+        const response = await AuditLogService.getAuditLogs({
+          ...filters,
+          page,
+          per_page: perPage,
+        });
 
-      setLogsState(prev => ({ ...prev, logs: response.data, isLoading: false, currentPage: response.current_page, totalPages: response.last_page }));
-    } catch (err: any) {
-      console.error('Error cargando registros de bitácora:', err);
-      setLogsState(prev => ({ ...prev, isLoading: false, error: err.message || 'Error al cargar los registros de bitácora', logs: [] }));
-    }
-  }, [perPage]);
+        setLogsState((prev) => ({
+          ...prev,
+          logs: response.data,
+          isLoading: false,
+          currentPage: response.current_page,
+          totalPages: response.last_page,
+        }));
+      } catch (err: any) {
+        console.error("Error cargando registros de bitácora:", err);
+        setLogsState((prev) => ({
+          ...prev,
+          isLoading: false,
+          error: err.message || "Error al cargar los registros de bitácora",
+          logs: [],
+        }));
+      }
+    },
+    [perPage],
+  );
 
   /**
    * Cargar registros al montar el componente
@@ -108,7 +146,10 @@ const AuditLogPage: React.FC = () => {
       return;
     }
     const timer = setTimeout(() => {
-      loadAuditLogs({ ...appliedFiltersRef.current, search: searchTerm || undefined }, 1);
+      loadAuditLogs(
+        { ...appliedFiltersRef.current, search: searchTerm || undefined },
+        1,
+      );
     }, 300);
     return () => clearTimeout(timer);
   }, [searchTerm, loadAuditLogs]);
@@ -116,10 +157,13 @@ const AuditLogPage: React.FC = () => {
   /**
    * Aplicar filtros
    */
-  const handleApplyFilters = useCallback((filters: Filters) => {
-    setAppliedFilters(filters);
-    loadAuditLogs({ ...filters, search: searchTerm || undefined }, 1);
-  }, [loadAuditLogs, searchTerm]);
+  const handleApplyFilters = useCallback(
+    (filters: Filters) => {
+      setAppliedFilters(filters);
+      loadAuditLogs({ ...filters, search: searchTerm || undefined }, 1);
+    },
+    [loadAuditLogs, searchTerm],
+  );
 
   /**
    * Manejar cambio en el buscador
@@ -131,9 +175,15 @@ const AuditLogPage: React.FC = () => {
   /**
    * Cambiar página
    */
-  const handlePageChange = useCallback((page: number) => {
-    loadAuditLogs({ ...appliedFilters, search: searchTerm || undefined }, page);
-  }, [appliedFilters, searchTerm, loadAuditLogs]);
+  const handlePageChange = useCallback(
+    (page: number) => {
+      loadAuditLogs(
+        { ...appliedFilters, search: searchTerm || undefined },
+        page,
+      );
+    },
+    [appliedFilters, searchTerm, loadAuditLogs],
+  );
 
   /**
    * Ver detalle de un registro
@@ -158,71 +208,89 @@ const AuditLogPage: React.FC = () => {
   /**
    * Exportar registros (requiere rango de fechas obligatorio)
    */
-  const handleExport = useCallback(async (format: ExportFormat) => {
-    // Validar que se hayan seleccionado las fechas obligatorias
-    if (!appliedFilters.fecha_desde || !appliedFilters.fecha_hasta) {
-      showToast({
-        type: 'error',
-        title: 'Fechas requeridas',
-        message: 'Debe seleccionar un rango de fechas (desde - hasta) para exportar la bitácora',
-      });
-      return;
-    }
+  const handleExport = useCallback(
+    async (format: ExportFormat) => {
+      // Validar que se hayan seleccionado las fechas obligatorias
+      if (!appliedFilters.fecha_desde || !appliedFilters.fecha_hasta) {
+        showToast({
+          type: "error",
+          title: "Fechas requeridas",
+          message:
+            "Debe seleccionar un rango de fechas (desde - hasta) para exportar la bitácora",
+        });
+        return;
+      }
 
-    try {
-      showToast({
-        type: 'info',
-        title: 'Exportando...',
-        message: `Generando archivo ${format.toUpperCase()}...`,
-      });
+      try {
+        showToast({
+          type: "info",
+          title: "Exportando...",
+          message: `Generando archivo ${format.toUpperCase()}...`,
+        });
 
-      const blob = await AuditLogService.exportAuditLogs(
-        format,
-        appliedFilters.fecha_desde,
-        appliedFilters.fecha_hasta,
-        {
-          usuario_id: appliedFilters.usuario_id,
-          tipo_accion_id: appliedFilters.tipo_accion_id,
-          tipo_accion: appliedFilters.tipo_accion,
-          modulo: appliedFilters.modulo,
-        }
-      );
-      
-      AuditLogService.downloadExportedFile(blob, format);
+        const blob = await AuditLogService.exportAuditLogs(
+          format,
+          appliedFilters.fecha_desde,
+          appliedFilters.fecha_hasta,
+          {
+            usuario_id: appliedFilters.usuario_id,
+            tipo_accion_id: appliedFilters.tipo_accion_id,
+            tipo_accion: appliedFilters.tipo_accion,
+            modulo: appliedFilters.modulo,
+          },
+        );
 
-      showToast({
-        type: 'success',
-        title: 'Exportación exitosa',
-        message: `Bitácora exportada exitosamente a ${format.toUpperCase()}`,
-      });
-    } catch (err: any) {
-      console.error('Error exportando bitácora:', err);
-      showToast({
-        type: 'error',
-        title: 'Error al exportar',
-        message: err.message || 'Error al exportar la bitácora',
-      });
-    }
-  }, [appliedFilters, showToast]);
+        AuditLogService.downloadExportedFile(blob, format);
 
-  const moduleInfo = getModuleInfo('auditlog');
+        showToast({
+          type: "success",
+          title: "Exportación exitosa",
+          message: `Bitácora exportada exitosamente a ${format.toUpperCase()}`,
+        });
+      } catch (err: any) {
+        console.error("Error exportando bitácora:", err);
+        showToast({
+          type: "error",
+          title: "Error al exportar",
+          message: err.message || "Error al exportar la bitácora",
+        });
+      }
+    },
+    [appliedFilters, showToast],
+  );
+
+  const moduleInfo = getModuleInfo("auditlog");
 
   // Opciones del menú de exportación
   const exportOptions: DropdownOption[] = [
     {
-      id: 'pdf',
+      id: "pdf",
       label: <span className={TYPOGRAPHY.button}>Exportar a PDF</span>,
-      icon: <SystemIcons.modal.pdf className={`text-negro-una-2 ${ICON_SIZES.md}`} />,
-      onClick: () => handleExport('pdf'),
-      disabled: !appliedFilters.fecha_desde || !appliedFilters.fecha_hasta || logs.length === 0
+      icon: (
+        <SystemIcons.modal.pdf
+          className={`text-negro-una-2 ${ICON_SIZES.md}`}
+        />
+      ),
+      onClick: () => handleExport("pdf"),
+      disabled:
+        !appliedFilters.fecha_desde ||
+        !appliedFilters.fecha_hasta ||
+        logs.length === 0,
     },
     {
-      id: 'excel',
+      id: "excel",
       label: <span className={TYPOGRAPHY.button}>Exportar a Excel</span>,
-      icon: <SystemIcons.modal.excel className={`text-negro-una-2 ${ICON_SIZES.md}`} />,
-      onClick: () => handleExport('excel'),
-      disabled: !appliedFilters.fecha_desde || !appliedFilters.fecha_hasta || logs.length === 0
-    }
+      icon: (
+        <SystemIcons.modal.excel
+          className={`text-negro-una-2 ${ICON_SIZES.md}`}
+        />
+      ),
+      onClick: () => handleExport("excel"),
+      disabled:
+        !appliedFilters.fecha_desde ||
+        !appliedFilters.fecha_hasta ||
+        logs.length === 0,
+    },
   ];
 
   return (
@@ -230,6 +298,7 @@ const AuditLogPage: React.FC = () => {
       <PageHeader
         title={moduleInfo.title}
         description={moduleInfo.description}
+        breadcrumbMode="none"
         headerExtra={
           <div className="flex items-center gap-3">
             <div className="flex-1 min-w-64">
@@ -239,32 +308,35 @@ const AuditLogPage: React.FC = () => {
                 onChange={handleSearchChange}
               />
             </div>
-              <DropdownButton
-                label="Exportar"
-                icon={<SystemIcons.actions.export className="w-4 h-4" />}
-                variant="outline"
-                options={exportOptions}
-                disabled={isLoading || logs.length === 0}
-                tooltip={
-                  !appliedFilters.fecha_desde || !appliedFilters.fecha_hasta
-                    ? 'Debe seleccionar un rango de fechas para exportar'
-                    : 'Exportar registros de bitácora'
-                }
-              />
-              <Tooltip>
-                <TooltipTrigger>
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    onClick={() => setShowFilters(prev => !prev)}
-                  >
-                    <SystemIcons.interface.filter className={ICON_SIZES.md} color="currentColor" />
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent side="top">
-                  <p>Filtros</p>
-                </TooltipContent>
-              </Tooltip>
+            <DropdownButton
+              label="Exportar"
+              icon={<SystemIcons.actions.export className="w-4 h-4" />}
+              variant="outline"
+              options={exportOptions}
+              disabled={isLoading || logs.length === 0}
+              tooltip={
+                !appliedFilters.fecha_desde || !appliedFilters.fecha_hasta
+                  ? "Debe seleccionar un rango de fechas para exportar"
+                  : "Exportar registros de bitácora"
+              }
+            />
+            <Tooltip>
+              <TooltipTrigger>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  onClick={() => setShowFilters((prev) => !prev)}
+                >
+                  <SystemIcons.interface.filter
+                    className={ICON_SIZES.md}
+                    color="currentColor"
+                  />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent side="top">
+                <p>Filtros</p>
+              </TooltipContent>
+            </Tooltip>
           </div>
         }
       >
@@ -293,9 +365,7 @@ const AuditLogPage: React.FC = () => {
       {/* Alerta de error */}
       {error && (
         <div className="mb-6">
-          <BackendErrorAlert
-            error={error}
-          />
+          <BackendErrorAlert error={error} />
         </div>
       )}
 

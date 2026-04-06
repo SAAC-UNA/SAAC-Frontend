@@ -5,7 +5,12 @@
 
 import React, { useState, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
-import { PageHeader, ScreenContainer, CustomSelect, LoadingSpinner } from "@/Components/Ui/Index";
+import {
+  PageHeader,
+  ScreenContainer,
+  CustomSelect,
+  LoadingSpinner,
+} from "@/Components/Ui/Index";
 import type { SelectOption } from "@/Components/Ui/Index";
 import { BackendErrorAlert } from "@/Components/Ui/Feedback/BackendErrorAlert";
 import { SearchInput } from "@/Components/Ui/Forms/SearchInput";
@@ -150,18 +155,25 @@ export const MyEvidenceAssignmentsPage: React.FC = () => {
   };
 
   const loadFlexAssignments = async () => {
-    const userWithOptionalId = user as { usuario_id?: number; id?: number } | null;
+    const userWithOptionalId = user as {
+      usuario_id?: number;
+      id?: number;
+    } | null;
     const userId = userWithOptionalId?.usuario_id ?? userWithOptionalId?.id;
     if (!userId) return;
 
     try {
       setFlexState((prev) => ({ ...prev, loading: true, error: null }));
-      const data = await evidenceAssignmentService.getMyElementAssignments(userId);
+      const data =
+        await evidenceAssignmentService.getMyElementAssignments(userId);
       setFlexState((prev) => ({ ...prev, assignments: data }));
     } catch (error: unknown) {
       setFlexState((prev) => ({
         ...prev,
-        error: getErrorMessage(error, "No se pudieron obtener las pautas asignadas"),
+        error: getErrorMessage(
+          error,
+          "No se pudieron obtener las pautas asignadas",
+        ),
       }));
     } finally {
       setFlexState((prev) => ({ ...prev, loading: false }));
@@ -169,7 +181,10 @@ export const MyEvidenceAssignmentsPage: React.FC = () => {
   };
 
   const loadUserCycles = async () => {
-    const userWithOptionalId = user as { usuario_id?: number; id?: number } | null;
+    const userWithOptionalId = user as {
+      usuario_id?: number;
+      id?: number;
+    } | null;
     const userId = userWithOptionalId?.usuario_id ?? userWithOptionalId?.id;
     if (!userId) return;
     try {
@@ -186,7 +201,7 @@ export const MyEvidenceAssignmentsPage: React.FC = () => {
       return userCycles.map((c) => ({
         ciclo_id: c.ciclo_acreditacion_id,
         nombre: c.nombre,
-        isFlexible: c.tipo_modelo === 'elemento_flexible',
+        isFlexible: c.tipo_modelo === "elemento_flexible",
       }));
     }
 
@@ -213,7 +228,10 @@ export const MyEvidenceAssignmentsPage: React.FC = () => {
       }
     }
 
-    return [...cycleMap.entries()].map(([id, info]) => ({ ciclo_id: id, ...info }));
+    return [...cycleMap.entries()].map(([id, info]) => ({
+      ciclo_id: id,
+      ...info,
+    }));
   }, [userCycles, assignments, flexState.assignments]);
 
   useEffect(() => {
@@ -222,7 +240,8 @@ export const MyEvidenceAssignmentsPage: React.FC = () => {
     }
   }, [availableCycles, selectedCycleId]);
 
-  const selectedCycle = availableCycles.find((c) => c.ciclo_id === selectedCycleId) ?? null;
+  const selectedCycle =
+    availableCycles.find((c) => c.ciclo_id === selectedCycleId) ?? null;
   const isFlexible = selectedCycle?.isFlexible ?? false;
 
   const cycleOptions: SelectOption[] = availableCycles.map((c) => ({
@@ -252,7 +271,9 @@ export const MyEvidenceAssignmentsPage: React.FC = () => {
       setFlexState((prev) => ({
         ...prev,
         assignments: prev.assignments.map((x) =>
-          x.elemento_asignacion_id === updated.elemento_asignacion_id ? updated : x,
+          x.elemento_asignacion_id === updated.elemento_asignacion_id
+            ? updated
+            : x,
         ),
       }));
       showToast({
@@ -261,15 +282,25 @@ export const MyEvidenceAssignmentsPage: React.FC = () => {
         message: `Pauta marcada como ${newStatus === "Completado" ? "completada" : "en progreso"}`,
       });
     } catch {
-      showToast({ type: "error", title: "Error", message: "No se pudo actualizar el estado" });
+      showToast({
+        type: "error",
+        title: "Error",
+        message: "No se pudo actualizar el estado",
+      });
     }
   };
 
   const handleFlexRequestExtension = (a: FlexibleAssignmentItem) => {
-    setFlexModal((prev) => ({ ...prev, selectedForExtension: a, showExtension: true }));
+    setFlexModal((prev) => ({
+      ...prev,
+      selectedForExtension: a,
+      showExtension: true,
+    }));
   };
 
-  const handleFlexConfirmExtension = async (data: CreateExtensionRequestData) => {
+  const handleFlexConfirmExtension = async (
+    data: CreateExtensionRequestData,
+  ) => {
     const assignment = flexModal.selectedForExtension;
     if (!assignment) return;
     try {
@@ -277,8 +308,16 @@ export const MyEvidenceAssignmentsPage: React.FC = () => {
         assignment.elemento_asignacion_id,
         { motivo: data.motivo, fecha_sugerida: data.fecha_sugerida },
       );
-      setFlexModal((prev) => ({ ...prev, showExtension: false, selectedForExtension: null }));
-      showToast({ type: "success", title: "Solicitud enviada", message: "Su solicitud de ampliación ha sido enviada" });
+      setFlexModal((prev) => ({
+        ...prev,
+        showExtension: false,
+        selectedForExtension: null,
+      }));
+      showToast({
+        type: "success",
+        title: "Solicitud enviada",
+        message: "Su solicitud de ampliación ha sido enviada",
+      });
       loadFlexAssignments();
     } catch (error: unknown) {
       const message = getErrorMessage(error, "No se pudo enviar la solicitud");
@@ -286,10 +325,16 @@ export const MyEvidenceAssignmentsPage: React.FC = () => {
       showToast({
         type: "error",
         title: isDuplicate ? "Solicitud duplicada" : "Error",
-        message: isDuplicate ? "Ya tienes una solicitud pendiente para esta pauta" : message,
+        message: isDuplicate
+          ? "Ya tienes una solicitud pendiente para esta pauta"
+          : message,
       });
       if (isDuplicate) {
-        setFlexModal((prev) => ({ ...prev, showExtension: false, selectedForExtension: null }));
+        setFlexModal((prev) => ({
+          ...prev,
+          showExtension: false,
+          selectedForExtension: null,
+        }));
         loadFlexAssignments();
       } else {
         throw new Error(message);
@@ -458,7 +503,9 @@ export const MyEvidenceAssignmentsPage: React.FC = () => {
   };
 
   const filteredAssignments = filterAndSortAssignments(
-    assignments.filter((a) => a.proceso?.ciclo_acreditacion_id === selectedCycleId),
+    assignments.filter(
+      (a) => a.proceso?.ciclo_acreditacion_id === selectedCycleId,
+    ),
     filters,
   );
   const filteredFlex = flexState.assignments.filter(
@@ -484,10 +531,12 @@ export const MyEvidenceAssignmentsPage: React.FC = () => {
         title={moduleInfo.title}
         description={moduleInfo.description}
         headerExtra={
-          cycleOptions.length > 1 || (!isFlexible && !error && assignments.length > 0) ? (
+          cycleOptions.length > 1 ||
+          (!isFlexible && !error && assignments.length > 0) ? (
             <div className="flex items-end gap-3">
               {cycleOptions.length > 1 && (
-                <CustomSelect className="w-80"
+                <CustomSelect
+                  className="w-80"
                   label="Ciclo de acreditación"
                   options={cycleOptions}
                   value={selectedCycleId ? String(selectedCycleId) : ""}
@@ -529,7 +578,9 @@ export const MyEvidenceAssignmentsPage: React.FC = () => {
         {/* ── Modelo tradicional (Criterios) ── */}
         {selectedCycleId !== null && !isFlexible && (
           <>
-            {error && <BackendErrorAlert error={error} onRetry={loadAssignments} />}
+            {error && (
+              <BackendErrorAlert error={error} onRetry={loadAssignments} />
+            )}
             {!error && (
               <EvidenceAssignmentsTable
                 assignments={paginatedAssignments}
@@ -553,7 +604,10 @@ export const MyEvidenceAssignmentsPage: React.FC = () => {
         {selectedCycleId !== null && isFlexible && (
           <>
             {flexState.error && (
-              <BackendErrorAlert error={flexState.error} onRetry={loadFlexAssignments} />
+              <BackendErrorAlert
+                error={flexState.error}
+                onRetry={loadFlexAssignments}
+              />
             )}
             {!flexState.error && (
               <ElementAssignmentsTable
@@ -608,13 +662,32 @@ export const MyEvidenceAssignmentsPage: React.FC = () => {
           cancelLabel="Cerrar"
         >
           <div className="space-y-3 text-sm text-negro-una-2">
-            <p><span className="font-semibold">Pauta:</span> {flexModal.selected.element?.nombre ?? '—'}</p>
-            <p><span className="font-semibold">Tipo:</span> {flexModal.selected.element?.tipo ?? '—'}</p>
-            <p><span className="font-semibold">Proceso:</span> {flexModal.selected.process?.nombre ?? `Proceso ${flexModal.selected.proceso_id}`}</p>
-            <p><span className="font-semibold">Estado:</span> {flexModal.selected.estado}</p>
-            <p><span className="font-semibold">Fecha límite:</span> {flexModal.selected.fecha_limite ?? 'Sin límite'}</p>
+            <p>
+              <span className="font-semibold">Pauta:</span>{" "}
+              {flexModal.selected.element?.nombre ?? "—"}
+            </p>
+            <p>
+              <span className="font-semibold">Tipo:</span>{" "}
+              {flexModal.selected.element?.tipo ?? "—"}
+            </p>
+            <p>
+              <span className="font-semibold">Proceso:</span>{" "}
+              {flexModal.selected.process?.nombre ??
+                `Proceso ${flexModal.selected.proceso_id}`}
+            </p>
+            <p>
+              <span className="font-semibold">Estado:</span>{" "}
+              {flexModal.selected.estado}
+            </p>
+            <p>
+              <span className="font-semibold">Fecha límite:</span>{" "}
+              {flexModal.selected.fecha_limite ?? "Sin límite"}
+            </p>
             {flexModal.selected.comentario && (
-              <p><span className="font-semibold">Comentario:</span> {flexModal.selected.comentario}</p>
+              <p>
+                <span className="font-semibold">Comentario:</span>{" "}
+                {flexModal.selected.comentario}
+              </p>
             )}
           </div>
         </Modal>
@@ -625,11 +698,19 @@ export const MyEvidenceAssignmentsPage: React.FC = () => {
         <CreateExtensionRequestModal
           isOpen={flexModal.showExtension}
           onClose={() =>
-            setFlexModal((prev) => ({ ...prev, showExtension: false, selectedForExtension: null }))
+            setFlexModal((prev) => ({
+              ...prev,
+              showExtension: false,
+              selectedForExtension: null,
+            }))
           }
           onConfirm={handleFlexConfirmExtension}
-          evidenciaAsignacionId={flexModal.selectedForExtension.elemento_asignacion_id}
-          fechaLimiteActual={flexModal.selectedForExtension.fecha_limite || undefined}
+          evidenciaAsignacionId={
+            flexModal.selectedForExtension.elemento_asignacion_id
+          }
+          fechaLimiteActual={
+            flexModal.selectedForExtension.fecha_limite || undefined
+          }
         />
       )}
 
