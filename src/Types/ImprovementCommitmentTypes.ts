@@ -161,12 +161,19 @@ export interface EvidenciaAsignar {
   comentario?: string;
 }
 
+export interface EncargadoInfo {
+  id: number;
+  name: string;
+}
+
 export interface CriterioSeleccionado {
   criterio_id: number;
   criterio: Criterio;
   evidencias_seleccionadas: number[]; // IDs de evidencias
   encargados_usuarios: number[]; // IDs de usuarios
   encargados_roles: number[]; // IDs de roles
+  encargados_usuarios_info?: EncargadoInfo[]; // nombres para avatares
+  encargados_roles_info?: EncargadoInfo[]; // nombres para avatares
   fecha_limite?: string;
   comentario?: string;
 }
@@ -174,8 +181,11 @@ export interface CriterioSeleccionado {
 export interface ElementoSeleccionado {
   elemento_id: number;
   elemento: import('@/Types/StructureModelTypes').FlexibleElement;
+  hijos_seleccionados?: number[]; // IDs de elementos hijo (fuentes) incluidos
   encargados_usuarios: number[];
   encargados_roles: number[];
+  encargados_usuarios_info?: EncargadoInfo[]; // nombres para avatares
+  encargados_roles_info?: EncargadoInfo[]; // nombres para avatares
   fecha_limite?: string;
   comentario?: string;
 }

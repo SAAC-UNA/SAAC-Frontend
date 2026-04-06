@@ -187,7 +187,14 @@ export const AccreditationProcessList: React.FC = () => {
     const matchedCycle = cycles.find(c => c.id === process.accreditationCycleId);
     const modeloTipo = process.modeloEstructuraTipo ?? matchedCycle?.modeloEstructuraTipo;
     const modeloId = process.modeloEstructuraId ?? matchedCycle?.modeloEstructuraId;
-    navigate('/compromisos/crear', {
+    const params = new URLSearchParams();
+    if (process.id) params.set('procesoId', String(process.id));
+    if (process.accreditationCycleId) params.set('cicloId', String(process.accreditationCycleId));
+    if (process.startDate) params.set('startDate', process.startDate);
+    if (process.estimatedEndDate) params.set('estimatedEndDate', process.estimatedEndDate);
+    if (modeloTipo) params.set('modeloTipo', modeloTipo);
+    if (modeloId) params.set('modeloId', String(modeloId));
+    navigate(`/compromisos/crear?${params.toString()}`, {
       state: {
         procesoId: process.id,
         cicloId: process.accreditationCycleId,

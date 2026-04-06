@@ -7,14 +7,16 @@
  */
 
 import React, { useState, useEffect } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate, useLocation, useSearchParams } from 'react-router-dom';
 import { ScreenContainer } from '@/Components/Ui/Layout/ScreenContainer';
-import { Button, WizardProgress, PageHeader } from '@/Components/Ui/Index';
+import { Button, PageHeader } from '@/Components/Ui/Index';
 import { getModuleInfo } from '@/Constants/ModuleInfo';
 import { SuccessModal } from '@/Components/Ui/Modals/SuccessModal';
 import { CreateConfirmationModal } from '@/Components/Ui/Modals/CreateConfirmationModal';
 import { useToast } from '@/Context/ToastContext';
 import { improvementCommitmentService } from '@/Services/ImprovementCommitmentService';
+import { Textarea } from '@/Components/Ui/Forms/Textarea';
+import { DateRangePicker, type DateRange } from '@/Components/Ui/Calendar/DateRangePicker';
 import type {
   CompromisoFormData,
   CriterioSeleccionado,
@@ -28,23 +30,22 @@ import type { FlexibleElement } from '@/Types/StructureModelTypes';
 // Importar componentes de los pasos
 import { CreationStep } from './Components/CreationStep';
 import type { StatusFilter } from './Components/CreationStep';
-import { ReviewStep } from './Components/ReviewStep';
 import { SearchInput } from '@/Components/Ui/Forms/SearchInput';
 import { FilterButton } from '@/Components/Ui/Buttons/FilterButton';
 import type { FilterOption } from '@/Components/Ui/Buttons/FilterButton';
+import { CustomSelect } from '@/Components/Ui/Forms/SingleSelect';
+import type { SelectOption } from '@/Components/Ui/Forms/SingleSelect';
 
-interface WizardStep {
-  id: number;
-  title: string;
-}
 
 const CreateImprovementCommitment: React.FC = () => {
   const moduleInfo = getModuleInfo('improvement_commitments');
   const { showToast } = useToast();
   const navigate = useNavigate();
   const location = useLocation();
+  const [searchParams] = useSearchParams();
 
   // State recibido desde AccreditationProcessList al pulsar "Configurar"
+  // Fallback a query params para sobrevivir un refresh de página
   const locationState = (location.state ?? {}) as {
     procesoId?: string;
     cicloId?: string;
@@ -53,10 +54,16 @@ const CreateImprovementCommitment: React.FC = () => {
     modeloTipo?: string;
     modeloId?: number;
   };
-  const fromProcess = !!locationState.procesoId;
-  const isFlexible = locationState.modeloTipo === 'elemento_flexible';
+  const procesoId   = locationState.procesoId   ?? searchParams.get('procesoId')   ?? undefined;
+  const cicloId     = locationState.cicloId     ?? searchParams.get('cicloId')     ?? undefined;
+  const startDate   = locationState.startDate   ?? searchParams.get('startDate')   ?? undefined;
+  const estimatedEndDate = locationState.estimatedEndDate ?? searchParams.get('estimatedEndDate') ?? undefined;
+  const modeloTipo  = locationState.modeloTipo  ?? searchParams.get('modeloTipo')  ?? undefined;
+  const modeloIdRaw = locationState.modeloId    ?? (searchParams.get('modeloId') ? parseInt(searchParams.get('modeloId')!) : undefined);
+
+  const fromProcess = !!procesoId;
+  const isFlexible  = modeloTipo === 'elemento_flexible';
   
-  const [currentStep, setCurrentStep] = useState(1);
   const [submitState, setSubmitState] = useState<{ isSubmitting: boolean; errors: ValidationErrors }>({ isSubmitting: false, errors: {} });
   const isSubmitting = submitState.isSubmitting;
   const errors = submitState.errors;
@@ -69,6 +76,12 @@ const CreateImprovementCommitment: React.FC = () => {
     statusFilter: 'todos',
   });
 
+  const [cicloOptions, setCicloOptions] = useState<SelectOption[]>([]);
+
+  const handleCicloChange = (value: string) => {
+    setFormData(prev => ({ ...prev, ciclo_acreditacion_id: parseInt(value) }));
+  };
+
   const filterOptions: FilterOption<StatusFilter>[] = [
     { value: 'todos', label: 'Todos' },
     { value: 'seleccionados', label: 'Seleccionados' },
@@ -76,11 +89,11 @@ const CreateImprovementCommitment: React.FC = () => {
   ];
 
   const [formData, setFormData] = useState<CompromisoFormData>({
-    ciclo_acreditacion_id: locationState.cicloId ? parseInt(locationState.cicloId) : null,
-    proceso_id: locationState.procesoId ? parseInt(locationState.procesoId) : undefined,
+    ciclo_acreditacion_id: cicloId ? parseInt(cicloId) : null,
+    proceso_id: procesoId ? parseInt(procesoId) : undefined,
     descripcion: '',
-    fecha_inicio: locationState.startDate ?? '',
-    fecha_fin: locationState.estimatedEndDate ?? '',
+    fecha_inicio: startDate ?? '',
+    fecha_fin: estimatedEndDate ?? '',
     criterios_seleccionados: [],
     elementos_seleccionados: [],
   });
@@ -88,17 +101,12 @@ const CreateImprovementCommitment: React.FC = () => {
   const [existingCompromisoId, setExistingCompromisoId] = useState<number | null>(null);
   const [existingElementIdMap, setExistingElementIdMap] = useState<Record<number, number>>({});
 
-  const steps: WizardStep[] = [
-    { id: 1, title: 'Configuración' },
-    { id: 2, title: 'Revisión' }
-  ];
-
   // Cargar datos existentes al abrir si el proceso ya tiene compromiso configurado
   useEffect(() => {
-    if (!fromProcess || !locationState.procesoId) return;
-    const procesoId = parseInt(locationState.procesoId);
+    if (!fromProcess || !procesoId) return;
+    const procesoIdNum = parseInt(procesoId);
     if (isFlexible) {
-      improvementCommitmentService.obtenerCompromisoElementosPorProceso(procesoId)
+      improvementCommitmentService.obtenerCompromisoElementosPorProceso(procesoIdNum)
         .then(commitments => {
           if (!commitments.length) return;
           const idMap: Record<number, number> = {};
@@ -106,32 +114,44 @@ const CreateImprovementCommitment: React.FC = () => {
           commitments.forEach((commitment: any) => {
             const assignments: any[] = commitment.assigned_elements ?? [];
             if (!assignments.length) return;
-            const byElemento: Record<number, any[]> = {};
+
+            // Group by the PAUTA's ID (element.padre_id), not the fuente's own ID.
+            // When pautas are leaves (flat model) padre_id is null, so fall back to
+            // the element's own ID so the badge check still matches.
+            const byPauta: Record<number, any[]> = {};
             assignments.forEach((a: any) => {
-              if (!byElemento[a.elemento_id]) byElemento[a.elemento_id] = [];
-              byElemento[a.elemento_id].push(a);
+              const pautaId = a.element?.padre_id ?? a.elemento_id;
+              if (!byPauta[pautaId]) byPauta[pautaId] = [];
+              byPauta[pautaId].push(a);
             });
-            Object.entries(byElemento).forEach(([elIdStr, assigns]) => {
-              const elementoId = Number(elIdStr);
-              idMap[elementoId] = commitment.compromiso_elemento_id;
-              const elementDetails = assigns[0]?.element;
+            Object.entries(byPauta).forEach(([pautaIdStr, assigns]) => {
+              const pautaId = Number(pautaIdStr);
+              idMap[pautaId] = commitment.compromiso_elemento_id;
+              const hasFuentes = !!assigns[0]?.element?.padre_id;
+              const hijoIds = hasFuentes ? [...new Set(assigns.map((a: any) => a.elemento_id as number))] : undefined;
+              const uniqueUsers = [...new Set(assigns.map((a: any) => a.usuario_id as number))];
+              const usuariosInfo = assigns
+                .filter((a: any, i: number, arr: any[]) => arr.findIndex(x => x.usuario_id === a.usuario_id) === i)
+                .map((a: any) => ({ id: a.usuario_id as number, name: (a.user?.name ?? a.user?.nombre ?? '') as string }));
               elementosSeleccionados.push({
-                elemento_id: elementoId,
+                elemento_id: pautaId,
                 elemento: {
-                  elemento_id: elementoId,
-                  modelo_estructura_id: locationState.modeloId ?? 0,
-                  padre_id: elementDetails?.padre_id ?? null,
-                  tipo: elementDetails?.tipo ?? '',
-                  nombre: elementDetails?.nombre ?? null,
-                  categoria: elementDetails?.categoria ?? null,
-                  nomenclatura: elementDetails?.nomenclatura ?? null,
-                  descripcion: elementDetails?.descripcion ?? null,
-                  activo: elementDetails?.activo ?? true,
-                  created_at: elementDetails?.created_at ?? '',
-                  updated_at: elementDetails?.updated_at ?? '',
+                  elemento_id: pautaId,
+                  modelo_estructura_id: modeloIdRaw ?? 0,
+                  padre_id: null,
+                  tipo: '',
+                  nombre: null,
+                  categoria: null,
+                  nomenclatura: null,
+                  descripcion: null,
+                  activo: true,
+                  created_at: '',
+                  updated_at: '',
                 } as FlexibleElement,
-                encargados_usuarios: assigns.map((a: any) => a.usuario_id),
+                hijos_seleccionados: hijoIds,
+                encargados_usuarios: uniqueUsers,
                 encargados_roles: [],
+                encargados_usuarios_info: usuariosInfo,
                 fecha_limite: assigns[0]?.fecha_limite ?? '',
                 comentario: assigns[0]?.comentario ?? '',
               });
@@ -144,7 +164,7 @@ const CreateImprovementCommitment: React.FC = () => {
         })
         .catch(() => {});
     } else {
-      improvementCommitmentService.obtenerCompromisoPorProceso(procesoId)
+      improvementCommitmentService.obtenerCompromisoPorProceso(procesoIdNum)
         .then(commitment => {
           if (!commitment) return;
           setExistingCompromisoId(commitment.compromiso_mejora_id);
@@ -154,6 +174,9 @@ const CreateImprovementCommitment: React.FC = () => {
             const evidenciaIds: number[] = (sel.evidencias ?? []).map((e: any) => e.evidencia_id);
             const matchingAssignments = assignedEvidences.filter(ae => evidenciaIds.includes(ae.evidencia_id));
             const uniqueUsers = [...new Set(matchingAssignments.map((ae: any) => ae.usuario_id as number))];
+            const usuariosInfo = matchingAssignments
+              .filter((ae: any, i: number, arr: any[]) => arr.findIndex(x => x.usuario_id === ae.usuario_id) === i)
+              .map((ae: any) => ({ id: ae.usuario_id as number, name: (ae.user?.name ?? ae.user?.nombre ?? '') as string }));
             return {
               criterio_id: criterioId,
               criterio: {
@@ -166,6 +189,7 @@ const CreateImprovementCommitment: React.FC = () => {
               evidencias_seleccionadas: evidenciaIds,
               encargados_usuarios: uniqueUsers,
               encargados_roles: [],
+              encargados_usuarios_info: usuariosInfo,
               fecha_limite: matchingAssignments[0]?.fecha_limite ?? '',
               comentario: matchingAssignments[0]?.pivot?.comentario ?? matchingAssignments[0]?.comentario ?? '',
             } as CriterioSeleccionado;
@@ -261,41 +285,35 @@ const CreateImprovementCommitment: React.FC = () => {
   };
 
   /**
-   * Validar el paso actual — retorna los errores encontrados, o null si no hay errores.
+   * Validar el formulario — retorna los errores encontrados, o null si no hay errores.
    */
-  const validateStep = (step: number): ValidationErrors | null => {
+  const validateStep = (): ValidationErrors | null => {
     const newErrors: ValidationErrors = {};
     
-    switch (step) {
-      case 1:
-        if (!formData.ciclo_acreditacion_id) {
-          newErrors.ciclo_acreditacion_id = 'Debe seleccionar un ciclo de acreditación';
-        }
-        if (isFlexible) {
-          if (!formData.elementos_seleccionados?.length) {
-            newErrors.criterios = 'Debe seleccionar al menos un elemento';
-          }
-        } else {
-          if (formData.criterios_seleccionados.length === 0) {
-            newErrors.criterios = 'Debe seleccionar al menos un criterio';
-          }
-        }
-        break;
-      case 2:
-        if (!fromProcess) {
-          if (!formData.fecha_inicio) {
-            newErrors.fecha_inicio = 'La fecha de inicio es obligatoria';
-          }
-          if (!formData.fecha_fin) {
-            newErrors.fecha_fin = 'La fecha fin es obligatoria';
-          } else if (formData.fecha_inicio && new Date(formData.fecha_fin) <= new Date(formData.fecha_inicio)) {
-            newErrors.fecha_fin = 'La fecha fin debe ser posterior a la fecha de inicio';
-          }
-        }
-        if (formData.descripcion && formData.descripcion.length > 100) {
-          newErrors.descripcion = 'La descripción no puede exceder 100 caracteres';
-        }
-        break;
+    if (!formData.ciclo_acreditacion_id) {
+      newErrors.ciclo_acreditacion_id = 'Debe seleccionar un ciclo de acreditación';
+    }
+    if (isFlexible) {
+      if (!formData.elementos_seleccionados?.length) {
+        newErrors.criterios = 'Debe seleccionar al menos un elemento';
+      }
+    } else {
+      if (formData.criterios_seleccionados.length === 0) {
+        newErrors.criterios = 'Debe seleccionar al menos un criterio';
+      }
+    }
+    if (!fromProcess) {
+      if (!formData.fecha_inicio) {
+        newErrors.fecha_inicio = 'La fecha de inicio es obligatoria';
+      }
+      if (!formData.fecha_fin) {
+        newErrors.fecha_fin = 'La fecha fin es obligatoria';
+      } else if (formData.fecha_inicio && new Date(formData.fecha_fin) <= new Date(formData.fecha_inicio)) {
+        newErrors.fecha_fin = 'La fecha fin debe ser posterior a la fecha de inicio';
+      }
+    }
+    if (formData.descripcion && formData.descripcion.length > 100) {
+      newErrors.descripcion = 'La descripción no puede exceder 100 caracteres';
     }
     
     setSubmitState(prev => ({...prev, errors: newErrors}));
@@ -303,24 +321,10 @@ const CreateImprovementCommitment: React.FC = () => {
   };
 
   /**
-   * Avanzar al siguiente paso
-   */
-  const handleNext = () => {
-    const errs = validateStep(currentStep);
-    if (!errs) {
-      setCurrentStep(prev => Math.min(prev + 1, steps.length));
-      setSubmitState(prev => ({...prev, errors: {}}));
-    } else {
-      const firstMsg = Object.values(errs)[0];
-      showToast({ type: 'error', title: firstMsg || 'Por favor, complete todos los campos obligatorios' });
-    }
-  };
-
-  /**
    * Enviar el formulario al backend
    */
   const handleSubmit = async () => {
-    if (validateStep(2)) {
+    if (validateStep()) {
       showToast({ type: 'error', title: 'Hay errores en el formulario' });
       return;
     }
@@ -458,7 +462,7 @@ const CreateImprovementCommitment: React.FC = () => {
    * Mostrar modal de confirmación
    */
   const handleConfirmCreate = () => {
-    if (validateStep(2)) {
+    if (validateStep()) {
       showToast({ type: 'error', title: 'Hay errores en el formulario' });
       return;
     }
@@ -485,111 +489,108 @@ const CreateImprovementCommitment: React.FC = () => {
         <div className="space-y-4">
           {/* Header */}
           <PageHeader
-                title={`Configurar ${moduleInfo.title.replace('Compromisos de Mejora', 'Compromiso de Mejora')}`}
-                description="Seleccione criterios y configure las asignaciones"
-                headerExtra={
-                  <div className="flex gap-4 items-center">
-                    <WizardProgress
-                      steps={steps}
-                      currentStep={currentStep}
-                      variant="compact"
-                    />
-                    {currentStep === 1 && (
-                      <>
-                        <SearchInput
-                          value={creationFilter.searchTerm}
-                          onChange={(v) => setCreationFilter(prev => ({ ...prev, searchTerm: v }))}
-                          placeholder="Buscar por nomenclatura o descripción..."
-                          className="w-72"
-                        />
-                        <FilterButton
-                          tooltipText="Filtrar por estado"
-                          options={filterOptions}
-                          value={creationFilter.statusFilter}
-                          onChange={(v) => setCreationFilter(prev => ({ ...prev, statusFilter: v as StatusFilter }))}
-                        />
-                      </>
-                    )}
-                  </div>
-                }
-              />
+            title={`Configurar ${moduleInfo.title.replace('Compromisos de Mejora', 'Compromiso de Mejora')}`}
+            description="Seleccione criterios y configure las asignaciones"
+            headerExtra={
+              <div className="flex gap-4 items-center">
+                <CustomSelect
+                  label="Ciclo"
+                  value={formData.ciclo_acreditacion_id?.toString() || ''}
+                  options={cicloOptions}
+                  placeholder="Seleccione un ciclo..."
+                  onChange={handleCicloChange}
+                  required
+                  error={errors.ciclo_acreditacion_id}
+                  size="sm"
+                  disabled={fromProcess}
+                  className="w-60"
+                />
+                <SearchInput
+                  value={creationFilter.searchTerm}
+                  onChange={(v) => setCreationFilter(prev => ({ ...prev, searchTerm: v }))}
+                  placeholder="Buscar por nomenclatura o descripción..."
+                  className="w-72"
+                />
+                <FilterButton
+                  tooltipText="Filtrar por estado"
+                  options={filterOptions}
+                  value={creationFilter.statusFilter}
+                  onChange={(v) => setCreationFilter(prev => ({ ...prev, statusFilter: v as StatusFilter }))}
+                />
+              </div>
+            }
+          />
 
-          {/* Step Content */}
-          <div className="min-h-100">
-            {currentStep === 1 ? (
-              <CreationStep
-                formData={formData}
-                updateFormData={updateFormData}
-                agregarCriterio={addCriterion}
-                eliminarCriterio={deleteCriterion}
-                actualizarCriterio={updateCriterion}
-                agregarElemento={addElemento}
-                eliminarElemento={deleteElemento}
-                actualizarElemento={updateElemento}
-                errors={errors}
-                cicloFijo={fromProcess}
-                searchTerm={creationFilter.searchTerm}
-                statusFilter={creationFilter.statusFilter}
-                modeloTipo={locationState.modeloTipo}
-                modeloId={locationState.modeloId}
+          {/* Criterios / Elementos */}
+          <CreationStep
+            formData={formData}
+            updateFormData={updateFormData}
+            agregarCriterio={addCriterion}
+            eliminarCriterio={deleteCriterion}
+            actualizarCriterio={updateCriterion}
+            agregarElemento={addElemento}
+            eliminarElemento={deleteElemento}
+            actualizarElemento={updateElemento}
+            errors={errors}
+            cicloFijo={fromProcess}
+            searchTerm={creationFilter.searchTerm}
+            statusFilter={creationFilter.statusFilter}
+            modeloTipo={modeloTipo}
+            modeloId={modeloIdRaw}
+            onCiclosLoaded={setCicloOptions}
+          />
+
+          {/* Información opcional del compromiso */}
+          <div className="flex gap-4 items-start">
+            <div className="flex-1">
+              <Textarea
+                label="Descripción del Compromiso (opcional)"
+                value={formData.descripcion}
+                onChange={(e) => updateFormData({ descripcion: e.target.value })}
+                placeholder="Descripción general del compromiso de mejora..."
+                rows={3}
+                maxLength={100}
+                characterCount
+                error={errors.descripcion}
+                helperText="Máximo 100 caracteres"
               />
-            ) : currentStep === 2 ? (
-              <ReviewStep
-                formData={formData}
-                updateFormData={updateFormData}
-                onSubmit={handleSubmit}
-                isSubmitting={isSubmitting}
-                errors={errors}
-                fromProcess={fromProcess}
-                modeloTipo={locationState.modeloTipo}
-              />
-            ) : null}
+            </div>
+            {!fromProcess && (
+              <div className="w-80">
+                <DateRangePicker
+                  label="Periodo del Compromiso"
+                  value={{ from: formData.fecha_inicio, to: formData.fecha_fin }}
+                  onChange={(range: DateRange) => {
+                    updateFormData({
+                      fecha_inicio: range?.from ?? '',
+                      fecha_fin: range?.to ?? '',
+                    });
+                  }}
+                  error={errors.fecha_inicio || errors.fecha_fin}
+                  required
+                />
+              </div>
+            )}
           </div>
 
           {/* Navigation */}
           <div className="flex justify-between items-center mt-2">
-            {currentStep === 2 ? (
-              <Button
-                variant="secondary"
-                onClick={() => {
-                  setCurrentStep(1);
-                  setSubmitState(prev => ({...prev, errors: {}}));
-                }}
-                disabled={isSubmitting}
-                standardWidth
-                size="sm"
-              >
-                Anterior
-              </Button>
-            ) : (
-              <Button
-                variant="secondary"
-                onClick={() => navigate('/procesos-acreditacion/listar')}
-                disabled={isSubmitting}
-                standardWidth
-                size="sm"
-              >
-                Regresar
-              </Button>
-            )}
-
-            {currentStep < steps.length ? (
-              <Button
-                onClick={handleNext}
-                disabled={isSubmitting}
-                variant="primary"
-              >
-                Siguiente
-              </Button>
-            ) : (
-              <Button
-                onClick={handleConfirmCreate}
-                disabled={isSubmitting}
-                variant="primary"
-              >
-                Configurar
-              </Button>
-            )}
+            <Button
+              variant="secondary"
+              onClick={() => navigate('/procesos-acreditacion/listar')}
+              disabled={isSubmitting}
+              standardWidth
+              size="sm"
+            >
+              Regresar
+            </Button>
+            <Button
+              onClick={handleConfirmCreate}
+              disabled={isSubmitting}
+              variant="primary"
+            >
+              Configurar
+            </Button>
           </div>
         </div>
       </ScreenContainer>

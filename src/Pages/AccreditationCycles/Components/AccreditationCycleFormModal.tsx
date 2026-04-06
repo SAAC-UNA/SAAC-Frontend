@@ -171,6 +171,7 @@ export const AccreditationCycleFormModal: React.FC<Props> = ({
             error={errors.nombre}
             maxLength={50}
             characterCount
+            placeholder="Ej: Ciclo 2026-2030"
           />
 
           <CustomSelect

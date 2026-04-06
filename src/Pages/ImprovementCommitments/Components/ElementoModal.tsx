@@ -13,13 +13,14 @@ import { ICON_SIZES } from '@/Constants/Components';
 import { userService, type User } from '@/Services/UserService';
 import { roleService, type Role } from '@/Services/RoleService';
 import type { FlexibleElement } from '@/Types/StructureModelTypes';
-import type { ElementoSeleccionado } from '@/Types/ImprovementCommitmentTypes';
+import type { ElementoSeleccionado, EncargadoInfo } from '@/Types/ImprovementCommitmentTypes';
 import type { MultiSelectOption } from '@/Components/Ui/Forms/MultiSelect';
 
 interface ElementoModalProps {
   isOpen: boolean;
   onClose: () => void;
   elemento: FlexibleElement;
+  hijos?: FlexibleElement[];
   configuracionExistente?: ElementoSeleccionado;
   onGuardar: (config: ElementoSeleccionado) => void;
   modoEdicion: boolean;
@@ -29,6 +30,7 @@ export const ElementoModal: React.FC<ElementoModalProps> = ({
   isOpen,
   onClose,
   elemento,
+  hijos = [],
   configuracionExistente,
   onGuardar,
   modoEdicion,
@@ -45,16 +47,19 @@ export const ElementoModal: React.FC<ElementoModalProps> = ({
   const userCountByRole = catalogState.userCountByRole;
 
   const [formState, setFormState] = useState<{
+    hijosSeleccionados: number[];
     assignedUsers: number[];
     assignedRoles: number[];
     fechaLimite: string;
     comentario: string;
   }>({
+    hijosSeleccionados: configuracionExistente?.hijos_seleccionados || [],
     assignedUsers: configuracionExistente?.encargados_usuarios || [],
     assignedRoles: configuracionExistente?.encargados_roles || [],
     fechaLimite: configuracionExistente?.fecha_limite || '',
     comentario: configuracionExistente?.comentario || '',
   });
+  const hijosSeleccionados = formState.hijosSeleccionados;
   const assignedUsers = formState.assignedUsers;
   const assignedRoles = formState.assignedRoles;
   const fechaLimite = formState.fechaLimite;
@@ -69,6 +74,7 @@ export const ElementoModal: React.FC<ElementoModalProps> = ({
   // Reset form when elemento changes
   useEffect(() => {
     setFormState({
+      hijosSeleccionados: configuracionExistente?.hijos_seleccionados || [],
       assignedUsers: configuracionExistente?.encargados_usuarios || [],
       assignedRoles: configuracionExistente?.encargados_roles || [],
       fechaLimite: configuracionExistente?.fecha_limite || '',
@@ -137,6 +143,10 @@ export const ElementoModal: React.FC<ElementoModalProps> = ({
   const validate = (): boolean => {
     const newErrors: Record<string, string> = {};
 
+    if (hijos.length > 0 && hijosSeleccionados.length === 0) {
+      newErrors.hijos = 'Debe seleccionar al menos una fuente';
+    }
+
     if (assignedUsers.length === 0 && assignedRoles.length === 0) {
       newErrors.encargados = 'Debe seleccionar al menos un usuario o un rol';
     }
@@ -159,14 +169,23 @@ export const ElementoModal: React.FC<ElementoModalProps> = ({
     const config: ElementoSeleccionado = {
       elemento_id: elemento.elemento_id,
       elemento,
+      hijos_seleccionados: hijos.length > 0 ? hijosSeleccionados : undefined,
       encargados_usuarios: assignedUsers,
       encargados_roles: assignedRoles,
+      encargados_usuarios_info: assignedUsers
+        .map(id => { const u = usuarios.find(u => u.id === id); return u ? { id: u.id, name: u.name } : null; })
+        .filter((x): x is EncargadoInfo => x !== null),
+      encargados_roles_info: assignedRoles
+        .map(id => { const r = roles.find(r => r.id === id); return r ? { id: r.id, name: r.name } : null; })
+        .filter((x): x is EncargadoInfo => x !== null),
       fecha_limite: fechaLimite || undefined,
       comentario: comentario || undefined,
     };
 
     onGuardar(config);
   };
+
+  const allHijosSelected = hijos.length > 0 && hijosSeleccionados.length === hijos.length;
 
   const elementoTitle = elemento.nombre
     ? `${elemento.tipo}: ${elemento.nombre}`
@@ -202,6 +221,50 @@ export const ElementoModal: React.FC<ElementoModalProps> = ({
           {elemento.descripcion && (
             <div className="bg-gray-50 rounded-lg p-4">
               <p className="text-sm text-gris-una">{elemento.descripcion}</p>
+            </div>
+          )}
+
+          {/* Fuentes a incluir */}
+          {hijos.length > 0 && (
+            <div>
+              <div className="flex items-center justify-between mb-2">
+                <p className="block text-sm font-medium text-negro-una">
+                  Fuentes a incluir <span className="text-red-500">*</span>
+                </p>
+                <button
+                  type="button"
+                  onClick={() =>
+                    setFormState(prev => ({
+                      ...prev,
+                      hijosSeleccionados: allHijosSelected ? [] : hijos.map(h => h.elemento_id),
+                    }))
+                  }
+                  className="text-xs text-rojo-una-2 hover:underline flex items-center gap-1"
+                >
+                  <SystemIcons.interface.checkCircle size="xs" />
+                  {allHijosSelected ? 'Deseleccionar todas' : 'Seleccionar todas'}
+                </button>
+              </div>
+              <MultiSelect
+                label=""
+                options={hijos.map(h => ({
+                  value: h.elemento_id.toString(),
+                  label: h.nomenclatura ? `${h.nomenclatura} - ${h.nombre ?? h.tipo}` : (h.nombre ?? h.tipo),
+                }))}
+                value={hijosSeleccionados.map(id => id.toString())}
+                onChange={(values) =>
+                  setFormState(prev => ({ ...prev, hijosSeleccionados: values.map(v => parseInt(v)) }))
+                }
+                placeholder="Seleccione fuentes..."
+                required
+                showSelectAll={false}
+              />
+              {errors.hijos && (
+                <p className="mt-1 text-sm text-red-600">{errors.hijos}</p>
+              )}
+              <p className="mt-1 text-xs text-gris-una">
+                {hijosSeleccionados.length} de {hijos.length} fuentes seleccionadas
+              </p>
             </div>
           )}
 

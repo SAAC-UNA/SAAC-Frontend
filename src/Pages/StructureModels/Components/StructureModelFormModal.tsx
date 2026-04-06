@@ -96,7 +96,7 @@ export const StructureModelFormModal: React.FC<Props> = ({ isOpen, onClose, mode
         return false;
       }
       if (!form.tipos_jerarquia.some(r => r.acepta_archivos)) {
-        showToast({ type: 'error', title: 'Debes marcar qué tipo de elemento recibirá los archivos.' });
+        showToast({ type: 'error', title: 'Debe marcar qué tipo de elemento recibirá los archivos.' });
         setErrors(next);
         return false;
       }
@@ -157,6 +157,7 @@ export const StructureModelFormModal: React.FC<Props> = ({ isOpen, onClose, mode
             error={errors.nombre}
             maxLength={100}
             characterCount
+            placeholder="Ej: Modelo SINAES 2026"
           />
           <Input
             label="Versión"
@@ -201,7 +202,7 @@ export const StructureModelFormModal: React.FC<Props> = ({ isOpen, onClose, mode
               </Button>
             </div>
             <p className="text-xs text-gris-una mb-2">
-              Marca el tipo que recibirá los archivos.
+              Marque el tipo que recibirá los archivos.
             </p>
 
             <div className="flex flex-col gap-3">

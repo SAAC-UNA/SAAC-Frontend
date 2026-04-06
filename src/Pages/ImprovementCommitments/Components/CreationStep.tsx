@@ -3,9 +3,9 @@
  * Permite seleccionar ciclo y criterios/elementos con sus asignaciones
  */
 
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { LoadingSpinner } from '@/Components/Ui/Index';
-import { CustomSelect } from '@/Components/Ui/Forms/SingleSelect';
+import type { SelectOption } from '@/Components/Ui/Forms/SingleSelect';
 import { SystemIcons } from '@/Components/Ui/Icons/SystemIcons';
 import { ButtonWithTooltip } from '@/Components/Ui/Buttons/ButtonWithTooltip';
 import { DataTable } from '@/components/index';
@@ -30,7 +30,8 @@ import { useFirstColumnConfig } from '@/Hooks/UseFirstColumnConfig';
 import { truncateText } from '@/Utils';
 import { StatusBadge } from '@/Components/Ui/Feedback/StatusBadge';
 import { CRITERIO_SELECTION_STATUS_BADGE } from '@/Constants/StatusBadges';
-import { Card } from '@/Components/Ui/Layout/Card';
+import { UserAvatars } from '@/Components/Ui/UserAvatars/UserAvatars';
+import type { UserAvatarsUser } from '@/Components/Ui/UserAvatars/UserAvatars';
 
 interface CreationStepProps {
   formData: CompromisoFormData;
@@ -50,6 +51,8 @@ interface CreationStepProps {
   modeloTipo?: string;
   /** ID del modelo de estructura (para cargar elementos en modo flexible) */
   modeloId?: number;
+  /** Callback para notificar al padre cuando las opciones del ciclo estén disponibles */
+  onCiclosLoaded?: (options: SelectOption[]) => void;
 }
 
 export type StatusFilter = 'todos' | 'seleccionados' | 'pendientes';
@@ -69,14 +72,47 @@ export const CreationStep: React.FC<CreationStepProps> = ({
   statusFilter,
   modeloTipo,
   modeloId,
+  onCiclosLoaded,
 }) => {
   const isFlexible = modeloTipo === 'elemento_flexible';
 
   const [catalogState, setCatalogState] = useState<{ ciclos: CicloAcreditacion[]; criterios: Criterio[]; elementos: FlexibleElement[]; loading: boolean }>({ ciclos: [], criterios: [], elementos: [], loading: true });
-  const ciclos = catalogState.ciclos;
   const criterios = catalogState.criterios;
   const elementos = catalogState.elementos;
   const loading = catalogState.loading;
+
+  // Detectar hojas (fuentes): elementos que nadie referencia como padre_id
+  const leafElementIds = useMemo(() => {
+    const parentIds = new Set(
+      elementos.map(e => e.padre_id).filter((id): id is number => id !== null)
+    );
+    return new Set(elementos.filter(e => !parentIds.has(e.elemento_id)).map(e => e.elemento_id));
+  }, [elementos]);
+
+  // Pautas: padres directos de las hojas. Si no hay jerarquía (modelo plano), mostrar las hojas directamente.
+  const listedElementos = useMemo(() => {
+    const pautaIds = new Set(
+      elementos
+        .filter(e => leafElementIds.has(e.elemento_id) && e.padre_id !== null)
+        .map(e => e.padre_id as number)
+    );
+    if (pautaIds.size > 0) {
+      return elementos.filter(e => pautaIds.has(e.elemento_id));
+    }
+    return elementos.filter(e => leafElementIds.has(e.elemento_id));
+  }, [elementos, leafElementIds]);
+
+  // Hijos (fuentes) por pauta — solo cuando hay jerarquía
+  const hijosDeElemento = useMemo(() => {
+    const map = new Map<number, FlexibleElement[]>();
+    for (const e of elementos) {
+      if (e.padre_id !== null && leafElementIds.has(e.elemento_id)) {
+        if (!map.has(e.padre_id)) map.set(e.padre_id, []);
+        map.get(e.padre_id)!.push(e);
+      }
+    }
+    return map;
+  }, [elementos, leafElementIds]);
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = TABLE_PAGE_SIZE.standard;
   const firstColumn = useFirstColumnConfig();
@@ -93,15 +129,19 @@ export const CreationStep: React.FC<CreationStepProps> = ({
   const [criterionToDelete, setCriterionToDelete] = useState<{ id: number; nombre: string } | null>(null);
 
   // Modal state — elementos (modelo flexible)
-  const [elementoModalState, setElementoModalState] = useState<{ showModal: boolean; selectedElemento: FlexibleElement | null; editMode: boolean }>({ showModal: false, selectedElemento: null, editMode: false });
+  const [elementoModalState, setElementoModalState] = useState<{ showModal: boolean; selectedElemento: FlexibleElement | null; selectedHijos: FlexibleElement[]; editMode: boolean }>({ showModal: false, selectedElemento: null, selectedHijos: [], editMode: false });
   const showElementoModal = elementoModalState.showModal;
   const selectedElemento = elementoModalState.selectedElemento;
+  const selectedHijos = elementoModalState.selectedHijos;
   const elementoEditMode = elementoModalState.editMode;
   const [elementoToDelete, setElementoToDelete] = useState<{ id: number; nombre: string } | null>(null);
 
   useEffect(() => {
     loadData();
   }, []);
+
+  const onCiclosLoadedRef = useRef(onCiclosLoaded);
+  onCiclosLoadedRef.current = onCiclosLoaded;
 
   const loadData = async () => {
     try {
@@ -113,26 +153,28 @@ export const CreationStep: React.FC<CreationStepProps> = ({
           improvementCommitmentService.obtenerElementosPorModelo(modeloId),
         ]);
         setCatalogState({ ciclos: ciclosData, criterios: [], elementos: elementosData, loading: false });
+        const opts = ciclosData.map(c => ({
+          value: c.ciclo_acreditacion_id.toString(),
+          label: `${c.nombre || (c.anio ? `Ciclo ${c.anio}` : `Ciclo ${c.ciclo_acreditacion_id}`)}${c.careerCampus?.career?.nombre ? ` - ${c.careerCampus.career.nombre}` : ''}${c.careerCampus?.campus?.nombre ? ` (${c.careerCampus.campus.nombre})` : ''}`,
+        }));
+        onCiclosLoadedRef.current?.(opts);
       } else {
         const [ciclosData, criteriosData] = await Promise.all([
           improvementCommitmentService.obtenerCiclosAcreditacion(),
           improvementCommitmentService.obtenerCriterios({ activo: true }),
         ]);
         setCatalogState({ ciclos: ciclosData, criterios: criteriosData, elementos: [], loading: false });
+        const opts = ciclosData.map(c => ({
+          value: c.ciclo_acreditacion_id.toString(),
+          label: `${c.nombre || (c.anio ? `Ciclo ${c.anio}` : `Ciclo ${c.ciclo_acreditacion_id}`)}${c.careerCampus?.career?.nombre ? ` - ${c.careerCampus.career.nombre}` : ''}${c.careerCampus?.campus?.nombre ? ` (${c.careerCampus.campus.nombre})` : ''}`,
+        }));
+        onCiclosLoadedRef.current?.(opts);
       }
     } catch (error) {
       console.error('Error cargando datos:', error);
       setCatalogState(prev => ({ ...prev, loading: false }));
     }
   };
-
-  // Opciones para selector de ciclos
-  const cicloOptions = useMemo(() => {
-    return ciclos.map(ciclo => ({
-      value: ciclo.ciclo_acreditacion_id.toString(),
-      label: `${ciclo.nombre || (ciclo.anio ? `Ciclo ${ciclo.anio}` : `Ciclo ${ciclo.ciclo_acreditacion_id}`)}${ciclo.careerCampus?.career?.nombre ? ` - ${ciclo.careerCampus.career.nombre}` : ''}${ciclo.careerCampus?.campus?.nombre ? ` (${ciclo.careerCampus.campus.nombre})` : ''}`
-    }));
-  }, [ciclos]);
 
   // Criterios filtrados (modelo tradicional)
   const criteriosFiltrados = useMemo(() => {
@@ -154,9 +196,9 @@ export const CreationStep: React.FC<CreationStepProps> = ({
     return filtered;
   }, [criterios, searchTerm, statusFilter, formData.criterios_seleccionados]);
 
-  // Elementos filtrados (modelo flexible)
+  // Elementos filtrados (modelo flexible) — pautas o leaves en modelo plano
   const elementosFiltrados = useMemo(() => {
-    let filtered = elementos;
+    let filtered = listedElementos;
     if (searchTerm) {
       const term = searchTerm.toLowerCase();
       filtered = filtered.filter(e =>
@@ -175,11 +217,10 @@ export const CreationStep: React.FC<CreationStepProps> = ({
       filtered = filtered.filter(e => !ids.includes(e.elemento_id));
     }
     return filtered;
-  }, [elementos, searchTerm, statusFilter, formData.elementos_seleccionados]);
+  }, [listedElementos, searchTerm, statusFilter, formData.elementos_seleccionados]);
 
-  // Paginación — usa la lista apropiada según modelo
-  const activeFiltrados = isFlexible ? elementosFiltrados : criteriosFiltrados;
-  const totalPages = Math.ceil(activeFiltrados.length / itemsPerPage);
+  // Paginación — igual en ambos modelos
+  const totalPages = Math.max(1, Math.ceil((isFlexible ? elementosFiltrados : criteriosFiltrados).length / itemsPerPage));
   const paginatedCriterios = useMemo(() => {
     const startIndex = (currentPage - 1) * itemsPerPage;
     return criteriosFiltrados.slice(startIndex, startIndex + itemsPerPage);
@@ -230,7 +271,8 @@ export const CreationStep: React.FC<CreationStepProps> = ({
     const yaSeleccionado = (formData.elementos_seleccionados ?? []).find(
       e => e.elemento_id === elemento.elemento_id
     );
-    setElementoModalState({ showModal: true, selectedElemento: elemento, editMode: !!yaSeleccionado });
+    const hijos = hijosDeElemento.get(elemento.elemento_id) ?? [];
+    setElementoModalState({ showModal: true, selectedElemento: elemento, selectedHijos: hijos, editMode: !!yaSeleccionado });
   };
 
   const handleSaveElemento = (config: ElementoSeleccionado) => {
@@ -239,7 +281,7 @@ export const CreationStep: React.FC<CreationStepProps> = ({
     } else {
       agregarElemento?.(config);
     }
-    setElementoModalState({ showModal: false, selectedElemento: null, editMode: false });
+    setElementoModalState({ showModal: false, selectedElemento: null, selectedHijos: [], editMode: false });
   };
 
   const handleDeleteElemento = (elementoId: number, nombre: string) => {
@@ -300,6 +342,28 @@ export const CreationStep: React.FC<CreationStepProps> = ({
       },
     },
     {
+      key: 'destinatarios',
+      header: 'Destinatarios',
+      align: 'center',
+      width: '18%',
+      render: (_, criterio) => {
+        const config = formData.criterios_seleccionados.find(
+          c => c.criterio_id === criterio.criterio_id
+        );
+        const avatars: UserAvatarsUser[] = [
+          ...(config?.encargados_usuarios_info ?? config?.encargados_usuarios.map(id => ({ id, name: undefined })) ?? []),
+          ...(config?.encargados_roles_info?.map(r => ({ id: `role-${r.id}`, name: r.name })) ?? config?.encargados_roles.map(id => ({ id: `role-${id}`, name: undefined })) ?? []),
+        ];
+        return avatars.length > 0 ? (
+          <div className="flex justify-center">
+            <UserAvatars users={avatars} size={28} maxVisible={5} tooltipPlacement="top" />
+          </div>
+        ) : (
+          <span className={`${TYPOGRAPHY.table.helper} text-gris-una/50`}>Sin destinatarios</span>
+        );
+      },
+    },
+    {
       key: 'actions',
       header: 'Acciones',
       align: 'center',
@@ -319,7 +383,7 @@ export const CreationStep: React.FC<CreationStepProps> = ({
               disabled={seleccionado}
               className={TABLE_ACTION_BUTTON.button}
             >
-              <SystemIcons.structure.nut size="md" />
+              <SystemIcons.structure.nut className={TABLE_ACTION_BUTTON.icon} />
             </ButtonWithTooltip>
 
             <ButtonWithTooltip
@@ -356,41 +420,30 @@ export const CreationStep: React.FC<CreationStepProps> = ({
     },
   ], [firstColumn, formData.criterios_seleccionados]);
 
-  // Columnas para tabla de elementos (modelo flexible)
+  // Columnas para tabla de elementos (modelo flexible) — misma estructura que criterios
   const columnsElementos: DataTableColumn<FlexibleElement>[] = useMemo(() => [
     {
-      key: 'identificador',
-      header: 'Identificador',
+      key: 'nomenclatura',
+      header: 'Elemento',
       align: 'left',
       width: firstColumn.width,
       render: (_, elemento) => (
         <div className="flex flex-col pl-2">
           <p
             className={`block font-sans antialiased font-bold leading-normal text-negro-una-2 ${TYPOGRAPHY.table.cell}`}
-            title={elemento.nombre ?? elemento.tipo}
+            title={elemento.nomenclatura ?? elemento.nombre ?? elemento.tipo}
           >
-            {truncateText(elemento.nombre ?? elemento.tipo, firstColumn.maxLength)}
+            {truncateText(elemento.nomenclatura ?? elemento.nombre ?? elemento.tipo, firstColumn.maxLength)}
           </p>
-          {elemento.descripcion && (
+          {(elemento.nombre || elemento.descripcion) && (
             <p
               className={`block font-sans antialiased font-normal leading-normal text-gris-una ${TYPOGRAPHY.table.helper}`}
-              title={elemento.descripcion}
+              title={elemento.nombre ?? elemento.descripcion ?? ''}
             >
-              {truncateText(elemento.descripcion, firstColumn.maxLength)}
+              {truncateText(elemento.nombre ?? elemento.descripcion ?? '', firstColumn.maxLength)}
             </p>
           )}
         </div>
-      ),
-    },
-    {
-      key: 'tipo',
-      header: 'Tipo',
-      align: 'center',
-      width: TABLE_COLUMN_WIDTHS.status,
-      render: (_, elemento) => (
-        <p className={`block font-sans antialiased font-normal leading-normal text-negro-una ${TYPOGRAPHY.table.cell}`}>
-          {elemento.tipo}
-        </p>
       ),
     },
     {
@@ -417,6 +470,28 @@ export const CreationStep: React.FC<CreationStepProps> = ({
       },
     },
     {
+      key: 'destinatarios',
+      header: 'Destinatarios',
+      align: 'center',
+      width: '18%',
+      render: (_, elemento) => {
+        const config = (formData.elementos_seleccionados ?? []).find(
+          e => e.elemento_id === elemento.elemento_id
+        );
+        const avatars: UserAvatarsUser[] = [
+          ...(config?.encargados_usuarios_info ?? config?.encargados_usuarios.map(id => ({ id, name: undefined })) ?? []),
+          ...(config?.encargados_roles_info?.map(r => ({ id: `role-${r.id}`, name: r.name })) ?? config?.encargados_roles.map(id => ({ id: `role-${id}`, name: undefined })) ?? []),
+        ];
+        return avatars.length > 0 ? (
+          <div className="flex justify-center">
+            <UserAvatars users={avatars} size={28} maxVisible={5} tooltipPlacement="top" />
+          </div>
+        ) : (
+          <span className={`${TYPOGRAPHY.table.helper} text-gris-una/50`}>Sin destinatarios</span>
+        );
+      },
+    },
+    {
       key: 'actions',
       header: 'Acciones',
       align: 'center',
@@ -437,9 +512,8 @@ export const CreationStep: React.FC<CreationStepProps> = ({
               disabled={seleccionado}
               className={TABLE_ACTION_BUTTON.button}
             >
-              <SystemIcons.structure.nut size="md" />
+              <SystemIcons.structure.nut className={TABLE_ACTION_BUTTON.icon} />
             </ButtonWithTooltip>
-
             <ButtonWithTooltip
               variant="tableEdit"
               size="sm"
@@ -451,7 +525,6 @@ export const CreationStep: React.FC<CreationStepProps> = ({
             >
               <SystemIcons.actions.edit className={TABLE_ACTION_BUTTON.icon} />
             </ButtonWithTooltip>
-
             <ButtonWithTooltip
               variant="tableDelete"
               size="sm"
@@ -472,7 +545,7 @@ export const CreationStep: React.FC<CreationStepProps> = ({
         );
       },
     },
-  ], [firstColumn, formData.elementos_seleccionados]);
+  ], [firstColumn, formData.elementos_seleccionados, hijosDeElemento]);
 
   if (loading) {
     return (
@@ -485,21 +558,6 @@ export const CreationStep: React.FC<CreationStepProps> = ({
   return (
     <>
       <div className="space-y-2">
-        {/* Select de Ciclo */}
-        <Card className="w-80">
-          <CustomSelect
-            label="Ciclo de Acreditación"
-            value={formData.ciclo_acreditacion_id?.toString() || ''}
-            options={cicloOptions}
-            placeholder="Seleccione un ciclo..."
-            onChange={handleCicloChange}
-            required
-            error={errors.ciclo_acreditacion_id}
-            size="sm"
-            disabled={cicloFijo}
-          />
-        </Card>
-
         {/* Tabla o Mensaje de Sin Ciclo */}
         {!formData.ciclo_acreditacion_id ? (
           <div className="bg-white rounded-lg border border-gray-200 py-16">
@@ -558,8 +616,9 @@ export const CreationStep: React.FC<CreationStepProps> = ({
       {showElementoModal && selectedElemento && (
         <ElementoModal
           isOpen={showElementoModal}
-          onClose={() => setElementoModalState({ showModal: false, selectedElemento: null, editMode: false })}
+          onClose={() => setElementoModalState({ showModal: false, selectedElemento: null, selectedHijos: [], editMode: false })}
           elemento={selectedElemento}
+          hijos={selectedHijos}
           configuracionExistente={
             elementoEditMode
               ? (formData.elementos_seleccionados ?? []).find(e => e.elemento_id === selectedElemento.elemento_id)

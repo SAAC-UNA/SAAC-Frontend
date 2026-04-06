@@ -13,7 +13,7 @@ import { ICON_SIZES } from '@/Constants/Components';
 import { improvementCommitmentService } from '@/Services/ImprovementCommitmentService';
 import { userService, type User } from '@/Services/UserService';
 import { roleService, type Role } from '@/Services/RoleService';
-import type { Criterio, Evidencia, CriterioSeleccionado } from '@/Types/ImprovementCommitmentTypes';
+import type { Criterio, Evidencia, CriterioSeleccionado, EncargadoInfo } from '@/Types/ImprovementCommitmentTypes';
 import type { MultiSelectOption } from '@/Components/Ui/Forms/MultiSelect';
 
 interface CriterionModalProps {
@@ -192,6 +192,12 @@ export const CriterionModal: React.FC<CriterionModalProps> = ({
       evidencias_seleccionadas: selectedEvidences,
       encargados_usuarios: assignedUsers,
       encargados_roles: assignedRoles,
+      encargados_usuarios_info: assignedUsers
+        .map(id => { const u = usuarios.find(u => u.id === id); return u ? { id: u.id, name: u.name } : null; })
+        .filter((x): x is EncargadoInfo => x !== null),
+      encargados_roles_info: assignedRoles
+        .map(id => { const r = roles.find(r => r.id === id); return r ? { id: r.id, name: r.name } : null; })
+        .filter((x): x is EncargadoInfo => x !== null),
       fecha_limite: fechaLimite || undefined,
       comentario: comentario || undefined
     };

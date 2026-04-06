@@ -230,13 +230,18 @@ class ImprovementCommitmentService {
    * Construir el payload de elementos_asignar para un ElementoSeleccionado
    */
   transformarElementosParaBackend(elemento: import('@/Types/ImprovementCommitmentTypes').ElementoSeleccionado): CrearCompromisoElementoPayload['elementos_asignar'] {
-    return [{
-      elemento_id: elemento.elemento_id,
+    const base = {
       usuarios: elemento.encargados_usuarios,
       roles: elemento.encargados_roles,
       fecha_limite: elemento.fecha_limite,
       comentario: elemento.comentario,
-    }];
+    };
+    // Si hay hijos seleccionados (fuentes bajo la pauta), asignar cada hijo individualmente
+    if (elemento.hijos_seleccionados?.length) {
+      return elemento.hijos_seleccionados.map(hijoId => ({ elemento_id: hijoId, ...base }));
+    }
+    // Modelo plano: asignar el elemento directamente
+    return [{ elemento_id: elemento.elemento_id, ...base }];
   }
 
   /**
