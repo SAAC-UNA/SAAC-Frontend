@@ -30,6 +30,7 @@ export interface Criterio extends Record<string, unknown> {
   nomenclatura: string;
   descripcion: string;
   estado_aprobacion?: 'pendiente' | 'aprobado' | 'rechazado';
+  archivos?: Archivo[];
 }
 
 // ---------- EvidenceExpansionRow ----------
@@ -141,11 +142,104 @@ const EvidenceExpansionRow: React.FC<EvidenceExpansionProps> = ({
   );
 };
 
+// ---------- ElementExpansionRow (modelo flexible) ----------
+
+interface ElementExpansionProps {
+  elemento: Criterio;
+  loadingFiles: Set<number>;
+  onLoadFile: (id: number) => void;
+  onOpenLink: (evidencia: Evidencia) => void;
+}
+
+const ElementExpansionRow: React.FC<ElementExpansionProps> = ({
+  elemento,
+  loadingFiles,
+  onLoadFile,
+  onOpenLink,
+}) => {
+  useEffect(() => {
+    if (!elemento.archivos) onLoadFile(elemento.id);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [elemento.id]);
+
+  if (loadingFiles.has(elemento.id)) {
+    return (
+      <p className={`px-4 py-3 ${TYPOGRAPHY.table.helper} text-gris-una`}>Cargando archivos...</p>
+    );
+  }
+
+  const archivos = elemento.archivos ?? [];
+  if (archivos.length === 0) {
+    return (
+      <p className={`px-4 py-3 ${TYPOGRAPHY.table.helper} text-gris-una`}>Sin archivos adjuntos</p>
+    );
+  }
+
+  return (
+    <div className="space-y-1">
+      {archivos.map((archivo) => {
+        const tieneEnlace = archivo.is_publico && archivo.token_publico;
+        const handleOpen = () =>
+          onOpenLink({
+            id: elemento.id,
+            nomenclatura: elemento.nomenclatura,
+            descripcion: elemento.descripcion,
+            criterio_id: 0,
+            archivos: [archivo],
+          });
+        const action = tieneEnlace ? (
+          <div className="flex items-center gap-1.5">
+            <StatusBadge label="Enlace listo" colorClasses="text-verde-dark bg-verde-ring" />
+            <ButtonWithTooltip
+              variant="tableView" size="sm"
+              tooltip="Abrir enlace público" tooltipPosition="left"
+              onClick={handleOpen}
+              className={TABLE_ACTION_BUTTON.button}
+            >
+              <SystemIcons.actions.linkIcon className={TABLE_ACTION_BUTTON.icon} />
+            </ButtonWithTooltip>
+          </div>
+        ) : (
+          <div className="flex items-center gap-1.5">
+            <StatusBadge label="Sin enlace" colorClasses="text-warning-dark bg-warning-ring" />
+            <ButtonWithTooltip
+              variant="tableView" size="sm"
+              tooltip="Gestionar enlace público" tooltipPosition="left"
+              onClick={handleOpen}
+              className={TABLE_ACTION_BUTTON.button}
+            >
+              <SystemIcons.actions.linkIcon className={TABLE_ACTION_BUTTON.icon} />
+            </ButtonWithTooltip>
+          </div>
+        );
+        return (
+          <ExpandableChildRow
+            key={archivo.archivo_id}
+            item={{
+              key: String(archivo.archivo_id),
+              content: (
+                <p
+                  className={`truncate flex-1 min-w-0 ${TYPOGRAPHY.table.helper}`}
+                  title={archivo.nombre_original}
+                >
+                  <span className="font-medium text-negro-una">{archivo.nombre_original}</span>
+                </p>
+              ),
+              action,
+            }}
+          />
+        );
+      })}
+    </div>
+  );
+};
+
 // ---------- FinalReportsTable ----------
 
 interface FinalReportsTableProps {
   criteria: Criterio[];
   evidences: Evidencia[];
+  isFlexible?: boolean;
   loadingFiles: Set<number>;
   onLoadFile: (id: number) => void;
   onOpenLink: (evidencia: Evidencia) => void;
@@ -155,6 +249,7 @@ interface FinalReportsTableProps {
 export const FinalReportsTable: React.FC<FinalReportsTableProps> = ({
   criteria,
   evidences,
+  isFlexible = false,
   loadingFiles,
   onLoadFile,
   onOpenLink,
@@ -163,7 +258,7 @@ export const FinalReportsTable: React.FC<FinalReportsTableProps> = ({
   const columns: DataTableColumn<Criterio>[] = [
     {
       key: 'nomenclatura',
-      header: 'Criterio',
+      header: isFlexible ? 'Elemento' : 'Criterio',
       render: (_, item) => (
         <p className={`truncate ${TYPOGRAPHY.table.cell}`} title={`${item.nomenclatura} — ${item.descripcion}`}>
           <span className="font-bold text-negro-una-2">{item.nomenclatura}</span>
@@ -201,7 +296,14 @@ export const FinalReportsTable: React.FC<FinalReportsTableProps> = ({
             expandableRow={item => [{
                 key: String(item.id),
                 noBorder: true,
-                content: (
+                content: isFlexible ? (
+                  <ElementExpansionRow
+                    elemento={item}
+                    loadingFiles={loadingFiles}
+                    onLoadFile={onLoadFile}
+                    onOpenLink={onOpenLink}
+                  />
+                ) : (
                 <EvidenceExpansionRow
                     criterio={item}
                     evidences={evidences}

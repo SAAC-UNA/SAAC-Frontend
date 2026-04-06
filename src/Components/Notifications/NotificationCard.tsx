@@ -41,7 +41,9 @@ export const NotificationCard: React.FC<NotificationCardProps> = ({
   const targetRoute =
     notification.tipo_evento === "asignacion_evidencia"
       ? "/mis-evidencias-asignadas"
-      : notification.enlace;
+      : notification.tipo_evento === "asignacion_elemento"
+        ? "/mis-evidencias-asignadas"
+        : notification.enlace;
 
   const handleClick = () => {
     if (!notification.leida && onMarkAsRead) {
