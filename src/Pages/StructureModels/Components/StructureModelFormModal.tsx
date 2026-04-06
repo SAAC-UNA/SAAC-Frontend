@@ -17,9 +17,7 @@ import { SystemIcons } from '@/Components/Ui/Icons/SystemIcons';
 import { useToast } from '@/Context/ToastContext';
 import type { StructureModel, CreateModelForm, EditModelForm, TipoJerarquia } from '@/Types/StructureModelTypes';
 
-interface JerarquiaRow extends TipoJerarquia {
-  acepta_archivos: boolean;
-}
+interface JerarquiaRow extends TipoJerarquia {}
 
 interface Props {
   isOpen: boolean;
@@ -41,7 +39,7 @@ interface FormErrors {
   version?: string;
 }
 
-const EMPTY: FormData = { nombre: '', descripcion: '', version: '', tipos_jerarquia: [{ tipo: '', padre_tipo: null, acepta_archivos: false }] };
+const EMPTY: FormData = { nombre: '', descripcion: '', version: '', tipos_jerarquia: [{ tipo: '', padre_tipo: null }] };
 
 export const StructureModelFormModal: React.FC<Props> = ({ isOpen, onClose, model, onConfirm }) => {
   const isEditing = !!model;
@@ -63,7 +61,7 @@ export const StructureModelFormModal: React.FC<Props> = ({ isOpen, onClose, mode
               version: model.version ?? '',
               tipos_jerarquia: (model.tipos_jerarquia ?? []).map(t => ({ ...t, acepta_archivos: false })),
             }
-          : EMPTY
+              : EMPTY
       );
       setErrors({});
       setConfirmOpen(false);
@@ -95,11 +93,7 @@ export const StructureModelFormModal: React.FC<Props> = ({ isOpen, onClose, mode
         setErrors(next);
         return false;
       }
-      if (!form.tipos_jerarquia.some(r => r.acepta_archivos)) {
-        showToast({ type: 'error', title: 'Debe marcar qué tipo de elemento recibirá los archivos.' });
-        setErrors(next);
-        return false;
-      }
+
     }
     setErrors(next);
     return Object.keys(next).length === 0;
@@ -115,11 +109,7 @@ export const StructureModelFormModal: React.FC<Props> = ({ isOpen, onClose, mode
       nombre: form.nombre.trim(),
       descripcion: form.descripcion.trim() || undefined,
       version: form.version.trim() || undefined,
-      tipos_jerarquia: form.tipos_jerarquia.length > 0 ? form.tipos_jerarquia.map(({ acepta_archivos: _, ...r }) => r) : undefined,
-      tipos_asignables: (() => {
-        const list = form.tipos_jerarquia.filter(r => r.acepta_archivos && r.tipo.trim()).map(r => r.tipo.trim());
-        return list.length > 0 ? list : undefined;
-      })(),
+      tipos_jerarquia: form.tipos_jerarquia.length > 0 ? form.tipos_jerarquia.map(r => ({ tipo: r.tipo, padre_tipo: r.padre_tipo })) : undefined,
     };
     const result = await onConfirm(payload);
     setOpLoading(false);
@@ -202,7 +192,7 @@ export const StructureModelFormModal: React.FC<Props> = ({ isOpen, onClose, mode
               </Button>
             </div>
             <p className="text-xs text-gris-una mb-2">
-              Marque el tipo que recibirá los archivos.
+              Defina los tipos de elemento y su jerarquía.
             </p>
 
             <div className="flex flex-col gap-3">
@@ -218,27 +208,7 @@ export const StructureModelFormModal: React.FC<Props> = ({ isOpen, onClose, mode
                 ];
 
                 return (
-                  <div key={idx} className="flex items-center gap-2">
-                    <label
-                      title="Este tipo recibirá archivos"
-                      className="flex items-center cursor-pointer select-none shrink-0"
-                    >
-                      <input
-                        type="checkbox"
-                        checked={row.acepta_archivos}
-                        onChange={e => {
-                          const val = e.target.checked;
-                          setForm(p => ({
-                            ...p,
-                            // Radio-like: desmarcar los demás al marcar uno
-                            tipos_jerarquia: p.tipos_jerarquia.map((r, i) =>
-                              i === idx ? { ...r, acepta_archivos: val } : { ...r, acepta_archivos: false }
-                            ),
-                          }));
-                        }}
-                        className="w-4 h-4 cursor-pointer accent-dorado-una"
-                      />
-                    </label>
+                  <div key={idx} className="flex items-end gap-2">
                     <div className="flex-1">
                       <Input
                         label="Nombre del tipo"
@@ -256,7 +226,7 @@ export const StructureModelFormModal: React.FC<Props> = ({ isOpen, onClose, mode
                         }}
                       />
                     </div>
-                    <div className="w-[40%]">
+                    <div className="flex-1">
                       <CustomSelect
                         label="Depende de (tipo padre)"
                         value={row.padre_tipo ?? ''}
