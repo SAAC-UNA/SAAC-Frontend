@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { ScreenContainer, PageHeader } from "@/Components/Ui/Index";
 import { LoadingSpinner } from "@/Components/Ui/Index";
 import { ButtonWithTooltip } from "@/Components/Ui/Buttons/ButtonWithTooltip";
@@ -26,6 +26,10 @@ interface Proceso {
   accreditation_cycle: {
     ciclo_acreditacion_id: number;
     nombre: string;
+    modelo_estructura?: {
+      modelo_estructura_id: number;
+      tipo: string;
+    };
     career_campus: {
       career: {
         nombre: string;
@@ -61,6 +65,13 @@ const FinalReports: React.FC = () => {
   const selectedProcesoId = uiState.selectedProcesoId;
   const loadingFiles = uiState.loadingFiles;
 
+  const selectedProcess = useMemo(
+    () => processes.find((p) => p.proceso_id === selectedProcesoId) ?? null,
+    [processes, selectedProcesoId],
+  );
+  const isFlexible =
+    selectedProcess?.accreditation_cycle?.modelo_estructura?.tipo === "elemento_flexible";
+
   // Modal de detalle de criterio
   const [detailModal, setDetailModal] = useState<{
     open: boolean;
@@ -92,55 +103,102 @@ const FinalReports: React.FC = () => {
   const fetchData = async () => {
     try {
       setDataState((prev) => ({ ...prev, isLoading: true }));
-      const [
-        criteriaResponse,
-        evidencesResponse,
-        processesResponse,
-        approvalsResponse,
-      ] = await Promise.all([
-        axiosInstance.get("/estructura/criterios"),
-        axiosInstance.get("/estructura/evidencias"),
-        axiosInstance.get("/estructura/procesos"),
-        axiosInstance.get("/aprobaciones-criterios"),
-      ]);
 
-      const criteriaArray = criteriaResponse.data.data || criteriaResponse.data;
-      const evidencesArray =
-        evidencesResponse.data.data || evidencesResponse.data;
-      const processesArray =
-        processesResponse.data.data || processesResponse.data;
-      const approvalsArray =
-        approvalsResponse.data.data || approvalsResponse.data;
+      const processesResponse = await axiosInstance.get("/estructura/procesos");
+      const processesArray = processesResponse.data.data || processesResponse.data;
 
-      // Create approvals map by criterio_id + proceso_id
-      const approvalsMap = new Map<string, ApprovalStatus>();
-      approvalsArray.forEach((aprobacion: any) => {
-        const key = `${aprobacion.criterio_id}-${aprobacion.proceso_id}`;
-        approvalsMap.set(key, aprobacion.estado as ApprovalStatus);
-      });
-
-      // Assign approval status according to selected process
-      const criteriaWithStatus = criteriaArray.map((c: any) => {
-        const key = selectedProcesoId ? `${c.id}-${selectedProcesoId}` : "";
-        const approvalStatus = approvalsMap.get(key) || "pendiente";
-
-        return {
-          ...c,
-          estado_aprobacion: approvalStatus as ApprovalStatus,
-        };
-      });
-
-      // Filter only approved criteria
-      const approvedCriteria = criteriaWithStatus.filter(
-        (c: Criterio) => c.estado_aprobacion === "aprobado",
+      const selProc = processesArray.find(
+        (p: any) => p.proceso_id === selectedProcesoId,
       );
+      const flex =
+        selProc?.accreditation_cycle?.modelo_estructura?.tipo === "elemento_flexible";
 
-      setDataState((prev) => ({
-        ...prev,
-        criteria: approvedCriteria,
-        evidences: evidencesArray,
-        processes: processesArray,
-      }));
+      if (!selectedProcesoId || !selProc) {
+        setDataState((prev) => ({
+          ...prev,
+          processes: processesArray,
+          criteria: [],
+          evidences: [],
+        }));
+        return;
+      }
+
+      if (flex) {
+        const modeloId =
+          selProc.accreditation_cycle.modelo_estructura!.modelo_estructura_id;
+        const [elementosResponse, approvalsResponse] = await Promise.all([
+          axiosInstance.get(
+            `/estructura/elementos?modelo_estructura_id=${modeloId}`,
+          ),
+          axiosInstance.get("/aprobaciones-elementos"),
+        ]);
+        const elementosArray =
+          elementosResponse.data.data || elementosResponse.data;
+        const approvalsArray =
+          approvalsResponse.data.data || approvalsResponse.data;
+
+        const approvalsMap = new Map<string, ApprovalStatus>();
+        approvalsArray.forEach((ap: any) => {
+          approvalsMap.set(
+            `${ap.elemento_id}-${ap.proceso_id}`,
+            ap.estado as ApprovalStatus,
+          );
+        });
+
+        const approvedElements = elementosArray
+          .map((el: any) => ({
+            id: el.elemento_id ?? el.id,
+            nomenclatura: el.nomenclatura ?? "",
+            descripcion: el.descripcion ?? el.nombre ?? "",
+            estado_aprobacion:
+              approvalsMap.get(
+                `${el.elemento_id ?? el.id}-${selectedProcesoId}`,
+              ) ?? "pendiente",
+          }))
+          .filter((el: any) => el.estado_aprobacion === "aprobado");
+
+        setDataState((prev) => ({
+          ...prev,
+          processes: processesArray,
+          criteria: approvedElements,
+          evidences: [],
+        }));
+      } else {
+        const [criteriaResponse, evidencesResponse, approvalsResponse] =
+          await Promise.all([
+            axiosInstance.get("/estructura/criterios"),
+            axiosInstance.get("/estructura/evidencias"),
+            axiosInstance.get("/aprobaciones-criterios"),
+          ]);
+        const criteriaArray = criteriaResponse.data.data || criteriaResponse.data;
+        const evidencesArray =
+          evidencesResponse.data.data || evidencesResponse.data;
+        const approvalsArray =
+          approvalsResponse.data.data || approvalsResponse.data;
+
+        const approvalsMap = new Map<string, ApprovalStatus>();
+        approvalsArray.forEach((aprobacion: any) => {
+          const key = `${aprobacion.criterio_id}-${aprobacion.proceso_id}`;
+          approvalsMap.set(key, aprobacion.estado as ApprovalStatus);
+        });
+
+        const criteriaWithStatus = criteriaArray.map((c: any) => {
+          const key = `${c.id}-${selectedProcesoId}`;
+          const approvalStatus = approvalsMap.get(key) ?? "pendiente";
+          return { ...c, estado_aprobacion: approvalStatus as ApprovalStatus };
+        });
+
+        const approvedCriteria = criteriaWithStatus.filter(
+          (c: Criterio) => c.estado_aprobacion === "aprobado",
+        );
+
+        setDataState((prev) => ({
+          ...prev,
+          processes: processesArray,
+          criteria: approvedCriteria,
+          evidences: evidencesArray,
+        }));
+      }
     } catch (error: any) {
       console.error("Error:", error);
       showToast({
@@ -160,33 +218,42 @@ const FinalReports: React.FC = () => {
     return evidences.filter((ev) => ev.criterio_id === criterioId);
   };
 
-  const loadEvidenceFiles = async (evidenciaId: number) => {
-    if (loadingFiles.has(evidenciaId)) return;
+  const loadFiles = async (nodeId: number) => {
+    if (loadingFiles.has(nodeId)) return;
 
     setUiState((prev) => ({
       ...prev,
-      loadingFiles: new Set(prev.loadingFiles).add(evidenciaId),
+      loadingFiles: new Set(prev.loadingFiles).add(nodeId),
     }));
 
     try {
-      const response = await axiosInstance.get(
-        `/archivos?evidencia_id=${evidenciaId}`,
-      );
+      const param = isFlexible
+        ? `elemento_id=${nodeId}`
+        : `evidencia_id=${nodeId}`;
+      const response = await axiosInstance.get(`/archivos?${param}`);
       const archivos = response.data.data || response.data;
 
-      // Update evidences with loaded files
-      setDataState((prev) => ({
-        ...prev,
-        evidences: prev.evidences.map((ev) =>
-          ev.id === evidenciaId ? { ...ev, archivos } : ev,
-        ),
-      }));
+      if (isFlexible) {
+        setDataState((prev) => ({
+          ...prev,
+          criteria: prev.criteria.map((c) =>
+            c.id === nodeId ? { ...c, archivos } : c,
+          ),
+        }));
+      } else {
+        setDataState((prev) => ({
+          ...prev,
+          evidences: prev.evidences.map((ev) =>
+            ev.id === nodeId ? { ...ev, archivos } : ev,
+          ),
+        }));
+      }
     } catch (error) {
       console.error("Error cargando archivos:", error);
     } finally {
       setUiState((prev) => {
         const newSet = new Set(prev.loadingFiles);
-        newSet.delete(evidenciaId);
+        newSet.delete(nodeId);
         return { ...prev, loadingFiles: newSet };
       });
     }
@@ -230,9 +297,8 @@ const FinalReports: React.FC = () => {
   };
 
   const handleEnlaceGenerado = async () => {
-    // Recargar los archivos de la evidencia seleccionada
     if (selectedEvidencia) {
-      await loadEvidenceFiles(selectedEvidencia.id);
+      await loadFiles(selectedEvidencia.id);
     }
     setPublicLinkModal({ open: false, archivo: null, evidencia: null });
   };
@@ -253,15 +319,23 @@ const FinalReports: React.FC = () => {
       // Collect all files from all evidences
       const todosLosArchivos: number[] = [];
 
-      for (const criterio of criteria) {
-        const evidenciasCriterio = getEvidenciasPorCriterio(criterio.id);
-        for (const evidencia of evidenciasCriterio) {
-          if (evidencia.archivos) {
-            evidencia.archivos.forEach((archivo) => {
-              if (!archivo.is_publico) {
-                todosLosArchivos.push(archivo.archivo_id);
-              }
-            });
+      if (isFlexible) {
+        for (const elemento of criteria) {
+          (elemento.archivos ?? []).forEach((archivo) => {
+            if (!archivo.is_publico) todosLosArchivos.push(archivo.archivo_id);
+          });
+        }
+      } else {
+        for (const criterio of criteria) {
+          const evidenciasCriterio = getEvidenciasPorCriterio(criterio.id);
+          for (const evidencia of evidenciasCriterio) {
+            if (evidencia.archivos) {
+              evidencia.archivos.forEach((archivo) => {
+                if (!archivo.is_publico) {
+                  todosLosArchivos.push(archivo.archivo_id);
+                }
+              });
+            }
           }
         }
       }
@@ -283,13 +357,15 @@ const FinalReports: React.FC = () => {
         title: `Se generaron ${todosLosArchivos.length} enlaces públicos exitosamente`,
       });
 
-      // Reload all evidences that have been previously loaded
-      const evidencesWithFiles = evidences.filter(
-        (ev) => ev.archivos !== undefined,
-      );
-      await Promise.all(
-        evidencesWithFiles.map((ev) => loadEvidenceFiles(ev.id)),
-      );
+      if (isFlexible) {
+        const loadedElements = criteria.filter((c) => c.archivos !== undefined);
+        await Promise.all(loadedElements.map((c) => loadFiles(c.id)));
+      } else {
+        const evidencesWithFiles = evidences.filter(
+          (ev) => ev.archivos !== undefined,
+        );
+        await Promise.all(evidencesWithFiles.map((ev) => loadFiles(ev.id)));
+      }
     } catch (error: any) {
       console.error("Error generando enlaces masivos:", error);
       showToast({
@@ -303,6 +379,18 @@ const FinalReports: React.FC = () => {
   };
 
   const buildReportRows = () => {
+    if (isFlexible) {
+      return criteria.flatMap((elemento) =>
+        (elemento.archivos ?? []).map((archivo) => ({
+          criterio: `${elemento.nomenclatura} — ${elemento.descripcion}`,
+          evidencia: archivo.nombre_original,
+          link:
+            archivo.is_publico && archivo.token_publico
+              ? `${window.location.origin}/api/p/${archivo.token_publico}`
+              : "Sin enlace",
+        })),
+      );
+    }
     return criteria.flatMap((criterio) => {
       const evidenciasCriterio = getEvidenciasPorCriterio(criterio.id);
       return evidenciasCriterio.map((evidencia) => ({
@@ -317,7 +405,9 @@ const FinalReports: React.FC = () => {
     rows: Array<{ criterio: string; evidencia: string; link: string }>,
   ) => {
     const escapeCsv = (value: string) => `"${value.replace(/"/g, '""')}"`;
-    const header = ["Criterio", "Evidencia", "Enlace"].map(escapeCsv).join(",");
+    const header = [isFlexible ? "Elemento" : "Criterio", isFlexible ? "Archivo" : "Evidencia", "Enlace"]
+      .map(escapeCsv)
+      .join(",");
     const lines = rows.map((row) =>
       [row.criterio, row.evidencia, row.link].map(escapeCsv).join(","),
     );
@@ -349,8 +439,8 @@ const FinalReports: React.FC = () => {
         Generado: new Date().toLocaleString(),
       },
       columns: [
-        { header: "Criterio", key: "criterio" },
-        { header: "Evidencia", key: "evidencia" },
+        { header: isFlexible ? "Elemento" : "Criterio", key: "criterio" },
+        { header: isFlexible ? "Archivo" : "Evidencia", key: "evidencia" },
         { header: "Enlace", key: "link" },
       ],
       data: rows,
@@ -476,10 +566,14 @@ const FinalReports: React.FC = () => {
                   <div className="flex flex-col items-center">
                     <SystemIcons.modal.document className="h-24 w-24 text-gris-una mb-4" />
                     <p className="text-sm font-medium text-negro-una mb-1">
-                      No hay criterios aprobados
+                      {isFlexible
+                        ? "No hay elementos aprobados"
+                        : "No hay criterios aprobados"}
                     </p>
                     <p className="text-sm text-gris-una">
-                      No se encontraron criterios aprobados para este proceso
+                      {isFlexible
+                        ? "No se encontraron elementos aprobados para este proceso"
+                        : "No se encontraron criterios aprobados para este proceso"}
                     </p>
                   </div>
                 </div>
@@ -487,8 +581,9 @@ const FinalReports: React.FC = () => {
                 <FinalReportsTable
                   criteria={criteria}
                   evidences={evidences}
+                  isFlexible={isFlexible}
                   loadingFiles={loadingFiles}
-                  onLoadFile={loadEvidenceFiles}
+                  onLoadFile={loadFiles}
                   onOpenLink={handleAbrirEnlaceEvidencia}
                   onViewDetail={(criterio) => setDetailModal({ open: true, criterio })}
                 />
