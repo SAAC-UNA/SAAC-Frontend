@@ -151,6 +151,7 @@ export interface FlexibleAssignmentItem extends Record<string, unknown> {
   created_at: string;
   updated_at: string;
   has_pending_extension_request?: boolean;
+  has_uploaded_files?: boolean;
   element?: {
     elemento_id: number;
     nombre: string;
@@ -167,4 +168,10 @@ export interface FlexibleAssignmentItem extends Record<string, unknown> {
     usuario_id: number;
     nombre: string;
   };
+  comments?: Array<{
+    id: number;
+    texto: string;
+    autor: string;
+    fecha: string;
+  }>;
 }

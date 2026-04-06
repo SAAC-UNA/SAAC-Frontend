@@ -21,6 +21,7 @@ import type {
   FlexibleAssignmentItem
 } from '@/Types/EvidenceAssignment';
 import type { FlexibleElement } from '@/Types/StructureModelTypes';
+import type { FileModel } from '@/Types/FileTypes';
 import { devLog } from '@/Utils/devLogger';
 
 export interface AssignmentCatalogRole {
@@ -461,6 +462,116 @@ class EvidenceAssignmentService {
         error.message ||
         'Error al enviar la solicitud de ampliación'
       );
+    }
+  }
+
+  /**
+   * Obtiene el detalle completo de una asignación de elemento (con comentarios).
+   * GET /api/elementos-asignaciones/{id}
+   */
+  async getElementAssignmentById(id: number): Promise<FlexibleAssignmentItem> {
+    try {
+      const response = await axiosInstance.get<{ data: FlexibleAssignmentItem }>(
+        `/elementos-asignaciones/${id}`
+      );
+      return response.data.data;
+    } catch (error: any) {
+      throw new Error(
+        error.response?.data?.message ||
+        error.message ||
+        'Error al obtener el detalle de la asignación'
+      );
+    }
+  }
+
+  /**
+   * Lista los archivos de un elemento para un proceso.
+   * GET /api/elementos-archivos?elemento_id={id}&proceso_id={id}
+   */
+  async getElementFiles(elementoId: number, procesoId: number): Promise<FileModel[]> {
+    try {
+      const response = await axiosInstance.get<{ data: FileModel[]; count: number }>(
+        `/elementos-archivos`,
+        { params: { elemento_id: elementoId, proceso_id: procesoId } }
+      );
+      return response.data.data || [];
+    } catch (error: any) {
+      if (error.response?.status === 404) return [];
+      throw new Error(error.response?.data?.message || error.message || 'Error al obtener archivos');
+    }
+  }
+
+  /**
+   * Sube archivos a un elemento (modelo flexible).
+   * POST /api/elementos-archivos
+   */
+  async uploadElementFiles(
+    files: File[],
+    elementoId: number,
+    procesoId: number
+  ): Promise<{ successful: FileModel[]; failed: Array<{ file: File; error: string }> }> {
+    const formData = new FormData();
+    formData.append('tipo', 'archivo');
+    files.forEach(f => formData.append('archivos[]', f));
+    formData.append('elemento_id', elementoId.toString());
+    formData.append('proceso_id', procesoId.toString());
+    try {
+      const response = await axiosInstance.post<{ data: FileModel[]; errores?: Array<{ indice: number; error: string }> }>(
+        '/elementos-archivos', formData,
+        { headers: { 'Content-Type': 'multipart/form-data' } }
+      );
+      const successful = response.data.data || [];
+      const failed: Array<{ file: File; error: string }> = (response.data.errores || []).map(e => ({
+        file: files[e.indice],
+        error: e.error,
+      }));
+      return { successful, failed };
+    } catch (error: any) {
+      const msg = error.response?.data?.message || error.message || 'Error al subir archivos';
+      return { successful: [], failed: files.map(f => ({ file: f, error: msg })) };
+    }
+  }
+
+  /**
+   * Guarda enlaces asociados a un elemento (modelo flexible).
+   * POST /api/elementos-archivos
+   */
+  async uploadElementLinks(
+    links: string[],
+    elementoId: number,
+    procesoId: number
+  ): Promise<{ successful: FileModel[]; failed: Array<{ url: string; error: string }> }> {
+    const formData = new FormData();
+    formData.append('tipo', 'enlace');
+    links.forEach(l => formData.append('enlaces[]', l.trim()));
+    formData.append('elemento_id', elementoId.toString());
+    formData.append('proceso_id', procesoId.toString());
+    try {
+      const response = await axiosInstance.post<{ data: FileModel[]; errores?: Array<{ indice: number; error: string }> }>(
+        '/elementos-archivos', formData,
+        { headers: { 'Content-Type': 'multipart/form-data' } }
+      );
+      const successful = response.data.data || [];
+      const failed: Array<{ url: string; error: string }> = (response.data.errores || []).map(e => ({
+        url: links[e.indice],
+        error: e.error,
+      }));
+      return { successful, failed };
+    } catch (error: any) {
+      const msg = error.response?.data?.message || error.message || 'Error al guardar enlaces';
+      return { successful: [], failed: links.map(url => ({ url, error: msg })) };
+    }
+  }
+
+  /**
+   * Elimina un archivo de un elemento (modelo flexible).
+   * DELETE /api/elementos-archivos/{id}
+   */
+  async deleteElementFile(archivoId: number): Promise<void> {
+    try {
+      await axiosInstance.delete(`/elementos-archivos/${archivoId}`);
+    } catch (error: any) {
+      throw new Error(error.response?.data?.message || error.message || 'Error al eliminar el archivo');
     }
   }
 

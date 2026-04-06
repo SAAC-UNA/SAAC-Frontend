@@ -25,6 +25,7 @@ interface ElementAssignmentsTableProps {
   loading?: boolean;
   hasFilters?: boolean;
   onViewDetails: (assignment: FlexibleAssignmentItem) => void;
+  onUploadFiles: (assignment: FlexibleAssignmentItem) => void;
   onStatusChange?: (
     assignment: FlexibleAssignmentItem,
     newStatus: 'En Progreso' | 'Completado'
@@ -43,6 +44,7 @@ export const ElementAssignmentsTable: React.FC<ElementAssignmentsTableProps> = (
   loading = false,
   hasFilters = false,
   onViewDetails,
+  onUploadFiles,
   onStatusChange,
   onRequestExtension,
   allElements,
@@ -143,10 +145,17 @@ export const ElementAssignmentsTable: React.FC<ElementAssignmentsTableProps> = (
           const isActionable = ['Pendiente', 'En Progreso'].includes(assignment.estado);
           const hasPending = assignment.has_pending_extension_request === true;
           const canExtend = !hasPending && isActionable;
+          const canMarkCompleted = assignment.has_uploaded_files === true;
 
           let extensionTooltip = 'Solicitar ampliación';
           if (hasPending) extensionTooltip = 'Ya hay una solicitud pendiente';
           else if (!isActionable) extensionTooltip = 'No se puede solicitar ampliación';
+
+          const completeTooltip = isCompleted
+            ? 'Revertir a en progreso'
+            : canMarkCompleted
+              ? 'Marcar completado'
+              : 'Debe subir al menos un archivo o enlace';
 
           return (
             <div className="flex items-center justify-center gap-2 pr-2">
@@ -156,15 +165,11 @@ export const ElementAssignmentsTable: React.FC<ElementAssignmentsTableProps> = (
                 onClick={() => onViewDetails(assignment)}
               />
 
-              {onStatusChange && isActionable && (
-                <TableActionButton
-                  action={isCompleted ? 'markInProgress' : 'markComplete'}
-                  tooltip={isCompleted ? 'Revertir a en progreso' : 'Marcar completado'}
-                  onClick={() =>
-                    onStatusChange(assignment, isCompleted ? 'En Progreso' : 'Completado')
-                  }
-                />
-              )}
+              <TableActionButton
+                action="uploadArrow"
+                tooltip="Subir archivos"
+                onClick={() => onUploadFiles(assignment)}
+              />
 
               {onRequestExtension && (
                 <TableActionButton
@@ -174,12 +179,23 @@ export const ElementAssignmentsTable: React.FC<ElementAssignmentsTableProps> = (
                   disabled={!canExtend}
                 />
               )}
+
+              {onStatusChange && (isActionable || isCompleted) && (
+                <TableActionButton
+                  action={isCompleted ? 'markInProgress' : 'markComplete'}
+                  tooltip={completeTooltip}
+                  disabled={!isCompleted && !canMarkCompleted}
+                  onClick={() =>
+                    onStatusChange(assignment, isCompleted ? 'En Progreso' : 'Completado')
+                  }
+                />
+              )}
             </div>
           );
         },
       },
     ],
-    [firstColumn, onViewDetails, onStatusChange, onRequestExtension]
+    [firstColumn, onViewDetails, onUploadFiles, onStatusChange, onRequestExtension]
   );
 
   return (
