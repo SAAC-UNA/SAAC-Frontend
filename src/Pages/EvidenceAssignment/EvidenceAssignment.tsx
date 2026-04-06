@@ -17,10 +17,11 @@ import {
   type AssignmentCatalogUser,
 } from "@/Services/EvidenceAssignmentService";
 import type { MultiSelectOption } from "@/Components/Ui/Forms/MultiSelect";
-import { useFirstColumnConfig } from "@/Hooks/UseFirstColumnConfig";
 import type { UserAvatarsUser } from "@/Components/Ui/UserAvatars/UserAvatars";
 import type { DataTableColumn } from "@/Components/Ui/Index";
+import { Tooltip, TooltipTrigger, TooltipContent } from "@/Components/Ui/Feedback/Tooltip";
 import { TYPOGRAPHY } from "@/Constants/Typography";
+import { TABLE_COLUMN_WIDTHS } from "@/Constants/Components";
 import { formatDateShort } from "@/Utils/DateUtils";
 
 import { EvidenceAssignmentView } from "./Components/EvidenceAssignmentView";
@@ -74,6 +75,7 @@ export interface EvidenceAssignmentViewProps {
   activeDuplicateRows: DuplicateGroupRow[];
   completedDuplicateRows: DuplicateGroupRow[];
   evidenceById: Record<number, Evidence>;
+  criterionById: Record<number, Criterion>;
   excludedCompletedPairs: Array<{ usuario_id: number; evidencia_id: number }>;
   toggleCompletedPair: (usuario_id: number, evidencia_id: number) => void;
   toggleAllCompletedPairsForUser: (evidences: DuplicateAssignment[]) => void;
@@ -92,8 +94,8 @@ export interface EvidenceAssignmentViewProps {
   selectedAvatars: UserAvatarsUser[];
   // Modo flexible
   isFlexible: boolean;
-  elementOptions: MultiSelectOption[];
   flexElements: FlexibleElement[];
+  flexElementsLoading: boolean;
 }
 
 // ---------------------------------------------------------------------------
@@ -121,6 +123,7 @@ const EvidenceAssignment: React.FC = () => {
   // ── Tipo de modelo del proceso seleccionado ──────────────────────────────
   const [processes, setProcesses] = useState<Process[]>([]);
   const [flexElements, setFlexElements] = useState<FlexibleElement[]>([]);
+  const [flexElementsLoading, setFlexElementsLoading] = useState(false);
 
   const selectedProcess = useMemo(
     () => processes.find((p) => p.proceso_id === formData.proceso_id) ?? null,
@@ -229,12 +232,14 @@ const EvidenceAssignment: React.FC = () => {
   useEffect(() => {
     if (!isFlexible || !selectedProcess?.modelo_estructura_id) {
       setFlexElements([]);
+      setFlexElementsLoading(false);
       return;
     }
+    setFlexElementsLoading(true);
     evidenceAssignmentService
       .getElementsByModel(selectedProcess.modelo_estructura_id)
-      .then(setFlexElements)
-      .catch(() => setFlexElements([]));
+      .then((els) => { setFlexElements(els); setFlexElementsLoading(false); })
+      .catch(() => { setFlexElements([]); setFlexElementsLoading(false); });
   }, [isFlexible, selectedProcess?.modelo_estructura_id]);
 
   // ── Duplicados ───────────────────────────────────────────────────────────
@@ -302,21 +307,6 @@ const EvidenceAssignment: React.FC = () => {
     })), [criteriaState.criteria]
   );
 
-  // Elementos del modelo flexible: solo hojas (sin hijos) para poder asignarlos
-  const elementOptions = useMemo<MultiSelectOption[]>(() => {
-    const parentIds = new Set(
-      flexElements.filter((e) => e.padre_id !== null).map((e) => e.padre_id as number)
-    );
-    return flexElements
-      .filter((e) => !parentIds.has(e.elemento_id) && e.activo)
-      .map((e) => ({
-        value: e.elemento_id.toString(),
-        label: e.nomenclatura
-          ? `${e.nomenclatura} — ${e.descripcion ?? e.tipo}`
-          : e.descripcion ?? e.tipo,
-      }));
-  }, [flexElements]);
-
   const criterionById = useMemo(() =>
     criteriaState.criteria.reduce<Record<number, Criterion>>((acc, c) => {
       acc[c.criterio_id] = c;
@@ -376,8 +366,7 @@ const EvidenceAssignment: React.FC = () => {
     return [...userAvatars, ...roleAvatars];
   }, [formData.selectedUsers, formData.selectedRoles, catalogState.availableUsers, catalogState.availableRoles]);
 
-  const firstColumn = useFirstColumnConfig();
-
+  
   const assignmentTableRows = useMemo<AssignmentTableRow[]>(() => {
     if (isFlexible) {
       return formData.selectedElements.map((id) => {
@@ -396,11 +385,15 @@ const EvidenceAssignment: React.FC = () => {
     }
     return formData.selectedEvidences.map((id) => {
       const ev = evidenceById[id];
+      const criterion = ev ? criterionById[ev.criterio_id] : null;
+      const path = criterion
+        ? `${criterion.nomenclatura} > ${ev!.nomenclatura} — ${ev!.descripcion}`
+        : ev ? `${ev.nomenclatura} — ${ev.descripcion}` : '—';
       return {
         id: id.toString(),
         evidencia_id: id,
         nomenclatura: ev?.nomenclatura ?? "—",
-        descripcion: ev?.descripcion ?? "—",
+        descripcion: path,
         destinatarios: "—",
         fecha_limite: formData.fecha_limite ?? "",
         comentario: formData.comentario ?? "",
@@ -411,23 +404,47 @@ const EvidenceAssignment: React.FC = () => {
   const assignmentColumns = useMemo<DataTableColumn<AssignmentTableRow>[]>(() => [
     {
       key: "evidencia",
-      header: "Evidencia",
-      width: firstColumn.width,
-      render: (_val: unknown, row: AssignmentTableRow) => (
-        <div className={`${TYPOGRAPHY.table.cell} text-negro-una`}>
-          <span className="font-semibold">{row.nomenclatura as string}</span>
-          <span className="text-gris-una mx-1.5">—</span>
-          <span className="text-negro-una font-semibold">{row.descripcion as string}</span>
-        </div>
-      ),
+      header: isFlexible ? "Elemento" : "Evidencia",
+      align: "left" as const,
+      render: (_val: unknown, row: AssignmentTableRow) => {
+        const displayText = row.descripcion as string;
+        const comentario = row.comentario as string;
+        return (
+          <div className="min-w-0">
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <span className={`${TYPOGRAPHY.table.cell} font-semibold truncate block cursor-default text-negro-una`} title="">
+                  {displayText}
+                </span>
+              </TooltipTrigger>
+              <TooltipContent side="top" align="start" className="whitespace-normal max-w-xs">
+                {displayText}
+              </TooltipContent>
+            </Tooltip>
+            {comentario && (
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <span className={`${TYPOGRAPHY.table.helper} truncate block cursor-default text-gris-una mt-0.5`} title="">
+                    {comentario}
+                  </span>
+                </TooltipTrigger>
+                <TooltipContent side="top" align="start" className="whitespace-normal max-w-xs">
+                  {comentario}
+                </TooltipContent>
+              </Tooltip>
+            )}
+          </div>
+        );
+      },
     },
     {
       key: "destinatarios",
       header: "Destinatarios",
-      align: "center" as const,
+      align: "left" as const,
+      width: TABLE_COLUMN_WIDTHS.status,
       render: () =>
         selectedAvatars.length > 0 ? (
-          <div className="flex justify-center">
+          <div className="flex justify-start">
             {/* UserAvatars se renderiza en la vista */}
             <span data-avatars={JSON.stringify(selectedAvatars)} />
           </div>
@@ -438,7 +455,8 @@ const EvidenceAssignment: React.FC = () => {
     {
       key: "fecha",
       header: "Fecha límite",
-      align: "center" as const,
+      align: "left" as const,
+      width: TABLE_COLUMN_WIDTHS.status,
       render: (_val: unknown, row: AssignmentTableRow) => {
         const fecha = row.fecha_limite as string;
         return fecha
@@ -446,18 +464,7 @@ const EvidenceAssignment: React.FC = () => {
           : <span className={`${TYPOGRAPHY.table.cell} text-gris-una/50`}>—</span>;
       },
     },
-    {
-      key: "comentario",
-      header: "Comentario",
-      align: "center" as const,
-      render: (_val: unknown, row: AssignmentTableRow) => {
-        const comentario = row.comentario as string;
-        return comentario
-          ? <p className={`${TYPOGRAPHY.table.cell} text-gris-una truncate max-w-xs`} title={comentario}>{comentario}</p>
-          : <span className={`${TYPOGRAPHY.table.cell} text-gris-una/50`}>—</span>;
-      },
-    },
-  ], [selectedAvatars, firstColumn.width, TYPOGRAPHY]);
+  ], [isFlexible, selectedAvatars, TYPOGRAPHY]);
 
   // ── Duplicados agrupados ─────────────────────────────────────────────────
   const activeDuplicates = duplicatesState.duplicates.filter((d) => d.estado !== "completado");
@@ -654,6 +661,7 @@ const EvidenceAssignment: React.FC = () => {
     activeDuplicateRows,
     completedDuplicateRows,
     evidenceById,
+    criterionById,
     excludedCompletedPairs,
     toggleCompletedPair,
     toggleAllCompletedPairsForUser,
@@ -669,8 +677,8 @@ const EvidenceAssignment: React.FC = () => {
     criteriaEvidences: criteriaState.evidences,
     selectedAvatars,
     isFlexible,
-    elementOptions,
     flexElements,
+    flexElementsLoading,
   };
 
   return <EvidenceAssignmentView {...viewProps} />;

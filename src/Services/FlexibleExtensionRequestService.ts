@@ -75,6 +75,25 @@ class FlexibleExtensionRequestService {
   }
 
   /**
+   * Obtener mis solicitudes de ampliación (usuario autenticado)
+   * GET /api/elemento-solicitudes-ampliacion/mis-solicitudes
+   */
+  async getMyRequests(filters?: ExtensionRequestFilters): Promise<ExtensionRequestPaginatedResponse> {
+    try {
+      const response = await axiosInstance.get<ExtensionRequestPaginatedResponse>(
+        `${this.BASE_PATH}/mis-solicitudes`,
+        { params: filters },
+      );
+      return response.data;
+    } catch (error: any) {
+      devLog.error('FlexibleExtensionRequestService - Error al obtener mis solicitudes', error);
+      throw new Error(
+        error.response?.data?.message ?? 'Error al obtener las solicitudes',
+      );
+    }
+  }
+
+  /**
    * Rechazar una solicitud (solo encargados)
    * POST /api/elemento-solicitudes-ampliacion/{id}/rechazar
    */

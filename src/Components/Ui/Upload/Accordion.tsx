@@ -78,7 +78,7 @@ const EvidenciaRow: React.FC<EvidenciaRowProps> = ({ ev, isExpanded, onToggle })
   >
     <SystemIcons.interface.chevronDown
       className={cn(
-        `text-gris-una transition-transform duration-200 flex-shrink-0 ${ICON_SIZES.sm}`,
+        `text-gris-una transition-transform duration-200 shrink-0 ${ICON_SIZES.sm}`,
         isExpanded && 'rotate-180'
       )}
     />

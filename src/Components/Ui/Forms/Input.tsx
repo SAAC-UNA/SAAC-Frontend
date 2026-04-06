@@ -146,7 +146,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(({
         {/* Error message */}
         {error && (
           <p className={`text-rojo-una-2 ${TYPOGRAPHY.form.helper} flex items-center gap-2`}>
-            <SystemIcons.interface.alert className="w-4 h-4 flex-shrink-0 text-rojo-una-2" size="sm" />
+            <SystemIcons.interface.alert className="w-4 h-4 shrink-0 text-rojo-una-2" size="sm" />
             {error}
           </p>
         )}
@@ -201,7 +201,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(({
       {/* Error message */}
       {error && (
         <p className={`text-rojo-una-2 ${TYPOGRAPHY.form.helper} flex items-center gap-2`}>
-          <SystemIcons.interface.alert className="w-4 h-4 flex-shrink-0 text-rojo-una-2" size="sm" />
+          <SystemIcons.interface.alert className="w-4 h-4 shrink-0 text-rojo-una-2" size="sm" />
           {error}
         </p>
       )}

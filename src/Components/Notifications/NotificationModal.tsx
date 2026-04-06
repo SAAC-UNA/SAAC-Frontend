@@ -12,10 +12,16 @@
 import React, { useMemo, useState } from "react";
 import { Modal } from "@/Components/Ui/Modals/Modal";
 import { Button, LoadingSpinner } from "@/Components/Ui/Index";
+import { Alert } from "@/Components/Ui/Feedback/Alert";
+import { EmptyState } from "@/Components/Ui/Feedback/EmptyState";
 import { SystemIcons } from "@/Components/Ui/Icons/SystemIcons";
+import { Tooltip, TooltipTrigger, TooltipContent } from "@/Components/Ui/Feedback/Tooltip";
 import { NotificationCard } from "@/Components/Notifications/NotificationCard";
 import { NotificationFiltersComponent } from "@/Components/Notifications/NotificationFilters";
 import { useNotifications } from "@/Hooks/useNotifications";
+import { cn } from "@/Utils/ClassNames";
+import { TYPOGRAPHY } from "@/Constants/Typography";
+import { ICON_SIZES } from "@/Constants/Components";
 import type { NotificationFilters } from "@/Types/NotificationTypes";
 import { format, isToday, isYesterday } from "date-fns";
 import { es } from "date-fns/locale";
@@ -36,7 +42,6 @@ const NotificationCenter: React.FC<NotificationCenterModalProps> = ({
     error,
     fetchNotifications,
     markAsRead,
-    markAllAsRead,
     deleteNotification,
     refreshNotifications,
   } = useNotifications({
@@ -45,7 +50,6 @@ const NotificationCenter: React.FC<NotificationCenterModalProps> = ({
   });
 
   const [currentFilters, setCurrentFilters] = useState<NotificationFilters>({});
-  const [isMarkingAll, setIsMarkingAll] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
 
   const filteredNotifications = useMemo(() => {
@@ -84,17 +88,6 @@ const NotificationCenter: React.FC<NotificationCenterModalProps> = ({
     fetchNotifications(filters);
   };
 
-  // Marcar todas como leídas
-  const handleMarkAllAsRead = async () => {
-    try {
-      setIsMarkingAll(true);
-      await markAllAsRead();
-    } catch (error) {
-      console.error("Error al marcar todas como leídas:", error);
-    } finally {
-      setIsMarkingAll(false);
-    }
-  };
 
   // Marcar una como leída
   const handleMarkAsRead = async (id: number) => {
@@ -125,9 +118,9 @@ const NotificationCenter: React.FC<NotificationCenterModalProps> = ({
       onClose={onClose}
       title="Centro de Notificaciones"
       subtitle="Gestione y filtre sus notificaciones"
-      size="xl"
+      size="lg"
       maxHeight="xl"
-      variant="info"
+      variant="neutral"
       heroIcon={
         <SystemIcons.interface.bell className="h-5 w-5 text-blanco-una" />
       }
@@ -135,113 +128,89 @@ const NotificationCenter: React.FC<NotificationCenterModalProps> = ({
       cancelLabel="Cerrar"
     >
       <div className="space-y-4">
-        {/* Contador */}
-        <div className="text-sm text-gray-600 pb-2 border-b border-gray-200">
-          <span className="font-semibold text-gray-900">
-            {filteredNotifications.length}
-          </span>{" "}
-          notificaciones
-          {unreadCount > 0 && (
-            <>
-              {" • "}
-              <span className="font-semibold text-blue-600">
-                {unreadCount}
-              </span>{" "}
-              sin leer
-            </>
-          )}
-        </div>
+        {/* Contador + Filtros + Acciones en una sola línea */}
+        <div className="flex items-center gap-3">
+          {/* Contador */}
+          <span className={cn(TYPOGRAPHY.form.helper, "text-gris-una shrink-0")}>
+            {filteredNotifications.length} notificaciones
+            {unreadCount > 0 && (
+              <>
+                {" • "}
+                <span className="text-azul-una-2">{unreadCount} sin leer</span>
+              </>
+            )}
+          </span>
 
-        {/* Filtros y Acciones */}
-        <div className="flex items-end gap-3">
-          {/* Filtros a la izquierda */}
-          <div className="flex-1">
+          {/* Spacer */}
+          <div className="flex-1" />
+
+          {/* Filtros + Acciones a la derecha */}
+          <div className="flex items-center gap-2">
             <NotificationFiltersComponent
               onFilterChange={handleFilterChange}
               initialFilters={currentFilters}
               onSearchChange={setSearchQuery}
             />
-          </div>
 
-          {/* Botones a la derecha */}
-          <div className="flex gap-2 pb-1">
-            <Button
-              variant="secondary"
-              size="sm"
-              onClick={() => refreshNotifications()}
-              disabled={isLoading}
-            >
-              Actualizar
-            </Button>
-
-            {Object.keys(currentFilters).length > 0 && (
-              <Button
-                variant="secondary"
-                size="sm"
-                onClick={() => handleFilterChange({})}
-              >
-                Limpiar
-              </Button>
-            )}
-
-            {unreadCount > 0 && (
-              <Button
-                variant="primary"
-                size="sm"
-                onClick={handleMarkAllAsRead}
-                disabled={isMarkingAll}
-              >
-                {isMarkingAll ? "Marcando..." : "Marcar todas leídas"}
-              </Button>
-            )}
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="none"
+                  onClick={() => refreshNotifications()}
+                  disabled={isLoading}
+                  className="p-1.5 rounded-corner-sm text-gris-una hover:text-negro-una hover:bg-gris-light"
+                  aria-label="Actualizar notificaciones"
+                >
+                  <SystemIcons.interface.refresh className={ICON_SIZES.sm} />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>Actualizar</TooltipContent>
+            </Tooltip>
           </div>
         </div>
 
         {/* Contenido con scroll */}
-        <div className="max-h-[52vh] min-h-[260px] overflow-y-auto pr-2">
+        <div className="max-h-[52vh] min-h-65 overflow-y-auto divide-y divide-gris-light">
           {isLoading && notifications.length === 0 ? (
-            <div className="relative py-12 min-h-[400px]">
+            <div className="relative py-12 min-h-100">
               <LoadingSpinner variant="loader" />
             </div>
           ) : error ? (
-            <div className="bg-red-50 border border-red-200 rounded-lg p-6 text-center">
-              <SystemIcons.interface.alert className="mx-auto h-12 w-12 text-red-400 mb-2" />
-              <p className="text-red-800 font-medium">
-                Error al cargar notificaciones
-              </p>
-              <p className="text-red-600 text-sm mt-1">{error}</p>
-              <Button
-                variant="secondary"
-                size="sm"
-                onClick={() => refreshNotifications()}
-                className="mt-4"
-              >
-                Reintentar
-              </Button>
-            </div>
+            <Alert
+              variant="error"
+              title="Error al cargar notificaciones"
+              message={error}
+              dismissible={false}
+              action={{
+                label: "Reintentar",
+                onClick: () => refreshNotifications(),
+              }}
+            />
           ) : filteredNotifications.length === 0 ? (
-            <div className="bg-gray-50 rounded-lg p-8 h-full">
-              <div className="min-h-[340px] h-full flex flex-col items-center justify-center text-center pt-6">
-                <SystemIcons.interface.bell className="h-12 w-12 text-gray-300" />
-                <h3 className="mt-2 text-sm font-medium text-gray-900">
-                  No hay notificaciones
-                </h3>
-                <p className="mt-1 text-sm text-gray-500">
-                  {Object.keys(currentFilters).length > 0 || searchQuery
-                    ? "No se encontraron notificaciones con los filtros aplicados."
-                    : "No tienes notificaciones en este momento."}
-                </p>
-              </div>
-            </div>
+            <EmptyState
+              variant="search"
+              icon={<SystemIcons.interface.bell className="w-12 h-12 text-gris-una/40" />}
+              title="No hay notificaciones"
+              description={
+                Object.keys(currentFilters).length > 0 || searchQuery
+                  ? "No se encontraron notificaciones con los filtros aplicados."
+                  : "No tienes notificaciones en este momento."
+              }
+            />
           ) : (
-            <div className="space-y-6">
+            <div>
               {groupedNotifications.map(([label, items]) => (
-                <div key={label} className="space-y-3">
-                  <div className="text-xs uppercase tracking-wide text-gris-una font-semibold">
-                    {label}
+                <div key={label}>
+                  {/* Separador con fecha a la derecha */}
+                  <div className="flex items-center gap-3 px-4 py-1.5">
+                    <div className="flex-1 h-px bg-gris-light" />
+                    <span className={cn(TYPOGRAPHY.badge, "text-gris-una uppercase tracking-wide shrink-0")}>
+                      {label}
+                    </span>
                   </div>
-                  <div className="space-y-3">
-                    {items.map((notification) => (
+                  <div className="divide-y divide-gris-light">
+                    {items.map((notification, index) => (
                       <NotificationCard
                         key={notification.notificacion_id}
                         notification={notification}
@@ -249,6 +218,7 @@ const NotificationCenter: React.FC<NotificationCenterModalProps> = ({
                         onDelete={handleDelete}
                         compact={false}
                         onNavigate={onClose}
+                        index={index}
                       />
                     ))}
                   </div>

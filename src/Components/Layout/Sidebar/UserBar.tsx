@@ -17,7 +17,7 @@ import { APP_HEADER_BUTTON } from "@/Constants/Components";
 import { buttonVariants } from "@/Components/Ui/Buttons/Button";
 import { DROPDOWN_VARIANTS, SPRING_SIDEBAR } from "@/Constants/Animations";
 import { NotificationDropdown } from "@/Components/Notifications/NotificationDropdown";
-import NotificationCenter from "@/Pages/Notifications/NotificationCenter";
+import NotificationCenter from "@/Components/Notifications/NotificationModal";
 import { Tooltip, TooltipTrigger, TooltipContent } from "@/Components/Ui/Feedback/Tooltip";
 import { TYPOGRAPHY } from "@/Constants/Typography";
 

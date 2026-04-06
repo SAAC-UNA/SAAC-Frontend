@@ -118,7 +118,7 @@ export const ExpandableChildRow: React.FC<{ item: ExpandableChildItem; depth?: n
             initial={false}
             animate={{ rotate: open ? 180 : 0 }}
             transition={{ type: 'spring', damping: 25, stiffness: 300, mass: 0.8 }}
-            className="flex-shrink-0"
+            className="shrink-0"
             onClick={e => { e.stopPropagation(); setOpen(v => !v); }}
           >
             <SystemIcons.interface.chevronDown className={`text-gris-una ${ICON_SIZES.sm}`} />
@@ -269,7 +269,7 @@ export const DataTable = React.memo(<T extends Record<string, unknown>>({
       {/* Tabla */}
       <div className="pt-0 pb-1 px-0 overflow-x-auto lg:overflow-x-visible custom-scrollbar">
         {loading ? (
-          <div className="relative min-h-[200px]">
+          <div className="relative min-h-50">
             <LoadingSpinner variant="loader" />
           </div>
         ) : data.length === 0 ? (
@@ -278,7 +278,7 @@ export const DataTable = React.memo(<T extends Record<string, unknown>>({
             description={typeof emptyMessage === 'string' ? emptyMessage : undefined}
           />
         ) : (
-          <table className="w-full text-left table-fixed min-w-[600px] lg:min-w-0">
+          <table className="w-full text-left table-fixed min-w-150 lg:min-w-0">
             <thead>
               <tr>
                 {hasExpandableRows && (
@@ -376,7 +376,7 @@ export const DataTable = React.memo(<T extends Record<string, unknown>>({
                               <button
                                 key={action.label}
                                 className={cn(
-                                  "relative h-10 max-h-[40px] w-10 max-w-[40px] select-none rounded-corner text-center align-middle font-sans text-xs font-medium uppercase transition-all disabled:pointer-events-none disabled:opacity-50 disabled:shadow-none",
+                                  "relative h-10 max-h-10 w-10 max-w-10 select-none rounded-corner text-center align-middle font-sans text-xs font-medium uppercase transition-all disabled:pointer-events-none disabled:opacity-50 disabled:shadow-none",
                                   action.className
                                 )}
                                 type="button"

@@ -100,15 +100,9 @@ const buttonVariants = cva(
         ].join(' '),
 
         // ===== Variantes premium =====
-        shimmer: [
-          'text-blanco-una border-0',
-          'bg-gradient-to-r from-azul-una via-azul-una-2 to-azul-una',
-          '[background-size:200%_auto]',
-          'animate-shimmer',
-          'shadow-[0_4px_14px_rgba(3,73,145,0.30)] hover:shadow-[0_4px_16px_rgba(3,73,145,0.38)]',
-          'focus-visible:ring-azul-una',
-          '[--ripple-color:rgba(255,255,255,0.30)]',
-          '[--shine-opacity:1]',
+        invisible: [
+          'bg-transparent text-negro-una border-0',
+          'hover:bg-transparent',
         ].join(' '),
 
         glow: [

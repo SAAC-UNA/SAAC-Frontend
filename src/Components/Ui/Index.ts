@@ -28,3 +28,5 @@ export { DateRangePicker } from './Calendar/DateRangePicker';
 export type { DateRange, DateRangePickerProps } from './Calendar/DateRangePicker';
 export { RadioGroupCards } from './Forms/RadioGroupCards';
 export type { RadioCardOption } from './Forms/RadioGroupCards';
+export { NotificationPopover } from './Feedback/NotificationPopover';
+export type { NotificationPopoverProps, PopoverNotification } from './Feedback/NotificationPopover';
