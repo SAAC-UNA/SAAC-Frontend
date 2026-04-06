@@ -14,7 +14,10 @@ export type TipoEvento =
   | 'solicitud_ampliacion'
   | 'respuesta_ampliacion'
   | 'comentario_nuevo'
-  | 'actualizacion_sistema';
+  | 'actualizacion_sistema'
+  | 'asignacion_elemento'
+  | 'aprobacion_elemento'
+  | 'rechazo_elemento';
 
 export type Canal = 'interno' | 'email' | 'ambos';
 
@@ -75,4 +78,7 @@ export const TIPO_EVENTO_LABELS: Record<TipoEvento, string> = {
   respuesta_ampliacion: 'Respuesta a Ampliación',
   comentario_nuevo: 'Nuevo Comentario',
   actualizacion_sistema: 'Actualización del Sistema',
+  asignacion_elemento: 'Asignación de Elemento',
+  aprobacion_elemento: 'Aprobación de Elemento',
+  rechazo_elemento: 'Rechazo de Elemento',
 };

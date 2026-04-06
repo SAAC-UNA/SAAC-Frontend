@@ -20,6 +20,10 @@ interface EvidenceFilesModalProps {
   isOpen: boolean;
   onClose: () => void;
   evidencia: Evidencia | null;
+  approvalStatus?: string;
+  blockIsApproved?: boolean;
+  onAprobar?: (comentario?: string) => void;
+  onRechazar?: (comentario?: string) => void;
 }
 
 export const EvidenceFilesModal: React.FC<EvidenceFilesModalProps> = ({
