@@ -276,7 +276,7 @@ class EvidenceAssignmentService {
       return raw.map((item: any) => ({
         elemento_id:          item.elemento_id ?? item.id,
         modelo_estructura_id: item.modelo_estructura_id,
-        padre_id:             item.padre_id ?? null,
+        padre_id:             item.padre_id || null,
         tipo:                 item.tipo ?? '',
         nombre:               item.nombre ?? null,
         categoria:            item.categoria ?? null,

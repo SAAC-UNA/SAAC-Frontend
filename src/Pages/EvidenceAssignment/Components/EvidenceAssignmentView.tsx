@@ -14,7 +14,7 @@ import { UserAvatars } from "@/Components/Ui/UserAvatars/UserAvatars";
 import { SuccessModal } from "@/Components/Ui/Modals/SuccessModal.tsx";
 import { EditConfirmationModal } from "@/Components/Ui/Modals/EditConfirmationModal.tsx";
 import { Textarea } from "@/Components/Ui/Forms/Textarea";
-import { TreeSelect } from "@/Components/Ui/Forms/TreeSelect";
+import { ChainedMultiSelect } from "@/Components/Ui/Forms/ChainedMultiSelect";
 import { BackendErrorAlert } from "@/Components/Ui/Feedback/BackendErrorAlert";
 import { Breadcrumb } from "@/Components/Ui/Feedback/Breadcrumb";
 import type { BreadcrumbItem } from "@/Components/Ui/Feedback/Breadcrumb";
@@ -203,17 +203,13 @@ export const EvidenceAssignmentView: React.FC<EvidenceAssignmentViewProps> = ({
                 {/* Selectores: modo flexible vs tradicional */}
                 {isFlexible ? (
                   <div>
-                    <TreeSelect
-                      label="Elementos a asignar"
+                    <ChainedMultiSelect
                       elements={flexElements}
                       value={formData.selectedElements}
                       onChange={(ids) =>
                         updateFormData({ selectedElements: ids })
                       }
-                      mode="select"
-                      multiple
                       loading={flexElementsLoading}
-                      placeholder="Seleccione elementos..."
                       required
                     />
                     <p
