@@ -110,6 +110,8 @@ export interface EvidenceAssignmentViewProps {
   flexElementsLoading: boolean;
   // Proceso seleccionado para breadcrumbs
   selectedProcess: Process | null;
+  // Selector de proceso
+  processes: Process[];
 }
 
 // ---------------------------------------------------------------------------
@@ -853,6 +855,7 @@ const EvidenceAssignment: React.FC = () => {
     flexElements,
     flexElementsLoading,
     selectedProcess,
+    processes,
   };
 
   return <EvidenceAssignmentView {...viewProps} />;

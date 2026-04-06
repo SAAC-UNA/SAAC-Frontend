@@ -18,6 +18,7 @@ import { TreeSelect } from "@/Components/Ui/Forms/TreeSelect";
 import { BackendErrorAlert } from "@/Components/Ui/Feedback/BackendErrorAlert";
 import { Breadcrumb } from "@/Components/Ui/Feedback/Breadcrumb";
 import type { BreadcrumbItem } from "@/Components/Ui/Feedback/Breadcrumb";
+import { CustomSelect } from "@/Components/Ui/Forms/SingleSelect";
 import { TYPOGRAPHY } from "@/Constants/Typography";
 import type {
   DuplicateAssignment,
@@ -76,6 +77,7 @@ export const EvidenceAssignmentView: React.FC<EvidenceAssignmentViewProps> = ({
   isFlexible,
   flexElements,
   flexElementsLoading,
+  processes,
 }) => {
   const getEvidenceBreadcrumb = (evidenciaId: number): BreadcrumbItem[] => {
     const ev = evidenceById[evidenciaId];
@@ -92,6 +94,18 @@ export const EvidenceAssignmentView: React.FC<EvidenceAssignmentViewProps> = ({
         title={moduleInfo.title}
         description={moduleInfo.description}
         breadcrumbMode="contextual"
+        headerExtra={
+          <Card className="w-80">
+          <CustomSelect
+            label="Proceso"
+            value={formData.proceso_id?.toString() ?? ""}
+            options={processes.map((p) => ({ value: p.proceso_id.toString(), label: p.nombre }))}
+            onChange={(val) => updateFormData({ proceso_id: Number(val) })}
+            searchable
+            variant="floating"
+          />
+          </Card>
+        }
       />
 
       {criteriaLoading ? (
