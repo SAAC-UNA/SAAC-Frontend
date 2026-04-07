@@ -350,6 +350,9 @@ export const fileService = {
       if (params.proceso_id) {
         queryParams.append('proceso_id', params.proceso_id.toString());
       }
+      if (params.usuario_id) {
+        queryParams.append('usuario_id', params.usuario_id.toString());
+      }
 
       const response = await axiosInstance.get<FileListResponse>(
         `${BASE_URL}?${queryParams.toString()}`

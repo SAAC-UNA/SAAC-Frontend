@@ -13,6 +13,7 @@ import { TYPOGRAPHY } from '@/Constants/Typography';
 import { truncateText } from '@/Utils';
 import { TableActionButton } from '@/Components/Ui/Buttons/TableActionButton';
 import { StatusBadge } from '@/Components/Ui/Feedback/StatusBadge';
+import { Tooltip, TooltipTrigger, TooltipContent } from '@/Components/Ui/Feedback/Tooltip';
 import { EVIDENCE_STATUS_BADGE } from '@/Constants/StatusBadges';
 import type { FlexibleAssignmentItem } from '@/Types/EvidenceAssignment';
 import type { FlexibleElement } from '@/Types/StructureModelTypes';
@@ -125,13 +126,35 @@ export const ElementAssignmentsTable: React.FC<ElementAssignmentsTableProps> = (
         header: 'Estado',
         align: 'left',
         render: (_: unknown, assignment: FlexibleAssignmentItem) => {
+          const isReturnedPending =
+            assignment.estado === 'Pendiente' && assignment.is_returned_for_changes === true;
           const badge = EVIDENCE_STATUS_BADGE[assignment.estado as keyof typeof EVIDENCE_STATUS_BADGE];
+          const badgeLabel = isReturnedPending
+            ? 'Pendiente'
+            : badge?.label ?? assignment.estado;
+          const badgeColor = isReturnedPending
+            ? 'bg-error-ring text-error'
+            : badge?.colorClasses ?? 'bg-gris-light text-gris-una';
           return (
             <div className="flex justify-start">
-              <StatusBadge
-                label={badge?.label ?? assignment.estado}
-                colorClasses={badge?.colorClasses ?? 'bg-gris-light text-gris-una'}
-              />
+              {isReturnedPending ? (
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <span className="inline-flex">
+                      <StatusBadge
+                        label={badgeLabel}
+                        colorClasses={badgeColor}
+                      />
+                    </span>
+                  </TooltipTrigger>
+                  <TooltipContent side="top">Devuelta por rechazo</TooltipContent>
+                </Tooltip>
+              ) : (
+                <StatusBadge
+                  label={badgeLabel}
+                  colorClasses={badgeColor}
+                />
+              )}
             </div>
           );
         },

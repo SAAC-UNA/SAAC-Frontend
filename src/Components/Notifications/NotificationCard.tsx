@@ -38,12 +38,22 @@ export const NotificationCard: React.FC<NotificationCardProps> = ({
   index = 0,
 }) => {
   const navigate = useNavigate();
+
+  const shouldRouteToAssignments =
+    notification.tipo_evento === "asignacion_evidencia" ||
+    notification.tipo_evento === "asignacion_elemento" ||
+    notification.tipo_evento === "devolucion_observacion" ||
+    notification.tipo_evento === "rechazo_elemento";
+
+  const hasLegacyAssignmentLink =
+    notification.enlace?.startsWith("/Elements/") ||
+    /\/evidencias\/\d+\/asignar$/.test(notification.enlace ?? "") ||
+    /\/elementos\/\d+\/aprobaciones$/.test(notification.enlace ?? "");
+
   const targetRoute =
-    notification.tipo_evento === "asignacion_evidencia"
+    shouldRouteToAssignments || hasLegacyAssignmentLink
       ? "/mis-evidencias-asignadas"
-      : notification.tipo_evento === "asignacion_elemento"
-        ? "/mis-evidencias-asignadas"
-        : notification.enlace;
+      : notification.enlace;
 
   const handleClick = () => {
     if (!notification.leida && onMarkAsRead) {

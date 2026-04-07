@@ -6,8 +6,10 @@
 import React, { useState, useEffect } from 'react';
 import { Modal } from '@/Components/Ui/Modals/Modal';
 import { Button } from '@/Components/Ui/Index';
+import { ButtonWithTooltip } from '@/Components/Ui/Buttons/ButtonWithTooltip';
 import { SystemIcons } from '@/Components/Ui/Icons/SystemIcons';
 import { StatusBadge } from '@/Components/Ui/Feedback/StatusBadge';
+import { Tooltip, TooltipTrigger, TooltipContent } from '@/Components/Ui/Feedback/Tooltip';
 import { axiosInstance } from '@/Config/axios';
 import { useToast } from '@/Context/ToastContext';
 import { TYPOGRAPHY } from '@/Constants/Typography';
@@ -20,6 +22,7 @@ interface Archivo {
   nombre_original: string;
   ruta_archivo: string;
   token_publico?: string;
+  url_publica?: string;
   is_publico: boolean;
   link_expira_en?: string;
 }
@@ -58,14 +61,22 @@ export const PublicLinkModal: React.FC<PublicLinkModalProps> = ({
 
   if (!archivo || !evidencia) return null;
 
-  const publicUrl = archivo.token_publico
-    ? `${window.location.origin}/api/p/${archivo.token_publico}`
-    : '';
+  const publicUrl = archivo.url_publica
+    ?? (archivo.token_publico
+      ? `${window.location.origin}/api/p/${archivo.token_publico}`
+      : '');
 
   const handleGenerateLink = async () => {
     setIsGenerating(true);
     try {
-      await axiosInstance.post(`/archivos/${archivo.archivo_id}/make-public`);
+      try {
+        await axiosInstance.post(`/archivos/${archivo.archivo_id}/make-public`);
+      } catch (error: any) {
+        if (error?.response?.status !== 404) {
+          throw error;
+        }
+        await axiosInstance.post(`/elementos-archivos/${archivo.archivo_id}/make-public`);
+      }
       onSuccess();
     } catch (error: any) {
       showToast({
@@ -84,7 +95,14 @@ export const PublicLinkModal: React.FC<PublicLinkModalProps> = ({
 
     setIsRevoking(true);
     try {
-      await axiosInstance.post(`/archivos/${archivo.archivo_id}/revoke-public`);
+      try {
+        await axiosInstance.post(`/archivos/${archivo.archivo_id}/revoke-public`);
+      } catch (error: any) {
+        if (error?.response?.status !== 404) {
+          throw error;
+        }
+        await axiosInstance.post(`/elementos-archivos/${archivo.archivo_id}/revoke-public`);
+      }
       onSuccess();
     } catch (error: any) {
       showToast({
@@ -144,7 +162,7 @@ export const PublicLinkModal: React.FC<PublicLinkModalProps> = ({
         <hr className="border-gris-light" />
 
         {/* Estado del enlace */}
-        {archivo.is_publico && archivo.token_publico ? (
+        {archivo.is_publico && (archivo.token_publico || archivo.url_publica) ? (
           <div className="flex flex-col gap-3">
             {/* Encabezado estado activo */}
             <div className="flex items-center justify-between">
@@ -166,42 +184,72 @@ export const PublicLinkModal: React.FC<PublicLinkModalProps> = ({
               <span className={cn(TYPOGRAPHY.modal.subtitle, 'text-gris-una-2 uppercase tracking-wider font-semibold')}>
                 URL pública
               </span>
-              <div className="flex items-center gap-2 border border-gris-light rounded px-3 py-2">
-                <input
-                  type="text"
-                  readOnly
-                  value={publicUrl}
-                  className={cn(TYPOGRAPHY.modal.body, 'flex-1 bg-transparent border-none focus:outline-none text-gris-una-2')}
-                  onClick={(e) => e.currentTarget.select()}
-                />
+              <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2 border border-gris-light rounded px-3 py-2 flex-1">
+                  <input
+                    type="text"
+                    readOnly
+                    value={publicUrl}
+                    className={cn(TYPOGRAPHY.modal.body, 'flex-1 bg-transparent border-none focus:outline-none text-gris-una-2')}
+                    onClick={(e) => e.currentTarget.select()}
+                  />
+                </div>
+
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <span className="shrink-0 cursor-help text-slate">
+                      {SystemIcons.interface.informationCircle({ size: 'sm' })}
+                    </span>
+                  </TooltipTrigger>
+                  <TooltipContent
+                    side="right"
+                    className="max-w-[360px] whitespace-normal break-words px-3 py-2 leading-relaxed"
+                  >
+                    <div>
+                      <span className={cn(TYPOGRAPHY.modal.subtitle, 'font-semibold text-blanco-una block')}>
+                        Sobre los enlaces públicos
+                      </span>
+                      <ul className={cn(TYPOGRAPHY.modal.subtitle, 'text-blanco-una mt-1 pl-4 list-disc')}> 
+                        <li>Cualquier persona con este enlace puede acceder al archivo</li>
+                        <li>No se requiere autenticación para ver el contenido</li>
+                        <li>Puede revocar el enlace en cualquier momento</li>
+                      </ul>
+                    </div>
+                  </TooltipContent>
+                </Tooltip>
               </div>
             </div>
 
             {/* Botones */}
-            <div className="flex gap-2">
-              <Button variant="primary" size="sm" onClick={handleCopyLink} className="flex-1">
-                {copiedToClipboard ? (
-                  <><SystemIcons.interface.check className={ICON_SIZES.sm} /> Copiado</>
-                ) : (
-                  <><SystemIcons.actions.copy className={ICON_SIZES.sm} /> Copiar enlace</>
-                )}
-              </Button>
-              <Button variant="error" size="sm" onClick={handleRevokeLink} disabled={isRevoking} className="flex-1">
-                {isRevoking ? 'Revocando...' : 'Revocar enlace'}
-              </Button>
-            </div>
+            <div className="flex items-center justify-end gap-1.5">
+              {copiedToClipboard && (
+                <span className={cn(TYPOGRAPHY.modal.subtitle, 'text-verde-dark')}>
+                  Copiado
+                </span>
+              )}
 
-            {/* Aviso */}
-            <div className="flex items-start gap-2">
-              <SystemIcons.interface.informationCircle className={cn(ICON_SIZES.sm, 'text-info mt-0.5 shrink-0')} />
-              <div className="flex flex-col gap-0.5">
-                <span className={cn(TYPOGRAPHY.modal.subtitle, 'font-semibold text-negro-una')}>Sobre los enlaces públicos</span>
-                <ul className={cn(TYPOGRAPHY.modal.subtitle, 'text-gris-una-2 list-disc list-inside')}>
-                  <li>Cualquier persona con este enlace puede acceder al archivo</li>
-                  <li>No se requiere autenticación para ver el contenido</li>
-                  <li>Puede revocar el enlace en cualquier momento</li>
-                </ul>
-              </div>
+              <ButtonWithTooltip
+                variant="tableView"
+                size="sm"
+                tooltip="Copiar enlace"
+                onClick={handleCopyLink}
+                className="p-1"
+                aria-label="Copiar enlace"
+              >
+                <SystemIcons.actions.copy className={ICON_SIZES.sm} />
+              </ButtonWithTooltip>
+
+              <ButtonWithTooltip
+                variant="tableDelete"
+                size="sm"
+                tooltip={isRevoking ? 'Revocando...' : 'Revocar enlace'}
+                onClick={handleRevokeLink}
+                disabled={isRevoking}
+                className="p-1"
+                aria-label="Revocar enlace"
+              >
+                <SystemIcons.interface.xCircle className={ICON_SIZES.sm} />
+              </ButtonWithTooltip>
             </div>
           </div>
         ) : (

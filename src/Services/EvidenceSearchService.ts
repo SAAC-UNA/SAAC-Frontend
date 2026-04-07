@@ -49,6 +49,7 @@ interface BackendResponsable {
 interface BackendEvidenceResult {
   evidencia_id: number;
   criterio_id?: number;
+  proceso_id?: number;
   nomenclatura: string;
   descripcion: string;
   // El backend devuelve estado como string PascalCase (EVIDENCIA.estado enum)
@@ -237,10 +238,41 @@ export const evidenceSearchService = {
 
     const raw = response.data;
 
+    // Cargar conteos reales de recursos por elemento+proceso para evitar
+    // que el explorador flexible muestre siempre "Sin recursos".
+    const resourceCountMap = new Map<string, { archivos: number; enlaces: number }>();
+    const uniqueElementProcessKeys = new Set<string>();
+    raw.data.forEach((ea) => {
+      uniqueElementProcessKeys.add(`${ea.elemento_id}-${ea.proceso_id}`);
+    });
+
+    await Promise.all(
+      Array.from(uniqueElementProcessKeys).map(async (key) => {
+        const [elementoIdRaw, procesoIdRaw] = key.split("-");
+        const elementoId = Number(elementoIdRaw);
+        const procesoId = Number(procesoIdRaw);
+        try {
+          const fileResponse = await axiosInstance.get<{
+            data?: Array<{ tipo?: "archivo" | "enlace" }>;
+          }>("/elementos-archivos", {
+            params: { elemento_id: elementoId, proceso_id: procesoId },
+          });
+          const files = fileResponse.data?.data ?? [];
+          resourceCountMap.set(key, {
+            archivos: files.filter((f) => f.tipo === "archivo").length,
+            enlaces: files.filter((f) => f.tipo === "enlace").length,
+          });
+        } catch {
+          resourceCountMap.set(key, { archivos: 0, enlaces: 0 });
+        }
+      }),
+    );
+
     // Adaptar al shape BackendEvidenceResult para reutilizar el resto del flujo
     const mapped: BackendEvidenceResult[] = raw.data.map((ea) => ({
       evidencia_id: ea.elemento_asignacion_id,
       criterio_id: ea.elemento_id,
+      proceso_id: ea.proceso_id,
       nomenclatura: ea.element?.nomenclatura ?? "",
       descripcion: ea.element?.descripcion ?? ea.element?.nombre ?? "",
       estado: ea.estado,
@@ -261,8 +293,12 @@ export const evidenceSearchService = {
       fecha_publicacion: ea.created_at,
       created_at: ea.created_at,
       updated_at: ea.updated_at,
-      archivos_count: 0,
-      enlaces_count: 0,
+      archivos_count:
+        resourceCountMap.get(`${ea.elemento_id}-${ea.proceso_id}`)?.archivos ??
+        0,
+      enlaces_count:
+        resourceCountMap.get(`${ea.elemento_id}-${ea.proceso_id}`)?.enlaces ??
+        0,
     }));
 
     return {
@@ -395,6 +431,7 @@ export function mapBackendToFrontend(backendData: BackendEvidenceResult) {
   return {
     evidencia_id: backendData.evidencia_id,
     criterio_id: backendData.criterio_id ?? 0,
+    proceso_id: backendData.proceso_id,
     nomenclatura: backendData.nomenclatura || "",
     criterio_nomenclatura: backendData.criterion?.nomenclatura || "N/A",
     criterio_descripcion:

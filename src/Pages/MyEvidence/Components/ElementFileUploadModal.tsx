@@ -64,8 +64,15 @@ export const ElementFileUploadModal: React.FC<ElementFileUploadModalProps> = ({
         showToast({ type: 'success', title: `${totalSuccess} recurso(s) guardados correctamente` });
       }
 
-      onSuccess();
-      onClose();
+      if (totalSuccess > 0) {
+        onSuccess();
+      }
+
+      if (totalFailed === 0 && totalSuccess > 0) {
+        setSelectedFiles([]);
+        setSelectedLinks([]);
+        onClose();
+      }
     } catch (error: any) {
       showToast({ type: 'error', title: 'Error al subir', message: error.message || 'No se pudo completar la operación.' });
     } finally {

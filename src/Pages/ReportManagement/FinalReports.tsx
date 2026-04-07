@@ -88,6 +88,20 @@ const FinalReports: React.FC = () => {
   const isFlexible =
     selectedProcess?.accreditation_cycle?.modelo_estructura?.tipo === "elemento_flexible";
 
+  const flexibleSourceElements = useMemo(() => {
+    if (!isFlexible) return [] as Criterio[];
+
+    const parentIds = new Set<number>();
+    criteria.forEach((item) => {
+      if (typeof item.padre_id === "number") {
+        parentIds.add(item.padre_id);
+      }
+    });
+
+    // En el modo flexible exportamos/generamos enlaces sobre fuentes (nodos hoja).
+    return criteria.filter((item) => !parentIds.has(item.id));
+  }, [criteria, isFlexible]);
+
   // Modal de detalle de criterio
   const [detailModal, setDetailModal] = useState<{
     open: boolean;
@@ -221,6 +235,8 @@ const FinalReports: React.FC = () => {
         const approvedElements = elementosArray
           .map((el: any) => ({
             id: el.elemento_id ?? el.id,
+            padre_id: el.padre_id ?? null,
+            tipo: el.tipo ?? null,
             nomenclatura: el.nomenclatura ?? "",
             descripcion: el.descripcion ?? el.nombre ?? "",
             estado_aprobacion:
@@ -300,10 +316,19 @@ const FinalReports: React.FC = () => {
     }));
 
     try {
-      const param = isFlexible
-        ? `elemento_id=${nodeId}`
-        : `evidencia_id=${nodeId}`;
-      const response = await axiosInstance.get(`/archivos?${param}`);
+      const response = isFlexible
+        ? await axiosInstance.get('/elementos-archivos', {
+            params: {
+              elemento_id: nodeId,
+              ...(selectedProcesoId ? { proceso_id: selectedProcesoId } : {}),
+            },
+          })
+        : await axiosInstance.get('/archivos', {
+            params: {
+              evidencia_id: nodeId,
+              ...(selectedProcesoId ? { proceso_id: selectedProcesoId } : {}),
+            },
+          });
       const archivos = response.data.data || response.data;
 
       if (isFlexible) {
@@ -325,12 +350,21 @@ const FinalReports: React.FC = () => {
       console.error("Error cargando archivos:", error);
 
       // Evita reintentos automáticos infinitos al expandir filas con error
-      setDataState((prev) => ({
-        ...prev,
-        evidences: prev.evidences.map((ev) =>
-          ev.id === nodeId ? { ...ev, archivos: [] } : ev,
-        ),
-      }));
+      if (isFlexible) {
+        setDataState((prev) => ({
+          ...prev,
+          criteria: prev.criteria.map((c) =>
+            c.id === nodeId ? { ...c, archivos: [] } : c,
+          ),
+        }));
+      } else {
+        setDataState((prev) => ({
+          ...prev,
+          evidences: prev.evidences.map((ev) =>
+            ev.id === nodeId ? { ...ev, archivos: [] } : ev,
+          ),
+        }));
+      }
     } finally {
       setUiState((prev) => {
         const newSet = new Set(prev.loadingFiles);
@@ -340,24 +374,34 @@ const FinalReports: React.FC = () => {
     }
   };
 
+  const resolvePublicLink = (archivo: Archivo): string => {
+    if (archivo.url_publica) {
+      return archivo.url_publica;
+    }
+
+    if (archivo.token_publico) {
+      return `${window.location.origin}/api/p/${archivo.token_publico}`;
+    }
+
+    return "";
+  };
+
   const getArchivoParaEnlace = (evidencia: Evidencia): Archivo | null => {
     const archivos = evidencia.archivos || [];
     if (archivos.length === 0) return null;
 
     const publico = archivos.find(
-      (archivo) => archivo.is_publico && archivo.token_publico,
+      (archivo) => archivo.is_publico && Boolean(resolvePublicLink(archivo)),
     );
     return publico || archivos[0];
   };
 
   const getPublicLinkForEvidence = (evidencia: Evidencia): string => {
     const archivoPublico = (evidencia.archivos || []).find(
-      (archivo) => archivo.is_publico && archivo.token_publico,
+      (archivo) => archivo.is_publico && Boolean(resolvePublicLink(archivo)),
     );
 
-    return archivoPublico?.token_publico
-      ? `${window.location.origin}/api/p/${archivoPublico.token_publico}`
-      : "";
+    return archivoPublico ? resolvePublicLink(archivoPublico) : "";
   };
 
   const handleGenerateLink = (archivo: Archivo, evidencia: Evidencia) => {
@@ -401,7 +445,7 @@ const FinalReports: React.FC = () => {
       const todosLosArchivos: number[] = [];
 
       if (isFlexible) {
-        for (const elemento of criteria) {
+        for (const elemento of flexibleSourceElements) {
           (elemento.archivos ?? []).forEach((archivo) => {
             if (!archivo.is_publico) todosLosArchivos.push(archivo.archivo_id);
           });
@@ -439,7 +483,9 @@ const FinalReports: React.FC = () => {
       });
 
       if (isFlexible) {
-        const loadedElements = criteria.filter((c) => c.archivos !== undefined);
+        const loadedElements = flexibleSourceElements.filter(
+          (c) => c.archivos !== undefined,
+        );
         await Promise.all(loadedElements.map((c) => loadFiles(c.id)));
       } else {
         const evidencesWithFiles = evidences.filter(
@@ -461,14 +507,13 @@ const FinalReports: React.FC = () => {
 
   const buildReportRows = () => {
     if (isFlexible) {
-      return criteria.flatMap((elemento) =>
+      return flexibleSourceElements.flatMap((elemento) =>
         (elemento.archivos ?? []).map((archivo) => ({
           criterio: `${elemento.nomenclatura} — ${elemento.descripcion}`,
           evidencia: archivo.nombre_original,
-          link:
-            archivo.is_publico && archivo.token_publico
-              ? `${window.location.origin}/api/p/${archivo.token_publico}`
-              : "Sin enlace",
+          link: archivo.is_publico && resolvePublicLink(archivo)
+            ? resolvePublicLink(archivo)
+            : "Sin enlace",
         })),
       );
     }
@@ -486,7 +531,7 @@ const FinalReports: React.FC = () => {
     rows: Array<{ criterio: string; evidencia: string; link: string }>,
   ) => {
     const escapeCsv = (value: string) => `"${value.replace(/"/g, '""')}"`;
-    const header = [isFlexible ? "Elemento" : "Criterio", isFlexible ? "Archivo" : "Evidencia", "Enlace"]
+    const header = [isFlexible ? "Fuente" : "Criterio", isFlexible ? "Archivo" : "Evidencia", "Enlace"]
       .map(escapeCsv)
       .join(",");
     const lines = rows.map((row) =>

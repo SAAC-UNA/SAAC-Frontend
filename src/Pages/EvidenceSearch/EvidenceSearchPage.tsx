@@ -27,6 +27,7 @@ import {
   EvidenceDetailsModal,
   EvidenceSearchFiltersPanel,
 } from "./Components";
+import { ElementAssignmentDetailModal } from "@/Pages/MyEvidence/Components/ElementAssignmentDetailModal";
 import { useToast } from "@/Context/ToastContext";
 import { useAuth } from "@/Context/AuthContext";
 import { getModuleInfo } from "@/Constants/ModuleInfo";
@@ -99,6 +100,8 @@ export const EvidenceSearchPage: React.FC = () => {
     isOpen: boolean;
     selectedCriterioId: number | null;
   }>({ isOpen: false, selectedCriterioId: null });
+  const [selectedFlexibleAssignmentId, setSelectedFlexibleAssignmentId] =
+    useState<number | null>(null);
   const isModalOpen = modalState.isOpen;
   const selectedCriterioId = modalState.selectedCriterioId;
 
@@ -237,16 +240,23 @@ export const EvidenceSearchPage: React.FC = () => {
 
   // Ver detalles de evidencia
   const handleViewDetails = (evidenceId: number) => {
-    const evidence = displayedResults.find(
-      (e) => e.evidencia_id === evidenceId,
-    );
+    if (isFlexible) {
+      setSelectedFlexibleAssignmentId(evidenceId);
+      return;
+    }
+
+    const evidence = displayedResults.find((e) => e.evidencia_id === evidenceId);
     if (evidence) {
-      setModalState({ isOpen: true, selectedCriterioId: evidence.criterio_id });
+      setModalState({
+        isOpen: true,
+        selectedCriterioId: evidence.criterio_id,
+      });
     }
   };
 
   const handleCloseModal = () => {
     setModalState({ isOpen: false, selectedCriterioId: null });
+    setSelectedFlexibleAssignmentId(null);
   };
 
   // Handlers de retroalimentación movidos a EvidenceDetailsModal
@@ -356,11 +366,20 @@ export const EvidenceSearchPage: React.FC = () => {
       />
 
       {/* Modal de detalles */}
-      <EvidenceDetailsModal
-        isOpen={isModalOpen}
-        onClose={handleCloseModal}
-        criterioId={selectedCriterioId}
-      />
+      {!isFlexible && (
+        <EvidenceDetailsModal
+          isOpen={isModalOpen}
+          onClose={handleCloseModal}
+          criterioId={selectedCriterioId}
+        />
+      )}
+
+      {isFlexible && selectedFlexibleAssignmentId !== null && (
+        <ElementAssignmentDetailModal
+          assignmentId={selectedFlexibleAssignmentId}
+          onClose={handleCloseModal}
+        />
+      )}
     </ScreenContainer>
   );
 };

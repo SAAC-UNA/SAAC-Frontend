@@ -423,6 +423,7 @@ export const MyEvidenceAssignmentsPage: React.FC = () => {
       procesoId: (
         assignment.proceso?.proceso_id ?? assignment.proceso_id
       ).toString(),
+      usuarioId: assignment.usuario_id.toString(),
       nombre: `${assignment.evidencia.nomenclatura} - ${assignment.evidencia.descripcion}`,
     });
 

@@ -47,6 +47,7 @@ export const EvidenceUploadPage: React.FC<EvidenceUploadPageProps> = ({
     propEvidenciaId ?? (Number(searchParams.get("evidenciaId")) || undefined);
   const procesoId =
     propProcesoId ?? (Number(searchParams.get("procesoId")) || undefined);
+  const usuarioId = Number(searchParams.get("usuarioId")) || undefined;
   const evidenciaNombre =
     propEvidenciaNombre ?? searchParams.get("nombre") ?? "Evidencia";
 
@@ -75,14 +76,18 @@ export const EvidenceUploadPage: React.FC<EvidenceUploadPageProps> = ({
   // Cargar archivos existentes al montar el componente
   useEffect(() => {
     loadFiles();
-  }, [evidenciaId]);
+  }, [evidenciaId, procesoId, usuarioId]);
 
   const loadFiles = async () => {
     if (!evidenciaId) return;
 
     try {
       setLoadingFiles(true);
-      const files = await fileService.listFiles({ evidencia_id: evidenciaId });
+      const files = await fileService.listFiles({
+        evidencia_id: evidenciaId,
+        ...(procesoId ? { proceso_id: procesoId } : {}),
+        ...(usuarioId ? { usuario_id: usuarioId } : {}),
+      });
       setUploadedFiles(files);
     } catch (error: any) {
       showToast({

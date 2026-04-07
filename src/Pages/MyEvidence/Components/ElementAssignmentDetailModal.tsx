@@ -11,6 +11,7 @@ import { evidenceAssignmentService } from '@/Services/EvidenceAssignmentService'
 import { useToast } from '@/Context/ToastContext';
 import { LoadingSpinner } from '@/Components/Ui/Feedback/Loading';
 import { FileList } from '@/Components/Ui/Upload';
+import { Tooltip, TooltipTrigger, TooltipContent } from '@/Components/Ui/Feedback/Tooltip';
 import type { FileModel } from '@/Types/FileTypes';
 import { formatDateShort } from '@/Utils/DateUtils';
 
@@ -71,7 +72,7 @@ export const ElementAssignmentDetailModal: React.FC<ElementAssignmentDetailModal
       setFetchState(prev => ({ ...prev, loading: true }));
       const data = await evidenceAssignmentService.getElementAssignmentById(assignmentId);
       setFetchState({ assignment: data, loading: false });
-      loadFiles(data.elemento_id, data.proceso_id);
+      loadFiles(data.elemento_id, data.proceso_id, data.usuario_id);
     } catch {
       showToast({ type: 'error', title: 'Error', message: 'Error al cargar los detalles de la asignación' });
       setFetchState(prev => ({ ...prev, loading: false }));
@@ -79,10 +80,10 @@ export const ElementAssignmentDetailModal: React.FC<ElementAssignmentDetailModal
     }
   };
 
-  const loadFiles = async (elementoId: number, procesoId: number) => {
+  const loadFiles = async (elementoId: number, procesoId: number, usuarioId: number) => {
     try {
       setFilesState({ files: [], loadingFiles: true });
-      const files = await evidenceAssignmentService.getElementFiles(elementoId, procesoId);
+      const files = await evidenceAssignmentService.getElementFiles(elementoId, procesoId, usuarioId);
       setFilesState({ files, loadingFiles: false });
     } catch {
       setFilesState(prev => ({ ...prev, loadingFiles: false }));
@@ -94,7 +95,11 @@ export const ElementAssignmentDetailModal: React.FC<ElementAssignmentDetailModal
       await evidenceAssignmentService.deleteElementFile(fileId);
       showToast({ type: 'success', title: 'Archivo eliminado', message: 'El archivo se eliminó correctamente' });
       if (fetchState.assignment) {
-        loadFiles(fetchState.assignment.elemento_id, fetchState.assignment.proceso_id);
+        loadFiles(
+          fetchState.assignment.elemento_id,
+          fetchState.assignment.proceso_id,
+          fetchState.assignment.usuario_id,
+        );
       }
     } catch (error: any) {
       showToast({ type: 'error', title: 'Error al eliminar', message: error.message || 'No se pudo eliminar el archivo' });
@@ -140,6 +145,14 @@ export const ElementAssignmentDetailModal: React.FC<ElementAssignmentDetailModal
       : 'text-gris-una-2';
 
   const badge = EVIDENCE_STATUS_BADGE[assignment.estado as keyof typeof EVIDENCE_STATUS_BADGE];
+  const isReturnedPending =
+    assignment.estado === 'Pendiente' && assignment.is_returned_for_changes === true;
+  const badgeLabel = isReturnedPending
+    ? 'Pendiente'
+    : badge?.label ?? assignment.estado;
+  const badgeColor = isReturnedPending
+    ? 'bg-error-ring text-error'
+    : badge?.colorClasses ?? 'bg-gris-light text-gris-una';
 
   return (
     <DetailsModal
@@ -177,10 +190,24 @@ export const ElementAssignmentDetailModal: React.FC<ElementAssignmentDetailModal
 
         {/* Estado */}
         <InfoCell label="Estado" className="col-start-1 col-end-3 items-start">
-          <StatusBadge
-            label={badge?.label ?? assignment.estado}
-            colorClasses={badge?.colorClasses ?? 'bg-gris-light text-gris-una'}
-          />
+          {isReturnedPending ? (
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <span className="inline-flex">
+                  <StatusBadge
+                    label={badgeLabel}
+                    colorClasses={badgeColor}
+                  />
+                </span>
+              </TooltipTrigger>
+              <TooltipContent side="top">Devuelta por rechazo</TooltipContent>
+            </Tooltip>
+          ) : (
+            <StatusBadge
+              label={badgeLabel}
+              colorClasses={badgeColor}
+            />
+          )}
         </InfoCell>
 
         {/* Proceso */}

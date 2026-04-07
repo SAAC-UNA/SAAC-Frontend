@@ -488,16 +488,48 @@ class EvidenceAssignmentService {
    * Lista los archivos de un elemento para un proceso.
    * GET /api/elementos-archivos?elemento_id={id}&proceso_id={id}
    */
-  async getElementFiles(elementoId: number, procesoId: number): Promise<FileModel[]> {
+  async getElementFiles(elementoId: number, procesoId: number, usuarioId?: number): Promise<FileModel[]> {
     try {
       const response = await axiosInstance.get<{ data: FileModel[]; count: number }>(
         `/elementos-archivos`,
-        { params: { elemento_id: elementoId, proceso_id: procesoId } }
+        {
+          params: {
+            elemento_id: elementoId,
+            proceso_id: procesoId,
+            ...(usuarioId ? { usuario_id: usuarioId } : {}),
+          },
+        }
       );
       return response.data.data || [];
     } catch (error: any) {
       if (error.response?.status === 404) return [];
       throw new Error(error.response?.data?.message || error.message || 'Error al obtener archivos');
+    }
+  }
+
+  /**
+   * Lista asignaciones de un elemento (modelo flexible).
+   * GET /api/elementos/{elementoId}/asignaciones
+   */
+  async getElementAssignmentsByElement(
+    elementoId: number,
+    procesoId?: number,
+  ): Promise<FlexibleAssignmentItem[]> {
+    try {
+      const response = await axiosInstance.get<{ data: FlexibleAssignmentItem[] }>(
+        `/elementos/${elementoId}/asignaciones`,
+        {
+          params: procesoId ? { proceso_id: procesoId } : undefined,
+        },
+      );
+      return response.data.data || [];
+    } catch (error: any) {
+      if (error.response?.status === 404) return [];
+      throw new Error(
+        error.response?.data?.message ||
+          error.message ||
+          'Error al obtener asignaciones del elemento',
+      );
     }
   }
 
