@@ -167,21 +167,6 @@ export const getNavigationItems = (
     const evidenciaChildren: NavItem[] = [];
 
     if (
-      hasAccess({
-        requireAnyCapabilities: [CAPABILITIES.EVIDENCE_VIEW],
-        requireAnyPermissions: EVIDENCE_VIEW_PERMISSIONS,
-      })
-    ) {
-      evidenciaChildren.push({
-        id: "misEvidenciasAsignadas",
-        label: "Mis Entregas",
-        icon: myEvidencesIcon,
-        href: "/mis-evidencias-asignadas",
-        isActive: false,
-      });
-    }
-
-    if (
       hasContextualSelection &&
       hasAccess({
         requireAnyCapabilities: [CAPABILITIES.EVIDENCE_ASSIGN],
@@ -193,6 +178,21 @@ export const getNavigationItems = (
         label: "Asignar Entregables",
         icon: evidenceIcon,
         href: "/evidencias/asignar",
+        isActive: false,
+      });
+    }
+
+    if (
+      hasAccess({
+        requireAnyCapabilities: [CAPABILITIES.EVIDENCE_VIEW],
+        requireAnyPermissions: EVIDENCE_VIEW_PERMISSIONS,
+      })
+    ) {
+      evidenciaChildren.push({
+        id: "misEvidenciasAsignadas",
+        label: "Mis Entregas",
+        icon: myEvidencesIcon,
+        href: "/mis-evidencias-asignadas",
         isActive: false,
       });
     }

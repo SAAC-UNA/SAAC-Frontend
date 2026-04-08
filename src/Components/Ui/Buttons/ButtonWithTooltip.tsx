@@ -47,34 +47,6 @@ export const ButtonWithTooltip: React.FC<ButtonWithTooltipProps> = ({
   children,
   ...props
 }) => {
-  // Si el botón está deshabilitado, envolver en un span para que el tooltip funcione
-  if (disabled) {
-    return (
-      <Tooltip>
-        <TooltipTrigger asChild>
-          <span className="inline-block">
-            <Button
-              variant={variant}
-              size={size}
-              isLoading={isLoading}
-              fullWidth={fullWidth}
-              flex={flex}
-              responsive={responsive}
-              className={className}
-              disabled={disabled}
-              {...props}
-            >
-              {children}
-            </Button>
-          </span>
-        </TooltipTrigger>
-        <TooltipContent side={tooltipPosition}>
-          {tooltip}
-        </TooltipContent>
-      </Tooltip>
-    );
-  }
-
   return (
     <Tooltip>
       <TooltipTrigger asChild>
@@ -87,6 +59,7 @@ export const ButtonWithTooltip: React.FC<ButtonWithTooltipProps> = ({
           responsive={responsive}
           className={className}
           disabled={disabled}
+          style={disabled ? { pointerEvents: 'auto' } : undefined}
           {...props}
         >
           {children}
