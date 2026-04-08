@@ -21,6 +21,7 @@ import { ASSIGNMENT_STATUS_BADGE } from '@/Constants/StatusBadges';
 import type { EvidenceAssignment } from "@/Types/EvidenceAssignmentTypes";
 import { formatDate, isOverdue } from "@/Types/EvidenceAssignmentTypes";
 import { useFirstColumnConfig } from "@/Hooks/UseFirstColumnConfig";
+import { TABLE_COLUMN_WIDTHS } from '@/Constants/Components';
 
 interface EvidenceAssignmentsTableProps {
   /** Asignaciones a mostrar */
@@ -102,6 +103,7 @@ export const EvidenceAssignmentsTable: React.FC<
         key: "fecha_asignacion",
         header: "Fecha Asignación",
         align: "left",
+        width: TABLE_COLUMN_WIDTHS.status,
         render: (_: unknown, assignment: EvidenceAssignment) => (
             <span
               className={`relative grid items-start font-sans text-negro-una-2 rounded-corner select-none whitespace-nowrap ${TYPOGRAPHY.table.cell}`}
@@ -114,6 +116,7 @@ export const EvidenceAssignmentsTable: React.FC<
         key: "fecha_limite",
         header: "Fecha Límite",
         align: "left",
+        width: TABLE_COLUMN_WIDTHS.status,
         render: (_: unknown, assignment: EvidenceAssignment) => {
           const fechaLimite = assignment.fecha_limite
             ? formatDate(assignment.fecha_limite)
@@ -132,6 +135,7 @@ export const EvidenceAssignmentsTable: React.FC<
         key: "estado",
         header: "Estado",
         align: "left",
+        width: TABLE_COLUMN_WIDTHS.status,
         render: (_: unknown, assignment: EvidenceAssignment) => {
           const estado = isOverdue(assignment) ? "vencido" : assignment.estado;
           return (
@@ -148,6 +152,7 @@ export const EvidenceAssignmentsTable: React.FC<
         key: "actions",
         header: "Acciones",
         align: "center",
+        width: TABLE_COLUMN_WIDTHS.actionsLarge,
         render: (_: unknown, assignment: EvidenceAssignment) => {
           // Determinar si puede solicitar ampliación
           // No puede solicitar si:

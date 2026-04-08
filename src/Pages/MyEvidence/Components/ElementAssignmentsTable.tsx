@@ -19,6 +19,7 @@ import type { FlexibleElement } from '@/Types/StructureModelTypes';
 import { getElementPath } from '@/Utils/elementTreeUtils';
 import { useFirstColumnConfig } from '@/Hooks/UseFirstColumnConfig';
 import { formatDate } from '@/Utils/DateUtils';
+import { TABLE_COLUMN_WIDTHS } from '@/Constants/Components';
 
 interface ElementAssignmentsTableProps {
   assignments: FlexibleAssignmentItem[];
@@ -96,6 +97,7 @@ export const ElementAssignmentsTable: React.FC<ElementAssignmentsTableProps> = (
         key: 'process',
         header: 'Proceso',
         align: 'left',
+        width: TABLE_COLUMN_WIDTHS.actionsLarge,
         render: (_: unknown, assignment: FlexibleAssignmentItem) => (
           <span className={`font-sans text-negro-una-2 ${TYPOGRAPHY.table.cell}`}>
             {assignment.process?.nombre ?? `Proceso ${assignment.proceso_id}`}
@@ -106,6 +108,7 @@ export const ElementAssignmentsTable: React.FC<ElementAssignmentsTableProps> = (
         key: 'fecha_limite',
         header: 'Fecha Límite',
         align: 'left',
+        width: TABLE_COLUMN_WIDTHS.status,
         render: (_: unknown, assignment: FlexibleAssignmentItem) => {
           const fecha = assignment.fecha_limite
             ? formatDate(assignment.fecha_limite)
@@ -124,6 +127,7 @@ export const ElementAssignmentsTable: React.FC<ElementAssignmentsTableProps> = (
         key: 'estado',
         header: 'Estado',
         align: 'left',
+        width: TABLE_COLUMN_WIDTHS.status,
         render: (_: unknown, assignment: FlexibleAssignmentItem) => {
           const badge = EVIDENCE_STATUS_BADGE[assignment.estado as keyof typeof EVIDENCE_STATUS_BADGE];
           return (
@@ -140,6 +144,7 @@ export const ElementAssignmentsTable: React.FC<ElementAssignmentsTableProps> = (
         key: 'actions',
         header: 'Acciones',
         align: 'center',
+        width: TABLE_COLUMN_WIDTHS.actionsLarge,
         render: (_: unknown, assignment: FlexibleAssignmentItem) => {
           const isCompleted = assignment.estado === 'Completado';
           const isActionable = ['Pendiente', 'En Progreso'].includes(assignment.estado);

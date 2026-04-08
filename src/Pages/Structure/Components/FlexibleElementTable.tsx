@@ -165,7 +165,7 @@ export const FlexibleElementTable: React.FC<FlexibleElementTableProps> = ({
           {el.categoria ? (
             <StatusBadge label={el.categoria} colorClasses={getBadgeColorForString(el.categoria)} />
           ) : (
-            <span className={`${TYPOGRAPHY.table.cell} text-gris-una`}>—</span>
+            <span className={`${TYPOGRAPHY.table.cell} text-gris-una`}>-</span>
           )}
         </div>
       ),
