@@ -469,20 +469,16 @@ export const fileService = {
    */
   listFiles: async (params: FileListParams): Promise<FileModel[]> => {
     try {
-      const queryParams = new URLSearchParams();
-      if (params.evidencia_id) {
-        queryParams.append("evidencia_id", params.evidencia_id.toString());
-      }
-      if (params.proceso_id) {
-        queryParams.append("proceso_id", params.proceso_id.toString());
-      }
-      if (params.usuario_id) {
-        queryParams.append("usuario_id", params.usuario_id.toString());
-      }
+      const queryParams: Record<string, number> = {};
+      if (params.evidencia_id) queryParams.evidencia_id = params.evidencia_id;
+      if (params.proceso_id)   queryParams.proceso_id   = params.proceso_id;
+      if (params.usuario_id)   queryParams.usuario_id   = params.usuario_id;
 
-      const response = await axiosInstance.get<FileListResponse>(
-        `${BASE_URL}?${queryParams.toString()}`,
-      );
+      // Use config.params so the axios interceptor merges context as defaults
+      // and these explicit values take precedence (service params override context).
+      const response = await axiosInstance.get<FileListResponse>(BASE_URL, {
+        params: queryParams,
+      });
 
       if (!response.data.success) {
         throw new Error("Error al obtener la lista de archivos");

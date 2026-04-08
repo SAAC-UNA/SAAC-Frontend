@@ -58,8 +58,9 @@ axiosInstance.interceptors.request.use((config) => {
 
   if (String(config.method || "get").toLowerCase() === "get") {
     const params = (config.params ?? {}) as Record<string, unknown>;
+    // Context values are injected as DEFAULTS: if the service explicitly sets a
+    // param (e.g. proceso_id from an assignment), that value takes priority.
     config.params = {
-      ...params,
       ...(contextIds.careerCampusId !== null
         ? { career_campus_id: contextIds.careerCampusId }
         : {}),
@@ -69,6 +70,8 @@ axiosInstance.interceptors.request.use((config) => {
       ...(contextIds.processId !== null
         ? { proceso_id: contextIds.processId }
         : {}),
+      // Service-explicit params spread last so they override context defaults.
+      ...params,
     };
   }
 

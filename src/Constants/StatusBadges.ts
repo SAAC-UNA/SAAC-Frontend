@@ -29,12 +29,20 @@ export const EVIDENCE_STATUS_BADGE: Record<EvidencePublicationStatus, StatusBadg
   'Validada': { label: 'Validada', colorClasses: 'bg-info-ring text-info' },
 };
 
-/** Estados de asignación de evidencia a responsable */
+/** Estados de asignación de evidencia a responsable (modelo tradicional — snake_case) */
 export const ASSIGNMENT_STATUS_BADGE: Record<AssignmentStatus, StatusBadgeConfig> = {
   pendiente: { label: 'Pendiente', colorClasses: 'bg-slate-ring text-slate' },
   en_progreso: { label: 'En progreso', colorClasses: 'bg-warning-ring text-warning' },
   completado: { label: 'Completado', colorClasses: 'bg-verde-ring text-verde' },
   vencido: { label: 'Vencido', colorClasses: 'bg-rose-ring text-rose' },
+};
+
+/** Estados de asignación de elemento (modelo flexible — PascalCase del backend) */
+export const ELEMENT_ASSIGNMENT_STATUS_BADGE: Record<string, StatusBadgeConfig> = {
+  'Pendiente':   { label: 'Pendiente',   colorClasses: 'bg-slate-ring text-slate' },
+  'En Progreso': { label: 'En progreso', colorClasses: 'bg-warning-ring text-warning' },
+  'Completado':  { label: 'Completado',  colorClasses: 'bg-verde-ring text-verde' },
+  'Vencido':     { label: 'Vencido',     colorClasses: 'bg-rose-ring text-rose' },
 };
 
 /** Estados de solicitud de ampliación de plazo */

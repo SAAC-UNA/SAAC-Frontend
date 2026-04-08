@@ -14,7 +14,7 @@ import { truncateText } from '@/Utils';
 import { TableActionButton } from '@/Components/Ui/Buttons/TableActionButton';
 import { StatusBadge } from '@/Components/Ui/Feedback/StatusBadge';
 import { Tooltip, TooltipTrigger, TooltipContent } from '@/Components/Ui/Feedback/Tooltip';
-import { EVIDENCE_STATUS_BADGE } from '@/Constants/StatusBadges';
+import { ELEMENT_ASSIGNMENT_STATUS_BADGE } from '@/Constants/StatusBadges';
 import type { FlexibleAssignmentItem } from '@/Types/EvidenceAssignment';
 import type { FlexibleElement } from '@/Types/StructureModelTypes';
 import { getElementPath } from '@/Utils/elementTreeUtils';
@@ -132,7 +132,7 @@ export const ElementAssignmentsTable: React.FC<ElementAssignmentsTableProps> = (
         render: (_: unknown, assignment: FlexibleAssignmentItem) => {
           const isReturnedPending =
             assignment.estado === 'Pendiente' && assignment.is_returned_for_changes === true;
-          const badge = EVIDENCE_STATUS_BADGE[assignment.estado as keyof typeof EVIDENCE_STATUS_BADGE];
+          const badge = ELEMENT_ASSIGNMENT_STATUS_BADGE[assignment.estado];
           const badgeLabel = isReturnedPending
             ? 'Pendiente'
             : badge?.label ?? assignment.estado;

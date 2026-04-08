@@ -542,16 +542,23 @@ class EvidenceAssignmentService {
     elementoId: number,
     procesoId: number
   ): Promise<{ successful: FileModel[]; failed: Array<{ file: File; error: string }> }> {
-    const formData = new FormData();
-    formData.append('tipo', 'archivo');
-    files.forEach(f => formData.append('archivos[]', f));
-    formData.append('elemento_id', elementoId.toString());
-    formData.append('proceso_id', procesoId.toString());
-    try {
-      const response = await axiosInstance.post<{ data: FileModel[]; errores?: Array<{ indice: number; error: string }> }>(
-        '/elementos-archivos', formData,
+    const buildFormData = (batch: File[]) => {
+      const formData = new FormData();
+      formData.append('tipo', 'archivo');
+      batch.forEach(f => formData.append('archivos[]', f));
+      formData.append('elemento_id', elementoId.toString());
+      formData.append('proceso_id', procesoId.toString());
+      return formData;
+    };
+
+    const sendBatch = (batch: File[]) =>
+      axiosInstance.post<{ data: FileModel[]; errores?: Array<{ indice: number; error: string }> }>(
+        '/elementos-archivos', buildFormData(batch),
         { headers: { 'Content-Type': 'multipart/form-data' } }
       );
+
+    try {
+      const response = await sendBatch(files);
       const successful = response.data.data || [];
       const failed: Array<{ file: File; error: string }> = (response.data.errores || []).map(e => ({
         file: files[e.indice],
@@ -559,6 +566,47 @@ class EvidenceAssignmentService {
       }));
       return { successful, failed };
     } catch (error: any) {
+      // Si el backend rechaza archivos específicos con 422, excluirlos y reintentar los válidos
+      if (error.response?.status === 422) {
+        const validationErrors: Record<string, unknown> = error.response.data?.errors || {};
+        const indexedErrors = new Map<number, string>();
+
+        Object.entries(validationErrors).forEach(([key, value]) => {
+          const match = key.match(/^archivos\.(\d+)$/);
+          if (!match) return;
+          const index = Number(match[1]);
+          const message = Array.isArray(value) ? String(value[0]) : String(value);
+          if (!Number.isNaN(index)) indexedErrors.set(index, message);
+        });
+
+        if (indexedErrors.size > 0) {
+          const failed: Array<{ file: File; error: string }> = [];
+          const retryBatch = files.filter((file, index) => {
+            if (indexedErrors.has(index)) {
+              failed.push({ file, error: indexedErrors.get(index) || 'Archivo inválido.' });
+              return false;
+            }
+            return true;
+          });
+
+          if (retryBatch.length === 0) return { successful: [], failed };
+
+          try {
+            const retryResponse = await sendBatch(retryBatch);
+            const successful = retryResponse.data.data || [];
+            (retryResponse.data.errores || []).forEach(e => {
+              const f = retryBatch[e.indice];
+              if (f) failed.push({ file: f, error: e.error });
+            });
+            return { successful, failed };
+          } catch (retryError: any) {
+            const msg = retryError.response?.data?.message || retryError.message || 'Error al reintentar subida';
+            retryBatch.forEach(f => failed.push({ file: f, error: msg }));
+            return { successful: [], failed };
+          }
+        }
+      }
+
       const msg = error.response?.data?.message || error.message || 'Error al subir archivos';
       return { successful: [], failed: files.map(f => ({ file: f, error: msg })) };
     }

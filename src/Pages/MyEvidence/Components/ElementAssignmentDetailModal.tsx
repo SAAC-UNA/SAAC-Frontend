@@ -5,7 +5,7 @@ import { cn } from '@/Utils/ClassNames';
 import { ICON_SIZES } from '@/Constants/Components';
 import { TYPOGRAPHY } from '@/Constants/Typography';
 import { StatusBadge } from '@/Components/Ui/Feedback/StatusBadge';
-import { EVIDENCE_STATUS_BADGE } from '@/Constants/StatusBadges';
+import { ELEMENT_ASSIGNMENT_STATUS_BADGE } from '@/Constants/StatusBadges';
 import type { FlexibleAssignmentItem } from '@/Types/EvidenceAssignment';
 import type { FlexibleElement } from '@/Types/StructureModelTypes';
 import { getAncestors } from '@/Utils/elementTreeUtils';
@@ -154,7 +154,7 @@ export const ElementAssignmentDetailModal: React.FC<ElementAssignmentDetailModal
       ? 'text-warning font-semibold'
       : 'text-gris-una-2';
 
-  const badge = EVIDENCE_STATUS_BADGE[assignment.estado as keyof typeof EVIDENCE_STATUS_BADGE];
+  const badge = ELEMENT_ASSIGNMENT_STATUS_BADGE[assignment.estado];
   const isReturnedPending =
     assignment.estado === 'Pendiente' && assignment.is_returned_for_changes === true;
   const badgeLabel = isReturnedPending
