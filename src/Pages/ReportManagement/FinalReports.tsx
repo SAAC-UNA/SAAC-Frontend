@@ -5,6 +5,7 @@ import { ButtonWithTooltip } from "@/Components/Ui/Buttons/ButtonWithTooltip";
 import { getModuleInfo } from "@/Constants/ModuleInfo";
 import { SystemIcons } from "@/Components/Ui/Icons/SystemIcons";
 import { axiosInstance } from "@/Config/axios";
+import { config } from "@/Config/app.config";
 import { PublicLinkModal } from "./Components/PublicLinkModal";
 import { CriterionDetailModal } from "./Components/CriterionDetailModal";
 import { GenerateLinksConfirmModal } from "./Components/GenerateLinksConfirmModal";
@@ -375,12 +376,16 @@ const FinalReports: React.FC = () => {
   };
 
   const resolvePublicLink = (archivo: Archivo): string => {
-    if (archivo.url_publica) {
-      return archivo.url_publica;
+    if (archivo.token_publico) {
+      return `${config.FRONTEND_BASE_URL}/p/${archivo.token_publico}`;
     }
 
-    if (archivo.token_publico) {
-      return `${window.location.origin}/api/p/${archivo.token_publico}`;
+    if (archivo.url_publica_carpeta) {
+      return archivo.url_publica_carpeta;
+    }
+
+    if (archivo.url_publica) {
+      return archivo.url_publica;
     }
 
     return "";

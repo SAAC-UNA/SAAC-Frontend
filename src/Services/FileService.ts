@@ -89,20 +89,20 @@ export const fileService = {
     procesoId: number,
     onProgress?: (progress: number) => void
   ): Promise<{ successful: FileModel[]; failed: Array<{ file: File; error: string }> }> => {
-    const formData = new FormData();
-    
-    formData.append('tipo', 'archivo');
-    
-    // Agregar todos los archivos al FormData
-    files.forEach(file => {
-      formData.append('archivos[]', file);
-    });
-    
-    formData.append('evidencia_id', evidenciaId.toString());
-    formData.append('proceso_id', procesoId.toString());
+    const sendBatch = async (
+      batchFiles: File[],
+      batchProgress?: (progress: number) => void
+    ) => {
+      const formData = new FormData();
 
-    try {
-      const response = await axiosInstance.post<MultipleFileUploadResponse>(
+      formData.append('tipo', 'archivo');
+      batchFiles.forEach(file => {
+        formData.append('archivos[]', file);
+      });
+      formData.append('evidencia_id', evidenciaId.toString());
+      formData.append('proceso_id', procesoId.toString());
+
+      return axiosInstance.post<MultipleFileUploadResponse>(
         BASE_URL,
         formData,
         {
@@ -110,15 +110,36 @@ export const fileService = {
             'Content-Type': 'multipart/form-data',
           },
           onUploadProgress: (progressEvent) => {
-            if (onProgress && progressEvent.total) {
+            if (batchProgress && progressEvent.total) {
               const percentCompleted = Math.round(
                 (progressEvent.loaded * 100) / progressEvent.total
               );
-              onProgress(percentCompleted);
+              batchProgress(percentCompleted);
             }
           },
         }
       );
+    };
+
+    const parseIndexedValidationErrors = (validationErrors: Record<string, unknown>) => {
+      const indexedErrors = new Map<number, string>();
+
+      Object.entries(validationErrors || {}).forEach(([key, value]) => {
+        const match = key.match(/^archivos\.(\d+)$/);
+        if (!match) return;
+
+        const index = Number(match[1]);
+        const message = Array.isArray(value) ? String(value[0]) : String(value);
+        if (!Number.isNaN(index)) {
+          indexedErrors.set(index, message);
+        }
+      });
+
+      return indexedErrors;
+    };
+
+    try {
+      const response = await sendBatch(files, onProgress);
 
       // Manejar respuesta exitosa o parcial (status 201 o 207)
       const successful = response.data.data || [];
@@ -140,13 +161,68 @@ export const fileService = {
       return { successful, failed };
 
     } catch (error: any) {
-      // Si falla completamente, todos los archivos fallan
       const errorMessage = error.response?.data?.message || error.message || 'Error al subir archivos';
       
       // Manejar errores de validación (422)
       if (error.response?.status === 422) {
-        const validationErrors = error.response.data.errors;
+        const validationErrors = error.response.data.errors || {};
         console.error('[FileService] 422 Validation errors:', validationErrors, '\nFull response:', error.response.data);
+
+        const indexedErrors = parseIndexedValidationErrors(validationErrors as Record<string, unknown>);
+
+        // Si el backend marca archivos específicos (archivos.N), excluirlos y reintentar los válidos.
+        if (indexedErrors.size > 0) {
+          const failed: Array<{ file: File; error: string }> = [];
+
+          const retryMap = files
+            .map((file, index) => ({ file, index }))
+            .filter(({ index }) => {
+              if (indexedErrors.has(index)) {
+                failed.push({
+                  file: files[index],
+                  error: indexedErrors.get(index) || 'Archivo inválido.',
+                });
+                return false;
+              }
+              return true;
+            });
+
+          if (retryMap.length === 0) {
+            return { successful: [], failed };
+          }
+
+          try {
+            const retryResponse = await sendBatch(
+              retryMap.map(({ file }) => file),
+              onProgress
+            );
+
+            const successful = retryResponse.data.data || [];
+
+            if (retryResponse.data.errores?.length) {
+              retryResponse.data.errores.forEach((retryErr) => {
+                const mapped = retryMap[retryErr.indice];
+                if (mapped) {
+                  failed.push({
+                    file: mapped.file,
+                    error: retryErr.error,
+                  });
+                }
+              });
+            }
+
+            return { successful, failed };
+          } catch (retryError: any) {
+            const retryMessage = retryError.response?.data?.message || retryError.message || 'Error al subir archivos válidos';
+
+            retryMap.forEach(({ file }) => {
+              failed.push({ file, error: retryMessage });
+            });
+
+            return { successful: [], failed };
+          }
+        }
+
         const firstError = Object.values(validationErrors || {})[0];
         const message = Array.isArray(firstError) ? firstError[0] : errorMessage;
         

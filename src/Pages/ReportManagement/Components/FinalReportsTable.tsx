@@ -14,6 +14,7 @@ export interface Archivo {
   ruta_archivo: string;
   token_publico?: string;
   url_publica?: string;
+  url_publica_carpeta?: string;
   is_publico: boolean;
   link_expira_en?: string;
 }
@@ -76,7 +77,7 @@ const EvidenceExpansionRow: React.FC<EvidenceExpansionProps> = ({
         {criterionEvidences.map(evidencia => {
           const tieneArchivos = (evidencia.archivos?.length ?? 0) > 0;
           const tieneEnlace = (evidencia.archivos ?? []).some(
-            a => a.is_publico && (Boolean(a.token_publico) || Boolean(a.url_publica)),
+            a => a.is_publico && (Boolean(a.token_publico) || Boolean(a.url_publica) || Boolean(a.url_publica_carpeta)),
           );
           const isLoadingFile = loadingFiles.has(evidencia.id);
 
@@ -155,7 +156,7 @@ const normalizeElementType = (value: unknown): string => {
 };
 
 const hasPublicLink = (archivos: Archivo[] = []) =>
-  archivos.some(a => a.is_publico && (Boolean(a.token_publico) || Boolean(a.url_publica)));
+  archivos.some(a => a.is_publico && (Boolean(a.token_publico) || Boolean(a.url_publica) || Boolean(a.url_publica_carpeta)));
 
 const buildSourceAsEvidence = (source: Criterio): Evidencia => ({
   id: source.id,

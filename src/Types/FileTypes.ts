@@ -33,6 +33,7 @@ export interface FileModel {
   // Acceso público
   is_publico: boolean;
   url_publica?: string;
+  url_publica_carpeta?: string;
   link_expira_en?: string;
   
   // Relaciones

@@ -10,6 +10,7 @@ import { ButtonWithTooltip } from '@/Components/Ui/Buttons/ButtonWithTooltip';
 import { SystemIcons } from '@/Components/Ui/Icons/SystemIcons';
 import { Tooltip, TooltipTrigger, TooltipContent } from '@/Components/Ui/Feedback/Tooltip';
 import { axiosInstance } from '@/Config/axios';
+import { config } from '@/Config/app.config';
 import { useToast } from '@/Context/ToastContext';
 import { TYPOGRAPHY } from '@/Constants/Typography';
 import { ICON_SIZES } from '@/Constants/Components';
@@ -21,6 +22,7 @@ interface Archivo {
   ruta_archivo: string;
   token_publico?: string;
   url_publica?: string;
+  url_publica_carpeta?: string;
   is_publico: boolean;
   link_expira_en?: string;
 }
@@ -86,10 +88,11 @@ export const PublicLinkModal: React.FC<PublicLinkModalProps> = ({
     ) : null;
   }
 
-  const publicUrl = archivo.url_publica
-    ?? (archivo.token_publico
-      ? `${window.location.origin}/api/p/${archivo.token_publico}`
-      : '');
+  const publicUrl = archivo.token_publico
+    ? `${config.FRONTEND_BASE_URL}/p/${archivo.token_publico}`
+    : (archivo.url_publica_carpeta
+      ?? archivo.url_publica
+      ?? '');
 
   const handleGenerateLink = async () => {
     setIsGenerating(true);
