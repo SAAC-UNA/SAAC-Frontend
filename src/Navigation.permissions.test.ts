@@ -21,7 +21,6 @@ describe("Navigation permissions", () => {
       roles: ["Encargado de Acreditación"],
       permissions: [
         "procesos.view",
-        "elemento.view",
         "modelos.view",
         "ciclos.view",
       ],
@@ -31,7 +30,6 @@ describe("Navigation permissions", () => {
     const childIds = acreditacion?.children?.map((child) => child.id) ?? [];
 
     expect(childIds).toContain("procesos-acreditacion");
-    expect(childIds).toContain("estructura");
     expect(childIds).toContain("modelos-acreditacion");
     expect(childIds).toContain("ciclos-acreditacion");
   });

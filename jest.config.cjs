@@ -8,6 +8,8 @@ module.exports = {
   setupFiles: ["<rootDir>/jest.setup.cjs"],
   setupFilesAfterEnv: ["@testing-library/jest-dom"],
   moduleNameMapper: {
+    "^@/.*\\.svg(\\?.*)?$": "<rootDir>/src/__mocks__/svgMock.js",
+    "^.*\\.svg(\\?.*)?$": "<rootDir>/src/__mocks__/svgMock.js",
     "^@/(.*)$": "<rootDir>/src/$1",
     "\\.(css|less|scss|sass)$": "identity-obj-proxy"
   },

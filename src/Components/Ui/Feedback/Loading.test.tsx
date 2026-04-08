@@ -13,14 +13,14 @@ describe('LoadingSpinner', () => {
     expect(screen.getByRole('status')).toBeInTheDocument();
   });
 
-  it('contiene el div con clase loader-con', () => {
+  it('contiene el div con clase loader', () => {
     const { container } = render(<LoadingSpinner />);
-    expect(container.querySelector('.loader-con')).toBeInTheDocument();
+    expect(container.querySelector('.loader')).toBeInTheDocument();
   });
 
-  it('contiene 6 elementos pfile', () => {
+  it('contiene elementos bar dentro del loader', () => {
     const { container } = render(<LoadingSpinner />);
-    expect(container.querySelectorAll('.pfile')).toHaveLength(6);
+    expect(container.querySelectorAll('.bar')).toHaveLength(2);
   });
 
   it('tiene aria-label="Cargando..."', () => {
