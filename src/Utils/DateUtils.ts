@@ -123,3 +123,53 @@ export function formatDateCompact(date: string | Date): string {
     day: 'numeric',
   }).format(d);
 }
+
+/**
+ * Verifica si una fecha es hoy.
+ */
+export function isToday(date: Date): boolean {
+  const now = new Date();
+  return (
+    date.getFullYear() === now.getFullYear() &&
+    date.getMonth() === now.getMonth() &&
+    date.getDate() === now.getDate()
+  );
+}
+
+/**
+ * Verifica si una fecha fue ayer.
+ */
+export function isYesterday(date: Date): boolean {
+  const yesterday = new Date();
+  yesterday.setDate(yesterday.getDate() - 1);
+  return (
+    date.getFullYear() === yesterday.getFullYear() &&
+    date.getMonth() === yesterday.getMonth() &&
+    date.getDate() === yesterday.getDate()
+  );
+}
+
+/**
+ * Tiempo relativo al momento actual: "hace 5 minutos", "hace 2 horas", "ayer", etc.
+ * Usa Intl.RelativeTimeFormat con locale es-CR.
+ */
+export function formatTimeAgo(date: string | Date): string {
+  const d = new Date(date);
+  if (Number.isNaN(d.getTime())) return '—';
+  const diffMs = d.getTime() - Date.now();
+  const diffSeconds = Math.round(diffMs / 1000);
+  const diffMinutes = Math.round(diffMs / (1000 * 60));
+  const diffHours = Math.round(diffMs / (1000 * 60 * 60));
+  const diffDays = Math.round(diffMs / (1000 * 60 * 60 * 24));
+  const diffMonths = Math.round(diffMs / (1000 * 60 * 60 * 24 * 30));
+  const diffYears = Math.round(diffMs / (1000 * 60 * 60 * 24 * 365));
+
+  const rtf = new Intl.RelativeTimeFormat(LOCALE, { numeric: 'auto' });
+
+  if (Math.abs(diffSeconds) < 60) return rtf.format(diffSeconds, 'second');
+  if (Math.abs(diffMinutes) < 60) return rtf.format(diffMinutes, 'minute');
+  if (Math.abs(diffHours) < 24) return rtf.format(diffHours, 'hour');
+  if (Math.abs(diffDays) < 30) return rtf.format(diffDays, 'day');
+  if (Math.abs(diffMonths) < 12) return rtf.format(diffMonths, 'month');
+  return rtf.format(diffYears, 'year');
+}

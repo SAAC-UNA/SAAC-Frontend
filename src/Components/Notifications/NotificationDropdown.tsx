@@ -18,8 +18,7 @@ import { useNotifications } from "@/Hooks/useNotifications";
 import { NotificationService } from "@/Services/NotificationService";
 import { cn } from "@/Utils/ClassNames";
 import { TYPOGRAPHY } from "@/Constants/Typography";
-import { formatDistanceToNow } from "date-fns";
-import { es } from "date-fns/locale";
+import { formatTimeAgo } from "@/Utils/DateUtils";
 import type { Notification } from "@/Types/NotificationTypes";
 import { buildNotificationTargetRoute } from "@/Components/Notifications/notificationNavigation";
 
@@ -62,10 +61,7 @@ const DropdownItem: React.FC<DropdownItemProps> = ({
     }
   };
 
-  const timeAgo = formatDistanceToNow(new Date(notification.created_at), {
-    addSuffix: true,
-    locale: es,
-  });
+  const timeAgo = formatTimeAgo(notification.created_at);
 
   return (
     <motion.div

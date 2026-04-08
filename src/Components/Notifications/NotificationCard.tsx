@@ -15,8 +15,7 @@ import { TYPOGRAPHY } from "@/Constants/Typography";
 import { SPRING_HOVER } from "@/Constants/Animations";
 import type { Notification } from "@/Types/NotificationTypes";
 import { buildNotificationTargetRoute } from "@/Components/Notifications/notificationNavigation";
-import { formatDistanceToNow } from "date-fns";
-import { es } from "date-fns/locale";
+import { formatTimeAgo } from "@/Utils/DateUtils";
 import { Button } from "@/Components/Ui/Index";
 
 const HOVER_LAYOUT_ID = "notif-card-hover-bg";
@@ -63,10 +62,7 @@ export const NotificationCard: React.FC<NotificationCardProps> = ({
 
   const [isHovered, setIsHovered] = useState(false);
 
-  const timeAgo = formatDistanceToNow(new Date(notification.created_at), {
-    addSuffix: true,
-    locale: es,
-  });
+  const timeAgo = formatTimeAgo(notification.created_at);
 
   return (
     <motion.div

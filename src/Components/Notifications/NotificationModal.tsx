@@ -23,8 +23,7 @@ import { cn } from "@/Utils/ClassNames";
 import { TYPOGRAPHY } from "@/Constants/Typography";
 import { ICON_SIZES } from "@/Constants/Components";
 import type { NotificationFilters } from "@/Types/NotificationTypes";
-import { format, isToday, isYesterday } from "date-fns";
-import { es } from "date-fns/locale";
+import { isToday, isYesterday, formatDateShort } from "@/Utils/DateUtils";
 
 interface NotificationCenterModalProps {
   isOpen: boolean;
@@ -69,7 +68,7 @@ const NotificationCenter: React.FC<NotificationCenterModalProps> = ({
       const date = new Date(dateString);
       if (isToday(date)) return "Hoy";
       if (isYesterday(date)) return "Ayer";
-      return format(date, "dd MMM yyyy", { locale: es });
+      return formatDateShort(date);
     };
 
     filteredNotifications.forEach((notification) => {
