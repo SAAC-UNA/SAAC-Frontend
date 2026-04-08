@@ -59,12 +59,15 @@ export type StatusFilter = 'todos' | 'seleccionados' | 'pendientes';
 
 export const CreationStep: React.FC<CreationStepProps> = ({
   formData,
+  updateFormData: _updateFormData,
   agregarCriterio: addCriterion,
   eliminarCriterio: deleteCriterion,
   actualizarCriterio: updateCriterion,
   agregarElemento,
   eliminarElemento,
   actualizarElemento,
+  errors: _errors,
+  cicloFijo: _cicloFijo = false,
   searchTerm,
   statusFilter,
   modeloTipo,

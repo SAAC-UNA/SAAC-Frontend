@@ -4,7 +4,7 @@
  */
 
 import React, { useState, useEffect, useMemo } from "react";
-import { useLocation, useNavigate } from "react-router-dom";
+import { useLocation } from "react-router-dom";
 import {
   PageHeader,
   ScreenContainer,
@@ -37,7 +37,8 @@ import {
 } from "./Components";
 import { CreateExtensionRequestModal } from "@/Pages/MyEvidence/Components/CreateExtensionRequestModal";
 import { ElementAssignmentDetailModal } from "@/Pages/MyEvidence/Components/ElementAssignmentDetailModal";
-import { ElementFileUploadModal } from "@/Pages/MyEvidence/Components/ElementFileUploadModal";
+import { ElementUploadPage } from "./Components/ElementUploadModal";
+import { EvidenceUploadPage } from "./Components/EvidenceUploadModal";
 
 const parsePositiveInt = (value: string | null): number | null => {
   if (!value) {
@@ -51,7 +52,6 @@ const parsePositiveInt = (value: string | null): number | null => {
 export const MyEvidenceAssignmentsPage: React.FC = () => {
   const { showToast } = useToast();
   const { user } = useAuth();
-  const navigate = useNavigate();
   const location = useLocation();
 
   const [pageState, setPageState] = useState<{
@@ -88,8 +88,7 @@ export const MyEvidenceAssignmentsPage: React.FC = () => {
     selectedId: number | null;
     showExtension: boolean;
     selectedForExtension: FlexibleAssignmentItem | null;
-    selectedForUpload: FlexibleAssignmentItem | null;
-  }>({ selectedId: null, showExtension: false, selectedForExtension: null, selectedForUpload: null });
+  }>({ selectedId: null, showExtension: false, selectedForExtension: null });
 
   // Confirmación de revertir estado en modelo flexible
   const [flexRevertConfirm, setFlexRevertConfirm] = useState<{
@@ -108,6 +107,16 @@ export const MyEvidenceAssignmentsPage: React.FC = () => {
     showExtensionModal: false,
     selectedAssignmentForExtension: null,
   });
+
+  const [uploadModal, setUploadModal] = useState<{
+    open: boolean;
+    assignment: FlexibleAssignmentItem | null;
+  }>({ open: false, assignment: null });
+
+  const [evidenceUploadModal, setEvidenceUploadModal] = useState<{
+    open: boolean;
+    assignment: EvidenceAssignment | null;
+  }>({ open: false, assignment: null });
 
   // Modal de confirmación para revertir estado completado → en_progreso
   const [revertConfirmState, setRevertConfirmState] = useState<{
@@ -359,11 +368,7 @@ export const MyEvidenceAssignmentsPage: React.FC = () => {
   };
 
   const handleFlexUploadFiles = (a: FlexibleAssignmentItem) => {
-    setFlexModal((prev) => ({ ...prev, selectedForUpload: a }));
-  };
-
-  const handleFlexUploadSuccess = () => {
-    loadFlexAssignments();
+    setUploadModal({ open: true, assignment: a });
   };
 
   const handleFlexStatusChange = async (
@@ -505,18 +510,7 @@ export const MyEvidenceAssignmentsPage: React.FC = () => {
       });
       return;
     }
-
-    // Navegar a la página de subida con los parámetros necesarios
-    const params = new URLSearchParams({
-      evidenciaId: assignment.evidencia.evidencia_id.toString(),
-      procesoId: (
-        assignment.proceso?.proceso_id ?? assignment.proceso_id
-      ).toString(),
-      usuarioId: assignment.usuario_id.toString(),
-      nombre: `${assignment.evidencia.nomenclatura} - ${assignment.evidencia.descripcion}`,
-    });
-
-    navigate(`/evidencias/subir?${params.toString()}`);
+    setEvidenceUploadModal({ open: true, assignment });
   };
 
   // HU-016: Handler para solicitar ampliación
@@ -804,18 +798,6 @@ export const MyEvidenceAssignmentsPage: React.FC = () => {
         />
       )}
 
-      {/* Modal subida de archivos flexible */}
-      {flexModal.selectedForUpload && (
-        <ElementFileUploadModal
-          isOpen
-          onClose={() => setFlexModal((prev) => ({ ...prev, selectedForUpload: null }))}
-          elementoId={flexModal.selectedForUpload.elemento_id}
-          procesoId={flexModal.selectedForUpload.proceso_id}
-          elementoNombre={flexModal.selectedForUpload.element?.nombre ?? "Pauta"}
-          onSuccess={handleFlexUploadSuccess}
-        />
-      )}
-
       {/* Modal ampliación flexible */}
       {flexModal.showExtension && flexModal.selectedForExtension && (
         <CreateExtensionRequestModal
@@ -859,6 +841,33 @@ export const MyEvidenceAssignmentsPage: React.FC = () => {
           La pauta dejará de estar marcada como completada.
         </p>
       </Modal>
+
+      {/* Modal de subida de archivos para modelo tradicional */}
+      {evidenceUploadModal.open && evidenceUploadModal.assignment?.evidencia && (
+        <EvidenceUploadPage
+          isOpen={evidenceUploadModal.open}
+          onClose={() => setEvidenceUploadModal({ open: false, assignment: null })}
+          evidenciaId={evidenceUploadModal.assignment.evidencia.evidencia_id}
+          procesoId={
+            evidenceUploadModal.assignment.proceso?.proceso_id ??
+            evidenceUploadModal.assignment.proceso_id
+          }
+          nombre={`${evidenceUploadModal.assignment.evidencia.nomenclatura} - ${evidenceUploadModal.assignment.evidencia.descripcion}`}
+          onSuccess={loadAssignments}
+        />
+      )}
+
+      {/* Modal de subida de archivos para modelo flexible */}
+      {uploadModal.open && uploadModal.assignment && (
+        <ElementUploadPage
+          isOpen={uploadModal.open}
+          onClose={() => setUploadModal({ open: false, assignment: null })}
+          elementoId={uploadModal.assignment.elemento_id}
+          procesoId={uploadModal.assignment.proceso_id}
+          nombre={uploadModal.assignment.element?.nombre ?? 'Pauta'}
+          onSuccess={loadFlexAssignments}
+        />
+      )}
 
       {/* Modal de confirmación para revertir estado completado → en_progreso */}
       <Modal

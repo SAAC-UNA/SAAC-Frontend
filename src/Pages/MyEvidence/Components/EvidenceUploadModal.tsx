@@ -1,11 +1,10 @@
 /**
- * EvidenceUploadPage - Página principal para subida de evidencias
+ * EvidenceUploadModal - Modal de subida de evidencias (modelo tradicional)
  * HU008 - Subida de Evidencias al Sistema
  */
 
 import React, { useState, useEffect } from "react";
-import { useSearchParams, useNavigate } from "react-router-dom";
-import { PageHeader, ScreenContainer } from "@/Components/Ui/Index";
+import { Modal } from "@/Components/Ui/Modals/Modal";
 import { Button } from "@/Components/Ui/Buttons/Button";
 import { SystemIcons } from "@/Components/Ui/Icons/SystemIcons";
 import {
@@ -20,36 +19,30 @@ import {
 } from "@/Components/Ui/Upload";
 import type { FileUploadProgressItem } from "@/Components/Ui/Upload";
 import { LinkInput } from "@/Components/Ui/Forms/LinkInput";
+import { LoadingSpinner } from "@/Components/Ui/Index";
 import { fileService } from "@/Services/FileService";
 import { useToast } from "@/Context/ToastContext";
-import { getModuleInfo } from "@/Constants/ModuleInfo";
 import type { FileModel } from "@/Types/FileTypes";
-import { TYPOGRAPHY } from "@/constants/Typography";
-import { Card } from "@/Components/Ui/Layout/Card";
+import { TYPOGRAPHY } from "@/Constants/Typography";
 
 interface EvidenceUploadPageProps {
-  evidenciaId?: number;
-  procesoId?: number;
-  evidenciaNombre?: string;
+  isOpen: boolean;
+  onClose: () => void;
+  evidenciaId: number;
+  procesoId: number;
+  nombre: string;
+  onSuccess?: () => void;
 }
 
 export const EvidenceUploadPage: React.FC<EvidenceUploadPageProps> = ({
-  evidenciaId: propEvidenciaId,
-  procesoId: propProcesoId,
-  evidenciaNombre: propEvidenciaNombre,
+  isOpen,
+  onClose,
+  evidenciaId,
+  procesoId,
+  nombre,
+  onSuccess,
 }) => {
   const { showToast } = useToast();
-  const [searchParams] = useSearchParams();
-  const navigate = useNavigate();
-
-  // Obtener IDs desde props o desde URL query params
-  const evidenciaId =
-    propEvidenciaId ?? (Number(searchParams.get("evidenciaId")) || undefined);
-  const procesoId =
-    propProcesoId ?? (Number(searchParams.get("procesoId")) || undefined);
-  const usuarioId = Number(searchParams.get("usuarioId")) || undefined;
-  const evidenciaNombre =
-    propEvidenciaNombre ?? searchParams.get("nombre") ?? "Evidencia";
 
   // Estados
   const [uploadState, setUploadState] = useState<{
@@ -65,18 +58,13 @@ export const EvidenceUploadPage: React.FC<EvidenceUploadPageProps> = ({
     isUploading: false,
     uploaderKey: 0,
   });
-  const selectedFiles = uploadState.selectedFiles;
-  const selectedLinks = uploadState.selectedLinks;
-  const uploadProgress = uploadState.uploadProgress;
-  const isUploading = uploadState.isUploading;
-  const uploaderKey = uploadState.uploaderKey;
   const [uploadedFiles, setUploadedFiles] = useState<FileModel[]>([]);
   const [loadingFiles, setLoadingFiles] = useState(false);
 
-  // Cargar archivos existentes al montar el componente
+  // Cargar archivos existentes al abrir el modal
   useEffect(() => {
-    loadFiles();
-  }, [evidenciaId, procesoId, usuarioId]);
+    if (isOpen) loadFiles();
+  }, [isOpen, evidenciaId]);
 
   const loadFiles = async () => {
     if (!evidenciaId) return;
@@ -86,7 +74,6 @@ export const EvidenceUploadPage: React.FC<EvidenceUploadPageProps> = ({
       const files = await fileService.listFiles({
         evidencia_id: evidenciaId,
         ...(procesoId ? { proceso_id: procesoId } : {}),
-        ...(usuarioId ? { usuario_id: usuarioId } : {}),
       });
       setUploadedFiles(files);
     } catch (error: any) {
@@ -266,9 +253,9 @@ export const EvidenceUploadPage: React.FC<EvidenceUploadPageProps> = ({
         });
       }
 
-      // Recargar lista de archivos si hubo éxitos
       if (successCount > 0) {
         await loadFiles();
+        onSuccess?.();
       }
 
       // Limpiar selección si todos fueron exitosos
@@ -305,14 +292,10 @@ export const EvidenceUploadPage: React.FC<EvidenceUploadPageProps> = ({
     }
   };
 
-  const handleCancelUpload = () => {
-    setUploadState((prev) => ({
-      ...prev,
-      selectedFiles: [],
-      selectedLinks: [],
-      uploadProgress: [],
-      uploaderKey: prev.uploaderKey + 1,
-    }));
+  const { selectedFiles, selectedLinks, uploadProgress, isUploading, uploaderKey } = uploadState;
+
+  const handleClose = () => {
+    if (!isUploading) onClose();
   };
 
   const handleDeleteFile = async (fileId: number) => {
@@ -333,137 +316,85 @@ export const EvidenceUploadPage: React.FC<EvidenceUploadPageProps> = ({
     }
   };
 
-  const moduleInfo = getModuleInfo("evidence_upload");
-
-  const handleGoBack = () => {
-    navigate("/mis-evidencias-asignadas");
-  };
-
   return (
-    <ScreenContainer>
-      <PageHeader
-        title={moduleInfo.title}
-        description={`${moduleInfo.description}\nEvidencia: ${evidenciaNombre}`}
-        breadcrumbMode="none"
-      />
+    <Modal
+      isOpen={isOpen}
+      onClose={handleClose}
+      title={`Subir evidencias — ${nombre}`}
+      size="xl"
+      footerButtons={
+        <>
+          <Button variant="outline" onClick={handleClose} disabled={isUploading} standardWidth>
+            Cerrar
+          </Button>
+          {(selectedFiles.length > 0 || selectedLinks.length > 0) && !isUploading && (
+            <>
+              <Button variant="secondary" onClick={handleStartUpload} standardWidth>
+                Subir
+              </Button>
+            </>
+          )}
+        </>
+      }
+    >
+      <div className="space-y-5">
+        {/* Archivos */}
+        <div>
+          <h2 className={`${TYPOGRAPHY.pageSubtitle} font-semibold text-negro-una-2 mb-2`}>
+            Seleccione archivos
+          </h2>
+          <FileUploader
+            key={`file-uploader-${uploaderKey}`}
+            onFilesSelected={handleFilesSelected}
+            disabled={isUploading}
+          />
+        </div>
 
-      <div className="space-y-6">
-        {/* Sección de subida */}
-        <Card className="p-6 space-y-6">
-          <div>
-            <h2
-              className={` ${TYPOGRAPHY.pageSubtitle} font-semibold text-negro-una-2`}
-            >
-              Seleccione archivos
-            </h2>
+        {/* Enlaces */}
+        <div>
+          <h2 className={`${TYPOGRAPHY.pageSubtitle} font-semibold text-negro-una-2 mb-2`}>
+            Enlaces externos
+          </h2>
+          <LinkInput
+            key={`link-input-${uploaderKey}`}
+            onLinksChange={(links) =>
+              setUploadState((prev) => ({ ...prev, selectedLinks: links }))
+            }
+            disabled={isUploading}
+            className="w-full"
+          />
+        </div>
 
-            <FileUploader
-              key={`file-uploader-${uploaderKey}`}
-              onFilesSelected={handleFilesSelected}
-              disabled={isUploading}
-            />
-          </div>
-
-          {/* Sección de enlaces */}
-          <div>
-            <h2
-              className={` ${TYPOGRAPHY.pageSubtitle} font-semibold text-negro-una-2`}
-            >
-              Enlaces externos
-            </h2>
-
-            <LinkInput
-              key={`link-input-${uploaderKey}`}
-              onLinksChange={(links) =>
-                setUploadState((prev) => ({ ...prev, selectedLinks: links }))
-              }
-              disabled={isUploading}
-              className="w-full"
-            />
-          </div>
-
-          {/* Botones de acción */}
-          {(selectedFiles.length > 0 || selectedLinks.length > 0) &&
-            !isUploading && (
-              <div className="mt-4 flex gap-3 justify-end">
-                <Button
-                  type="button"
-                  onClick={handleCancelUpload}
-                  variant="secondary"
-                  standardWidth={true}
-                  size="sm"
-                >
-                  Cancelar
-                </Button>
-                <Button
-                  type="button"
-                  onClick={handleStartUpload}
-                  variant="primary"
-                  standardWidth={true}
-                  size="sm"
-                >
-                  Subir
-                </Button>
-              </div>
-            )}
-        </Card>
-
-        {/* Progreso de subida */}
+        {/* Progreso */}
         {uploadProgress.length > 0 && (
-          <div>
-            <FileUploadProgress files={uploadProgress} />
-          </div>
+          <FileUploadProgress files={uploadProgress} />
         )}
 
-        {/* Lista de archivos subidos */}
-        <Card className="p-4">
-          <div className="flex items-center justify-between mb-4">
-            <h2
-              className={` ${TYPOGRAPHY.pageSubtitle} font-semibold text-negro-una-2`}
-            >
+        {/* Archivos subidos */}
+        <div>
+          <div className="flex items-center justify-between mb-2">
+            <h2 className={`${TYPOGRAPHY.pageSubtitle} font-semibold text-negro-una-2`}>
               Archivos subidos
             </h2>
             <Tooltip>
               <TooltipTrigger asChild>
-                <Button
-                  type="button"
-                  onClick={loadFiles}
-                  disabled={loadingFiles}
-                  variant="ghost"
-                  size="sm"
-                >
+                <Button variant="ghost" size="sm" onClick={loadFiles} disabled={loadingFiles}>
                   {SystemIcons.interface.refresh({
                     size: "sm",
                     className: loadingFiles ? "animate-spin" : "",
                   })}
                 </Button>
               </TooltipTrigger>
-              <TooltipContent side="left">
-                Actualizar lista de archivos
-              </TooltipContent>
+              <TooltipContent side="left">Actualizar lista de archivos</TooltipContent>
             </Tooltip>
           </div>
-
-          <FileList
-            files={uploadedFiles}
-            loading={loadingFiles}
-            onDelete={handleDeleteFile}
-          />
-        </Card>
-
-        {/* Botón para volver a Mis Evidencias */}
-        <div className="mt-6 flex justify-center">
-          <Button
-            type="button"
-            onClick={handleGoBack}
-            variant="secondary"
-            standardWidth={true}
-            size="sm"
-          >
-            Regresar
-          </Button>
+          {loadingFiles ? (
+            <div className="flex justify-center py-6"><LoadingSpinner /></div>
+          ) : (
+            <FileList files={uploadedFiles} onDelete={handleDeleteFile} />
+          )}
         </div>
       </div>
-    </ScreenContainer>
+    </Modal>
   );
 };
