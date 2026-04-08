@@ -13,11 +13,13 @@ import {
 import { SystemIcons } from '@/Components/Ui/Icons/SystemIcons';
 import { Button } from '@/Components/Ui/Buttons/Button';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/Components/Ui/Feedback/Tooltip';
-import { TYPOGRAPHY } from '@/constants/Typography';
+import { TYPOGRAPHY } from '@/Constants/Typography';
 import { DataTable, type DataTableColumn } from '@/Components/Ui/Table/DataTable';
 import { DropZone } from './DropZone';
 import { FileTypeIcon } from './FileTypeIcon';
 import { useFileUpload } from '../../../Hooks/useFileUpload';
+import { useFirstColumnConfig } from '@/Hooks/UseFirstColumnConfig';
+import { TABLE_COLUMN_WIDTHS } from '@/Constants/Components';
 
 type SelectedRow = Record<string, unknown> & { _file: File; _index: number };
 
@@ -40,6 +42,7 @@ export const FileUploader: React.FC<FileUploaderProps> = ({
   className = '',
 }) => {
   const { files: selectedFiles, errors: validationErrors, addFiles, removeFile, clearAll } = useFileUpload(onFilesSelected, maxFiles);
+  const firstColumn = useFirstColumnConfig();
 
   return (
     <div className={`w-full space-y-4 ${className}`}>
@@ -80,6 +83,8 @@ export const FileUploader: React.FC<FileUploaderProps> = ({
               {
                 key: 'name',
                 header: 'Nombre',
+                align: 'left',
+                width: firstColumn.width,
                 render: (_, item) => {
                   const { _file: file } = item;
                   return (
@@ -102,28 +107,30 @@ export const FileUploader: React.FC<FileUploaderProps> = ({
               {
                 key: 'size',
                 header: 'Tamaño',
-                align: 'center',
+                align: 'left',
+                width: TABLE_COLUMN_WIDTHS.status,
                 render: (_, item) => (
-                  <span className="text-gris-una">{formatFileSize(item._file.size)}</span>
+                  <span className={`${TYPOGRAPHY.table.cell} text-gris-una`}>{formatFileSize(item._file.size)}</span>
                 ),
               },
               {
                 key: 'remove',
                 header: '',
                 align: 'right',
+                width: TABLE_COLUMN_WIDTHS.status,
                 render: (_, item) => (
                   <Tooltip>
                     <TooltipTrigger asChild>
                       <Button
                         type="button"
-                        variant="ghost"
+                        variant="invisible"
                         size="sm"
                         onClick={(e) => { e.stopPropagation(); removeFile(item._index); }}
                       >
                         {SystemIcons.actions.cancel({ size: 'md', className: 'text-rojo-una' })}
                       </Button>
                     </TooltipTrigger>
-                    <TooltipContent side="left">Eliminar archivo</TooltipContent>
+                    <TooltipContent side="top">Eliminar archivo</TooltipContent>
                   </Tooltip>
                 ),
               },
