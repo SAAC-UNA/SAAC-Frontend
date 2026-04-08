@@ -76,7 +76,10 @@ axiosInstance.interceptors.request.use((config) => {
 
 // Interceptor para manejar errores de autenticación (sesión expirada)
 axiosInstance.interceptors.response.use(
-  (response) => response,
+  (response) => {
+    authService.touchSessionExpiration();
+    return response;
+  },
   (error) => {
     const skipSessionRedirect =
       error?.config?.headers?.["X-Skip-Session-Redirect"] === "true";

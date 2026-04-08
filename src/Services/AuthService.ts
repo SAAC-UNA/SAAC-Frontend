@@ -54,6 +54,7 @@ export interface User {
 const AUTH_TOKEN_KEY = "auth_token";
 const USER_DATA_KEY = "auth_user";
 const SESSION_EXPIRATION_KEY = "session_expiration";
+const SESSION_LIFETIME_SECONDS_KEY = "session_lifetime_seconds";
 let isHandlingSessionExpiry = false;
 
 export const authService = {
@@ -129,6 +130,10 @@ export const authService = {
           SESSION_EXPIRATION_KEY,
           expirationTime.toString(),
         );
+        sessionStorage.setItem(
+          SESSION_LIFETIME_SECONDS_KEY,
+          String(data.session_lifetime),
+        );
       }
 
       // Persistencia por pestaña: sobrevive refresh, pero no una pestaña nueva.
@@ -166,6 +171,7 @@ export const authService = {
       sessionStorage.removeItem(AUTH_TOKEN_KEY);
       sessionStorage.removeItem(USER_DATA_KEY);
       sessionStorage.removeItem(SESSION_EXPIRATION_KEY);
+      sessionStorage.removeItem(SESSION_LIFETIME_SECONDS_KEY);
       clearOperationalContextIds();
       localStorage.removeItem(AUTH_TOKEN_KEY);
       localStorage.removeItem(USER_DATA_KEY);
@@ -197,6 +203,29 @@ export const authService = {
   getSessionExpiration: (): number | null => {
     const expirationTime = sessionStorage.getItem(SESSION_EXPIRATION_KEY);
     return expirationTime ? parseInt(expirationTime, 10) : null;
+  },
+
+  /**
+   * Renueva la expiración local de sesión para mantener sincronía
+   * con el esquema de expiración deslizante del backend.
+   */
+  touchSessionExpiration: (): void => {
+    const userData = sessionStorage.getItem(USER_DATA_KEY);
+    if (!userData) {
+      return;
+    }
+
+    const storedLifetime = sessionStorage.getItem(SESSION_LIFETIME_SECONDS_KEY);
+    const lifetimeSeconds = storedLifetime
+      ? parseInt(storedLifetime, 10)
+      : Math.floor(config.SESSION_TIMEOUT / 1000);
+
+    if (!Number.isFinite(lifetimeSeconds) || lifetimeSeconds <= 0) {
+      return;
+    }
+
+    const expirationTime = new Date().getTime() + lifetimeSeconds * 1000;
+    sessionStorage.setItem(SESSION_EXPIRATION_KEY, expirationTime.toString());
   },
 
   /**
