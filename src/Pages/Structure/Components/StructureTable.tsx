@@ -229,6 +229,7 @@ export const StructureTable: React.FC<StructureTableProps> = ({
             key: 'type',
             header: 'Tipo',
             align: 'left',
+            //agregar espaciado
             render: (_, element) => (
                 <div className="flex flex-col justify-start">
                     <p className={`block font-sans antialiased font-normal leading-normal text-negro-una-2 ${TYPOGRAPHY.table.cell}`}>

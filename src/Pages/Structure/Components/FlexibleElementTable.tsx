@@ -21,6 +21,8 @@ import type { FlexibleElement } from '@/Types/StructureModelTypes';
 import { TableActionButton } from '@/Components/Ui/Buttons/TableActionButton';
 import { StatusBadge } from '@/Components/Ui/Feedback/StatusBadge';
 import { Modal } from '@/Components/Ui/Modals/Modal';
+import { TABLE_COLUMN_WIDTHS } from '@/Constants/Components';
+import { getBadgeColorForString } from '@/Constants/StatusBadges';
 
 interface FlexibleElementTableProps {
   elements: FlexibleElement[];
@@ -139,6 +141,7 @@ export const FlexibleElementTable: React.FC<FlexibleElementTableProps> = ({
       key: 'tipo',
       header: 'Tipo',
       align: 'left',
+      width: TABLE_COLUMN_WIDTHS.actionsLarge,
       render: (_, el) => (
         <div className="flex flex-col">
           <p className={`block font-sans antialiased font-bold leading-normal text-negro-una-2 ${TYPOGRAPHY.table.cell}`}>
@@ -156,11 +159,11 @@ export const FlexibleElementTable: React.FC<FlexibleElementTableProps> = ({
       key: 'categoria',
       header: 'Categoría',
       align: 'center',
-      width: '10%',
+      width: TABLE_COLUMN_WIDTHS.status,
       render: (_, el) => (
         <div className="flex justify-center">
           {el.categoria ? (
-            <StatusBadge label={el.categoria} colorClasses="bg-azul-una/10 text-azul-una" />
+            <StatusBadge label={el.categoria} colorClasses={getBadgeColorForString(el.categoria)} />
           ) : (
             <span className={`${TYPOGRAPHY.table.cell} text-gris-una`}>—</span>
           )}
@@ -171,7 +174,7 @@ export const FlexibleElementTable: React.FC<FlexibleElementTableProps> = ({
       key: 'activo',
       header: 'Estado',
       align: 'center',
-      width: '10%',
+      width: TABLE_COLUMN_WIDTHS.status,
       render: (_, el) => (
         <div className="flex justify-center">
           <StatusBadge
@@ -186,7 +189,7 @@ export const FlexibleElementTable: React.FC<FlexibleElementTableProps> = ({
       key: 'actions',
       header: 'Acciones',
       align: 'center',
-      width: '14%',
+      width: TABLE_COLUMN_WIDTHS.actionsLarge,
       render: (_, el) => {
         const parentEl = el.padre_id ? elements.find(e => e.elemento_id === el.padre_id) : null;
         const canActivate = el.activo || !parentEl || parentEl.activo;
