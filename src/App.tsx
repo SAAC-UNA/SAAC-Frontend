@@ -87,6 +87,9 @@ const MyExtensionRequestsPage = lazy(() =>
     default: m.MyExtensionRequestsPage,
   })),
 );
+const PublicFolderPage = lazy(
+  () => import("./Pages/PublicFolder/PublicFolderPage"),
+);
 
 // Componente de loading para Suspense
 const PageLoader = () => (
@@ -133,7 +136,14 @@ function App() {
               {/* Rutas publicas */}
               <Route path="/login" element={<Login />} />
               <Route path="/session-expired" element={<SessionExpired />} />
-
+              <Route
+                path="/p/:token"
+                element={
+                  <Suspense fallback={<PageLoader />}>
+                    <PublicFolderPage />
+                  </Suspense>
+                }
+              />
               {/* Rutas protegidas con Layout */}
               <Route
                 path="/*"

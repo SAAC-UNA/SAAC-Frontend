@@ -1,12 +1,12 @@
-import React, { useState, useEffect, useMemo } from 'react';
-import { DataTable, ExpandableChildRow } from '@/Components/Ui/Table/DataTable';
-import type { DataTableColumn } from '@/Components/Ui/Table/DataTable';
-import { ButtonWithTooltip } from '@/Components/Ui/Buttons/ButtonWithTooltip';
-import { StatusBadge } from '@/Components/Ui/Feedback/StatusBadge';
-import { SystemIcons } from '@/Components/Ui/Icons/SystemIcons';
-import { EvidenceFilesModal } from './EvidenceFilesModal';
-import { TYPOGRAPHY } from '@/Constants/Typography';
-import { TABLE_ACTION_BUTTON } from '@/Constants/Components';
+import React, { useState, useEffect, useMemo } from "react";
+import { DataTable, ExpandableChildRow } from "@/Components/Ui/Table/DataTable";
+import type { DataTableColumn } from "@/Components/Ui/Table/DataTable";
+import { ButtonWithTooltip } from "@/Components/Ui/Buttons/ButtonWithTooltip";
+import { StatusBadge } from "@/Components/Ui/Feedback/StatusBadge";
+import { SystemIcons } from "@/Components/Ui/Icons/SystemIcons";
+import { EvidenceFilesModal } from "./EvidenceFilesModal";
+import { TYPOGRAPHY } from "@/Constants/Typography";
+import { TABLE_ACTION_BUTTON } from "@/Constants/Components";
 
 export interface Archivo {
   archivo_id: number;
@@ -14,6 +14,7 @@ export interface Archivo {
   ruta_archivo: string;
   token_publico?: string;
   url_publica?: string;
+  url_publica_carpeta?: string;
   is_publico: boolean;
   link_expira_en?: string;
 }
@@ -32,7 +33,7 @@ export interface Criterio extends Record<string, unknown> {
   descripcion: string;
   padre_id?: number | null;
   tipo?: string | null;
-  estado_aprobacion?: 'pendiente' | 'aprobado' | 'rechazado';
+  estado_aprobacion?: "pendiente" | "aprobado" | "rechazado";
   archivos?: Archivo[];
 }
 
@@ -53,63 +54,94 @@ const EvidenceExpansionRow: React.FC<EvidenceExpansionProps> = ({
   onLoadFile,
   onOpenLink,
 }) => {
-  const criterionEvidences = evidences.filter(e => e.criterio_id === criterio.id);
-  const [noFilesModal, setNoFilesModal] = useState<{ open: boolean; evidencia: Evidencia | null }>({
+  const criterionEvidences = evidences.filter(
+    (e) => e.criterio_id === criterio.id,
+  );
+  const [noFilesModal, setNoFilesModal] = useState<{
+    open: boolean;
+    evidencia: Evidencia | null;
+  }>({
     open: false,
     evidencia: null,
   });
 
   useEffect(() => {
-    criterionEvidences.forEach(ev => {
+    criterionEvidences.forEach((ev) => {
       if (!ev.archivos) onLoadFile(ev.id);
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [criterio.id]);
 
   if (criterionEvidences.length === 0) {
-    return <p className={`px-4 py-3 ${TYPOGRAPHY.table.helper} text-gris-una`}>Sin evidencias</p>;
+    return (
+      <p className={`px-4 py-3 ${TYPOGRAPHY.table.helper} text-gris-una`}>
+        Sin evidencias
+      </p>
+    );
   }
 
   return (
     <>
       <div className="space-y-1">
-        {criterionEvidences.map(evidencia => {
+        {criterionEvidences.map((evidencia) => {
           const tieneArchivos = (evidencia.archivos?.length ?? 0) > 0;
           const tieneEnlace = (evidencia.archivos ?? []).some(
-            a => a.is_publico && (Boolean(a.token_publico) || Boolean(a.url_publica)),
+            (a) =>
+              a.is_publico &&
+              (Boolean(a.token_publico) ||
+                Boolean(a.url_publica) ||
+                Boolean(a.url_publica_carpeta)),
           );
           const isLoadingFile = loadingFiles.has(evidencia.id);
 
           const action = isLoadingFile ? (
-            <span className={`${TYPOGRAPHY.table.helper} text-gris-una px-2`}>Cargando...</span>
+            <span className={`${TYPOGRAPHY.table.helper} text-gris-una px-2`}>
+              Cargando...
+            </span>
           ) : tieneEnlace ? (
             <div className="flex items-center gap-1.5">
-              <StatusBadge label="Enlace listo" colorClasses="text-verde-dark bg-verde-ring" />
+              <StatusBadge
+                label="Enlace listo"
+                colorClasses="text-verde-dark bg-verde-ring"
+              />
               <ButtonWithTooltip
-                variant="tableView" size="sm"
-                tooltip="Abrir enlace público" tooltipPosition="left"
+                variant="tableView"
+                size="sm"
+                tooltip="Abrir enlace público"
+                tooltipPosition="left"
                 onClick={() => onOpenLink(evidencia)}
                 className={TABLE_ACTION_BUTTON.button}
               >
-                <SystemIcons.actions.linkIcon className={TABLE_ACTION_BUTTON.icon} />
+                <SystemIcons.actions.linkIcon
+                  className={TABLE_ACTION_BUTTON.icon}
+                />
               </ButtonWithTooltip>
             </div>
           ) : tieneArchivos ? (
             <div className="flex items-center gap-1.5">
-              <StatusBadge label="Sin enlace" colorClasses="text-warning-dark bg-warning-ring" />
+              <StatusBadge
+                label="Sin enlace"
+                colorClasses="text-warning-dark bg-warning-ring"
+              />
               <ButtonWithTooltip
-                variant="tableView" size="sm"
-                tooltip="Abrir enlace público" tooltipPosition="left"
+                variant="tableView"
+                size="sm"
+                tooltip="Abrir enlace público"
+                tooltipPosition="left"
                 onClick={() => onOpenLink(evidencia)}
                 className={TABLE_ACTION_BUTTON.button}
               >
-                <SystemIcons.actions.linkIcon className={TABLE_ACTION_BUTTON.icon} />
+                <SystemIcons.actions.linkIcon
+                  className={TABLE_ACTION_BUTTON.icon}
+                />
               </ButtonWithTooltip>
             </div>
           ) : (
             <ButtonWithTooltip
-              variant="tableView" size="sm"
-              tooltip="Ver archivos asociados" tooltipPosition="left"
+              variant="tableView"
+              size="sm"
+              tooltip="Ver archivos asociados"
+              tooltipPosition="left"
               onClick={() => setNoFilesModal({ open: true, evidencia })}
               className={TABLE_ACTION_BUTTON.button}
             >
@@ -127,8 +159,13 @@ const EvidenceExpansionRow: React.FC<EvidenceExpansionProps> = ({
                     className={`truncate flex-1 min-w-0 ${TYPOGRAPHY.table.helper}`}
                     title={`${evidencia.nomenclatura} — ${evidencia.descripcion}`}
                   >
-                    <span className="font-medium text-negro-una">{evidencia.nomenclatura}</span>
-                    <span className="text-gris-una"> — {evidencia.descripcion}</span>
+                    <span className="font-medium text-negro-una">
+                      {evidencia.nomenclatura}
+                    </span>
+                    <span className="text-gris-una">
+                      {" "}
+                      — {evidencia.descripcion}
+                    </span>
                   </p>
                 ),
                 action,
@@ -150,12 +187,18 @@ const EvidenceExpansionRow: React.FC<EvidenceExpansionProps> = ({
 // ---------- FlexiblePautaExpansionRow (modelo flexible) ----------
 
 const normalizeElementType = (value: unknown): string => {
-  if (typeof value !== 'string') return '';
+  if (typeof value !== "string") return "";
   return value.trim().toLowerCase();
 };
 
 const hasPublicLink = (archivos: Archivo[] = []) =>
-  archivos.some(a => a.is_publico && (Boolean(a.token_publico) || Boolean(a.url_publica)));
+  archivos.some(
+    (a) =>
+      a.is_publico &&
+      (Boolean(a.token_publico) ||
+        Boolean(a.url_publica) ||
+        Boolean(a.url_publica_carpeta)),
+  );
 
 const buildSourceAsEvidence = (source: Criterio): Evidencia => ({
   id: source.id,
@@ -185,10 +228,10 @@ const FlexiblePautaExpansionRow: React.FC<FlexiblePautaExpansionProps> = ({
       if (!source.archivos) onLoadFile(source.id);
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [pauta.id, sources.map((source) => source.id).join(',')]);
+  }, [pauta.id, sources.map((source) => source.id).join(",")]);
 
   const visibleSources = sources.filter((source) => {
-    if (source.estado_aprobacion && source.estado_aprobacion !== 'aprobado') {
+    if (source.estado_aprobacion && source.estado_aprobacion !== "aprobado") {
       return false;
     }
 
@@ -215,19 +258,27 @@ const FlexiblePautaExpansionRow: React.FC<FlexiblePautaExpansionProps> = ({
         let action: React.ReactNode;
         if (isLoadingFile) {
           action = (
-            <span className={`${TYPOGRAPHY.table.helper} text-gris-una px-2`}>Cargando...</span>
+            <span className={`${TYPOGRAPHY.table.helper} text-gris-una px-2`}>
+              Cargando...
+            </span>
           );
         } else {
           action = (
             <div className="flex items-center gap-1.5">
               <StatusBadge
-                label={tieneEnlace ? 'Enlace listo' : tieneArchivos ? 'Sin enlace' : 'Sin archivos'}
+                label={
+                  tieneEnlace
+                    ? "Enlace listo"
+                    : tieneArchivos
+                      ? "Sin enlace"
+                      : "Sin archivos"
+                }
                 colorClasses={
                   tieneEnlace
-                    ? 'text-verde-dark bg-verde-ring'
+                    ? "text-verde-dark bg-verde-ring"
                     : tieneArchivos
-                      ? 'text-warning-dark bg-warning-ring'
-                      : 'text-gris-una bg-gris-light'
+                      ? "text-warning-dark bg-warning-ring"
+                      : "text-gris-una bg-gris-light"
                 }
               />
               <ButtonWithTooltip
@@ -238,7 +289,9 @@ const FlexiblePautaExpansionRow: React.FC<FlexiblePautaExpansionProps> = ({
                 onClick={() => onOpenLink(buildSourceAsEvidence(source))}
                 className={TABLE_ACTION_BUTTON.button}
               >
-                <SystemIcons.actions.view className={TABLE_ACTION_BUTTON.icon} />
+                <SystemIcons.actions.view
+                  className={TABLE_ACTION_BUTTON.icon}
+                />
               </ButtonWithTooltip>
             </div>
           );
@@ -254,7 +307,9 @@ const FlexiblePautaExpansionRow: React.FC<FlexiblePautaExpansionProps> = ({
                   className={`truncate flex-1 min-w-0 ${TYPOGRAPHY.table.helper}`}
                   title={`${source.nomenclatura} — ${source.descripcion}`}
                 >
-                  <span className="font-medium text-negro-una">{source.nomenclatura}</span>
+                  <span className="font-medium text-negro-una">
+                    {source.nomenclatura}
+                  </span>
                   <span className="text-gris-una"> — {source.descripcion}</span>
                 </p>
               ),
@@ -302,7 +357,7 @@ export const FinalReportsTable: React.FC<FinalReportsTableProps> = ({
     const childrenByParent = new Map<number, Criterio[]>();
 
     criteria.forEach((item) => {
-      if (typeof item.padre_id !== 'number') return;
+      if (typeof item.padre_id !== "number") return;
       if (!criteriaById.has(item.padre_id)) return;
 
       const currentChildren = childrenByParent.get(item.padre_id) ?? [];
@@ -333,7 +388,7 @@ export const FinalReportsTable: React.FC<FinalReportsTableProps> = ({
     };
 
     let pautas = criteria.filter(
-      (item) => normalizeElementType(item.tipo) === 'pauta',
+      (item) => normalizeElementType(item.tipo) === "pauta",
     );
 
     if (pautas.length === 0) {
@@ -355,7 +410,7 @@ export const FinalReportsTable: React.FC<FinalReportsTableProps> = ({
     const groupedSources = new Map<number, Criterio[]>();
     pautas.forEach((pauta) => {
       const sources = collectLeafSources(pauta).filter(
-        (source) => source.estado_aprobacion === 'aprobado',
+        (source) => source.estado_aprobacion === "aprobado",
       );
 
       if (sources.length > 0) {
@@ -375,26 +430,31 @@ export const FinalReportsTable: React.FC<FinalReportsTableProps> = ({
 
   const columns: DataTableColumn<Criterio>[] = [
     {
-      key: 'nomenclatura',
-      header: isFlexible ? 'Pauta' : 'Criterio',
+      key: "nomenclatura",
+      header: isFlexible ? "Pauta" : "Criterio",
       render: (_, item) => (
-        <p className={`truncate ${TYPOGRAPHY.table.cell}`} title={`${item.nomenclatura} — ${item.descripcion}`}>
-          <span className="font-bold text-negro-una-2">{item.nomenclatura}</span>
+        <p
+          className={`truncate ${TYPOGRAPHY.table.cell}`}
+          title={`${item.nomenclatura} — ${item.descripcion}`}
+        >
+          <span className="font-bold text-negro-una-2">
+            {item.nomenclatura}
+          </span>
           <span className="text-gris-una"> — {item.descripcion}</span>
         </p>
       ),
     },
     {
-      key: 'actions',
-      header: 'Acciones',
-      align: 'center',
-      width: '90px',
+      key: "actions",
+      header: "Acciones",
+      align: "center",
+      width: "90px",
       render: (_, item) => (
         <div className="flex gap-1 justify-center">
           <ButtonWithTooltip
             variant="tableView"
             size="sm"
-            tooltip={isFlexible ? 'Ver detalle de pauta' : 'Ver detalles'}
+            tooltip={isFlexible ? "Ver detalle de pauta" : "Ver detalles"}
             onClick={(event) => {
               event.stopPropagation();
               onViewDetail(item);
@@ -414,29 +474,31 @@ export const FinalReportsTable: React.FC<FinalReportsTableProps> = ({
     <DataTable<Criterio>
       data={tableData}
       columns={columns}
-      getRowKey={item => String(item.id)}
+      getRowKey={(item) => String(item.id)}
       searchable={false}
-      expandableRow={item => [{
-        key: String(item.id),
-        noBorder: true,
-        content: isFlexible ? (
-          <FlexiblePautaExpansionRow
-            pauta={item}
-            sources={sourcesByPauta.get(item.id) ?? []}
-            loadingFiles={loadingFiles}
-            onLoadFile={onLoadFile}
-            onOpenLink={onOpenLink}
-          />
-        ) : (
-          <EvidenceExpansionRow
-            criterio={item}
-            evidences={evidences}
-            loadingFiles={loadingFiles}
-            onLoadFile={onLoadFile}
-            onOpenLink={onOpenLink}
-          />
-        ),
-      }]}
+      expandableRow={(item) => [
+        {
+          key: String(item.id),
+          noBorder: true,
+          content: isFlexible ? (
+            <FlexiblePautaExpansionRow
+              pauta={item}
+              sources={sourcesByPauta.get(item.id) ?? []}
+              loadingFiles={loadingFiles}
+              onLoadFile={onLoadFile}
+              onOpenLink={onOpenLink}
+            />
+          ) : (
+            <EvidenceExpansionRow
+              criterio={item}
+              evidences={evidences}
+              loadingFiles={loadingFiles}
+              onLoadFile={onLoadFile}
+              onOpenLink={onOpenLink}
+            />
+          ),
+        },
+      ]}
     />
   );
 };

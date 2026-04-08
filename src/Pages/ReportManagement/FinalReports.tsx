@@ -5,6 +5,7 @@ import { ButtonWithTooltip } from "@/Components/Ui/Buttons/ButtonWithTooltip";
 import { getModuleInfo } from "@/Constants/ModuleInfo";
 import { SystemIcons } from "@/Components/Ui/Icons/SystemIcons";
 import { axiosInstance } from "@/Config/axios";
+import { config } from "@/Config/app.config";
 import { PublicLinkModal } from "./Components/PublicLinkModal";
 import { CriterionDetailModal } from "./Components/CriterionDetailModal";
 import { GenerateLinksConfirmModal } from "./Components/GenerateLinksConfirmModal";
@@ -82,11 +83,14 @@ const FinalReports: React.FC = () => {
   const loadingFiles = uiState.loadingFiles;
 
   const selectedProcess = useMemo(
-    () => processes.find((p: Proceso) => p.proceso_id === selectedProcesoId) ?? null,
+    () =>
+      processes.find((p: Proceso) => p.proceso_id === selectedProcesoId) ??
+      null,
     [processes, selectedProcesoId],
   );
   const isFlexible =
-    selectedProcess?.accreditation_cycle?.modelo_estructura?.tipo === "elemento_flexible";
+    selectedProcess?.accreditation_cycle?.modelo_estructura?.tipo ===
+    "elemento_flexible";
 
   const flexibleSourceElements = useMemo(() => {
     if (!isFlexible) return [] as Criterio[];
@@ -184,7 +188,12 @@ const FinalReports: React.FC = () => {
 
   const fetchData = async () => {
     if (!selectedProcesoId) {
-      setDataState({ isLoading: false, processes: [], criteria: [], evidences: [] });
+      setDataState({
+        isLoading: false,
+        processes: [],
+        criteria: [],
+        evidences: [],
+      });
       return;
     }
 
@@ -192,13 +201,15 @@ const FinalReports: React.FC = () => {
       setDataState((prev) => ({ ...prev, isLoading: true }));
 
       const processesResponse = await axiosInstance.get("/estructura/procesos");
-      const processesArray = processesResponse.data.data || processesResponse.data;
+      const processesArray =
+        processesResponse.data.data || processesResponse.data;
 
       const selProc = processesArray.find(
         (p: any) => p.proceso_id === selectedProcesoId,
       );
       const flex =
-        selProc?.accreditation_cycle?.modelo_estructura?.tipo === "elemento_flexible";
+        selProc?.accreditation_cycle?.modelo_estructura?.tipo ===
+        "elemento_flexible";
 
       if (!selectedProcesoId || !selProc) {
         setDataState((prev) => ({
@@ -259,7 +270,8 @@ const FinalReports: React.FC = () => {
             axiosInstance.get("/estructura/evidencias"),
             axiosInstance.get("/aprobaciones-criterios"),
           ]);
-        const criteriaArray = criteriaResponse.data.data || criteriaResponse.data;
+        const criteriaArray =
+          criteriaResponse.data.data || criteriaResponse.data;
         const evidencesArray =
           evidencesResponse.data.data || evidencesResponse.data;
         const approvalsArray =
@@ -317,13 +329,13 @@ const FinalReports: React.FC = () => {
 
     try {
       const response = isFlexible
-        ? await axiosInstance.get('/elementos-archivos', {
+        ? await axiosInstance.get("/elementos-archivos", {
             params: {
               elemento_id: nodeId,
               ...(selectedProcesoId ? { proceso_id: selectedProcesoId } : {}),
             },
           })
-        : await axiosInstance.get('/archivos', {
+        : await axiosInstance.get("/archivos", {
             params: {
               evidencia_id: nodeId,
               ...(selectedProcesoId ? { proceso_id: selectedProcesoId } : {}),
@@ -375,12 +387,16 @@ const FinalReports: React.FC = () => {
   };
 
   const resolvePublicLink = (archivo: Archivo): string => {
-    if (archivo.url_publica) {
-      return archivo.url_publica;
+    if (archivo.token_publico) {
+      return `${config.FRONTEND_BASE_URL}/p/${archivo.token_publico}`;
     }
 
-    if (archivo.token_publico) {
-      return `${window.location.origin}/api/p/${archivo.token_publico}`;
+    if (archivo.url_publica_carpeta) {
+      return archivo.url_publica_carpeta;
+    }
+
+    if (archivo.url_publica) {
+      return archivo.url_publica;
     }
 
     return "";
@@ -458,7 +474,7 @@ const FinalReports: React.FC = () => {
               return elemento.archivos;
             }
 
-            const response = await axiosInstance.get('/elementos-archivos', {
+            const response = await axiosInstance.get("/elementos-archivos", {
               params: {
                 elemento_id: elemento.id,
                 ...(selectedProcesoId ? { proceso_id: selectedProcesoId } : {}),
@@ -471,7 +487,9 @@ const FinalReports: React.FC = () => {
 
         archivosPorFuente.forEach(pushPendingFiles);
       } else {
-        const approvedCriterionIds = new Set(criteria.map((criterio) => criterio.id));
+        const approvedCriterionIds = new Set(
+          criteria.map((criterio) => criterio.id),
+        );
         const evidenciasAprobadas = evidences.filter((ev) =>
           approvedCriterionIds.has(ev.criterio_id),
         );
@@ -482,7 +500,7 @@ const FinalReports: React.FC = () => {
               return evidencia.archivos;
             }
 
-            const response = await axiosInstance.get('/archivos', {
+            const response = await axiosInstance.get("/archivos", {
               params: {
                 evidencia_id: evidencia.id,
                 ...(selectedProcesoId ? { proceso_id: selectedProcesoId } : {}),
@@ -494,7 +512,6 @@ const FinalReports: React.FC = () => {
         );
 
         archivosPorEvidencia.forEach(pushPendingFiles);
-
       }
 
       if (todosLosArchivos.size === 0) {
@@ -519,7 +536,9 @@ const FinalReports: React.FC = () => {
           flexibleSourceElements.map((elemento) => loadFiles(elemento.id)),
         );
       } else {
-        const approvedCriterionIds = new Set(criteria.map((criterio) => criterio.id));
+        const approvedCriterionIds = new Set(
+          criteria.map((criterio) => criterio.id),
+        );
         const evidenciasAprobadas = evidences.filter((ev) =>
           approvedCriterionIds.has(ev.criterio_id),
         );
@@ -543,9 +562,10 @@ const FinalReports: React.FC = () => {
         (elemento.archivos ?? []).map((archivo) => ({
           criterio: `${elemento.nomenclatura} — ${elemento.descripcion}`,
           evidencia: archivo.nombre_original,
-          link: archivo.is_publico && resolvePublicLink(archivo)
-            ? resolvePublicLink(archivo)
-            : "Sin enlace",
+          link:
+            archivo.is_publico && resolvePublicLink(archivo)
+              ? resolvePublicLink(archivo)
+              : "Sin enlace",
         })),
       );
     }
@@ -563,7 +583,11 @@ const FinalReports: React.FC = () => {
     rows: Array<{ criterio: string; evidencia: string; link: string }>,
   ) => {
     const escapeCsv = (value: string) => `"${value.replace(/"/g, '""')}"`;
-    const header = [isFlexible ? "Fuente" : "Criterio", isFlexible ? "Archivo" : "Evidencia", "Enlace"]
+    const header = [
+      isFlexible ? "Fuente" : "Criterio",
+      isFlexible ? "Archivo" : "Evidencia",
+      "Enlace",
+    ]
       .map(escapeCsv)
       .join(",");
     const lines = rows.map((row) =>
