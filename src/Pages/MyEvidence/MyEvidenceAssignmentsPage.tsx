@@ -29,6 +29,7 @@ import { filterAndSortAssignments } from "@/Types/EvidenceAssignmentTypes";
 import type { CreateExtensionRequestData } from "@/Types/ExtensionRequestTypes";
 import type { FlexibleAssignmentItem } from "@/Types/EvidenceAssignment";
 import type { UserCycle } from "@/Types/EvidenceAssignment";
+import { filterFlexAssignments } from "@/Types/EvidenceAssignment";
 import {
   EvidenceAssignmentDetail,
   EvidenceAssignmentsTable,
@@ -555,8 +556,11 @@ export const MyEvidenceAssignmentsPage: React.FC = () => {
     ),
     filters,
   );
-  const filteredFlex = flexState.assignments.filter(
-    (a) => a.process?.ciclo_acreditacion_id === selectedCycleId,
+  const filteredFlex = filterFlexAssignments(
+    flexState.assignments.filter(
+      (a) => a.process?.ciclo_acreditacion_id === selectedCycleId,
+    ),
+    filters.search,
   );
   const moduleInfo = getModuleInfo("my_evidence_assignments");
 
@@ -579,7 +583,8 @@ export const MyEvidenceAssignmentsPage: React.FC = () => {
         description={moduleInfo.description}
         headerExtra={
           cycleOptions.length > 1 ||
-          (!isFlexible && !error && assignments.length > 0) ? (
+          (!isFlexible && !error && assignments.length > 0) ||
+          (isFlexible && !flexState.error && flexState.assignments.length > 0) ? (
             <div className="flex items-end gap-3">
               {cycleOptions.length > 1 && (
                 <CustomSelect
@@ -593,9 +598,10 @@ export const MyEvidenceAssignmentsPage: React.FC = () => {
                   }}
                 />
               )}
-              {!isFlexible && !error && assignments.length > 0 && (
+              {((!isFlexible && !error && assignments.length > 0) ||
+                (isFlexible && !flexState.error && flexState.assignments.length > 0)) && (
                 <SearchInput
-                  placeholder="Buscar evidencias..."
+                  placeholder={isFlexible ? "Buscar pautas..." : "Buscar evidencias..."}
                   value={filters.search || ""}
                   onChange={(value) =>
                     handleFiltersChange({ ...filters, search: value })
@@ -656,10 +662,11 @@ export const MyEvidenceAssignmentsPage: React.FC = () => {
                 onRetry={loadFlexAssignments}
               />
             )}
-            {!flexState.error && (
+            {!flexState.error && flexState.assignments.length > 0 && (
               <ElementAssignmentsTable
                 assignments={paginatedFlex}
                 loading={flexState.loading}
+                hasFilters={!!filters.search}
                 onViewDetails={handleFlexViewDetails}
                 onUploadFiles={handleFlexUploadFiles}
                 onStatusChange={handleFlexStatusChange}
