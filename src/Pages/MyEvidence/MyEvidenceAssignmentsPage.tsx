@@ -4,7 +4,7 @@
  */
 
 import React, { useState, useEffect, useMemo } from "react";
-import { useLocation, useNavigate } from "react-router-dom";
+import { useLocation } from "react-router-dom";
 import {
   PageHeader,
   ScreenContainer,
@@ -52,7 +52,6 @@ const parsePositiveInt = (value: string | null): number | null => {
 export const MyEvidenceAssignmentsPage: React.FC = () => {
   const { showToast } = useToast();
   const { user } = useAuth();
-  const navigate = useNavigate();
   const location = useLocation();
 
   const [pageState, setPageState] = useState<{
@@ -511,22 +510,7 @@ export const MyEvidenceAssignmentsPage: React.FC = () => {
       });
       return;
     }
-<<<<<<< HEAD
     setEvidenceUploadModal({ open: true, assignment });
-=======
-
-    // Navegar a la página de subida con los parámetros necesarios
-    const params = new URLSearchParams({
-      evidenciaId: assignment.evidencia.evidencia_id.toString(),
-      procesoId: (
-        assignment.proceso?.proceso_id ?? assignment.proceso_id
-      ).toString(),
-      usuarioId: assignment.usuario_id.toString(),
-      nombre: `${assignment.evidencia.nomenclatura} - ${assignment.evidencia.descripcion}`,
-    });
-
-    navigate(`/evidencias/subir?${params.toString()}`);
->>>>>>> development
   };
 
   // HU-016: Handler para solicitar ampliación

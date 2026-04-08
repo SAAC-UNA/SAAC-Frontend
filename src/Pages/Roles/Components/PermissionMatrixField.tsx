@@ -59,7 +59,6 @@ interface ModuleRow {
   moduleName: string;
   moduleLabel: string;
   permissions: Array<{ action: MatrixAction; value: string; label: string }>;
-  [key: string]: unknown;
 }
 
 const buildModuleRows = (group: PermissionGroupOption): ModuleRow[] => {
