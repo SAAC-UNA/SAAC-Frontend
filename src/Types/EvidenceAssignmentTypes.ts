@@ -29,6 +29,8 @@ export interface EvidenceAssignment extends Record<string, unknown> {
   has_pending_extension_request?: boolean;
   // Indica si ya hay al menos un archivo/enlace subido por el responsable
   has_uploaded_files?: boolean;
+  // Indica si fue devuelta/rechazada para correcciones
+  is_returned_for_changes?: boolean;
 
   // Relaciones opcionales (cuando están cargadas con eager loading)
   proceso?: {

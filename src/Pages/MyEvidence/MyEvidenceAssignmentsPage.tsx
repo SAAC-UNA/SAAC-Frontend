@@ -4,7 +4,7 @@
  */
 
 import React, { useState, useEffect, useMemo } from "react";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import {
   PageHeader,
   ScreenContainer,
@@ -29,17 +29,30 @@ import { filterAndSortAssignments } from "@/Types/EvidenceAssignmentTypes";
 import type { CreateExtensionRequestData } from "@/Types/ExtensionRequestTypes";
 import type { FlexibleAssignmentItem } from "@/Types/EvidenceAssignment";
 import type { UserCycle } from "@/Types/EvidenceAssignment";
+import { filterFlexAssignments } from "@/Types/EvidenceAssignment";
 import {
   EvidenceAssignmentDetail,
   EvidenceAssignmentsTable,
   ElementAssignmentsTable,
 } from "./Components";
 import { CreateExtensionRequestModal } from "@/Pages/MyEvidence/Components/CreateExtensionRequestModal";
+import { ElementAssignmentDetailModal } from "@/Pages/MyEvidence/Components/ElementAssignmentDetailModal";
+import { ElementFileUploadModal } from "@/Pages/MyEvidence/Components/ElementFileUploadModal";
+
+const parsePositiveInt = (value: string | null): number | null => {
+  if (!value) {
+    return null;
+  }
+
+  const parsed = Number.parseInt(value, 10);
+  return Number.isFinite(parsed) && parsed > 0 ? parsed : null;
+};
 
 export const MyEvidenceAssignmentsPage: React.FC = () => {
   const { showToast } = useToast();
   const { user } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
 
   const [pageState, setPageState] = useState<{
     assignments: EvidenceAssignment[];
@@ -61,6 +74,9 @@ export const MyEvidenceAssignmentsPage: React.FC = () => {
   // Selector de ciclo — datos vienen del endpoint mis-ciclos
   const [userCycles, setUserCycles] = useState<UserCycle[]>([]);
   const [selectedCycleId, setSelectedCycleId] = useState<number | null>(null);
+  const [appliedRouteContextKey, setAppliedRouteContextKey] = useState<
+    string | null
+  >(null);
 
   // Estado del modelo flexible
   const [flexState, setFlexState] = useState<{
@@ -69,10 +85,18 @@ export const MyEvidenceAssignmentsPage: React.FC = () => {
     error: string | null;
   }>({ assignments: [], loading: false, error: null });
   const [flexModal, setFlexModal] = useState<{
-    selected: FlexibleAssignmentItem | null;
+    selectedId: number | null;
     showExtension: boolean;
     selectedForExtension: FlexibleAssignmentItem | null;
-  }>({ selected: null, showExtension: false, selectedForExtension: null });
+    selectedForUpload: FlexibleAssignmentItem | null;
+  }>({ selectedId: null, showExtension: false, selectedForExtension: null, selectedForUpload: null });
+
+  // Confirmación de revertir estado en modelo flexible
+  const [flexRevertConfirm, setFlexRevertConfirm] = useState<{
+    open: boolean;
+    assignment: FlexibleAssignmentItem | null;
+    loading: boolean;
+  }>({ open: false, assignment: null, loading: false });
 
   // HU-016: modales de detalle y extensión
   const [modalState, setModalState] = useState<{
@@ -249,6 +273,81 @@ export const MyEvidenceAssignmentsPage: React.FC = () => {
     label: c.nombre,
   }));
 
+  const routeContext = useMemo(() => {
+    const params = new URLSearchParams(location.search);
+    const cycleId = parsePositiveInt(params.get("ciclo_acreditacion_id"));
+    const processId = parsePositiveInt(params.get("proceso_id"));
+    return {
+      cycleId,
+      processId,
+      key: `${cycleId ?? ""}|${processId ?? ""}`,
+    };
+  }, [location.search]);
+
+  useEffect(() => {
+    if (appliedRouteContextKey === routeContext.key) {
+      return;
+    }
+
+    const { cycleId, processId, key } = routeContext;
+    if (cycleId === null && processId === null) {
+      setAppliedRouteContextKey(key);
+      return;
+    }
+
+    const applyCycleSelection = (cycleToSelect: number) => {
+      if (selectedCycleId !== cycleToSelect) {
+        setSelectedCycleId(cycleToSelect);
+        setCurrentPage(1);
+      }
+      setAppliedRouteContextKey(key);
+    };
+
+    if (cycleId !== null) {
+      const cycleExists = availableCycles.some(
+        (cycle) => cycle.ciclo_id === cycleId,
+      );
+      if (cycleExists) {
+        applyCycleSelection(cycleId);
+        return;
+      }
+    }
+
+    if (processId !== null) {
+      const traditionalCycleId =
+        assignments.find(
+          (assignment) =>
+            (assignment.proceso?.proceso_id ?? assignment.proceso_id) ===
+            processId,
+        )?.proceso?.ciclo_acreditacion_id ?? null;
+
+      const flexibleCycleId =
+        flexState.assignments.find(
+          (assignment) => assignment.process?.proceso_id === processId,
+        )?.process?.ciclo_acreditacion_id ?? null;
+
+      const targetCycleId = traditionalCycleId ?? flexibleCycleId;
+
+      if (targetCycleId !== null) {
+        applyCycleSelection(targetCycleId);
+        return;
+      }
+    }
+
+    if (!loading && !flexState.loading) {
+      setAppliedRouteContextKey(key);
+    }
+  }, [
+    appliedRouteContextKey,
+    routeContext,
+    selectedCycleId,
+    availableCycles,
+    assignments,
+    flexState.assignments,
+    loading,
+    flexState.loading,
+  ]);
+
   const handleViewDetails = (assignment: EvidenceAssignment) => {
     setModalState((prev) => ({ ...prev, selectedAssignment: assignment }));
   };
@@ -256,10 +355,39 @@ export const MyEvidenceAssignmentsPage: React.FC = () => {
   // ── Handlers modelo flexible ──────────────────────────────────────────────
 
   const handleFlexViewDetails = (a: FlexibleAssignmentItem) => {
-    setFlexModal((prev) => ({ ...prev, selected: a }));
+    setFlexModal((prev) => ({ ...prev, selectedId: a.elemento_asignacion_id }));
+  };
+
+  const handleFlexUploadFiles = (a: FlexibleAssignmentItem) => {
+    setFlexModal((prev) => ({ ...prev, selectedForUpload: a }));
+  };
+
+  const handleFlexUploadSuccess = () => {
+    loadFlexAssignments();
   };
 
   const handleFlexStatusChange = async (
+    a: FlexibleAssignmentItem,
+    newStatus: "En Progreso" | "Completado",
+  ) => {
+    if (newStatus === "Completado" && !a.has_uploaded_files) {
+      showToast({
+        type: "warning",
+        title: "Acción no permitida",
+        message: "Debe subir al menos un archivo o enlace antes de marcar como completada.",
+      });
+      return;
+    }
+
+    if (newStatus === "En Progreso") {
+      setFlexRevertConfirm({ open: true, assignment: a, loading: false });
+      return;
+    }
+
+    await applyFlexStatusChange(a, newStatus);
+  };
+
+  const applyFlexStatusChange = async (
     a: FlexibleAssignmentItem,
     newStatus: "En Progreso" | "Completado",
   ) => {
@@ -288,6 +416,14 @@ export const MyEvidenceAssignmentsPage: React.FC = () => {
         message: "No se pudo actualizar el estado",
       });
     }
+  };
+
+  const handleFlexConfirmRevert = async () => {
+    if (!flexRevertConfirm.assignment) return;
+    const a = flexRevertConfirm.assignment;
+    setFlexRevertConfirm((prev) => ({ ...prev, loading: true }));
+    await applyFlexStatusChange(a, "En Progreso");
+    setFlexRevertConfirm({ open: false, assignment: null, loading: false });
   };
 
   const handleFlexRequestExtension = (a: FlexibleAssignmentItem) => {
@@ -376,6 +512,7 @@ export const MyEvidenceAssignmentsPage: React.FC = () => {
       procesoId: (
         assignment.proceso?.proceso_id ?? assignment.proceso_id
       ).toString(),
+      usuarioId: assignment.usuario_id.toString(),
       nombre: `${assignment.evidencia.nomenclatura} - ${assignment.evidencia.descripcion}`,
     });
 
@@ -508,9 +645,16 @@ export const MyEvidenceAssignmentsPage: React.FC = () => {
     ),
     filters,
   );
-  const filteredFlex = flexState.assignments.filter(
-    (a) => a.process?.ciclo_acreditacion_id === selectedCycleId,
+  const filteredFlex = filterFlexAssignments(
+    flexState.assignments.filter(
+      (a) => a.process?.ciclo_acreditacion_id === selectedCycleId,
+    ),
+    filters.search,
   );
+
+  const hasTraditionalSearch = !error && assignments.length > 0;
+  const hasFlexibleSearch = !flexState.error && flexState.assignments.length > 0;
+  const showSearchInput = isFlexible ? hasFlexibleSearch : hasTraditionalSearch;
   const moduleInfo = getModuleInfo("my_evidence_assignments");
 
   // Paginación unificada por proceso
@@ -532,7 +676,7 @@ export const MyEvidenceAssignmentsPage: React.FC = () => {
         description={moduleInfo.description}
         headerExtra={
           cycleOptions.length > 1 ||
-          (!isFlexible && !error && assignments.length > 0) ? (
+          showSearchInput ? (
             <div className="flex items-end gap-3">
               {cycleOptions.length > 1 && (
                 <CustomSelect
@@ -546,9 +690,9 @@ export const MyEvidenceAssignmentsPage: React.FC = () => {
                   }}
                 />
               )}
-              {!isFlexible && !error && assignments.length > 0 && (
+              {showSearchInput && (
                 <SearchInput
-                  placeholder="Buscar evidencias..."
+                  placeholder={isFlexible ? "Buscar pautas..." : "Buscar evidencias..."}
                   value={filters.search || ""}
                   onChange={(value) =>
                     handleFiltersChange({ ...filters, search: value })
@@ -614,8 +758,10 @@ export const MyEvidenceAssignmentsPage: React.FC = () => {
                 assignments={paginatedFlex}
                 loading={flexState.loading}
                 onViewDetails={handleFlexViewDetails}
+                onUploadFiles={handleFlexUploadFiles}
                 onStatusChange={handleFlexStatusChange}
                 onRequestExtension={handleFlexRequestExtension}
+                hasFilters={filters.search?.trim() !== ""}
                 pagination={
                   totalPages > 1
                     ? { currentPage, totalPages, onPageChange: setCurrentPage }
@@ -651,46 +797,23 @@ export const MyEvidenceAssignmentsPage: React.FC = () => {
       )}
 
       {/* Modal de detalle flexible */}
-      {flexModal.selected && (
-        <Modal
+      {flexModal.selectedId !== null && (
+        <ElementAssignmentDetailModal
+          assignmentId={flexModal.selectedId}
+          onClose={() => setFlexModal((prev) => ({ ...prev, selectedId: null }))}
+        />
+      )}
+
+      {/* Modal subida de archivos flexible */}
+      {flexModal.selectedForUpload && (
+        <ElementFileUploadModal
           isOpen
-          onClose={() => setFlexModal((prev) => ({ ...prev, selected: null }))}
-          title="Detalle de Pauta"
-          variant="info"
-          showConfirm={false}
-          showCancel
-          cancelLabel="Cerrar"
-        >
-          <div className="space-y-3 text-sm text-negro-una-2">
-            <p>
-              <span className="font-semibold">Pauta:</span>{" "}
-              {flexModal.selected.element?.nombre ?? "—"}
-            </p>
-            <p>
-              <span className="font-semibold">Tipo:</span>{" "}
-              {flexModal.selected.element?.tipo ?? "—"}
-            </p>
-            <p>
-              <span className="font-semibold">Proceso:</span>{" "}
-              {flexModal.selected.process?.nombre ??
-                `Proceso ${flexModal.selected.proceso_id}`}
-            </p>
-            <p>
-              <span className="font-semibold">Estado:</span>{" "}
-              {flexModal.selected.estado}
-            </p>
-            <p>
-              <span className="font-semibold">Fecha límite:</span>{" "}
-              {flexModal.selected.fecha_limite ?? "Sin límite"}
-            </p>
-            {flexModal.selected.comentario && (
-              <p>
-                <span className="font-semibold">Comentario:</span>{" "}
-                {flexModal.selected.comentario}
-              </p>
-            )}
-          </div>
-        </Modal>
+          onClose={() => setFlexModal((prev) => ({ ...prev, selectedForUpload: null }))}
+          elementoId={flexModal.selectedForUpload.elemento_id}
+          procesoId={flexModal.selectedForUpload.proceso_id}
+          elementoNombre={flexModal.selectedForUpload.element?.nombre ?? "Pauta"}
+          onSuccess={handleFlexUploadSuccess}
+        />
       )}
 
       {/* Modal ampliación flexible */}
@@ -713,6 +836,29 @@ export const MyEvidenceAssignmentsPage: React.FC = () => {
           }
         />
       )}
+
+      {/* Modal de confirmación revertir estado flexible */}
+      <Modal
+        isOpen={flexRevertConfirm.open}
+        onClose={() => setFlexRevertConfirm({ open: false, assignment: null, loading: false })}
+        onConfirm={handleFlexConfirmRevert}
+        title="Revertir estado de pauta"
+        variant="info"
+        confirmLabel="Sí, revertir"
+        cancelLabel="Cancelar"
+        confirmLoading={flexRevertConfirm.loading}
+        showCancel
+        showConfirm
+        footerMeta="Esta acción puede volver a completarse posteriormente"
+      >
+        <p className="text-sm text-gris-una-2 leading-relaxed">
+          ¿Está seguro de que desea marcar esta pauta como{" "}
+          <strong>en progreso</strong>?
+        </p>
+        <p className="mt-2 text-sm text-gris-una-2">
+          La pauta dejará de estar marcada como completada.
+        </p>
+      </Modal>
 
       {/* Modal de confirmación para revertir estado completado → en_progreso */}
       <Modal

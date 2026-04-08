@@ -13,18 +13,21 @@ import { TYPOGRAPHY } from '@/Constants/Typography';
 import { truncateText } from '@/Utils';
 import { TableActionButton } from '@/Components/Ui/Buttons/TableActionButton';
 import { StatusBadge } from '@/Components/Ui/Feedback/StatusBadge';
+import { Tooltip, TooltipTrigger, TooltipContent } from '@/Components/Ui/Feedback/Tooltip';
 import { EVIDENCE_STATUS_BADGE } from '@/Constants/StatusBadges';
 import type { FlexibleAssignmentItem } from '@/Types/EvidenceAssignment';
 import type { FlexibleElement } from '@/Types/StructureModelTypes';
 import { getElementPath } from '@/Utils/elementTreeUtils';
 import { useFirstColumnConfig } from '@/Hooks/UseFirstColumnConfig';
 import { formatDate } from '@/Utils/DateUtils';
+import { TABLE_COLUMN_WIDTHS } from '@/Constants/Components';
 
 interface ElementAssignmentsTableProps {
   assignments: FlexibleAssignmentItem[];
   loading?: boolean;
   hasFilters?: boolean;
   onViewDetails: (assignment: FlexibleAssignmentItem) => void;
+  onUploadFiles: (assignment: FlexibleAssignmentItem) => void;
   onStatusChange?: (
     assignment: FlexibleAssignmentItem,
     newStatus: 'En Progreso' | 'Completado'
@@ -43,6 +46,7 @@ export const ElementAssignmentsTable: React.FC<ElementAssignmentsTableProps> = (
   loading = false,
   hasFilters = false,
   onViewDetails,
+  onUploadFiles,
   onStatusChange,
   onRequestExtension,
   allElements,
@@ -94,6 +98,7 @@ export const ElementAssignmentsTable: React.FC<ElementAssignmentsTableProps> = (
         key: 'process',
         header: 'Proceso',
         align: 'left',
+        width: TABLE_COLUMN_WIDTHS.actionsLarge,
         render: (_: unknown, assignment: FlexibleAssignmentItem) => (
           <span className={`font-sans text-negro-una-2 ${TYPOGRAPHY.table.cell}`}>
             {assignment.process?.nombre ?? `Proceso ${assignment.proceso_id}`}
@@ -104,6 +109,7 @@ export const ElementAssignmentsTable: React.FC<ElementAssignmentsTableProps> = (
         key: 'fecha_limite',
         header: 'Fecha Límite',
         align: 'left',
+        width: TABLE_COLUMN_WIDTHS.status,
         render: (_: unknown, assignment: FlexibleAssignmentItem) => {
           const fecha = assignment.fecha_limite
             ? formatDate(assignment.fecha_limite)
@@ -122,14 +128,37 @@ export const ElementAssignmentsTable: React.FC<ElementAssignmentsTableProps> = (
         key: 'estado',
         header: 'Estado',
         align: 'left',
+        width: TABLE_COLUMN_WIDTHS.status,
         render: (_: unknown, assignment: FlexibleAssignmentItem) => {
+          const isReturnedPending =
+            assignment.estado === 'Pendiente' && assignment.is_returned_for_changes === true;
           const badge = EVIDENCE_STATUS_BADGE[assignment.estado as keyof typeof EVIDENCE_STATUS_BADGE];
+          const badgeLabel = isReturnedPending
+            ? 'Pendiente'
+            : badge?.label ?? assignment.estado;
+          const badgeColor = isReturnedPending
+            ? 'bg-error-ring text-error'
+            : badge?.colorClasses ?? 'bg-gris-light text-gris-una';
           return (
             <div className="flex justify-start">
-              <StatusBadge
-                label={badge?.label ?? assignment.estado}
-                colorClasses={badge?.colorClasses ?? 'bg-gris-light text-gris-una'}
-              />
+              {isReturnedPending ? (
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <span className="inline-flex">
+                      <StatusBadge
+                        label={badgeLabel}
+                        colorClasses={badgeColor}
+                      />
+                    </span>
+                  </TooltipTrigger>
+                  <TooltipContent side="top">Devuelta por rechazo</TooltipContent>
+                </Tooltip>
+              ) : (
+                <StatusBadge
+                  label={badgeLabel}
+                  colorClasses={badgeColor}
+                />
+              )}
             </div>
           );
         },
@@ -138,15 +167,23 @@ export const ElementAssignmentsTable: React.FC<ElementAssignmentsTableProps> = (
         key: 'actions',
         header: 'Acciones',
         align: 'center',
+        width: TABLE_COLUMN_WIDTHS.actionsLarge,
         render: (_: unknown, assignment: FlexibleAssignmentItem) => {
           const isCompleted = assignment.estado === 'Completado';
           const isActionable = ['Pendiente', 'En Progreso'].includes(assignment.estado);
           const hasPending = assignment.has_pending_extension_request === true;
           const canExtend = !hasPending && isActionable;
+          const canMarkCompleted = assignment.has_uploaded_files === true;
 
           let extensionTooltip = 'Solicitar ampliación';
           if (hasPending) extensionTooltip = 'Ya hay una solicitud pendiente';
           else if (!isActionable) extensionTooltip = 'No se puede solicitar ampliación';
+
+          const completeTooltip = isCompleted
+            ? 'Revertir a en progreso'
+            : canMarkCompleted
+              ? 'Marcar completado'
+              : 'Debe subir al menos un archivo o enlace';
 
           return (
             <div className="flex items-center justify-center gap-2 pr-2">
@@ -156,15 +193,11 @@ export const ElementAssignmentsTable: React.FC<ElementAssignmentsTableProps> = (
                 onClick={() => onViewDetails(assignment)}
               />
 
-              {onStatusChange && isActionable && (
-                <TableActionButton
-                  action={isCompleted ? 'markInProgress' : 'markComplete'}
-                  tooltip={isCompleted ? 'Revertir a en progreso' : 'Marcar completado'}
-                  onClick={() =>
-                    onStatusChange(assignment, isCompleted ? 'En Progreso' : 'Completado')
-                  }
-                />
-              )}
+              <TableActionButton
+                action="uploadArrow"
+                tooltip="Subir archivos"
+                onClick={() => onUploadFiles(assignment)}
+              />
 
               {onRequestExtension && (
                 <TableActionButton
@@ -174,12 +207,23 @@ export const ElementAssignmentsTable: React.FC<ElementAssignmentsTableProps> = (
                   disabled={!canExtend}
                 />
               )}
+
+              {onStatusChange && (isActionable || isCompleted) && (
+                <TableActionButton
+                  action={isCompleted ? 'markInProgress' : 'markComplete'}
+                  tooltip={completeTooltip}
+                  disabled={!isCompleted && !canMarkCompleted}
+                  onClick={() =>
+                    onStatusChange(assignment, isCompleted ? 'En Progreso' : 'Completado')
+                  }
+                />
+              )}
             </div>
           );
         },
       },
     ],
-    [firstColumn, onViewDetails, onStatusChange, onRequestExtension]
+    [firstColumn, onViewDetails, onUploadFiles, onStatusChange, onRequestExtension]
   );
 
   return (

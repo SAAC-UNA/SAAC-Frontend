@@ -13,6 +13,7 @@ interface GenerateLinksConfirmModalProps {
   onClose: () => void;
   onConfirm: () => void;
   isLoading?: boolean;
+  isFlexible?: boolean;
 }
 
 export const GenerateLinksConfirmModal: React.FC<GenerateLinksConfirmModalProps> = ({
@@ -20,7 +21,12 @@ export const GenerateLinksConfirmModal: React.FC<GenerateLinksConfirmModalProps>
   onClose,
   onConfirm,
   isLoading = false,
+  isFlexible = false,
 }) => {
+  const scopeText = isFlexible
+    ? 'todas las fuentes de las pautas aprobadas'
+    : 'todas las evidencias de los criterios aprobados';
+
   return (
     <Modal
       isOpen={isOpen}
@@ -37,7 +43,7 @@ export const GenerateLinksConfirmModal: React.FC<GenerateLinksConfirmModalProps>
     >
       <p className={cn(TYPOGRAPHY.modal.body, 'text-gris-una-2 leading-relaxed')}>
         ¿Está seguro que desea generar enlaces públicos para{' '}
-        <strong className="text-negro-una">todas</strong> las evidencias de los criterios aprobados?
+        <strong className="text-negro-una">{scopeText}</strong>?
         Esta acción puede tardar un momento.
       </p>
     </Modal>

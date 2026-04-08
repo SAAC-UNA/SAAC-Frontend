@@ -73,6 +73,7 @@ export interface PaginationParams {
 export interface EvidenceSearchResult {
   evidencia_id: number;
   criterio_id: number;
+  proceso_id?: number;
   // Nomenclatura propia de la evidencia (ej. "E-001")
   nomenclatura: string;
   criterio_nomenclatura: string;

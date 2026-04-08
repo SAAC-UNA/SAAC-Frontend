@@ -96,6 +96,20 @@ export const AUDIT_ACTION_BADGE: Record<string, StatusBadgeConfig> = {
   asignar: { label: 'Asignar', colorClasses: 'bg-info-ring text-info' },
 };
 
+/**
+ * Retorna un color de badge determinista para un string dado.
+ * El mismo valor siempre produce el mismo color (basado en hash del string).
+ * Usar para categorías, tipos u otros campos sin una paleta fija.
+ */
+export const getBadgeColorForString = (value: string): string => {
+  const keys = Object.keys(BADGE_COLORS).filter(k => k !== 'gris');
+  let hash = 0;
+  for (let i = 0; i < value.length; i++) {
+    hash = (hash * 31 + value.charCodeAt(i)) >>> 0;
+  }
+  return BADGE_COLORS[keys[hash % keys.length]].colorClasses;
+};
+
 /** Tipo de modelo de estructura (tradicional vs flexible) */
 export const MODELO_TIPO_BADGE: Record<string, StatusBadgeConfig> = {
   tradicional:       { label: 'Tradicional',      colorClasses: 'bg-info-ring text-info-dark' },

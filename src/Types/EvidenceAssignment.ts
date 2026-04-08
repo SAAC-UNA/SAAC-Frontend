@@ -151,6 +151,8 @@ export interface FlexibleAssignmentItem extends Record<string, unknown> {
   created_at: string;
   updated_at: string;
   has_pending_extension_request?: boolean;
+  has_uploaded_files?: boolean;
+  is_returned_for_changes?: boolean;
   element?: {
     elemento_id: number;
     nombre: string;
@@ -167,4 +169,40 @@ export interface FlexibleAssignmentItem extends Record<string, unknown> {
     usuario_id: number;
     nombre: string;
   };
+  comments?: Array<{
+    id: number;
+    texto: string;
+    autor: string;
+    fecha: string;
+  }>;
+}
+
+/**
+ * Filtra asignaciones del modelo flexible por texto de búsqueda.
+ * Cubre todas las columnas visibles: nombre/nomenclatura de pauta,
+ * proceso, estado y fecha límite.
+ */
+export function filterFlexAssignments(
+  assignments: FlexibleAssignmentItem[],
+  search?: string,
+): FlexibleAssignmentItem[] {
+  if (!search?.trim()) return assignments;
+  const term = search.toLowerCase().trim();
+  return assignments.filter((a) => {
+    const fechaStr = a.fecha_limite
+      ? new Intl.DateTimeFormat('es-CR', {
+          year: 'numeric',
+          month: '2-digit',
+          day: '2-digit',
+        }).format(new Date(a.fecha_limite))
+      : '';
+    return (
+      a.element?.nombre?.toLowerCase().includes(term) ||
+      a.element?.nomenclatura?.toLowerCase().includes(term) ||
+      a.element?.descripcion?.toLowerCase().includes(term) ||
+      a.process?.nombre?.toLowerCase().includes(term) ||
+      a.estado?.toLowerCase().includes(term) ||
+      fechaStr.includes(term)
+    );
+  });
 }

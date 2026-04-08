@@ -21,6 +21,7 @@ import { TYPOGRAPHY } from "@/Constants/Typography";
 import { formatDistanceToNow } from "date-fns";
 import { es } from "date-fns/locale";
 import type { Notification } from "@/Types/NotificationTypes";
+import { buildNotificationTargetRoute } from "@/Components/Notifications/notificationNavigation";
 
 interface NotificationDropdownProps {
   onClose: () => void;
@@ -51,10 +52,7 @@ const DropdownItem: React.FC<DropdownItemProps> = ({
   onClose,
 }) => {
   const navigate = useNavigate();
-  const targetRoute =
-    notification.tipo_evento === "asignacion_evidencia"
-      ? "/mis-evidencias-asignadas"
-      : notification.enlace;
+  const targetRoute = buildNotificationTargetRoute(notification);
 
   const handleClick = () => {
     if (!notification.leida) onMarkAsRead(notification.notificacion_id);
@@ -199,8 +197,8 @@ export const NotificationDropdown: React.FC<NotificationDropdownProps> = ({
       )}
     >
       {/* Header */}
-      <div className="flex items-center justify-between px-4 py-3 border-b border-gris-light">
-        <h3 className={cn(TYPOGRAPHY.modal.subtitle, "font-semibold text-negro-una-2")}>
+      <div className="relative flex items-center justify-center px-4 py-3 border-b border-gris-light">
+        <h3 className={cn(TYPOGRAPHY.modal.subtitle, "font-semibold text-negro-una-2 text-center")}>
           Notificaciones
         </h3>
         {unreadCount > 0 && (
@@ -210,7 +208,7 @@ export const NotificationDropdown: React.FC<NotificationDropdownProps> = ({
             onClick={handleMarkAllAsRead}
             className={cn(
               TYPOGRAPHY.form.helper,
-              "px-2 py-1 text-gris-una hover:text-negro-una hover:bg-gris-light rounded-corner-sm",
+              "absolute right-4 top-1/2 -translate-y-1/2 px-2 py-1 text-gris-una hover:text-negro-una hover:bg-gris-light rounded-corner-sm",
             )}
           >
             Marcar todas leídas
