@@ -384,7 +384,7 @@ const StructureList: React.FC = () => {
           breadcrumbMode="none"
           headerExtra={
             <div className="flex flex-col sm:flex-row w-full gap-2 shrink-0 lg:w-auto items-end">
-              <Card>
+              <Card className="w-80">
                 <CustomSelect
                   label="Modelo"
                   value={
@@ -392,7 +392,6 @@ const StructureList: React.FC = () => {
                   }
                   onChange={handleModelChange}
                   options={modelOptions}
-                  className="w-52"
                 />
               </Card>
               <SearchInput

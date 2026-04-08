@@ -21,7 +21,6 @@ import { useAuth } from "@/Context/AuthContext";
 import { evidenceAssignmentService } from "@/Services/EvidenceAssignmentService";
 import { extensionRequestService } from "@/Services/ExtensionRequestService";
 import { Modal } from "@/Components/Ui/Modals/Modal";
-import { formatDate } from "@/Utils/DateUtils";
 import type {
   EvidenceAssignment,
   AssignmentFilters,
@@ -30,6 +29,7 @@ import { filterAndSortAssignments } from "@/Types/EvidenceAssignmentTypes";
 import type { CreateExtensionRequestData } from "@/Types/ExtensionRequestTypes";
 import type { FlexibleAssignmentItem } from "@/Types/EvidenceAssignment";
 import type { UserCycle } from "@/Types/EvidenceAssignment";
+import { filterFlexAssignments } from "@/Types/EvidenceAssignment";
 import {
   EvidenceAssignmentDetail,
   EvidenceAssignmentsTable,
@@ -645,38 +645,12 @@ export const MyEvidenceAssignmentsPage: React.FC = () => {
     ),
     filters,
   );
-  const filteredFlex = useMemo(() => {
-    const cycleFiltered = flexState.assignments.filter(
+  const filteredFlex = filterFlexAssignments(
+    flexState.assignments.filter(
       (a) => a.process?.ciclo_acreditacion_id === selectedCycleId,
-    );
-
-    const searchTerm = (filters.search ?? "").toLowerCase().trim();
-    if (!searchTerm) {
-      return cycleFiltered;
-    }
-
-    return cycleFiltered.filter((assignment) => {
-      const elementName = assignment.element?.nombre?.toLowerCase() ?? "";
-      const elementCode = assignment.element?.nomenclatura?.toLowerCase() ?? "";
-      const elementDescription = assignment.element?.descripcion?.toLowerCase() ?? "";
-      const processName = assignment.process?.nombre?.toLowerCase() ?? "";
-      const status = assignment.estado?.toLowerCase() ?? "";
-      const statusLabel = status.replace(/_/g, " ");
-      const deadline = assignment.fecha_limite
-        ? formatDate(assignment.fecha_limite).toLowerCase()
-        : "";
-
-      return (
-        elementName.includes(searchTerm) ||
-        elementCode.includes(searchTerm) ||
-        elementDescription.includes(searchTerm) ||
-        processName.includes(searchTerm) ||
-        status.includes(searchTerm) ||
-        statusLabel.includes(searchTerm) ||
-        deadline.includes(searchTerm)
-      );
-    });
-  }, [flexState.assignments, selectedCycleId, filters.search]);
+    ),
+    filters.search,
+  );
 
   const hasTraditionalSearch = !error && assignments.length > 0;
   const hasFlexibleSearch = !flexState.error && flexState.assignments.length > 0;

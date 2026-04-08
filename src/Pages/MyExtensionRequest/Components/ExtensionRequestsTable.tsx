@@ -19,6 +19,7 @@ import { EXTENSION_REQUEST_STATUS_BADGE } from '@/Constants/StatusBadges';
 import type { ExtensionRequest, ExtensionRequestStatus } from '@/Types/ExtensionRequestTypes';
 import { filterExtensionRequests } from '@/Types/ExtensionRequestTypes';
 import { formatDate } from '@/Utils/DateUtils';
+import { TABLE_COLUMN_WIDTHS } from '@/Constants/Components';
 import { useFirstColumnConfig } from '@/Hooks/UseFirstColumnConfig';
 
 const EMPTY_REQUESTS: ExtensionRequest[] = [];
@@ -100,13 +101,18 @@ export const ExtensionRequestsTable: React.FC<ExtensionRequestsTableProps> = ({
           </p>
           {/* Mostrar contexto: evidencia o elemento */}
           {item.evidencia_asignacion?.evidencia ? (
-            <p className={`block font-sans antialiased font-normal leading-normal text-gris-una ${TYPOGRAPHY.table.helper}`}>
-              {item.evidencia_asignacion.evidencia.nomenclatura}
+            <p className={`block font-sans antialiased font-normal leading-normal text-gris-una ${TYPOGRAPHY.table.helper}`} title={item.evidencia_asignacion.evidencia.nomenclatura}>
+              {truncateText(item.evidencia_asignacion.evidencia.nomenclatura, firstColumn.maxLength)}
             </p>
           ) : item.elemento_asignacion ? (
-            <p className={`block font-sans antialiased font-normal leading-normal text-gris-una ${TYPOGRAPHY.table.helper}`}>
-              {(item.elemento_asignacion as any).element?.nombre ?? `Elemento #${item.elemento_asignacion.elemento_id}`}
-            </p>
+            (() => {
+              const nombre = (item.elemento_asignacion as any).element?.nombre ?? `Elemento #${item.elemento_asignacion.elemento_id}`;
+              return (
+                <p className={`block font-sans antialiased font-normal leading-normal text-gris-una ${TYPOGRAPHY.table.helper}`} title={nombre}>
+                  {truncateText(nombre, firstColumn.maxLength)}
+                </p>
+              );
+            })()
           ) : null}
         </div>
       )
@@ -115,6 +121,7 @@ export const ExtensionRequestsTable: React.FC<ExtensionRequestsTableProps> = ({
       key: 'fecha_solicitud',
       header: 'Fecha Solicitud',
       align: 'left',
+      width: TABLE_COLUMN_WIDTHS.status,
       render: (_: unknown, item: ExtensionRequest) => (
         <div className="flex items-start">
           <span className={`block font-sans antialiased leading-normal text-negro-una-2 ${TYPOGRAPHY.table.cell}`}>
@@ -127,6 +134,7 @@ export const ExtensionRequestsTable: React.FC<ExtensionRequestsTableProps> = ({
       key: 'fecha_sugerida',
       header: 'Fecha Sugerida',
       align: 'left',
+      width: TABLE_COLUMN_WIDTHS.status,
       render: (_: unknown, item: ExtensionRequest) => (
         <div className="flex items-start">
           <span className={`block font-sans antialiased leading-normal text-negro-una-2 ${TYPOGRAPHY.table.cell}`}>
@@ -139,6 +147,7 @@ export const ExtensionRequestsTable: React.FC<ExtensionRequestsTableProps> = ({
       key: 'estado',
       header: 'Estado',
       align: 'left',
+      width: TABLE_COLUMN_WIDTHS.status,
       render: (_: unknown, item: ExtensionRequest) => 
         <div className="flex justify-start">
           <StatusBadge
@@ -151,6 +160,7 @@ export const ExtensionRequestsTable: React.FC<ExtensionRequestsTableProps> = ({
       key: 'actions',
       header: 'Acciones',
       align: 'center',
+      width: TABLE_COLUMN_WIDTHS.status,
       render: (_: unknown, item: ExtensionRequest) => (
         <div className="flex items-center justify-center gap-2 pr-2">
           <TableActionButton
