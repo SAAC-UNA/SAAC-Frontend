@@ -28,8 +28,7 @@ import type {
 import { filterAndSortAssignments } from "@/Types/EvidenceAssignmentTypes";
 import type { CreateExtensionRequestData } from "@/Types/ExtensionRequestTypes";
 import type { FlexibleAssignmentItem } from "@/Types/EvidenceAssignment";
-import type { UserCycle } from "@/Types/EvidenceAssignment";
-import { filterFlexAssignments } from "@/Types/EvidenceAssignment";
+import type { UserCycle } from "@/Types/EvidenceAssignment";import type { FlexibleElement } from '@/Types/StructureModelTypes';import { filterFlexAssignments } from "@/Types/EvidenceAssignment";
 import {
   EvidenceAssignmentDetail,
   EvidenceAssignmentsTable,
@@ -84,6 +83,7 @@ export const MyEvidenceAssignmentsPage: React.FC = () => {
     loading: boolean;
     error: string | null;
   }>({ assignments: [], loading: false, error: null });
+  const [flexElements, setFlexElements] = useState<FlexibleElement[]>([]);
   const [flexModal, setFlexModal] = useState<{
     selectedId: number | null;
     showExtension: boolean;
@@ -200,6 +200,16 @@ export const MyEvidenceAssignmentsPage: React.FC = () => {
       const data =
         await evidenceAssignmentService.getMyElementAssignments(userId);
       setFlexState((prev) => ({ ...prev, assignments: data }));
+
+      const modeloId = data[0]?.process?.modelo_estructura_id;
+      if (modeloId) {
+        try {
+          const elements = await evidenceAssignmentService.getElementsByModel(modeloId);
+          setFlexElements(elements);
+        } catch {
+          // silencioso: la ruta de ancestros no estará disponible
+        }
+      }
     } catch (error: unknown) {
       setFlexState((prev) => ({
         ...prev,
@@ -756,6 +766,7 @@ export const MyEvidenceAssignmentsPage: React.FC = () => {
                 onStatusChange={handleFlexStatusChange}
                 onRequestExtension={handleFlexRequestExtension}
                 hasFilters={filters.search?.trim() !== ""}
+                allElements={flexElements}
                 pagination={
                   totalPages > 1
                     ? { currentPage, totalPages, onPageChange: setCurrentPage }

@@ -280,6 +280,21 @@ export const EvidenceAssignmentDetail: React.FC<EvidenceAssignmentDetailProps> =
           </>
         )}
 
+        {/* Instrucciones del encargado */}
+        {assignment.comentario && (
+          <>
+            <div className="col-span-6 flex flex-col gap-1">
+              <span className={cn('uppercase tracking-wider font-semibold text-gris-una-2', TYPOGRAPHY.modal.subtitle)}>
+                Instrucciones del encargado
+              </span>
+              <p className={cn(TYPOGRAPHY.modal.body, 'text-gris-una-2 whitespace-pre-wrap')}>
+                {assignment.comentario}
+              </p>
+            </div>
+            <Separator />
+          </>
+        )}
+
         {/* div5 — Retroalimentación recibida */}
         <div className="col-span-6 flex flex-col gap-2">
           <span className={cn('uppercase tracking-wider font-semibold text-gris-una-2', TYPOGRAPHY.modal.subtitle)}>

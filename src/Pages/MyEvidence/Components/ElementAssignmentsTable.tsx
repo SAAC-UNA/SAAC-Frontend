@@ -95,13 +95,13 @@ export const ElementAssignmentsTable: React.FC<ElementAssignmentsTableProps> = (
         },
       },
       {
-        key: 'process',
-        header: 'Proceso',
+        key: 'fecha_asignacion',
+        header: 'Fecha Asignación',
         align: 'left',
-        width: TABLE_COLUMN_WIDTHS.actionsLarge,
+        width: TABLE_COLUMN_WIDTHS.status,
         render: (_: unknown, assignment: FlexibleAssignmentItem) => (
-          <span className={`font-sans text-negro-una-2 ${TYPOGRAPHY.table.cell}`}>
-            {assignment.process?.nombre ?? `Proceso ${assignment.proceso_id}`}
+          <span className={`font-sans text-negro-una-2 rounded-corner select-none whitespace-nowrap ${TYPOGRAPHY.table.cell}`}>
+            {formatDate(assignment.created_at)}
           </span>
         ),
       },

@@ -7,6 +7,8 @@ import { TYPOGRAPHY } from '@/Constants/Typography';
 import { StatusBadge } from '@/Components/Ui/Feedback/StatusBadge';
 import { EVIDENCE_STATUS_BADGE } from '@/Constants/StatusBadges';
 import type { FlexibleAssignmentItem } from '@/Types/EvidenceAssignment';
+import type { FlexibleElement } from '@/Types/StructureModelTypes';
+import { getAncestors } from '@/Utils/elementTreeUtils';
 import { evidenceAssignmentService } from '@/Services/EvidenceAssignmentService';
 import { useToast } from '@/Context/ToastContext';
 import { LoadingSpinner } from '@/Components/Ui/Feedback/Loading';
@@ -58,6 +60,7 @@ export const ElementAssignmentDetailModal: React.FC<ElementAssignmentDetailModal
     assignment: null,
     loading: true,
   });
+  const [allElements, setAllElements] = useState<FlexibleElement[]>([]);
   const [filesState, setFilesState] = useState<{ files: FileModel[]; loadingFiles: boolean }>({
     files: [],
     loadingFiles: false,
@@ -73,6 +76,13 @@ export const ElementAssignmentDetailModal: React.FC<ElementAssignmentDetailModal
       const data = await evidenceAssignmentService.getElementAssignmentById(assignmentId);
       setFetchState({ assignment: data, loading: false });
       loadFiles(data.elemento_id, data.proceso_id, data.usuario_id);
+
+      const modeloId = data.process?.modelo_estructura_id;
+      if (modeloId) {
+        evidenceAssignmentService.getElementsByModel(modeloId)
+          .then(setAllElements)
+          .catch(() => {});
+      }
     } catch {
       showToast({ type: 'error', title: 'Error', message: 'Error al cargar los detalles de la asignación' });
       setFetchState(prev => ({ ...prev, loading: false }));
@@ -210,10 +220,10 @@ export const ElementAssignmentDetailModal: React.FC<ElementAssignmentDetailModal
           )}
         </InfoCell>
 
-        {/* Proceso */}
-        <InfoCell label="Proceso" className="col-start-3 col-end-5">
+        {/* Fecha de asignación */}
+        <InfoCell label="Fecha de asignación" className="col-start-3 col-end-5">
           <span className={cn(TYPOGRAPHY.modal.body, 'text-gris-una-2')}>
-            {assignment.process?.nombre ?? `Proceso ${assignment.proceso_id}`}
+            {formatDateShort(new Date(assignment.created_at))}
           </span>
         </InfoCell>
 
@@ -226,27 +236,53 @@ export const ElementAssignmentDetailModal: React.FC<ElementAssignmentDetailModal
 
         <Separator />
 
-        {/* Tipo y descripción del elemento */}
-        {assignment.element && (
-          <>
-            <div className="col-span-6 flex flex-col gap-0.5">
-              {assignment.element.nomenclatura && (
-                <span className={cn(TYPOGRAPHY.modal.body, 'text-gris-una font-mono text-xs')}>
-                  {assignment.element.nomenclatura}
-                </span>
-              )}
-              <span className={cn(TYPOGRAPHY.modal.body, 'text-negro-una-2 font-semibold')}>
-                {assignment.element.tipo}
-              </span>
-              {assignment.element.descripcion && (
-                <span className={cn(TYPOGRAPHY.modal.body, 'text-gris-una-2')}>
-                  {assignment.element.descripcion}
-                </span>
-              )}
-            </div>
-            <Separator />
-          </>
-        )}
+        {/* Jerarquía del elemento */}
+        {assignment.element && (() => {
+          const ancestors = allElements.length > 0
+            ? getAncestors(assignment.element!.elemento_id, allElements)
+            : [];
+          return (
+            <>
+              <div className="col-span-6 flex flex-col gap-2">
+                {/* Ancestros */}
+                {ancestors.map(ancestor => (
+                  <div key={ancestor.elemento_id} className="flex items-start gap-2">
+                    <span className="w-24 shrink-0 pt-px text-xs uppercase tracking-wider font-semibold text-gris-una">
+                      {ancestor.tipo}
+                    </span>
+                    <span className={cn(TYPOGRAPHY.modal.body, 'text-gris-una-2')}>
+                      {[ancestor.nomenclatura, ancestor.nombre].filter(Boolean).join(' · ')}
+                    </span>
+                  </div>
+                ))}
+
+                {/* Separador visual sólo si hay ancestros */}
+                {ancestors.length > 0 && <hr className="border-dashed border-gray-200" />}
+
+                {/* Elemento actual */}
+                <div className="flex flex-col gap-0.5">
+                  <span className="text-xs uppercase tracking-wider font-semibold text-gris-una">
+                    {assignment.element.tipo}
+                  </span>
+                  {assignment.element.nomenclatura && (
+                    <span className={cn(TYPOGRAPHY.modal.body, 'text-gris-una font-mono text-xs')}>
+                      {assignment.element.nomenclatura}
+                    </span>
+                  )}
+                  <span className={cn(TYPOGRAPHY.modal.body, 'text-negro-una-2 font-semibold')}>
+                    {assignment.element.nombre ?? assignment.element.tipo}
+                  </span>
+                  {assignment.element.descripcion && (
+                    <span className={cn(TYPOGRAPHY.modal.body, 'text-gris-una-2')}>
+                      {assignment.element.descripcion}
+                    </span>
+                  )}
+                </div>
+              </div>
+              <Separator />
+            </>
+          );
+        })()}
 
         {/* Comentario de asignación */}
         {assignment.comentario && (
