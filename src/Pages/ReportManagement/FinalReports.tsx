@@ -441,31 +441,63 @@ const FinalReports: React.FC = () => {
     setConfirmModal({ show: false, isGeneratingLinks: true });
 
     try {
-      // Collect all files from all evidences
-      const todosLosArchivos: number[] = [];
+      const todosLosArchivos = new Set<number>();
+
+      const pushPendingFiles = (archivos: Archivo[]) => {
+        archivos.forEach((archivo) => {
+          if (!archivo.is_publico) {
+            todosLosArchivos.add(archivo.archivo_id);
+          }
+        });
+      };
 
       if (isFlexible) {
-        for (const elemento of flexibleSourceElements) {
-          (elemento.archivos ?? []).forEach((archivo) => {
-            if (!archivo.is_publico) todosLosArchivos.push(archivo.archivo_id);
-          });
-        }
-      } else {
-        for (const criterio of criteria) {
-          const evidenciasCriterio = getEvidenciasPorCriterio(criterio.id);
-          for (const evidencia of evidenciasCriterio) {
-            if (evidencia.archivos) {
-              evidencia.archivos.forEach((archivo) => {
-                if (!archivo.is_publico) {
-                  todosLosArchivos.push(archivo.archivo_id);
-                }
-              });
+        const archivosPorFuente = await Promise.all(
+          flexibleSourceElements.map(async (elemento) => {
+            if (elemento.archivos !== undefined) {
+              return elemento.archivos;
             }
-          }
-        }
+
+            const response = await axiosInstance.get('/elementos-archivos', {
+              params: {
+                elemento_id: elemento.id,
+                ...(selectedProcesoId ? { proceso_id: selectedProcesoId } : {}),
+              },
+            });
+
+            return (response.data.data || response.data) as Archivo[];
+          }),
+        );
+
+        archivosPorFuente.forEach(pushPendingFiles);
+      } else {
+        const approvedCriterionIds = new Set(criteria.map((criterio) => criterio.id));
+        const evidenciasAprobadas = evidences.filter((ev) =>
+          approvedCriterionIds.has(ev.criterio_id),
+        );
+
+        const archivosPorEvidencia = await Promise.all(
+          evidenciasAprobadas.map(async (evidencia) => {
+            if (evidencia.archivos !== undefined) {
+              return evidencia.archivos;
+            }
+
+            const response = await axiosInstance.get('/archivos', {
+              params: {
+                evidencia_id: evidencia.id,
+                ...(selectedProcesoId ? { proceso_id: selectedProcesoId } : {}),
+              },
+            });
+
+            return (response.data.data || response.data) as Archivo[];
+          }),
+        );
+
+        archivosPorEvidencia.forEach(pushPendingFiles);
+
       }
 
-      if (todosLosArchivos.length === 0) {
+      if (todosLosArchivos.size === 0) {
         showToast({
           type: "info",
           title: "No hay archivos sin enlace público",
@@ -474,24 +506,24 @@ const FinalReports: React.FC = () => {
       }
 
       await axiosInstance.post("/archivos/bulk-make-public", {
-        archivo_ids: todosLosArchivos,
+        archivos_ids: Array.from(todosLosArchivos),
       });
 
       showToast({
         type: "success",
-        title: `Se generaron ${todosLosArchivos.length} enlaces públicos exitosamente`,
+        title: `Se generaron ${todosLosArchivos.size} enlaces públicos exitosamente`,
       });
 
       if (isFlexible) {
-        const loadedElements = flexibleSourceElements.filter(
-          (c) => c.archivos !== undefined,
+        await Promise.all(
+          flexibleSourceElements.map((elemento) => loadFiles(elemento.id)),
         );
-        await Promise.all(loadedElements.map((c) => loadFiles(c.id)));
       } else {
-        const evidencesWithFiles = evidences.filter(
-          (ev) => ev.archivos !== undefined,
+        const approvedCriterionIds = new Set(criteria.map((criterio) => criterio.id));
+        const evidenciasAprobadas = evidences.filter((ev) =>
+          approvedCriterionIds.has(ev.criterio_id),
         );
-        await Promise.all(evidencesWithFiles.map((ev) => loadFiles(ev.id)));
+        await Promise.all(evidenciasAprobadas.map((ev) => loadFiles(ev.id)));
       }
     } catch (error: any) {
       console.error("Error generando enlaces masivos:", error);
@@ -714,6 +746,7 @@ const FinalReports: React.FC = () => {
         onClose={() => setConfirmModal((prev) => ({ ...prev, show: false }))}
         onConfirm={confirmGenerateAllLinks}
         isLoading={isGeneratingLinks}
+        isFlexible={isFlexible}
       />
 
       {/* Modal para gestionar enlaces públicos */}
