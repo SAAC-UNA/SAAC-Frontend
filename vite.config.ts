@@ -32,26 +32,26 @@
   '@': './src'
 */
 
-import { defineConfig } from 'vite'
-import react from '@vitejs/plugin-react-swc'
-import tailwindcss from '@tailwindcss/vite'
-import svgr from 'vite-plugin-svgr'
-import path from 'path'
+import { defineConfig } from "vite";
+import react from "@vitejs/plugin-react";
+import tailwindcss from "@tailwindcss/vite";
+import svgr from "vite-plugin-svgr";
+import path from "path";
 
 // https://vite.dev/config/
 export default defineConfig({
   plugins: [react(), tailwindcss(), svgr()],
   resolve: {
     alias: {
-      '@': path.resolve(process.cwd(), './src'),
-      '@/components': path.resolve(process.cwd(), './src/Components'),
-      '@/context': path.resolve(process.cwd(), './src/Context'),
-      '@/hooks': path.resolve(process.cwd(), './src/Hooks'),
-      '@/pages': path.resolve(process.cwd(), './src/Pages'),
-      '@/types': path.resolve(process.cwd(), './src/Types'),
-      '@/utils': path.resolve(process.cwd(), './src/Utils'),
-      '@/constants': path.resolve(process.cwd(), './src/Constants'),
-      '@/Services': path.resolve(process.cwd(), './src/Services')
-    }
-  }
-})
+      "@": path.resolve(process.cwd(), "./src"),
+      "@/components": path.resolve(process.cwd(), "./src/Components"),
+      "@/context": path.resolve(process.cwd(), "./src/Context"),
+      "@/hooks": path.resolve(process.cwd(), "./src/Hooks"),
+      "@/pages": path.resolve(process.cwd(), "./src/Pages"),
+      "@/types": path.resolve(process.cwd(), "./src/Types"),
+      "@/utils": path.resolve(process.cwd(), "./src/Utils"),
+      "@/constants": path.resolve(process.cwd(), "./src/Constants"),
+      "@/Services": path.resolve(process.cwd(), "./src/Services"),
+    },
+  },
+});
