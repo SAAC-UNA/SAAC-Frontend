@@ -59,15 +59,15 @@ export type StatusFilter = 'todos' | 'seleccionados' | 'pendientes';
 
 export const CreationStep: React.FC<CreationStepProps> = ({
   formData,
-  updateFormData,
+  updateFormData: _updateFormData,
   agregarCriterio: addCriterion,
   eliminarCriterio: deleteCriterion,
   actualizarCriterio: updateCriterion,
   agregarElemento,
   eliminarElemento,
   actualizarElemento,
-  errors,
-  cicloFijo = false,
+  errors: _errors,
+  cicloFijo: _cicloFijo = false,
   searchTerm,
   statusFilter,
   modeloTipo,
@@ -229,10 +229,6 @@ export const CreationStep: React.FC<CreationStepProps> = ({
     const startIndex = (currentPage - 1) * itemsPerPage;
     return elementosFiltrados.slice(startIndex, startIndex + itemsPerPage);
   }, [elementosFiltrados, currentPage, itemsPerPage]);
-
-  const handleCicloChange = (value: string) => {
-    updateFormData({ ciclo_acreditacion_id: parseInt(value) });
-  };
 
   const handleCriterioClick = (criterio: Criterio) => {
     // Verificar si ya está seleccionado

@@ -3,3 +3,4 @@
  */
 
 export { MyEvidenceAssignmentsPage } from './MyEvidenceAssignmentsPage';
+export { ElementUploadPage } from './Components/ElementUploadModal';

@@ -50,10 +50,7 @@ axiosInstance.interceptors.request.use((config) => {
     headerPatch["X-Context-Process-Id"] = String(contextIds.processId);
   }
 
-  config.headers = {
-    ...(config.headers ?? {}),
-    ...headerPatch,
-  };
+  Object.assign(config.headers, headerPatch);
 
   if (String(config.method || "get").toLowerCase() === "get") {
     const params = (config.params ?? {}) as Record<string, unknown>;

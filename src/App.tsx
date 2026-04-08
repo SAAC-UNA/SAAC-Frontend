@@ -44,11 +44,7 @@ const AccreditationCyclesPage = lazy(
 const EvidenceAssignment = lazy(
   () => import("./Pages/EvidenceAssignment/EvidenceAssignment"),
 );
-const EvidenceUploadPage = lazy(() =>
-  import("./Pages/EvidenceUpload").then((m) => ({
-    default: m.EvidenceUploadPage,
-  })),
-);
+
 const EvidenceSearchPage = lazy(() =>
   import("./Pages/EvidenceSearch").then((m) => ({
     default: m.EvidenceSearchPage,
@@ -59,6 +55,7 @@ const MyEvidenceAssignmentsPage = lazy(() =>
     default: m.MyEvidenceAssignmentsPage,
   })),
 );
+
 const AuditLogPage = lazy(() => import("@/Pages/AuditLog/AuditLogPage"));
 const CreateImprovementCommitment = lazy(
   () => import("./Pages/ImprovementCommitments/CreateImprovementCommitment"),
@@ -287,16 +284,6 @@ function App() {
                                   requirePermissions={EVIDENCE_VIEW_PERMISSIONS}
                                 >
                                   <MyEvidenceAssignmentsPage />
-                                </ProtectedRoute>
-                              }
-                            />
-                            <Route
-                              path="/evidencias/subir"
-                              element={
-                                <ProtectedRoute
-                                  requirePermissions={["archivos.upload"]}
-                                >
-                                  <EvidenceUploadPage />
                                 </ProtectedRoute>
                               }
                             />

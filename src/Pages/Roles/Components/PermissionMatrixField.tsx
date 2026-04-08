@@ -58,6 +58,7 @@ interface ModuleRow {
   moduleName: string;
   moduleLabel: string;
   permissions: Array<{ action: MatrixAction; value: string; label: string }>;
+  [key: string]: unknown;
 }
 
 const buildModuleRows = (group: PermissionGroupOption): ModuleRow[] => {
@@ -126,7 +127,7 @@ const PermissionGroupMatrix: React.FC<{
     const moduleColumn: PermissionsTableColumn<ModuleRow> = {
       key: 'module',
       header: 'Módulo',
-      accessor: (item) => item,
+      accessor: (item) => item as unknown as React.ReactNode,
       align: 'left',
       render: (_value, item) => (
         <div className="flex flex-col gap-0.5 leading-tight">
@@ -141,7 +142,7 @@ const PermissionGroupMatrix: React.FC<{
     const actionColumns: PermissionsTableColumn<ModuleRow>[] = visibleActions.map((action) => ({
       key: action,
       header: ACTION_LABELS[action],
-      accessor: (item) => item.permissions.find((permission) => permission.action === action),
+      accessor: (item) => item.permissions.find((permission) => permission.action === action) as unknown as React.ReactNode,
       align: 'center',
       render: (value, item) => {
         const permission = value as ModuleRow['permissions'][number] | undefined;
