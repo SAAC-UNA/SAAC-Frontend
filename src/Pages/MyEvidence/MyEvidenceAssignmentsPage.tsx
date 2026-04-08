@@ -4,7 +4,7 @@
  */
 
 import React, { useState, useEffect, useMemo } from "react";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import {
   PageHeader,
   ScreenContainer,
@@ -21,6 +21,7 @@ import { useAuth } from "@/Context/AuthContext";
 import { evidenceAssignmentService } from "@/Services/EvidenceAssignmentService";
 import { extensionRequestService } from "@/Services/ExtensionRequestService";
 import { Modal } from "@/Components/Ui/Modals/Modal";
+import { formatDate } from "@/Utils/DateUtils";
 import type {
   EvidenceAssignment,
   AssignmentFilters,
@@ -38,10 +39,20 @@ import { CreateExtensionRequestModal } from "@/Pages/MyEvidence/Components/Creat
 import { ElementAssignmentDetailModal } from "@/Pages/MyEvidence/Components/ElementAssignmentDetailModal";
 import { ElementFileUploadModal } from "@/Pages/MyEvidence/Components/ElementFileUploadModal";
 
+const parsePositiveInt = (value: string | null): number | null => {
+  if (!value) {
+    return null;
+  }
+
+  const parsed = Number.parseInt(value, 10);
+  return Number.isFinite(parsed) && parsed > 0 ? parsed : null;
+};
+
 export const MyEvidenceAssignmentsPage: React.FC = () => {
   const { showToast } = useToast();
   const { user } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
 
   const [pageState, setPageState] = useState<{
     assignments: EvidenceAssignment[];
@@ -63,6 +74,9 @@ export const MyEvidenceAssignmentsPage: React.FC = () => {
   // Selector de ciclo — datos vienen del endpoint mis-ciclos
   const [userCycles, setUserCycles] = useState<UserCycle[]>([]);
   const [selectedCycleId, setSelectedCycleId] = useState<number | null>(null);
+  const [appliedRouteContextKey, setAppliedRouteContextKey] = useState<
+    string | null
+  >(null);
 
   // Estado del modelo flexible
   const [flexState, setFlexState] = useState<{
@@ -258,6 +272,81 @@ export const MyEvidenceAssignmentsPage: React.FC = () => {
     value: String(c.ciclo_id),
     label: c.nombre,
   }));
+
+  const routeContext = useMemo(() => {
+    const params = new URLSearchParams(location.search);
+    const cycleId = parsePositiveInt(params.get("ciclo_acreditacion_id"));
+    const processId = parsePositiveInt(params.get("proceso_id"));
+    return {
+      cycleId,
+      processId,
+      key: `${cycleId ?? ""}|${processId ?? ""}`,
+    };
+  }, [location.search]);
+
+  useEffect(() => {
+    if (appliedRouteContextKey === routeContext.key) {
+      return;
+    }
+
+    const { cycleId, processId, key } = routeContext;
+    if (cycleId === null && processId === null) {
+      setAppliedRouteContextKey(key);
+      return;
+    }
+
+    const applyCycleSelection = (cycleToSelect: number) => {
+      if (selectedCycleId !== cycleToSelect) {
+        setSelectedCycleId(cycleToSelect);
+        setCurrentPage(1);
+      }
+      setAppliedRouteContextKey(key);
+    };
+
+    if (cycleId !== null) {
+      const cycleExists = availableCycles.some(
+        (cycle) => cycle.ciclo_id === cycleId,
+      );
+      if (cycleExists) {
+        applyCycleSelection(cycleId);
+        return;
+      }
+    }
+
+    if (processId !== null) {
+      const traditionalCycleId =
+        assignments.find(
+          (assignment) =>
+            (assignment.proceso?.proceso_id ?? assignment.proceso_id) ===
+            processId,
+        )?.proceso?.ciclo_acreditacion_id ?? null;
+
+      const flexibleCycleId =
+        flexState.assignments.find(
+          (assignment) => assignment.process?.proceso_id === processId,
+        )?.process?.ciclo_acreditacion_id ?? null;
+
+      const targetCycleId = traditionalCycleId ?? flexibleCycleId;
+
+      if (targetCycleId !== null) {
+        applyCycleSelection(targetCycleId);
+        return;
+      }
+    }
+
+    if (!loading && !flexState.loading) {
+      setAppliedRouteContextKey(key);
+    }
+  }, [
+    appliedRouteContextKey,
+    routeContext,
+    selectedCycleId,
+    availableCycles,
+    assignments,
+    flexState.assignments,
+    loading,
+    flexState.loading,
+  ]);
 
   const handleViewDetails = (assignment: EvidenceAssignment) => {
     setModalState((prev) => ({ ...prev, selectedAssignment: assignment }));
@@ -556,9 +645,42 @@ export const MyEvidenceAssignmentsPage: React.FC = () => {
     ),
     filters,
   );
-  const filteredFlex = flexState.assignments.filter(
-    (a) => a.process?.ciclo_acreditacion_id === selectedCycleId,
-  );
+  const filteredFlex = useMemo(() => {
+    const cycleFiltered = flexState.assignments.filter(
+      (a) => a.process?.ciclo_acreditacion_id === selectedCycleId,
+    );
+
+    const searchTerm = (filters.search ?? "").toLowerCase().trim();
+    if (!searchTerm) {
+      return cycleFiltered;
+    }
+
+    return cycleFiltered.filter((assignment) => {
+      const elementName = assignment.element?.nombre?.toLowerCase() ?? "";
+      const elementCode = assignment.element?.nomenclatura?.toLowerCase() ?? "";
+      const elementDescription = assignment.element?.descripcion?.toLowerCase() ?? "";
+      const processName = assignment.process?.nombre?.toLowerCase() ?? "";
+      const status = assignment.estado?.toLowerCase() ?? "";
+      const statusLabel = status.replace(/_/g, " ");
+      const deadline = assignment.fecha_limite
+        ? formatDate(assignment.fecha_limite).toLowerCase()
+        : "";
+
+      return (
+        elementName.includes(searchTerm) ||
+        elementCode.includes(searchTerm) ||
+        elementDescription.includes(searchTerm) ||
+        processName.includes(searchTerm) ||
+        status.includes(searchTerm) ||
+        statusLabel.includes(searchTerm) ||
+        deadline.includes(searchTerm)
+      );
+    });
+  }, [flexState.assignments, selectedCycleId, filters.search]);
+
+  const hasTraditionalSearch = !error && assignments.length > 0;
+  const hasFlexibleSearch = !flexState.error && flexState.assignments.length > 0;
+  const showSearchInput = isFlexible ? hasFlexibleSearch : hasTraditionalSearch;
   const moduleInfo = getModuleInfo("my_evidence_assignments");
 
   // Paginación unificada por proceso
@@ -580,7 +702,7 @@ export const MyEvidenceAssignmentsPage: React.FC = () => {
         description={moduleInfo.description}
         headerExtra={
           cycleOptions.length > 1 ||
-          (!isFlexible && !error && assignments.length > 0) ? (
+          showSearchInput ? (
             <div className="flex items-end gap-3">
               {cycleOptions.length > 1 && (
                 <CustomSelect
@@ -594,9 +716,9 @@ export const MyEvidenceAssignmentsPage: React.FC = () => {
                   }}
                 />
               )}
-              {!isFlexible && !error && assignments.length > 0 && (
+              {showSearchInput && (
                 <SearchInput
-                  placeholder="Buscar evidencias..."
+                  placeholder={isFlexible ? "Buscar pautas..." : "Buscar evidencias..."}
                   value={filters.search || ""}
                   onChange={(value) =>
                     handleFiltersChange({ ...filters, search: value })
@@ -665,6 +787,7 @@ export const MyEvidenceAssignmentsPage: React.FC = () => {
                 onUploadFiles={handleFlexUploadFiles}
                 onStatusChange={handleFlexStatusChange}
                 onRequestExtension={handleFlexRequestExtension}
+                hasFilters={filters.search?.trim() !== ""}
                 pagination={
                   totalPages > 1
                     ? { currentPage, totalPages, onPageChange: setCurrentPage }

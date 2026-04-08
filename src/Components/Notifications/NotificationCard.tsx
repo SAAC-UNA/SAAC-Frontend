@@ -14,6 +14,7 @@ import { cn } from "@/Utils/ClassNames";
 import { TYPOGRAPHY } from "@/Constants/Typography";
 import { SPRING_HOVER } from "@/Constants/Animations";
 import type { Notification } from "@/Types/NotificationTypes";
+import { buildNotificationTargetRoute } from "@/Components/Notifications/notificationNavigation";
 import { formatDistanceToNow } from "date-fns";
 import { es } from "date-fns/locale";
 import { Button } from "@/Components/Ui/Index";
@@ -38,22 +39,7 @@ export const NotificationCard: React.FC<NotificationCardProps> = ({
   index = 0,
 }) => {
   const navigate = useNavigate();
-
-  const shouldRouteToAssignments =
-    notification.tipo_evento === "asignacion_evidencia" ||
-    notification.tipo_evento === "asignacion_elemento" ||
-    notification.tipo_evento === "devolucion_observacion" ||
-    notification.tipo_evento === "rechazo_elemento";
-
-  const hasLegacyAssignmentLink =
-    notification.enlace?.startsWith("/Elements/") ||
-    /\/evidencias\/\d+\/asignar$/.test(notification.enlace ?? "") ||
-    /\/elementos\/\d+\/aprobaciones$/.test(notification.enlace ?? "");
-
-  const targetRoute =
-    shouldRouteToAssignments || hasLegacyAssignmentLink
-      ? "/mis-evidencias-asignadas"
-      : notification.enlace;
+  const targetRoute = buildNotificationTargetRoute(notification);
 
   const handleClick = () => {
     if (!notification.leida && onMarkAsRead) {
