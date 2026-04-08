@@ -545,6 +545,32 @@ export const SystemIcons = {
       </svg>
     ),
 
+    /** Grip vertical - Manija de arrastre (drag handle) */
+    gripVertical: ({ className, size, color }: IconProps) => (
+      <svg
+        className={`${getSizeClasses(size)} ${className || ""}`}
+        viewBox="0 0 24 24"
+        fill={color || "currentColor"}
+      >
+        <path d="M9.5 5a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0Zm0 7a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0Zm0 7a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0Zm8-14a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0Zm0 7a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0Zm0 7a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0Z" />
+      </svg>
+    ),
+
+    /** Paperclip - Para adjuntos y archivos */
+    paperclip: ({ className, size, color }: IconProps) => (
+      <svg
+        className={`${getSizeClasses(size)} ${className || ""}`}
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke={color || "currentColor"}
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      >
+        <path d="m21.44 11.05-9.19 9.19a6 6 0 0 1-8.49-8.49l8.57-8.57A4 4 0 1 1 18 8.84l-8.59 8.57a2 2 0 0 1-2.83-2.83l8.49-8.48" />
+      </svg>
+    ),
+
     // ===== ICONOS ESPECÍFICOS PARA MODALES =====
 
     /** Círculo de información - Para mensajes informativos */

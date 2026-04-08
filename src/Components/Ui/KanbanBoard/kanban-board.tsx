@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Card, CardContent } from './card';
 import { Badge } from './badge';
 import { Avatar, AvatarFallback, AvatarImage } from './avatar';
-import { Calendar, GripVertical, MessageCircle, Paperclip, Plus } from 'lucide-react';
+import { SystemIcons } from '@/Components/Ui/Icons/SystemIcons';
 import { TYPOGRAPHY } from '@/Constants/Typography';
 import { ICON_SIZES } from '@/Constants/Components';
 import { BADGE_COLORS } from '@/Constants/StatusBadges';
@@ -32,102 +32,7 @@ interface Column {
   dotClass: string;
 }
 
-const sampleData: Column[] = [
-  {
-    id: 'todo',
-    title: 'To Do',
-    dotClass: 'bg-slate',
-    tasks: [
-      {
-        id: '1',
-        title: 'Design System Audit',
-        description: 'Review and update component library',
-        priority: 'high',
-        assignee: {
-          name: 'Sarah Chen',
-          avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=64&h=64&fit=crop',
-        },
-        tags: ['Design', 'System'],
-        dueDate: '2024-01-15',
-        attachments: 3,
-        comments: 7,
-      },
-      {
-        id: '2',
-        title: 'User Research Analysis',
-        description: 'Analyze feedback from recent user interviews',
-        priority: 'medium',
-        assignee: {
-          name: 'Alex Rivera',
-          avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=64&h=64&fit=crop',
-        },
-        tags: ['Research', 'UX'],
-        dueDate: '2024-01-18',
-        comments: 4,
-      },
-    ],
-  },
-  {
-    id: 'progress',
-    title: 'In Progress',
-    dotClass: 'bg-verde',
-    tasks: [
-      {
-        id: '3',
-        title: 'Mobile App Redesign',
-        description: 'Implementing new navigation patterns',
-        priority: 'high',
-        assignee: {
-          name: 'Jordan Kim',
-          avatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=64&h=64&fit=crop',
-        },
-        tags: ['Mobile', 'UI'],
-        attachments: 8,
-        comments: 12,
-      },
-    ],
-  },
-  {
-    id: 'review',
-    title: 'Review',
-    dotClass: 'bg-naranja',
-    tasks: [
-      {
-        id: '4',
-        title: 'API Documentation',
-        description: 'Complete developer documentation',
-        priority: 'medium',
-        assignee: {
-          name: 'Maya Patel',
-          avatar: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=64&h=64&fit=crop',
-        },
-        tags: ['Documentation', 'API'],
-        dueDate: '2024-01-20',
-        comments: 2,
-      },
-    ],
-  },
-  {
-    id: 'done',
-    title: 'Done',
-    dotClass: 'bg-teal',
-    tasks: [
-      {
-        id: '5',
-        title: 'Landing Page Optimization',
-        description: 'Improved conversion rate by 23%',
-        priority: 'low',
-        assignee: {
-          name: 'Chris Wong',
-          avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=64&h=64&fit=crop',
-        },
-        tags: ['Marketing', 'Web'],
-        attachments: 2,
-        comments: 8,
-      },
-    ],
-  },
-];
+const sampleData: Column[] = [];
 
 export default function KanbanBoard() {
   const [columns, setColumns] = useState<Column[]>(sampleData);
@@ -195,7 +100,7 @@ export default function KanbanBoard() {
                 </Badge>
               </div>
               <button className="p-1 rounded-corner-full bg-blanco-una hover:bg-gris-light transition-colors">
-                <Plus className={`${ICON_SIZES.sm} text-gris-una-3`} />
+                <SystemIcons.actions.add className={`${ICON_SIZES.sm} text-gris-una-3`} />
               </button>
             </div>
 
@@ -222,7 +127,7 @@ export default function KanbanBoard() {
                             <h4 className={`font-semibold text-gris-una-4 leading-tight ${TYPOGRAPHY.body}`}>
                               {task.title}
                             </h4>
-                            <GripVertical className={`${ICON_SIZES.md} text-gris-una shrink-0 cursor-move`} />
+                            <SystemIcons.interface.gripVertical className={`${ICON_SIZES.md} text-gris-una shrink-0 cursor-move`} />
                           </div>
 
                           {task.description && (
@@ -248,7 +153,7 @@ export default function KanbanBoard() {
                             <div className="flex items-center gap-4 text-gris-una-2">
                               {task.dueDate && (
                                 <div className="flex items-center gap-1">
-                                  <Calendar className={ICON_SIZES.sm} />
+                                  <SystemIcons.interface.calendar className={ICON_SIZES.sm} />
                                   <span className={`${TYPOGRAPHY.badge} font-medium`}>
                                     {formatDateCompact(task.dueDate)}
                                   </span>
@@ -256,13 +161,13 @@ export default function KanbanBoard() {
                               )}
                               {task.comments != null && (
                                 <div className="flex items-center gap-1">
-                                  <MessageCircle className={ICON_SIZES.sm} />
+                                  <SystemIcons.actions.comment className={ICON_SIZES.sm} />
                                   <span className={`${TYPOGRAPHY.badge} font-medium`}>{task.comments}</span>
                                 </div>
                               )}
                               {task.attachments != null && (
                                 <div className="flex items-center gap-1">
-                                  <Paperclip className={ICON_SIZES.sm} />
+                                  <SystemIcons.interface.paperclip className={ICON_SIZES.sm} />
                                   <span className={`${TYPOGRAPHY.badge} font-medium`}>{task.attachments}</span>
                                 </div>
                               )}
