@@ -29,7 +29,9 @@ export default function PublicFolderPage() {
 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [contexto, setContexto] = useState<PublicFolderResponse["data"]["contexto"] | null>(null);
+  const [contexto, setContexto] = useState<
+    PublicFolderResponse["data"]["contexto"] | null
+  >(null);
   const [items, setItems] = useState<PublicItem[]>([]);
   const [downloadingId, setDownloadingId] = useState<number | null>(null);
 
@@ -69,7 +71,10 @@ export default function PublicFolderPage() {
         }
       } catch (err) {
         if (!cancelled) {
-          const message = err instanceof Error ? err.message : "Error inesperado al cargar la carpeta.";
+          const message =
+            err instanceof Error
+              ? err.message
+              : "Error inesperado al cargar la carpeta.";
           setError(message);
         }
       } finally {
@@ -119,7 +124,9 @@ export default function PublicFolderPage() {
         },
       });
 
-      const blob = new Blob([response.data], { type: response.headers["content-type"] || "application/octet-stream" });
+      const blob = new Blob([response.data], {
+        type: response.headers["content-type"] || "application/octet-stream",
+      });
       const objectUrl = window.URL.createObjectURL(blob);
       const anchor = document.createElement("a");
       anchor.href = objectUrl;
@@ -148,10 +155,12 @@ export default function PublicFolderPage() {
           {!loading && !error && contexto && (
             <div className="mt-4 space-y-2 text-sm text-slate-700">
               <p>
-                <strong>Nomenclatura:</strong> {contexto.nomenclatura || "No disponible"}
+                <strong>Nomenclatura:</strong>{" "}
+                {contexto.nomenclatura || "No disponible"}
               </p>
               <p>
-                <strong>Descripción:</strong> {contexto.descripcion || "No disponible"}
+                <strong>Descripción:</strong>{" "}
+                {contexto.descripcion || "No disponible"}
               </p>
             </div>
           )}
@@ -162,14 +171,20 @@ export default function PublicFolderPage() {
             Archivos y enlaces disponibles
           </header>
 
-          {loading && <p className="px-6 py-5 text-slate-600">Cargando carpeta pública...</p>}
+          {loading && (
+            <p className="px-6 py-5 text-slate-600">
+              Cargando carpeta pública...
+            </p>
+          )}
 
           {!loading && error && (
             <p className="px-6 py-5 text-red-600">{error}</p>
           )}
 
           {!loading && !error && items.length === 0 && (
-            <p className="px-6 py-5 text-slate-600">No hay archivos públicos disponibles para esta carpeta.</p>
+            <p className="px-6 py-5 text-slate-600">
+              No hay archivos públicos disponibles para esta carpeta.
+            </p>
           )}
 
           {!loading && !error && items.length > 0 && (
@@ -180,8 +195,12 @@ export default function PublicFolderPage() {
                   className="grid gap-3 px-6 py-4 md:grid-cols-[1fr_auto_auto] md:items-center"
                 >
                   <div>
-                    <p className="font-medium text-slate-800 break-all">{item.nombre_original || "Sin nombre"}</p>
-                    <p className="text-xs text-slate-500">Subido: {item.fecha_subida || "Sin fecha"}</p>
+                    <p className="font-medium text-slate-800 break-all">
+                      {item.nombre_original || "Sin nombre"}
+                    </p>
+                    <p className="text-xs text-slate-500">
+                      Subido: {item.fecha_subida || "Sin fecha"}
+                    </p>
                   </div>
 
                   <span className="text-xs font-semibold uppercase tracking-wide text-slate-500">
