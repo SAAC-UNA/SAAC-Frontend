@@ -161,7 +161,7 @@ export const EvidenceSearchResultsTable: React.FC<EvidenceSearchResultsTableProp
           />
           <TableActionButton
             action="list"
-            tooltip="Ver recursos del criterio"
+            tooltip={isFlexible ? 'Ver recursos de la pauta' : 'Ver recursos del criterio'}
             onClick={() => openResourcesModal(item)}
           />
         </div>
@@ -189,6 +189,7 @@ export const EvidenceSearchResultsTable: React.FC<EvidenceSearchResultsTableProp
         onClose={closeResourcesModal}
         evidencias={resourcesModal?.evidencias ?? []}
         criterioNomenclatura={resourcesModal?.criterioNomenclatura}
+        isFlexible={isFlexible}
       />
     </>
   );

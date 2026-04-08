@@ -152,6 +152,7 @@ export interface FlexibleAssignmentItem extends Record<string, unknown> {
   updated_at: string;
   has_pending_extension_request?: boolean;
   has_uploaded_files?: boolean;
+  is_returned_for_changes?: boolean;
   element?: {
     elemento_id: number;
     nombre: string;

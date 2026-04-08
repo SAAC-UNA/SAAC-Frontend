@@ -71,7 +71,11 @@ export const EvidenceUploadPage: React.FC<EvidenceUploadPageProps> = ({
 
     try {
       setLoadingFiles(true);
-      const files = await fileService.listFiles({ evidencia_id: evidenciaId });
+      const files = await fileService.listFiles({
+        evidencia_id: evidenciaId,
+        ...(procesoId ? { proceso_id: procesoId } : {}),
+        ...(usuarioId ? { usuario_id: usuarioId } : {}),
+      });
       setUploadedFiles(files);
     } catch (error: any) {
       showToast({

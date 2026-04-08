@@ -55,6 +55,7 @@ const getActionName = (permissionValue: string): string => permissionValue.split
 const isAction = (value: string): value is MatrixAction => ACTION_ORDER.includes(value as MatrixAction);
 
 interface ModuleRow {
+  [key: string]: unknown;
   moduleName: string;
   moduleLabel: string;
   permissions: Array<{ action: MatrixAction; value: string; label: string }>;
@@ -127,7 +128,7 @@ const PermissionGroupMatrix: React.FC<{
     const moduleColumn: PermissionsTableColumn<ModuleRow> = {
       key: 'module',
       header: 'Módulo',
-      accessor: (item) => item as unknown as React.ReactNode,
+      accessor: 'moduleLabel',
       align: 'left',
       render: (_value, item) => (
         <div className="flex flex-col gap-0.5 leading-tight">
@@ -142,10 +143,9 @@ const PermissionGroupMatrix: React.FC<{
     const actionColumns: PermissionsTableColumn<ModuleRow>[] = visibleActions.map((action) => ({
       key: action,
       header: ACTION_LABELS[action],
-      accessor: (item) => item.permissions.find((permission) => permission.action === action) as unknown as React.ReactNode,
       align: 'center',
-      render: (value, item) => {
-        const permission = value as ModuleRow['permissions'][number] | undefined;
+      render: (_value, item) => {
+        const permission = item.permissions.find((entry) => entry.action === action);
         const selected = permission ? selectedValues.includes(permission.value) : false;
 
         if (!permission) {

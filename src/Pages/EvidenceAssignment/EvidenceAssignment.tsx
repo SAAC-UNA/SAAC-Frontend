@@ -25,6 +25,8 @@ import {
   TooltipTrigger,
   TooltipContent,
 } from "@/Components/Ui/Feedback/Tooltip";
+import { GLOBAL_FILTER_CONTEXT_CHANGED_EVENT } from "@/Services/GlobalFilterContextService";
+import { getOperationalContextSnapshot } from "@/Services/OperationalContextStore";
 import { TYPOGRAPHY } from "@/Constants/Typography";
 import { TABLE_COLUMN_WIDTHS } from "@/Constants/Components";
 import { formatDateShort } from "@/Utils/DateUtils";
@@ -108,10 +110,6 @@ export interface EvidenceAssignmentViewProps {
   isFlexible: boolean;
   flexElements: FlexibleElement[];
   flexElementsLoading: boolean;
-  // Proceso seleccionado para breadcrumbs
-  selectedProcess: Process | null;
-  // Selector de proceso
-  processes: Process[];
 }
 
 // ---------------------------------------------------------------------------
@@ -148,6 +146,23 @@ const EvidenceAssignment: React.FC = () => {
 
   const isFlexible =
     selectedProcess?.modelo_estructura_tipo === "elemento_flexible";
+
+  const resolveProcessIdFromContext = useCallback(
+    (availableProcesses: Process[]): number | null => {
+      const contextProcessId = getOperationalContextSnapshot().processId;
+
+      if (contextProcessId === null) {
+        return null;
+      }
+
+      return availableProcesses.some(
+        (processItem) => processItem.proceso_id === contextProcessId,
+      )
+        ? contextProcessId
+        : null;
+    },
+    [],
+  );
 
   const updateFormData = useCallback(
     (updates: Partial<EvidenceAssignmentFormData>) => {
@@ -251,9 +266,6 @@ const EvidenceAssignment: React.FC = () => {
           loading: false,
         });
         setProcesses(processesData);
-        if (processesData.length > 0 && !formData.proceso_id) {
-          updateFormData({ proceso_id: processesData[0].proceso_id });
-        }
         await Promise.all([loadUsers(), loadRoles()]);
         setCatalogState((prev) => ({ ...prev, loading: false }));
         setDataLoaded(true);
@@ -264,6 +276,46 @@ const EvidenceAssignment: React.FC = () => {
     };
     load();
   }, [dataLoaded]);
+
+  useEffect(() => {
+    const syncSelectedProcessFromContext = () => {
+      const nextProcessId = resolveProcessIdFromContext(processes);
+
+      setFormData((prev) => {
+        if (prev.proceso_id === nextProcessId) {
+          return prev;
+        }
+
+        return {
+          ...prev,
+          proceso_id: nextProcessId,
+          criterio_id: null,
+          selectedCriteria: [],
+          selectedEvidences: [],
+          selectedElements: [],
+          excludedUsers: [],
+        };
+      });
+    };
+
+    syncSelectedProcessFromContext();
+
+    if (typeof window === "undefined") {
+      return;
+    }
+
+    window.addEventListener(
+      GLOBAL_FILTER_CONTEXT_CHANGED_EVENT,
+      syncSelectedProcessFromContext,
+    );
+
+    return () => {
+      window.removeEventListener(
+        GLOBAL_FILTER_CONTEXT_CHANGED_EVENT,
+        syncSelectedProcessFromContext,
+      );
+    };
+  }, [processes, resolveProcessIdFromContext]);
 
   // Cargar elementos cuando cambia el proceso a uno de tipo flexible
   useEffect(() => {
@@ -296,43 +348,56 @@ const EvidenceAssignment: React.FC = () => {
   >([]);
 
   useEffect(() => {
+    let cancelled = false;
+
     const validate = async () => {
       if (
         !formData.proceso_id ||
         formData.selectedEvidences.length === 0 ||
         formData.selectedUsers.length === 0
       ) {
+        if (cancelled) return;
         setDuplicatesState({ duplicates: [], validating: false });
         updateFormData({ excludedUsers: [] });
         setExcludedCompletedPairs([]);
         return;
       }
+
+      if (cancelled) return;
       setDuplicatesState((prev) => ({
         ...prev,
         validating: true,
         duplicates: [],
       }));
       setExcludedCompletedPairs([]);
+
       const found: DuplicateAssignment[] = [];
       try {
-        for (const evidenciaId of formData.selectedEvidences) {
-          const res = await evidenceAssignmentService.validateDuplicates({
-            proceso_id: formData.proceso_id!,
-            evidencia_id: evidenciaId,
-            usuarios: formData.selectedUsers,
-          });
-          if (res.tiene_duplicados) {
-            found.push(
-              ...res.duplicados.map((d) => ({
-                ...d,
-                evidencia_id: evidenciaId,
-              })),
-            );
-          }
-        }
+        const results = await Promise.all(
+          formData.selectedEvidences.map(async (evidenciaId) => {
+            const res = await evidenceAssignmentService.validateDuplicates({
+              proceso_id: formData.proceso_id!,
+              evidencia_id: evidenciaId,
+              usuarios: formData.selectedUsers,
+            });
+
+            if (!res.tiene_duplicados) {
+              return [] as DuplicateAssignment[];
+            }
+
+            return res.duplicados.map((d) => ({
+              ...d,
+              evidencia_id: evidenciaId,
+            }));
+          }),
+        );
+
+        results.forEach((dups) => found.push(...dups));
       } catch {
         // silenciar error de validación
       }
+
+      if (cancelled) return;
       setDuplicatesState({ duplicates: found, validating: false });
       updateFormData({
         excludedUsers: found
@@ -340,7 +405,12 @@ const EvidenceAssignment: React.FC = () => {
           .map((d) => d.usuario_id),
       });
     };
+
     validate();
+
+    return () => {
+      cancelled = true;
+    };
   }, [
     formData.proceso_id,
     JSON.stringify(formData.selectedEvidences),
@@ -719,27 +789,32 @@ const EvidenceAssignment: React.FC = () => {
     setSubmitState((prev) => ({ ...prev, isSubmitting: true }));
     try {
       if (isFlexible) {
-        // Modelo flexible: un POST por cada elemento seleccionado
-        for (const elementoId of formData.selectedElements) {
-          await evidenceAssignmentService.createElementAssignment({
-            proceso_id: formData.proceso_id!,
-            elemento_id: elementoId,
-            usuarios:
-              formData.selectedUsers.length > 0
-                ? formData.selectedUsers
-                : undefined,
-            roles:
-              formData.selectedRoles.length > 0
-                ? formData.selectedRoles
-                : undefined,
-            fecha_limite: formData.fecha_limite || undefined,
-            comentario: formData.comentario || undefined,
-          });
-        }
+        // Modelo flexible: enviar asignaciones en paralelo para reducir latencia total.
+        const elementPayloads = formData.selectedElements.map((elementoId) => ({
+          proceso_id: formData.proceso_id!,
+          elemento_id: elementoId,
+          usuarios:
+            formData.selectedUsers.length > 0
+              ? formData.selectedUsers
+              : undefined,
+          roles:
+            formData.selectedRoles.length > 0
+              ? formData.selectedRoles
+              : undefined,
+          fecha_limite: formData.fecha_limite || undefined,
+          comentario: formData.comentario || undefined,
+        }));
+
+        await Promise.all(
+          elementPayloads.map((payload) =>
+            evidenceAssignmentService.createElementAssignment(payload),
+          ),
+        );
+
         setModalState({
           showSuccessModal: true,
           showConfirmModal: false,
-          assignedEvidencesCount: formData.selectedElements.length,
+          assignedEvidencesCount: elementPayloads.length,
         });
         setFormData((prev) => ({
           ...prev,
@@ -751,31 +826,47 @@ const EvidenceAssignment: React.FC = () => {
           excludedUsers: [],
         }));
       } else {
-        // Modelo tradicional: un POST por cada evidencia seleccionada
-        for (const evidenciaId of formData.selectedEvidences) {
-          const finalUsers = formData.selectedUsers.filter(
-            (id) =>
-              !excludedUsersSet.has(id) &&
-              !excludedCompletedPairs.some(
-                (p) => p.usuario_id === id && p.evidencia_id === evidenciaId,
-              ),
-          );
-          await evidenceAssignmentService.createAssignment({
-            proceso_id: formData.proceso_id!,
-            evidencia_id: evidenciaId,
-            usuarios: finalUsers.length > 0 ? finalUsers : undefined,
-            roles:
+        // Modelo tradicional: enviar asignaciones en paralelo por evidencia.
+        const assignmentPayloads = formData.selectedEvidences
+          .map((evidenciaId) => {
+            const finalUsers = formData.selectedUsers.filter(
+              (id) =>
+                !excludedUsersSet.has(id) &&
+                !excludedCompletedPairs.some(
+                  (p) => p.usuario_id === id && p.evidencia_id === evidenciaId,
+                ),
+            );
+
+            const roles =
               formData.selectedRoles.length > 0
                 ? formData.selectedRoles
-                : undefined,
-            fecha_limite: formData.fecha_limite || undefined,
-            comentario: formData.comentario || undefined,
-          });
-        }
+                : undefined;
+
+            if (finalUsers.length === 0 && !roles) {
+              return null;
+            }
+
+            return {
+              proceso_id: formData.proceso_id!,
+              evidencia_id: evidenciaId,
+              usuarios: finalUsers.length > 0 ? finalUsers : undefined,
+              roles,
+              fecha_limite: formData.fecha_limite || undefined,
+              comentario: formData.comentario || undefined,
+            };
+          })
+          .filter((payload): payload is NonNullable<typeof payload> => payload !== null);
+
+        await Promise.all(
+          assignmentPayloads.map((payload) =>
+            evidenceAssignmentService.createAssignment(payload),
+          ),
+        );
+
         setModalState({
           showSuccessModal: true,
           showConfirmModal: false,
-          assignedEvidencesCount: formData.selectedEvidences.length,
+          assignedEvidencesCount: assignmentPayloads.length,
         });
         setFormData({
           proceso_id: formData.proceso_id,
@@ -854,8 +945,6 @@ const EvidenceAssignment: React.FC = () => {
     isFlexible,
     flexElements,
     flexElementsLoading,
-    selectedProcess,
-    processes,
   };
 
   return <EvidenceAssignmentView {...viewProps} />;

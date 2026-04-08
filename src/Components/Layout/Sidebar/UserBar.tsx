@@ -15,7 +15,7 @@ import { SystemIcons } from "@/Components/Ui/Icons/SystemIcons";
 import { cn } from "@/Utils/ClassNames";
 import { APP_HEADER_BUTTON } from "@/Constants/Components";
 import { buttonVariants } from "@/Components/Ui/Buttons/Button";
-import { DROPDOWN_VARIANTS, SPRING_SIDEBAR } from "@/Constants/Animations";
+import { DROPDOWN_VARIANTS_UP, SPRING_SIDEBAR } from "@/Constants/Animations";
 import { NotificationDropdown } from "@/Components/Notifications/NotificationDropdown";
 import NotificationCenter from "@/Components/Notifications/NotificationModal";
 import { Tooltip, TooltipTrigger, TooltipContent } from "@/Components/Ui/Feedback/Tooltip";
@@ -43,7 +43,7 @@ export const UserWidget: React.FC<UserWidgetProps> = ({
 
   const [isNotifOpen, setIsNotifOpen] = useState(false);
   const [notifCoords, setNotifCoords] = useState<{
-    top: number;
+    bottom: number;
     left: number;
   } | null>(null);
 
@@ -58,16 +58,14 @@ export const UserWidget: React.FC<UserWidgetProps> = ({
   const calculatePosition = useCallback(() => {
     if (!bellRef.current) return;
     const rect = bellRef.current.getBoundingClientRect();
-    const gap = 4;
+    const gap = 8;
     const left = Math.min(
       rect.right + gap,
       window.innerWidth - DROPDOWN_WIDTH - gap
     );
-    const top = Math.min(
-      rect.top,
-      window.innerHeight - 480
-    );
-    setNotifCoords({ top, left });
+    const anchorY = rect.top + rect.height / 2;
+    const bottom = Math.max(gap, window.innerHeight - anchorY);
+    setNotifCoords({ bottom, left });
   }, []);
 
   useEffect(() => {
@@ -256,23 +254,30 @@ export const UserWidget: React.FC<UserWidgetProps> = ({
         createPortal(
           <AnimatePresence>
             {isNotifOpen && (
-              <div
-                style={{
-                  position: "fixed",
-                  top: notifCoords.top,
-                  left: notifCoords.left,
-                  zIndex: 9999,
-                  width: 0,
-                  height: 0,
-                }}
-              >
+              <>
+                <motion.button
+                  type="button"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  transition={{ duration: 0.16 }}
+                  className="fixed inset-0 z-[9998] bg-negro-una/5 backdrop-blur-[1.5px]"
+                  onClick={() => setIsNotifOpen(false)}
+                  aria-label="Cerrar panel de notificaciones"
+                />
                 <motion.div
                   ref={notifMenuRef}
-                  variants={DROPDOWN_VARIANTS}
+                  variants={DROPDOWN_VARIANTS_UP}
                   initial="hidden"
                   animate="visible"
                   exit="exit"
-                  style={{ position: "relative", width: DROPDOWN_WIDTH }}
+                  style={{
+                    position: "fixed",
+                    bottom: notifCoords.bottom,
+                    left: notifCoords.left,
+                    zIndex: 9999,
+                    width: DROPDOWN_WIDTH,
+                  }}
                 >
                   <NotificationDropdown
                     onClose={() => setIsNotifOpen(false)}
@@ -282,7 +287,7 @@ export const UserWidget: React.FC<UserWidgetProps> = ({
                     }}
                   />
                 </motion.div>
-              </div>
+              </>
             )}
           </AnimatePresence>,
           document.body,

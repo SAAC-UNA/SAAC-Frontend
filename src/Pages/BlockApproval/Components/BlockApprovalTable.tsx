@@ -1,15 +1,13 @@
 import React, { useMemo } from 'react';
 import { DataTable } from '@/Components/Ui/Table/DataTable';
 import { TableActionButton } from '@/Components/Ui/Buttons/TableActionButton';
-import { ButtonWithTooltip } from '@/Components/Ui/Buttons/ButtonWithTooltip';
 import { StatusBadge } from '@/Components/Ui/Feedback/StatusBadge';
 import { SystemIcons } from '@/Components/Ui/Icons/SystemIcons';
-import { LoadingSpinner } from '@/Components/Ui/Feedback/Loading';
 import { UserAvatars } from '@/Components/Ui/UserAvatars/UserAvatars';
 import type { UserAvatarsUser } from '@/Components/Ui/UserAvatars/UserAvatars';
 
 import { TYPOGRAPHY } from '@/Constants/Typography';
-import { TABLE_ACTION_BUTTON, TABLE_COLUMN_WIDTHS } from '@/Constants/Components';
+import { TABLE_COLUMN_WIDTHS } from '@/Constants/Components';
 
 const ICON = 'size-4 shrink-0';
 import type { DataTableColumn } from '@/Components/Ui/Table/DataTable';
@@ -24,20 +22,36 @@ const BLOCK_STATUS_BADGE: Record<BlockApprovalStatus, { label: string; colorClas
   incompleto:  { label: 'Incompleto',  colorClasses: 'text-orange-700 bg-orange-100' },
 };
 
-const EVIDENCE_STATUS_BADGE: Record<EvidenceApprovalStatus, { label: string; colorClasses: string }> = {
-  pendiente: { label: 'Pendiente', colorClasses: 'text-warning-dark bg-warning-ring' },
-  aprobado:  { label: 'Aprobado',  colorClasses: 'text-verde-dark bg-verde-ring' },
-  rechazado: { label: 'Rechazado', colorClasses: 'text-error-dark bg-error-ring' },
-};
-
 export interface EvidenceApprovalItem {
   evidencia_id: number;
   nomenclatura: string;
   descripcion: string;
   approval_status: EvidenceApprovalStatus;
   comentario_rechazo?: string | null;
-  asignacion?: { estado: string; fecha_limite: string | null; usuario_id: number } | null;
+  asignacion?: {
+    estado: string;
+    fecha_limite: string | null;
+    usuario_id: number;
+    usuario_nombre?: string | null;
+  } | null;
   asignacion_id?: number;
+  approvals_by_user?: Record<
+    string,
+    {
+      approval_status: EvidenceApprovalStatus;
+      comentario_rechazo?: string | null;
+      aprobacion_evidencia_id?: number | null;
+      updated_at?: string | null;
+    }
+  >;
+  responsables_asignados?: Array<{
+    usuario_id: number;
+    usuario_nombre?: string | null;
+    estado: string;
+    fecha_limite: string | null;
+    asignacion_id?: number;
+    proceso_id?: number;
+  }>;
 }
 
 export interface Evidencia {
@@ -53,14 +67,12 @@ export interface Criterio {
   nomenclatura: string;
   descripcion: string;
   estado_aprobacion?: BlockApprovalStatus;
+  linked_count?: number;
   responsables?: UserAvatarsUser[];
 }
 
 interface BlockApprovalTableProps {
   criteria: Criterio[];
-  evidences: Evidencia[];
-  evidenceApprovals: Record<number, EvidenceApprovalItem[]>;
-  loadingEvidences: Set<number>;
   isLoading: boolean;
   currentPage: number;
   totalPages: number;
@@ -69,18 +81,11 @@ interface BlockApprovalTableProps {
   onPageChange: (page: number) => void;
   onAprobar: (criterio: Criterio) => void;
   onRechazar: (criterio: Criterio) => void;
-  onViewFiles: (evidencia: Evidencia) => void;
-  onAprobarEvidencia: (criterio: Criterio, evidencia: EvidenceApprovalItem) => void;
-  onRechazarEvidencia: (criterio: Criterio, evidencia: EvidenceApprovalItem) => void;
-  onExpandCriterion: (criterionId: number) => void;
-  onViewElementRow?: (criterio: Criterio, ev: EvidenceApprovalItem) => void;
+  onOpenCriterionEvidences: (criterio: Criterio) => void;
 }
 
 export const BlockApprovalTable: React.FC<BlockApprovalTableProps> = ({
   criteria,
-  evidences,
-  evidenceApprovals,
-  loadingEvidences,
   isLoading,
   currentPage,
   totalPages,
@@ -89,56 +94,75 @@ export const BlockApprovalTable: React.FC<BlockApprovalTableProps> = ({
   onPageChange,
   onAprobar,
   onRechazar,
-  onViewFiles,
-  onAprobarEvidencia,
-  onRechazarEvidencia,
-  onExpandCriterion,
-  onViewElementRow,
+  onOpenCriterionEvidences,
 }) => {
-  const getEvidencesByCriterion = (criterionId: number) =>
-    evidences.filter(ev => ev.criterio_id === criterionId);
-
   const columns: DataTableColumn<Criterio>[] = useMemo(() => [
     {
       key: 'nomenclatura',
       header: isFlexible ? 'Elemento' : 'Criterio',
       align: 'left',
+      width: '38%',
       render: (_, item) => (
         <div className="flex flex-col pl-2">
           <p
-            className={`block font-sans antialiased font-normal leading-normal text-negro-una-2 truncate ${TYPOGRAPHY.table.cell}`}
+            className={`block truncate text-gris-una ${TYPOGRAPHY.table.cell}`}
             title={`${item.nomenclatura} — ${item.descripcion}`}
           >
-            <span className="font-bold">{item.nomenclatura}</span>
-            <span className="text-gris-una"> — {item.descripcion}</span>
+            <span className="font-bold text-negro-una-2">{item.nomenclatura}</span>
+            <span> — {item.descripcion}</span>
           </p>
         </div>
       ),
     },
-    ...(isFlexible ? [{
+    {
+      key: 'linked_count',
+      header: 'Elementos enlazados',
+      align: 'center',
+      width: '200px',
+      render: (_, item) => {
+        const count = item.linked_count ?? 0;
+        const label = isFlexible
+          ? `${count} ${count === 1 ? 'fuente de informacion' : 'fuentes de informacion'}`
+          : `${count} ${count === 1 ? 'evidencia' : 'evidencias'}`;
+        return (
+          <div className="flex justify-center">
+            <span className={`${TYPOGRAPHY.table.helper} text-gris-una`}>
+              {label}
+            </span>
+          </div>
+        );
+      },
+    },
+    {
       key: 'responsables',
       header: 'Responsables',
       align: 'center' as const,
-      width: '140px',
+      width: '170px',
       render: (_: unknown, item: Criterio) => {
         const users = item.responsables ?? [];
-        if (users.length === 0) return <span className={`${TYPOGRAPHY.table.helper} text-gris-una/50`}>—</span>;
+        if (users.length === 0) {
+          return (
+            <div className="flex justify-center">
+              <span className={`${TYPOGRAPHY.table.helper} text-gris-una/50`}>—</span>
+            </div>
+          );
+        }
         return (
-          <div className="flex justify-center">
+          <div className="flex w-full justify-center pr-1">
             <UserAvatars users={users} size={28} maxVisible={4} tooltipPlacement="bottom" />
           </div>
         );
       },
-    }] : []),
+    },
     {
       key: 'estado_aprobacion',
       header: 'Estado',
-      align: 'left',
+      align: 'center',
       width: TABLE_COLUMN_WIDTHS.status,
       render: (_, item) => {
         const config = BLOCK_STATUS_BADGE[item.estado_aprobacion ?? 'pendiente'];
         return (
-          <div className="flex items-start">
+          <div className="flex justify-center">
             <StatusBadge label={config.label} colorClasses={config.colorClasses} />
           </div>
         );
@@ -154,6 +178,11 @@ export const BlockApprovalTable: React.FC<BlockApprovalTableProps> = ({
         const canRejectBlock  = item.estado_aprobacion !== 'aprobado';
         return (
           <div className="flex items-center justify-center" onClick={e => e.stopPropagation()}>
+            <TableActionButton
+              action="list"
+              tooltip={isFlexible ? 'Ver fuentes asociadas' : 'Ver evidencias asociadas'}
+              onClick={() => onOpenCriterionEvidences(item)}
+            />
             <TableActionButton
               action="custom"
               customIcon={<SystemIcons.interface.checkCircle className={ICON} />}
@@ -175,7 +204,7 @@ export const BlockApprovalTable: React.FC<BlockApprovalTableProps> = ({
         );
       },
     },
-  ], [onAprobar, onRechazar, isFlexible, TYPOGRAPHY]);
+  ], [onAprobar, onRechazar, onOpenCriterionEvidences, isFlexible, TYPOGRAPHY]);
 
   if (!selectedProcesoId) {
     return (
@@ -200,120 +229,6 @@ export const BlockApprovalTable: React.FC<BlockApprovalTableProps> = ({
         emptyMessage={isFlexible ? 'No hay elementos disponibles para el filtro seleccionado' : 'No hay criterios disponibles para el filtro seleccionado'}
         pagination={totalPages > 1 ? { currentPage, totalPages, onPageChange } : undefined}
         getRowKey={(item) => String((item as unknown as Criterio).id)}
-        onRowExpand={(rowKey, isExpanding) => {
-          if (isExpanding) onExpandCriterion(Number(rowKey));
-        }}
-        expandableRow={(row) => {
-          const criterio = row as unknown as Criterio;
-          const isLoadingEv = loadingEvidences.has(criterio.id);
-          const approvals = evidenceApprovals[criterio.id];
-          const blockIsApproved = criterio.estado_aprobacion === 'aprobado';
-          const blockIsIncompleto = criterio.estado_aprobacion === 'incompleto';
-
-          // Mostrar spinner mientras carga
-          if (isLoadingEv) {
-            return [{
-              key: 'loading',
-              noBorder: true,
-              content: (
-                <div className="flex justify-center py-2">
-                  <LoadingSpinner variant="loader" />
-                </div>
-              ),
-            }];
-          }
-
-          // Si tenemos aprobaciones individuales, mostrarlas
-          if (approvals && approvals.length > 0) {
-            return approvals.map(ev => {
-              const isLocked = ev.approval_status === 'aprobado' && blockIsIncompleto;
-              const statusConfig = EVIDENCE_STATUS_BADGE[ev.approval_status];
-              const canApprove = !blockIsApproved && !isLocked && ev.approval_status !== 'aprobado';
-              const canReject  = !blockIsApproved && !isLocked && ev.approval_status !== 'rechazado';
-              return {
-                key: String(ev.evidencia_id),
-                content: (
-                  <div
-                    className="flex items-center gap-2 min-w-0 cursor-pointer"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      if (isFlexible) {
-                        onViewElementRow?.(criterio, ev);
-                      } else {
-                        onViewFiles({ id: ev.evidencia_id, nomenclatura: ev.nomenclatura, descripcion: ev.descripcion, criterio_id: criterio.id });
-                      }
-                    }}
-                  >
-                    <StatusBadge label={statusConfig.label} colorClasses={statusConfig.colorClasses} />
-                    <p className={`truncate ${TYPOGRAPHY.table.helper}`}>
-                      <span className="font-medium text-negro-una">{ev.nomenclatura}</span>
-                      <span className="text-gris-una"> — {ev.descripcion}</span>
-                    </p>
-                    {ev.comentario_rechazo && (
-                      <span className={`shrink-0 text-error-dark ${TYPOGRAPHY.table.helper}`} title={ev.comentario_rechazo}>
-                        · {ev.comentario_rechazo}
-                      </span>
-                    )}
-                  </div>
-                ),
-                action: isFlexible ? (
-                  <div className="flex items-center gap-1">
-                    <ButtonWithTooltip
-                      variant="tableView"
-                      size="sm"
-                      tooltip="Ver archivos y revisar"
-                      tooltipPosition="left"
-                      onClick={(e) => { e.stopPropagation(); onViewElementRow?.(criterio, ev); }}
-                      className={TABLE_ACTION_BUTTON.button}
-                    >
-                      <SystemIcons.actions.view className={ICON} />
-                    </ButtonWithTooltip>
-                  </div>
-                ) : (
-                  <div className="flex items-center gap-1">
-                    <ButtonWithTooltip
-                      variant="tablePower"
-                      size="sm"
-                      tooltip={isLocked ? 'Elemento aprobado (bloqueado)' : canApprove ? 'Aprobar evidencia' : 'Ya aprobado'}
-                      tooltipPosition="left"
-                      disabled={!canApprove}
-                      onClick={(e) => { e.stopPropagation(); onAprobarEvidencia(criterio, ev); }}
-                      className={TABLE_ACTION_BUTTON.button}
-                    >
-                      <SystemIcons.interface.checkCircle className={ICON} />
-                    </ButtonWithTooltip>
-                    <ButtonWithTooltip
-                      variant="tableDelete"
-                      size="sm"
-                      tooltip={isLocked ? 'Elemento aprobado (bloqueado)' : canReject ? 'Rechazar evidencia' : 'Ya rechazado'}
-                      tooltipPosition="left"
-                      disabled={!canReject}
-                      onClick={(e) => { e.stopPropagation(); onRechazarEvidencia(criterio, ev); }}
-                      className={TABLE_ACTION_BUTTON.button}
-                    >
-                      <SystemIcons.interface.xCircle className={ICON} />
-                    </ButtonWithTooltip>
-                  </div>
-                ),
-              };
-            });
-          }
-
-          // Fallback: evidencias without individual approval status (traditional mode — click to view)
-          return getEvidencesByCriterion(criterio.id).map(evidencia => ({
-            key: String(evidencia.id),
-            content: (
-              <p
-                className={`truncate cursor-pointer ${TYPOGRAPHY.table.helper}`}
-                onClick={(e) => { e.stopPropagation(); onViewFiles(evidencia); }}
-              >
-                <span className="font-medium text-negro-una">{evidencia.nomenclatura}</span>
-                <span className="text-gris-una"> — {evidencia.descripcion}</span>
-              </p>
-            ),
-            action: null,
-          }));
-        }}
       />
     </div>
   );

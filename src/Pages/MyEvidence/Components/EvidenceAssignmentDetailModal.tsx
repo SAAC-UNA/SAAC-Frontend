@@ -14,6 +14,7 @@ import { fileService } from '@/Services/FileService';
 import { useToast } from '@/Context/ToastContext';
 import { LoadingSpinner } from '@/Components/Ui/Feedback/Loading';
 import { FileList } from '@/Components/Ui/Upload';
+import { Tooltip, TooltipTrigger, TooltipContent } from '@/Components/Ui/Feedback/Tooltip';
 import type { FileModel } from '@/Types/FileTypes';
 
 interface EvidenceAssignmentDetailProps {
@@ -99,7 +100,11 @@ export const EvidenceAssignmentDetail: React.FC<EvidenceAssignmentDetailProps> =
       setFetchState({ assignment: data, loading: false });
       // Cargar archivos de la evidencia
       if (data.evidencia_id) {
-        loadFiles(data.evidencia_id);
+        loadFiles(
+          data.evidencia_id,
+          data.proceso?.proceso_id ?? data.proceso_id,
+          data.usuario_id,
+        );
       }
     } catch (error) {
       console.error('Error al cargar detalle de asignación:', error);
@@ -109,10 +114,14 @@ export const EvidenceAssignmentDetail: React.FC<EvidenceAssignmentDetailProps> =
     }
   };
 
-  const loadFiles = async (evidenciaId: number) => {
+  const loadFiles = async (evidenciaId: number, procesoId: number, usuarioId: number) => {
     try {
       setFilesState({ uploadedFiles: [], loadingFiles: true });
-      const files = await fileService.listFiles({ evidencia_id: evidenciaId });
+      const files = await fileService.listFiles({
+        evidencia_id: evidenciaId,
+        proceso_id: procesoId,
+        usuario_id: usuarioId,
+      });
       setFilesState({ uploadedFiles: files, loadingFiles: false });
     } catch (error) {
       console.error('Error al cargar archivos:', error);
@@ -131,7 +140,11 @@ export const EvidenceAssignmentDetail: React.FC<EvidenceAssignmentDetailProps> =
       });
       // Recargar archivos
       if (assignment?.evidencia_id) {
-        loadFiles(assignment.evidencia_id);
+        loadFiles(
+          assignment.evidencia_id,
+          assignment.proceso?.proceso_id ?? assignment.proceso_id,
+          assignment.usuario_id,
+        );
       }
     } catch (error: any) {
       showToast({ 
@@ -177,6 +190,17 @@ export const EvidenceAssignmentDetail: React.FC<EvidenceAssignmentDetailProps> =
     ? `${assignment.evidencia.nomenclatura} - ${assignment.evidencia.descripcion}`
     : '';
 
+  const isReturnedPending =
+    assignment.estado === 'pendiente' && assignment.is_returned_for_changes === true;
+
+  const statusLabel = isReturnedPending
+    ? 'Pendiente'
+    : ASSIGNMENT_STATUS_BADGE[assignment.estado]?.label ?? assignment.estado;
+
+  const statusColor = isReturnedPending
+    ? 'bg-error-ring text-error'
+    : ASSIGNMENT_STATUS_BADGE[assignment.estado]?.colorClasses ?? 'bg-gris-light text-gris-una';
+
   const deadlineDateText = assignment.fecha_limite
     ? formatDeadline(assignment.fecha_limite)
     : '—';
@@ -205,10 +229,24 @@ export const EvidenceAssignmentDetail: React.FC<EvidenceAssignmentDetailProps> =
 
         {/* div1 — Estado */}
         <InfoCell label="Estado" className="col-start-1 col-end-3 items-start">
-          <StatusBadge
-            label={ASSIGNMENT_STATUS_BADGE[assignment.estado]?.label ?? assignment.estado}
-            colorClasses={ASSIGNMENT_STATUS_BADGE[assignment.estado]?.colorClasses ?? 'bg-gris-light text-gris-una'}
-          />
+          {isReturnedPending ? (
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <span className="inline-flex">
+                  <StatusBadge
+                    label={statusLabel}
+                    colorClasses={statusColor}
+                  />
+                </span>
+              </TooltipTrigger>
+              <TooltipContent side="top">Devuelta por rechazo</TooltipContent>
+            </Tooltip>
+          ) : (
+            <StatusBadge
+              label={statusLabel}
+              colorClasses={statusColor}
+            />
+          )}
         </InfoCell>
 
         {/* div2 — Fecha de asignación */}

@@ -4,6 +4,7 @@
  */
 
 import React, { useState, useEffect, useMemo } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
 import {
   PageHeader,
   ScreenContainer,
@@ -39,9 +40,20 @@ import { ElementAssignmentDetailModal } from "@/Pages/MyEvidence/Components/Elem
 import { ElementUploadPage } from "./Components/ElementUploadModal";
 import { EvidenceUploadPage } from "./Components/EvidenceUploadModal";
 
+const parsePositiveInt = (value: string | null): number | null => {
+  if (!value) {
+    return null;
+  }
+
+  const parsed = Number.parseInt(value, 10);
+  return Number.isFinite(parsed) && parsed > 0 ? parsed : null;
+};
+
 export const MyEvidenceAssignmentsPage: React.FC = () => {
   const { showToast } = useToast();
   const { user } = useAuth();
+  const navigate = useNavigate();
+  const location = useLocation();
 
   const [pageState, setPageState] = useState<{
     assignments: EvidenceAssignment[];
@@ -63,6 +75,9 @@ export const MyEvidenceAssignmentsPage: React.FC = () => {
   // Selector de ciclo — datos vienen del endpoint mis-ciclos
   const [userCycles, setUserCycles] = useState<UserCycle[]>([]);
   const [selectedCycleId, setSelectedCycleId] = useState<number | null>(null);
+  const [appliedRouteContextKey, setAppliedRouteContextKey] = useState<
+    string | null
+  >(null);
 
   // Estado del modelo flexible
   const [flexState, setFlexState] = useState<{
@@ -268,6 +283,81 @@ export const MyEvidenceAssignmentsPage: React.FC = () => {
     label: c.nombre,
   }));
 
+  const routeContext = useMemo(() => {
+    const params = new URLSearchParams(location.search);
+    const cycleId = parsePositiveInt(params.get("ciclo_acreditacion_id"));
+    const processId = parsePositiveInt(params.get("proceso_id"));
+    return {
+      cycleId,
+      processId,
+      key: `${cycleId ?? ""}|${processId ?? ""}`,
+    };
+  }, [location.search]);
+
+  useEffect(() => {
+    if (appliedRouteContextKey === routeContext.key) {
+      return;
+    }
+
+    const { cycleId, processId, key } = routeContext;
+    if (cycleId === null && processId === null) {
+      setAppliedRouteContextKey(key);
+      return;
+    }
+
+    const applyCycleSelection = (cycleToSelect: number) => {
+      if (selectedCycleId !== cycleToSelect) {
+        setSelectedCycleId(cycleToSelect);
+        setCurrentPage(1);
+      }
+      setAppliedRouteContextKey(key);
+    };
+
+    if (cycleId !== null) {
+      const cycleExists = availableCycles.some(
+        (cycle) => cycle.ciclo_id === cycleId,
+      );
+      if (cycleExists) {
+        applyCycleSelection(cycleId);
+        return;
+      }
+    }
+
+    if (processId !== null) {
+      const traditionalCycleId =
+        assignments.find(
+          (assignment) =>
+            (assignment.proceso?.proceso_id ?? assignment.proceso_id) ===
+            processId,
+        )?.proceso?.ciclo_acreditacion_id ?? null;
+
+      const flexibleCycleId =
+        flexState.assignments.find(
+          (assignment) => assignment.process?.proceso_id === processId,
+        )?.process?.ciclo_acreditacion_id ?? null;
+
+      const targetCycleId = traditionalCycleId ?? flexibleCycleId;
+
+      if (targetCycleId !== null) {
+        applyCycleSelection(targetCycleId);
+        return;
+      }
+    }
+
+    if (!loading && !flexState.loading) {
+      setAppliedRouteContextKey(key);
+    }
+  }, [
+    appliedRouteContextKey,
+    routeContext,
+    selectedCycleId,
+    availableCycles,
+    assignments,
+    flexState.assignments,
+    loading,
+    flexState.loading,
+  ]);
+
   const handleViewDetails = (assignment: EvidenceAssignment) => {
     setModalState((prev) => ({ ...prev, selectedAssignment: assignment }));
   };
@@ -421,7 +511,22 @@ export const MyEvidenceAssignmentsPage: React.FC = () => {
       });
       return;
     }
+<<<<<<< HEAD
     setEvidenceUploadModal({ open: true, assignment });
+=======
+
+    // Navegar a la página de subida con los parámetros necesarios
+    const params = new URLSearchParams({
+      evidenciaId: assignment.evidencia.evidencia_id.toString(),
+      procesoId: (
+        assignment.proceso?.proceso_id ?? assignment.proceso_id
+      ).toString(),
+      usuarioId: assignment.usuario_id.toString(),
+      nombre: `${assignment.evidencia.nomenclatura} - ${assignment.evidencia.descripcion}`,
+    });
+
+    navigate(`/evidencias/subir?${params.toString()}`);
+>>>>>>> development
   };
 
   // HU-016: Handler para solicitar ampliación
@@ -556,6 +661,10 @@ export const MyEvidenceAssignmentsPage: React.FC = () => {
     ),
     filters.search,
   );
+
+  const hasTraditionalSearch = !error && assignments.length > 0;
+  const hasFlexibleSearch = !flexState.error && flexState.assignments.length > 0;
+  const showSearchInput = isFlexible ? hasFlexibleSearch : hasTraditionalSearch;
   const moduleInfo = getModuleInfo("my_evidence_assignments");
 
   // Paginación unificada por proceso
@@ -577,8 +686,7 @@ export const MyEvidenceAssignmentsPage: React.FC = () => {
         description={moduleInfo.description}
         headerExtra={
           cycleOptions.length > 1 ||
-          (!isFlexible && !error && assignments.length > 0) ||
-          (isFlexible && !flexState.error && flexState.assignments.length > 0) ? (
+          showSearchInput ? (
             <div className="flex items-end gap-3">
               {cycleOptions.length > 1 && (
                 <CustomSelect
@@ -592,8 +700,7 @@ export const MyEvidenceAssignmentsPage: React.FC = () => {
                   }}
                 />
               )}
-              {((!isFlexible && !error && assignments.length > 0) ||
-                (isFlexible && !flexState.error && flexState.assignments.length > 0)) && (
+              {showSearchInput && (
                 <SearchInput
                   placeholder={isFlexible ? "Buscar pautas..." : "Buscar evidencias..."}
                   value={filters.search || ""}
@@ -656,15 +763,15 @@ export const MyEvidenceAssignmentsPage: React.FC = () => {
                 onRetry={loadFlexAssignments}
               />
             )}
-            {!flexState.error && flexState.assignments.length > 0 && (
+            {!flexState.error && (
               <ElementAssignmentsTable
                 assignments={paginatedFlex}
                 loading={flexState.loading}
-                hasFilters={!!filters.search}
                 onViewDetails={handleFlexViewDetails}
                 onUploadFiles={handleFlexUploadFiles}
                 onStatusChange={handleFlexStatusChange}
                 onRequestExtension={handleFlexRequestExtension}
+                hasFilters={filters.search?.trim() !== ""}
                 pagination={
                   totalPages > 1
                     ? { currentPage, totalPages, onPageChange: setCurrentPage }

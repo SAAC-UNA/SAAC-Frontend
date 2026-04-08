@@ -1,4 +1,4 @@
-import axios from "axios";
+import axios, { AxiosHeaders } from "axios";
 import { authService } from "@/Services/AuthService";
 import { getOperationalContextSnapshot } from "@/Services/OperationalContextStore";
 
@@ -50,7 +50,11 @@ axiosInstance.interceptors.request.use((config) => {
     headerPatch["X-Context-Process-Id"] = String(contextIds.processId);
   }
 
-  Object.assign(config.headers, headerPatch);
+  const headers = config.headers ?? AxiosHeaders.from({});
+  for (const [key, value] of Object.entries(headerPatch)) {
+    headers.set(key, value);
+  }
+  config.headers = headers;
 
   if (String(config.method || "get").toLowerCase() === "get") {
     const params = (config.params ?? {}) as Record<string, unknown>;

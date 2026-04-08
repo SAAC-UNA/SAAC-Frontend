@@ -90,6 +90,7 @@ export interface FileDeleteResponse {
 export interface FileListParams {
   evidencia_id?: number;
   proceso_id?: number;
+  usuario_id?: number;
 }
 
 // Estado de subida de archivo

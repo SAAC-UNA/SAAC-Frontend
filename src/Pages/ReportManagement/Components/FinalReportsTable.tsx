@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { DataTable, ExpandableChildRow } from '@/Components/Ui/Table/DataTable';
 import type { DataTableColumn } from '@/Components/Ui/Table/DataTable';
 import { ButtonWithTooltip } from '@/Components/Ui/Buttons/ButtonWithTooltip';
@@ -13,6 +13,7 @@ export interface Archivo {
   nombre_original: string;
   ruta_archivo: string;
   token_publico?: string;
+  url_publica?: string;
   is_publico: boolean;
   link_expira_en?: string;
 }
@@ -29,6 +30,8 @@ export interface Criterio extends Record<string, unknown> {
   id: number;
   nomenclatura: string;
   descripcion: string;
+  padre_id?: number | null;
+  tipo?: string | null;
   estado_aprobacion?: 'pendiente' | 'aprobado' | 'rechazado';
   archivos?: Archivo[];
 }
@@ -72,7 +75,9 @@ const EvidenceExpansionRow: React.FC<EvidenceExpansionProps> = ({
       <div className="space-y-1">
         {criterionEvidences.map(evidencia => {
           const tieneArchivos = (evidencia.archivos?.length ?? 0) > 0;
-          const tieneEnlace = (evidencia.archivos ?? []).some(a => a.is_publico && a.token_publico);
+          const tieneEnlace = (evidencia.archivos ?? []).some(
+            a => a.is_publico && (Boolean(a.token_publico) || Boolean(a.url_publica)),
+          );
           const isLoadingFile = loadingFiles.has(evidencia.id);
 
           const action = isLoadingFile ? (
@@ -142,87 +147,115 @@ const EvidenceExpansionRow: React.FC<EvidenceExpansionProps> = ({
   );
 };
 
-// ---------- ElementExpansionRow (modelo flexible) ----------
+// ---------- FlexiblePautaExpansionRow (modelo flexible) ----------
 
-interface ElementExpansionProps {
-  elemento: Criterio;
+const normalizeElementType = (value: unknown): string => {
+  if (typeof value !== 'string') return '';
+  return value.trim().toLowerCase();
+};
+
+const hasPublicLink = (archivos: Archivo[] = []) =>
+  archivos.some(a => a.is_publico && (Boolean(a.token_publico) || Boolean(a.url_publica)));
+
+const buildSourceAsEvidence = (source: Criterio): Evidencia => ({
+  id: source.id,
+  nomenclatura: source.nomenclatura,
+  descripcion: source.descripcion,
+  criterio_id: 0,
+  archivos: source.archivos ?? [],
+});
+
+interface FlexiblePautaExpansionProps {
+  pauta: Criterio;
+  sources: Criterio[];
   loadingFiles: Set<number>;
   onLoadFile: (id: number) => void;
   onOpenLink: (evidencia: Evidencia) => void;
 }
 
-const ElementExpansionRow: React.FC<ElementExpansionProps> = ({
-  elemento,
+const FlexiblePautaExpansionRow: React.FC<FlexiblePautaExpansionProps> = ({
+  pauta,
+  sources,
   loadingFiles,
   onLoadFile,
   onOpenLink,
 }) => {
   useEffect(() => {
-    if (!elemento.archivos) onLoadFile(elemento.id);
+    sources.forEach((source) => {
+      if (!source.archivos) onLoadFile(source.id);
+    });
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [elemento.id]);
+  }, [pauta.id, sources.map((source) => source.id).join(',')]);
 
-  if (loadingFiles.has(elemento.id)) {
-    return (
-      <p className={`px-4 py-3 ${TYPOGRAPHY.table.helper} text-gris-una`}>Cargando archivos...</p>
-    );
-  }
+  const visibleSources = sources.filter((source) => {
+    if (source.estado_aprobacion && source.estado_aprobacion !== 'aprobado') {
+      return false;
+    }
 
-  const archivos = elemento.archivos ?? [];
-  if (archivos.length === 0) {
+    // Mantener visible mientras se cargan archivos; ocultar cuando ya cargó y no tiene archivos.
+    return source.archivos === undefined || (source.archivos?.length ?? 0) > 0;
+  });
+
+  if (visibleSources.length === 0) {
     return (
-      <p className={`px-4 py-3 ${TYPOGRAPHY.table.helper} text-gris-una`}>Sin archivos adjuntos</p>
+      <p className={`px-4 py-3 ${TYPOGRAPHY.table.helper} text-gris-una`}>
+        No hay fuentes aprobadas con archivos
+      </p>
     );
   }
 
   return (
     <div className="space-y-1">
-      {archivos.map((archivo) => {
-        const tieneEnlace = archivo.is_publico && archivo.token_publico;
-        const handleOpen = () =>
-          onOpenLink({
-            id: elemento.id,
-            nomenclatura: elemento.nomenclatura,
-            descripcion: elemento.descripcion,
-            criterio_id: 0,
-            archivos: [archivo],
-          });
-        const action = tieneEnlace ? (
-          <div className="flex items-center gap-1.5">
-            <StatusBadge label="Enlace listo" colorClasses="text-verde-dark bg-verde-ring" />
-            <ButtonWithTooltip
-              variant="tableView" size="sm"
-              tooltip="Abrir enlace público" tooltipPosition="left"
-              onClick={handleOpen}
-              className={TABLE_ACTION_BUTTON.button}
-            >
-              <SystemIcons.actions.linkIcon className={TABLE_ACTION_BUTTON.icon} />
-            </ButtonWithTooltip>
-          </div>
-        ) : (
-          <div className="flex items-center gap-1.5">
-            <StatusBadge label="Sin enlace" colorClasses="text-warning-dark bg-warning-ring" />
-            <ButtonWithTooltip
-              variant="tableView" size="sm"
-              tooltip="Gestionar enlace público" tooltipPosition="left"
-              onClick={handleOpen}
-              className={TABLE_ACTION_BUTTON.button}
-            >
-              <SystemIcons.actions.linkIcon className={TABLE_ACTION_BUTTON.icon} />
-            </ButtonWithTooltip>
-          </div>
-        );
+      {visibleSources.map((source) => {
+        const isLoadingFile = loadingFiles.has(source.id);
+        const archivos = source.archivos ?? [];
+        const tieneArchivos = archivos.length > 0;
+        const tieneEnlace = hasPublicLink(archivos);
+
+        let action: React.ReactNode;
+        if (isLoadingFile) {
+          action = (
+            <span className={`${TYPOGRAPHY.table.helper} text-gris-una px-2`}>Cargando...</span>
+          );
+        } else {
+          action = (
+            <div className="flex items-center gap-1.5">
+              <StatusBadge
+                label={tieneEnlace ? 'Enlace listo' : tieneArchivos ? 'Sin enlace' : 'Sin archivos'}
+                colorClasses={
+                  tieneEnlace
+                    ? 'text-verde-dark bg-verde-ring'
+                    : tieneArchivos
+                      ? 'text-warning-dark bg-warning-ring'
+                      : 'text-gris-una bg-gris-light'
+                }
+              />
+              <ButtonWithTooltip
+                variant="tableView"
+                size="sm"
+                tooltip="Gestionar enlace público"
+                tooltipPosition="left"
+                onClick={() => onOpenLink(buildSourceAsEvidence(source))}
+                className={TABLE_ACTION_BUTTON.button}
+              >
+                <SystemIcons.actions.view className={TABLE_ACTION_BUTTON.icon} />
+              </ButtonWithTooltip>
+            </div>
+          );
+        }
+
         return (
           <ExpandableChildRow
-            key={archivo.archivo_id}
+            key={source.id}
             item={{
-              key: String(archivo.archivo_id),
+              key: String(source.id),
               content: (
                 <p
                   className={`truncate flex-1 min-w-0 ${TYPOGRAPHY.table.helper}`}
-                  title={archivo.nombre_original}
+                  title={`${source.nomenclatura} — ${source.descripcion}`}
                 >
-                  <span className="font-medium text-negro-una">{archivo.nombre_original}</span>
+                  <span className="font-medium text-negro-una">{source.nomenclatura}</span>
+                  <span className="text-gris-una"> — {source.descripcion}</span>
                 </p>
               ),
               action,
@@ -255,10 +288,95 @@ export const FinalReportsTable: React.FC<FinalReportsTableProps> = ({
   onOpenLink,
   onViewDetail,
 }) => {
+  const { pautaRows, sourcesByPauta } = useMemo(() => {
+    if (!isFlexible) {
+      return {
+        pautaRows: criteria,
+        sourcesByPauta: new Map<number, Criterio[]>(),
+      };
+    }
+
+    const criteriaById = new Map<number, Criterio>(
+      criteria.map((item) => [item.id, item]),
+    );
+    const childrenByParent = new Map<number, Criterio[]>();
+
+    criteria.forEach((item) => {
+      if (typeof item.padre_id !== 'number') return;
+      if (!criteriaById.has(item.padre_id)) return;
+
+      const currentChildren = childrenByParent.get(item.padre_id) ?? [];
+      currentChildren.push(item);
+      childrenByParent.set(item.padre_id, currentChildren);
+    });
+
+    const collectLeafSources = (root: Criterio): Criterio[] => {
+      const leaves: Criterio[] = [];
+      const stack: Criterio[] = [root];
+      const visited = new Set<number>();
+
+      while (stack.length > 0) {
+        const current = stack.pop()!;
+        if (visited.has(current.id)) continue;
+        visited.add(current.id);
+
+        const children = childrenByParent.get(current.id) ?? [];
+        if (children.length === 0 && current.id !== root.id) {
+          leaves.push(current);
+          continue;
+        }
+
+        children.forEach((child) => stack.push(child));
+      }
+
+      return leaves;
+    };
+
+    let pautas = criteria.filter(
+      (item) => normalizeElementType(item.tipo) === 'pauta',
+    );
+
+    if (pautas.length === 0) {
+      pautas = criteria.filter(
+        (item) => (childrenByParent.get(item.id)?.length ?? 0) > 0,
+      );
+    }
+
+    if (pautas.length === 0) {
+      const fallback = new Map<number, Criterio[]>();
+      criteria.forEach((item) => fallback.set(item.id, [item]));
+
+      return {
+        pautaRows: criteria,
+        sourcesByPauta: fallback,
+      };
+    }
+
+    const groupedSources = new Map<number, Criterio[]>();
+    pautas.forEach((pauta) => {
+      const sources = collectLeafSources(pauta).filter(
+        (source) => source.estado_aprobacion === 'aprobado',
+      );
+
+      if (sources.length > 0) {
+        groupedSources.set(pauta.id, sources);
+      }
+    });
+
+    const visiblePautas = pautas.filter(
+      (pauta) => (groupedSources.get(pauta.id)?.length ?? 0) > 0,
+    );
+
+    return {
+      pautaRows: visiblePautas,
+      sourcesByPauta: groupedSources,
+    };
+  }, [criteria, isFlexible]);
+
   const columns: DataTableColumn<Criterio>[] = [
     {
       key: 'nomenclatura',
-      header: isFlexible ? 'Elemento' : 'Criterio',
+      header: isFlexible ? 'Pauta' : 'Criterio',
       render: (_, item) => (
         <p className={`truncate ${TYPOGRAPHY.table.cell}`} title={`${item.nomenclatura} — ${item.descripcion}`}>
           <span className="font-bold text-negro-una-2">{item.nomenclatura}</span>
@@ -272,12 +390,15 @@ export const FinalReportsTable: React.FC<FinalReportsTableProps> = ({
       align: 'center',
       width: '90px',
       render: (_, item) => (
-        <div className="flex gap-1 justify-center" onClick={e => e.stopPropagation()}>
+        <div className="flex gap-1 justify-center">
           <ButtonWithTooltip
             variant="tableView"
             size="sm"
-            tooltip="Ver detalles"
-            onClick={() => onViewDetail(item)}
+            tooltip={isFlexible ? 'Ver detalle de pauta' : 'Ver detalles'}
+            onClick={(event) => {
+              event.stopPropagation();
+              onViewDetail(item);
+            }}
             className={TABLE_ACTION_BUTTON.button}
           >
             <SystemIcons.actions.view className={TABLE_ACTION_BUTTON.icon} />
@@ -287,32 +408,35 @@ export const FinalReportsTable: React.FC<FinalReportsTableProps> = ({
     },
   ];
 
-    return (
-        <DataTable<Criterio>
-            data={criteria}
-            columns={columns}
-            getRowKey={item => String(item.id)}
-            searchable={false}
-            expandableRow={item => [{
-                key: String(item.id),
-                noBorder: true,
-                content: isFlexible ? (
-                  <ElementExpansionRow
-                    elemento={item}
-                    loadingFiles={loadingFiles}
-                    onLoadFile={onLoadFile}
-                    onOpenLink={onOpenLink}
-                  />
-                ) : (
-                <EvidenceExpansionRow
-                    criterio={item}
-                    evidences={evidences}
-                    loadingFiles={loadingFiles}
-                    onLoadFile={onLoadFile}
-                    onOpenLink={onOpenLink}
-                />
-                ),
-            }]}
-            />
-    );
+  const tableData = isFlexible ? pautaRows : criteria;
+
+  return (
+    <DataTable<Criterio>
+      data={tableData}
+      columns={columns}
+      getRowKey={item => String(item.id)}
+      searchable={false}
+      expandableRow={item => [{
+        key: String(item.id),
+        noBorder: true,
+        content: isFlexible ? (
+          <FlexiblePautaExpansionRow
+            pauta={item}
+            sources={sourcesByPauta.get(item.id) ?? []}
+            loadingFiles={loadingFiles}
+            onLoadFile={onLoadFile}
+            onOpenLink={onOpenLink}
+          />
+        ) : (
+          <EvidenceExpansionRow
+            criterio={item}
+            evidences={evidences}
+            loadingFiles={loadingFiles}
+            onLoadFile={onLoadFile}
+            onOpenLink={onOpenLink}
+          />
+        ),
+      }]}
+    />
+  );
 };
