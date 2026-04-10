@@ -25,8 +25,8 @@ export const EVIDENCE_STATUS_BADGE: Record<EvidencePublicationStatus, StatusBadg
   'Rechazado': { label: 'Rechazado', colorClasses: 'bg-error-ring text-error' },
   'Completado': { label: 'Completado', colorClasses: 'bg-verde-ring text-verde' },
   'Vencido': { label: 'Vencido', colorClasses: 'bg-rose-ring text-rose' },
-  'Observada': { label: 'Observada', colorClasses: 'bg-naranja-ring text-naranja' },
-  'Validada': { label: 'Validada', colorClasses: 'bg-info-ring text-info' },
+  'Observada': { label: 'Observada', colorClasses: 'bg-info-ring text-info' },
+  'Validada': { label: 'Validada', colorClasses: 'bg-verde-ring text-verde' },
 };
 
 /** Estados de asignación de evidencia a responsable (modelo tradicional — snake_case) */
@@ -64,7 +64,6 @@ export const BADGE_COLORS: Record<string, BadgeColorConfig> = {
   verde:   { colorClasses: 'bg-verde-ring text-verde' },
   teal:    { colorClasses: 'bg-teal-ring text-teal' },
   warning: { colorClasses: 'bg-warning-ring text-warning' },
-  naranja: { colorClasses: 'bg-naranja-ring text-naranja' },
   error:   { colorClasses: 'bg-error-ring text-error' },
   rose:    { colorClasses: 'bg-rose-ring text-rose' },
   info:    { colorClasses: 'bg-info-ring text-info' },
