@@ -119,13 +119,20 @@ export const UsersTable: React.FC<UsersTableProps> = ({
             header: 'Rol',
             accessor: 'role',
             align: 'left',
-            render: (role) => (
+            render: (role) => {
+                const roleLabel = String(role || 'Sin rol')
+                    .toLowerCase()
+                    .split(' ')
+                    .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+                    .join(' ');
+                return (
                 <div className="flex items-start">
-                    <div className={`relative grid items-center px-2 py-1 font-sans text-negro-una-2 rounded-corner select-none whitespace-nowrap ${TYPOGRAPHY.table.cell}`} title={String(role || 'Sin rol').toLowerCase().replace(/\b\w/g, c => c.toUpperCase())}>
-                        <span>{truncateText(String(role || 'Sin rol').toLowerCase().replace(/\b\w/g, c => c.toUpperCase()), TABLE_TRUNCATE.name)}</span>
+                    <div className={`relative grid items-center px-2 py-1 font-sans text-negro-una-2 rounded-corner select-none whitespace-nowrap ${TYPOGRAPHY.table.cell}`} title={roleLabel}>
+                        <span>{truncateText(roleLabel, TABLE_TRUNCATE.name)}</span>
                     </div>
                 </div>
-            )
+                );
+            }
         },
         {
             key: 'status',
