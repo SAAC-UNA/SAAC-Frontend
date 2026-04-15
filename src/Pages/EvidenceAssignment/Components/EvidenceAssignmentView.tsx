@@ -198,11 +198,6 @@ export const EvidenceAssignmentView: React.FC<EvidenceAssignmentViewProps> = ({
                       loading={flexElementsLoading}
                       required
                     />
-                    <p
-                      className={`mt-1.5 ${TYPOGRAPHY.form.helper} text-gris-una`}
-                    >
-                      Elementos del modelo de acreditación a asignar.
-                    </p>
                   </div>
                 ) : (
                   <>
