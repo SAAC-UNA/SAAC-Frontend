@@ -9,6 +9,7 @@ export interface OperationalContextSnapshot extends OperationalContextIds {
   campusLabel: string | null;
   cycleLabel: string | null;
   processLabel: string | null;
+  cycleModelType: string | null;
 }
 
 const DEFAULT_CONTEXT: OperationalContextSnapshot = {
@@ -19,6 +20,7 @@ const DEFAULT_CONTEXT: OperationalContextSnapshot = {
   campusLabel: null,
   cycleLabel: null,
   processLabel: null,
+  cycleModelType: null,
 };
 
 const STORAGE_KEY = "operational-context";

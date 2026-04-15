@@ -377,6 +377,7 @@ export const RequireOperationalContext = ({
         campusLabel: selectedCareer?.sede_nombre ?? null,
         cycleLabel: selectedCycle?.nombre ?? null,
         processLabel: selectedProcess?.tipo_proceso ?? null,
+        cycleModelType: selectedCycle?.modelo_tipo ?? null,
       });
 
       emitManualContextApplied();

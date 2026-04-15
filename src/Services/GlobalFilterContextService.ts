@@ -22,6 +22,7 @@ export interface GlobalFilterCycle {
   nombre: string;
   estado: string;
   carrera_sede_id: number;
+  modelo_tipo: string | null;
 }
 
 export interface GlobalFilterProcess {

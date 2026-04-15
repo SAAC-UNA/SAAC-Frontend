@@ -99,63 +99,79 @@ export const ManageExtensionRequestsPage: React.FC = () => {
   };
 
   const loadSolicitudes = async () => {
+    const cycleModelType = contextSnapshot.cycleModelType;
+    const isTradicional = cycleModelType === "tradicional";
+    const isFlexible = cycleModelType === "elemento_flexible";
+
     try {
       setTradState((prev) => ({ ...prev, loading: true, error: null }));
-      setFlexState((prev) => ({ ...prev, loading: true, error: null }));
+      setFlexState((prev) => ({ ...prev, loading: isFlexible, error: null }));
 
       const baseFilters = {
         estado: filtroEstado === "todos" ? undefined : filtroEstado,
       };
 
-      const tradFetcher =
-        filtroEstado === "pendiente"
-          ? extensionRequestService.getPendingRequests.bind(
-              extensionRequestService,
-            )
-          : extensionRequestService.getAllRequests.bind(
-              extensionRequestService,
-            );
-      const flexFetcher =
-        filtroEstado === "pendiente"
-          ? flexibleExtensionRequestService.getPendingRequests.bind(
-              flexibleExtensionRequestService,
-            )
-          : flexibleExtensionRequestService.getAllRequests.bind(
-              flexibleExtensionRequestService,
-            );
+      // Solo llamar al servicio que corresponde al modelo del ciclo activo
+      if (!isFlexible) {
+        const tradFetcher =
+          filtroEstado === "pendiente"
+            ? extensionRequestService.getPendingRequests.bind(
+                extensionRequestService,
+              )
+            : extensionRequestService.getAllRequests.bind(
+                extensionRequestService,
+              );
+        const tradRes = await fetchAllPages(tradFetcher, baseFilters).catch(
+          (e: Error) => { throw e; }
+        );
+        setTradState({ solicitudes: tradRes, loading: false, error: null });
+        setFlexState({ solicitudes: [], loading: false, error: null });
+        return;
+      }
 
+      if (!isTradicional) {
+        const flexFetcher =
+          filtroEstado === "pendiente"
+            ? flexibleExtensionRequestService.getPendingRequests.bind(
+                flexibleExtensionRequestService,
+              )
+            : flexibleExtensionRequestService.getAllRequests.bind(
+                flexibleExtensionRequestService,
+              );
+        const flexRes = await fetchAllPages(flexFetcher, baseFilters).catch(
+          (e: Error) => { throw e; }
+        );
+        setFlexState({ solicitudes: flexRes, loading: false, error: null });
+        setTradState({ solicitudes: [], loading: false, error: null });
+        return;
+      }
+
+      // modelo desconocido: cargar ambos (fallback)
       const [tradRes, flexRes] = await Promise.allSettled([
-        fetchAllPages(tradFetcher, baseFilters),
-        fetchAllPages(flexFetcher, baseFilters),
+        fetchAllPages(
+          filtroEstado === "pendiente"
+            ? extensionRequestService.getPendingRequests.bind(extensionRequestService)
+            : extensionRequestService.getAllRequests.bind(extensionRequestService),
+          baseFilters,
+        ),
+        fetchAllPages(
+          filtroEstado === "pendiente"
+            ? flexibleExtensionRequestService.getPendingRequests.bind(flexibleExtensionRequestService)
+            : flexibleExtensionRequestService.getAllRequests.bind(flexibleExtensionRequestService),
+          baseFilters,
+        ),
       ]);
 
-      if (tradRes.status === "fulfilled") {
-        setTradState((prev) => ({
-          ...prev,
-          solicitudes: tradRes.value,
-          loading: false,
-        }));
-      } else {
-        setTradState((prev) => ({
-          ...prev,
-          error: tradRes.reason?.message ?? "Error",
-          loading: false,
-        }));
-      }
-
-      if (flexRes.status === "fulfilled") {
-        setFlexState((prev) => ({
-          ...prev,
-          solicitudes: flexRes.value,
-          loading: false,
-        }));
-      } else {
-        setFlexState((prev) => ({
-          ...prev,
-          error: flexRes.reason?.message ?? "Error",
-          loading: false,
-        }));
-      }
+      setTradState({
+        solicitudes: tradRes.status === "fulfilled" ? tradRes.value : [],
+        loading: false,
+        error: tradRes.status === "rejected" ? (tradRes.reason?.message ?? "Error") : null,
+      });
+      setFlexState({
+        solicitudes: flexRes.status === "fulfilled" ? flexRes.value : [],
+        loading: false,
+        error: flexRes.status === "rejected" ? (flexRes.reason?.message ?? "Error") : null,
+      });
     } catch (error: any) {
       const msg = error.message || "No se pudieron cargar las solicitudes";
       setTradState((prev) => ({ ...prev, error: msg, loading: false }));

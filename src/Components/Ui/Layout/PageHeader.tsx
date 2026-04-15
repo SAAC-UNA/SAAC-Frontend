@@ -132,8 +132,7 @@ export const PageHeader: React.FC<PageHeaderProps> = ({
               careerLabel: contextSnapshot.careerLabel,
               campusLabel: contextSnapshot.campusLabel,
               cycleLabel: contextSnapshot.cycleLabel,
-              processLabel: null,
-            });
+              processLabel: null,              cycleModelType: contextSnapshot.cycleModelType,            });
           },
         });
 
@@ -164,6 +163,7 @@ export const PageHeader: React.FC<PageHeaderProps> = ({
                   campusLabel: contextSnapshot.campusLabel,
                   cycleLabel: contextSnapshot.cycleLabel,
                   processLabel: null,
+                  cycleModelType: contextSnapshot.cycleModelType,
                 });
               },
             },
@@ -397,6 +397,7 @@ export const PageHeader: React.FC<PageHeaderProps> = ({
         campusLabel: selectedCareer?.sede_nombre ?? null,
         cycleLabel: selectedCycle?.nombre ?? null,
         processLabel: selectedProcess?.tipo_proceso ?? null,
+        cycleModelType: selectedCycle?.modelo_tipo ?? null,
       });
 
       emitManualContextApplied();
