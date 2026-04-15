@@ -360,7 +360,7 @@ const ElementoResponsablesPanel: React.FC<{
   if (groups.length === 0) {
     return (
       <p className={`text-gris-una px-3 py-1.5 ${TYPOGRAPHY.table.helper}`}>
-        Sin responsables o recursos para esta pauta
+        Sin responsables o recursos para este entregable
       </p>
     );
   }
@@ -539,7 +539,7 @@ export const EvidenceResourcesModal: React.FC<EvidenceResourcesModalProps> = ({
     <Modal
       isOpen={isOpen}
       onClose={onClose}
-      title={isFlexible ? 'Recursos de la pauta' : 'Recursos del criterio'}
+      title="Recursos del entregable"
       subtitle={criterioNomenclatura}
       variant="neutral"
       heroIcon={<SystemIcons.actions.list className={`${ICON_SIZES.md} text-blanco-una`} />}
@@ -594,7 +594,7 @@ export const EvidenceResourcesModal: React.FC<EvidenceResourcesModalProps> = ({
             data={evidencias as any}
             columns={evidenceColumns as any}
             getRowKey={(item: any) => String(item.evidencia_id)}
-            emptyMessage="No hay evidencias para este criterio"
+            emptyMessage="No hay evidencias para este entregable"
             unstyled
             expandableRow={(evidencia: any) => [{
               key: String(evidencia.evidencia_id),

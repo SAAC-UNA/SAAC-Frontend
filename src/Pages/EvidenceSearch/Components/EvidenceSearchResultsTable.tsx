@@ -71,7 +71,7 @@ export const EvidenceSearchResultsTable: React.FC<EvidenceSearchResultsTableProp
   const columns: DataTableColumn<EvidenceSearchResult>[] = useMemo(() => [
     {
       key: 'criterio',
-      header: isFlexible ? 'Pauta' : 'Criterio',
+      header: 'Entregable',
       align: 'left',
       width: firstColumn.width,
       render: (_, item) => (
@@ -161,7 +161,7 @@ export const EvidenceSearchResultsTable: React.FC<EvidenceSearchResultsTableProp
           />
           <TableActionButton
             action="list"
-            tooltip={isFlexible ? 'Ver recursos de la pauta' : 'Ver recursos del criterio'}
+            tooltip="Ver recursos del entregable"
             onClick={() => openResourcesModal(item)}
           />
         </div>

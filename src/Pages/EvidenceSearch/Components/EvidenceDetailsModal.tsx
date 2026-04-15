@@ -483,7 +483,7 @@ export const EvidenceDetailsModal: React.FC<EvidenceDetailsModalProps> = ({
       <Modal
         isOpen={isOpen}
         onClose={onClose}
-        title="Detalles del Criterio"
+        title="Detalles del Entregable"
         subtitle={criterio?.criterio_nomenclatura}
         variant="info"
         size="xl"
@@ -503,7 +503,7 @@ export const EvidenceDetailsModal: React.FC<EvidenceDetailsModalProps> = ({
               TYPOGRAPHY.modal.body,
             )}
           >
-            Cargando información del criterio…
+            Cargando información del entregable…
           </div>
         ) : (
           <div className="grid grid-cols-5 gap-x-4 gap-y-3">

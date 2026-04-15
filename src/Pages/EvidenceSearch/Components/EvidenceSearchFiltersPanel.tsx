@@ -226,7 +226,7 @@ export const EvidenceSearchFiltersPanel: React.FC<
 
               <div>
                 <CustomSelect
-                  label="Criterio"
+                  label="Entregable"
                   value={criterioId || "__all__"}
                   options={opcionesCriterio}
                   onChange={handleCriterioChange}

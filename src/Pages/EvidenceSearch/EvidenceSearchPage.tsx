@@ -262,7 +262,6 @@ export const EvidenceSearchPage: React.FC = () => {
   // Handlers de retroalimentación movidos a EvidenceDetailsModal
 
   const moduleInfo = getModuleInfo("evidence_search");
-  const pageTitle = isFlexible ? "Explorador de Pautas" : moduleInfo.title;
 
   // Opciones del menú de exportación
   const exportOptions: DropdownOption[] = [
@@ -293,18 +292,14 @@ export const EvidenceSearchPage: React.FC = () => {
   return (
     <ScreenContainer>
       <PageHeader
-        title={pageTitle}
+        title={moduleInfo.title}
         description={moduleInfo.description}
         breadcrumbMode="contextual"
         headerExtra={
           <div className="flex items-center gap-3">
             <div className="flex-1 min-w-64">
               <SearchInput
-                placeholder={
-                  isFlexible
-                    ? "Buscar por descripción, pauta o responsable..."
-                    : "Buscar por descripción, criterio o responsable..."
-                }
+                placeholder="Buscar por elemento..."
                 value={searchTerm}
                 onChange={handleSearchChange}
                 disabled={loading}
