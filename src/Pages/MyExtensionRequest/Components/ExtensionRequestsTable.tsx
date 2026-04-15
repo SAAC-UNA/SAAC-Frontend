@@ -34,6 +34,7 @@ interface ExtensionRequestsTableProps {
   unstyled?: boolean;
   onRetry?: () => void;
   onViewDetails?: (request: ExtensionRequest) => void;
+  onCancelRequest?: (request: ExtensionRequest) => void;
 }
 
 export const ExtensionRequestsTable: React.FC<ExtensionRequestsTableProps> = ({
@@ -45,7 +46,8 @@ export const ExtensionRequestsTable: React.FC<ExtensionRequestsTableProps> = ({
   itemsPerPage = TABLE_PAGE_SIZE.standard,
   unstyled = false,
   onRetry,
-  onViewDetails
+  onViewDetails,
+  onCancelRequest
 }) => {
   const [currentPage, setCurrentPage] = useState(1);
 
@@ -160,7 +162,7 @@ export const ExtensionRequestsTable: React.FC<ExtensionRequestsTableProps> = ({
       key: 'actions',
       header: 'Acciones',
       align: 'center',
-      width: TABLE_COLUMN_WIDTHS.status,
+      width: TABLE_COLUMN_WIDTHS.actionsLarge,
       render: (_: unknown, item: ExtensionRequest) => (
         <div className="flex items-center justify-center gap-2 pr-2">
           <TableActionButton
@@ -168,10 +170,19 @@ export const ExtensionRequestsTable: React.FC<ExtensionRequestsTableProps> = ({
             tooltip="Ver detalles de la solicitud"
             onClick={() => onViewDetails?.(item)}
           />
+          {onCancelRequest && (
+            <TableActionButton
+              action="clock"
+              tooltip={item.estado === 'pendiente' ? 'Cancelar ampliación' : 'Solo se pueden cancelar solicitudes pendientes'}
+              customVariant={item.estado === 'pendiente' ? 'tableDelete' : undefined}
+              onClick={() => onCancelRequest(item)}
+              disabled={item.estado !== 'pendiente'}
+            />
+          )}
         </div>
       )
     }
-  ], [onViewDetails]);
+  ], [onViewDetails, onCancelRequest]);
 
   if (error) {
     return (

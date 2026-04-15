@@ -50,6 +50,7 @@ export const EXTENSION_REQUEST_STATUS_BADGE: Record<ExtensionRequestStatus, Stat
   pendiente: { label: 'Pendiente', colorClasses: 'bg-slate-ring text-slate' },
   aprobada:  { label: 'Aprobado',  colorClasses: 'bg-verde-ring text-verde' },
   rechazada: { label: 'Rechazado', colorClasses: 'bg-error-ring text-error' },
+  cancelada: { label: 'Cancelada', colorClasses: 'bg-gris-light text-gris-una' },
 };
 
 /** Estado activo/inactivo de un usuario */
