@@ -156,14 +156,19 @@ const PermissionGroupMatrix: React.FC<{
         }
 
         return (
-          <input
-            type="checkbox"
-            checked={selected}
-            onChange={() => togglePermission(permission.value)}
-            className="h-4 w-4 rounded border-gris-una/40 text-info focus:ring-info"
+          <button
+            type="button"
+            role="checkbox"
+            aria-checked={selected}
+            onClick={() => togglePermission(permission.value)}
+            className={`inline-flex h-4 w-4 items-center justify-center rounded-[3px] border transition-colors focus:outline-none focus:ring-2 focus:ring-verde/40 focus:ring-offset-1 cursor-pointer ${selected ? 'border-verde bg-verde' : 'border-gris-una/40 bg-white'}`}
             aria-label={`${item.moduleLabel} - ${ACTION_LABELS[action]}`}
             title={permission.label}
-          />
+          >
+            {selected && (
+              <SystemIcons.interface.check className="h-3 w-3 text-white" />
+            )}
+          </button>
         );
       },
     }));

@@ -119,7 +119,7 @@ export const RoleFormContent: React.FC<RoleFormContentProps> = ({
             <div>
               <h3 className="text-sm font-semibold text-negro-una">Datos del rol</h3>
               <p className={`${TYPOGRAPHY.form.helper} mt-1 text-gris-una`}>
-                Define el nombre y una descripción corta antes de asignar permisos.
+                Defina el nombre y una descripción corta antes de asignar permisos.
               </p>
             </div>
 
