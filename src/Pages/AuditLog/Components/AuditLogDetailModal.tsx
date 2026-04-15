@@ -46,7 +46,7 @@ export const AuditLogDetailModal: React.FC<AuditLogDetailModalProps> = ({
       title="Detalle de Bitácora"
       size="lg"
       maxHeight='lg'
-      variant="neutral"
+      variant="info"
       heroIcon={<SystemIcons.navigation.auditLog className={`${ICON_SIZES.md} text-blanco-una`} />}
     >
       <div className="grid grid-cols-6 gap-x-4 gap-y-3">
@@ -128,7 +128,7 @@ export const AuditLogDetailModal: React.FC<AuditLogDetailModalProps> = ({
 
         {/* div9 — Nota de inmutabilidad */}
         <div className="col-span-6 flex flex-col gap-1">
-          <span className={cn(TYPOGRAPHY.form.helper, 'text-gris-una-2 font-semibold')}>
+          <span className={cn(TYPOGRAPHY.form.helper, 'text-info font-semibold')}>
             Registro inmutable
           </span>
           <span className={cn(TYPOGRAPHY.form.helper, 'text-gris-una-2 leading-relaxed')}>
