@@ -33,6 +33,7 @@ interface ElementAssignmentsTableProps {
     newStatus: 'En Progreso' | 'Completado'
   ) => void;
   onRequestExtension?: (assignment: FlexibleAssignmentItem) => void;
+  onCancelExtension?: (requestId: number) => void;
   allElements?: FlexibleElement[];
   pagination?: {
     currentPage: number;
@@ -49,6 +50,7 @@ export const ElementAssignmentsTable: React.FC<ElementAssignmentsTableProps> = (
   onUploadFiles,
   onStatusChange,
   onRequestExtension,
+  onCancelExtension,
   allElements,
   pagination,
 }) => {
@@ -199,12 +201,17 @@ export const ElementAssignmentsTable: React.FC<ElementAssignmentsTableProps> = (
                 onClick={() => onUploadFiles(assignment)}
               />
 
-              {onRequestExtension && (
+              {(onRequestExtension || onCancelExtension) && (
                 <TableActionButton
                   action="clock"
                   tooltip={extensionTooltip}
-                  onClick={() => onRequestExtension(assignment)}
-                  disabled={!canExtend}
+                  customVariant={hasPending ? 'tableDelete' : undefined}
+                  onClick={() =>
+                    hasPending
+                      ? pendingRequestId && onCancelExtension?.(pendingRequestId)
+                      : onRequestExtension?.(assignment)
+                  }
+                  disabled={!hasPending && !canExtend}
                 />
               )}
 
@@ -223,7 +230,7 @@ export const ElementAssignmentsTable: React.FC<ElementAssignmentsTableProps> = (
         },
       },
     ],
-    [firstColumn, onViewDetails, onUploadFiles, onStatusChange, onRequestExtension]
+    [firstColumn, onViewDetails, onUploadFiles, onStatusChange, onRequestExtension, onCancelExtension]
   );
 
   return (

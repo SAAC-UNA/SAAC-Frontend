@@ -27,6 +27,8 @@ export interface EvidenceAssignment extends Record<string, unknown> {
 
   // HU-016: Indica si tiene una solicitud de ampliación pendiente
   has_pending_extension_request?: boolean;
+  // ID de la solicitud pendiente para poder cancelarla
+  pending_extension_request_id?: number | null;
   // Indica si ya hay al menos un archivo/enlace subido por el responsable
   has_uploaded_files?: boolean;
   // Indica si fue devuelta/rechazada para correcciones

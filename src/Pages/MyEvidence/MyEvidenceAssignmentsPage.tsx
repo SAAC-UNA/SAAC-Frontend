@@ -493,6 +493,42 @@ export const MyEvidenceAssignmentsPage: React.FC = () => {
     }
   };
 
+  const handleCancelExtension = async (requestId: number) => {
+    try {
+      await extensionRequestService.cancelRequest(requestId);
+      showToast({
+        type: "success",
+        title: "Solicitud cancelada",
+        message: "La solicitud de ampliación ha sido cancelada",
+      });
+      loadAssignments();
+    } catch (error: unknown) {
+      showToast({
+        type: "error",
+        title: "Error",
+        message: getErrorMessage(error, "No se pudo cancelar la solicitud"),
+      });
+    }
+  };
+
+  const handleFlexCancelExtension = async (requestId: number) => {
+    try {
+      await extensionRequestService.cancelElementRequest(requestId);
+      showToast({
+        type: "success",
+        title: "Solicitud cancelada",
+        message: "La solicitud de ampliación ha sido cancelada",
+      });
+      loadFlexAssignments();
+    } catch (error: unknown) {
+      showToast({
+        type: "error",
+        title: "Error",
+        message: getErrorMessage(error, "No se pudo cancelar la solicitud"),
+      });
+    }
+  };
+
   // ─────────────────────────────────────────────────────────────────────────
 
   const handleCloseDetail = () => {
@@ -737,6 +773,7 @@ export const MyEvidenceAssignmentsPage: React.FC = () => {
                 onUploadFiles={handleUploadFiles}
                 onStatusChange={handleTableStatusChange}
                 onRequestExtension={handleRequestExtension}
+                onCancelExtension={handleCancelExtension}
                 hasFilters={filters.estado !== "todos" || filters.search !== ""}
                 pagination={
                   totalPages > 1
@@ -765,6 +802,7 @@ export const MyEvidenceAssignmentsPage: React.FC = () => {
                 onUploadFiles={handleFlexUploadFiles}
                 onStatusChange={handleFlexStatusChange}
                 onRequestExtension={handleFlexRequestExtension}
+                onCancelExtension={handleFlexCancelExtension}
                 hasFilters={filters.search?.trim() !== ""}
                 allElements={flexElements}
                 pagination={

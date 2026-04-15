@@ -203,6 +203,44 @@ class ExtensionRequestService {
       );
     }
   }
+
+  /**
+   * Cancelar una solicitud de ampliación pendiente — modelo TRADICIONAL (evidencia_asignacion_id)
+   * PATCH /api/solicitudes-ampliacion-tiempo/{id}/cancelar
+   */
+  async cancelRequest(id: number): Promise<void> {
+    try {
+      devLog.info('ExtensionRequestService - Cancelando solicitud de ampliación (tradicional)');
+      await axiosInstance.patch(`/solicitudes-ampliacion-tiempo/${id}/cancelar`);
+      devLog.info('ExtensionRequestService - Solicitud cancelada exitosamente');
+    } catch (error: any) {
+      devLog.error('ExtensionRequestService - Error al cancelar solicitud', error);
+      throw new Error(
+        error.response?.data?.message ||
+        error.response?.data?.error ||
+        'Error al cancelar la solicitud'
+      );
+    }
+  }
+
+  /**
+   * Cancelar una solicitud de ampliación pendiente — modelo FLEXIBLE (elemento_asignacion_id)
+   * PATCH /api/solicitudes-ampliacion-elemento/{id}/cancelar
+   */
+  async cancelElementRequest(id: number): Promise<void> {
+    try {
+      devLog.info('ExtensionRequestService - Cancelando solicitud de ampliación (elemento)');
+      await axiosInstance.patch(`/solicitudes-ampliacion-elemento/${id}/cancelar`);
+      devLog.info('ExtensionRequestService - Solicitud de elemento cancelada exitosamente');
+    } catch (error: any) {
+      devLog.error('ExtensionRequestService - Error al cancelar solicitud de elemento', error);
+      throw new Error(
+        error.response?.data?.message ||
+        error.response?.data?.error ||
+        'Error al cancelar la solicitud'
+      );
+    }
+  }
 }
 
 // Exportar instancia única del servicio

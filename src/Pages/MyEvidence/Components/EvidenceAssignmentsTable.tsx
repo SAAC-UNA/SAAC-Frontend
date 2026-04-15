@@ -37,6 +37,8 @@ interface EvidenceAssignmentsTableProps {
   onUploadFiles: (assignment: EvidenceAssignment) => void;
   /** HU-016: Callback al solicitar ampliación */
   onRequestExtension?: (assignment: EvidenceAssignment) => void;
+  /** HU-016: Callback al cancelar ampliación pendiente */
+  onCancelExtension?: (requestId: number) => void;
   /** Callback al cambiar estado (toggle completado / en_progreso) */
   onStatusChange?: (
     assignment: EvidenceAssignment,
@@ -59,6 +61,7 @@ export const EvidenceAssignmentsTable: React.FC<
   onViewDetails,
   onUploadFiles,
   onRequestExtension,
+  onCancelExtension,
   onStatusChange,
   pagination,
 }) => {
@@ -186,17 +189,18 @@ export const EvidenceAssignmentsTable: React.FC<
           // 2. El estado no es pendiente o en_progreso
           const hasPendingRequest =
             assignment.has_pending_extension_request === true;
+          const pendingRequestId = assignment.pending_extension_request_id ?? null;
           const validStatus = ["pendiente", "en_progreso"].includes(
             assignment.estado,
           );
           const canRequestExtension = !hasPendingRequest && validStatus;
 
           // Tooltip dinámico
-          let tooltip = "Solicitar ampliación";
+          let clockTooltip = "Solicitar ampliación";
           if (hasPendingRequest) {
-            tooltip = "Ya hay una solicitud pendiente";
+            clockTooltip = "Cancelar ampliación";
           } else if (!validStatus) {
-            tooltip = "No se puede solicitar ampliación";
+            clockTooltip = "No se puede solicitar ampliación";
           }
 
           const isCompleted = assignment.estado === "completado";
@@ -221,13 +225,18 @@ export const EvidenceAssignmentsTable: React.FC<
                 onClick={() => onUploadFiles(assignment)}
               />
 
-              {/* Botón de solicitar ampliación */}
-              {onRequestExtension && (
+              {/* Botón solicitar / cancelar ampliación */}
+              {(onRequestExtension || onCancelExtension) && (
                 <TableActionButton
                   action="clock"
-                  tooltip={tooltip}
-                  onClick={() => onRequestExtension(assignment)}
-                  disabled={!canRequestExtension}
+                  tooltip={clockTooltip}
+                  customVariant={hasPendingRequest ? 'tableDelete' : undefined}
+                  onClick={() =>
+                    hasPendingRequest
+                      ? pendingRequestId && onCancelExtension?.(pendingRequestId)
+                      : onRequestExtension?.(assignment)
+                  }
+                  disabled={!hasPendingRequest && !canRequestExtension}
                 />
               )}
 
@@ -255,6 +264,7 @@ export const EvidenceAssignmentsTable: React.FC<
       onViewDetails,
       onUploadFiles,
       onRequestExtension,
+      onCancelExtension,
       onStatusChange,
     ],
   );
