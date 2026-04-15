@@ -66,24 +66,6 @@ export const AuditLogTable: React.FC<AuditLogTableProps> = ({
         ),
       },
       {
-        key: 'tipo_accion',
-        header: 'Acción',
-        align: 'left',
-        accessor: (log) => log.tipo_accion.descripcion,
-        render: (_, log) => {
-          const key = log.tipo_accion.descripcion.toLowerCase();
-          const badge = AUDIT_ACTION_BADGE[key];
-          return (
-            <div className="flex items-start">
-              <StatusBadge
-                label={badge?.label ?? log.tipo_accion.descripcion}
-                colorClasses={badge?.colorClasses ?? 'bg-slate-light text-slate'}
-              />
-            </div>
-          );
-        },
-      },
-      {
         key: 'modulo',
         header: 'Módulo',
         align: 'left',
@@ -115,6 +97,29 @@ export const AuditLogTable: React.FC<AuditLogTableProps> = ({
             {formatDateWithTime(log.fecha_hora).split(', ')[1]}
           </span>
         ),
+      },
+      {
+        key: 'tipo_accion',
+        header: 'Acción',
+        align: 'left',
+        accessor: (log) => log.tipo_accion.descripcion,
+        render: (_, log) => {
+          const key = log.tipo_accion.descripcion.toLowerCase();
+          const badge = AUDIT_ACTION_BADGE[key];
+          const fallbackLabel = log.tipo_accion.descripcion
+            .toLowerCase()
+            .split(' ')
+            .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+            .join(' ');
+          return (
+            <div className="flex items-start">
+              <StatusBadge
+                label={badge?.label ?? fallbackLabel}
+                colorClasses={badge?.colorClasses ?? 'bg-slate-light text-slate'}
+              />
+            </div>
+          );
+        },
       },
       {
         key: 'actions',
