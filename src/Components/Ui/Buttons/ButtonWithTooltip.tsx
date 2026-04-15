@@ -50,20 +50,22 @@ export const ButtonWithTooltip: React.FC<ButtonWithTooltipProps> = ({
   return (
     <Tooltip>
       <TooltipTrigger asChild>
-        <Button
-          variant={variant}
-          size={size}
-          isLoading={isLoading}
-          fullWidth={fullWidth}
-          flex={flex}
-          responsive={responsive}
-          className={className}
-          disabled={disabled}
-          style={disabled ? { pointerEvents: 'auto' } : undefined}
-          {...props}
-        >
-          {children}
-        </Button>
+        <span style={disabled ? { pointerEvents: 'auto', display: 'inline-flex' } : undefined}>
+          <Button
+            variant={variant}
+            size={size}
+            isLoading={isLoading}
+            fullWidth={fullWidth}
+            flex={flex}
+            responsive={responsive}
+            className={className}
+            disabled={disabled}
+            style={disabled ? { pointerEvents: 'none' } : undefined}
+            {...props}
+          >
+            {children}
+          </Button>
+        </span>
       </TooltipTrigger>
       <TooltipContent side={tooltipPosition}>
         {tooltip}

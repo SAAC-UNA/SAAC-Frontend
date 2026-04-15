@@ -201,7 +201,6 @@ export const ManageExtensionRequestsTable: React.FC<
         align: "center",
         render: (_: unknown, item: ExtensionRequest) => {
           const isPending = item.estado === "pendiente";
-          const isApproved = item.estado === "aprobada";
           return (
             <div className="flex items-center justify-center gap-2 pr-2">
               <TableActionButton
@@ -209,19 +208,16 @@ export const ManageExtensionRequestsTable: React.FC<
                 tooltip="Ver detalles"
                 onClick={() => onReviewRequest?.(item)}
               />
-              {/* Toggle decisión: aprobada ↔ rechazada / pendiente → aprobar */}
               <TableActionButton
-                action={
-                  isApproved || isPending ? "approveRequest" : "rejectRequest"
-                }
-                tooltip={
-                  isPending
-                    ? "Aprobar solicitud"
-                    : isApproved
-                      ? "Solicitud aprobada"
-                      : "Solicitud rechazada"
-                }
+                action="approveRequest"
+                tooltip="Aprobar solicitud"
                 onClick={() => onApproveRequest?.(item)}
+                disabled={!isPending}
+              />
+              <TableActionButton
+                action="rejectRequest"
+                tooltip="Rechazar solicitud"
+                onClick={() => onRejectRequest?.(item)}
                 disabled={!isPending}
               />
             </div>
