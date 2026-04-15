@@ -216,7 +216,7 @@ export const ChainedMultiSelect: React.FC<ChainedMultiSelectProps> = ({
               <p className={`mt-1 ${TYPOGRAPHY.form.helper} text-gris-una`}>
                 {selectedInLevel.length > 0
                   ? `${selectedInLevel.length} ${(selectedInLevel.length === 1 ? label : labelPlural).toLowerCase()} seleccionado${selectedInLevel.length !== 1 ? 's' : ''}`
-                  : `Seleccione al menos una ${label.toLowerCase()} para continuar`}
+                  : `Seleccione al menos una ${label.toLowerCase()} para continuar.`}
               </p>
             )}
           </div>
