@@ -174,6 +174,7 @@ export const ElementAssignmentsTable: React.FC<ElementAssignmentsTableProps> = (
           const isCompleted = assignment.estado === 'Completado';
           const isActionable = ['Pendiente', 'En Progreso'].includes(assignment.estado);
           const hasPending = assignment.has_pending_extension_request === true;
+          const pendingRequestId = assignment.pending_extension_request_id ?? null;
           const canExtend = !hasPending && isActionable;
           const canMarkCompleted = assignment.has_uploaded_files === true;
 
