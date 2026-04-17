@@ -177,7 +177,7 @@ export const BlockApprovalTable: React.FC<BlockApprovalTableProps> = ({
         const canApproveBlock = item.estado_aprobacion === 'pendiente';
         const canRejectBlock  = item.estado_aprobacion !== 'aprobado';
         return (
-          <div className="flex items-center justify-center" onClick={e => e.stopPropagation()}>
+          <div className="flex items-center justify-center gap-2" onClick={e => e.stopPropagation()}>
             <TableActionButton
               action="list"
               tooltip={isFlexible ? 'Ver fuentes asociadas' : 'Ver evidencias asociadas'}

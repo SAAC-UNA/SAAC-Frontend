@@ -127,7 +127,7 @@ export const AuditLogTable: React.FC<AuditLogTableProps> = ({
         align: 'center',
         accessor: () => '',
         render: (_, log) => (
-          <div className="flex gap-2 justify-center">
+          <div className="flex items-center justify-center gap-2">
             <TableActionButton
               onClick={() => onViewDetail?.(log)}
               action="view"

@@ -152,7 +152,7 @@ export const UsersTable: React.FC<UsersTableProps> = ({
             header: 'Acciones',
             align: 'center',
             render: (_, user) => (
-                <div className="flex items-center justify-center gap-2 pr-2">
+                <div className="flex items-center justify-center gap-2">
                     <TableActionButton
                         action="view"
                         tooltip="Ver usuario"

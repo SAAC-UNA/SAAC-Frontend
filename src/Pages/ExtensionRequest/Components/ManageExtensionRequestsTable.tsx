@@ -202,7 +202,7 @@ export const ManageExtensionRequestsTable: React.FC<
         render: (_: unknown, item: ExtensionRequest) => {
           const isPending = item.estado === "pendiente";
           return (
-            <div className="flex items-center justify-center gap-2 pr-2">
+            <div className="flex items-center justify-center gap-2">
               <TableActionButton
                 action="view"
                 tooltip="Ver detalles"

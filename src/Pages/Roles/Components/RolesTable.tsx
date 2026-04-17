@@ -147,7 +147,7 @@ export const RolesTable: React.FC<RolesTableProps> = ({
             header: 'Acciones',
             align: 'center',
             render: (_: unknown, role: Role) => (
-                <div className="flex items-center justify-center gap-2 pr-2">
+                <div className="flex items-center justify-center gap-2">
                     <TableActionButton
                         action="view"
                         tooltip="Ver permisos"

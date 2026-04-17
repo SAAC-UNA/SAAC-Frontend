@@ -188,7 +188,7 @@ export const ElementAssignmentsTable: React.FC<ElementAssignmentsTableProps> = (
               : 'Debe subir al menos un archivo o enlace';
 
           return (
-            <div className="flex items-center justify-center gap-2 pr-2">
+            <div className="flex items-center justify-center gap-2">
               <TableActionButton
                 action="view"
                 tooltip="Ver detalles"

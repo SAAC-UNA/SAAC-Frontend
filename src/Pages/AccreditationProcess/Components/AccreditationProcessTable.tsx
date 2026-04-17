@@ -159,7 +159,7 @@ export const AccreditationProcessTable: React.FC<
       header: "Acciones",
       align: "center",
       render: (_, process) => (
-        <div className="flex items-center justify-center gap-2 pr-2">
+        <div className="flex items-center justify-center gap-2">
           <TableActionButton
             action="view"
             tooltip="Ver detalles"
