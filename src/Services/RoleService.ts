@@ -42,8 +42,10 @@ export interface BackendRole {
   name: string;
   description?: string;
   permissions: BackendPermission[];
-  // created_at?: string; // TODO: Uncomment when backend adds this field to RoleResource
-  // updated_at?: string; // TODO: Uncomment when backend adds this field to RoleResource
+  users_count: number;
+  is_protected: boolean;
+  can_delete: boolean;
+  is_active: boolean;
 }
 
 /**
@@ -53,9 +55,11 @@ export interface Role {
   id: number;
   name: string;
   description?: string;
-  permissions: BackendPermission[]; // Ahora usa las etiquetas del backend
-  // createdAt?: Date; // TODO
-  // updatedAt?: Date; // TODO
+  permissions: BackendPermission[];
+  users_count: number;
+  is_protected: boolean;
+  can_delete: boolean;
+  is_active: boolean;
 }
 
 /**
@@ -75,9 +79,11 @@ const transformBackendRole = (backendRole: BackendRole): Role => {
     id: backendRole.id,
     name: backendRole.name,
     description: backendRole.description,
-    permissions: backendRole.permissions, // Ahora mantenemos los objetos completos
-    // createdAt: backendRole.created_at ? new Date(backendRole.created_at) : undefined, // TODO
-    // updatedAt: backendRole.updated_at ? new Date(backendRole.updated_at) : undefined  // TODO
+    permissions: backendRole.permissions,
+    users_count: backendRole.users_count ?? 0,
+    is_protected: backendRole.is_protected ?? false,
+    can_delete: backendRole.can_delete ?? false,
+    is_active: backendRole.is_active ?? true,
   };
 };
 
@@ -230,6 +236,19 @@ class RoleService {
     } catch (error: any) {
       console.error('Error eliminando rol:', error);
       throw new Error(error.response?.data?.errorMessage || error.message || 'Error al eliminar el rol');
+    }
+  }
+
+  /**
+   * Alternar el estado activo/inactivo de un rol
+   */
+  async toggleRoleStatus(roleId: number): Promise<ApiResponse<{ is_active: boolean }>> {
+    try {
+      const response = await axiosInstance.patch(`/roles/${roleId}/toggle`);
+      return response.data;
+    } catch (error: any) {
+      console.error('Error cambiando estado del rol:', error);
+      throw new Error(error.response?.data?.message || error.message || 'Error al cambiar el estado del rol');
     }
   }
 

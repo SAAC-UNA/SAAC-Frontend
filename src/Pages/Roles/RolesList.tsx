@@ -34,7 +34,7 @@ const SuccessModal = lazy(() =>
 );
 
 const RolesRepository: React.FC = () => {
-  const { deleteRole, roles, loadRoles, isLoading, error } = useRoles();
+  const { deleteRole, toggleRoleStatus, roles, loadRoles, isLoading, error } = useRoles();
   const { showToast } = useToast();
 
   // Obtener información del módulo desde ModuleInfo
@@ -128,6 +128,24 @@ const RolesRepository: React.FC = () => {
     setDeleteModalState({ isOpen: false, role: null });
   };
 
+  const handleToggleStatus = async (role: Role) => {
+    const result = await toggleRoleStatus(role.id);
+    if (result) {
+      const newState = !role.is_active;
+      showToast({
+        type: 'success',
+        title: newState ? 'Rol activado' : 'Rol inactivado',
+        message: `El rol "${role.name}" ha sido ${newState ? 'activado' : 'inactivado'} correctamente`,
+      });
+    } else {
+      showToast({
+        type: 'error',
+        title: 'Error al cambiar estado',
+        message: 'No se pudo cambiar el estado del rol',
+      });
+    }
+  };
+
   const closePermissionsModal = () => {
     setPermissionsModalState({ isOpen: false, role: null });
   };
@@ -167,6 +185,7 @@ const RolesRepository: React.FC = () => {
           onEdit={handleEditRole}
           onDelete={handleDeleteRole}
           onViewPermissions={handleViewPermissions}
+          onToggleStatus={handleToggleStatus}
           roles={roles}
           isLoading={isLoading}
           error={error}

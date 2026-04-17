@@ -31,6 +31,7 @@ interface RolesTableProps {
     onEdit?: (role: Role) => void;
     onDelete?: (role: Role) => void;
     onViewPermissions?: (role: Role) => void;
+    onToggleStatus?: (role: Role) => void;
     itemsPerPage?: number;
     unstyled?: boolean; // Para usar sin contenedor
     // Props para datos externos
@@ -44,6 +45,7 @@ export const RolesTable: React.FC<RolesTableProps> = ({
     onEdit,
     onDelete,
     onViewPermissions,
+    onToggleStatus,
     itemsPerPage = TABLE_PAGE_SIZE.standard,
     unstyled = false,
     roles: externalRoles,
@@ -159,16 +161,30 @@ export const RolesTable: React.FC<RolesTableProps> = ({
                         tooltip="Editar rol"
                         onClick={() => handleEdit(role)}
                     />
-                    
+
+                    <TableActionButton
+                        action="power"
+                        tooltip={role.is_active ? 'Inactivar rol' : 'Activar rol'}
+                        onClick={() => onToggleStatus?.(role)}
+                        isActive={role.is_active}
+                    />
+
                     <TableActionButton
                         action="delete"
-                        tooltip="Eliminar rol"
+                        tooltip={
+                            role.is_protected
+                                ? 'Los roles del sistema no pueden eliminarse'
+                                : role.users_count > 0
+                                    ? `No se puede eliminar: tiene ${role.users_count} usuarios asignados`
+                                    : 'Eliminar rol'
+                        }
                         onClick={() => onDelete?.(role)}
+                        disabled={!role.can_delete}
                     />
                 </div>
             )
         }
-    ], [onViewPermissions, onDelete, handleEdit]);
+    ], [onViewPermissions, onDelete, onToggleStatus, handleEdit]);
 
     if (error) {
         return (

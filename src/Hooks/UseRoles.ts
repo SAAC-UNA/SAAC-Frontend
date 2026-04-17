@@ -47,6 +47,7 @@ interface UseRolesReturn {
   createRole: (roleData: CreateRoleData) => Promise<Role | null>;
   editRole: (roleId: number, roleData: CreateRoleData) => Promise<Role | null>;
   deleteRole: (roleId: number) => Promise<boolean>;
+  toggleRoleStatus: (roleId: number) => Promise<boolean>;
   getRoleById: (roleId: number) => Promise<Role | null>;
   loadPermissions: () => Promise<PermissionOption[] | null>;
   loadRoles: () => Promise<Role[] | null>;
@@ -195,6 +196,33 @@ export const useRoles = (): UseRolesReturn => {
   }, []);
 
   /**
+   * Alternar el estado activo/inactivo de un rol
+   */
+  const toggleRoleStatus = useCallback(async (roleId: number): Promise<boolean> => {
+    setIsLoading(true);
+    setError(null);
+
+    try {
+      const response = await roleService.toggleRoleStatus(roleId);
+      const isActive = (response as any).is_active ?? response.data?.is_active;
+
+      // Actualizar optimistamente el estado en la lista local
+      setRoles(prevRoles =>
+        prevRoles.map(role =>
+          role.id === roleId ? { ...role, is_active: isActive } : role
+        )
+      );
+      return true;
+    } catch (err) {
+      const msg = extractBackendError(err, 'Error al cambiar estado del rol');
+      setError(msg);
+      return false;
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
+
+  /**
    * Cargar lista de roles
    */
   const loadRoles = useCallback(async (): Promise<Role[] | null> => {
@@ -231,6 +259,7 @@ export const useRoles = (): UseRolesReturn => {
     createRole,
     editRole,
     deleteRole,
+    toggleRoleStatus,
     getRoleById,
     loadPermissions,
     loadRoles,
