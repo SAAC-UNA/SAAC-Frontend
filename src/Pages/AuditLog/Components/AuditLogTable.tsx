@@ -53,7 +53,7 @@ export const AuditLogTable: React.FC<AuditLogTableProps> = ({
         width: firstColumn.width,
         accessor: (log) => log.usuario?.nombre || 'Sistema',
         render: (_, log) => (
-          <div className="flex flex-col pl-2">
+          <div className="flex flex-col">
             <p className={`block font-sans antialiased font-bold leading-normal text-negro-una-2 ${TYPOGRAPHY.table.cell}`} title={log.usuario?.nombre || 'Sistema'}>
               {truncateText(log.usuario?.nombre || 'Sistema', firstColumn.maxLength)}
             </p>

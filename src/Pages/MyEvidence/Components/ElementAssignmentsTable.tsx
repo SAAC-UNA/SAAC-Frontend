@@ -71,7 +71,7 @@ export const ElementAssignmentsTable: React.FC<ElementAssignmentsTableProps> = (
             ? getElementPath(element.elemento_id, allElements)
             : null;
           return (
-            <div className="flex flex-col pl-2">
+            <div className="flex flex-col">
               <p
                 className={`block font-sans antialiased font-bold leading-normal text-negro-una-2 ${TYPOGRAPHY.table.cell}`}
                 title={path ?? nombre}

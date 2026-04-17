@@ -118,7 +118,7 @@ export const RolesTable: React.FC<RolesTableProps> = ({
             align: 'left',
             width: firstColumn.width,
             render: (value: unknown, item: Role) => (
-                <div className="flex flex-col pl-2">
+                <div className="flex flex-col">
                     <p className={`block font-sans antialiased font-bold leading-normal text-negro-una-2 ${TYPOGRAPHY.table.cell}`} title={String(value)}>
                         {truncateText(String(value), firstColumn.maxLength)}
                     </p>
@@ -137,7 +137,7 @@ export const RolesTable: React.FC<RolesTableProps> = ({
                 <div className="flex items-start">
                     <StatusBadge
                         label={`${Array.isArray(role.permissions) ? role.permissions.length : 0} permisos`}
-                        colorClasses={BADGE_COLORS.slate.colorClasses}
+                        colorClasses={BADGE_COLORS.gris.colorClasses}
                     />
                 </div>
             )

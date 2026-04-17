@@ -104,7 +104,7 @@ export const UsersTable: React.FC<UsersTableProps> = ({
             align: 'left',
             width: firstColumn.width,
             render: (value, user) => (
-                <div className="flex flex-col pl-2">
+                <div className="flex flex-col">
                     <p className={`block font-sans antialiased font-bold leading-normal text-negro-una-2 ${TYPOGRAPHY.table.cell}`} title={String(value)}>
                         {truncateText(String(value), firstColumn.maxLength)}
                     </p>

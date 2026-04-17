@@ -103,7 +103,7 @@ export const BlockApprovalTable: React.FC<BlockApprovalTableProps> = ({
       align: 'left',
       width: '38%',
       render: (_, item) => (
-        <div className="flex flex-col pl-2">
+        <div className="flex flex-col">
           <p
             className={`block truncate text-gris-una ${TYPOGRAPHY.table.cell}`}
             title={`${item.nomenclatura} — ${item.descripcion}`}
