@@ -311,7 +311,7 @@ line {
        evitando saltos de layout al abrir modales sin reservar espacio asimétrico */
     overflow-y: scroll;
     scrollbar-width: thin;
-    scrollbar-color: transparent transparent;
+    scrollbar-color: rgba(167, 167, 169, 0.3) transparent;
   }
 
   html::-webkit-scrollbar {
@@ -323,12 +323,8 @@ line {
   }
 
   html::-webkit-scrollbar-thumb {
-    background: transparent;
-    border-radius: 2px;
-  }
-
-  html:hover::-webkit-scrollbar-thumb {
     background: rgba(167, 167, 169, 0.3);
+    border-radius: 2px;
   }
 
   html::-webkit-scrollbar-thumb:hover {

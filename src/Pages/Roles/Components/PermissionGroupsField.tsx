@@ -132,7 +132,7 @@ const PermissionGroupCard: React.FC<PermissionGroupCardProps> = ({
   };
 
   return (
-    <Card className="p-4 border border-gris-una/15 shadow-sm">
+    <Card className="p-4 ">
       <div className="flex flex-col gap-4">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div className="min-w-0 flex-1">

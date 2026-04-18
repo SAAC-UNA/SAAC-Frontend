@@ -13,6 +13,7 @@ import type { DataTableColumn } from '@/Components/Ui/Table/DataTable';
 import type { User } from '@/Services/UserService';
 import { useFirstColumnConfig } from '@/Hooks/UseFirstColumnConfig';
 import { STATUS_BADGE } from '@/Constants/StatusBadges';
+import { TABLE_COLUMN_WIDTHS } from '@/Constants/Components';
 
 interface UsersTableProps {
     onViewUser?: (user: User) => void;
@@ -127,7 +128,7 @@ export const UsersTable: React.FC<UsersTableProps> = ({
                     .join(' ');
                 return (
                 <div className="flex items-start">
-                    <div className={`relative grid items-center px-2 py-1 font-sans text-negro-una-2 rounded-corner select-none whitespace-nowrap ${TYPOGRAPHY.table.cell}`} title={roleLabel}>
+                    <div className={`relative grid items-center py-1 font-sans text-negro-una-2 rounded-corner select-none whitespace-nowrap ${TYPOGRAPHY.table.cell}`} title={roleLabel}>
                         <span>{truncateText(roleLabel, TABLE_TRUNCATE.name)}</span>
                     </div>
                 </div>
@@ -138,6 +139,7 @@ export const UsersTable: React.FC<UsersTableProps> = ({
             key: 'status',
             header: 'Estado',
             align: 'left',
+            width: TABLE_COLUMN_WIDTHS.status,
             render: (_, user) => (
                 <div className="flex items-start">
                     <StatusBadge

@@ -204,7 +204,7 @@ export const SuccessModal: React.FC<SuccessModalProps> = ({
         onClick={handleOverlayClick}
       >
         <div 
-          className={`success-modal-content relative bg-gradient-to-br from-white to-gray-50 p-8 rounded-2xl shadow-2xl text-center max-w-md mx-4 overflow-visible ${isClosing ? 'slideOut' : ''}`}
+          className={`success-modal-content relative bg-gradient-to-br from-white to-gray-50 p-8 rounded-2xl shadow-2xl text-center w-full max-w-md mx-4 overflow-hidden ${isClosing ? 'slideOut' : ''}`}
           role="presentation"
           onClick={(e) => e.stopPropagation()}
         >
@@ -222,7 +222,7 @@ export const SuccessModal: React.FC<SuccessModalProps> = ({
             {title}
           </h2>
           
-          <p className="text-sm text-gray-600 relative z-10">
+          <p className="text-sm text-gray-600 relative z-10 break-words">
             {message}
           </p>
         </div>

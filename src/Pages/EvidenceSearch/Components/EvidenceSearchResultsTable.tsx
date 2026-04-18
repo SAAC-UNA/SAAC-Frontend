@@ -15,6 +15,7 @@ import { EVIDENCE_STATUS_BADGE } from '@/Constants/StatusBadges';
 import { EvidenceResourcesModal } from './EvidenceResourcesModal';
 import { BADGE_COLORS } from '@/Constants/StatusBadges';
 import { formatDateShort } from '@/Utils/DateUtils';
+import { TABLE_COLUMN_WIDTHS } from '@/Constants/Components';
 
 
 export interface EvidenceSearchResultsTableProps {
@@ -112,6 +113,7 @@ export const EvidenceSearchResultsTable: React.FC<EvidenceSearchResultsTableProp
       key: 'recursos',
       header: 'Recursos',
       align: 'left',
+      width: TABLE_COLUMN_WIDTHS.status,
       render: (_, item) => (
         <div className="flex items-start">
           {item.archivos_count > 0 && (
@@ -139,6 +141,7 @@ export const EvidenceSearchResultsTable: React.FC<EvidenceSearchResultsTableProp
       key: 'estado',
       header: 'Estado',
       align: 'left',
+      width: TABLE_COLUMN_WIDTHS.status,
       render: (_, item) => (
         <div className="flex items-start">
           <StatusBadge

@@ -114,7 +114,7 @@ export const RoleFormContent: React.FC<RoleFormContentProps> = ({
   return (
     <form ref={formRef} onSubmit={handleSubmit} className="flex flex-col gap-5">
       <div className="grid grid-cols-1 xl:grid-cols-[320px_minmax(0,1fr)] gap-5 items-start">
-        <Card className="p-4 border border-gris-una/15 shadow-sm">
+        <Card className="p-4 ">
           <div className="space-y-4">
             <div>
               <h3 className="text-sm font-semibold text-negro-una">Datos del rol</h3>

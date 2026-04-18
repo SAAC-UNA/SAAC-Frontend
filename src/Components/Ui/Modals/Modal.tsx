@@ -262,21 +262,22 @@ export const Modal: React.FC<ModalProps> = React.memo(({
                         {heroIcon ?? <cfg.Icon className={`${ICON_SIZES.md} text-blanco-una`}/>}
                       </div>
                       <div className="flex flex-col min-w-0">
-                        <div className="flex items-baseline gap-2 flex-wrap min-w-0">
-                          <p className={cn('font-bold text-white tracking-tight leading-snug', TYPOGRAPHY.modal.title)}>
-                            {title}
-                          </p>
-                          {subtitle && (
-                            <p className={cn('text-white/70 leading-snug', TYPOGRAPHY.modal.subtitle)}>
-                              {subtitle}
-                            </p>
-                          )}
-                        </div>
-                        {heroBadge && (
-                          <span className={cn('inline-flex items-center gap-1.5 mt-2 px-2.5 py-1 rounded-full bg-white/18 border border-white/35 text-white/95 font-semibold w-fit', TYPOGRAPHY.badge)}>
-                            <span className="w-1.5 h-1.5 rounded-full bg-white/90" />
-                            {heroBadge}
-                          </span>
+                        <p className={cn('font-bold text-white tracking-tight leading-snug wrap-break-word', TYPOGRAPHY.modal.title)}>
+                          {title}
+                        </p>
+                        {(subtitle || heroBadge) && (
+                          <div className="flex items-center gap-2 mt-0.5 flex-wrap">
+                            {subtitle && (
+                              <span className={cn('text-white/70 leading-snug', TYPOGRAPHY.form.helper)}>
+                                {subtitle}
+                              </span>
+                            )}
+                            {heroBadge && (
+                              <span className={cn('text-white/70 leading-snug', TYPOGRAPHY.form.helper)}>
+                                · {heroBadge}
+                              </span>
+                            )}
+                          </div>
                         )}
                       </div>
                     </div>
@@ -295,7 +296,8 @@ export const Modal: React.FC<ModalProps> = React.memo(({
                 </div>
               </div>
             )}
-            {cfg && <div className="h-9 flex-shrink-0" />}
+            {/** Espacio entre card de color y el texto del modal */}
+            {cfg && <div className="h-10 shrink-0" />}
 
             <div className="flex flex-col flex-1 min-h-0 overflow-hidden rounded-corner">
             {/* ════════════════════════════════════
@@ -324,7 +326,7 @@ export const Modal: React.FC<ModalProps> = React.memo(({
                 BODY
             ════════════════════════════════════ */}
             {children && (
-              <div className="flex-1 overflow-y-auto px-4 py-3">
+              <div className="flex-1 overflow-y-auto px-4 py-4">
                 {children}
               </div>
             )}

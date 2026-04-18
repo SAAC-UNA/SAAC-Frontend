@@ -177,7 +177,7 @@ const PermissionGroupMatrix: React.FC<{
   }, [selectedValues, visibleActions]);
 
   return (
-    <Card className="overflow-hidden border border-gris-una/15 shadow-sm">
+    <Card className="overflow-hidden ">
       <div className="flex items-center justify-between gap-3 border-b border-gris-una/10 bg-blanco-una px-3 py-2">
         <div className="min-w-0">
           <div className="flex flex-wrap items-center gap-2">
@@ -190,7 +190,7 @@ const PermissionGroupMatrix: React.FC<{
 
         <Button
           type="button"
-          variant={allSelected ? 'outline' : 'ghost'}
+          variant="outline"
           size="sm"
           onClick={toggleGroup}
           className="!w-auto shrink-0 !shadow-none"
@@ -224,7 +224,7 @@ export const PermissionMatrixField: React.FC<PermissionMatrixFieldProps> = ({
 
   if (loading && groupCount === 0) {
     return (
-      <Card className="p-4 border border-gris-una/15 shadow-sm">
+      <Card className="p-4 ">
         <p className={`${TYPOGRAPHY.form.helper} text-gris-una`}>Cargando permisos disponibles...</p>
       </Card>
     );
@@ -232,7 +232,7 @@ export const PermissionMatrixField: React.FC<PermissionMatrixFieldProps> = ({
 
   if (groupCount === 0) {
     return (
-      <Card className="p-4 border border-gris-una/15 shadow-sm">
+      <Card className="p-4 ">
         <p className={`${TYPOGRAPHY.form.helper} text-gris-una`}>{emptyLabel}</p>
       </Card>
     );
