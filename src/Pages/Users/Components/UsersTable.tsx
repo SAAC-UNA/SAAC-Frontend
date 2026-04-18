@@ -212,7 +212,7 @@ export const UsersTable: React.FC<UsersTableProps> = ({
                 loading={isLoading}
                 emptyMessage={
                     debouncedSearchQuery
-                        ? `No se encontraron usuarios que coincidan con "${debouncedSearchQuery}"`
+                        ? "No se encontraron usuarios que coincidan con los filtros de búsqueda"
                         : "No hay usuarios registrados aún."
                 }
                 unstyled={unstyled}

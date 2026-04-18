@@ -214,7 +214,7 @@ export const RolesTable: React.FC<RolesTableProps> = ({
                 loading={isLoading}
                 emptyMessage={
                     searchQuery 
-                        ? `No se encontraron roles que coincidan con "${searchQuery}"`
+                        ? "No se encontraron roles que coincidan con los filtros de búsqueda"
                         : "No hay roles creados aún."
                 }
                 unstyled={unstyled}
