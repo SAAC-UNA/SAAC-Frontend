@@ -6,10 +6,7 @@
 import React, { useState, useEffect, useCallback, useMemo } from "react";
 import { PageHeader, ScreenContainer } from "@/Components/Ui/Index";
 import { SearchInput } from "@/Components/Ui/Forms/SearchInput";
-import {
-  FilterButton,
-  type FilterOption,
-} from "@/Components/Ui/Buttons/FilterButton";
+
 import { extensionRequestService } from "@/Services/ExtensionRequestService";
 import { flexibleExtensionRequestService } from "@/Services/FlexibleExtensionRequestService";
 import { useToast } from "@/Context/ToastContext";
@@ -21,10 +18,10 @@ import { ManageExtensionRequestsTable } from "./Components/ManageExtensionReques
 import { ReviewExtensionRequestModal } from "@/Pages/ExtensionRequest/Components/ManageExtensionRequestDetailsModal";
 import { CreateConfirmationModal } from "@/Components/Ui/Modals/CreateConfirmationModal";
 import { DeleteConfirmationModal } from "@/Components/Ui/Modals/DeleteConfirmationModal";
+import { SuccessModal } from "@/Components/Ui/Modals/SuccessModal";
 import type {
   ExtensionRequest,
   ExtensionRequestPaginatedResponse,
-  ExtensionRequestStatus,
   ReviewFormData,
 } from "@/Types/ExtensionRequestTypes";
 import { SystemIcons } from "@/Components/Ui/Icons/SystemIcons";
@@ -53,11 +50,6 @@ export const ManageExtensionRequestsPage: React.FC = () => {
   const error = tradState.error;
 
   const [searchQuery, setSearchQuery] = useState("");
-  const [filterState, setFilterState] = useState<{
-    filtroEstado: ExtensionRequestStatus | "todos";
-  }>({ filtroEstado: "todos" });
-  const filtroEstado = filterState.filtroEstado;
-
   // Estado para el modal de revisión (detalles)
   const [selectedSolicitud, setSelectedSolicitud] =
     useState<ExtensionRequest | null>(null);
@@ -69,17 +61,12 @@ export const ManageExtensionRequestsPage: React.FC = () => {
     loading: boolean;
   }>({ action: null, solicitud: null, loading: false });
 
-  // Opciones para el filtro de estado
-  const estadoOptions: FilterOption<ExtensionRequestStatus | "todos">[] = [
-    { value: "todos", label: "Todos" },
-    { value: "pendiente", label: "Pendiente" },
-    { value: "aprobada", label: "Aprobada" },
-    { value: "rechazada", label: "Rechazada" },
-  ];
+  // Estado para el modal de éxito de aprobación
+  const [successModalOpen, setSuccessModalOpen] = useState(false);
 
   useEffect(() => {
     loadSolicitudes();
-  }, [filtroEstado]);
+  }, []);
 
   /** Obtener todas las páginas de un endpoint paginado */
   const fetchAllPages = async (
@@ -107,20 +94,13 @@ export const ManageExtensionRequestsPage: React.FC = () => {
       setTradState((prev) => ({ ...prev, loading: true, error: null }));
       setFlexState((prev) => ({ ...prev, loading: isFlexible, error: null }));
 
-      const baseFilters = {
-        estado: filtroEstado === "todos" ? undefined : filtroEstado,
-      };
+      const baseFilters = {};
 
       // Solo llamar al servicio que corresponde al modelo del ciclo activo
       if (!isFlexible) {
-        const tradFetcher =
-          filtroEstado === "pendiente"
-            ? extensionRequestService.getPendingRequests.bind(
-                extensionRequestService,
-              )
-            : extensionRequestService.getAllRequests.bind(
-                extensionRequestService,
-              );
+        const tradFetcher = extensionRequestService.getAllRequests.bind(
+          extensionRequestService,
+        );
         const tradRes = await fetchAllPages(tradFetcher, baseFilters).catch(
           (e: Error) => { throw e; }
         );
@@ -130,14 +110,9 @@ export const ManageExtensionRequestsPage: React.FC = () => {
       }
 
       if (!isTradicional) {
-        const flexFetcher =
-          filtroEstado === "pendiente"
-            ? flexibleExtensionRequestService.getPendingRequests.bind(
-                flexibleExtensionRequestService,
-              )
-            : flexibleExtensionRequestService.getAllRequests.bind(
-                flexibleExtensionRequestService,
-              );
+        const flexFetcher = flexibleExtensionRequestService.getAllRequests.bind(
+          flexibleExtensionRequestService,
+        );
         const flexRes = await fetchAllPages(flexFetcher, baseFilters).catch(
           (e: Error) => { throw e; }
         );
@@ -149,15 +124,11 @@ export const ManageExtensionRequestsPage: React.FC = () => {
       // modelo desconocido: cargar ambos (fallback)
       const [tradRes, flexRes] = await Promise.allSettled([
         fetchAllPages(
-          filtroEstado === "pendiente"
-            ? extensionRequestService.getPendingRequests.bind(extensionRequestService)
-            : extensionRequestService.getAllRequests.bind(extensionRequestService),
+          extensionRequestService.getAllRequests.bind(extensionRequestService),
           baseFilters,
         ),
         fetchAllPages(
-          filtroEstado === "pendiente"
-            ? flexibleExtensionRequestService.getPendingRequests.bind(flexibleExtensionRequestService)
-            : flexibleExtensionRequestService.getAllRequests.bind(flexibleExtensionRequestService),
+          flexibleExtensionRequestService.getAllRequests.bind(flexibleExtensionRequestService),
           baseFilters,
         ),
       ]);
@@ -286,12 +257,7 @@ export const ManageExtensionRequestsPage: React.FC = () => {
         );
       }
 
-      showToast({
-        type: "success",
-        title: "Solicitud Aprobada",
-        message:
-          "La solicitud ha sido aprobada correctamente y la fecha límite ha sido actualizada.",
-      });
+      setSuccessModalOpen(true);
 
       await loadSolicitudes();
       handleCloseModal();
@@ -360,19 +326,12 @@ export const ManageExtensionRequestsPage: React.FC = () => {
           isAuthenticated && canManageRequests ? (
             <div className="flex flex-col sm:flex-row w-full gap-2 shrink-0 lg:w-auto">
               <SearchInput
-                placeholder="Buscar por solicitante, email o motivo..."
+                placeholder="Buscar por solicitante, email..."
                 value={searchQuery}
                 onChange={setSearchQuery}
                 className="w-full sm:w-72"
               />
-              <FilterButton
-                tooltipText="Filtrar por estado"
-                options={estadoOptions}
-                value={filtroEstado}
-                onChange={(value) => {
-                  setFilterState({ filtroEstado: value });
-                }}
-              />
+
             </div>
           ) : undefined
         }
@@ -412,7 +371,6 @@ export const ManageExtensionRequestsPage: React.FC = () => {
             isLoading={loading}
             error={error}
             searchQuery={searchQuery}
-            filterEstado={filtroEstado}
             itemsPerPage={TABLE_PAGE_SIZE.standard}
             onRetry={loadSolicitudes}
             onReviewRequest={handleReviewRequest}
@@ -426,6 +384,8 @@ export const ManageExtensionRequestsPage: React.FC = () => {
               isOpen={!!selectedSolicitud}
               onClose={handleCloseModal}
               solicitud={selectedSolicitud}
+              onApprove={handleOpenApprove}
+              onReject={handleOpenReject}
             />
           )}
 
@@ -439,6 +399,14 @@ export const ManageExtensionRequestsPage: React.FC = () => {
             confirmLabel="Aprobar"
             isLoading={confirmState.loading}
             variant="success"
+          />
+
+          {/* Modal de éxito al aprobar */}
+          <SuccessModal
+            isOpen={successModalOpen}
+            title="Solicitud Aprobada"
+            message="La solicitud ha sido aprobada correctamente y la fecha límite ha sido actualizada."
+            onClose={() => setSuccessModalOpen(false)}
           />
 
           {/* Confirmación de rechazo */}

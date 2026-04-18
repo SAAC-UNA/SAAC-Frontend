@@ -9,6 +9,7 @@ import { SystemIcons } from '@/Components/Ui/Icons/SystemIcons';
 import { ICON_SIZES } from '@/Constants/Components';
 import { TYPOGRAPHY } from '@/Constants/Typography';
 import { cn } from '@/Utils/ClassNames';
+import { TableActionButton } from '@/Components/Ui/Buttons/TableActionButton';
 import type { ExtensionRequest } from '@/Types/ExtensionRequestTypes';
 import { formatDateShort } from '@/Utils/DateUtils';
 
@@ -16,6 +17,8 @@ interface ReviewExtensionRequestModalProps {
   isOpen: boolean;
   onClose: () => void;
   solicitud: ExtensionRequest;
+  onApprove?: (solicitud: ExtensionRequest) => void;
+  onReject?: (solicitud: ExtensionRequest) => void;
 }
 
 const InfoCell: React.FC<{ label: string; children: React.ReactNode; className?: string }> = ({
@@ -39,7 +42,10 @@ export const ReviewExtensionRequestModal: React.FC<ReviewExtensionRequestModalPr
   isOpen,
   onClose,
   solicitud,
+  onApprove,
+  onReject,
 }) => {
+  const isPending = solicitud.estado === 'pendiente';
   return (
     <DetailsModal
       isOpen={isOpen}
@@ -127,11 +133,34 @@ export const ReviewExtensionRequestModal: React.FC<ReviewExtensionRequestModalPr
         <Separator />
 
         {/* div7 — Motivo */}
-        <InfoCell label="Motivo" className="col-span-6">
+        <div className="col-span-6 flex flex-col gap-1">
+          <div className="flex items-center justify-between">
+            <span className={cn('uppercase tracking-wider font-semibold text-gris-una-2', TYPOGRAPHY.modal.subtitle)}>
+              Motivo
+            </span>
+            {isPending && (onApprove || onReject) && (
+              <div className="flex gap-1">
+                {onApprove && (
+                  <TableActionButton
+                    action="approveRequest"
+                    tooltip="Aprobar solicitud"
+                    onClick={() => { onApprove(solicitud); onClose(); }}
+                  />
+                )}
+                {onReject && (
+                  <TableActionButton
+                    action="rejectRequest"
+                    tooltip="Rechazar solicitud"
+                    onClick={() => { onReject(solicitud); onClose(); }}
+                  />
+                )}
+              </div>
+            )}
+          </div>
           <p className={cn(TYPOGRAPHY.modal.body, 'text-gris-una-2 whitespace-pre-wrap break-all')}>
             {solicitud.motivo}
           </p>
-        </InfoCell>
+        </div>
 
         <Separator />
 
