@@ -114,28 +114,24 @@ export const EvidenceSearchResultsTable: React.FC<EvidenceSearchResultsTableProp
       header: 'Recursos',
       align: 'left',
       width: TABLE_COLUMN_WIDTHS.status,
-      render: (_, item) => (
-        <div className="flex items-start">
-          {item.archivos_count > 0 && (
-            <StatusBadge
-              label={`${item.archivos_count} ${item.archivos_count === 1 ? 'archivo' : 'archivos'}`}
-              colorClasses={BADGE_COLORS.info.colorClasses}
-            />
-          )}
-          {item.enlaces_count > 0 && (
-            <StatusBadge
-              label={`${item.enlaces_count} ${item.enlaces_count === 1 ? 'enlace' : 'enlaces'}`}
-              colorClasses={BADGE_COLORS.gris.colorClasses}
-            />
-          )}
-          {item.archivos_count === 0 && item.enlaces_count === 0 && (
-            <StatusBadge
-              label="Sin recursos"
-              colorClasses={BADGE_COLORS.slate.colorClasses}
-            />
-          )}
-        </div>
-      )
+      render: (_, item) => {
+        const total = item.archivos_count + item.enlaces_count;
+        return (
+          <div className="flex items-start">
+            {total > 0 ? (
+              <StatusBadge
+                label={`${total} ${total === 1 ? 'recurso' : 'recursos'}`}
+                colorClasses={BADGE_COLORS.info.colorClasses}
+              />
+            ) : (
+              <StatusBadge
+                label="Sin recursos"
+                colorClasses={BADGE_COLORS.gris.colorClasses}
+              />
+            )}
+          </div>
+        );
+      }
     },
     {
       key: 'estado',
@@ -162,11 +158,6 @@ export const EvidenceSearchResultsTable: React.FC<EvidenceSearchResultsTableProp
             tooltip="Ver detalles"
             onClick={() => onViewDetails(item.evidencia_id)}
           />
-          <TableActionButton
-            action="list"
-            tooltip="Ver recursos del entregable"
-            onClick={() => openResourcesModal(item)}
-          />
         </div>
       )
     },
@@ -180,7 +171,7 @@ export const EvidenceSearchResultsTable: React.FC<EvidenceSearchResultsTableProp
         title=""
         searchable={false}
         loading={loading}
-        emptyMessage="No existen evidencias que cumplan con los filtros aplicados. Intenta ajustar los criterios de búsqueda."
+        emptyMessage="No existen elementos que cumplan con los filtros aplicados."
         pagination={totalPages > 1 ? {
           currentPage,
           totalPages,

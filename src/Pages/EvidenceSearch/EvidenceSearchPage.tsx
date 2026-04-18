@@ -187,13 +187,6 @@ export const EvidenceSearchPage: React.FC = () => {
           loading: false,
         }));
 
-        if (mappedResults.length === 0) {
-          showToast({
-            type: "info",
-            title: "Sin resultados",
-            message: "No se encontraron evidencias con los filtros aplicados",
-          });
-        }
       } catch (error) {
         setSearchState((prev) => ({
           ...prev,

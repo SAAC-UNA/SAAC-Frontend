@@ -8,6 +8,10 @@
  */
 
 import React, { useState, useEffect, useCallback, useMemo } from "react";
+import { Tooltip, TooltipTrigger, TooltipContent } from "@/Components/Ui/Index";
+import { Button } from "@/Components/Ui/Buttons/Button";
+import { SystemIcons } from "@/Components/Ui/Icons/SystemIcons";
+import { ICON_SIZES } from "@/Constants/Components";
 import { CustomSelect, type SelectOption } from "@/Components/Ui/Index";
 import { Card } from "@/Components/Ui/Layout/Card";
 import { ChainedSingleSelect } from "@/Components/Ui/Forms/ChainedSingleSelect";
@@ -179,10 +183,10 @@ export const EvidenceSearchFiltersPanel: React.FC<
   return (
     <Card className="p-4 w-full">
       <div className="flex items-end gap-4">
-        <div className="flex-1 grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
+        <div className={`flex-1 grid gap-4 grid-cols-1 ${isFlexible ? 'md:grid-cols-1' : 'md:grid-cols-3'}`}>
           {/* Modo flexible: filtros jerárquicos por nivel */}
           {isFlexible ? (
-            <div className="md:col-span-1 xl:col-span-3">
+            <div>
               <ChainedSingleSelect
                 elements={flexElements}
                 value={pautaId ? parseInt(pautaId, 10) : null}
@@ -241,13 +245,20 @@ export const EvidenceSearchFiltersPanel: React.FC<
         </div>
 
         {hayFiltrosActivos && (
-          <button
-            type="button"
-            onClick={handleLimpiar}
-            className="text-xs text-azul-una hover:underline whitespace-nowrap pb-1"
-          >
-            Limpiar filtros
-          </button>
+          <Tooltip>
+            <TooltipTrigger>
+              <Button
+                type="button"
+                variant="ghost"
+                onClick={handleLimpiar}
+              >
+                <SystemIcons.interface.clearFilters className={ICON_SIZES.md} />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent side="top">
+              <p>Limpiar filtros</p>
+            </TooltipContent>
+          </Tooltip>
         )}
       </div>
     </Card>

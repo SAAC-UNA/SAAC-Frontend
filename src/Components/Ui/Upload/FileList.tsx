@@ -205,7 +205,7 @@ export const FileList: React.FC<FileListProps> = ({
     }
   };
 
-  if (loading) return <div className="relative min-h-[60px]"><LoadingSpinner variant="loader" /></div>;
+  if (loading) return <div className="relative min-h-[60px]"><LoadingSpinner variant="loader" size="sm" /></div>;
   if (files.length === 0) return <p className={`text-gris-una px-3 py-1.5 ${TYPOGRAPHY.table.helper}`}>{emptyMessage}</p>;
 
   return (

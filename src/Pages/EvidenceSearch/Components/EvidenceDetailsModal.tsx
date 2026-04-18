@@ -84,7 +84,7 @@ const EvidenciaResponsablesPanelAdmin: React.FC<
   if (loading)
     return (
       <div className="relative min-h-[60px]">
-        <LoadingSpinner variant="loader" />
+        <LoadingSpinner variant="loader" size="sm" />
       </div>
     );
   if (groups.length === 0)
@@ -132,7 +132,7 @@ const EvidenciaResponsablesPanelAdmin: React.FC<
                   <Tooltip>
                     <TooltipTrigger asChild>
                       <span
-                        className={`text-gris-una flex-shrink-0 cursor-default ${TYPOGRAPHY.table.helper}`}
+                        className={`text-gris-una shrink-0 w-20 cursor-default ${TYPOGRAPHY.table.helper}`}
                       >
                         {formatDate(group.fecha_asignacion as string | null)}
                       </span>
@@ -144,21 +144,23 @@ const EvidenciaResponsablesPanelAdmin: React.FC<
                   <Tooltip>
                     <TooltipTrigger asChild>
                       <span
-                        className={`text-gris-una flex-shrink-0 cursor-default ${TYPOGRAPHY.table.helper}`}
+                        className={`text-gris-una shrink-0 w-20 cursor-default ${TYPOGRAPHY.table.helper}`}
                       >
                         {formatDate(group.fecha_limite as string | null)}
                       </span>
                     </TooltipTrigger>
                     <TooltipContent side="top">Fecha límite</TooltipContent>
                   </Tooltip>
-                  {estado && (
-                    <StatusBadge
-                      label={ASSIGNMENT_STATUS_BADGE[estado].label}
-                      colorClasses={
-                        ASSIGNMENT_STATUS_BADGE[estado].colorClasses
-                      }
-                    />
-                  )}
+                  <div className="shrink-0 w-24 flex items-center">
+                    {estado && (
+                      <StatusBadge
+                        label={ASSIGNMENT_STATUS_BADGE[estado].label}
+                        colorClasses={
+                          ASSIGNMENT_STATUS_BADGE[estado].colorClasses
+                        }
+                      />
+                    )}
+                  </div>
                 </div>
               ),
             }}
@@ -238,28 +240,24 @@ export const EvidenceDetailsModal: React.FC<EvidenceDetailsModalProps> = ({
       header: "Recursos",
       align: "left",
       width: TABLE_COLUMN_WIDTHS.status,
-      render: (_, item) => (
-        <div className="flex items-start">
-          {item.archivos_count > 0 && (
-            <StatusBadge
-              label={`${item.archivos_count} ${item.archivos_count === 1 ? "archivo" : "archivos"}`}
-              colorClasses={BADGE_COLORS.info.colorClasses}
-            />
-          )}
-          {item.enlaces_count > 0 && (
-            <StatusBadge
-              label={`${item.enlaces_count} ${item.enlaces_count === 1 ? "enlace" : "enlaces"}`}
-              colorClasses={BADGE_COLORS.gris.colorClasses}
-            />
-          )}
-          {item.archivos_count === 0 && item.enlaces_count === 0 && (
-            <StatusBadge
-              label="Sin recursos"
-              colorClasses={BADGE_COLORS.slate.colorClasses}
-            />
-          )}
-        </div>
-      ),
+      render: (_, item) => {
+        const total = item.archivos_count + item.enlaces_count;
+        return (
+          <div className="flex items-start">
+            {total > 0 ? (
+              <StatusBadge
+                label={`${total} ${total === 1 ? "recurso" : "recursos"}`}
+                colorClasses={BADGE_COLORS.info.colorClasses}
+              />
+            ) : (
+              <StatusBadge
+                label="Sin recursos"
+                colorClasses={BADGE_COLORS.slate.colorClasses}
+              />
+            )}
+          </div>
+        );
+      },
     },
     {
       key: "estado",
@@ -487,7 +485,7 @@ export const EvidenceDetailsModal: React.FC<EvidenceDetailsModalProps> = ({
         subtitle={criterio?.criterio_nomenclatura}
         variant="info"
         size="xl"
-        maxHeight="xl"
+        maxHeight="auto"
         heroIcon={
           <SystemIcons.modal.document
             className={`${ICON_SIZES.md} text-blanco-una`}

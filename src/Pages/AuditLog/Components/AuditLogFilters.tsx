@@ -224,7 +224,7 @@ export const AuditLogFilters: React.FC<AuditLogFiltersProps> = ({
                 onClick={handleClearFilters}
                 disabled={isLoading}
               >
-                <SystemIcons.interface.refresh className={ICON_SIZES.md} />
+                <SystemIcons.interface.clearFilters className={ICON_SIZES.md} />
               </Button>
             </TooltipTrigger>
             <TooltipContent side="top">
