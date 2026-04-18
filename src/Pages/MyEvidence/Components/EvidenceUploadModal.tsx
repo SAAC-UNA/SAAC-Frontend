@@ -320,8 +320,10 @@ export const EvidenceUploadPage: React.FC<EvidenceUploadPageProps> = ({
     <Modal
       isOpen={isOpen}
       onClose={handleClose}
-      title={`Subir evidencias — ${nombre}`}
+      title={`Subir recursos: ${nombre}`}
+      variant="warning"
       size="xl"
+      maxHeight="xl"
       footerButtons={
         <>
           <Button variant="outline" onClick={handleClose} disabled={isUploading} standardWidth>

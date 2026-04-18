@@ -122,7 +122,7 @@ export const ElementAssignmentDetailModal: React.FC<ElementAssignmentDetailModal
         isOpen={true}
         onClose={onClose}
         title="Detalles del entregable"
-        size="lg"
+        size="xl"
         variant="neutral"
         heroIcon={<SystemIcons.work.myEvidences className={`${ICON_SIZES.md} text-blanco-una`} />}
       >
@@ -170,8 +170,8 @@ export const ElementAssignmentDetailModal: React.FC<ElementAssignmentDetailModal
       onClose={onClose}
       title="Detalles del entregable"
       subtitle={itemName}
-      size="lg"
-      maxHeight="lg"
+      size="xl"
+      maxHeight="xl"
       variant={modalVariant}
       heroIcon={heroIcon}
     >

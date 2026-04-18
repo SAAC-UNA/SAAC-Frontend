@@ -162,7 +162,7 @@ export const EvidenceAssignmentDetail: React.FC<EvidenceAssignmentDetailProps> =
         isOpen={true}
         onClose={onClose}
         title="Detalles de la evidencia"
-        size="lg"
+        size="xl"
         variant="neutral"
         heroIcon={<SystemIcons.work.myEvidences className={`${ICON_SIZES.md} text-blanco-una`} />}
       >
@@ -213,8 +213,8 @@ export const EvidenceAssignmentDetail: React.FC<EvidenceAssignmentDetailProps> =
       onClose={onClose}
       title="Detalles de la evidencia"
       subtitle={itemName}
-      size="lg"
-      maxHeight="lg"
+      size="xl"
+      maxHeight="xl"
       variant={modalVariant}
       heroIcon={modalHeroIcon}
     >

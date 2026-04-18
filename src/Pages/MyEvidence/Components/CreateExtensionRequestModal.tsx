@@ -109,7 +109,7 @@ export const CreateExtensionRequestModal: React.FC<CreateExtensionRequestModalPr
       isOpen={isOpen}
       onClose={handleClose}
       title="Solicitar Ampliación de Plazo"
-      size="md"
+      size="lg"
       variant="warning"
       heroIcon={<SystemIcons.interface.clock className={`${ICON_SIZES.md} text-blanco-una`} />}
       footerButtons={
