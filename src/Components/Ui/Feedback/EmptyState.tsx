@@ -105,7 +105,7 @@ export const EmptyState: React.FC<EmptyStateProps> = ({
       {/* Descripción */}
       {finalDescription && (
         <p className={cn(
-          "text-gray-500",
+          "text-gray-500 wrap-break-word w-full max-w-sm text-center",
           compact ? "text-xs" : "text-sm"
         )}>
           {finalDescription}

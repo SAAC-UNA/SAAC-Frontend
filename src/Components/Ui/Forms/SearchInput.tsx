@@ -44,6 +44,7 @@ export const SearchInput: React.FC<SearchInputProps> = ({
           value={value}
           onChange={handleChange}
           disabled={disabled}
+          maxLength={200}
         />
       </div>
     </div>

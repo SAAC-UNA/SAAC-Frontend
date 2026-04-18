@@ -75,10 +75,14 @@ export const UsersTable: React.FC<UsersTableProps> = ({
         }
         
         const query = debouncedSearchQuery.toLowerCase();
+        const statusLabel = (status: string) =>
+            status === 'active' ? 'activo' : status === 'inactive' ? 'inactivo' : status;
         return users.filter(user =>
             user.name.toLowerCase().includes(query) ||
             user.email.toLowerCase().includes(query) ||
-            (user.role && user.role.toLowerCase().includes(query))
+            (user.role && user.role.toLowerCase().includes(query)) ||
+            statusLabel(user.status).includes(query) ||
+            user.status.toLowerCase().includes(query)
         );
     }, [users, debouncedSearchQuery]);
 
