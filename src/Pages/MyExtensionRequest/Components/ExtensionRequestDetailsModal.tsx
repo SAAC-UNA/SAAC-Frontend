@@ -46,7 +46,6 @@ export const ExtensionRequestDetailsModal: React.FC<ExtensionRequestDetailsModal
       isOpen={isOpen}
       onClose={onClose}
       title="Mi Solicitud de Ampliación"
-      subtitle={`#${solicitud.solicitud_ampliacion_id}`}
       size="lg"
       maxHeight="lg"
       variant="info"

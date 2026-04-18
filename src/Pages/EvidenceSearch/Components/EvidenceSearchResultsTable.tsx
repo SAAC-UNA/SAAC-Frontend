@@ -14,7 +14,7 @@ import { useFirstColumnConfig } from '@/Hooks/UseFirstColumnConfig';
 import { EVIDENCE_STATUS_BADGE } from '@/Constants/StatusBadges';
 import { EvidenceResourcesModal } from './EvidenceResourcesModal';
 import { BADGE_COLORS } from '@/Constants/StatusBadges';
-import { formatDateShort } from '@/Utils/DateUtils';
+import { formatDate } from '@/Utils/DateUtils';
 import { TABLE_COLUMN_WIDTHS } from '@/Constants/Components';
 
 
@@ -86,7 +86,7 @@ export const EvidenceSearchResultsTable: React.FC<EvidenceSearchResultsTableProp
             </p>
           </div>
           <p className={`${TYPOGRAPHY.table.helper} text-gris-una mt-1.5 -mb-0.5`}>
-            {formatDateShort(item.fecha_publicacion)}
+            {formatDate(item.fecha_publicacion)}
           </p>
         </div>
       )
