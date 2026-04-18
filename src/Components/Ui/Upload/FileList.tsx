@@ -46,18 +46,18 @@ export const getFileTypeLabel = (file: FileModel): string => {
 export const FileRowContent: React.FC<{ file: FileModel }> = ({ file }) => (
   <div className="flex items-center gap-3 flex-1 min-w-0">
     <FileTypeIcon filename={file.nombre_original} isLink={file.tipo === 'enlace'} size="sm" />
-    <span className={`font-medium text-negro-una-2 truncate ${TYPOGRAPHY.table.helper}`} title={file.nombre_original}>
+    <span className={`font-medium text-negro-una-2 truncate flex-1 min-w-0 ${TYPOGRAPHY.table.helper}`} title={file.nombre_original}>
       {file.nombre_original}
     </span>
     <Tooltip>
       <TooltipTrigger asChild>
-        <span className={`text-gris-una flex-shrink-0 ml-auto cursor-default ${TYPOGRAPHY.table.helper}`}>{getFileTypeLabel(file)}</span>
+        <span className={`text-gris-una shrink-0 w-12 cursor-default ${TYPOGRAPHY.table.helper}`}>{getFileTypeLabel(file)}</span>
       </TooltipTrigger>
       <TooltipContent side="top">Tipo de archivo</TooltipContent>
     </Tooltip>
     <Tooltip>
       <TooltipTrigger asChild>
-        <span className={`text-gris-una flex-shrink-0 cursor-default ${TYPOGRAPHY.table.helper}`}>
+        <span className={`text-gris-una shrink-0 w-16 cursor-default ${TYPOGRAPHY.table.helper}`}>
           {file.tamanio ? formatFileSize(file.tamanio) : '—'}
         </span>
       </TooltipTrigger>
@@ -103,11 +103,15 @@ export const FileDownloadAction: React.FC<{ file: FileModel }> = ({ file }) => {
   return (
     <TableActionButton
       action="custom"
-      customIcon={SystemIcons.actions.download({ className: TABLE_ACTION_BUTTON.icon })}
-      customVariant="tablePower"
-      tooltip={file.tipo === 'archivo' ? 'Descargar' : 'No disponible para enlaces'}
+      customIcon={
+        file.tipo === 'enlace'
+          ? SystemIcons.actions.copyLink({ className: TABLE_ACTION_BUTTON.icon })
+          : SystemIcons.actions.download({ className: TABLE_ACTION_BUTTON.icon })
+      }
+      customVariant={file.tipo === 'enlace' ? 'tableView' : 'tablePower'}
+      tooltip={file.tipo === 'enlace' ? 'Copiar enlace' : 'Descargar'}
       onClick={handleDownload}
-      disabled={loading || file.tipo !== 'archivo'}
+      disabled={loading}
     />
   );
 };
@@ -214,11 +218,15 @@ export const FileList: React.FC<FileListProps> = ({
               <div className="flex items-center gap-1 flex-shrink-0" onClick={e => e.stopPropagation()}>
                 <TableActionButton
                   action="custom"
-                  customIcon={SystemIcons.actions.download({ className: TABLE_ACTION_BUTTON.icon })}
-                  customVariant="tablePower"
-                  tooltip={file.tipo === 'archivo' ? 'Descargar' : 'No disponible para enlaces'}
+                  customIcon={
+                    file.tipo === 'enlace'
+                      ? SystemIcons.actions.copyLink({ className: TABLE_ACTION_BUTTON.icon })
+                      : SystemIcons.actions.download({ className: TABLE_ACTION_BUTTON.icon })
+                  }
+                  customVariant={file.tipo === 'enlace' ? 'tableView' : 'tablePower'}
+                  tooltip={file.tipo === 'enlace' ? 'Copiar enlace' : 'Descargar'}
                   onClick={() => handleDownload(file)}
-                  disabled={actionLoading === file.archivo_id || file.tipo !== 'archivo'}
+                  disabled={actionLoading === file.archivo_id}
                 />
                 {onDelete && (
                   <TableActionButton
