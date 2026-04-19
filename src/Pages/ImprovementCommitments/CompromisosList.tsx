@@ -174,9 +174,9 @@ const CompromisosList: React.FC = () => {
                   <Button
                     variant="outline"
                     onClick={() =>
-                      navigate(
-                        `/compromisos/ver/${compromiso.compromiso_mejora_id}`,
-                      )
+                      navigate(ROUTES.COMMITMENTS_DETAIL, {
+                        state: { id: compromiso.compromiso_mejora_id },
+                      })
                     }
                   >
                     Ver detalle

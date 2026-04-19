@@ -12,7 +12,7 @@
  * - /usuarios/editar/:id -> Editar usuario
  */
 import React, { useEffect, useState } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { Navigate, useLocation, useNavigate } from "react-router-dom";
 import { ROUTES } from "@/Constants/ROUTES";
 import { EditUserForm } from "./Components/EditUserForm";
 import {
@@ -30,7 +30,8 @@ import { LAYOUT } from "@/Constants/Layout";
 import { useToast } from "@/Context/ToastContext";
 
 const EditUserPage: React.FC = () => {
-  const { id } = useParams<{ id: string }>();
+  const location = useLocation();
+  const id = (location.state as { id?: number } | null)?.id;
   const navigate = useNavigate();
   const { showToast } = useToast();
 
@@ -64,7 +65,8 @@ const EditUserPage: React.FC = () => {
 
   // Cargar datos del usuario al montar el componente
   useEffect(() => {
-    loadUserData(id ? parseInt(id) : 0);
+    if (!id) return;
+    loadUserData(id);
   }, [id]);
 
   /**
@@ -192,9 +194,14 @@ const EditUserPage: React.FC = () => {
    */
   const handleRetry = () => {
     if (id) {
-      loadUserData(parseInt(id));
+      loadUserData(id);
     }
   };
+
+  // Guard: si no hay ID en state (p.ej. acceso directo o refresh), volver al listado
+  if (!id) {
+    return <Navigate to={ROUTES.USERS} replace />;
+  }
 
   // Estado de carga
   if (isLoadingUser) {

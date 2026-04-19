@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { Navigate, useLocation, useNavigate } from "react-router-dom";
 import { ROUTES } from "@/Constants/ROUTES";
 import {
   Button,
@@ -57,7 +57,12 @@ const getStatusBadge = (estado?: string, isOverdue?: boolean) => {
 
 const CompromisoDetalle: React.FC = () => {
   const navigate = useNavigate();
-  const { id } = useParams();
+  const location = useLocation();
+  const id = (location.state as { id?: number } | null)?.id;
+
+  if (!id) {
+    return <Navigate to={ROUTES.COMMITMENTS} replace />;
+  }
   const [compromiso, setCompromiso] = useState<CompromisoMejora | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);

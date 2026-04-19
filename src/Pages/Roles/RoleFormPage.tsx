@@ -14,7 +14,7 @@
  */
 import React, { useEffect, useState } from "react";
 import { ROUTES } from "@/Constants/ROUTES";
-import { useParams, useNavigate } from "react-router-dom";
+import { Navigate, useLocation, useNavigate } from "react-router-dom";
 import { RoleForm as RoleFormComponent } from "./Components/RoleForm";
 import { Button, ScreenContainer, PageHeader } from "@/components/Ui/Index";
 import { CreateConfirmationModal } from "@/Components/Ui/Modals/CreateConfirmationModal";
@@ -37,7 +37,8 @@ const truncateText = (text: string, maxLength: number = 25): string => {
 };
 
 const RoleFormPage: React.FC = () => {
-  const { id } = useParams<{ id: string }>();
+  const location = useLocation();
+  const id = (location.state as { id?: number } | null)?.id;
   const navigate = useNavigate();
   const { showToast } = useToast();
   const { createRole, getRoleById, editRole } = useRoles();
@@ -83,7 +84,7 @@ const RoleFormPage: React.FC = () => {
     if (isEditing && id) {
       const loadRole = async () => {
         try {
-          const roleData = await getRoleById(parseInt(id));
+          const roleData = await getRoleById(id as number);
           setRoleState({
             role: roleData || null,
             loading: false,
@@ -108,6 +109,11 @@ const RoleFormPage: React.FC = () => {
     const itemName = role?.name;
     return getModuleInfoWithDynamicTitle("roles", action, itemName);
   })();
+
+  // Guard: si se accede a la ruta de edición sin ID en state, volver al listado
+  if (location.pathname === ROUTES.ROLES_EDIT && !id) {
+    return <Navigate to={ROUTES.ROLES} replace />;
+  }
 
   /**
    * Maneja el envío del formulario (crear o editar)

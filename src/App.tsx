@@ -100,15 +100,13 @@ const PageLoader = () => (
 );
 
 /**
- * RedirectWithParam - Redirige rutas antiguas con parámetro :id al nuevo patrón.
- * Ejemplo: /compromisos/ver/:id  → /compromisos/:id
- *          /compromisos/editar/:id → /compromisos/:id/editar
- *          /roles/editar/:id → /roles/:id/editar
+ * RedirectToState - Redirige rutas antiguas con :id pasando el ID por navigation state.
+ * Mantiene compatibilidad con links/bookmarks que contengan el ID en la URL,
+ * sin exponerlo de nuevo en la URL de destino.
  */
-const RedirectWithParam = ({ base, suffix }: { base: string; suffix?: string }) => {
+const RedirectToState = ({ to }: { to: string }) => {
   const { id } = useParams<{ id: string }>();
-  const target = suffix ? `${base}/${id}/${suffix}` : `${base}/${id}`;
-  return <Navigate to={target} replace />;
+  return <Navigate to={to} state={{ id: id ? Number(id) : undefined }} replace />;
 };
 
 function App() {
@@ -196,7 +194,7 @@ function App() {
                               }
                             />
                             <Route
-                              path="/roles/:id/editar"
+                              path={ROUTES.ROLES_EDIT}
                               element={
                                 <ProtectedRoute
                                   requirePermissions={["roles.edit"]}
@@ -208,7 +206,7 @@ function App() {
                             {/* Redirects de compatibilidad - Roles */}
                             <Route path="/roles/listar" element={<Navigate to={ROUTES.ROLES} replace />} />
                             <Route path="/roles/crear" element={<Navigate to={ROUTES.ROLES_NEW} replace />} />
-                            <Route path="/roles/editar/:id" element={<RedirectWithParam base="/roles" suffix="editar" />} />
+                            <Route path="/roles/editar/:id" element={<RedirectToState to={ROUTES.ROLES_EDIT} />} />
 
                             {/* Bitacora del Sistema - Solo Superusuario */}
                             <Route
@@ -239,7 +237,7 @@ function App() {
                               }
                             />
                             <Route
-                              path="/usuarios/:id/editar"
+                              path={ROUTES.USERS_EDIT}
                               element={
                                 <ProtectedRoute
                                   requirePermissions={["usuarios.edit"]}
@@ -250,7 +248,7 @@ function App() {
                             />
                             {/* Redirects de compatibilidad - Usuarios */}
                             <Route path="/usuarios/listar" element={<Navigate to={ROUTES.USERS} replace />} />
-                            <Route path="/usuarios/editar/:id" element={<RedirectWithParam base="/usuarios" suffix="editar" />} />
+                            <Route path="/usuarios/editar/:id" element={<RedirectToState to={ROUTES.USERS_EDIT} />} />
 
                             {/* Estructura - Todos los autenticados */}
                             <Route
@@ -395,7 +393,7 @@ function App() {
                               }
                             />
                             <Route
-                              path="/compromisos/:id/editar"
+                              path={ROUTES.COMMITMENTS_EDIT}
                               element={
                                 <ProtectedRoute
                                   requirePermissions={[
@@ -407,7 +405,7 @@ function App() {
                               }
                             />
                             <Route
-                              path="/compromisos/:id"
+                              path={ROUTES.COMMITMENTS_DETAIL}
                               element={
                                 <ProtectedRoute
                                   requireCapabilities={[
@@ -424,8 +422,8 @@ function App() {
                             {/* Redirects de compatibilidad - Compromisos */}
                             <Route path="/compromisos/listar" element={<Navigate to={ROUTES.COMMITMENTS} replace />} />
                             <Route path="/compromisos/crear" element={<Navigate to={ROUTES.COMMITMENTS_NEW} replace />} />
-                            <Route path="/compromisos/ver/:id" element={<RedirectWithParam base="/compromisos" />} />
-                            <Route path="/compromisos/editar/:id" element={<RedirectWithParam base="/compromisos" suffix="editar" />} />
+                            <Route path="/compromisos/ver/:id" element={<RedirectToState to={ROUTES.COMMITMENTS_DETAIL} />} />
+                            <Route path="/compromisos/editar/:id" element={<RedirectToState to={ROUTES.COMMITMENTS_EDIT} />} />
 
                             {/* Procesos de Acreditacion - Todos los autenticados */}
                             <Route

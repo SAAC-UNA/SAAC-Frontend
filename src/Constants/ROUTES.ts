@@ -5,8 +5,12 @@
  *   /[modulo]                → listado general
  *   /[modulo]/nuevo          → crear
  *   /[modulo]/mias           → vista personal del usuario autenticado
- *   /[modulo]/:id            → detalle
- *   /[modulo]/:id/editar     → editar
+ *   /[modulo]/detalle        → detalle (ID viaja en location.state, NO en la URL)
+ *   /[modulo]/editar         → editar  (ID viaja en location.state, NO en la URL)
+ *
+ * Los IDs NUNCA aparecen en la URL. Se pasan como navigate(ruta, { state: { id } })
+ * y se leen en el componente destino con useLocation().state.id.
+ * Si el state no tiene ID (p.ej. refresh), el componente redirige al listado.
  *
  * Seguridad: las rutas son solo apariencia visual.
  * La autorización real ocurre en Laravel (middleware + policies).
@@ -32,10 +36,10 @@ export const ROUTES = {
   // ---------------------------------------------------------------------------
   ROLES: "/roles",
   ROLES_NEW: "/roles/nuevo",
-  ROLES_EDIT: (id: string | number) => `/roles/${id}/editar`,
+  ROLES_EDIT: "/roles/editar",
 
   USERS: "/usuarios",
-  USERS_EDIT: (id: string | number) => `/usuarios/${id}/editar`,
+  USERS_EDIT: "/usuarios/editar",
 
   AUDIT_LOG: "/bitacora",
 
@@ -69,8 +73,8 @@ export const ROUTES = {
   // ---------------------------------------------------------------------------
   COMMITMENTS: "/compromisos",
   COMMITMENTS_NEW: "/compromisos/nuevo",
-  COMMITMENTS_DETAIL: (id: string | number) => `/compromisos/${id}`,
-  COMMITMENTS_EDIT: (id: string | number) => `/compromisos/${id}/editar`,
+  COMMITMENTS_DETAIL: "/compromisos/detalle",
+  COMMITMENTS_EDIT: "/compromisos/editar",
 
   // ---------------------------------------------------------------------------
   // Aprobación de Bloques
