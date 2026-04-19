@@ -1,9 +1,9 @@
 import React, { useEffect, useMemo } from 'react';
-import { Modal } from '../../../Components/Ui/Modals/Modal';
-import { SystemIcons } from '../../../Components/Ui/Icons/SystemIcons';
-import { cn } from '../../../Utils/ClassNames';
-import { TYPOGRAPHY } from '../../../Constants/Typography';
-import { ICON_SIZES } from '../../../Constants/Components';
+import { Modal } from '@/Components/Ui/Modals/Modal';
+import { SystemIcons } from '@/Components/Ui/Icons/SystemIcons';
+import { cn } from '@/Utils/ClassNames';
+import { TYPOGRAPHY } from '@/Constants/Typography';
+import { ICON_SIZES } from '@/Constants/Components';
 import { useRoles } from '@/Hooks/UseRoles';
 import { LoadingSpinner } from '@/Components/Ui/Feedback/Loading';
 
