@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import logo from "@/assets/IsotipoSAAC.svg";
+const logo = "/Images/IsotipoSAAC.svg";
 import { Button } from "@/Components/Ui/Buttons/Button";
 
 const REDIRECT_SECONDS = 5;
