@@ -6,6 +6,11 @@ import { validationRules, useValidation } from "@/Utils/Validation";
 import type { CreateRoleData, Role } from "@/Services/RoleService";
 import { TYPOGRAPHY } from "@/Constants/Typography";
 import { SystemIcons } from "@/Components/Ui/Icons/SystemIcons";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/Components/Ui/Feedback/Tooltip";
 import { ICON_SIZES } from "@/Constants/Components";
 import { PermissionsTable } from "@/Components/Ui/Table/PermissionsTable";
 import type { PermissionsTableColumn } from "@/Components/Ui/Table/PermissionsTable";
@@ -347,17 +352,21 @@ const RolePermissionMatrixField: React.FC<{
           </p>
         </div>
 
-        <Button
-          type="button"
-          variant="ghost"
-          size="sm"
-          onClick={handleClearAll}
-          className="w-auto! min-w-0! px-2"
-          title="Limpiar seleccion"
-          aria-label="Limpiar seleccion"
-        >
-          <SystemIcons.interface.refresh className={ICON_SIZES.sm} />
-        </Button>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              onClick={handleClearAll}
+              className="w-auto! min-w-0! px-2"
+              aria-label="Limpiar seleccion"
+            >
+              <SystemIcons.interface.clearFilters className={ICON_SIZES.sm} />
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent side="top">Limpiar seleccion</TooltipContent>
+        </Tooltip>
       </div>
 
       <div className="grid grid-cols-1 gap-4">
