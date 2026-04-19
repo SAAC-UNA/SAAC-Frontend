@@ -407,7 +407,7 @@ export const CustomSelect: React.FC<CustomSelectProps> = ({
                 : 'border-gris-light bg-blanco-una',
               disabled
                 ? 'bg-blanco-una-2 border-blanco-una-2 text-gris-una'
-                : isOpen && !readonly && 'border-blanco-una-2/20'
+                : isOpen && !readonly && 'border-gris-una'
             )}
             onClick={() => {
               if (!disabled) {
