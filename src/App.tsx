@@ -24,7 +24,7 @@ import { SessionExpired } from "@/Pages/Auth/SessionExpired";
 const HomePage = lazy(() =>
   import("./Pages/Index").then((m) => ({ default: m.HomePage })),
 );
-const RoleForm = lazy(() => import("@/Pages/Roles/RoleForm"));
+const RoleFormPage = lazy(() => import("@/Pages/Roles/RoleFormPage"));
 const RolesRepository = lazy(() =>
   import("./Pages/Roles").then((m) => ({ default: m.RolesRepository })),
 );
@@ -178,7 +178,7 @@ function App() {
                                 <ProtectedRoute
                                   requirePermissions={["roles.create"]}
                                 >
-                                  <RoleForm />
+                                  <RoleFormPage />
                                 </ProtectedRoute>
                               }
                             />
@@ -188,7 +188,7 @@ function App() {
                                 <ProtectedRoute
                                   requirePermissions={["roles.edit"]}
                                 >
-                                  <RoleForm />
+                                  <RoleFormPage />
                                 </ProtectedRoute>
                               }
                             />

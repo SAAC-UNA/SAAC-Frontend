@@ -12,15 +12,15 @@
  * 3. Al confirmar la operación se llama onSuccess y se cierra
  */
 
-import React, { useRef, useState } from 'react';
-import { EntityFormModal } from '@/Components/Ui/Modals/EntityFormModal';
-import { CreateConfirmationModal } from '@/Components/Ui/Modals/CreateConfirmationModal';
-import { EditConfirmationModal } from '@/Components/Ui/Modals/EditConfirmationModal';
-import { SuccessModal } from '@/Components/Ui/Modals/SuccessModal';
-import { RoleFormContent } from './RoleFormContent';
-import { useRoles } from '@/Hooks/UseRoles';
-import { useToast } from '@/Context/ToastContext';
-import type { CreateRoleData, Role } from '@/Services/RoleService';
+import React, { useRef, useState } from "react";
+import { EntityFormModal } from "@/Components/Ui/Modals/EntityFormModal";
+import { CreateConfirmationModal } from "@/Components/Ui/Modals/CreateConfirmationModal";
+import { EditConfirmationModal } from "@/Components/Ui/Modals/EditConfirmationModal";
+import { SuccessModal } from "@/Components/Ui/Modals/SuccessModal";
+import { RoleForm } from "./RoleForm";
+import { useRoles } from "@/Hooks/UseRoles";
+import { useToast } from "@/Context/ToastContext";
+import type { CreateRoleData, Role } from "@/Services/RoleService";
 
 interface RoleFormModalProps {
   isOpen: boolean;
@@ -32,7 +32,7 @@ interface RoleFormModalProps {
 }
 
 const truncate = (text: string, max = 30) =>
-  text.length > max ? text.slice(0, max).trim() + '…' : text;
+  text.length > max ? text.slice(0, max).trim() + "…" : text;
 
 export const RoleFormModal: React.FC<RoleFormModalProps> = ({
   isOpen,
@@ -57,7 +57,7 @@ export const RoleFormModal: React.FC<RoleFormModalProps> = ({
   const [successState, setSuccessState] = useState<{
     isOpen: boolean;
     roleName: string;
-  }>({ isOpen: false, roleName: '' });
+  }>({ isOpen: false, roleName: "" });
 
   // Ref al form para dispararle submit
   const formRef = useRef<HTMLFormElement>(null);
@@ -86,9 +86,10 @@ export const RoleFormModal: React.FC<RoleFormModalProps> = ({
       }
     } catch (error) {
       showToast({
-        type: 'error',
-        title: isEditing ? 'Error al editar rol' : 'Error al crear rol',
-        message: error instanceof Error ? error.message : 'No se pudo guardar el rol'
+        type: "error",
+        title: isEditing ? "Error al editar rol" : "Error al crear rol",
+        message:
+          error instanceof Error ? error.message : "No se pudo guardar el rol",
       });
       setConfirmState({ isOpen: false, roleData: null });
     } finally {
@@ -97,7 +98,7 @@ export const RoleFormModal: React.FC<RoleFormModalProps> = ({
   };
 
   const handleSuccessClose = () => {
-    setSuccessState({ isOpen: false, roleName: '' });
+    setSuccessState({ isOpen: false, roleName: "" });
     onSuccess?.();
     onClose();
   };
@@ -113,17 +114,18 @@ export const RoleFormModal: React.FC<RoleFormModalProps> = ({
         isOpen={isOpen && !successState.isOpen}
         onClose={handleClose}
         onConfirm={handleMainConfirm}
-        title={isEditing ? 'Editar Rol' : 'Crear Rol'}
+        title={isEditing ? "Editar Rol" : "Crear Rol"}
         subtitle={isEditing ? initialData?.name : undefined}
         isEditing={isEditing}
         confirmDisabled={!hasChanges}
-        size="xl"
-        maxHeight="xl"
+        size="lg"
+        maxHeight="lg"
       >
-        <RoleFormContent
+        <RoleForm
           formRef={formRef}
           initialData={initialData}
           onSubmit={handleFormSubmit}
+          hideButtons={true}
           onHasChangesChange={setHasChanges}
         />
       </EntityFormModal>
@@ -158,7 +160,9 @@ export const RoleFormModal: React.FC<RoleFormModalProps> = ({
       {/* Éxito */}
       <SuccessModal
         isOpen={successState.isOpen}
-        title={isEditing ? '¡Rol editado exitosamente!' : '¡Rol creado exitosamente!'}
+        title={
+          isEditing ? "¡Rol editado exitosamente!" : "¡Rol creado exitosamente!"
+        }
         message={
           isEditing
             ? `El rol "${truncate(successState.roleName)}" ha sido modificado correctamente.`

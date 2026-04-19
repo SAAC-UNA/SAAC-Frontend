@@ -1,5 +1,5 @@
 /**
- * RoleForm - Componente unificado para crear y editar roles
+ * RoleFormPage - Componente unificado para crear y editar roles
  *
  * Funcionalidades:
  * - Detección automática del modo (crear/editar) por URL
@@ -14,7 +14,7 @@
  */
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { CreateRoleForm } from "./Components/CreateRoleForm";
+import { RoleForm as RoleFormComponent } from "./Components/RoleForm";
 import { Button, ScreenContainer, PageHeader } from "@/components/Ui/Index";
 import { CreateConfirmationModal } from "@/Components/Ui/Modals/CreateConfirmationModal";
 import { EditConfirmationModal } from "@/Components/Ui/Modals/EditConfirmationModal";
@@ -35,7 +35,7 @@ const truncateText = (text: string, maxLength: number = 25): string => {
   return text.substring(0, maxLength).trim() + "...";
 };
 
-const RoleForm: React.FC = () => {
+const RoleFormPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { showToast } = useToast();
@@ -146,7 +146,6 @@ const RoleForm: React.FC = () => {
           });
         }
       } catch (error) {
-        // TODO: Mostrar error al usuario
         showToast({
           type: "error",
           title: `Error al ${isEditing ? "editar" : "crear"} rol`,
@@ -190,7 +189,6 @@ const RoleForm: React.FC = () => {
     return isEditing ? "Guardar" : "Crear";
   };
 
-  // Formulario normal
   return (
     <>
       <ScreenContainer>
@@ -199,21 +197,16 @@ const RoleForm: React.FC = () => {
           description={moduleInfo.description}
           breadcrumbMode="none"
         />
-        {/* Layout que empuja botones al fondo cuando hay poco contenido */}
         <div className={LAYOUT.FORM_CONTAINER}>
           <div className={LAYOUT.FLEX_GROW}>
-            {/* Contenido del formulario */}
-            <CreateRoleForm
+            <RoleFormComponent
               initialData={isEditing && role ? role : undefined}
               onSubmit={handleFormSubmit}
               hideButtons={true}
               onHasChangesChange={setHasChanges}
             />
-          </div>{" "}
-          {/* Cierre de LAYOUT.FLEX_GROW */}
-          {/* Línea divisoria inferior */}
+          </div>
           <hr className="border-0 border-t border-gris-una/20 mx-6 mt-6 mb-6" />
-          {/* Botones de acción */}
           <div className="px-4 sm:px-5 lg:px-6 pb-4 sm:pb-5 lg:pb-6">
             <div className="flex justify-end gap-4">
               <Button
@@ -229,7 +222,6 @@ const RoleForm: React.FC = () => {
                 type="button"
                 variant="primary"
                 onClick={() => {
-                  // Trigger form submission
                   const form = document.querySelector("form");
                   if (form) {
                     form.requestSubmit();
@@ -243,11 +235,9 @@ const RoleForm: React.FC = () => {
               </Button>
             </div>
           </div>
-        </div>{" "}
-        {/* Cierre de LAYOUT.FORM_CONTAINER */}
+        </div>
       </ScreenContainer>
 
-      {/* Modal de confirmación - Crear */}
       {!isEditing && (
         <CreateConfirmationModal
           isOpen={confirmModalState.isOpen}
@@ -261,7 +251,6 @@ const RoleForm: React.FC = () => {
         />
       )}
 
-      {/* Modal de confirmación - Editar */}
       {isEditing && (
         <EditConfirmationModal
           isOpen={confirmModalState.isOpen}
@@ -275,7 +264,6 @@ const RoleForm: React.FC = () => {
         />
       )}
 
-      {/* Modal de éxito */}
       <SuccessModal
         isOpen={successModalState.isOpen}
         title={
@@ -295,4 +283,4 @@ const RoleForm: React.FC = () => {
   );
 };
 
-export default RoleForm;
+export default RoleFormPage;
