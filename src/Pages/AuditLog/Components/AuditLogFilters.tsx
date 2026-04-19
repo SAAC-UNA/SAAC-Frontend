@@ -131,7 +131,7 @@ export const AuditLogFilters: React.FC<AuditLogFiltersProps> = ({
   const actionTypeOptions = useMemo((): SelectOption[] => {
     return actionTypes.map(actionType => ({
       value: actionType.descripcion,
-      label: actionType.descripcion
+      label: actionType.label ?? actionType.descripcion
     }));
   }, [actionTypes]);
 

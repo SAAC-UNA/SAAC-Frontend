@@ -9,6 +9,7 @@ import { formatDateWithTime } from '@/Utils/DateUtils';
 export interface ActionType {
   tipo_accion_id: number;
   descripcion: string;
+  label?: string;
 }
 
 /**
