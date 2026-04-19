@@ -7,7 +7,8 @@
  */
 
 import React, { useState, useEffect } from 'react';
-import { useNavigate, useLocation, useSearchParams } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
+import { ROUTES } from '@/Constants/ROUTES';
 import { ScreenContainer } from '@/Components/Ui/Layout/ScreenContainer';
 import { Button, PageHeader } from '@/Components/Ui/Index';
 import { getModuleInfo } from '@/Constants/ModuleInfo';
@@ -42,10 +43,9 @@ const CreateImprovementCommitment: React.FC = () => {
   const { showToast } = useToast();
   const navigate = useNavigate();
   const location = useLocation();
-  const [searchParams] = useSearchParams();
 
-  // State recibido desde AccreditationProcessList al pulsar "Configurar"
-  // Fallback a query params para sobrevivir un refresh de página
+  // State recibido desde AccreditationProcessList al pulsar "Configurar".
+  // Los datos de contexto del proceso se pasan vía navigate state, no por query params.
   const locationState = (location.state ?? {}) as {
     procesoId?: string;
     cicloId?: string;
@@ -54,12 +54,12 @@ const CreateImprovementCommitment: React.FC = () => {
     modeloTipo?: string;
     modeloId?: number;
   };
-  const procesoId   = locationState.procesoId   ?? searchParams.get('procesoId')   ?? undefined;
-  const cicloId     = locationState.cicloId     ?? searchParams.get('cicloId')     ?? undefined;
-  const startDate   = locationState.startDate   ?? searchParams.get('startDate')   ?? undefined;
-  const estimatedEndDate = locationState.estimatedEndDate ?? searchParams.get('estimatedEndDate') ?? undefined;
-  const modeloTipo  = locationState.modeloTipo  ?? searchParams.get('modeloTipo')  ?? undefined;
-  const modeloIdRaw = locationState.modeloId    ?? (searchParams.get('modeloId') ? parseInt(searchParams.get('modeloId')!) : undefined);
+  const procesoId   = locationState.procesoId   ?? undefined;
+  const cicloId     = locationState.cicloId     ?? undefined;
+  const startDate   = locationState.startDate   ?? undefined;
+  const estimatedEndDate = locationState.estimatedEndDate ?? undefined;
+  const modeloTipo  = locationState.modeloTipo  ?? undefined;
+  const modeloIdRaw = locationState.modeloId    ?? undefined;
 
   const fromProcess = !!procesoId;
   const isFlexible  = modeloTipo === 'elemento_flexible';
@@ -531,7 +531,7 @@ const CreateImprovementCommitment: React.FC = () => {
    */
   const handleSuccessClose = () => {
     setModals((prev) => ({ ...prev, showSuccessModal: false }));
-    navigate("/procesos-acreditacion/listar");
+    navigate(ROUTES.ACCREDITATION_PROCESSES);
   };
 
   /**
@@ -634,7 +634,7 @@ const CreateImprovementCommitment: React.FC = () => {
           <div className="flex justify-between items-center mt-2">
             <Button
               variant="secondary"
-              onClick={() => navigate('/procesos-acreditacion/listar')}
+              onClick={() => navigate(ROUTES.ACCREDITATION_PROCESSES)}
               disabled={isSubmitting}
               standardWidth
               size="sm"

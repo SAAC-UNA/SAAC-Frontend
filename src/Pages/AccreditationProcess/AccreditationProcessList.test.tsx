@@ -265,13 +265,8 @@ describe("AccreditationProcessList", () => {
 
     const [targetPath, navigateOptions] = mockNavigate.mock.calls[0];
 
-    expect(targetPath).toContain("/compromisos/crear?");
-    expect(targetPath).toContain("procesoId=proc-1");
-    expect(targetPath).toContain("cicloId=1");
-    expect(targetPath).toContain("startDate=2025-01-10");
-    expect(targetPath).toContain("estimatedEndDate=2025-02-10");
-    expect(targetPath).toContain("modeloTipo=Modelo+A");
-    expect(targetPath).toContain("modeloId=77");
+    // La navegación ahora usa solo state, sin query params en la URL
+    expect(targetPath).toBe("/compromisos/nuevo");
 
     expect(navigateOptions).toEqual({
       state: {

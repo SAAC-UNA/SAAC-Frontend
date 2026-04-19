@@ -1,5 +1,6 @@
 import type { NavItem } from "./Types/CommonTypes";
 import { evaluateAccess, type AccessRule } from "@/Utils/Authorization";
+import { ROUTES } from "@/Constants/ROUTES";
 import {
   CAPABILITIES,
   EVIDENCE_ASSIGNMENT_PERMISSIONS,
@@ -115,7 +116,7 @@ export const getNavigationItems = (
         id: "roles",
         label: "Roles",
         icon: rolesIcon,
-        href: "/roles/listar",
+        href: ROUTES.ROLES,
         isActive: false,
       });
     }
@@ -130,7 +131,7 @@ export const getNavigationItems = (
         id: "usuarios",
         label: "Usuarios",
         icon: userIcon,
-        href: "/usuarios/listar",
+        href: ROUTES.USERS,
         isActive: false,
       });
     }
@@ -145,7 +146,7 @@ export const getNavigationItems = (
         id: "bitacora",
         label: "Bitácora del Sistema",
         icon: auditLogIcon,
-        href: "/bitacora",
+        href: ROUTES.AUDIT_LOG,
         isActive: false,
       });
     }
@@ -177,7 +178,7 @@ export const getNavigationItems = (
         id: "evidenciasAsignar",
         label: "Asignar Entregables",
         icon: evidenceIcon,
-        href: "/evidencias/asignar",
+        href: ROUTES.EVIDENCE_ASSIGN,
         isActive: false,
       });
     }
@@ -192,7 +193,7 @@ export const getNavigationItems = (
         id: "misEvidenciasAsignadas",
         label: "Mis Entregas",
         icon: myEvidencesIcon,
-        href: "/mis-evidencias-asignadas",
+        href: ROUTES.EVIDENCE_MY,
         isActive: false,
       });
     }
@@ -208,7 +209,7 @@ export const getNavigationItems = (
         id: "busquedaEvidencias",
         label: "Buscar Entregables",
         icon: searchEvidenceIcon,
-        href: "/evidencias/busqueda-avanzada",
+        href: ROUTES.EVIDENCE_SEARCH,
         isActive: false,
       });
     }
@@ -239,7 +240,7 @@ export const getNavigationItems = (
         id: "misSolicitudesAmpliacion",
         label: "Mis Solicitudes",
         icon: extensionRequestIcon,
-        href: "/solicitudes-ampliacion/mis-solicitudes",
+        href: ROUTES.EXTENSION_REQUESTS_MY,
         isActive: false,
       });
     }
@@ -258,7 +259,7 @@ export const getNavigationItems = (
         id: "gestionarSolicitudesAmpliacion",
         label: "Gestionar Solicitudes",
         icon: extensionRequestIcon,
-        href: "/solicitudes-ampliacion/gestionar",
+        href: ROUTES.EXTENSION_REQUESTS_MANAGE,
         isActive: false,
       });
     }
@@ -289,7 +290,7 @@ export const getNavigationItems = (
         id: "modelos-acreditacion",
         label: "Modelos de Acreditación",
         icon: nutIcon,
-        href: "/estructura/modelos",
+        href: ROUTES.STRUCTURE_MODELS,
         isActive: false,
       });
     }
@@ -304,7 +305,7 @@ export const getNavigationItems = (
         id: "ciclos-acreditacion",
         label: "Ciclos de Acreditación",
         icon: calendarIcon,
-        href: "/ciclos-acreditacion",
+        href: ROUTES.ACCREDITATION_CYCLES,
         isActive: false,
       });
     }
@@ -319,7 +320,7 @@ export const getNavigationItems = (
         id: "procesos-acreditacion",
         label: "Procesos de Acreditación",
         icon: processIcon,
-        href: "/procesos-acreditacion/listar",
+        href: ROUTES.ACCREDITATION_PROCESSES,
         isActive: false,
       });
     }
@@ -350,7 +351,7 @@ export const getNavigationItems = (
         id: "aprobacion-bloques",
         label: "Aprobación de Bloques",
         icon: approvalIcon,
-        href: "/aprobacion-bloques",
+        href: ROUTES.BLOCK_APPROVAL,
         isActive: false,
       });
     }
@@ -365,7 +366,7 @@ export const getNavigationItems = (
         id: "gestion-informes",
         label: "Gestión de Informes",
         icon: reportsIcon,
-        href: "/gestion-informes",
+        href: ROUTES.REPORTS,
         isActive: false,
       });
     }

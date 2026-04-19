@@ -1,5 +1,6 @@
 import { lazy, Suspense, useEffect, useState } from "react";
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate, useParams } from "react-router-dom";
+import { ROUTES } from "@/Constants/ROUTES";
 import { AuthProvider } from "@/Context/AuthContext";
 import { NavigationProvider } from "@/Context/NavigationContext";
 import { ToastProvider } from "./Context/ToastContext";
@@ -98,6 +99,18 @@ const PageLoader = () => (
   </div>
 );
 
+/**
+ * RedirectWithParam - Redirige rutas antiguas con parámetro :id al nuevo patrón.
+ * Ejemplo: /compromisos/ver/:id  → /compromisos/:id
+ *          /compromisos/editar/:id → /compromisos/:id/editar
+ *          /roles/editar/:id → /roles/:id/editar
+ */
+const RedirectWithParam = ({ base, suffix }: { base: string; suffix?: string }) => {
+  const { id } = useParams<{ id: string }>();
+  const target = suffix ? `${base}/${id}/${suffix}` : `${base}/${id}`;
+  return <Navigate to={target} replace />;
+};
+
 function App() {
   const [contextRenderKey, setContextRenderKey] = useState(0);
 
@@ -158,7 +171,7 @@ function App() {
 
                             {/* Roles - Solo Superusuario */}
                             <Route
-                              path="/roles/listar"
+                              path={ROUTES.ROLES}
                               element={
                                 <ProtectedRoute
                                   requireCapabilities={[
@@ -173,7 +186,7 @@ function App() {
                               }
                             />
                             <Route
-                              path="/roles/crear"
+                              path={ROUTES.ROLES_NEW}
                               element={
                                 <ProtectedRoute
                                   requirePermissions={["roles.create"]}
@@ -183,7 +196,7 @@ function App() {
                               }
                             />
                             <Route
-                              path="/roles/editar/:id"
+                              path="/roles/:id/editar"
                               element={
                                 <ProtectedRoute
                                   requirePermissions={["roles.edit"]}
@@ -192,10 +205,14 @@ function App() {
                                 </ProtectedRoute>
                               }
                             />
+                            {/* Redirects de compatibilidad - Roles */}
+                            <Route path="/roles/listar" element={<Navigate to={ROUTES.ROLES} replace />} />
+                            <Route path="/roles/crear" element={<Navigate to={ROUTES.ROLES_NEW} replace />} />
+                            <Route path="/roles/editar/:id" element={<RedirectWithParam base="/roles" suffix="editar" />} />
 
                             {/* Bitacora del Sistema - Solo Superusuario */}
                             <Route
-                              path="/bitacora"
+                              path={ROUTES.AUDIT_LOG}
                               element={
                                 <ProtectedRoute
                                   requirePermissions={["bitacora.view"]}
@@ -207,7 +224,7 @@ function App() {
 
                             {/* Usuarios - Todos los autenticados */}
                             <Route
-                              path="/usuarios/listar"
+                              path={ROUTES.USERS}
                               element={
                                 <ProtectedRoute
                                   requireCapabilities={[
@@ -222,7 +239,7 @@ function App() {
                               }
                             />
                             <Route
-                              path="/usuarios/editar/:id"
+                              path="/usuarios/:id/editar"
                               element={
                                 <ProtectedRoute
                                   requirePermissions={["usuarios.edit"]}
@@ -231,10 +248,13 @@ function App() {
                                 </ProtectedRoute>
                               }
                             />
+                            {/* Redirects de compatibilidad - Usuarios */}
+                            <Route path="/usuarios/listar" element={<Navigate to={ROUTES.USERS} replace />} />
+                            <Route path="/usuarios/editar/:id" element={<RedirectWithParam base="/usuarios" suffix="editar" />} />
 
                             {/* Estructura - Todos los autenticados */}
                             <Route
-                              path="/estructura/listar"
+                              path={ROUTES.STRUCTURE}
                               element={
                                 <ProtectedRoute
                                   requirePermissions={["procesos.view"]}
@@ -243,10 +263,11 @@ function App() {
                                 </ProtectedRoute>
                               }
                             />
+                            <Route path="/estructura/listar" element={<Navigate to={ROUTES.STRUCTURE} replace />} />
 
                             {/* Modelos de Acreditación - Administrador y Superusuario */}
                             <Route
-                              path="/estructura/modelos"
+                              path={ROUTES.STRUCTURE_MODELS}
                               element={
                                 <ProtectedRoute
                                   requirePermissions={["modelos.view"]}
@@ -258,7 +279,7 @@ function App() {
 
                             {/* Ciclos de Acreditación - Administrador y Superusuario */}
                             <Route
-                              path="/ciclos-acreditacion"
+                              path={ROUTES.ACCREDITATION_CYCLES}
                               element={
                                 <ProtectedRoute
                                   requirePermissions={["ciclos.view"]}
@@ -270,7 +291,7 @@ function App() {
 
                             {/* Evidencias */}
                             <Route
-                              path="/evidencias/asignar"
+                              path={ROUTES.EVIDENCE_ASSIGN}
                               element={
                                 <ProtectedRoute
                                   requireCapabilities={[
@@ -285,7 +306,7 @@ function App() {
                               }
                             />
                             <Route
-                              path="/mis-evidencias-asignadas"
+                              path={ROUTES.EVIDENCE_MY}
                               element={
                                 <ProtectedRoute
                                   requireCapabilities={[
@@ -298,7 +319,7 @@ function App() {
                               }
                             />
                             <Route
-                              path="/evidencias/busqueda-avanzada"
+                              path={ROUTES.EVIDENCE_SEARCH}
                               element={
                                 <ProtectedRoute
                                   requireCapabilities={[
@@ -312,10 +333,13 @@ function App() {
                                 </ProtectedRoute>
                               }
                             />
+                            {/* Redirects de compatibilidad - Evidencias */}
+                            <Route path="/mis-evidencias-asignadas" element={<Navigate to={ROUTES.EVIDENCE_MY} replace />} />
+                            <Route path="/evidencias/busqueda-avanzada" element={<Navigate to={ROUTES.EVIDENCE_SEARCH} replace />} />
 
                             {/* HU-016: Solicitudes de Ampliación */}
                             <Route
-                              path="/solicitudes-ampliacion/gestionar"
+                              path={ROUTES.EXTENSION_REQUESTS_MANAGE}
                               element={
                                 <ProtectedRoute
                                   requirePermissions={[
@@ -328,7 +352,7 @@ function App() {
                               }
                             />
                             <Route
-                              path="/solicitudes-ampliacion/mis-solicitudes"
+                              path={ROUTES.EXTENSION_REQUESTS_MY}
                               element={
                                 <ProtectedRoute
                                   requirePermissions={[
@@ -339,10 +363,12 @@ function App() {
                                 </ProtectedRoute>
                               }
                             />
+                            {/* Redirect de compatibilidad - Solicitudes */}
+                            <Route path="/solicitudes-ampliacion/mis-solicitudes" element={<Navigate to={ROUTES.EXTENSION_REQUESTS_MY} replace />} />
 
                             {/* Compromisos de Mejora - Todos los autenticados */}
                             <Route
-                              path="/compromisos/listar"
+                              path={ROUTES.COMMITMENTS}
                               element={
                                 <ProtectedRoute
                                   requireCapabilities={[
@@ -357,7 +383,7 @@ function App() {
                               }
                             />
                             <Route
-                              path="/compromisos/crear"
+                              path={ROUTES.COMMITMENTS_NEW}
                               element={
                                 <ProtectedRoute
                                   requirePermissions={[
@@ -369,7 +395,19 @@ function App() {
                               }
                             />
                             <Route
-                              path="/compromisos/ver/:id"
+                              path="/compromisos/:id/editar"
+                              element={
+                                <ProtectedRoute
+                                  requirePermissions={[
+                                    "compromisos_mejora.edit",
+                                  ]}
+                                >
+                                  <CreateImprovementCommitment />
+                                </ProtectedRoute>
+                              }
+                            />
+                            <Route
+                              path="/compromisos/:id"
                               element={
                                 <ProtectedRoute
                                   requireCapabilities={[
@@ -383,22 +421,15 @@ function App() {
                                 </ProtectedRoute>
                               }
                             />
-                            <Route
-                              path="/compromisos/editar/:id"
-                              element={
-                                <ProtectedRoute
-                                  requirePermissions={[
-                                    "compromisos_mejora.edit",
-                                  ]}
-                                >
-                                  <CreateImprovementCommitment />
-                                </ProtectedRoute>
-                              }
-                            />
+                            {/* Redirects de compatibilidad - Compromisos */}
+                            <Route path="/compromisos/listar" element={<Navigate to={ROUTES.COMMITMENTS} replace />} />
+                            <Route path="/compromisos/crear" element={<Navigate to={ROUTES.COMMITMENTS_NEW} replace />} />
+                            <Route path="/compromisos/ver/:id" element={<RedirectWithParam base="/compromisos" />} />
+                            <Route path="/compromisos/editar/:id" element={<RedirectWithParam base="/compromisos" suffix="editar" />} />
 
                             {/* Procesos de Acreditacion - Todos los autenticados */}
                             <Route
-                              path="/procesos-acreditacion/listar"
+                              path={ROUTES.ACCREDITATION_PROCESSES}
                               element={
                                 <ProtectedRoute
                                   requirePermissions={["procesos.view"]}
@@ -407,10 +438,11 @@ function App() {
                                 </ProtectedRoute>
                               }
                             />
+                            <Route path="/procesos-acreditacion/listar" element={<Navigate to={ROUTES.ACCREDITATION_PROCESSES} replace />} />
 
                             {/* Aprobacion de Bloques - Todos los autenticados */}
                             <Route
-                              path="/aprobacion-bloques"
+                              path={ROUTES.BLOCK_APPROVAL}
                               element={
                                 <ProtectedRoute
                                   requirePermissions={["aprobaciones.view"]}
@@ -422,7 +454,7 @@ function App() {
 
                             {/* Gestión de Informes - Todos los autenticados */}
                             <Route
-                              path="/gestion-informes"
+                              path={ROUTES.REPORTS}
                               element={
                                 <ProtectedRoute
                                   requireCapabilities={[
@@ -436,6 +468,7 @@ function App() {
                                 </ProtectedRoute>
                               }
                             />
+                            <Route path="/gestion-informes" element={<Navigate to={ROUTES.REPORTS} replace />} />
 
                             {/* Redirigir cualquier ruta no encontrada */}
                             <Route

@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { ROUTES } from "@/Constants/ROUTES";
 import {
   Button,
   Card,
@@ -100,7 +101,7 @@ const CompromisosList: React.FC = () => {
         description="Listado de compromisos registrados en el sistema."
         breadcrumbMode="cycle-only"
         headerExtra={
-          <Button onClick={() => navigate("/compromisos/crear")}>
+          <Button onClick={() => navigate(ROUTES.COMMITMENTS_NEW)}>
             Crear compromiso
           </Button>
         }
@@ -182,7 +183,7 @@ const CompromisosList: React.FC = () => {
                   </Button>
                   <Button
                     variant="ghost"
-                    onClick={() => navigate("/compromisos/crear")}
+                    onClick={() => navigate(ROUTES.COMMITMENTS_NEW)}
                   >
                     Nuevo compromiso
                   </Button>

@@ -13,6 +13,7 @@
  */
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
+import { ROUTES } from "@/Constants/ROUTES";
 import { EditUserForm } from "./Components/EditUserForm";
 import {
   LoadingSpinner,
@@ -176,14 +177,14 @@ const EditUserPage: React.FC = () => {
    */
   const handleSuccessModalClose = () => {
     setSuccessModalState({ isOpen: false, userName: "" });
-    navigate("/usuarios/listar");
+    navigate(ROUTES.USERS);
   };
 
   /**
    * Volver a la lista de usuarios
    */
   const handleCancel = () => {
-    navigate("/usuarios/listar");
+    navigate(ROUTES.USERS);
   };
 
   /**

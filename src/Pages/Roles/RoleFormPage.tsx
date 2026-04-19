@@ -13,6 +13,7 @@
  * - /roles/editar/:id -> Modo editar
  */
 import React, { useEffect, useState } from "react";
+import { ROUTES } from "@/Constants/ROUTES";
 import { useParams, useNavigate } from "react-router-dom";
 import { RoleForm as RoleFormComponent } from "./Components/RoleForm";
 import { Button, ScreenContainer, PageHeader } from "@/components/Ui/Index";
@@ -165,7 +166,7 @@ const RoleFormPage: React.FC = () => {
    */
   const handleSuccessModalClose = () => {
     setSuccessModalState({ isOpen: false, roleName: "", isEditing: false });
-    navigate("/roles/listar");
+    navigate(ROUTES.ROLES);
   };
 
   /**
@@ -179,7 +180,7 @@ const RoleFormPage: React.FC = () => {
    * Maneja la cancelación del formulario
    */
   const handleCancel = () => {
-    navigate("/roles/listar");
+    navigate(ROUTES.ROLES);
   };
 
   /**

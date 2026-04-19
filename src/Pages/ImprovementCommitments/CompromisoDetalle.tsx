@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
+import { ROUTES } from "@/Constants/ROUTES";
 import {
   Button,
   Card,
@@ -110,7 +111,7 @@ const CompromisoDetalle: React.FC = () => {
         headerExtra={
           <Button
             variant="outline"
-            onClick={() => navigate("/compromisos/listar")}
+            onClick={() => navigate(ROUTES.COMMITMENTS)}
           >
             Volver al listado
           </Button>
@@ -127,7 +128,7 @@ const CompromisoDetalle: React.FC = () => {
           <div className="mt-4">
             <Button
               variant="outline"
-              onClick={() => navigate("/compromisos/listar")}
+              onClick={() => navigate(ROUTES.COMMITMENTS)}
             >
               Volver al listado
             </Button>
@@ -248,7 +249,7 @@ const CompromisoDetalle: React.FC = () => {
           <div className="mt-4">
             <Button
               variant="outline"
-              onClick={() => navigate("/compromisos/listar")}
+              onClick={() => navigate(ROUTES.COMMITMENTS)}
             >
               Volver al listado
             </Button>

@@ -1,4 +1,5 @@
 import type { Notification } from "@/Types/NotificationTypes";
+import { ROUTES } from "@/Constants/ROUTES";
 
 const ASSIGNMENT_EVENTS = new Set([
   "asignacion_evidencia",
@@ -66,6 +67,6 @@ export const buildNotificationTargetRoute = (
 
   const serialized = query.toString();
   return serialized
-    ? `/mis-evidencias-asignadas?${serialized}`
-    : "/mis-evidencias-asignadas";
+    ? `${ROUTES.EVIDENCE_MY}?${serialized}`
+    : ROUTES.EVIDENCE_MY;
 };

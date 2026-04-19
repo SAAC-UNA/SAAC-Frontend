@@ -5,6 +5,7 @@ import { getNavigationItems } from "@/Navigation";
 import { useAuth } from "@/Context/AuthContext";
 import { useOperationalContextStatus } from "@/Hooks/useOperationalContextStatus";
 import { useOperationalContextSnapshot } from "@/Hooks/useOperationalContextSnapshot";
+import { ROUTES } from "@/Constants/ROUTES";
 
 /**
  * CONTEXTO DE NAVEGACIÓN DEL SIDEBAR
@@ -69,25 +70,25 @@ export const NavigationProvider: React.FC<NavigationProviderProps> = ({
     }
 
     // Si no hay coincidencia exacta, buscar por prefijo de módulo
-    if (path.startsWith("/roles")) {
+    if (path.startsWith(ROUTES.ROLES)) {
       return { activeId: "roles", parentId: "administracion" };
     }
-    if (path.startsWith("/estructura")) {
+    if (path.startsWith(ROUTES.STRUCTURE)) {
       return { activeId: "estructura", parentId: "acreditacion" };
     }
-    if (path.startsWith("/usuarios")) {
+    if (path.startsWith(ROUTES.USERS)) {
       return { activeId: "usuarios", parentId: "administracion" };
     }
-    if (path.startsWith("/compromisos")) {
+    if (path.startsWith(ROUTES.COMMITMENTS)) {
       return { activeId: "compromisos-mejora", parentId: "acreditacion" };
+    }
+    if (path.startsWith(ROUTES.EVIDENCE_MY)) {
+      return { activeId: "misEvidenciasAsignadas", parentId: "evidencias" };
     }
     if (path.startsWith("/evidencias")) {
       return { activeId: "evidenciasAsignar", parentId: "evidencias" };
     }
-    if (path.startsWith("/mis-evidencias")) {
-      return { activeId: "misEvidenciasAsignadas", parentId: "evidencias" };
-    }
-    if (path.startsWith("/bitacora")) {
+    if (path.startsWith(ROUTES.AUDIT_LOG)) {
       return { activeId: "bitacora", parentId: "administracion" };
     }
     if (path.startsWith("/solicitudes-ampliacion")) {
@@ -96,7 +97,7 @@ export const NavigationProvider: React.FC<NavigationProviderProps> = ({
         parentId: "solicitudesAmpliacion",
       };
     }
-    if (path.startsWith("/aprobacion-bloques")) {
+    if (path.startsWith(ROUTES.BLOCK_APPROVAL)) {
       return { activeId: "aprobacion-bloques", parentId: "acreditacion" };
     }
 

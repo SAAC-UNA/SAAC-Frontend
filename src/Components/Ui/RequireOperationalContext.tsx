@@ -15,6 +15,7 @@ import {
   emitManualContextApplied,
   type GlobalFilterCatalog,
 } from "@/Services/GlobalFilterContextService";
+import { ROUTES } from "@/Constants/ROUTES";
 
 interface RequireOperationalContextProps {
   children: ReactNode;
@@ -33,26 +34,26 @@ const isSuperUserRole = (roles: string[]): boolean =>
 
 const isGeneralRoute = (pathname: string): boolean => {
   return (
-    pathname === "/" ||
-    pathname.startsWith("/roles") ||
-    pathname.startsWith("/usuarios") ||
-    pathname.startsWith("/bitacora") ||
-    pathname.startsWith("/estructura") ||
-    pathname.startsWith("/ciclos-acreditacion") ||
+    pathname === ROUTES.HOME ||
+    pathname.startsWith(ROUTES.ROLES) ||
+    pathname.startsWith(ROUTES.USERS) ||
+    pathname.startsWith(ROUTES.AUDIT_LOG) ||
+    pathname.startsWith(ROUTES.STRUCTURE) ||
+    pathname.startsWith(ROUTES.ACCREDITATION_CYCLES) ||
     pathname.startsWith("/evidencias/subir") ||
-    pathname.startsWith("/evidencias/busqueda-avanzada") ||
-    pathname.startsWith("/mis-evidencias-asignadas") ||
-    pathname.startsWith("/solicitudes-ampliacion/mis-solicitudes")
+    pathname.startsWith(ROUTES.EVIDENCE_SEARCH) ||
+    pathname.startsWith(ROUTES.EVIDENCE_MY) ||
+    pathname.startsWith(ROUTES.EXTENSION_REQUESTS_MY)
   );
 };
 
 const isActionableRoute = (pathname: string): boolean => {
   return (
-    pathname.startsWith("/evidencias/asignar") ||
-    pathname.startsWith("/solicitudes-ampliacion/gestionar") ||
-    pathname.startsWith("/compromisos/crear") ||
-    pathname.startsWith("/compromisos/editar") ||
-    pathname.startsWith("/aprobacion-bloques")
+    pathname.startsWith(ROUTES.EVIDENCE_ASSIGN) ||
+    pathname.startsWith(ROUTES.EXTENSION_REQUESTS_MANAGE) ||
+    pathname.startsWith(ROUTES.COMMITMENTS_NEW) ||
+    (pathname.startsWith(ROUTES.COMMITMENTS) && pathname.includes("/editar")) ||
+    pathname.startsWith(ROUTES.BLOCK_APPROVAL)
   );
 };
 
