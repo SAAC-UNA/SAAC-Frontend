@@ -269,7 +269,7 @@ export const StructureTable: React.FC<StructureTableProps> = ({
             const canActivate = element.active || !element.parentElement || element.parentElement.active; // Puede activar si ya está activo, o si no tiene padre, o si el padre está activo
             
             return (
-                <div className="flex items-center justify-center gap-2 pr-2">
+                <div className="flex items-center justify-center gap-2">
                     <TableActionButton
                         action="view"
                         tooltip="Ver detalles"

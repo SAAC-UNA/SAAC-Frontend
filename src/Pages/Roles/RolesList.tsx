@@ -11,6 +11,7 @@ import { PageHeader, ScreenContainer } from "@/Components/Ui/Index";
 import { SearchInput } from "@/Components/Ui/Forms/SearchInput";
 import { Button } from "@/Components/Ui/Buttons/Button";
 import { RoleFormModal } from "./Components/RoleFormModal";
+import { Modal } from "@/Components/Ui/Modals/Modal";
 import { useRoles } from "@/Hooks/UseRoles";
 import { useToast } from "@/Context/ToastContext";
 import { getContextualInfo } from "@/Constants/ModuleInfo";
@@ -34,7 +35,7 @@ const SuccessModal = lazy(() =>
 );
 
 const RolesRepository: React.FC = () => {
-  const { deleteRole, roles, loadRoles, isLoading, error } = useRoles();
+  const { deleteRole, toggleRoleStatus, roles, loadRoles, isLoading, error } = useRoles();
   const { showToast } = useToast();
 
   // Obtener información del módulo desde ModuleInfo
@@ -66,6 +67,12 @@ const RolesRepository: React.FC = () => {
     isOpen: false,
     role: null,
   });
+
+  // Estado para el modal de confirmación de cambio de estado
+  const [toggleStatusModalState, setToggleStatusModalState] = useState<{
+    isOpen: boolean;
+    role: Role | null;
+  }>({ isOpen: false, role: null });
 
   // Estado para el modal de éxito (eliminación)
   const [successModalState, setSuccessModalState] = useState<{
@@ -128,6 +135,34 @@ const RolesRepository: React.FC = () => {
     setDeleteModalState({ isOpen: false, role: null });
   };
 
+  const handleToggleStatus = (role: Role) => {
+    setToggleStatusModalState({ isOpen: true, role });
+  };
+
+  const confirmToggleStatus = async () => {
+    if (!toggleStatusModalState.role) return;
+    const role = toggleStatusModalState.role;
+    const result = await toggleRoleStatus(role.id);
+    setToggleStatusModalState({ isOpen: false, role: null });
+    if (result) {
+      showToast({
+        type: 'success',
+        title: role.is_active ? 'Rol inactivado' : 'Rol activado',
+        message: `El rol "${role.name}" ha sido ${role.is_active ? 'inactivado' : 'activado'} correctamente`,
+      });
+    } else {
+      showToast({
+        type: 'error',
+        title: 'Error al cambiar estado',
+        message: 'No se pudo cambiar el estado del rol',
+      });
+    }
+  };
+
+  const closeToggleStatusModal = () => {
+    setToggleStatusModalState({ isOpen: false, role: null });
+  };
+
   const closePermissionsModal = () => {
     setPermissionsModalState({ isOpen: false, role: null });
   };
@@ -167,6 +202,7 @@ const RolesRepository: React.FC = () => {
           onEdit={handleEditRole}
           onDelete={handleDeleteRole}
           onViewPermissions={handleViewPermissions}
+          onToggleStatus={handleToggleStatus}
           roles={roles}
           isLoading={isLoading}
           error={error}
@@ -200,6 +236,53 @@ const RolesRepository: React.FC = () => {
           />
         </Suspense>
       )}
+      {/* Modal de confirmación para activación */}
+      {toggleStatusModalState.role?.is_active === false && (
+        <Modal
+          isOpen={toggleStatusModalState.isOpen}
+          onClose={closeToggleStatusModal}
+          onConfirm={confirmToggleStatus}
+          title="Confirmar activación de rol"
+          variant="success"
+          confirmLabel="Sí, activar"
+          cancelLabel="Cancelar"
+          showCancel
+          showConfirm
+        >
+          <p className="text-sm text-gris-una-2 leading-relaxed">
+            ¿Está seguro de que desea activar el rol{" "}
+            <strong>"{ toggleStatusModalState.role?.name}"</strong>?
+          </p>
+          <p className="mt-2 text-sm text-gris-una-2">
+            Al activarlo, los usuarios con este rol podrán acceder a sus funcionalidades.
+          </p>
+        </Modal>
+      )}
+
+      {/* Modal de confirmación para inactivación */}
+      {toggleStatusModalState.role?.is_active === true && (
+        <Modal
+          isOpen={toggleStatusModalState.isOpen}
+          onClose={closeToggleStatusModal}
+          onConfirm={confirmToggleStatus}
+          title="Confirmar inactivación de rol"
+          variant="success"
+          confirmLabel="Sí, inactivar"
+          cancelLabel="Cancelar"
+          showCancel
+          showConfirm
+          footerMeta="Esta acción puede ser revertida en el futuro"
+        >
+          <p className="text-sm text-gris-una-2 leading-relaxed">
+            ¿Está seguro de que desea inactivar el rol{" "}
+            <strong>"{toggleStatusModalState.role?.name}"</strong>?
+          </p>
+          <p className="mt-2 text-sm text-gris-una-2">
+            Al inactivarlo, los usuarios con este rol verán restringido su acceso.
+          </p>
+        </Modal>
+      )}
+
       {/* Modal de éxito (eliminación) */}
       <Suspense fallback={null}>
         <SuccessModal

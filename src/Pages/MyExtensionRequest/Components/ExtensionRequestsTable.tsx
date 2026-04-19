@@ -34,6 +34,7 @@ interface ExtensionRequestsTableProps {
   unstyled?: boolean;
   onRetry?: () => void;
   onViewDetails?: (request: ExtensionRequest) => void;
+  onCancelRequest?: (request: ExtensionRequest) => void;
 }
 
 export const ExtensionRequestsTable: React.FC<ExtensionRequestsTableProps> = ({
@@ -45,7 +46,8 @@ export const ExtensionRequestsTable: React.FC<ExtensionRequestsTableProps> = ({
   itemsPerPage = TABLE_PAGE_SIZE.standard,
   unstyled = false,
   onRetry,
-  onViewDetails
+  onViewDetails,
+  onCancelRequest
 }) => {
   const [currentPage, setCurrentPage] = useState(1);
 
@@ -101,15 +103,26 @@ export const ExtensionRequestsTable: React.FC<ExtensionRequestsTableProps> = ({
           </p>
           {/* Mostrar contexto: evidencia o elemento */}
           {item.evidencia_asignacion?.evidencia ? (
-            <p className={`block font-sans antialiased font-normal leading-normal text-gris-una ${TYPOGRAPHY.table.helper}`} title={item.evidencia_asignacion.evidencia.nomenclatura}>
-              {truncateText(item.evidencia_asignacion.evidencia.nomenclatura, firstColumn.maxLength)}
+            <p className={`block font-sans antialiased font-normal leading-normal text-gris-una ${TYPOGRAPHY.table.helper}`}>
+              <span title={item.evidencia_asignacion.evidencia.nomenclatura}>
+                {truncateText(item.evidencia_asignacion.evidencia.nomenclatura, firstColumn.maxLength)}
+              </span>
+              {item.evidencia_asignacion.evidencia.descripcion && (
+                <span className="text-gris-una-2" title={item.evidencia_asignacion.evidencia.descripcion}>
+                  {' — '}{truncateText(item.evidencia_asignacion.evidencia.descripcion, firstColumn.maxLength)}
+                </span>
+              )}
             </p>
           ) : item.elemento_asignacion ? (
             (() => {
               const nombre = (item.elemento_asignacion as any).element?.nombre ?? `Elemento #${item.elemento_asignacion.elemento_id}`;
+              const tipo = (item.elemento_asignacion as any).element?.tipo;
               return (
-                <p className={`block font-sans antialiased font-normal leading-normal text-gris-una ${TYPOGRAPHY.table.helper}`} title={nombre}>
-                  {truncateText(nombre, firstColumn.maxLength)}
+                <p className={`block font-sans antialiased font-normal leading-normal text-gris-una ${TYPOGRAPHY.table.helper}`}>
+                  <span title={nombre}>{truncateText(nombre, firstColumn.maxLength)}</span>
+                  {tipo && (
+                    <span className="text-gris-una-2" title={tipo}>{' - '}{truncateText(tipo, firstColumn.maxLength)}</span>
+                  )}
                 </p>
               );
             })()
@@ -160,18 +173,27 @@ export const ExtensionRequestsTable: React.FC<ExtensionRequestsTableProps> = ({
       key: 'actions',
       header: 'Acciones',
       align: 'center',
-      width: TABLE_COLUMN_WIDTHS.status,
+      width: TABLE_COLUMN_WIDTHS.actionsLarge,
       render: (_: unknown, item: ExtensionRequest) => (
-        <div className="flex items-center justify-center gap-2 pr-2">
+        <div className="flex items-center justify-center gap-2">
           <TableActionButton
             action="view"
             tooltip="Ver detalles de la solicitud"
             onClick={() => onViewDetails?.(item)}
           />
+          {onCancelRequest && (
+            <TableActionButton
+              action="clock"
+              tooltip={item.estado === 'pendiente' ? 'Cancelar ampliación' : 'Solo se pueden cancelar solicitudes pendientes'}
+              customVariant={item.estado === 'pendiente' ? 'tableDelete' : undefined}
+              onClick={() => onCancelRequest(item)}
+              disabled={item.estado !== 'pendiente'}
+            />
+          )}
         </div>
       )
     }
-  ], [onViewDetails]);
+  ], [onViewDetails, onCancelRequest]);
 
   if (error) {
     return (

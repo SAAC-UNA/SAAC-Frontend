@@ -210,6 +210,16 @@ export const SystemIcons = {
       </svg>
     ),
 
+    copyLink: ({ className, size, color }: IconProps) => (
+      <svg
+        className={`${getSizeClasses(size)} ${className || ""}`}
+        viewBox="0 0 24 24"
+        fill={color || "currentColor"}
+      >
+        <path d="M20.25 3h-12a.75.75 0 0 0-.75.75V7.5H3.75a.75.75 0 0 0-.75.75v12a.75.75 0 0 0 .75.75h12a.75.75 0 0 0 .75-.75V16.5h3.75a.75.75 0 0 0 .75-.75v-12a.75.75 0 0 0-.75-.75Zm-.75 12h-3V8.25a.75.75 0 0 0-.75-.75H9v-3h10.5V15Z" />
+      </svg>
+    ),
+
     linkIcon: ({ className, size, color }: IconProps) => (
       <svg
         className={`${getSizeClasses(size)} ${className || ""}`}
@@ -348,6 +358,16 @@ export const SystemIcons = {
         fill={color}
       >
         <path d="M20.446 16.06a.5.5 0 0 1-.655.68l-2.5-1.153a14.381 14.381 0 0 0-6.681-1.309 61.43 61.43 0 0 1-.121 2.204l-.069.938a.754.754 0 0 1-1.158.581 19.55 19.55 0 0 1-5.351-5.068l-.46-.64a.5.5 0 0 1 0-.584l.46-.64A19.55 19.55 0 0 1 9.262 6a.754.754 0 0 1 1.158.58l.069.94c.046.63.082 1.26.108 1.89h.644a9.5 9.5 0 0 1 8.475 5.209l.73 1.442Z" />
+      </svg>
+    ),
+
+    clearFilters: ({ className, size, color }: IconProps) => (
+      <svg
+        className={`${getSizeClasses(size)} ${className || ""}`}
+        viewBox="0 0 24 24"
+        fill={color || "currentColor"}
+      >
+        <path d="M21.619 2.38a2.99 2.99 0 0 0-4.238 0l-.028.028-5.147 5.738-.862-.863a2.241 2.241 0 0 0-3.188 0l-7.19 7.181a.76.76 0 0 0 0 1.07l7.5 7.5a.769.769 0 0 0 1.068 0l7.182-7.191a2.24 2.24 0 0 0 0-3.188l-.863-.862 5.738-5.147.028-.029a2.991 2.991 0 0 0 0-4.237ZM9 21.44l-1.322-1.323 2.39-2.4a.75.75 0 0 0-1.059-1.059l-2.39 2.4-1.566-1.566 2.39-2.4a.75.75 0 0 0-1.059-1.059l-2.39 2.4L2.559 15l4.191-4.19 6.44 6.44L9 21.439Z" />
       </svg>
     ),
 

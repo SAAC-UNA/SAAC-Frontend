@@ -450,7 +450,7 @@ export const FinalReportsTable: React.FC<FinalReportsTableProps> = ({
       align: "center",
       width: "90px",
       render: (_, item) => (
-        <div className="flex gap-1 justify-center">
+        <div className="flex items-center justify-center gap-2">
           <ButtonWithTooltip
             variant="tableView"
             size="sm"

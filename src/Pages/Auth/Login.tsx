@@ -76,7 +76,7 @@ export const Login = () => {
 
   return (
     <div
-      className="min-h-screen flex w-full bg-cover bg-center relative overflow-hidden items-center justify-center p-5 gap-[60px]"
+      className="min-h-screen flex w-full bg-cover bg-center relative overflow-hidden items-center justify-center p-5 gap-[60px] [html:has(&)]:overflow-y-hidden"
       style={{
         backgroundImage:
           "linear-gradient(135deg, rgba(0,0,0,0.2) 0%, rgba(0,0,0,0.3) 100%), url('/Images/Fondo login.png')",

@@ -185,8 +185,10 @@ export const ElementUploadPage: React.FC<ElementUploadPageProps> = ({
     <Modal
       isOpen={isOpen}
       onClose={handleClose}
-      title={`Subir recursos — ${nombre}`}
+      title={`Subir recursos: ${nombre}`}
+      variant="warning"
       size="xl"
+      maxHeight="xl"
       footerButtons={
         <>
           <Button variant="outline" onClick={handleClose} disabled={isUploading} standardWidth>

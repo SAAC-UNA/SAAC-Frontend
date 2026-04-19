@@ -71,7 +71,7 @@ export const ElementAssignmentsTable: React.FC<ElementAssignmentsTableProps> = (
             ? getElementPath(element.elemento_id, allElements)
             : null;
           return (
-            <div className="flex flex-col pl-2">
+            <div className="flex flex-col">
               <p
                 className={`block font-sans antialiased font-bold leading-normal text-negro-una-2 ${TYPOGRAPHY.table.cell}`}
                 title={path ?? nombre}
@@ -174,6 +174,7 @@ export const ElementAssignmentsTable: React.FC<ElementAssignmentsTableProps> = (
           const isCompleted = assignment.estado === 'Completado';
           const isActionable = ['Pendiente', 'En Progreso'].includes(assignment.estado);
           const hasPending = assignment.has_pending_extension_request === true;
+          const pendingRequestId = assignment.pending_extension_request_id ?? null;
           const canExtend = !hasPending && isActionable;
           const canMarkCompleted = assignment.has_uploaded_files === true;
 
@@ -188,7 +189,7 @@ export const ElementAssignmentsTable: React.FC<ElementAssignmentsTableProps> = (
               : 'Debe subir al menos un archivo o enlace';
 
           return (
-            <div className="flex items-center justify-center gap-2 pr-2">
+            <div className="flex items-center justify-center gap-2">
               <TableActionButton
                 action="view"
                 tooltip="Ver detalles"

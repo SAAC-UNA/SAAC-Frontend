@@ -31,6 +31,7 @@ interface RolesTableProps {
     onEdit?: (role: Role) => void;
     onDelete?: (role: Role) => void;
     onViewPermissions?: (role: Role) => void;
+    onToggleStatus?: (role: Role) => void;
     itemsPerPage?: number;
     unstyled?: boolean; // Para usar sin contenedor
     // Props para datos externos
@@ -44,6 +45,7 @@ export const RolesTable: React.FC<RolesTableProps> = ({
     onEdit,
     onDelete,
     onViewPermissions,
+    onToggleStatus,
     itemsPerPage = TABLE_PAGE_SIZE.standard,
     unstyled = false,
     roles: externalRoles,
@@ -118,7 +120,7 @@ export const RolesTable: React.FC<RolesTableProps> = ({
             align: 'left',
             width: firstColumn.width,
             render: (value: unknown, item: Role) => (
-                <div className="flex flex-col pl-2">
+                <div className="flex flex-col">
                     <p className={`block font-sans antialiased font-bold leading-normal text-negro-una-2 ${TYPOGRAPHY.table.cell}`} title={String(value)}>
                         {truncateText(String(value), firstColumn.maxLength)}
                     </p>
@@ -137,7 +139,7 @@ export const RolesTable: React.FC<RolesTableProps> = ({
                 <div className="flex items-start">
                     <StatusBadge
                         label={`${Array.isArray(role.permissions) ? role.permissions.length : 0} permisos`}
-                        colorClasses={BADGE_COLORS.slate.colorClasses}
+                        colorClasses={BADGE_COLORS.gris.colorClasses}
                     />
                 </div>
             )
@@ -147,7 +149,7 @@ export const RolesTable: React.FC<RolesTableProps> = ({
             header: 'Acciones',
             align: 'center',
             render: (_: unknown, role: Role) => (
-                <div className="flex items-center justify-center gap-2 pr-2">
+                <div className="flex items-center justify-center gap-2">
                     <TableActionButton
                         action="view"
                         tooltip="Ver permisos"
@@ -159,16 +161,30 @@ export const RolesTable: React.FC<RolesTableProps> = ({
                         tooltip="Editar rol"
                         onClick={() => handleEdit(role)}
                     />
-                    
+
+                    <TableActionButton
+                        action="power"
+                        tooltip={role.is_active ? 'Inactivar rol' : 'Activar rol'}
+                        onClick={() => onToggleStatus?.(role)}
+                        isActive={role.is_active}
+                    />
+
                     <TableActionButton
                         action="delete"
-                        tooltip="Eliminar rol"
+                        tooltip={
+                            role.is_protected
+                                ? 'Los roles del sistema no pueden eliminarse'
+                                : role.users_count > 0
+                                    ? `No se puede eliminar: tiene ${role.users_count} usuarios asignados`
+                                    : 'Eliminar rol'
+                        }
                         onClick={() => onDelete?.(role)}
+                        disabled={!role.can_delete}
                     />
                 </div>
             )
         }
-    ], [onViewPermissions, onDelete, handleEdit]);
+    ], [onViewPermissions, onDelete, onToggleStatus, handleEdit]);
 
     if (error) {
         return (
@@ -198,7 +214,7 @@ export const RolesTable: React.FC<RolesTableProps> = ({
                 loading={isLoading}
                 emptyMessage={
                     searchQuery 
-                        ? `No se encontraron roles que coincidan con "${searchQuery}"`
+                        ? "No se encontraron roles que coincidan con los filtros de búsqueda"
                         : "No hay roles creados aún."
                 }
                 unstyled={unstyled}

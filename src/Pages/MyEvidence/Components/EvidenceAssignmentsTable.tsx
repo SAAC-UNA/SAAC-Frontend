@@ -86,7 +86,7 @@ export const EvidenceAssignmentsTable: React.FC<
             : "Sin criterio";
 
           return (
-            <div className="flex flex-col pl-2">
+            <div className="flex flex-col">
               <p
                 className={`block font-sans antialiased font-bold leading-normal text-negro-una-2 ${TYPOGRAPHY.table.cell}`}
                 title={fullText}
@@ -212,7 +212,7 @@ export const EvidenceAssignmentsTable: React.FC<
               : "Debe subir al menos un archivo o enlace";
 
           return (
-            <div className="flex items-center justify-center gap-2 pr-2">
+            <div className="flex items-center justify-center gap-2">
               <TableActionButton
                 action="view"
                 tooltip="Ver detalles"

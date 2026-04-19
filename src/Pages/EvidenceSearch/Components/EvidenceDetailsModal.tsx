@@ -41,6 +41,7 @@ import { TYPOGRAPHY } from "@/Constants/Typography";
 import { ICON_SIZES } from "@/Constants/Components";
 import {
   ASSIGNMENT_STATUS_BADGE,
+  ELEMENT_ASSIGNMENT_STATUS_BADGE,
   EVIDENCE_STATUS_BADGE,
   BADGE_COLORS,
 } from "@/Constants/StatusBadges";
@@ -56,8 +57,11 @@ import { TABLE_COLUMN_WIDTHS } from "@/Constants/Components";
 interface EvidenceDetailsModalProps {
   isOpen: boolean;
   onClose: () => void;
-  /** ID del criterio a mostrar. El modal carga internamente todas sus evidencias. */
+  /** ID del criterio (tradicional) o elemento (flexible) a mostrar. */
   criterioId: number | null;
+  isFlexible?: boolean;
+  /** Requerido en modo flexible para cargar archivos por elemento+proceso. */
+  procesoId?: number | null;
 }
 
 interface FilesByUser extends Record<string, unknown> {
@@ -84,7 +88,7 @@ const EvidenciaResponsablesPanelAdmin: React.FC<
   if (loading)
     return (
       <div className="relative min-h-[60px]">
-        <LoadingSpinner variant="loader" />
+        <LoadingSpinner variant="loader" size="sm" />
       </div>
     );
   if (groups.length === 0)
@@ -97,7 +101,10 @@ const EvidenciaResponsablesPanelAdmin: React.FC<
   return (
     <div className="space-y-1">
       {groups.map((group) => {
-        const estado = group.estado_asignacion as AssignmentStatus | null;
+        const estadoRaw = group.estado_asignacion as string | null;
+        const badgeConfig = estadoRaw
+          ? (ASSIGNMENT_STATUS_BADGE[estadoRaw as AssignmentStatus] ?? ELEMENT_ASSIGNMENT_STATUS_BADGE[estadoRaw])
+          : null;
         const fileItems: ExpandableChildItem[] = group.archivos.map((file) => ({
           key: String(file.archivo_id),
           content: <FileRowContent file={file} />,
@@ -132,7 +139,7 @@ const EvidenciaResponsablesPanelAdmin: React.FC<
                   <Tooltip>
                     <TooltipTrigger asChild>
                       <span
-                        className={`text-gris-una flex-shrink-0 cursor-default ${TYPOGRAPHY.table.helper}`}
+                        className={`text-gris-una shrink-0 w-20 cursor-default ${TYPOGRAPHY.table.helper}`}
                       >
                         {formatDate(group.fecha_asignacion as string | null)}
                       </span>
@@ -144,21 +151,21 @@ const EvidenciaResponsablesPanelAdmin: React.FC<
                   <Tooltip>
                     <TooltipTrigger asChild>
                       <span
-                        className={`text-gris-una flex-shrink-0 cursor-default ${TYPOGRAPHY.table.helper}`}
+                        className={`text-gris-una shrink-0 w-20 cursor-default ${TYPOGRAPHY.table.helper}`}
                       >
                         {formatDate(group.fecha_limite as string | null)}
                       </span>
                     </TooltipTrigger>
                     <TooltipContent side="top">Fecha límite</TooltipContent>
                   </Tooltip>
-                  {estado && (
-                    <StatusBadge
-                      label={ASSIGNMENT_STATUS_BADGE[estado].label}
-                      colorClasses={
-                        ASSIGNMENT_STATUS_BADGE[estado].colorClasses
-                      }
-                    />
-                  )}
+                  <div className="shrink-0 w-24 flex items-center">
+                    {badgeConfig && (
+                      <StatusBadge
+                        label={badgeConfig.label}
+                        colorClasses={badgeConfig.colorClasses}
+                      />
+                    )}
+                  </div>
                 </div>
               ),
             }}
@@ -181,6 +188,8 @@ export const EvidenceDetailsModal: React.FC<EvidenceDetailsModalProps> = ({
   isOpen,
   onClose,
   criterioId,
+  isFlexible = false,
+  procesoId,
 }) => {
   const { canAccess } = useAuth();
   const isPrivileged = canAccess({
@@ -238,28 +247,24 @@ export const EvidenceDetailsModal: React.FC<EvidenceDetailsModalProps> = ({
       header: "Recursos",
       align: "left",
       width: TABLE_COLUMN_WIDTHS.status,
-      render: (_, item) => (
-        <div className="flex items-start">
-          {item.archivos_count > 0 && (
-            <StatusBadge
-              label={`${item.archivos_count} ${item.archivos_count === 1 ? "archivo" : "archivos"}`}
-              colorClasses={BADGE_COLORS.info.colorClasses}
-            />
-          )}
-          {item.enlaces_count > 0 && (
-            <StatusBadge
-              label={`${item.enlaces_count} ${item.enlaces_count === 1 ? "enlace" : "enlaces"}`}
-              colorClasses={BADGE_COLORS.gris.colorClasses}
-            />
-          )}
-          {item.archivos_count === 0 && item.enlaces_count === 0 && (
-            <StatusBadge
-              label="Sin recursos"
-              colorClasses={BADGE_COLORS.slate.colorClasses}
-            />
-          )}
-        </div>
-      ),
+      render: (_, item) => {
+        const total = item.archivos_count + item.enlaces_count;
+        return (
+          <div className="flex items-start">
+            {total > 0 ? (
+              <StatusBadge
+                label={`${total} ${total === 1 ? "recurso" : "recursos"}`}
+                colorClasses={BADGE_COLORS.info.colorClasses}
+              />
+            ) : (
+              <StatusBadge
+                label="Sin recursos"
+                colorClasses={BADGE_COLORS.slate.colorClasses}
+              />
+            )}
+          </div>
+        );
+      },
     },
     {
       key: "estado",
@@ -313,6 +318,34 @@ export const EvidenceDetailsModal: React.FC<EvidenceDetailsModalProps> = ({
   }, [isOpen, criterioId]);
 
   const reloadFilesForEvidencia = async (evidenciaId: number) => {
+    if (isFlexible && criterioId && procesoId) {
+      const [allFiles, flexAssignments] = await Promise.all([
+        evidenceAssignmentService.getElementFiles(criterioId, procesoId).catch(() => []),
+        evidenceAssignmentService.getElementAssignmentsByElement(criterioId, procesoId).catch(() => []),
+      ]);
+      const flexAssignmentMap = new Map(flexAssignments.map((a) => [a.usuario_id, a]));
+      const filesByUser = new Map<number, FileModel[]>();
+      allFiles.forEach((f) => {
+        if (!filesByUser.has(f.usuario_id)) filesByUser.set(f.usuario_id, []);
+        filesByUser.get(f.usuario_id)!.push(f);
+      });
+      setFilesByEvidencia((prev) => {
+        const next = new Map(prev);
+        for (const [evId, groups] of next.entries()) {
+          const userId = groups[0]?.usuario_id ?? 0;
+          const fa = flexAssignmentMap.get(userId);
+          next.set(evId, [{
+            ...groups[0],
+            archivos: filesByUser.get(userId) ?? [],
+            fecha_asignacion: fa?.created_at ?? null,
+            fecha_limite: fa?.fecha_limite ?? null,
+            estado_asignacion: (fa?.estado ?? null) as AssignmentStatus | null,
+          }]);
+        }
+        return next;
+      });
+      return;
+    }
     const [files, assignments] = await Promise.all([
       fileService.listFiles({ evidencia_id: evidenciaId }),
       evidenceAssignmentService
@@ -366,6 +399,11 @@ export const EvidenceDetailsModal: React.FC<EvidenceDetailsModalProps> = ({
   };
 
   const handleDeleteFile = async (fileId: number) => {
+    if (isFlexible) {
+      await evidenceAssignmentService.deleteElementFile(fileId);
+      await reloadFilesForEvidencia(0);
+      return;
+    }
     await fileService.deleteFile(fileId);
     for (const [evId, groups] of filesByEvidencia.entries()) {
       const found = groups.some((g) =>
@@ -398,8 +436,11 @@ export const EvidenceDetailsModal: React.FC<EvidenceDetailsModalProps> = ({
     if (!criterioId) return;
     setLoadingFiles(true);
     try {
+      const searchParams = isFlexible && procesoId
+        ? { elemento_id: criterioId, proceso_id: procesoId, is_flexible: true }
+        : { criterio: String(criterioId) };
       const response = await evidenceSearchService.search(
-        { criterio: String(criterioId) },
+        searchParams,
         1,
         100,
       );
@@ -407,6 +448,34 @@ export const EvidenceDetailsModal: React.FC<EvidenceDetailsModalProps> = ({
       setEvidencias(mapped);
 
       if (mapped.length > 0 && isPrivileged) {
+        if (isFlexible && procesoId) {
+          // Modo flexible: todos los archivos del elemento, agrupados por usuario
+          const [allFiles, flexAssignments] = await Promise.all([
+            evidenceAssignmentService.getElementFiles(criterioId, procesoId).catch(() => []),
+            evidenceAssignmentService.getElementAssignmentsByElement(criterioId, procesoId).catch(() => []),
+          ]);
+          const flexAssignmentMap = new Map(flexAssignments.map((a) => [a.usuario_id, a]));
+          const filesByUser = new Map<number, FileModel[]>();
+          allFiles.forEach((f) => {
+            if (!filesByUser.has(f.usuario_id)) filesByUser.set(f.usuario_id, []);
+            filesByUser.get(f.usuario_id)!.push(f);
+          });
+          const flexMap = new Map<number, FilesByUser[]>();
+          mapped.forEach((ev) => {
+            const userId = ev.responsables[0]?.usuario_id ?? 0;
+            const fa = flexAssignmentMap.get(userId);
+            flexMap.set(ev.evidencia_id, [{
+              usuario_id: userId,
+              nombre: ev.responsables[0]?.nombre ?? `Usuario ${userId}`,
+              email: ev.responsables[0]?.email ?? "",
+              archivos: filesByUser.get(userId) ?? [],
+              fecha_asignacion: fa?.created_at ?? null,
+              fecha_limite: fa?.fecha_limite ?? null,
+              estado_asignacion: (fa?.estado ?? null) as AssignmentStatus | null,
+            }]);
+          });
+          setFilesByEvidencia(flexMap);
+        } else {
         const [filesResults, assignmentsResults] = await Promise.all([
           Promise.all(
             mapped.map((ev) =>
@@ -467,6 +536,7 @@ export const EvidenceDetailsModal: React.FC<EvidenceDetailsModalProps> = ({
           map.set(ev.evidencia_id, Array.from(groupMap.values()));
         });
         setFilesByEvidencia(map);
+        } // end traditional
       }
     } catch (error) {
       console.error("Error al cargar datos del criterio:", error);
@@ -487,7 +557,7 @@ export const EvidenceDetailsModal: React.FC<EvidenceDetailsModalProps> = ({
         subtitle={criterio?.criterio_nomenclatura}
         variant="info"
         size="xl"
-        maxHeight="xl"
+        maxHeight="auto"
         heroIcon={
           <SystemIcons.modal.document
             className={`${ICON_SIZES.md} text-blanco-una`}
@@ -533,7 +603,7 @@ export const EvidenceDetailsModal: React.FC<EvidenceDetailsModalProps> = ({
                     TYPOGRAPHY.modal.subtitle,
                   )}
                 >
-                  Evidencias asociadas
+                  {isFlexible ? "Asignaciones" : "Evidencias asociadas"}
                 </span>
                 <span
                   className={cn(TYPOGRAPHY.modal.subtitle, "text-gris-una-2")}

@@ -142,7 +142,7 @@ export const AccreditationCyclesTable: React.FC<AccreditationCyclesTableProps> =
             align: 'center',
             width: TABLE_COLUMN_WIDTHS.actionsLarge,
             render: (_, item) => (
-            <div className="flex items-center justify-center gap-2 pr-2">
+            <div className="flex items-center justify-center gap-2">
                 <TableActionButton
                 action="view"
                 tooltip="Ver detalles"

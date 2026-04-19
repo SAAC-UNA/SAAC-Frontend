@@ -221,7 +221,7 @@ const UsersRepository: React.FC = () => {
           onClose={closeStateChangeModal}
           onConfirm={confirmStateChange}
           title="Confirmar inactivación de usuario"
-          variant="info"
+          variant="success"
           confirmLabel="Sí, inactivar"
           cancelLabel="Cancelar"
           confirmLoading={isLoading}

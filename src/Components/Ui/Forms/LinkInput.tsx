@@ -34,6 +34,12 @@ export const LinkInput: React.FC<LinkInputProps> = ({
     
     if (!trimmedUrl) return;
 
+    // Validar longitud máxima
+    if (trimmedUrl.length > 2048) {
+      showToast({ type: 'error', title: 'URL demasiado larga', message: 'La URL no puede superar los 2048 caracteres' });
+      return;
+    }
+
     // Validar límite de enlaces
     if (links.length >= maxLinks) {
       showToast({ type: 'warning', title: 'Límite alcanzado', message: `Solo puede agregar hasta ${maxLinks} enlaces` });
@@ -83,6 +89,10 @@ export const LinkInput: React.FC<LinkInputProps> = ({
       urls.forEach(url => {
         const trimmedUrl = url.trim();
         if (trimmedUrl) {
+          if (trimmedUrl.length > 2048) {
+            invalidUrls.push(trimmedUrl);
+            return;
+          }
           const validation = validateUrl(trimmedUrl);
           if (validation.isValid) {
             validUrls.push(trimmedUrl);
@@ -130,6 +140,7 @@ export const LinkInput: React.FC<LinkInputProps> = ({
             disabled={disabled || links.length >= maxLinks}
             variant="default"
             size="sm"
+            maxLength={2048}
           />
         </div>
         <Button

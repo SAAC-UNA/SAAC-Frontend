@@ -19,12 +19,12 @@ export interface BadgeColorConfig {
 
 /** Estados de publicación de evidencia — enum PascalCase (EVIDENCIA.estado) */
 export const EVIDENCE_STATUS_BADGE: Record<EvidencePublicationStatus, StatusBadgeConfig> = {
-  'Pendiente': { label: 'Pendiente', colorClasses: 'bg-slate-ring text-slate' },
+  'Pendiente': { label: 'Pendiente', colorClasses: 'bg-gris-light text-gris-una' },
   'En Proceso': { label: 'En proceso', colorClasses: 'bg-warning-ring text-warning' },
   'Aprobado': { label: 'Aprobado', colorClasses: 'bg-verde-ring text-verde' },
   'Rechazado': { label: 'Rechazado', colorClasses: 'bg-error-ring text-error' },
   'Completado': { label: 'Completado', colorClasses: 'bg-verde-ring text-verde' },
-  'Vencido': { label: 'Vencido', colorClasses: 'bg-rose-ring text-rose' },
+  'Vencido': { label: 'Vencido', colorClasses: 'bg-rose-light text-rose' },
   'Observada': { label: 'Observada', colorClasses: 'bg-info-ring text-info' },
   'Validada': { label: 'Validada', colorClasses: 'bg-verde-ring text-verde' },
 };
@@ -34,15 +34,15 @@ export const ASSIGNMENT_STATUS_BADGE: Record<AssignmentStatus, StatusBadgeConfig
   pendiente: { label: 'Pendiente', colorClasses: 'bg-slate-ring text-slate' },
   en_progreso: { label: 'En progreso', colorClasses: 'bg-warning-ring text-warning' },
   completado: { label: 'Completado', colorClasses: 'bg-verde-ring text-verde' },
-  vencido: { label: 'Vencido', colorClasses: 'bg-rose-ring text-rose' },
+  vencido: { label: 'Vencido', colorClasses: 'bg-rose-light text-rose' },
 };
 
 /** Estados de asignación de elemento (modelo flexible — PascalCase del backend) */
 export const ELEMENT_ASSIGNMENT_STATUS_BADGE: Record<string, StatusBadgeConfig> = {
-  'Pendiente':   { label: 'Pendiente',   colorClasses: 'bg-slate-ring text-slate' },
+  'Pendiente':   { label: 'Pendiente',   colorClasses: 'bg-gris-light text-gris-una' },
   'En Progreso': { label: 'En progreso', colorClasses: 'bg-warning-ring text-warning' },
   'Completado':  { label: 'Completado',  colorClasses: 'bg-verde-ring text-verde' },
-  'Vencido':     { label: 'Vencido',     colorClasses: 'bg-rose-ring text-rose' },
+  'Vencido':     { label: 'Vencido',     colorClasses: 'bg-rose-light text-rose' },
 };
 
 /** Estados de solicitud de ampliación de plazo */
@@ -50,6 +50,7 @@ export const EXTENSION_REQUEST_STATUS_BADGE: Record<ExtensionRequestStatus, Stat
   pendiente: { label: 'Pendiente', colorClasses: 'bg-slate-ring text-slate' },
   aprobada:  { label: 'Aprobado',  colorClasses: 'bg-verde-ring text-verde' },
   rechazada: { label: 'Rechazado', colorClasses: 'bg-error-ring text-error' },
+  cancelada: { label: 'Cancelada', colorClasses: 'bg-gris-light text-gris-una' },
 };
 
 /** Estado activo/inactivo de un usuario */
@@ -65,7 +66,7 @@ export const BADGE_COLORS: Record<string, BadgeColorConfig> = {
   teal:    { colorClasses: 'bg-teal-ring text-teal' },
   warning: { colorClasses: 'bg-warning-ring text-warning' },
   error:   { colorClasses: 'bg-error-ring text-error' },
-  rose:    { colorClasses: 'bg-rose-ring text-rose' },
+  rose:    { colorClasses: 'bg-rose-light text-rose' },
   info:    { colorClasses: 'bg-info-ring text-info' },
   gris:    { colorClasses: 'bg-gris-light text-gris-una' },
   slate:   { colorClasses: 'bg-slate-ring text-slate' },
@@ -94,7 +95,7 @@ export const AUDIT_ACTION_BADGE: Record<string, StatusBadgeConfig> = {
   consultar: { label: 'Consultar', colorClasses: 'bg-slate-ring text-slate' },
   login: { label: 'Login', colorClasses: 'bg-verde-ring text-verde' },
   logout: { label: 'Logout', colorClasses: 'bg-error-ring text-error' },
-  login_fallido: { label: 'Login fallido', colorClasses: 'bg-rose-ring text-rose' },
+  login_fallido: { label: 'Login fallido', colorClasses: 'bg-rose-light text-rose' },
   activar: { label: 'Activar', colorClasses: 'bg-teal-ring text-teal' },
   desactivar: { label: 'Desactivar', colorClasses: 'bg-gris-light text-gris-una' },
   asignar_rol: { label: 'Asignar rol', colorClasses: 'bg-morado-ring text-morado' },

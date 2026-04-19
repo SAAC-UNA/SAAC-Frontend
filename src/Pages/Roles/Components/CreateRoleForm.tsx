@@ -19,7 +19,7 @@
  * @param simplified - Usar validación simple (true) o avanzada (false)
  */
 import React, { useState, useEffect } from 'react';
-import { Input, Textarea, Button } from '@/components/Ui/Index';
+import { Input, Textarea, Button, Card } from '@/components/Ui/Index';
 import { useBreakpoint } from '@/hooks/UseBreakpoint';
 import { useRoles } from '@/hooks/UseRoles';
 import { validationRules, useValidation } from '@/utils/Validation';
@@ -321,8 +321,7 @@ export const CreateRoleForm: React.FC<CreateRoleFormProps> = ({
           {/* Grid principal: Columna izquierda (Nombre + Privilegios) y Columna derecha (Descripción) */}
           <div className="grid grid-cols-2 gap-6">
             {/* Columna izquierda: Nombre del rol + Privilegios */}
-            <div className="space-y-6">
-              {/* Nombre del rol */}
+            <Card className="p-4 space-y-6 ">
               <Input
                 label="Nombre del Rol"
                 placeholder="Ej: Administrador, Profesor..."
@@ -346,11 +345,10 @@ export const CreateRoleForm: React.FC<CreateRoleFormProps> = ({
                 loading={isLoading}
                 error={getFieldError('permissions')}
               />
-            </div>
+            </Card>
 
             {/* Columna derecha: Descripción */}
-            <div className="space-y-6">
-              <div className="min-h-full">
+            <Card className="p-4 space-y-6 ">
                 <Textarea
                   label="Descripción"
                   placeholder="Descripción del rol..."
@@ -400,13 +398,12 @@ export const CreateRoleForm: React.FC<CreateRoleFormProps> = ({
                     </Button>
                   </div>
                 )}
-              </div>
-            </div>
+            </Card>
           </div>
         </div>
       ) : (
         // Layout de Mobile/Tablet: Columna única
-        <div className="space-y-6">
+        <Card className="p-4 space-y-6 ">
           {/* Campo: Nombre del rol */}
           <Input
             label="Nombre del Rol"
@@ -483,7 +480,7 @@ export const CreateRoleForm: React.FC<CreateRoleFormProps> = ({
                 </Button>
             </div>
           )}
-        </div>
+        </Card>
       )}
     </form>
   );

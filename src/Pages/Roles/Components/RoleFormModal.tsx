@@ -110,7 +110,7 @@ export const RoleFormModal: React.FC<RoleFormModalProps> = ({
   return (
     <>
       <EntityFormModal
-        isOpen={isOpen}
+        isOpen={isOpen && !successState.isOpen}
         onClose={handleClose}
         onConfirm={handleMainConfirm}
         title={isEditing ? 'Editar Rol' : 'Crear Rol'}

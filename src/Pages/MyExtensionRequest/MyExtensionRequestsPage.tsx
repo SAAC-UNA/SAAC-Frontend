@@ -13,6 +13,7 @@ import {
 import { extensionRequestService } from "@/Services/ExtensionRequestService";
 import { flexibleExtensionRequestService } from "@/Services/FlexibleExtensionRequestService";
 import { useToast } from "@/Context/ToastContext";
+
 import { getContextualInfo } from "@/Constants/ModuleInfo";
 import { TABLE_PAGE_SIZE } from "@/Constants/TablePagination";
 import { ExtensionRequestsTable } from "../MyExtensionRequest/Components/ExtensionRequestsTable";
@@ -52,6 +53,7 @@ export const MyExtensionRequestsPage: React.FC = () => {
     { value: "pendiente", label: "Pendiente" },
     { value: "aprobada", label: "Aprobada" },
     { value: "rechazada", label: "Rechazada" },
+    { value: "cancelada", label: "Cancelada" },
   ];
 
   useEffect(() => {
@@ -113,6 +115,28 @@ export const MyExtensionRequestsPage: React.FC = () => {
     setSelectedSolicitud(null);
   }, []);
 
+  const handleCancelRequest = useCallback(async (solicitud: ExtensionRequest) => {
+    try {
+      if (solicitud.evidencia_asignacion_id !== null) {
+        await extensionRequestService.cancelRequest(solicitud.solicitud_ampliacion_id);
+      } else {
+        await extensionRequestService.cancelElementRequest(solicitud.solicitud_ampliacion_id);
+      }
+      showToast({
+        type: "success",
+        title: "Solicitud cancelada",
+        message: "La solicitud de ampliación ha sido cancelada",
+      });
+      loadSolicitudes();
+    } catch (error: unknown) {
+      showToast({
+        type: "error",
+        title: "Error",
+        message: error instanceof Error ? error.message : "No se pudo cancelar la solicitud",
+      });
+    }
+  }, []);
+
   return (
     <ScreenContainer>
       <PageHeader
@@ -148,6 +172,7 @@ export const MyExtensionRequestsPage: React.FC = () => {
         itemsPerPage={TABLE_PAGE_SIZE.standard}
         onRetry={loadSolicitudes}
         onViewDetails={handleViewDetails}
+        onCancelRequest={handleCancelRequest}
       />
 
       {/* Modal de detalles */}

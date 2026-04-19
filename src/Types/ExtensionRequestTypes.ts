@@ -5,7 +5,7 @@
 import { formatDate } from '@/Utils/DateUtils';
 
 // Estados posibles de una solicitud de ampliación
-export type ExtensionRequestStatus = 'pendiente' | 'aprobada' | 'rechazada';
+export type ExtensionRequestStatus = 'pendiente' | 'aprobada' | 'rechazada' | 'cancelada';
 
 // Modelo completo de solicitud de ampliación
 export interface ExtensionRequest {

@@ -14,7 +14,8 @@ import { useFirstColumnConfig } from '@/Hooks/UseFirstColumnConfig';
 import { EVIDENCE_STATUS_BADGE } from '@/Constants/StatusBadges';
 import { EvidenceResourcesModal } from './EvidenceResourcesModal';
 import { BADGE_COLORS } from '@/Constants/StatusBadges';
-import { formatDateShort } from '@/Utils/DateUtils';
+import { formatDate } from '@/Utils/DateUtils';
+import { TABLE_COLUMN_WIDTHS } from '@/Constants/Components';
 
 
 export interface EvidenceSearchResultsTableProps {
@@ -75,7 +76,7 @@ export const EvidenceSearchResultsTable: React.FC<EvidenceSearchResultsTableProp
       align: 'left',
       width: firstColumn.width,
       render: (_, item) => (
-        <div className="flex flex-col pl-2">
+        <div className="flex flex-col">
           <div className="flex flex-row items-baseline gap-1.5">
             <p className={`font-sans antialiased font-bold leading-normal text-negro-una-2 shrink-0 ${TYPOGRAPHY.table.cell}`} title={item.criterio_nomenclatura}>
               {truncateText(item.criterio_nomenclatura, firstColumn.maxLength)}
@@ -85,7 +86,7 @@ export const EvidenceSearchResultsTable: React.FC<EvidenceSearchResultsTableProp
             </p>
           </div>
           <p className={`${TYPOGRAPHY.table.helper} text-gris-una mt-1.5 -mb-0.5`}>
-            {formatDateShort(item.fecha_publicacion)}
+            {formatDate(item.fecha_publicacion)}
           </p>
         </div>
       )
@@ -112,33 +113,31 @@ export const EvidenceSearchResultsTable: React.FC<EvidenceSearchResultsTableProp
       key: 'recursos',
       header: 'Recursos',
       align: 'left',
-      render: (_, item) => (
-        <div className="flex items-start">
-          {item.archivos_count > 0 && (
-            <StatusBadge
-              label={`${item.archivos_count} ${item.archivos_count === 1 ? 'archivo' : 'archivos'}`}
-              colorClasses={BADGE_COLORS.info.colorClasses}
-            />
-          )}
-          {item.enlaces_count > 0 && (
-            <StatusBadge
-              label={`${item.enlaces_count} ${item.enlaces_count === 1 ? 'enlace' : 'enlaces'}`}
-              colorClasses={BADGE_COLORS.gris.colorClasses}
-            />
-          )}
-          {item.archivos_count === 0 && item.enlaces_count === 0 && (
-            <StatusBadge
-              label="Sin recursos"
-              colorClasses={BADGE_COLORS.slate.colorClasses}
-            />
-          )}
-        </div>
-      )
+      width: TABLE_COLUMN_WIDTHS.status,
+      render: (_, item) => {
+        const total = item.archivos_count + item.enlaces_count;
+        return (
+          <div className="flex items-start">
+            {total > 0 ? (
+              <StatusBadge
+                label={`${total} ${total === 1 ? 'recurso' : 'recursos'}`}
+                colorClasses={BADGE_COLORS.info.colorClasses}
+              />
+            ) : (
+              <StatusBadge
+                label="Sin recursos"
+                colorClasses={BADGE_COLORS.gris.colorClasses}
+              />
+            )}
+          </div>
+        );
+      }
     },
     {
       key: 'estado',
       header: 'Estado',
       align: 'left',
+      width: TABLE_COLUMN_WIDTHS.status,
       render: (_, item) => (
         <div className="flex items-start">
           <StatusBadge
@@ -153,16 +152,11 @@ export const EvidenceSearchResultsTable: React.FC<EvidenceSearchResultsTableProp
       header: 'Acciones',
       align: 'center',
       render: (_, item) => (
-        <div className="flex items-center justify-center gap-2 pr-2">
+        <div className="flex items-center justify-center gap-2">
           <TableActionButton
             action="view"
             tooltip="Ver detalles"
             onClick={() => onViewDetails(item.evidencia_id)}
-          />
-          <TableActionButton
-            action="list"
-            tooltip="Ver recursos del entregable"
-            onClick={() => openResourcesModal(item)}
           />
         </div>
       )
@@ -177,7 +171,7 @@ export const EvidenceSearchResultsTable: React.FC<EvidenceSearchResultsTableProp
         title=""
         searchable={false}
         loading={loading}
-        emptyMessage="No existen evidencias que cumplan con los filtros aplicados. Intenta ajustar los criterios de búsqueda."
+        emptyMessage="No existen elementos que cumplan con los filtros aplicados."
         pagination={totalPages > 1 ? {
           currentPage,
           totalPages,

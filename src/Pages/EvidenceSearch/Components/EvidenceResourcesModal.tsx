@@ -2,6 +2,9 @@
  * EvidenceResourcesModal - Modal de recursos del criterio
  * Muestra las evidencias del criterio, sus responsables y archivos asociados.
  */
+/** *****************************************************
+ * ! Meditar si se elimina o no este modal. Actualmente ya no se usa
+ * *****************************************************/
 
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { Modal } from '@/Components/Ui/Modals/Modal';

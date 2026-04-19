@@ -103,7 +103,7 @@ export const BlockApprovalTable: React.FC<BlockApprovalTableProps> = ({
       align: 'left',
       width: '38%',
       render: (_, item) => (
-        <div className="flex flex-col pl-2">
+        <div className="flex flex-col">
           <p
             className={`block truncate text-gris-una ${TYPOGRAPHY.table.cell}`}
             title={`${item.nomenclatura} — ${item.descripcion}`}
@@ -177,7 +177,7 @@ export const BlockApprovalTable: React.FC<BlockApprovalTableProps> = ({
         const canApproveBlock = item.estado_aprobacion === 'pendiente';
         const canRejectBlock  = item.estado_aprobacion !== 'aprobado';
         return (
-          <div className="flex items-center justify-center" onClick={e => e.stopPropagation()}>
+          <div className="flex items-center justify-center gap-2" onClick={e => e.stopPropagation()}>
             <TableActionButton
               action="list"
               tooltip={isFlexible ? 'Ver fuentes asociadas' : 'Ver evidencias asociadas'}

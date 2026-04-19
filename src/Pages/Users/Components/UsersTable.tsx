@@ -13,6 +13,7 @@ import type { DataTableColumn } from '@/Components/Ui/Table/DataTable';
 import type { User } from '@/Services/UserService';
 import { useFirstColumnConfig } from '@/Hooks/UseFirstColumnConfig';
 import { STATUS_BADGE } from '@/Constants/StatusBadges';
+import { TABLE_COLUMN_WIDTHS } from '@/Constants/Components';
 
 interface UsersTableProps {
     onViewUser?: (user: User) => void;
@@ -74,10 +75,14 @@ export const UsersTable: React.FC<UsersTableProps> = ({
         }
         
         const query = debouncedSearchQuery.toLowerCase();
+        const statusLabel = (status: string) =>
+            status === 'active' ? 'activo' : status === 'inactive' ? 'inactivo' : status;
         return users.filter(user =>
             user.name.toLowerCase().includes(query) ||
             user.email.toLowerCase().includes(query) ||
-            (user.role && user.role.toLowerCase().includes(query))
+            (user.role && user.role.toLowerCase().includes(query)) ||
+            statusLabel(user.status).includes(query) ||
+            user.status.toLowerCase().includes(query)
         );
     }, [users, debouncedSearchQuery]);
 
@@ -104,7 +109,7 @@ export const UsersTable: React.FC<UsersTableProps> = ({
             align: 'left',
             width: firstColumn.width,
             render: (value, user) => (
-                <div className="flex flex-col pl-2">
+                <div className="flex flex-col">
                     <p className={`block font-sans antialiased font-bold leading-normal text-negro-una-2 ${TYPOGRAPHY.table.cell}`} title={String(value)}>
                         {truncateText(String(value), firstColumn.maxLength)}
                     </p>
@@ -127,7 +132,7 @@ export const UsersTable: React.FC<UsersTableProps> = ({
                     .join(' ');
                 return (
                 <div className="flex items-start">
-                    <div className={`relative grid items-center px-2 py-1 font-sans text-negro-una-2 rounded-corner select-none whitespace-nowrap ${TYPOGRAPHY.table.cell}`} title={roleLabel}>
+                    <div className={`relative grid items-center py-1 font-sans text-negro-una-2 rounded-corner select-none whitespace-nowrap ${TYPOGRAPHY.table.cell}`} title={roleLabel}>
                         <span>{truncateText(roleLabel, TABLE_TRUNCATE.name)}</span>
                     </div>
                 </div>
@@ -138,6 +143,7 @@ export const UsersTable: React.FC<UsersTableProps> = ({
             key: 'status',
             header: 'Estado',
             align: 'left',
+            width: TABLE_COLUMN_WIDTHS.status,
             render: (_, user) => (
                 <div className="flex items-start">
                     <StatusBadge
@@ -152,7 +158,7 @@ export const UsersTable: React.FC<UsersTableProps> = ({
             header: 'Acciones',
             align: 'center',
             render: (_, user) => (
-                <div className="flex items-center justify-center gap-2 pr-2">
+                <div className="flex items-center justify-center gap-2">
                     <TableActionButton
                         action="view"
                         tooltip="Ver usuario"
@@ -206,7 +212,7 @@ export const UsersTable: React.FC<UsersTableProps> = ({
                 loading={isLoading}
                 emptyMessage={
                     debouncedSearchQuery
-                        ? `No se encontraron usuarios que coincidan con "${debouncedSearchQuery}"`
+                        ? "No se encontraron usuarios que coincidan con los filtros de búsqueda"
                         : "No hay usuarios registrados aún."
                 }
                 unstyled={unstyled}
