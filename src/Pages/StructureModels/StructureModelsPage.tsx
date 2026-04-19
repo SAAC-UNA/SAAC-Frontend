@@ -336,7 +336,6 @@ const ModelCard: React.FC<ModelCardProps> = ({
               MODELO_TIPO_BADGE[model.tipo]?.colorClasses ??
               "bg-gris-light text-gris-una"
             }
-            size="sm"
           />
           <StatusBadge
             label={model.activo ? "Activo" : "Inactivo"}
@@ -345,7 +344,6 @@ const ModelCard: React.FC<ModelCardProps> = ({
                 ? "text-verde-dark bg-verde-ring"
                 : "text-error-dark bg-error-ring"
             }
-            size="sm"
           />
         </div>
       </div>

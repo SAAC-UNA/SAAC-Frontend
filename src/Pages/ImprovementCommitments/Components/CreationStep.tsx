@@ -298,7 +298,7 @@ export const CreationStep: React.FC<CreationStepProps> = ({
       align: 'left',
       width: firstColumn.width,
       render: (_, criterio) => (
-        <div className="flex flex-col pl-2">
+        <div className="flex flex-col">
           <p
             className={`block font-sans antialiased font-bold leading-normal text-negro-una-2 ${TYPOGRAPHY.table.cell}`}
             title={criterio.nomenclatura}

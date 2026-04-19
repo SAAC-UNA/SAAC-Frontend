@@ -92,7 +92,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(({
               
               // State variants
               error
-                ? 'border-rojo-una-2' 
+                ? 'border-error' 
                 : 'border-gris-light bg-blanco-una',
               
               // Custom classes
@@ -131,22 +131,22 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(({
                 
                 // Colors
                 error
-                  ? 'text-rojo-una-2'
+                  ? 'text-error'
                   : hasValue 
                     ? 'text-gris-una font-semibold'  // Color activo cuando tiene contenido
                     : 'text-gris-una peer-focus:text-gris-una peer-focus:font-semibold',
               )}
             >
               {label}
-              {required && <span className="text-rojo-una-2 ml-1">*</span>}
+              {required && <span className="text-error ml-1">*</span>}
             </label>
           )}
         </div>
 
         {/* Error message */}
         {error && (
-          <p className={`text-rojo-una-2 ${TYPOGRAPHY.form.helper} flex items-center gap-2`}>
-            <SystemIcons.interface.alert className="w-4 h-4 shrink-0 text-rojo-una-2" size="sm" />
+          <p className={`text-error ${TYPOGRAPHY.form.helper} flex items-center gap-2`}>
+            <SystemIcons.interface.alert className="w-4 h-4 shrink-0 text-error" size="sm" />
             {error}
           </p>
         )}
@@ -171,7 +171,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(({
           className={`block ${TYPOGRAPHY.form.label} font-medium text-negro-una`}
         >
           {label}
-          {required && <span className="text-rojo-una-2 ml-1">*</span>}
+          {required && <span className="text-error ml-1">*</span>}
         </label>
       )}
 
@@ -200,8 +200,8 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(({
 
       {/* Error message */}
       {error && (
-        <p className={`text-rojo-una-2 ${TYPOGRAPHY.form.helper} flex items-center gap-2`}>
-          <SystemIcons.interface.alert className="w-4 h-4 shrink-0 text-rojo-una-2" size="sm" />
+        <p className={`text-error ${TYPOGRAPHY.form.helper} flex items-center gap-2`}>
+          <SystemIcons.interface.alert className="w-4 h-4 shrink-0 text-error" size="sm" />
           {error}
         </p>
       )}

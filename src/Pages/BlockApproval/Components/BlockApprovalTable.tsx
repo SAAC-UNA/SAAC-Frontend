@@ -115,25 +115,6 @@ export const BlockApprovalTable: React.FC<BlockApprovalTableProps> = ({
       ),
     },
     {
-      key: 'linked_count',
-      header: 'Elementos enlazados',
-      align: 'center',
-      width: '200px',
-      render: (_, item) => {
-        const count = item.linked_count ?? 0;
-        const label = isFlexible
-          ? `${count} ${count === 1 ? 'fuente de informacion' : 'fuentes de informacion'}`
-          : `${count} ${count === 1 ? 'evidencia' : 'evidencias'}`;
-        return (
-          <div className="flex justify-center">
-            <span className={`${TYPOGRAPHY.table.helper} text-gris-una`}>
-              {label}
-            </span>
-          </div>
-        );
-      },
-    },
-    {
       key: 'responsables',
       header: 'Responsables',
       align: 'center' as const,
@@ -150,6 +131,25 @@ export const BlockApprovalTable: React.FC<BlockApprovalTableProps> = ({
         return (
           <div className="flex w-full justify-center pr-1">
             <UserAvatars users={users} size={28} maxVisible={4} tooltipPlacement="bottom" />
+          </div>
+        );
+      },
+    },
+    {
+      key: 'linked_count',
+      header: 'Elementos enlazados',
+      align: 'center',
+      width: '200px',
+      render: (_, item) => {
+        const count = item.linked_count ?? 0;
+        const label = isFlexible
+          ? `${count} ${count === 1 ? 'fuente de información' : 'fuentes de información'}`
+          : `${count} ${count === 1 ? 'evidencia' : 'evidencias'}`;
+        return (
+          <div className="flex justify-center">
+            <span className={`${TYPOGRAPHY.table.helper} text-gris-una`}>
+              {label}
+            </span>
           </div>
         );
       },

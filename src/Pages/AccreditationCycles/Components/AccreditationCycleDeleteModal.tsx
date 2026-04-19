@@ -48,7 +48,7 @@ export const AccreditationCycleDeleteModal: React.FC<Props> = ({
       showConfirm={false}
       footerMeta={
         <span className={cn(TYPOGRAPHY.form.helper, 'text-error')}>
-          Acción irreversible
+          Esta acción no puede deshacerse.
         </span>
       }
       footerButtons={
@@ -72,12 +72,11 @@ export const AccreditationCycleDeleteModal: React.FC<Props> = ({
         <p className={cn(TYPOGRAPHY.modal.body, 'text-gris-una-2 leading-relaxed')}>
           ¿Está seguro de eliminar el ciclo{' '}
           <span className="font-bold text-negro-una">"{cycle.nombre}"</span>?
-          Esta acción no puede deshacerse.
         </p>
 
         <div className="mt-1">
           <div className={cn(TYPOGRAPHY.form.helper, 'text-gris-una-2 mb-2 flex flex-wrap items-center gap-1.5')}>
-            <span>Para confirmar, escribe el nombre exacto del ciclo:</span>
+            <span>Para confirmar, escriba el nombre exacto del ciclo:</span>
             <span className={cn(TYPOGRAPHY.modal.body, 'text-error font-bold')}>
               {cycle.nombre}
             </span>

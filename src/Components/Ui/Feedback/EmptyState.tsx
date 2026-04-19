@@ -52,26 +52,26 @@ export const EmptyState: React.FC<EmptyStateProps> = ({
     switch (variant) {
       case 'search':
         return {
-          icon: <SystemIcons.interface.search className={cn(compact ? "w-10 h-10" : "w-12 h-12", "text-gray-300")} />,
+          icon: <SystemIcons.interface.search className={cn(compact ? "w-10 h-10" : "w-12 h-12", "text-gris-una")} />,
           defaultTitle: 'Sin resultados',
           defaultDescription: 'No se encontraron resultados para tu búsqueda'
         };
       case 'document':
         return {
-          icon: <SystemIcons.modal.document className={cn(compact ? "w-10 h-10" : "w-12 h-12", "text-gray-300")} />,
+          icon: <SystemIcons.modal.document className={cn(compact ? "w-10 h-10" : "w-12 h-12", "text-gris-una")} />,
           defaultTitle: 'No hay datos',
           defaultDescription: 'No hay datos disponibles para mostrar'
         };
       case 'noPermission':
         return {
-          icon: <SystemIcons.interface.alert className={cn(compact ? "w-10 h-10" : "w-12 h-12", "text-gray-300")} />,
+          icon: <SystemIcons.interface.alert className={cn(compact ? "w-10 h-10" : "w-12 h-12", "text-gris-una")} />,
           defaultTitle: 'Sin permisos',
           defaultDescription: 'No tienes permisos para ver este contenido'
         };
       case 'default':
       default:
         return {
-          icon: <SystemIcons.modal.document className={cn(compact ? "w-10 h-10" : "w-12 h-12", "text-gray-300")} />,
+          icon: <SystemIcons.modal.document className={cn(compact ? "w-10 h-10" : "w-12 h-12", "text-gris-una")} />,
           defaultTitle: 'No hay datos',
           defaultDescription: 'No hay información disponible'
         };
@@ -85,7 +85,7 @@ export const EmptyState: React.FC<EmptyStateProps> = ({
 
   return (
     <div className={cn(
-      "flex flex-col items-center justify-center text-gray-500",
+      "flex flex-col items-center justify-center text-gris-una",
       compact ? "py-8" : "py-12",
       className
     )}>
@@ -96,7 +96,7 @@ export const EmptyState: React.FC<EmptyStateProps> = ({
       
       {/* Título */}
       <p className={cn(
-        "font-medium text-gray-900",
+        "font-medium text-gris-una",
         compact ? "text-base mb-0.5" : "text-lg mb-1"
       )}>
         {finalTitle}
@@ -105,7 +105,7 @@ export const EmptyState: React.FC<EmptyStateProps> = ({
       {/* Descripción */}
       {finalDescription && (
         <p className={cn(
-          "text-gray-500 wrap-break-word w-full max-w-sm text-center",
+          "text-gris-una wrap-break-word w-full max-w-sm text-center",
           compact ? "text-xs" : "text-sm"
         )}>
           {finalDescription}

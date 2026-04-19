@@ -51,7 +51,7 @@ export const StructureModelDeleteModal: React.FC<Props> = ({
       showConfirm={false}
       footerMeta={
         <span className={cn(TYPOGRAPHY.form.helper, 'text-error')}>
-          Acción irreversible
+          Esta acción no puede deshacerse.
         </span>
       }
       footerButtons={
@@ -80,7 +80,7 @@ export const StructureModelDeleteModal: React.FC<Props> = ({
 
         <div className="mt-1">
           <div className={cn(TYPOGRAPHY.form.helper, 'text-gris-una-2 mb-2 flex flex-wrap items-center gap-1.5')}>
-            <span>Para confirmar, escribe el nombre exacto del modelo:</span>
+            <span>Para confirmar, escriba el nombre exacto del modelo:</span>
             <span className={cn(TYPOGRAPHY.modal.body, 'text-error font-bold')}>
               {model.nombre}
             </span>

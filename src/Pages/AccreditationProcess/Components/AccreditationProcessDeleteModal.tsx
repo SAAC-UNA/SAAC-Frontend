@@ -41,7 +41,7 @@ export const AccreditationProcessDeleteModal: React.FC<Props> = ({
       showConfirm={false}
       footerMeta={
         <span className={cn(TYPOGRAPHY.form.helper, 'text-error')}>
-          Acción irreversible
+          Esta acción no puede deshacerse.
         </span>
       }
       footerButtons={
@@ -65,12 +65,11 @@ export const AccreditationProcessDeleteModal: React.FC<Props> = ({
         <p className={cn(TYPOGRAPHY.modal.body, 'text-gris-una-2 leading-relaxed')}>
           ¿Está seguro de eliminar el proceso{' '}
           <span className="font-bold text-negro-una">"{process.type}"</span>?
-          Esta acción no puede deshacerse.
         </p>
 
         <div className="mt-1">
           <div className={cn(TYPOGRAPHY.form.helper, 'text-gris-una-2 mb-2 flex flex-wrap items-center gap-1.5')}>
-            <span>Para confirmar, escribe el tipo de proceso exacto:</span>
+            <span>Para confirmar, escriba el tipo de proceso exacto:</span>
             <span className={cn(TYPOGRAPHY.modal.body, 'text-error font-bold')}>
               {process.type}
             </span>

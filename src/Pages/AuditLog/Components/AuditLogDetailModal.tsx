@@ -73,7 +73,7 @@ export const AuditLogDetailModal: React.FC<AuditLogDetailModalProps> = ({
                 <StatusBadge
                   key={rol}
                   label={rol}
-                  colorClasses={BADGE_COLORS.slate.colorClasses}
+                  colorClasses={BADGE_COLORS.info.colorClasses}
                 />
               ))
             ) : (
