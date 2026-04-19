@@ -81,8 +81,12 @@ export const RoleFormModal: React.FC<RoleFormModalProps> = ({
         result = await createRole(confirmState.roleData);
       }
       if (result) {
+        const createdRoleName = confirmState.roleData.name;
         setConfirmState({ isOpen: false, roleData: null });
-        setSuccessState({ isOpen: true, roleName: confirmState.roleData.name });
+        // Esperar al siguiente ciclo para evitar superposicion con otros modales.
+        setTimeout(() => {
+          setSuccessState({ isOpen: true, roleName: createdRoleName });
+        }, 0);
       }
     } catch (error) {
       showToast({
@@ -105,13 +109,18 @@ export const RoleFormModal: React.FC<RoleFormModalProps> = ({
 
   const handleClose = () => {
     setHasChanges(!isEditing);
+    setConfirmState({ isOpen: false, roleData: null });
+    setSuccessState({ isOpen: false, roleName: "" });
     onClose();
   };
+
+  const showFormModal = isOpen && !confirmState.isOpen && !successState.isOpen;
+  const showConfirmation = confirmState.isOpen && !successState.isOpen;
 
   return (
     <>
       <EntityFormModal
-        isOpen={isOpen && !successState.isOpen}
+        isOpen={showFormModal}
         onClose={handleClose}
         onConfirm={handleMainConfirm}
         title={isEditing ? "Editar Rol" : "Crear Rol"}
@@ -133,7 +142,7 @@ export const RoleFormModal: React.FC<RoleFormModalProps> = ({
       {/* Confirmación según modo */}
       {!isEditing ? (
         <CreateConfirmationModal
-          isOpen={confirmState.isOpen}
+          isOpen={showConfirmation}
           onClose={() => setConfirmState({ isOpen: false, roleData: null })}
           onConfirm={handleConfirmOperation}
           title="Confirmar creación de rol"
@@ -145,7 +154,7 @@ export const RoleFormModal: React.FC<RoleFormModalProps> = ({
         />
       ) : (
         <EditConfirmationModal
-          isOpen={confirmState.isOpen}
+          isOpen={showConfirmation}
           onClose={() => setConfirmState({ isOpen: false, roleData: null })}
           onConfirm={handleConfirmOperation}
           title="Confirmar edición de rol"

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState } from "react";
 
 interface SuccessModalProps {
   isOpen: boolean;
@@ -15,7 +15,7 @@ export const SuccessModal: React.FC<SuccessModalProps> = ({
   message,
   onClose,
   autoClose = true,
-  autoCloseDelay = 3000
+  autoCloseDelay = 3000,
 }) => {
   const [isClosing, setIsClosing] = useState(false);
 
@@ -44,8 +44,6 @@ export const SuccessModal: React.FC<SuccessModalProps> = ({
       handleClose();
     }
   };
-
-
 
   return (
     <>
@@ -197,14 +195,14 @@ export const SuccessModal: React.FC<SuccessModalProps> = ({
           filter: drop-shadow(0 2px 4px rgba(0,0,0,0.2));
         }
       `}</style>
-      
-      <div 
-        className={`success-modal-overlay fixed inset-0 bg-black/60 backdrop-blur-sm flex justify-center items-center z-50 ${isClosing ? 'fadeOut' : ''}`}
+
+      <div
+        className={`success-modal-overlay fixed inset-0 bg-black/60 backdrop-blur-sm flex justify-center items-center z-[80] ${isClosing ? "fadeOut" : ""}`}
         role="presentation"
         onClick={handleOverlayClick}
       >
-        <div 
-          className={`success-modal-content relative bg-gradient-to-br from-white to-gray-50 p-8 rounded-2xl shadow-2xl text-center w-full max-w-md mx-4 overflow-hidden ${isClosing ? 'slideOut' : ''}`}
+        <div
+          className={`success-modal-content relative bg-gradient-to-br from-white to-gray-50 p-8 rounded-2xl shadow-2xl text-center w-full max-w-md mx-4 overflow-hidden ${isClosing ? "slideOut" : ""}`}
           role="presentation"
           onClick={(e) => e.stopPropagation()}
         >
@@ -212,16 +210,24 @@ export const SuccessModal: React.FC<SuccessModalProps> = ({
           <div className="relative flex justify-center items-center min-h-40 mb-4">
             {/* Ícono de confirmación SVG */}
             <svg className="success-checkmark" viewBox="0 0 35.6 35.6">
-              <circle className="background" cx="17.8" cy="17.8" r="17.8"></circle>
+              <circle
+                className="background"
+                cx="17.8"
+                cy="17.8"
+                r="17.8"
+              ></circle>
               <circle className="stroke" cx="17.8" cy="17.8" r="14.37"></circle>
-              <polyline className="check" points="11.78 18.12 15.55 22.23 25.17 12.87"></polyline>
+              <polyline
+                className="check"
+                points="11.78 18.12 15.55 22.23 25.17 12.87"
+              ></polyline>
             </svg>
           </div>
-          
+
           <h2 className="text-xl font-bold text-gray-800 mb-2 relative z-10">
             {title}
           </h2>
-          
+
           <p className="text-sm text-gray-600 relative z-10 break-words">
             {message}
           </p>

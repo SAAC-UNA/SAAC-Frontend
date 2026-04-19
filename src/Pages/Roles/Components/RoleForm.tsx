@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useState } from "react";
 import { Input, Textarea, Button, Card } from "@/components/Ui/Index";
 import { useBreakpoint } from "@/hooks/UseBreakpoint";
 import { useRoles } from "@/Hooks/UseRoles";
+import { useToast } from "@/Context/ToastContext";
 import { validationRules, useValidation } from "@/Utils/Validation";
 import type { CreateRoleData, Role } from "@/Services/RoleService";
 import { TYPOGRAPHY } from "@/Constants/Typography";
@@ -307,8 +308,7 @@ const RolePermissionMatrixField: React.FC<{
   value: string[];
   onChange: (values: string[]) => void;
   loading?: boolean;
-  error?: string;
-}> = ({ groups, value, onChange, loading = false, error }) => {
+}> = ({ groups, value, onChange, loading = false }) => {
   const groupCount = groups.length;
   const selectedPermissionsCount = value.length;
   const selectedGroupsCount = countSelectedGroups(groups, value);
@@ -397,13 +397,7 @@ const RolePermissionMatrixField: React.FC<{
         ))}
       </div>
 
-      {error && (
-        <div
-          className={`${TYPOGRAPHY.form.helper} rounded-corner border border-rojo-una-2/20 bg-rojo-una-2/5 p-3 text-rojo-una-2`}
-        >
-          {error}
-        </div>
-      )}
+      {/* Errores de permisos se muestran por toast para mejor visibilidad */}
     </div>
   );
 };
@@ -427,6 +421,7 @@ export const RoleForm: React.FC<RoleFormProps> = ({
 }) => {
   const isEditing = !!initialData;
   const { isDesktop } = useBreakpoint();
+  const { showToast } = useToast();
   const {
     loadPermissions,
     availablePermissionGroups,
@@ -511,6 +506,13 @@ export const RoleForm: React.FC<RoleFormProps> = ({
 
   const submitForm = (): boolean => {
     if (!validation.validateForm(formData)) {
+      if (validation.errors.permissions) {
+        showToast({
+          type: "error",
+          title: "Permisos requeridos",
+          message: validation.errors.permissions,
+        });
+      }
       return false;
     }
 
@@ -574,7 +576,6 @@ export const RoleForm: React.FC<RoleFormProps> = ({
           value={formData.permissions}
           onChange={(values) => setFieldValue("permissions", values)}
           loading={isLoadingPermissions}
-          error={errors.permissions}
         />
 
         {apiError && (
