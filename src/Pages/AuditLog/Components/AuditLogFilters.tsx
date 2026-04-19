@@ -115,7 +115,7 @@ export const AuditLogFilters: React.FC<AuditLogFiltersProps> = ({
   const userOptions = useMemo((): SelectOption[] => {
     return users.map(user => ({
       value: user.id.toString(),
-      label: `${user.name} (${user.email})`
+      label: user.name
     }));
   }, [users]);
 

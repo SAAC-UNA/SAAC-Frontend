@@ -47,7 +47,7 @@ interface TableActionButtonProps extends Omit<React.ButtonHTMLAttributes<HTMLBut
   /**
    * Variante personalizada del botón. Si se proporciona, anula la variante predefinida
    */
-  customVariant?: 'primary' | 'secondary' | 'tertiary' | 'outline' | 'ghost' | 'transparent' | 'success' | 'tableView' | 'tableEdit' | 'tableDelete' | 'tablePower' | 'tablePowerInactive' | 'tableList';
+  customVariant?: 'primary' | 'secondary' | 'tertiary' | 'outline' | 'ghost' | 'transparent' | 'success' | 'tableView' | 'tableEdit' | 'tableDelete' | 'tablePower' | 'tablePowerInactive' | 'tableList' | 'tableGris' | 'tableOrange';
   
   /**
    * Clases CSS adicionales
@@ -105,7 +105,7 @@ const actionConfig: Record<TableActionType, {
   },
   clock: {
     icon: <SystemIcons.interface.hourglass className={TABLE_ACTION_BUTTON.icon} />,
-    variant: 'tablePower'
+    variant: 'tableOrange'
   },
   markComplete: {
     icon: <SystemIcons.interface.checkCircle className={TABLE_ACTION_BUTTON.icon} />,
@@ -113,7 +113,7 @@ const actionConfig: Record<TableActionType, {
   },
   markInProgress: {
     icon: <SystemIcons.interface.inProgress className={TABLE_ACTION_BUTTON.icon} />,
-    variant: 'tableEdit'
+    variant: 'tablePower'
   },  
   approveRequest: {
     icon: <SystemIcons.interface.checkCircle className={TABLE_ACTION_BUTTON.icon} />,
@@ -122,7 +122,8 @@ const actionConfig: Record<TableActionType, {
   rejectRequest: {
     icon: <SystemIcons.interface.xCircle className={TABLE_ACTION_BUTTON.icon} />,
     variant: 'tableDelete'
-  },  custom: {
+  },  
+  custom: {
     icon: null,
     variant: 'tableView'
   },

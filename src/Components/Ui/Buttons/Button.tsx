@@ -151,6 +151,18 @@ const buttonVariants = cva(
           'disabled:opacity-50 disabled:cursor-not-allowed',
         ].join(' '),
 
+        tableGris: [
+          'bg-transparent text-gris-una border-0 p-2',
+          'hover:[filter:drop-shadow(0_0_6px_rgba(167,167,169,0.75))] transition-all duration-200',
+          'disabled:opacity-50 disabled:cursor-not-allowed',
+        ].join(' '),
+
+        tableOrange: [
+          'bg-transparent text-naranja border-0 p-2',
+          'hover:[filter:drop-shadow(0_0_6px_rgba(249,115,22,0.85))] transition-all duration-200',
+          'disabled:opacity-50 disabled:cursor-not-allowed',
+        ].join(' '),
+
         // ===== Variante de paginación =====
         pagination: [
           'bg-transparent text-gris-una border-0',
@@ -201,7 +213,7 @@ export type ButtonVariant = NonNullable<VariantProps<typeof buttonVariants>['var
 
 // Variantes que no reciben ancho estándar automático
 const TABLE_VARIANTS: ButtonVariant[] = [
-  'tableView', 'tableEdit', 'tableDelete', 'tablePower', 'tablePowerInactive', 'tableList', 'ghost', 'pagination', 'sidebarAction', 'sidebarItem',
+  'tableView', 'tableEdit', 'tableDelete', 'tablePower', 'tablePowerInactive', 'tableList', 'tableGris', 'tableOrange', 'ghost', 'pagination', 'sidebarAction', 'sidebarItem',
 ];
 
 export interface ButtonProps

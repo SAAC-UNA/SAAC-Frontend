@@ -225,21 +225,6 @@ export const EvidenceAssignmentsTable: React.FC<
                 onClick={() => onUploadFiles(assignment)}
               />
 
-              {/* Botón solicitar / cancelar ampliación */}
-              {(onRequestExtension || onCancelExtension) && (
-                <TableActionButton
-                  action="clock"
-                  tooltip={clockTooltip}
-                  customVariant={hasPendingRequest ? 'tableDelete' : undefined}
-                  onClick={() =>
-                    hasPendingRequest
-                      ? pendingRequestId && onCancelExtension?.(pendingRequestId)
-                      : onRequestExtension?.(assignment)
-                  }
-                  disabled={!hasPendingRequest && !canRequestExtension}
-                />
-              )}
-
               {/* Toggle de estado: completado ↔ en_progreso */}
               {onStatusChange && (
                 <TableActionButton
@@ -252,6 +237,21 @@ export const EvidenceAssignmentsTable: React.FC<
                     )
                   }
                   disabled={!isCompleted && !canMarkCompleted}
+                />
+              )}
+
+              {/* Botón solicitar / cancelar ampliación */}
+              {(onRequestExtension || onCancelExtension) && (
+                <TableActionButton
+                  action="clock"
+                  tooltip={clockTooltip}
+                  customVariant={hasPendingRequest ? 'tableDelete' : 'tableOrange'}
+                  onClick={() =>
+                    hasPendingRequest
+                      ? pendingRequestId && onCancelExtension?.(pendingRequestId)
+                      : onRequestExtension?.(assignment)
+                  }
+                  disabled={!hasPendingRequest && !canRequestExtension}
                 />
               )}
             </div>
