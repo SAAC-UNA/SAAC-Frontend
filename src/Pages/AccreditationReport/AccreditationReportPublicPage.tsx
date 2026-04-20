@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 import { ScreenContainer, PageHeader, Tooltip, TooltipTrigger, TooltipContent } from "@/Components/Ui/Index";
 import { getModuleInfo } from "@/Constants/ModuleInfo";
 import { StatusBadge } from "@/Components/Ui/Feedback/StatusBadge";
@@ -6,13 +6,18 @@ import { Button } from "@/Components/Ui/Buttons/Button";
 import { SystemIcons } from "@/Components/Ui/Icons/SystemIcons";
 import { TYPOGRAPHY } from "@/Constants/Typography";
 import { BADGE_COLORS } from "@/Constants/StatusBadges";
-import { ICON_SIZES } from "@/Constants/Components";
+import { ICON_SIZES, TABLE_COLUMN_WIDTHS, TABLE_ACTION_BUTTON } from "@/Constants/Components";
 import { cn } from "@/Utils/ClassNames";
 import { formatDate } from "@/Utils/DateUtils";
 import { useNavigate } from "react-router-dom";
 import { ROUTES } from "@/Constants/ROUTES";
 import { useAuth } from "@/Context/AuthContext";
 import { REPORTS_ACCESS_PERMISSIONS } from "@/Constants/PermissionCapabilities";
+import { Card } from "@/Components/Ui/Layout/Card";
+import { DataTable } from "@/Components/Ui/Table/DataTable";
+import type { DataTableColumn } from "@/Components/Ui/Table/DataTable";
+import { TableActionButton } from "@/Components/Ui/Buttons/TableActionButton";
+import { useFirstColumnConfig } from "@/Hooks/UseFirstColumnConfig";
 
 // ─── Tipos SINAES ───────────────────────────────────────────────────────────
 
@@ -349,6 +354,9 @@ const DimensionAccordion: React.FC<DimensionAccordionProps> = ({ dimension }) =>
   );
 };
 
+// DataTable requiere T extends Record<string, unknown>
+type ResolucionRow = Resolucion & Record<string, unknown>;
+
 // ─── Componente principal ────────────────────────────────────────────────────
 
 const TABS = ["Resolución SINAES", "Informe Final Institucional"] as const;
@@ -363,6 +371,79 @@ export const AccreditationReportPublicPage: React.FC = () => {
   const historial = MOCK_HISTORIAL;
   const resolucionActiva = historial.find((r) => r.activa) ?? null;
   const isAcreditada = resolucionActiva?.estado === "acreditada";
+  const firstColumn = useFirstColumnConfig();
+
+  const historialColumns = useMemo<DataTableColumn<ResolucionRow>[]>(() => [
+    {
+      key: "numero",
+      header: "Resolución",
+      align: "left",
+      width: firstColumn.width,
+      render: (_, r) => (
+        <div className="flex flex-col">
+          <span className={cn("font-bold text-negro-una-2", TYPOGRAPHY.table.cell)}>Nº {r.numero}</span>
+          <p className={cn("text-gris-una mt-0.5", TYPOGRAPHY.table.helper)}>{formatDate(r.publicado_en)} · {r.archivo_size}</p>
+        </div>
+      ),
+    },
+    {
+      key: "vigencia",
+      header: "Vigencia",
+      align: "left",
+      render: (_, r) => (
+        <div className="flex flex-col gap-0.5">
+          <span className={cn("text-gris-una", TYPOGRAPHY.table.helper)}>{formatDate(r.vigencia_inicio)}</span>
+          <span className={cn("text-gris-una", TYPOGRAPHY.table.helper)}>{formatDate(r.vigencia_fin)}</span>
+        </div>
+      ),
+    },
+    {
+      key: "acreditacion",
+      header: "Acreditación",
+      align: "left",
+      width: TABLE_COLUMN_WIDTHS.status,
+      render: (_, r) => (
+        <StatusBadge
+          label={r.activa ? "Activa" : "Archivada"}
+          colorClasses={r.activa ? BADGE_COLORS.verde.colorClasses : BADGE_COLORS.gris.colorClasses}
+        />
+      ),
+    },
+    {
+      key: "estado",
+      header: "Estado",
+      align: "left",
+      width: TABLE_COLUMN_WIDTHS.status,
+      render: (_, r) => (
+        <StatusBadge
+          label={r.estado === "acreditada" ? "Acreditada" : "No acreditada"}
+          colorClasses={r.estado === "acreditada" ? BADGE_COLORS.verde.colorClasses : BADGE_COLORS.error.colorClasses}
+        />
+      ),
+    },
+    {
+      key: "actions",
+      header: "Acciones",
+      align: "center",
+      width: TABLE_COLUMN_WIDTHS.actions,
+      render: () => (
+        <div className="flex items-center justify-center gap-1">
+          <TableActionButton
+            action="view"
+            tooltip="Ver PDF"
+            onClick={() => window.open("#", "_blank")}
+          />
+          <TableActionButton
+            action="custom"
+            customIcon={SystemIcons.actions.download({ className: TABLE_ACTION_BUTTON.icon })}
+            customVariant="tablePower"
+            tooltip="Descargar PDF"
+            onClick={() => {}}
+          />
+        </div>
+      ),
+    },
+  ], [firstColumn.width]);
 
   return (
     <ScreenContainer>
@@ -470,100 +551,26 @@ export const AccreditationReportPublicPage: React.FC = () => {
       </div>
 
       {/* ──────────── Tab: Resolución SINAES ──────────── */}
-      {activeTab === "Resolución SINAES" && resolucionActiva && (
+      {activeTab === "Resolución SINAES" && (
         <div className="space-y-6">
-          <div className="bg-blanco-una border border-gris-claro rounded-xl p-5 shadow-sm">
-          <p className={cn("uppercase tracking-wider font-semibold text-gris-una mb-4", TYPOGRAPHY.table.helper)}>
-            Documento oficial
-          </p>
-          <div className="flex items-center gap-3 p-3 bg-gris-fondo rounded-lg border border-gris-claro">
-            <div className="w-9 h-11 bg-error-ring rounded flex items-center justify-center shrink-0 border border-error-dark/15">
-              <span className={cn("font-bold text-error-dark", TYPOGRAPHY.table.helper)}>PDF</span>
-            </div>
-            <div className="flex-1 min-w-0">
-              <p className={cn("font-medium text-negro-una-2 truncate", TYPOGRAPHY.table.cell)}>
-                {resolucionActiva.archivo_nombre}
-              </p>
-              <p className={cn("text-gris-una mt-0.5", TYPOGRAPHY.table.helper)}>
-                {resolucionActiva.archivo_size}
-              </p>
-            </div>
-            <Button variant="secondary" size="sm">
-              <SystemIcons.actions.download className={ICON_SIZES.sm} />
-              Descargar
-            </Button>
-          </div>
-        </div>
-
-          {/* Historial de resoluciones */}
-          <div className="bg-blanco-una border border-gris-claro rounded-xl overflow-hidden shadow-sm">
-            <div className="px-5 py-4 border-b border-gris-claro">
-              <p className={cn("uppercase tracking-wider font-semibold text-gris-una", TYPOGRAPHY.table.helper)}>
-                Historial de resoluciones
-              </p>
-            </div>
-            {historial.length === 0 ? (
-              <p className={cn("text-center py-8 text-gris-una", TYPOGRAPHY.table.cell)}>
-                Sin historial disponible.
-              </p>
-            ) : (
-              <div className="divide-y divide-gris-claro">
-                {historial.map((r) => (
-                  <div key={r.id} className="flex items-center gap-4 px-5 py-4">
-                    <div className="flex-1 min-w-0">
-                      <p className={cn("font-semibold text-negro-una-2", TYPOGRAPHY.table.cell)}>
-                        Nº {r.numero}
-                      </p>
-                      <p className={cn("text-gris-una mt-0.5", TYPOGRAPHY.table.helper)}>
-                        Vigencia: {formatDate(r.vigencia_inicio)} — {formatDate(r.vigencia_fin)}
-                      </p>
-                      <p className={cn("text-gris-una", TYPOGRAPHY.table.helper)}>
-                        Publicado por {r.publicado_por} · {formatDate(r.publicado_en)}
-                      </p>
-                    </div>
-                    <StatusBadge
-                      label={r.activa ? "Vigente" : "Archivada"}
-                      colorClasses={r.activa ? BADGE_COLORS.verde.colorClasses : BADGE_COLORS.gris.colorClasses}
-                    />
-                    <Button variant="ghost" size="sm">
-                      <SystemIcons.actions.download className={ICON_SIZES.sm} />
-                      PDF
-                    </Button>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-        </div>
-      )}
-
-      {activeTab === "Resolución SINAES" && !resolucionActiva && (
-        <div className={cn("text-center py-12 text-gris-una", TYPOGRAPHY.table.cell)}>
-          No hay documento disponible.
+          <Card>
+            <p className={cn("uppercase tracking-wider font-semibold text-gris-una px-4 pt-4 mb-4", TYPOGRAPHY.table.helper)}>
+              Historial de resoluciones publicadas
+            </p>
+            <DataTable<ResolucionRow>
+              data={historial as ResolucionRow[]}
+              columns={historialColumns}
+              searchable={false}
+              emptyMessage="Sin resoluciones registradas."
+              unstyled
+            />
+          </Card>
         </div>
       )}
 
       {/* ──────────── Tab: Informe Final Institucional ──────────── */}
       {activeTab === "Informe Final Institucional" && (
         <div className="space-y-4">
-          {/* Banner de publicación */}
-          <div className="flex items-center gap-3 p-4 bg-azul-ring/20 border border-azul-una/20 rounded-xl">
-            <SystemIcons.interface.checkCircle className={cn(ICON_SIZES.md, "text-azul-una shrink-0")} />
-            <div className="flex-1 min-w-0">
-              <p className={cn("font-semibold text-azul-una", TYPOGRAPHY.table.cell)}>
-                Informe final publicado en el sistema
-              </p>
-              <p className={cn("text-gris-una mt-0.5", TYPOGRAPHY.table.helper)}>
-                Publicado por {MOCK_INFORME.publicado_por} · {formatDate(MOCK_INFORME.publicado_en)}
-                &nbsp;· Solo lectura
-              </p>
-            </div>
-            <StatusBadge
-              label="Solo lectura"
-              colorClasses={BADGE_COLORS.azul.colorClasses}
-            />
-          </div>
-
           {/* Acordeón de dimensiones */}
           {MOCK_INFORME.dimensiones.map((dim) => (
             <DimensionAccordion key={dim.id} dimension={dim} />

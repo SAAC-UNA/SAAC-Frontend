@@ -1,4 +1,4 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import { ScreenContainer, PageHeader, Tooltip, TooltipTrigger, TooltipContent } from "@/Components/Ui/Index";
 import { StatusBadge } from "@/Components/Ui/Feedback/StatusBadge";
 import { Button } from "@/Components/Ui/Buttons/Button";
@@ -6,13 +6,27 @@ import { Input } from "@/Components/Ui/Index";
 import { SystemIcons } from "@/Components/Ui/Icons/SystemIcons";
 import { TYPOGRAPHY } from "@/Constants/Typography";
 import { BADGE_COLORS } from "@/Constants/StatusBadges";
-import { ICON_SIZES } from "@/Constants/Components";
+import { ICON_SIZES, TABLE_COLUMN_WIDTHS } from "@/Constants/Components";
 import { cn } from "@/Utils/ClassNames";
 import { formatDate } from "@/Utils/DateUtils";
 import { useToast } from "@/Context/ToastContext";
 import { getModuleInfo } from "@/Constants/ModuleInfo";
 import { useNavigate } from "react-router-dom";
 import { ROUTES } from "@/Constants/ROUTES";
+import { Card } from "@/Components/Ui/Layout/Card";
+import { DropZone } from "@/Components/Ui/Upload/DropZone";
+import { FileUploadProgress } from "@/Components/Ui/Upload/FileUploadProgress";
+import type { FileUploadProgressItem } from "@/Components/Ui/Upload/FileUploadProgress";
+import { DataTable } from "@/Components/Ui/Table/DataTable";
+import type { DataTableColumn } from "@/Components/Ui/Table/DataTable";
+import { TableActionButton } from "@/Components/Ui/Buttons/TableActionButton";
+import { TABLE_ACTION_BUTTON } from "@/Constants/Components";
+import { useFirstColumnConfig } from '@/Hooks/UseFirstColumnConfig';
+import { Modal } from "@/Components/Ui/Modals/Modal";
+import { DeleteConfirmationModal } from "@/Components/Ui/Modals/DeleteConfirmationModal";
+import { RadioGroupCards } from "@/Components/Ui/Forms/RadioGroupCards";
+import type { RadioCardOption } from "@/Components/Ui/Forms/RadioGroupCards";
+import { DatePicker } from "@/Components/Ui/Calendar/DatePicker";
 
 // ─── Tipos ─────────────────────────────────────────────────────────────────
 
@@ -33,20 +47,30 @@ interface Resolucion {
 
 // ─── Tipos informe ───────────────────────────────────────────────────────────
 
-type EstadoInforme = "sin_publicar" | "publicado";
-
-interface PublicacionInforme {
-  estado: EstadoInforme;
+interface VersionInforme {
+  id: number;
+  descripcion: string;
+  archivo_nombre: string;
+  archivo_size: string;
   publicado_por: string;
   publicado_en: string;
+  activa: boolean;
 }
 
-interface BitacoraItem {
-  id: number;
-  accion: string;
-  usuario: string;
-  fecha: string;
+type VersionInformeRow = VersionInforme & Record<string, unknown>;
+
+interface InformeFormData {
+  descripcion: string;
+  archivo: File | null;
 }
+
+const EMPTY_INFORME_FORM: InformeFormData = {
+  descripcion: "",
+  archivo: null,
+};
+
+// DataTable requiere T extends Record<string, unknown>
+type ResolucionRow = Resolucion & Record<string, unknown>;
 
 // ─── Datos mock ─────────────────────────────────────────────────────────────
 
@@ -91,26 +115,270 @@ const MOCK_HISTORIAL: Resolucion[] = [
 
 // ─── Mock publicación de informe ─────────────────────────────────────────────
 
-const MOCK_PUBLICACION_INFORME: PublicacionInforme = {
-  estado: "publicado",
-  publicado_por: "José Jara Arias",
-  publicado_en: "2026-04-10T14:30:00",
-};
-
-const MOCK_BITACORA: BitacoraItem[] = [
+const MOCK_VERSIONES_INFORME: VersionInforme[] = [
   {
     id: 1,
-    accion: "Informe final publicado en el sistema",
-    usuario: "José Jara Arias",
-    fecha: "2026-04-10T14:30:00",
+    descripcion: "Publicación inicial del informe final institucional",
+    archivo_nombre: "informe_final_institucional_2026.pdf",
+    archivo_size: "3.4 MB",
+    publicado_por: "José Jara Arias",
+    publicado_en: "2026-04-10T14:30:00",
+    activa: true,
   },
   {
     id: 2,
-    accion: "Informe final actualizado y republicado",
-    usuario: "Cristina Zúñiga Cárdenas",
-    fecha: "2026-03-01T10:00:00",
+    descripcion: "Actualización de criterios de la dimensión 3",
+    archivo_nombre: "informe_final_institucional_v2_2026.pdf",
+    archivo_size: "3.6 MB",
+    publicado_por: "Cristina Zúñiga Cárdenas",
+    publicado_en: "2026-03-01T10:00:00",
+    activa: false,
   },
 ];
+
+// ─── Modal de informe final ────────────────────────────────────────────────────
+
+interface InformeModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  initial?: VersionInforme | null;
+  onSave: (data: InformeFormData) => void;
+}
+
+const InformeModal: React.FC<InformeModalProps> = ({ isOpen, onClose, initial, onSave }) => {
+  const [form, setForm] = useState<InformeFormData>(EMPTY_INFORME_FORM);
+
+  useEffect(() => {
+    if (isOpen) {
+      setForm(
+        initial
+          ? { descripcion: initial.descripcion, archivo: null }
+          : EMPTY_INFORME_FORM,
+      );
+    }
+  }, [isOpen, initial]);
+
+  const archivoProgress: FileUploadProgressItem[] = useMemo(
+    () => (form.archivo ? [{ file: form.archivo, status: "pending" as const, progress: 0 }] : []),
+    [form.archivo],
+  );
+
+  const isEditing = initial != null;
+  const isCompleto = isEditing ? true : form.archivo !== null;
+
+  return (
+    <Modal
+      isOpen={isOpen}
+      onClose={onClose}
+      title={isEditing ? "Editar versión" : "Publicar informe final"}
+      subtitle="Informe Final Institucional"
+      variant={isEditing ? "info" : "success"}
+      size="lg"
+      footerButtons={
+        <>
+          <Button variant="outline" onClick={onClose}>
+            Cancelar
+          </Button>
+          <Button variant="primary" disabled={!isCompleto} onClick={() => onSave(form)}>
+            {isEditing ? "Guardar cambios" : "Publicar"}
+          </Button>
+        </>
+      }
+    >
+      <div className="space-y-5">
+        <Input
+          label="Descripción"
+          placeholder="Ej: Publicación inicial del informe final 2026"
+          value={form.descripcion}
+          onChange={(e) => setForm((p) => ({ ...p, descripcion: e.target.value }))}
+        />
+
+        <div>
+          <p className={cn("font-medium text-negro-una-2 mb-2", TYPOGRAPHY.form.label)}>
+            PDF del informe <span className="text-error-dark">*</span>
+          </p>
+          <DropZone
+            onFilesSelected={(files) =>
+              setForm((p) => ({
+                ...p,
+                archivo: files.find((f) => f.type === "application/pdf") ?? files[0] ?? null,
+              }))
+            }
+            accept=".pdf"
+            maxFiles={1}
+            hint="Solo PDF · Máx. 50 MB"
+          />
+          {isEditing && !form.archivo && (
+            <p className={cn("text-gris-una mt-2", TYPOGRAPHY.table.helper)}>
+              Archivo actual: <span className="font-medium text-negro-una-2">{initial?.archivo_nombre}</span> · {initial?.archivo_size}. Deja el campo vacío para conservarlo.
+            </p>
+          )}
+          {archivoProgress.length > 0 && (
+            <FileUploadProgress
+              files={archivoProgress}
+              onCancel={() => setForm((p) => ({ ...p, archivo: null }))}
+            />
+          )}
+        </div>
+      </div>
+    </Modal>
+  );
+};
+
+// ─── Tipos y constantes del modal de resolución ────────────────────────────
+
+interface ResolucionFormData {
+  numero: string;
+  estado: EstadoAcreditacion;
+  vigencia_inicio: string;
+  vigencia_fin: string;
+  archivo: File | null;
+}
+
+const EMPTY_RESOLUCION_FORM: ResolucionFormData = {
+  numero: "",
+  estado: "acreditada",
+  vigencia_inicio: "",
+  vigencia_fin: "",
+  archivo: null,
+};
+
+const ESTADO_OPTIONS: RadioCardOption[] = [
+  {
+    value: "acreditada",
+    label: "Acreditada",
+    description: "La carrera cumple con los estándares SINAES",
+    icon: SystemIcons.interface.checkCircle({ size: "md", className: "text-verde-dark" }),
+    iconBg: "bg-verde-ring",
+  },
+  {
+    value: "no_acreditada",
+    label: "No acreditada",
+    description: "La carrera no cumple con los estándares requeridos",
+    icon: SystemIcons.auth.ShieldSlash({ size: "md", className: "text-error-dark" }),
+    iconBg: "bg-error-ring",
+  },
+];
+
+interface ResolucionModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  initial?: Resolucion | null;
+  onSave: (data: ResolucionFormData) => void;
+}
+
+const ResolucionModal: React.FC<ResolucionModalProps> = ({ isOpen, onClose, initial, onSave }) => {
+  const [form, setForm] = useState<ResolucionFormData>(EMPTY_RESOLUCION_FORM);
+
+  useEffect(() => {
+    if (isOpen) {
+      setForm(
+        initial
+          ? {
+              numero: initial.numero,
+              estado: initial.estado,
+              vigencia_inicio: initial.vigencia_inicio,
+              vigencia_fin: initial.vigencia_fin,
+              archivo: null,
+            }
+          : EMPTY_RESOLUCION_FORM,
+      );
+    }
+  }, [isOpen, initial]);
+
+  const archivoProgress: FileUploadProgressItem[] = useMemo(
+    () => (form.archivo ? [{ file: form.archivo, status: "pending" as const, progress: 0 }] : []),
+    [form.archivo],
+  );
+
+  const isCompleto =
+    form.numero.trim() !== "" &&
+    form.vigencia_inicio !== "" &&
+    form.vigencia_fin !== "" &&
+    (form.archivo !== null || initial != null);
+
+  const isEditing = initial != null;
+
+  return (
+    <Modal
+      isOpen={isOpen}
+      onClose={onClose}
+      title={isEditing ? "Editar resolución" : "Nueva resolución"}
+      subtitle="Resolución SINAES"
+      variant="success"
+      size="lg"
+      footerButtons={
+        <>
+          <Button variant="outline" onClick={onClose}>
+            Cancelar
+          </Button>
+          <Button variant="primary" disabled={!isCompleto} onClick={() => onSave(form)}>
+            {isEditing ? "Guardar" : "Publicar"}
+          </Button>
+        </>
+      }
+    >
+      <div className="space-y-5">
+        <Input
+          label="Número de resolución"
+          placeholder="Ej: R-022-2026"
+          value={form.numero}
+          onChange={(e) => setForm((p) => ({ ...p, numero: e.target.value }))}
+          required
+        />
+
+        <RadioGroupCards
+          name="estado_acreditacion"
+          label="Estado de acreditación"
+          value={form.estado}
+          onChange={(v) => setForm((p) => ({ ...p, estado: v as EstadoAcreditacion }))}
+          options={ESTADO_OPTIONS}
+          required
+        />
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <DatePicker
+            label="Vigencia desde"
+            value={form.vigencia_inicio}
+            onChange={(d) => setForm((p) => ({ ...p, vigencia_inicio: d }))}
+            required
+          />
+          <DatePicker
+            label="Vigencia hasta"
+            value={form.vigencia_fin}
+            minDate={form.vigencia_inicio || undefined}
+            onChange={(d) => setForm((p) => ({ ...p, vigencia_fin: d }))}
+            required
+          />
+        </div>
+
+        <div>
+          <p className={cn("font-medium text-negro-una-2 mb-2", TYPOGRAPHY.form.label)}>
+            PDF de la resolución{" "}
+            {isEditing && <span className="font-normal text-gris-una">(opcional al editar)</span>}
+          </p>
+          <DropZone
+            onFilesSelected={(files) =>
+              setForm((p) => ({
+                ...p,
+                archivo: files.find((f) => f.type === "application/pdf") ?? files[0] ?? null,
+              }))
+            }
+            accept=".pdf"
+            maxFiles={1}
+            hint="Solo PDF oficial · Máx. 20 MB"
+          />
+          {archivoProgress.length > 0 && (
+            <FileUploadProgress
+              files={archivoProgress}
+              onCancel={() => setForm((p) => ({ ...p, archivo: null }))}
+            />
+          )}
+        </div>
+      </div>
+    </Modal>
+  );
+};
 
 // ─── Componente principal ────────────────────────────────────────────────────
 
@@ -123,68 +391,272 @@ export const AccreditationReportAdminPage: React.FC = () => {
   const moduleInfo = getModuleInfo("accreditation_report_admin");
   const [activeTab, setActiveTab] = useState<Tab>("Resolución SINAES");
   const [historial] = useState<Resolucion[]>(MOCK_HISTORIAL);
-  const resolucionActiva = historial.find((r) => r.activa) ?? null;
 
   // ─ Estado informe final ─
-  const [publicacionInforme, setPublicacionInforme] = useState<PublicacionInforme>(MOCK_PUBLICACION_INFORME);
-  const [bitacora] = useState<BitacoraItem[]>(MOCK_BITACORA);
-  const [showConfirmPublicar, setShowConfirmPublicar] = useState(false);
-  const [isPublicando, setIsPublicando] = useState(false);
+  const [versiones, setVersiones] = useState<VersionInforme[]>(MOCK_VERSIONES_INFORME);
+  const [showInformeModal, setShowInformeModal] = useState(false);
+  const [editingVersion, setEditingVersion] = useState<VersionInforme | null>(null);
+  const [deletingVersion, setDeletingVersion] = useState<VersionInforme | null>(null);
 
-  // ─ Formulario de nueva resolución ─
-  const [form, setForm] = useState({
-    numero: "",
-    estado: "acreditada" as EstadoAcreditacion,
-    vigencia_inicio: "",
-    vigencia_fin: "",
-  });
-  const [archivoSeleccionado, setArchivoSeleccionado] = useState<File | null>(null);
-  const fileInputRef = useRef<HTMLInputElement>(null);
+  // ─ Estado modales de resolución ─
+  const [showResolucionModal, setShowResolucionModal] = useState(false);
+  const [editingResolucion, setEditingResolucion] = useState<Resolucion | null>(null);
+  const [deletingResolucion, setDeletingResolucion] = useState<Resolucion | null>(null);
 
-  const handleFormChange = (field: keyof typeof form, value: string) => {
-    setForm((prev) => ({ ...prev, [field]: value }));
+  const handleSaveResolucion = (data: ResolucionFormData) => {
+    showToast({
+      type: "success",
+      title: editingResolucion ? "Resolución actualizada" : "Resolución publicada",
+      message: editingResolucion
+        ? `La resolución Nº ${data.numero} fue actualizada correctamente.`
+        : `La resolución Nº ${data.numero} fue publicada correctamente.`,
+    });
+    setShowResolucionModal(false);
+    setEditingResolucion(null);
   };
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0] ?? null;
-    setArchivoSeleccionado(file);
+  const handleDeleteResolucion = () => {
+    if (!deletingResolucion) return;
+    showToast({
+      type: "success",
+      title: "Resolución eliminada",
+      message: `La resolución Nº ${deletingResolucion.numero} fue eliminada.`,
+    });
+    setDeletingResolucion(null);
   };
 
-  const handleDrop = (e: React.DragEvent<HTMLDivElement>) => {
-    e.preventDefault();
-    const file = e.dataTransfer.files?.[0];
-    if (file && file.type === "application/pdf") setArchivoSeleccionado(file);
-  };
-
-  const handlePublicar = () => {
-    // Sin backend aún — placeholder
-    alert("(Sin backend) Publicaría la resolución con los datos del formulario.");
-  };
-
-  const handlePublicarInforme = () => {
-    setIsPublicando(true);
-    // Sin backend aún — simula publicación
-    setTimeout(() => {
-      setPublicacionInforme({
-        estado: "publicado",
+  const handleSaveInforme = (data: InformeFormData) => {
+    if (editingVersion) {
+      setVersiones((prev) =>
+        prev.map((v) =>
+          v.id === editingVersion.id
+            ? {
+                ...v,
+                descripcion: data.descripcion,
+                ...(data.archivo
+                  ? {
+                      archivo_nombre: data.archivo.name,
+                      archivo_size: `${(data.archivo.size / 1024 / 1024).toFixed(1)} MB`,
+                    }
+                  : {}),
+              }
+            : v,
+        ),
+      );
+      showToast({
+        type: "success",
+        title: "Versión actualizada",
+        message: "Los cambios fueron guardados correctamente.",
+      });
+    } else {
+      const nueva: VersionInforme = {
+        id: Date.now(),
+        descripcion: data.descripcion,
+        archivo_nombre: data.archivo?.name ?? "informe.pdf",
+        archivo_size: data.archivo ? `${(data.archivo.size / 1024 / 1024).toFixed(1)} MB` : "—",
         publicado_por: "Usuario actual",
         publicado_en: new Date().toISOString(),
-      });
-      setIsPublicando(false);
-      setShowConfirmPublicar(false);
+        activa: true,
+      };
+      setVersiones((prev) => [nueva, ...prev.map((v) => ({ ...v, activa: false }))]);
       showToast({
         type: "success",
         title: "Informe publicado",
-        message: "El informe final institucional ha sido publicado y está disponible para todos los usuarios.",
+        message: "El informe final institucional fue publicado correctamente.",
       });
-    }, 1200);
+    }
+    setShowInformeModal(false);
+    setEditingVersion(null);
   };
 
-  const formCompleto =
-    form.numero.trim() !== "" &&
-    form.vigencia_inicio !== "" &&
-    form.vigencia_fin !== "" &&
-    archivoSeleccionado !== null;
+  const handleDeleteVersion = () => {
+    if (!deletingVersion) return;
+    setVersiones((prev) => prev.filter((v) => v.id !== deletingVersion.id));
+    showToast({
+      type: "success",
+      title: "Versión eliminada",
+      message: `La versión "${deletingVersion.descripcion}" fue eliminada.`,
+    });
+    setDeletingVersion(null);
+  };
+
+  const firstColumn = useFirstColumnConfig();
+  // ─ Columnas historial ─────────────────────────────────────────────────────
+  const historialColumns = useMemo<DataTableColumn<ResolucionRow>[]>(() => [
+    {
+      key: "numero",
+      header: "Resolución",
+      align: "left",
+      width: firstColumn.width,
+      render: (_, r) => (
+        <div className="flex flex-col">
+          <span className={cn("font-bold text-negro-una-2", TYPOGRAPHY.table.cell)}>
+            Nº {r.numero}
+          </span>
+          <p className={cn("text-gris-una mt-0.5", TYPOGRAPHY.table.helper)}>{r.archivo_size}</p>
+        </div>
+      ),
+    },
+    {
+      key: "publicado",
+      header: "Publicado por",
+      align: "left",
+      width: TABLE_COLUMN_WIDTHS.status,
+      render: (_, r) => (
+        <div className="flex flex-col gap-0.5">
+          <span className={cn("font-semibold text-negro-una-2", TYPOGRAPHY.table.helper)}>{r.publicado_por}</span>
+          <span className={cn("text-gris-una", TYPOGRAPHY.table.helper)}>{formatDate(r.publicado_en)}</span>
+        </div>
+      ),
+    },
+    {
+      key: "vigencia",
+      header: "Vigencia",
+      align: "left",
+      width: TABLE_COLUMN_WIDTHS.status,
+      render: (_, r) => (
+        <div className="flex flex-col gap-0.5">
+          <span className={cn("text-gris-una", TYPOGRAPHY.table.helper)}>{formatDate(r.vigencia_inicio)}</span>
+          <span className={cn("text-gris-una", TYPOGRAPHY.table.helper)}>{formatDate(r.vigencia_fin)}</span>
+        </div>
+      ),
+    },
+    {
+      key: "acreditacion",
+      header: "Acreditación",
+      align: "left",
+      width: TABLE_COLUMN_WIDTHS.status,
+      render: (_, r) => (
+        <StatusBadge
+          label={r.activa ? "Activa" : "Archivada"}
+          colorClasses={r.activa ? BADGE_COLORS.verde.colorClasses : BADGE_COLORS.gris.colorClasses}
+        />
+      ),
+    },
+    {
+      key: "estado",
+      header: "Estado",
+      align: "left",
+      width: TABLE_COLUMN_WIDTHS.status,
+      render: (_, r) => (
+        <StatusBadge
+          label={r.estado === "acreditada" ? "Acreditada" : "No acreditada"}
+          colorClasses={r.estado === "acreditada" ? BADGE_COLORS.verde.colorClasses : BADGE_COLORS.error.colorClasses}
+        />
+      ),
+
+    },
+    {
+      key: "actions",
+      header: "Acciones",
+      align: "center",
+      width: TABLE_COLUMN_WIDTHS.actionsLarge,
+      render: (_, r) => (
+        <div className="flex items-center justify-center gap-1">
+          <TableActionButton
+            action="view"
+            tooltip="Ver PDF"
+            onClick={() => window.open("#", "_blank")}
+          />
+          <TableActionButton
+            action="custom"
+            customIcon={SystemIcons.actions.download({ className: TABLE_ACTION_BUTTON.icon })}
+            customVariant="tablePower"
+            tooltip="Descargar PDF"
+            onClick={() => {}}
+          />
+          <TableActionButton
+            action="edit"
+            tooltip="Editar"
+            onClick={() => {
+              setEditingResolucion(r as Resolucion);
+              setShowResolucionModal(true);
+            }}
+          />
+          <TableActionButton
+            action="delete"
+            tooltip="Eliminar"
+            onClick={() => setDeletingResolucion(r as Resolucion)}
+          />
+        </div>
+      ),
+    },
+  ], []);
+
+  // ─ Columnas versiones de informe ──────────────────────────────────────────
+  const versionesColumns = useMemo<DataTableColumn<VersionInformeRow>[]>(() => [
+    {
+      key: "descripcion",
+      header: "Descripción",
+      align: "left",
+      width: firstColumn.width,
+      render: (_, v) => (
+        <div className="flex flex-col">
+          <span className={cn("font-bold text-negro-una-2", TYPOGRAPHY.table.cell)}>{v.descripcion}</span>
+          <p className={cn("text-gris-una mt-0.5", TYPOGRAPHY.table.helper)}>{v.archivo_nombre} · {v.archivo_size}</p>
+        </div>
+      ),
+    },
+    {
+      key: "publicado",
+      header: "Publicado por",
+      align: "left",
+      width: TABLE_COLUMN_WIDTHS.status,
+      render: (_, v) => (
+        <div className="flex flex-col gap-0.5">
+          <span className={cn("font-semibold text-negro-una-2", TYPOGRAPHY.table.helper)}>{v.publicado_por}</span>
+          <span className={cn("text-gris-una", TYPOGRAPHY.table.helper)}>{formatDate(v.publicado_en)}</span>
+        </div>
+      ),
+    },
+    {
+      key: "estado",
+      header: "Estado",
+      align: "left",
+      width: TABLE_COLUMN_WIDTHS.status,
+      render: (_, v) => (
+        <StatusBadge
+          label={v.activa ? "Activa" : "Archivada"}
+          colorClasses={v.activa ? BADGE_COLORS.verde.colorClasses : BADGE_COLORS.gris.colorClasses}
+        />
+      ),
+    },
+    {
+      key: "actions",
+      header: "Acciones",
+      align: "center",
+      width: TABLE_COLUMN_WIDTHS.actionsLarge,
+      render: (_, v) => (
+        <div className="flex items-center justify-center gap-1">
+          <TableActionButton
+            action="view"
+            tooltip="Ver PDF"
+            onClick={() => window.open("#", "_blank")}
+          />
+          <TableActionButton
+            action="custom"
+            customIcon={SystemIcons.actions.download({ className: TABLE_ACTION_BUTTON.icon })}
+            customVariant="tablePower"
+            tooltip="Descargar PDF"
+            onClick={() => {}}
+          />
+          <TableActionButton
+            action="edit"
+            tooltip="Editar"
+            onClick={() => {
+              setEditingVersion(v as VersionInforme);
+              setShowInformeModal(true);
+            }}
+          />
+          <TableActionButton
+            action="delete"
+            tooltip="Eliminar"
+            onClick={() => setDeletingVersion(v as VersionInforme)}
+          />
+        </div>
+      ),
+    },
+  ], []);
 
   return (
     <ScreenContainer variant="full-width">
@@ -193,74 +665,57 @@ export const AccreditationReportAdminPage: React.FC = () => {
         description={moduleInfo.description}
         breadcrumbMode="contextual"
         headerExtra={
-          <Tooltip>
-            <TooltipTrigger>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => navigate(ROUTES.REPORTS_PUBLIC)}
-              >
-                <SystemIcons.actions.view className={ICON_SIZES.md} />
-              </Button>
-            </TooltipTrigger>
-            <TooltipContent side="bottom">
-              <p>Ver vista pública</p>
-            </TooltipContent>
-          </Tooltip>
+          <div className="flex items-center gap-2">
+            {activeTab === "Resolución SINAES" ? (
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    variant="secondary"
+                    size="sm"
+                    onClick={() => {
+                      setEditingResolucion(null);
+                      setShowResolucionModal(true);
+                    }}
+                  >
+                    Crear
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent side="bottom">Publicar nueva resolución SINAES</TooltipContent>
+              </Tooltip>
+            ) : (
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    variant="secondary"
+                    size="sm"
+                    onClick={() => setShowInformeModal(true)}
+                  >
+                    Crear
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent side="bottom">Publicar nueva versión del informe</TooltipContent>
+              </Tooltip>
+            )}
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => navigate(ROUTES.REPORTS_PUBLIC)}
+                >
+                  <SystemIcons.actions.view className={ICON_SIZES.md} />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent side="bottom">
+                <p>Ver vista pública</p>
+              </TooltipContent>
+            </Tooltip>
+          </div>
         }
       />
 
-      {/* ─ Banner resolución activa ─ */}
-      {resolucionActiva && (
-        <div
-          className={cn(
-            "flex items-center gap-4 p-4 rounded-xl border mb-6",
-            resolucionActiva.estado === "acreditada"
-              ? "bg-verde-ring border-verde-ring"
-              : "bg-error-ring border-error-ring",
-          )}
-        >
-          <div
-            className={cn(
-              "w-10 h-10 rounded-full flex items-center justify-center shrink-0",
-              resolucionActiva.estado === "acreditada"
-                ? "bg-verde-ring border border-verde-dark/30"
-                : "bg-error-ring border border-error-dark/30",
-            )}
-          >
-            <SystemIcons.users.roles
-              className={cn(
-                ICON_SIZES.sm,
-                resolucionActiva.estado === "acreditada"
-                  ? "text-verde-dark"
-                  : "text-error-dark",
-              )}
-            />
-          </div>
-          <div className="flex-1 min-w-0">
-            <p className={cn("font-semibold", TYPOGRAPHY.table.cell,
-              resolucionActiva.estado === "acreditada" ? "text-verde-dark" : "text-error-dark"
-            )}>
-              Resolución activa: Nº {resolucionActiva.numero}
-            </p>
-            <p className={cn(TYPOGRAPHY.table.helper, "text-negro-una-2 mt-0.5")}>
-              Vigente {formatDate(resolucionActiva.vigencia_inicio)} — {formatDate(resolucionActiva.vigencia_fin)}
-              &nbsp;· Publicado por {resolucionActiva.publicado_por}
-            </p>
-          </div>
-          <StatusBadge
-            label={resolucionActiva.estado === "acreditada" ? "Acreditada" : "No acreditada"}
-            colorClasses={
-              resolucionActiva.estado === "acreditada"
-                ? BADGE_COLORS.verde.colorClasses
-                : BADGE_COLORS.error.colorClasses
-            }
-          />
-        </div>
-      )}
-
       {/* ─ Tabs ─ */}
-      <div className="flex border-b border-gris-claro mb-6 gap-0">
+      <div className="flex border-b border-gris-light mb-6 gap-0">
         {TABS.map((tab) => (
           <button
             key={tab}
@@ -268,7 +723,7 @@ export const AccreditationReportAdminPage: React.FC = () => {
             className={cn(
               "px-5 py-2.5 text-sm font-medium border-b-2 -mb-px transition-colors",
               activeTab === tab
-                ? "border-rojo-una text-rojo-una"
+                ? "border-rojo-una-2 text-rojo-una-2"
                 : "border-transparent text-gris-una hover:text-negro-una-2",
             )}
           >
@@ -281,181 +736,19 @@ export const AccreditationReportAdminPage: React.FC = () => {
       {activeTab === "Resolución SINAES" && (
         <div className="space-y-6">
 
-          {/* Documento activo */}
-          {resolucionActiva && (
-            <div className="bg-blanco-una border border-gris-claro rounded-xl p-5 shadow-sm">
-              <p className={cn("uppercase tracking-wider font-semibold text-gris-una mb-4", TYPOGRAPHY.table.helper)}>
-                Documento publicado
-              </p>
-              <div className="flex items-center gap-3 p-3 bg-gris-fondo rounded-lg border border-gris-claro">
-                <div className="w-9 h-11 bg-error-ring rounded flex items-center justify-center shrink-0 border border-error-dark/15">
-                  <span className={cn("font-bold text-error-dark", TYPOGRAPHY.table.helper)}>PDF</span>
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p className={cn("font-medium text-negro-una-2 truncate", TYPOGRAPHY.table.cell)}>
-                    {resolucionActiva.archivo_nombre}
-                  </p>
-                  <p className={cn("text-gris-una mt-0.5", TYPOGRAPHY.table.helper)}>
-                    {resolucionActiva.archivo_size} · Subido el {formatDate(resolucionActiva.publicado_en)}
-                  </p>
-                </div>
-                <Button variant="secondary" size="sm">
-                  <SystemIcons.actions.download className={ICON_SIZES.sm} />
-                  Descargar
-                </Button>
-              </div>
-            </div>
-          )}
-
-          {/* Formulario nueva resolución */}
-          <div className="bg-blanco-una border border-gris-claro rounded-xl p-5 shadow-sm space-y-4">
-            <p className={cn("uppercase tracking-wider font-semibold text-gris-una", TYPOGRAPHY.table.helper)}>
-              Publicar nueva resolución
-            </p>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <Input
-                label="Número de resolución"
-                placeholder="Ej: R-022-2026"
-                value={form.numero}
-                onChange={(e) => handleFormChange("numero", e.target.value)}
-              />
-
-              {/* Estado de acreditación */}
-              <div className="flex flex-col gap-1.5">
-                <label className={cn("font-medium text-negro-una-2", TYPOGRAPHY.form.label)}>
-                  Estado de acreditación
-                </label>
-                <div className="flex gap-2">
-                  {(["acreditada", "no_acreditada"] as const).map((estado) => (
-                    <button
-                      key={estado}
-                      onClick={() => handleFormChange("estado", estado)}
-                      className={cn(
-                        "flex-1 py-2 px-3 rounded-lg border text-sm font-medium transition-colors",
-                        form.estado === estado
-                          ? estado === "acreditada"
-                            ? "bg-verde-ring border-verde-dark text-verde-dark"
-                            : "bg-error-ring border-error-dark text-error-dark"
-                          : "bg-gris-fondo border-gris-claro text-gris-una hover:border-negro-una-2",
-                      )}
-                    >
-                      {estado === "acreditada" ? "Acreditada" : "No acreditada"}
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              <Input
-                label="Vigencia desde"
-                type="date"
-                value={form.vigencia_inicio}
-                onChange={(e) => handleFormChange("vigencia_inicio", e.target.value)}
-              />
-
-              <Input
-                label="Vigencia hasta"
-                type="date"
-                value={form.vigencia_fin}
-                onChange={(e) => handleFormChange("vigencia_fin", e.target.value)}
-              />
-            </div>
-
-            {/* Drop zone PDF */}
-            <div
-              onDrop={handleDrop}
-              onDragOver={(e) => e.preventDefault()}
-              onClick={() => fileInputRef.current?.click()}
-              className={cn(
-                "border-2 border-dashed rounded-xl p-7 text-center cursor-pointer transition-colors",
-                archivoSeleccionado
-                  ? "border-verde-dark bg-verde-ring/20"
-                  : "border-gris-claro hover:border-rojo-una hover:bg-error-ring/10",
-              )}
-            >
-              <input
-                ref={fileInputRef}
-                type="file"
-                accept=".pdf"
-                className="hidden"
-                onChange={handleFileChange}
-              />
-              {archivoSeleccionado ? (
-                <div className="flex items-center justify-center gap-3">
-                  <SystemIcons.interface.checkCircle className={cn(ICON_SIZES.md, "text-verde-dark")} />
-                  <div className="text-left">
-                    <p className={cn("font-medium text-verde-dark", TYPOGRAPHY.table.cell)}>
-                      {archivoSeleccionado.name}
-                    </p>
-                    <p className={cn("text-gris-una mt-0.5", TYPOGRAPHY.table.helper)}>
-                      {(archivoSeleccionado.size / 1024 / 1024).toFixed(2)} MB · listo para subir
-                    </p>
-                  </div>
-                  <button
-                    onClick={(e) => { e.stopPropagation(); setArchivoSeleccionado(null); }}
-                    className="ml-2 text-gris-una hover:text-error-dark transition-colors"
-                  >
-                    <SystemIcons.interface.xCircle className={ICON_SIZES.sm} />
-                  </button>
-                </div>
-              ) : (
-                <>
-                  <div className="w-10 h-10 bg-gris-fondo rounded-full flex items-center justify-center mx-auto mb-3">
-                    <SystemIcons.interface.uploadArrow className={cn(ICON_SIZES.md, "text-gris-una")} />
-                  </div>
-                  <p className={cn("font-medium text-negro-una-2", TYPOGRAPHY.table.cell)}>
-                    Arrastrá el PDF oficial aquí o hacé clic para seleccionar
-                  </p>
-                  <p className={cn("text-gris-una mt-1", TYPOGRAPHY.table.helper)}>
-                    Solo archivos PDF · Máximo 20 MB
-                  </p>
-                </>
-              )}
-            </div>
-
-            <div className="flex justify-end pt-1">
-              <Button
-                variant="primary"
-                size="sm"
-                disabled={!formCompleto}
-                onClick={handlePublicar}
-              >
-                <SystemIcons.navigation.reports className={ICON_SIZES.sm} />
-                Publicar resolución
-              </Button>
-            </div>
-          </div>
-
           {/* Historial de resoluciones */}
-          <div className="bg-blanco-una border border-gris-claro rounded-xl overflow-hidden shadow-sm">
-            <div className="px-5 py-4 border-b border-gris-claro">
-              <p className={cn("uppercase tracking-wider font-semibold text-gris-una", TYPOGRAPHY.table.helper)}>
-                Historial de resoluciones publicadas
-              </p>
-            </div>
-            <div className="divide-y divide-gris-claro">
-              {historial.map((r) => (
-                <div key={r.id} className="flex items-center gap-4 px-5 py-4">
-                  <div className="flex-1 min-w-0">
-                    <p className={cn("font-semibold text-negro-una-2", TYPOGRAPHY.table.cell)}>
-                      Nº {r.numero}
-                    </p>
-                    <p className={cn("text-gris-una mt-0.5", TYPOGRAPHY.table.helper)}>
-                      {formatDate(r.publicado_en)} · {r.publicado_por} · {r.archivo_size}
-                    </p>
-                  </div>
-                  <StatusBadge
-                    label={r.activa ? "Activa" : "Archivada"}
-                    colorClasses={r.activa ? BADGE_COLORS.verde.colorClasses : BADGE_COLORS.gris.colorClasses}
-                  />
-                  <Button variant="ghost" size="sm">
-                    <SystemIcons.actions.view className={ICON_SIZES.sm} />
-                    Ver PDF
-                  </Button>
-                </div>
-              ))}
-            </div>
-          </div>
+          <Card>
+            <p className={cn("uppercase tracking-wider font-semibold text-gris-una px-4 pt-4 mb-4", TYPOGRAPHY.table.helper)}>
+              Historial de resoluciones publicadas
+            </p>
+            <DataTable<ResolucionRow>
+              data={historial as ResolucionRow[]}
+              columns={historialColumns}
+              searchable={false}
+              emptyMessage="Sin resoluciones registradas."
+              unstyled
+            />
+          </Card>
         </div>
       )}
 
@@ -463,147 +756,75 @@ export const AccreditationReportAdminPage: React.FC = () => {
       {activeTab === "Informe Final Institucional" && (
         <div className="space-y-6">
 
-          {/* Estado de publicación */}
-          <div
-            className={cn(
-              "flex items-center gap-4 p-4 rounded-xl border",
-              publicacionInforme.estado === "publicado"
-                ? "bg-verde-ring/20 border-verde-dark/25"
-                : "bg-gris-fondo border-gris-claro",
-            )}
-          >
-            <div
-              className={cn(
-                "w-10 h-10 rounded-full flex items-center justify-center shrink-0",
-                publicacionInforme.estado === "publicado"
-                  ? "bg-verde-ring border border-verde-dark/30"
-                  : "bg-gris-claro border border-gris-una/30",
-              )}
-            >
-              {publicacionInforme.estado === "publicado" ? (
-                <SystemIcons.interface.checkCircle className={cn(ICON_SIZES.sm, "text-verde-dark")} />
-              ) : (
-                <SystemIcons.interface.alert className={cn(ICON_SIZES.sm, "text-gris-una")} />
-              )}
-            </div>
-            <div className="flex-1 min-w-0">
-              <p
-                className={cn(
-                  "font-semibold",
-                  TYPOGRAPHY.table.cell,
-                  publicacionInforme.estado === "publicado" ? "text-verde-dark" : "text-gris-una",
-                )}
-              >
-                {publicacionInforme.estado === "publicado"
-                  ? "Informe final institucional publicado en el sistema"
-                  : "Informe final institucional no publicado"}
-              </p>
-              {publicacionInforme.estado === "publicado" && (
-                <p className={cn(TYPOGRAPHY.table.helper, "text-negro-una-2 mt-0.5")}>
-                  Publicado por {publicacionInforme.publicado_por} · {formatDate(publicacionInforme.publicado_en)}
-                </p>
-              )}
-            </div>
-            <StatusBadge
-              label={publicacionInforme.estado === "publicado" ? "Publicado" : "Sin publicar"}
-              colorClasses={
-                publicacionInforme.estado === "publicado"
-                  ? BADGE_COLORS.verde.colorClasses
-                  : BADGE_COLORS.gris.colorClasses
-              }
+          {/* Tabla de versiones */}
+          <Card>
+            <p className={cn("uppercase tracking-wider font-semibold text-gris-una px-4 pt-4 mb-4", TYPOGRAPHY.table.helper)}>
+              Versiones publicadas
+            </p>
+            <DataTable<VersionInformeRow>
+              data={versiones as VersionInformeRow[]}
+              columns={versionesColumns}
+              searchable={false}
+              emptyMessage="Sin versiones publicadas."
+              unstyled
             />
-          </div>
-
-          {/* Acción de publicación */}
-          <div className="bg-blanco-una border border-gris-claro rounded-xl p-5 shadow-sm">
-            <p className={cn("uppercase tracking-wider font-semibold text-gris-una mb-1", TYPOGRAPHY.table.helper)}>
-              Publicar informe
-            </p>
-            <p className={cn("text-gris-una mb-4", TYPOGRAPHY.table.cell)}>
-              Al publicar, todos los usuarios con acceso al sistema podrán visualizar en modo lectura las
-              dimensiones, componentes, criterios, evidencias y enlaces del informe final.
-            </p>
-            <Button
-              variant="primary"
-              size="sm"
-              onClick={() => setShowConfirmPublicar(true)}
-            >
-              <SystemIcons.navigation.reports className={ICON_SIZES.sm} />
-              {publicacionInforme.estado === "publicado" ? "Republicar informe" : "Publicar informe"}
-            </Button>
-          </div>
-
-          {/* Bitácora */}
-          <div className="bg-blanco-una border border-gris-claro rounded-xl overflow-hidden shadow-sm">
-            <div className="px-5 py-4 border-b border-gris-claro">
-              <p className={cn("uppercase tracking-wider font-semibold text-gris-una", TYPOGRAPHY.table.helper)}>
-                Bitácora de publicaciones
-              </p>
-            </div>
-            {bitacora.length === 0 ? (
-              <p className={cn("text-center py-8 text-gris-una", TYPOGRAPHY.table.cell)}>Sin registros.</p>
-            ) : (
-              <div className="divide-y divide-gris-claro">
-                {bitacora.map((item) => (
-                  <div key={item.id} className="flex items-start gap-3 px-5 py-3">
-                    <SystemIcons.interface.informationCircle
-                      className={cn(ICON_SIZES.sm, "text-gris-una shrink-0 mt-0.5")}
-                    />
-                    <div className="flex-1 min-w-0">
-                      <p className={cn("font-medium text-negro-una-2", TYPOGRAPHY.table.cell)}>
-                        {item.accion}
-                      </p>
-                      <p className={cn("text-gris-una mt-0.5", TYPOGRAPHY.table.helper)}>
-                        {item.usuario} · {formatDate(item.fecha)}
-                      </p>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
+          </Card>
         </div>
       )}
 
-      {/* ──────────── Modal de confirmación ──────────── */}
-      {showConfirmPublicar && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-negro-una/40 px-4">
-          <div className="bg-blanco-una rounded-2xl shadow-xl w-full max-w-md p-6 space-y-4">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-full bg-azul-ring flex items-center justify-center shrink-0">
-                <SystemIcons.navigation.reports className={cn(ICON_SIZES.md, "text-azul-una")} />
-              </div>
-              <div>
-                <p className={cn("font-semibold text-negro-una", TYPOGRAPHY.pageSubtitle)}>Confirmar publicación</p>
-                <p className={cn("text-gris-una mt-0.5", TYPOGRAPHY.table.helper)}>Esta acción quedará registrada en la bitácora.</p>
-              </div>
-            </div>
-            <p className={cn("text-gris-una-2", TYPOGRAPHY.table.cell)}>
-              ¿Confirma la publicación del informe final? Los usuarios del sistema podrán visualizarlo en modo lectura.
-            </p>
-            <div className="flex gap-3 justify-end pt-1">
-              <Button
-                variant="secondary"
-                size="sm"
-                onClick={() => setShowConfirmPublicar(false)}
-                disabled={isPublicando}
-              >
-                Cancelar
-              </Button>
-              <Button
-                variant="primary"
-                size="sm"
-                onClick={handlePublicarInforme}
-                disabled={isPublicando}
-              >
-                {isPublicando ? "Publicando..." : "Sí, publicar"}
-              </Button>
-            </div>
-          </div>
-        </div>
-      )}
+      {/* ──────────── Modal: Crear / Editar Resolución ──────────── */}
+      <ResolucionModal
+        isOpen={showResolucionModal}
+        onClose={() => {
+          setShowResolucionModal(false);
+          setEditingResolucion(null);
+        }}
+        initial={editingResolucion}
+        onSave={handleSaveResolucion}
+      />
 
+      {/* ──────────── Modal: Confirmar eliminación de resolución ──────────── */}
+      <DeleteConfirmationModal
+        isOpen={deletingResolucion !== null}
+        onClose={() => setDeletingResolucion(null)}
+        onConfirm={handleDeleteResolucion}
+        title="Eliminar resolución"
+        itemName={`Nº ${deletingResolucion?.numero ?? ""}`}
+        confirmLabel="Sí, eliminar"
+        variant={deletingResolucion?.activa ? "warning" : "danger"}
+        footerMeta={
+          deletingResolucion?.activa
+            ? "Esta es la resolución activa."
+            : "Esta acción no se puede deshacer"
+        }
+      />
 
+      {/* ──────────── Modal: Publicar informe final ──────────── */}
+      <InformeModal
+        isOpen={showInformeModal}
+        onClose={() => {
+          setShowInformeModal(false);
+          setEditingVersion(null);
+        }}
+        initial={editingVersion}
+        onSave={handleSaveInforme}
+      />
+
+      {/* ──────────── Modal: Eliminar versión de informe ──────────── */}
+      <DeleteConfirmationModal
+        isOpen={deletingVersion !== null}
+        onClose={() => setDeletingVersion(null)}
+        onConfirm={handleDeleteVersion}
+        title="Eliminar versión"
+        itemName={deletingVersion?.descripcion ?? ""}
+        confirmLabel="Sí, eliminar"
+        variant={deletingVersion?.activa ? "warning" : "danger"}
+        footerMeta={
+          deletingVersion?.activa
+            ? "Esta es la versión activa. Al eliminarla, ninguna versión quedará publicada."
+            : "Esta acción no se puede deshacer"
+        }
+      />
     </ScreenContainer>
   );
 };
