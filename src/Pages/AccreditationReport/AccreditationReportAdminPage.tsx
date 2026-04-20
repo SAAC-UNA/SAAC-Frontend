@@ -114,14 +114,14 @@ const MOCK_BITACORA: BitacoraItem[] = [
 
 // ─── Componente principal ────────────────────────────────────────────────────
 
-const TABS = ["Publicación actual", "Informe Final", "Historial"] as const;
+const TABS = ["Resolución SINAES", "Informe Final Institucional"] as const;
 type Tab = (typeof TABS)[number];
 
 export const AccreditationReportAdminPage: React.FC = () => {
   const { showToast } = useToast();
   const navigate = useNavigate();
   const moduleInfo = getModuleInfo("accreditation_report_admin");
-  const [activeTab, setActiveTab] = useState<Tab>("Publicación actual");
+  const [activeTab, setActiveTab] = useState<Tab>("Resolución SINAES");
   const [historial] = useState<Resolucion[]>(MOCK_HISTORIAL);
   const resolucionActiva = historial.find((r) => r.activa) ?? null;
 
@@ -175,7 +175,7 @@ export const AccreditationReportAdminPage: React.FC = () => {
       showToast({
         type: "success",
         title: "Informe publicado",
-        message: "El informe final ha sido publicado y está disponible para todos los usuarios.",
+        message: "El informe final institucional ha sido publicado y está disponible para todos los usuarios.",
       });
     }, 1200);
   };
@@ -277,8 +277,8 @@ export const AccreditationReportAdminPage: React.FC = () => {
         ))}
       </div>
 
-      {/* ──────────── Tab: Publicación actual ──────────── */}
-      {activeTab === "Publicación actual" && (
+      {/* ──────────── Tab: Resolución SINAES ──────────── */}
+      {activeTab === "Resolución SINAES" && (
         <div className="space-y-6">
 
           {/* Documento activo */}
@@ -425,11 +425,42 @@ export const AccreditationReportAdminPage: React.FC = () => {
               </Button>
             </div>
           </div>
+
+          {/* Historial de resoluciones */}
+          <div className="bg-blanco-una border border-gris-claro rounded-xl overflow-hidden shadow-sm">
+            <div className="px-5 py-4 border-b border-gris-claro">
+              <p className={cn("uppercase tracking-wider font-semibold text-gris-una", TYPOGRAPHY.table.helper)}>
+                Historial de resoluciones publicadas
+              </p>
+            </div>
+            <div className="divide-y divide-gris-claro">
+              {historial.map((r) => (
+                <div key={r.id} className="flex items-center gap-4 px-5 py-4">
+                  <div className="flex-1 min-w-0">
+                    <p className={cn("font-semibold text-negro-una-2", TYPOGRAPHY.table.cell)}>
+                      Nº {r.numero}
+                    </p>
+                    <p className={cn("text-gris-una mt-0.5", TYPOGRAPHY.table.helper)}>
+                      {formatDate(r.publicado_en)} · {r.publicado_por} · {r.archivo_size}
+                    </p>
+                  </div>
+                  <StatusBadge
+                    label={r.activa ? "Activa" : "Archivada"}
+                    colorClasses={r.activa ? BADGE_COLORS.verde.colorClasses : BADGE_COLORS.gris.colorClasses}
+                  />
+                  <Button variant="ghost" size="sm">
+                    <SystemIcons.actions.view className={ICON_SIZES.sm} />
+                    Ver PDF
+                  </Button>
+                </div>
+              ))}
+            </div>
+          </div>
         </div>
       )}
 
-      {/* ──────────── Tab: Informe Final ──────────── */}
-      {activeTab === "Informe Final" && (
+      {/* ──────────── Tab: Informe Final Institucional ──────────── */}
+      {activeTab === "Informe Final Institucional" && (
         <div className="space-y-6">
 
           {/* Estado de publicación */}
@@ -464,8 +495,8 @@ export const AccreditationReportAdminPage: React.FC = () => {
                 )}
               >
                 {publicacionInforme.estado === "publicado"
-                  ? "Informe final publicado en el sistema"
-                  : "Informe final no publicado"}
+                  ? "Informe final institucional publicado en el sistema"
+                  : "Informe final institucional no publicado"}
               </p>
               {publicacionInforme.estado === "publicado" && (
                 <p className={cn(TYPOGRAPHY.table.helper, "text-negro-una-2 mt-0.5")}>
@@ -548,7 +579,7 @@ export const AccreditationReportAdminPage: React.FC = () => {
               </div>
             </div>
             <p className={cn("text-gris-una-2", TYPOGRAPHY.table.cell)}>
-              ¿Confirmás la publicación del informe final? Los usuarios del sistema podrán visualizarlo en modo lectura.
+              ¿Confirma la publicación del informe final? Los usuarios del sistema podrán visualizarlo en modo lectura.
             </p>
             <div className="flex gap-3 justify-end pt-1">
               <Button
@@ -572,38 +603,7 @@ export const AccreditationReportAdminPage: React.FC = () => {
         </div>
       )}
 
-      {/* ──────────── Tab: Historial ──────────── */}
-      {activeTab === "Historial" && (
-        <div className="bg-blanco-una border border-gris-claro rounded-xl overflow-hidden shadow-sm">
-          <div className="px-5 py-4 border-b border-gris-claro">
-            <p className={cn("uppercase tracking-wider font-semibold text-gris-una", TYPOGRAPHY.table.helper)}>
-              Historial de resoluciones publicadas
-            </p>
-          </div>
-          <div className="divide-y divide-gris-claro">
-            {historial.map((r) => (
-              <div key={r.id} className="flex items-center gap-4 px-5 py-4">
-                <div className="flex-1 min-w-0">
-                  <p className={cn("font-semibold text-negro-una-2", TYPOGRAPHY.table.cell)}>
-                    Nº {r.numero}
-                  </p>
-                  <p className={cn("text-gris-una mt-0.5", TYPOGRAPHY.table.helper)}>
-                    {formatDate(r.publicado_en)} · {r.publicado_por} · {r.archivo_size}
-                  </p>
-                </div>
-                <StatusBadge
-                  label={r.activa ? "Activa" : "Archivada"}
-                  colorClasses={r.activa ? BADGE_COLORS.verde.colorClasses : BADGE_COLORS.gris.colorClasses}
-                />
-                <Button variant="ghost" size="sm">
-                  <SystemIcons.interface.back className={ICON_SIZES.sm} />
-                  Ver PDF
-                </Button>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
+
     </ScreenContainer>
   );
 };

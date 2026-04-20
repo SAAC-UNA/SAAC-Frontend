@@ -351,7 +351,7 @@ const DimensionAccordion: React.FC<DimensionAccordionProps> = ({ dimension }) =>
 
 // ─── Componente principal ────────────────────────────────────────────────────
 
-const TABS = ["Resolución actual", "Informe Final", "Historial"] as const;
+const TABS = ["Resolución SINAES", "Informe Final Institucional"] as const;
 type Tab = (typeof TABS)[number];
 
 export const AccreditationReportPublicPage: React.FC = () => {
@@ -359,7 +359,7 @@ export const AccreditationReportPublicPage: React.FC = () => {
   const navigate = useNavigate();
   const { canAccess } = useAuth();
   const canViewAdmin = canAccess({ requireAnyPermissions: REPORTS_ACCESS_PERMISSIONS });
-  const [activeTab, setActiveTab] = useState<Tab>("Resolución actual");
+  const [activeTab, setActiveTab] = useState<Tab>("Resolución SINAES");
   const historial = MOCK_HISTORIAL;
   const resolucionActiva = historial.find((r) => r.activa) ?? null;
   const isAcreditada = resolucionActiva?.estado === "acreditada";
@@ -413,7 +413,7 @@ export const AccreditationReportPublicPage: React.FC = () => {
             />
           ) : (
             <div className="w-14 h-14 rounded-full bg-error-ring border border-error-dark/20 flex items-center justify-center shrink-0">
-              <SystemIcons.interface.alert className={cn(ICON_SIZES.md, "text-error-dark")} />
+              <SystemIcons.auth.ShieldSlash className={cn(ICON_SIZES.md, "text-error-dark")} />
             </div>
           )}
 
@@ -469,9 +469,10 @@ export const AccreditationReportPublicPage: React.FC = () => {
         ))}
       </div>
 
-      {/* ──────────── Tab: Resolución actual ──────────── */}
-      {activeTab === "Resolución actual" && resolucionActiva && (
-        <div className="bg-blanco-una border border-gris-claro rounded-xl p-5 shadow-sm">
+      {/* ──────────── Tab: Resolución SINAES ──────────── */}
+      {activeTab === "Resolución SINAES" && resolucionActiva && (
+        <div className="space-y-6">
+          <div className="bg-blanco-una border border-gris-claro rounded-xl p-5 shadow-sm">
           <p className={cn("uppercase tracking-wider font-semibold text-gris-una mb-4", TYPOGRAPHY.table.helper)}>
             Documento oficial
           </p>
@@ -493,16 +494,57 @@ export const AccreditationReportPublicPage: React.FC = () => {
             </Button>
           </div>
         </div>
+
+          {/* Historial de resoluciones */}
+          <div className="bg-blanco-una border border-gris-claro rounded-xl overflow-hidden shadow-sm">
+            <div className="px-5 py-4 border-b border-gris-claro">
+              <p className={cn("uppercase tracking-wider font-semibold text-gris-una", TYPOGRAPHY.table.helper)}>
+                Historial de resoluciones
+              </p>
+            </div>
+            {historial.length === 0 ? (
+              <p className={cn("text-center py-8 text-gris-una", TYPOGRAPHY.table.cell)}>
+                Sin historial disponible.
+              </p>
+            ) : (
+              <div className="divide-y divide-gris-claro">
+                {historial.map((r) => (
+                  <div key={r.id} className="flex items-center gap-4 px-5 py-4">
+                    <div className="flex-1 min-w-0">
+                      <p className={cn("font-semibold text-negro-una-2", TYPOGRAPHY.table.cell)}>
+                        Nº {r.numero}
+                      </p>
+                      <p className={cn("text-gris-una mt-0.5", TYPOGRAPHY.table.helper)}>
+                        Vigencia: {formatDate(r.vigencia_inicio)} — {formatDate(r.vigencia_fin)}
+                      </p>
+                      <p className={cn("text-gris-una", TYPOGRAPHY.table.helper)}>
+                        Publicado por {r.publicado_por} · {formatDate(r.publicado_en)}
+                      </p>
+                    </div>
+                    <StatusBadge
+                      label={r.activa ? "Vigente" : "Archivada"}
+                      colorClasses={r.activa ? BADGE_COLORS.verde.colorClasses : BADGE_COLORS.gris.colorClasses}
+                    />
+                    <Button variant="ghost" size="sm">
+                      <SystemIcons.actions.download className={ICON_SIZES.sm} />
+                      PDF
+                    </Button>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
       )}
 
-      {activeTab === "Resolución actual" && !resolucionActiva && (
+      {activeTab === "Resolución SINAES" && !resolucionActiva && (
         <div className={cn("text-center py-12 text-gris-una", TYPOGRAPHY.table.cell)}>
           No hay documento disponible.
         </div>
       )}
 
-      {/* ──────────── Tab: Informe Final ──────────── */}
-      {activeTab === "Informe Final" && (
+      {/* ──────────── Tab: Informe Final Institucional ──────────── */}
+      {activeTab === "Informe Final Institucional" && (
         <div className="space-y-4">
           {/* Banner de publicación */}
           <div className="flex items-center gap-3 p-4 bg-azul-ring/20 border border-azul-una/20 rounded-xl">
@@ -526,48 +568,6 @@ export const AccreditationReportPublicPage: React.FC = () => {
           {MOCK_INFORME.dimensiones.map((dim) => (
             <DimensionAccordion key={dim.id} dimension={dim} />
           ))}
-        </div>
-      )}
-
-      {/* ──────────── Tab: Historial ──────────── */}
-      {activeTab === "Historial" && (
-        <div className="bg-blanco-una border border-gris-claro rounded-xl overflow-hidden shadow-sm">
-          <div className="px-5 py-4 border-b border-gris-claro">
-            <p className={cn("uppercase tracking-wider font-semibold text-gris-una", TYPOGRAPHY.table.helper)}>
-              Historial de resoluciones
-            </p>
-          </div>
-          {historial.length === 0 ? (
-            <p className={cn("text-center py-8 text-gris-una", TYPOGRAPHY.table.cell)}>
-              Sin historial disponible.
-            </p>
-          ) : (
-            <div className="divide-y divide-gris-claro">
-              {historial.map((r) => (
-                <div key={r.id} className="flex items-center gap-4 px-5 py-4">
-                  <div className="flex-1 min-w-0">
-                    <p className={cn("font-semibold text-negro-una-2", TYPOGRAPHY.table.cell)}>
-                      Nº {r.numero}
-                    </p>
-                    <p className={cn("text-gris-una mt-0.5", TYPOGRAPHY.table.helper)}>
-                      Vigencia: {formatDate(r.vigencia_inicio)} — {formatDate(r.vigencia_fin)}
-                    </p>
-                    <p className={cn("text-gris-una", TYPOGRAPHY.table.helper)}>
-                      Publicado por {r.publicado_por} · {formatDate(r.publicado_en)}
-                    </p>
-                  </div>
-                  <StatusBadge
-                    label={r.activa ? "Vigente" : "Archivada"}
-                    colorClasses={r.activa ? BADGE_COLORS.verde.colorClasses : BADGE_COLORS.gris.colorClasses}
-                  />
-                  <Button variant="ghost" size="sm">
-                    <SystemIcons.actions.download className={ICON_SIZES.sm} />
-                    PDF
-                  </Button>
-                </div>
-              ))}
-            </div>
-          )}
         </div>
       )}
     </ScreenContainer>

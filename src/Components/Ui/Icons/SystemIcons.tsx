@@ -915,6 +915,19 @@ export const SystemIcons = {
       </svg>
     ),
 
+    ShieldSlash: ({ className, size, color }: IconProps) => (
+      <svg
+        width={size}
+        height={size}
+        fill={color || "currentColor"}
+        viewBox="0 0 24 24"
+        xmlns="http://www.w3.org/2000/svg"
+        className={`${getSizeClasses(size)} ${className || ""}`}
+      >
+        <path d="M21.366 22.303a.752.752 0 0 1-1.06-.047l-2.737-3.01a13.725 13.725 0 0 1-5.1 3.141 1.34 1.34 0 0 1-.938 0C10.106 21.92 3 19.134 3 10.753V5.25a1.49 1.49 0 0 1 .703-1.266L2.588 2.756a.74.74 0 0 1 .046-1.06.75.75 0 0 1 1.06.048l2.044 2.25 12.403 13.64 3.272 3.6a.751.751 0 0 1-.047 1.069Zm-2.654-6.263a.743.743 0 0 0 .554.244h.122a.74.74 0 0 0 .562-.431c.694-1.528 1.05-3.244 1.05-5.09V5.25a1.5 1.5 0 0 0-1.5-1.5H9.234a.76.76 0 0 0-.684.45.75.75 0 0 0 .131.806L18.712 16.04Z" />
+      </svg>
+    ),
+
     AlertCircle: ({ className, size, color }: IconProps) => (
       <svg
         className={`${getSizeClasses(size)} ${className || ""}`}
