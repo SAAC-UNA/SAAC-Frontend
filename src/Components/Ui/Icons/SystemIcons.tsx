@@ -743,6 +743,19 @@ export const SystemIcons = {
         <path d="M13.16 4.407a2.25 2.25 0 0 0-2.32 0l-.517.311a9.75 9.75 0 0 1-4.115 1.354l-.325.031A1.25 1.25 0 0 0 4.75 7.347v1.644a10.25 10.25 0 0 0 3.126 7.37l3.255 3.147a1.25 1.25 0 0 0 1.738 0l3.255-3.147a10.25 10.25 0 0 0 3.126-7.37V7.347a1.25 1.25 0 0 0-1.133-1.244l-.325-.03a9.75 9.75 0 0 1-4.115-1.355l-.516-.31Z" />
       </svg>
     ),
+
+    informe: ({ className, size, color }: IconProps) => (
+      <svg
+        width={size}
+        height={size}
+        fill={color || "currentColor"}
+        viewBox="0 0 24 24"
+        xmlns="http://www.w3.org/2000/svg"
+        className={`${getSizeClasses(size)} ${className || ""}`}
+      >
+        <path d="M19.5 2.25H6.75a3.01 3.01 0 0 0-3 3V21a.75.75 0 0 0 .75.75H18a.75.75 0 1 0 0-1.5H5.25a1.5 1.5 0 0 1 1.5-1.5H19.5a.75.75 0 0 0 .75-.75V3a.75.75 0 0 0-.75-.75Zm-2.25 9-2.4-1.8a.366.366 0 0 0-.45 0l-2.4 1.8v-7.5h5.25v7.5Z" />
+      </svg>
+    )
   },
 
   // ===== TRABAJO Y REPORTES =====
@@ -1266,6 +1279,7 @@ export const getIconByName = (
     "clipboard-list": () => SystemIcons.work.myEvidences({ size }),
     "clipboard-check": () => SystemIcons.work.assignEvidence({ size }),
     "magnifying-glass": () => SystemIcons.interface.search({ size }),
+    informe: () => SystemIcons.users.informe({ size }),
   };
 
   return iconMap[iconName] ? iconMap[iconName]() : null;
