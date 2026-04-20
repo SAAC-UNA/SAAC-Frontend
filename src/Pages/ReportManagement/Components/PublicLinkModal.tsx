@@ -181,7 +181,8 @@ export const PublicLinkModal: React.FC<PublicLinkModalProps> = ({
         isOpen={isOpen && !successState.open}
         onClose={onClose}
         title="Enlace público"
-        size="md"
+        subtitle={`${evidencia.nomenclatura} — ${evidencia.descripcion}`}
+        size="lg"
         variant="info"
         heroIcon={
           <SystemIcons.modal.document
@@ -190,38 +191,6 @@ export const PublicLinkModal: React.FC<PublicLinkModalProps> = ({
         }
       >
         <div className="flex flex-col gap-4">
-          {/* Información del archivo */}
-          <div className="flex flex-col gap-1">
-            <div className="flex items-center gap-2">
-              <span
-                className={cn(
-                  TYPOGRAPHY.modal.body,
-                  "font-semibold text-negro-una",
-                )}
-              >
-                {evidencia.nomenclatura}
-              </span>
-              <span
-                className={cn(TYPOGRAPHY.modal.subtitle, "text-gris-una-2")}
-              >
-                —
-              </span>
-              <span className={cn(TYPOGRAPHY.modal.body, "text-gris-una-2")}>
-                {evidencia.descripcion}
-              </span>
-            </div>
-            <div className="flex items-center gap-1.5">
-              <SystemIcons.modal.document
-                className={cn(ICON_SIZES.sm, "text-gris-una")}
-              />
-              <span className={cn(TYPOGRAPHY.modal.body, "text-gris-una-2")}>
-                {archivo.nombre_original}
-              </span>
-            </div>
-          </div>
-
-          <hr className="border-gris-light" />
-
           {/* Estado del enlace */}
           {archivo.is_publico &&
           (archivo.token_publico || archivo.url_publica) ? (
@@ -229,9 +198,6 @@ export const PublicLinkModal: React.FC<PublicLinkModalProps> = ({
               {/* Encabezado estado activo */}
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <SystemIcons.actions.linkIcon
-                    className={cn(ICON_SIZES.sm, "text-verde")}
-                  />
                   <span
                     className={cn(
                       TYPOGRAPHY.modal.body,
@@ -250,16 +216,50 @@ export const PublicLinkModal: React.FC<PublicLinkModalProps> = ({
                 )}
               </div>
 
+              {/* Nombre del archivo */}
+              <div className="flex items-center gap-1.5">
+                <span className={cn(TYPOGRAPHY.modal.body, "text-gris-una-2")}>
+                  {archivo.nombre_original}
+                </span>
+              </div>
+
+              <hr className="border-gris-light" />
+
               {/* URL */}
               <div className="flex flex-col gap-1">
-                <span
-                  className={cn(
-                    TYPOGRAPHY.modal.subtitle,
-                    "text-gris-una-2 uppercase tracking-wider font-semibold",
-                  )}
-                >
-                  URL pública
-                </span>
+                <div className="flex items-center justify-between">
+                  <span
+                    className={cn(
+                      TYPOGRAPHY.modal.subtitle,
+                      "text-gris-una-2 uppercase tracking-wider font-semibold",
+                    )}
+                  >
+                    URL pública
+                  </span>
+                  <div className="flex items-center gap-1.5">
+                    <ButtonWithTooltip
+                      variant="tableView"
+                      size="sm"
+                      tooltip="Copiar enlace"
+                      onClick={handleCopyLink}
+                      className="p-1"
+                      aria-label="Copiar enlace"
+                    >
+                      <SystemIcons.actions.copyLink className={ICON_SIZES.sm} />
+                    </ButtonWithTooltip>
+                    <ButtonWithTooltip
+                      variant="tableDelete"
+                      size="sm"
+                      tooltip={isRevoking ? "Revocando..." : "Revocar enlace"}
+                      onClick={() => setShowRevokeConfirm(true)}
+                      disabled={isRevoking}
+                      className="p-1"
+                      aria-label="Revocar enlace"
+                    >
+                      <SystemIcons.interface.xCircle className={ICON_SIZES.sm} />
+                    </ButtonWithTooltip>
+                  </div>
+                </div>
                 <div className="flex items-center gap-2">
                   <div className="flex items-center gap-2 border border-gris-light rounded px-3 py-2 flex-1">
                     <input
@@ -315,40 +315,6 @@ export const PublicLinkModal: React.FC<PublicLinkModalProps> = ({
                   </Tooltip>
                 </div>
               </div>
-
-              {/* Botones */}
-              <div className="flex items-center justify-end gap-1.5">
-                {copiedToClipboard && (
-                  <span
-                    className={cn(TYPOGRAPHY.modal.subtitle, "text-verde-dark")}
-                  >
-                    Copiado
-                  </span>
-                )}
-
-                <ButtonWithTooltip
-                  variant="tableView"
-                  size="sm"
-                  tooltip="Copiar enlace"
-                  onClick={handleCopyLink}
-                  className="p-1"
-                  aria-label="Copiar enlace"
-                >
-                  <SystemIcons.actions.copy className={ICON_SIZES.sm} />
-                </ButtonWithTooltip>
-
-                <ButtonWithTooltip
-                  variant="tableDelete"
-                  size="sm"
-                  tooltip={isRevoking ? "Revocando..." : "Revocar enlace"}
-                  onClick={() => setShowRevokeConfirm(true)}
-                  disabled={isRevoking}
-                  className="p-1"
-                  aria-label="Revocar enlace"
-                >
-                  <SystemIcons.interface.xCircle className={ICON_SIZES.sm} />
-                </ButtonWithTooltip>
-              </div>
             </div>
           ) : (
             <div className="flex flex-col gap-3 py-1">
@@ -367,6 +333,15 @@ export const PublicLinkModal: React.FC<PublicLinkModalProps> = ({
                   </span>
                 </div>
               </div>
+
+              {/* Nombre del archivo */}
+              <div className="flex items-center gap-1.5">
+                <span className={cn(TYPOGRAPHY.modal.body, "text-gris-una-2")}>
+                  {archivo.nombre_original}
+                </span>
+              </div>
+
+              <hr className="border-gris-light" />
 
               <p className={cn(TYPOGRAPHY.modal.body, "text-gris-una-2")}>
                 Genere un enlace para compartir este archivo sin necesidad de
@@ -412,7 +387,7 @@ export const PublicLinkModal: React.FC<PublicLinkModalProps> = ({
         onConfirm={confirmRevokeLink}
         title="Revocar enlace público"
         variant="warning"
-        confirmLabel="Revocar"
+        confirmLabel="Sí, revocar"
         cancelLabel="Cancelar"
         confirmLoading={isRevoking}
         showCancel

@@ -8,6 +8,7 @@ import {
   TooltipTrigger,
 } from "@/Components/Ui/Feedback/Tooltip";
 import { SystemIcons } from "@/Components/Ui/Icons/SystemIcons";
+import { TYPOGRAPHY } from "@/Constants/Typography";
 
 export interface BreadcrumbItem {
   label: string;
@@ -20,7 +21,7 @@ export interface BreadcrumbItem {
 interface BreadcrumbProps {
   items: BreadcrumbItem[];
   className?: string;
-  variant?: "default" | "table";
+  variant?: "default" | "table" | "child";
 }
 
 const ChevronSeparator = () => (
@@ -35,7 +36,12 @@ export const Breadcrumb: React.FC<BreadcrumbProps> = ({ items, className, varian
   return (
     <TooltipProvider>
       <nav aria-label="Breadcrumb" className={cn("w-full", className)}>
-        <ol className="flex flex-wrap items-center gap-1 text-sm text-gris-una">
+        <ol className={cn(
+          "flex flex-wrap items-center gap-1 text-gris-una",
+          variant === "child" ? TYPOGRAPHY.table.helper
+          : variant === "table" ? TYPOGRAPHY.table.cell
+          : "text-sm",
+        )}>
           {items.map((item, index) => {
             const isLast = index === items.length - 1;
             const isCurrent = item.current || isLast;
@@ -43,8 +49,10 @@ export const Breadcrumb: React.FC<BreadcrumbProps> = ({ items, className, varian
             const labelClassName = cn(
               "block truncate transition-colors",
               isCurrent
-                ? "font-semibold text-negro-una"
-                : variant === "table" ? "text-negro-una font-semibold" : "hover:text-negro-una",
+                ? variant === "child" ? "text-gris-una-2"
+                  : variant === "table" ? "font-semibold text-negro-una-2"
+                  : "font-semibold text-negro-una"
+                : (variant === "table" || variant === "child") ? "font-semibold text-negro-una-2" : "hover:text-negro-una",
             );
 
             const content = item.href ? (

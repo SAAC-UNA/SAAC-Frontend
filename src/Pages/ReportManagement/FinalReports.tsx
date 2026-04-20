@@ -7,7 +7,6 @@ import { SystemIcons } from "@/Components/Ui/Icons/SystemIcons";
 import { axiosInstance } from "@/Config/axios";
 import { config } from "@/Config/app.config";
 import { PublicLinkModal } from "./Components/PublicLinkModal";
-import { CriterionDetailModal } from "./Components/CriterionDetailModal";
 import { GenerateLinksConfirmModal } from "./Components/GenerateLinksConfirmModal";
 import { DropdownButton } from "@/Components/Ui/Buttons/DropdownButton";
 import type { DropdownOption } from "@/Components/Ui/Buttons/DropdownButton";
@@ -105,12 +104,6 @@ const FinalReports: React.FC = () => {
     // En el modo flexible exportamos/generamos enlaces sobre fuentes (nodos hoja).
     return criteria.filter((item) => !parentIds.has(item.id));
   }, [criteria, isFlexible]);
-
-  // Modal de detalle de criterio
-  const [detailModal, setDetailModal] = useState<{
-    open: boolean;
-    criterio: Criterio | null;
-  }>({ open: false, criterio: null });
 
   // Modal de enlaces públicos
   const [publicLinkModal, setPublicLinkModal] = useState<{
@@ -747,22 +740,12 @@ const FinalReports: React.FC = () => {
                   loadingFiles={loadingFiles}
                   onLoadFile={loadFiles}
                   onOpenLink={handleAbrirEnlaceEvidencia}
-                  onViewDetail={(criterio) =>
-                    setDetailModal({ open: true, criterio })
-                  }
                 />
               )}
             </>
           )}
         </>
       )}
-
-      {/* Modal de detalle de criterio */}
-      <CriterionDetailModal
-        isOpen={detailModal.open}
-        onClose={() => setDetailModal({ open: false, criterio: null })}
-        criterio={detailModal.criterio}
-      />
 
       {/* Modal de confirmación para generar todos los enlaces */}
       <GenerateLinksConfirmModal

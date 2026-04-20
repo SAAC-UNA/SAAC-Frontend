@@ -1,12 +1,17 @@
-import React, { useState, useEffect, useMemo } from "react";
+﻿import React, { useEffect, useMemo, useState } from "react";
 import { DataTable, ExpandableChildRow } from "@/Components/Ui/Table/DataTable";
 import type { DataTableColumn } from "@/Components/Ui/Table/DataTable";
 import { ButtonWithTooltip } from "@/Components/Ui/Buttons/ButtonWithTooltip";
 import { StatusBadge } from "@/Components/Ui/Feedback/StatusBadge";
+import { Breadcrumb } from "@/Components/Ui/Feedback/Breadcrumb";
 import { SystemIcons } from "@/Components/Ui/Icons/SystemIcons";
-import { EvidenceFilesModal } from "./EvidenceFilesModal";
 import { TYPOGRAPHY } from "@/Constants/Typography";
-import { TABLE_ACTION_BUTTON } from "@/Constants/Components";
+import { LINK_STATUS_BADGE, BADGE_COLORS } from "@/Constants/StatusBadges";
+import type { LinkStatus } from "@/Constants/StatusBadges";
+import { TABLE_ACTION_BUTTON, TABLE_COLUMN_WIDTHS } from "@/Constants/Components";
+import { TABLE_TRUNCATE } from "@/Constants/TableTruncate";
+import { truncateText } from "@/Utils";
+import { useFirstColumnConfig } from "@/Hooks/UseFirstColumnConfig";
 
 export interface Archivo {
   archivo_id: number;
@@ -37,159 +42,17 @@ export interface Criterio extends Record<string, unknown> {
   archivos?: Archivo[];
 }
 
-// ---------- EvidenceExpansionRow ----------
+// ---------- Tipo unificado para filas expandidas ----------
 
-interface EvidenceExpansionProps {
-  criterio: Criterio;
-  evidences: Evidencia[];
-  loadingFiles: Set<number>;
-  onLoadFile: (id: number) => void;
-  onOpenLink: (evidencia: Evidencia) => void;
+interface ExpansionItem {
+  id: number;
+  nomenclatura: string;
+  descripcion: string;
+  archivos?: Archivo[];
+  criterio_id?: number;
 }
 
-const EvidenceExpansionRow: React.FC<EvidenceExpansionProps> = ({
-  criterio,
-  evidences,
-  loadingFiles,
-  onLoadFile,
-  onOpenLink,
-}) => {
-  const criterionEvidences = evidences.filter(
-    (e) => e.criterio_id === criterio.id,
-  );
-  const [noFilesModal, setNoFilesModal] = useState<{
-    open: boolean;
-    evidencia: Evidencia | null;
-  }>({
-    open: false,
-    evidencia: null,
-  });
-
-  useEffect(() => {
-    criterionEvidences.forEach((ev) => {
-      if (!ev.archivos) onLoadFile(ev.id);
-    });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [criterio.id]);
-
-  if (criterionEvidences.length === 0) {
-    return (
-      <p className={`px-4 py-3 ${TYPOGRAPHY.table.helper} text-gris-una`}>
-        Sin evidencias
-      </p>
-    );
-  }
-
-  return (
-    <>
-      <div className="space-y-1">
-        {criterionEvidences.map((evidencia) => {
-          const tieneArchivos = (evidencia.archivos?.length ?? 0) > 0;
-          const tieneEnlace = (evidencia.archivos ?? []).some(
-            (a) =>
-              a.is_publico &&
-              (Boolean(a.token_publico) ||
-                Boolean(a.url_publica) ||
-                Boolean(a.url_publica_carpeta)),
-          );
-          const isLoadingFile = loadingFiles.has(evidencia.id);
-
-          const action = isLoadingFile ? (
-            <span className={`${TYPOGRAPHY.table.helper} text-gris-una px-2`}>
-              Cargando...
-            </span>
-          ) : tieneEnlace ? (
-            <div className="flex items-center gap-1.5">
-              <StatusBadge
-                label="Enlace listo"
-                colorClasses="text-verde-dark bg-verde-ring"
-              />
-              <ButtonWithTooltip
-                variant="tableView"
-                size="sm"
-                tooltip="Abrir enlace público"
-                tooltipPosition="left"
-                onClick={() => onOpenLink(evidencia)}
-                className={TABLE_ACTION_BUTTON.button}
-              >
-                <SystemIcons.actions.linkIcon
-                  className={TABLE_ACTION_BUTTON.icon}
-                />
-              </ButtonWithTooltip>
-            </div>
-          ) : tieneArchivos ? (
-            <div className="flex items-center gap-1.5">
-              <StatusBadge
-                label="Sin enlace"
-                colorClasses="text-warning-dark bg-warning-ring"
-              />
-              <ButtonWithTooltip
-                variant="tableView"
-                size="sm"
-                tooltip="Abrir enlace público"
-                tooltipPosition="left"
-                onClick={() => onOpenLink(evidencia)}
-                className={TABLE_ACTION_BUTTON.button}
-              >
-                <SystemIcons.actions.linkIcon
-                  className={TABLE_ACTION_BUTTON.icon}
-                />
-              </ButtonWithTooltip>
-            </div>
-          ) : (
-            <ButtonWithTooltip
-              variant="tableView"
-              size="sm"
-              tooltip="Ver archivos asociados"
-              tooltipPosition="left"
-              onClick={() => setNoFilesModal({ open: true, evidencia })}
-              className={TABLE_ACTION_BUTTON.button}
-            >
-              <SystemIcons.actions.view className={TABLE_ACTION_BUTTON.icon} />
-            </ButtonWithTooltip>
-          );
-
-          return (
-            <ExpandableChildRow
-              key={evidencia.id}
-              item={{
-                key: String(evidencia.id),
-                content: (
-                  <p
-                    className={`truncate flex-1 min-w-0 ${TYPOGRAPHY.table.helper}`}
-                    title={`${evidencia.nomenclatura} — ${evidencia.descripcion}`}
-                  >
-                    <span className="font-medium text-negro-una">
-                      {evidencia.nomenclatura}
-                    </span>
-                    <span className="text-gris-una">
-                      {" "}
-                      — {evidencia.descripcion}
-                    </span>
-                  </p>
-                ),
-                action,
-              }}
-            />
-          );
-        })}
-      </div>
-
-      <EvidenceFilesModal
-        isOpen={noFilesModal.open}
-        onClose={() => setNoFilesModal({ open: false, evidencia: null })}
-        evidencia={noFilesModal.evidencia}
-      />
-    </>
-  );
-};
-
-// ---------- FlexiblePautaExpansionRow (modelo flexible) ----------
-
-const normalizeElementType = (value: unknown): string => {
-  if (typeof value !== "string") return "";
-  return value.trim().toLowerCase();
-};
+// ---------- Helpers ----------
 
 const hasPublicLink = (archivos: Archivo[] = []) =>
   archivos.some(
@@ -200,60 +63,55 @@ const hasPublicLink = (archivos: Archivo[] = []) =>
         Boolean(a.url_publica_carpeta)),
   );
 
-const buildSourceAsEvidence = (source: Criterio): Evidencia => ({
-  id: source.id,
-  nomenclatura: source.nomenclatura,
-  descripcion: source.descripcion,
-  criterio_id: 0,
-  archivos: source.archivos ?? [],
-});
+const normalizeElementType = (value: unknown): string => {
+  if (typeof value !== "string") return "";
+  return value.trim().toLowerCase();
+};
 
-interface FlexiblePautaExpansionProps {
-  pauta: Criterio;
-  sources: Criterio[];
+// ---------- ExpansionRow (unificado para ambos modelos) ----------
+
+interface ExpansionRowProps {
+  items: ExpansionItem[];
   loadingFiles: Set<number>;
   onLoadFile: (id: number) => void;
   onOpenLink: (evidencia: Evidencia) => void;
 }
 
-const FlexiblePautaExpansionRow: React.FC<FlexiblePautaExpansionProps> = ({
-  pauta,
-  sources,
+const ExpansionRow: React.FC<ExpansionRowProps> = ({
+  items,
   loadingFiles,
   onLoadFile,
   onOpenLink,
 }) => {
   useEffect(() => {
-    sources.forEach((source) => {
-      if (!source.archivos) onLoadFile(source.id);
+    items.forEach((item) => {
+      if (!item.archivos) onLoadFile(item.id);
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [pauta.id, sources.map((source) => source.id).join(",")]);
+  }, [items.map((i) => i.id).join(",")]);
 
-  const visibleSources = sources.filter((source) => {
-    if (source.estado_aprobacion && source.estado_aprobacion !== "aprobado") {
-      return false;
-    }
-
-    // Mantener visible mientras se cargan archivos; ocultar cuando ya cargó y no tiene archivos.
-    return source.archivos === undefined || (source.archivos?.length ?? 0) > 0;
-  });
-
-  if (visibleSources.length === 0) {
+  if (items.length === 0) {
     return (
       <p className={`px-4 py-3 ${TYPOGRAPHY.table.helper} text-gris-una`}>
-        No hay fuentes aprobadas con archivos
+        Sin evidencias disponibles
       </p>
     );
   }
 
   return (
     <div className="space-y-1">
-      {visibleSources.map((source) => {
-        const isLoadingFile = loadingFiles.has(source.id);
-        const archivos = source.archivos ?? [];
-        const tieneArchivos = archivos.length > 0;
-        const tieneEnlace = hasPublicLink(archivos);
+      {items.map((item) => {
+        const tieneArchivos = (item.archivos?.length ?? 0) > 0;
+        const tieneEnlace = hasPublicLink(item.archivos ?? []);
+        const isLoadingFile = loadingFiles.has(item.id);
+
+        const asEvidencia: Evidencia = {
+          id: item.id,
+          nomenclatura: item.nomenclatura,
+          descripcion: item.descripcion,
+          criterio_id: item.criterio_id ?? 0,
+          archivos: item.archivos ?? [],
+        };
 
         let action: React.ReactNode;
         if (isLoadingFile) {
@@ -262,56 +120,82 @@ const FlexiblePautaExpansionRow: React.FC<FlexiblePautaExpansionProps> = ({
               Cargando...
             </span>
           );
-        } else {
+        } else if (tieneEnlace) {
           action = (
             <div className="flex items-center gap-1.5">
               <StatusBadge
-                label={
-                  tieneEnlace
-                    ? "Enlace listo"
-                    : tieneArchivos
-                      ? "Sin enlace"
-                      : "Sin archivos"
-                }
-                colorClasses={
-                  tieneEnlace
-                    ? "text-verde-dark bg-verde-ring"
-                    : tieneArchivos
-                      ? "text-warning-dark bg-warning-ring"
-                      : "text-gris-una bg-gris-light"
-                }
+                label="Enlace listo"
+                colorClasses={BADGE_COLORS.verde.colorClasses}
+              />
+              <ButtonWithTooltip
+                variant="tableView"
+                size="sm"
+                tooltip="Abrir enlace público"
+                tooltipPosition="left"
+                onClick={() => onOpenLink(asEvidencia)}
+                className={TABLE_ACTION_BUTTON.button}
+              >
+                <SystemIcons.actions.linkIcon
+                  className={TABLE_ACTION_BUTTON.icon}
+                />
+              </ButtonWithTooltip>
+            </div>
+          );
+        } else if (tieneArchivos) {
+          action = (
+            <div className="flex items-center gap-1.5">
+              <StatusBadge
+                label="Sin enlace"
+                colorClasses={BADGE_COLORS.warning.colorClasses}
               />
               <ButtonWithTooltip
                 variant="tableView"
                 size="sm"
                 tooltip="Gestionar enlace público"
                 tooltipPosition="left"
-                onClick={() => onOpenLink(buildSourceAsEvidence(source))}
+                onClick={() => onOpenLink(asEvidencia)}
                 className={TABLE_ACTION_BUTTON.button}
               >
-                <SystemIcons.actions.view
+                <SystemIcons.actions.linkIcon
                   className={TABLE_ACTION_BUTTON.icon}
                 />
               </ButtonWithTooltip>
             </div>
           );
+        } else {
+          action = (
+            <StatusBadge
+              label="Sin archivos"
+              colorClasses={BADGE_COLORS.gris.colorClasses}
+            />
+          );
         }
-
+        {/** Tabla hija */}
         return (
           <ExpandableChildRow
-            key={source.id}
+            key={item.id}
             item={{
-              key: String(source.id),
+              key: String(item.id),
               content: (
-                <p
-                  className={`truncate flex-1 min-w-0 ${TYPOGRAPHY.table.helper}`}
-                  title={`${source.nomenclatura} — ${source.descripcion}`}
-                >
-                  <span className="font-medium text-negro-una">
-                    {source.nomenclatura}
-                  </span>
-                  <span className="text-gris-una"> — {source.descripcion}</span>
-                </p>
+                <Breadcrumb
+                  variant="child"
+                  items={[
+                    {
+                      label: truncateText(
+                        item.nomenclatura,
+                        TABLE_TRUNCATE.name * 2,
+                      ),
+                    },
+                    {
+                      label: truncateText(
+                        item.descripcion,
+                        TABLE_TRUNCATE.text * 2,
+                      ),
+                      current: true,
+                    },
+                  ]}
+                  className="min-w-0 flex-1"
+                />
               ),
               action,
             }}
@@ -331,7 +215,6 @@ interface FinalReportsTableProps {
   loadingFiles: Set<number>;
   onLoadFile: (id: number) => void;
   onOpenLink: (evidencia: Evidencia) => void;
-  onViewDetail: (criterio: Criterio) => void;
 }
 
 export const FinalReportsTable: React.FC<FinalReportsTableProps> = ({
@@ -341,13 +224,16 @@ export const FinalReportsTable: React.FC<FinalReportsTableProps> = ({
   loadingFiles,
   onLoadFile,
   onOpenLink,
-  onViewDetail,
 }) => {
-  const { pautaRows, sourcesByPauta } = useMemo(() => {
+  const firstColumn = useFirstColumnConfig();
+  const PAGE_SIZE = 20;
+  const [currentPage, setCurrentPage] = useState(1);
+
+  const { displayRows, expansionItemsMap } = useMemo(() => {
     if (!isFlexible) {
       return {
-        pautaRows: criteria,
-        sourcesByPauta: new Map<number, Criterio[]>(),
+        displayRows: criteria,
+        expansionItemsMap: new Map<number, ExpansionItem[]>(),
       };
     }
 
@@ -359,139 +245,210 @@ export const FinalReportsTable: React.FC<FinalReportsTableProps> = ({
     criteria.forEach((item) => {
       if (typeof item.padre_id !== "number") return;
       if (!criteriaById.has(item.padre_id)) return;
-
-      const currentChildren = childrenByParent.get(item.padre_id) ?? [];
-      currentChildren.push(item);
-      childrenByParent.set(item.padre_id, currentChildren);
+      const existing = childrenByParent.get(item.padre_id) ?? [];
+      existing.push(item);
+      childrenByParent.set(item.padre_id, existing);
     });
 
     const collectLeafSources = (root: Criterio): Criterio[] => {
       const leaves: Criterio[] = [];
       const stack: Criterio[] = [root];
       const visited = new Set<number>();
-
       while (stack.length > 0) {
         const current = stack.pop()!;
         if (visited.has(current.id)) continue;
         visited.add(current.id);
-
         const children = childrenByParent.get(current.id) ?? [];
         if (children.length === 0 && current.id !== root.id) {
           leaves.push(current);
           continue;
         }
-
         children.forEach((child) => stack.push(child));
       }
-
       return leaves;
     };
 
     let pautas = criteria.filter(
       (item) => normalizeElementType(item.tipo) === "pauta",
     );
-
     if (pautas.length === 0) {
       pautas = criteria.filter(
         (item) => (childrenByParent.get(item.id)?.length ?? 0) > 0,
       );
     }
-
     if (pautas.length === 0) {
-      const fallback = new Map<number, Criterio[]>();
+      const fallback = new Map<number, ExpansionItem[]>();
       criteria.forEach((item) => fallback.set(item.id, [item]));
-
-      return {
-        pautaRows: criteria,
-        sourcesByPauta: fallback,
-      };
+      return { displayRows: criteria, expansionItemsMap: fallback };
     }
 
-    const groupedSources = new Map<number, Criterio[]>();
+    const groupedSources = new Map<number, ExpansionItem[]>();
     pautas.forEach((pauta) => {
       const sources = collectLeafSources(pauta).filter(
-        (source) => source.estado_aprobacion === "aprobado",
+        (s) => s.estado_aprobacion === "aprobado",
       );
-
-      if (sources.length > 0) {
-        groupedSources.set(pauta.id, sources);
-      }
+      if (sources.length > 0) groupedSources.set(pauta.id, sources);
     });
 
     const visiblePautas = pautas.filter(
-      (pauta) => (groupedSources.get(pauta.id)?.length ?? 0) > 0,
+      (p) => (groupedSources.get(p.id)?.length ?? 0) > 0,
     );
-
-    return {
-      pautaRows: visiblePautas,
-      sourcesByPauta: groupedSources,
-    };
+    return { displayRows: visiblePautas, expansionItemsMap: groupedSources };
   }, [criteria, isFlexible]);
+
+  const totalPages = Math.ceil(displayRows.length / PAGE_SIZE);
+  const paginatedRows = displayRows.slice(
+    (currentPage - 1) * PAGE_SIZE,
+    currentPage * PAGE_SIZE,
+  );
+
+  const getExpansionItems = (criterio: Criterio): ExpansionItem[] => {
+    if (isFlexible) {
+      return expansionItemsMap.get(criterio.id) ?? [];
+    }
+    return evidences.filter(
+      (ev) => ev.criterio_id === criterio.id,
+    ) as ExpansionItem[];
+  };
+
+  const getEvidenceStats = (
+    criterio: Criterio,
+  ): { total: number; loaded: number; withLink: number } => {
+    const items = getExpansionItems(criterio);
+    const loaded = items.filter((i) => i.archivos !== undefined);
+    const withLink = loaded.filter((i) => hasPublicLink(i.archivos ?? []));
+    return {
+      total: items.length,
+      loaded: loaded.length,
+      withLink: withLink.length,
+    };
+  };
+
+  const getLinkStatus = (stats: {
+    total: number;
+    loaded: number;
+    withLink: number;
+  }): LinkStatus => {
+    const { total, loaded, withLink } = stats;
+    if (total === 0) return "sin_evidencias";
+    if (loaded === 0) return "pendiente";
+    if (withLink === total) return "completo";
+    if (withLink > 0) return "parcial";
+    return "sin_enlaces";
+  };
 
   const columns: DataTableColumn<Criterio>[] = [
     {
       key: "nomenclatura",
-      header: isFlexible ? "Pauta" : "Criterio",
+      header: "Entregable",
+      align: "left",
       render: (_, item) => (
-        <p
-          className={`truncate ${TYPOGRAPHY.table.cell}`}
-          title={`${item.nomenclatura} — ${item.descripcion}`}
-        >
-          <span className="font-bold text-negro-una-2">
-            {item.nomenclatura}
-          </span>
-          <span className="text-gris-una"> — {item.descripcion}</span>
-        </p>
+        <Breadcrumb
+          variant="table"
+          items={[
+            {
+              label: truncateText(item.nomenclatura, firstColumn.maxLength),
+            },
+            {
+              label: truncateText(item.descripcion, firstColumn.maxLength),
+              current: true,
+            },
+          ]}
+        />
       ),
     },
     {
-      key: "actions",
-      header: "Acciones",
-      align: "center",
-      width: "90px",
-      render: (_, item) => (
-        <div className="flex items-center justify-center gap-2">
-          <ButtonWithTooltip
-            variant="tableView"
-            size="sm"
-            tooltip={isFlexible ? "Ver detalle de pauta" : "Ver detalles"}
-            onClick={(event) => {
-              event.stopPropagation();
-              onViewDetail(item);
-            }}
-            className={TABLE_ACTION_BUTTON.button}
-          >
-            <SystemIcons.actions.view className={TABLE_ACTION_BUTTON.icon} />
-          </ButtonWithTooltip>
-        </div>
-      ),
+      key: "evidencias_count",
+      header: "Archivos",
+      align: "left",
+      width: TABLE_COLUMN_WIDTHS.status,
+      render: (_, item) => {
+        const { total } = getEvidenceStats(item);
+        const label =
+          total === 0
+            ? "Sin recursos"
+            : total === 1
+              ? "1 recurso"
+              : `${total} recursos`;
+        const colorClasses =
+          total === 0
+            ? BADGE_COLORS.gris.colorClasses
+            : BADGE_COLORS.info.colorClasses;
+        return (
+          <div className="flex items-start">
+            <StatusBadge label={label} colorClasses={colorClasses} />
+          </div>
+        );
+      },
+    },
+    {
+      key: "con_enlace",
+      header: "Con enlace",
+      align: "left",
+      width: TABLE_COLUMN_WIDTHS.status,
+      render: (_, item) => {
+        const { total, loaded, withLink } = getEvidenceStats(item);
+        if (total === 0) return null;
+        if (loaded === 0) {
+          return (
+            <div className="flex items-start">
+              <StatusBadge label="N/A" colorClasses={BADGE_COLORS.gris.colorClasses} />
+            </div>
+          );
+        }
+        const label = `${withLink} / ${total}`;
+        const colorClasses =
+          withLink === total
+            ? BADGE_COLORS.warning.colorClasses
+            : withLink > 0
+              ? BADGE_COLORS.warning.colorClasses
+              : BADGE_COLORS.error.colorClasses;
+        return (
+          <div className="flex items-start">
+            <StatusBadge label={label} colorClasses={colorClasses} />
+          </div>
+        );
+      },
+    },
+    {
+      key: "estado_enlace",
+      header: "Estado",
+      align: "left",
+      width: TABLE_COLUMN_WIDTHS.status,
+      render: (_, item) => {
+        const stats = getEvidenceStats(item);
+        const status = getLinkStatus(stats);
+        const badge = LINK_STATUS_BADGE[status];
+        return (
+          <div className="flex justify-start">
+            <StatusBadge
+              label={badge.label}
+              colorClasses={badge.colorClasses}
+            />
+          </div>
+        );
+      },
     },
   ];
 
-  const tableData = isFlexible ? pautaRows : criteria;
-
   return (
     <DataTable<Criterio>
-      data={tableData}
+      data={paginatedRows}
       columns={columns}
       getRowKey={(item) => String(item.id)}
       searchable={false}
+      pagination={
+        totalPages > 1
+          ? { currentPage, totalPages, onPageChange: setCurrentPage }
+          : undefined
+      }
       expandableRow={(item) => [
         {
           key: String(item.id),
           noBorder: true,
-          content: isFlexible ? (
-            <FlexiblePautaExpansionRow
-              pauta={item}
-              sources={sourcesByPauta.get(item.id) ?? []}
-              loadingFiles={loadingFiles}
-              onLoadFile={onLoadFile}
-              onOpenLink={onOpenLink}
-            />
-          ) : (
-            <EvidenceExpansionRow
-              criterio={item}
-              evidences={evidences}
+          content: (
+            <ExpansionRow
+              items={getExpansionItems(item)}
               loadingFiles={loadingFiles}
               onLoadFile={onLoadFile}
               onOpenLink={onOpenLink}
@@ -502,3 +459,4 @@ export const FinalReportsTable: React.FC<FinalReportsTableProps> = ({
     />
   );
 };
+
