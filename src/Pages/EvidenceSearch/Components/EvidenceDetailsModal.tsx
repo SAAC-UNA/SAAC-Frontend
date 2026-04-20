@@ -132,7 +132,7 @@ const EvidenciaResponsablesPanelAdmin: React.FC<
               content: (
                 <div className="flex items-center gap-4 flex-1 min-w-0">
                   <span
-                    className={`font-semibold text-negro-una-2 flex-1 min-w-0 truncate ${TYPOGRAPHY.table.helper}`}
+                    className={`font-normal text-negro-una-2 flex-1 min-w-0 truncate ${TYPOGRAPHY.table.helper}`}
                   >
                     {group.nombre as string}
                   </span>
@@ -229,16 +229,21 @@ export const EvidenceDetailsModal: React.FC<EvidenceDetailsModalProps> = ({
       header: "Evidencia",
       align: "left",
       render: (_, item) => (
-        <div className="flex items-center gap-1.5 min-w-0 pl-2">
-          <span
-            className={`font-bold text-negro-una-2 flex-shrink-0 ${TYPOGRAPHY.modal.body}`}
-          >
-            {item.nomenclatura}
-          </span>
-          <span className="text-gris-una flex-shrink-0">—</span>
-          <span className={`text-gris-una-2 truncate ${TYPOGRAPHY.modal.body}`}>
-            {item.descripcion}
-          </span>
+        <div className="flex flex-col">
+          <div className="flex flex-row items-baseline gap-1.5">
+            <p
+              className={`font-sans antialiased font-bold leading-normal text-negro-una-2 shrink-0 ${TYPOGRAPHY.modal.body}`}
+              title={item.nomenclatura}
+            >
+              {item.nomenclatura}
+            </p>
+            <p
+              className={`font-sans antialiased font-bold leading-normal text-negro-una-2 ${TYPOGRAPHY.modal.body}`}
+              title={item.descripcion}
+            >
+              {item.descripcion}
+            </p>
+          </div>
         </div>
       ),
     },

@@ -3,7 +3,6 @@ import { DataTable, ExpandableChildRow } from "@/Components/Ui/Table/DataTable";
 import type { DataTableColumn } from "@/Components/Ui/Table/DataTable";
 import { ButtonWithTooltip } from "@/Components/Ui/Buttons/ButtonWithTooltip";
 import { StatusBadge } from "@/Components/Ui/Feedback/StatusBadge";
-import { Breadcrumb } from "@/Components/Ui/Feedback/Breadcrumb";
 import { SystemIcons } from "@/Components/Ui/Icons/SystemIcons";
 import { TYPOGRAPHY } from "@/Constants/Typography";
 import { LINK_STATUS_BADGE, BADGE_COLORS } from "@/Constants/StatusBadges";
@@ -177,25 +176,20 @@ const ExpansionRow: React.FC<ExpansionRowProps> = ({
             item={{
               key: String(item.id),
               content: (
-                <Breadcrumb
-                  variant="child"
-                  items={[
-                    {
-                      label: truncateText(
-                        item.nomenclatura,
-                        TABLE_TRUNCATE.name * 2,
-                      ),
-                    },
-                    {
-                      label: truncateText(
-                        item.descripcion,
-                        TABLE_TRUNCATE.text * 2,
-                      ),
-                      current: true,
-                    },
-                  ]}
-                  className="min-w-0 flex-1"
-                />
+                <div className="flex flex-row items-baseline gap-1.5 min-w-0 flex-1">
+                  <p
+                    className={`font-bold leading-normal text-negro-una-2 shrink-0 ${TYPOGRAPHY.table.helper}`}
+                    title={item.nomenclatura}
+                  >
+                    {truncateText(item.nomenclatura, TABLE_TRUNCATE.name * 2)}
+                  </p>
+                  <p
+                    className={`font-normal leading-normal text-negro-una-2 ${TYPOGRAPHY.table.helper}`}
+                    title={item.descripcion}
+                  >
+                    {truncateText(item.descripcion, TABLE_TRUNCATE.text * 2)}
+                  </p>
+                </div>
               ),
               action,
             }}
@@ -343,18 +337,22 @@ export const FinalReportsTable: React.FC<FinalReportsTableProps> = ({
       header: "Entregable",
       align: "left",
       render: (_, item) => (
-        <Breadcrumb
-          variant="table"
-          items={[
-            {
-              label: truncateText(item.nomenclatura, firstColumn.maxLength),
-            },
-            {
-              label: truncateText(item.descripcion, firstColumn.maxLength),
-              current: true,
-            },
-          ]}
-        />
+        <div className="flex flex-col">
+          <div className="flex flex-row items-baseline gap-1.5">
+            <p
+              className={`font-sans antialiased font-bold leading-normal text-negro-una-2 shrink-0 ${TYPOGRAPHY.table.cell}`}
+              title={item.nomenclatura}
+            >
+              {truncateText(item.nomenclatura, firstColumn.maxLength)}
+            </p>
+            <p
+              className={`font-sans antialiased font-bold leading-normal text-negro-una-2 ${TYPOGRAPHY.table.cell}`}
+              title={item.descripcion}
+            >
+              {truncateText(item.descripcion, firstColumn.maxLength)}
+            </p>
+          </div>
+        </div>
       ),
     },
     {
