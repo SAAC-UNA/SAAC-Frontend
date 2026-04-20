@@ -755,6 +755,20 @@ export const SystemIcons = {
       >
         <path d="M19.5 2.25H6.75a3.01 3.01 0 0 0-3 3V21a.75.75 0 0 0 .75.75H18a.75.75 0 1 0 0-1.5H5.25a1.5 1.5 0 0 1 1.5-1.5H19.5a.75.75 0 0 0 .75-.75V3a.75.75 0 0 0-.75-.75Zm-2.25 9-2.4-1.8a.366.366 0 0 0-.45 0l-2.4 1.8v-7.5h5.25v7.5Z" />
       </svg>
+    ),
+
+    medal: ({ className, size, color }: IconProps) => (
+      <svg
+        width={size}
+        height={size}
+        fill={color || "currentColor"}
+        viewBox="0 0 24 24"
+        xmlns="http://www.w3.org/2000/svg"
+        className={`${getSizeClasses(size)} ${className || ""}`}
+      >
+        <path d="M12 14.25a5.25 5.25 0 1 0 0-10.5 5.25 5.25 0 0 0 0 10.5Z" />
+        <path d="M12 .75a8.24 8.24 0 0 0-5.25 14.606V22.5a.74.74 0 0 0 .356.637.75.75 0 0 0 .732.038L12 21.085l4.163 2.09a.88.88 0 0 0 .337.075.75.75 0 0 0 .75-.75v-7.144A8.24 8.24 0 0 0 12 .75Zm0 15A6.75 6.75 0 1 1 18.75 9 6.759 6.759 0 0 1 12 15.75Z" />
+      </svg>
     )
   },
 
@@ -1280,6 +1294,7 @@ export const getIconByName = (
     "clipboard-check": () => SystemIcons.work.assignEvidence({ size }),
     "magnifying-glass": () => SystemIcons.interface.search({ size }),
     informe: () => SystemIcons.users.informe({ size }),
+    medal: () => SystemIcons.users.medal({ size }),
   };
 
   return iconMap[iconName] ? iconMap[iconName]() : null;

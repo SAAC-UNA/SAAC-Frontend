@@ -1,5 +1,5 @@
 import React, { useState, useRef } from "react";
-import { ScreenContainer, PageHeader } from "@/Components/Ui/Index";
+import { ScreenContainer, PageHeader, Tooltip, TooltipTrigger, TooltipContent } from "@/Components/Ui/Index";
 import { StatusBadge } from "@/Components/Ui/Feedback/StatusBadge";
 import { Button } from "@/Components/Ui/Buttons/Button";
 import { Input } from "@/Components/Ui/Index";
@@ -11,6 +11,8 @@ import { cn } from "@/Utils/ClassNames";
 import { formatDate } from "@/Utils/DateUtils";
 import { useToast } from "@/Context/ToastContext";
 import { getModuleInfo } from "@/Constants/ModuleInfo";
+import { useNavigate } from "react-router-dom";
+import { ROUTES } from "@/Constants/ROUTES";
 
 // ─── Tipos ─────────────────────────────────────────────────────────────────
 
@@ -117,6 +119,7 @@ type Tab = (typeof TABS)[number];
 
 export const AccreditationReportAdminPage: React.FC = () => {
   const { showToast } = useToast();
+  const navigate = useNavigate();
   const moduleInfo = getModuleInfo("accreditation_report_admin");
   const [activeTab, setActiveTab] = useState<Tab>("Publicación actual");
   const [historial] = useState<Resolucion[]>(MOCK_HISTORIAL);
@@ -189,6 +192,22 @@ export const AccreditationReportAdminPage: React.FC = () => {
         title={moduleInfo.title}
         description={moduleInfo.description}
         breadcrumbMode="contextual"
+        headerExtra={
+          <Tooltip>
+            <TooltipTrigger>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => navigate(ROUTES.REPORTS_PUBLIC)}
+              >
+                <SystemIcons.actions.view className={ICON_SIZES.md} />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent side="bottom">
+              <p>Ver vista pública</p>
+            </TooltipContent>
+          </Tooltip>
+        }
       />
 
       {/* ─ Banner resolución activa ─ */}

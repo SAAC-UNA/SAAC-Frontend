@@ -26,6 +26,7 @@ const calendarIcon = "system-icon:calendar";
 const reportsIcon = "system-icon:reports";
 const lightIcon = "system-icon:lightbulb";
 const informeIcon = "system-icon:informe";
+const medalIcon = "system-icon:medal";
 
 /**
  * Obtener items de navegacion filtrados por reglas de acceso.
@@ -357,21 +358,6 @@ export const getNavigationItems = (
       });
     }
 
-    if (
-      hasAccess({
-        requireAnyCapabilities: [CAPABILITIES.REPORTS_ACCESS],
-        requireAnyPermissions: REPORTS_ACCESS_PERMISSIONS,
-      })
-    ) {
-      evaluacionChildren.push({
-        id: "gestion-informes",
-        label: "Gestión de Informes",
-        icon: reportsIcon,
-        href: ROUTES.REPORTS,
-        isActive: false,
-      });
-    }
-
     if (evaluacionChildren.length > 0) {
       items.push({
         id: "evaluacion",
@@ -396,25 +382,33 @@ export const getNavigationItems = (
       })
     ) {
       informeChildren.push({
+        id: "gestion-informes",
+        label: "Gestión de Informes",
+        icon: reportsIcon,
+        href: ROUTES.REPORTS,
+        isActive: false,
+      });
+    }
+
+    if (
+      hasContextualSelection &&
+      hasAccess({
+        requireAnyCapabilities: [CAPABILITIES.REPORTS_ACCESS],
+        requireAnyPermissions: REPORTS_ACCESS_PERMISSIONS,
+      })
+    ) {
+      informeChildren.push({
         id: "informe-gestion",
-        label: "Resolución SINAES",
-        icon: informeIcon,
+        label: "Informe de Acreditación",
+        icon: medalIcon,
         href: ROUTES.SINAES_ADMIN,
         isActive: false,
       });
     }
 
-    informeChildren.push({
-      id: "informe-publico",
-      label: "Vista Pública",
-      icon: reportsIcon,
-      href: ROUTES.REPORTS_PUBLIC,
-      isActive: false,
-    });
-
     items.push({
       id: "informe",
-      label: "Informe",
+      label: "Informes",
       icon: informeIcon,
       href: "#",
       isActive: false,
