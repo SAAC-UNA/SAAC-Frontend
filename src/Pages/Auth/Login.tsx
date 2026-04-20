@@ -10,7 +10,8 @@ import { SystemIcons } from "@/Components/Ui/Icons/SystemIcons";
 import { useToast } from "@/Hooks/useToast";
 import { ValidationError } from "@/Services/AuthService";
 import { cn } from "@/Utils/ClassNames";
-import IsotipoSAAC from "@/Assets/IsotipoSAAC.svg?react";
+import IsotipoSAAC from "../../../public/Images/IsotipoSAAC.svg?react";
+import { Grainient } from "@/Components/Ui/Backgrounds/Grainient";
 import {
   Tooltip,
   TooltipTrigger,
@@ -75,15 +76,37 @@ export const Login = () => {
     "text-rojo-una peer-[:not(:placeholder-shown)]:text-rojo-una peer-focus:text-rojo-una";
 
   return (
-    <div
-      className="min-h-screen flex w-full bg-cover bg-center relative overflow-hidden items-center justify-center p-5 gap-[60px] [html:has(&)]:overflow-y-hidden"
-      style={{
-        backgroundImage:
-          "linear-gradient(135deg, rgba(0,0,0,0.2) 0%, rgba(0,0,0,0.3) 100%), url('/Images/Fondo login.png')",
-      }}
-    >
+    <div className="min-h-screen flex w-full relative overflow-hidden items-center justify-center p-5 gap-[60px] [html:has(&)]:overflow-y-hidden">
+      {/* Fondo animado */}
+      <div className="absolute inset-0 isolate">
+        <div className="absolute inset-0 bg-blanco-una/25 z-10" />
+        <Grainient
+          color1="#cd1719"
+          color2="#f8f9fa"
+          color3="#cd1719"
+          timeSpeed={0.25}
+          colorBalance={0}
+          warpStrength={1}
+          warpFrequency={5}
+          warpSpeed={2}
+          warpAmplitude={50}
+          blendAngle={0}
+          blendSoftness={0.05}
+          rotationAmount={500}
+          noiseScale={2}
+          grainAmount={0.1}
+          grainScale={2}
+          grainAnimated={false}
+          contrast={1.5}
+          gamma={1}
+          saturation={1}
+          centerX={0}
+          centerY={0}
+          zoom={0.9}
+        />
+      </div>
       {/* Card */}
-      <div className="bg-white/75 backdrop-blur-[20px] flex flex-col items-center justify-start px-[60px] pt-10 pb-[60px] relative w-full max-w-[480px] rounded-corner-lg shadow-[0_10px_40px_rgba(0,0,0,0.1)] z-[1] flex-shrink-0">
+      <div className="bg-white flex flex-col items-center justify-start px-[60px] pt-10 pb-[60px] relative w-full max-w-[480px] rounded-corner-lg shadow-[0_10px_40px_rgba(0,0,0,0.1)] z-[1] flex-shrink-0">
         <div className="w-full max-w-[380px]">
           <IsotipoSAAC
             aria-label="SAAC Logo"
