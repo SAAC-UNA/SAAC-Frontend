@@ -85,6 +85,8 @@ export const ROUTES = {
   // Informes
   // ---------------------------------------------------------------------------
   REPORTS: "/informes",
+  REPORTS_PUBLIC: "/informe-publico",
+  SINAES_ADMIN: "/resolucion-sinaes",
 } as const;
 
 // ---------------------------------------------------------------------------

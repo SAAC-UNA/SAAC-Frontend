@@ -76,6 +76,12 @@ const BlockApproval = lazy(() => import("./Pages/BlockApproval/BlockApproval"));
 const FinalReports = lazy(() =>
   import("./Pages/ReportManagement").then((m) => ({ default: m.FinalReports })),
 );
+const AccreditationReportAdminPage = lazy(() =>
+  import("./Pages/AccreditationReport").then((m) => ({ default: m.AccreditationReportAdminPage })),
+);
+const AccreditationReportPublicPage = lazy(() =>
+  import("./Pages/AccreditationReport").then((m) => ({ default: m.AccreditationReportPublicPage })),
+);
 
 // HU-016: Paginas de solicitudes de ampliacion
 const ManageExtensionRequestsPage = lazy(() =>
@@ -467,6 +473,25 @@ function App() {
                               }
                             />
                             <Route path="/gestion-informes" element={<Navigate to={ROUTES.REPORTS} replace />} />
+
+                            {/* Resolución SINAES — Admin (requiere permisos de reportes) */}
+                            <Route
+                              path={ROUTES.SINAES_ADMIN}
+                              element={
+                                <ProtectedRoute
+                                  requireCapabilities={[CAPABILITIES.REPORTS_ACCESS]}
+                                  requirePermissions={REPORTS_ACCESS_PERMISSIONS}
+                                >
+                                  <AccreditationReportAdminPage />
+                                </ProtectedRoute>
+                              }
+                            />
+
+                            {/* Resolución SINAES — Vista pública (cualquier usuario autenticado) */}
+                            <Route
+                              path={ROUTES.REPORTS_PUBLIC}
+                              element={<AccreditationReportPublicPage />}
+                            />
 
                             {/* Redirigir cualquier ruta no encontrada */}
                             <Route

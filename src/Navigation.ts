@@ -25,6 +25,7 @@ const extensionRequestIcon = "system-icon:clock";
 const calendarIcon = "system-icon:calendar";
 const reportsIcon = "system-icon:reports";
 const lightIcon = "system-icon:lightbulb";
+const informeIcon = "system-icon:informe";
 
 /**
  * Obtener items de navegacion filtrados por reglas de acceso.
@@ -382,6 +383,44 @@ export const getNavigationItems = (
         children: evaluacionChildren,
       });
     }
+  }
+
+  {
+    const informeChildren: NavItem[] = [];
+
+    if (
+      hasContextualSelection &&
+      hasAccess({
+        requireAnyCapabilities: [CAPABILITIES.REPORTS_ACCESS],
+        requireAnyPermissions: REPORTS_ACCESS_PERMISSIONS,
+      })
+    ) {
+      informeChildren.push({
+        id: "informe-gestion",
+        label: "Resolución SINAES",
+        icon: informeIcon,
+        href: ROUTES.SINAES_ADMIN,
+        isActive: false,
+      });
+    }
+
+    informeChildren.push({
+      id: "informe-publico",
+      label: "Vista Pública",
+      icon: reportsIcon,
+      href: ROUTES.REPORTS_PUBLIC,
+      isActive: false,
+    });
+
+    items.push({
+      id: "informe",
+      label: "Informe",
+      icon: informeIcon,
+      href: "#",
+      isActive: false,
+      isExpandable: true,
+      children: informeChildren,
+    });
   }
 
   return items;

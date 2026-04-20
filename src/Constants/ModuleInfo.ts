@@ -258,6 +258,23 @@ const MODULE_INFO: Record<string, ModuleInfo> = {
       "Gestione los procesos de acreditación asociados a ciclos de acreditación",
     shortDescription: "Gestionar procesos de acreditación",
   },
+
+  // Informe de Acreditación
+  accreditation_report_admin: {
+    title: "Informe de Acreditación",
+    subtitle: "Gestión Administrativa",
+    description:
+      "Administre la resolución de acreditación vigente, publique el informe final y consulte el historial de publicaciones",
+    shortDescription: "Gestionar informe de acreditación",
+  },
+
+  accreditation_report_public: {
+    title: "Informe de Acreditación",
+    subtitle: "Vista Pública",
+    description:
+      "Consulte el estado de acreditación, el informe final publicado y el historial de resoluciones",
+    shortDescription: "Ver informe de acreditación",
+  },
 };
 
 /**
