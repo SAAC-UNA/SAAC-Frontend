@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { ScreenContainer, PageHeader } from "@/Components/Ui/Index";
+import { ScreenContainer, PageHeader, Tooltip, TooltipTrigger, TooltipContent } from "@/Components/Ui/Index";
 import { getModuleInfo } from "@/Constants/ModuleInfo";
 import { StatusBadge } from "@/Components/Ui/Feedback/StatusBadge";
 import { Button } from "@/Components/Ui/Buttons/Button";
@@ -9,6 +9,10 @@ import { BADGE_COLORS } from "@/Constants/StatusBadges";
 import { ICON_SIZES } from "@/Constants/Components";
 import { cn } from "@/Utils/ClassNames";
 import { formatDate } from "@/Utils/DateUtils";
+import { useNavigate } from "react-router-dom";
+import { ROUTES } from "@/Constants/ROUTES";
+import { useAuth } from "@/Context/AuthContext";
+import { REPORTS_ACCESS_PERMISSIONS } from "@/Constants/PermissionCapabilities";
 
 // ─── Tipos SINAES ───────────────────────────────────────────────────────────
 
@@ -352,17 +356,38 @@ type Tab = (typeof TABS)[number];
 
 export const AccreditationReportPublicPage: React.FC = () => {
   const moduleInfo = getModuleInfo("accreditation_report_public");
+  const navigate = useNavigate();
+  const { canAccess } = useAuth();
+  const canViewAdmin = canAccess({ requireAnyPermissions: REPORTS_ACCESS_PERMISSIONS });
   const [activeTab, setActiveTab] = useState<Tab>("Resolución actual");
   const historial = MOCK_HISTORIAL;
   const resolucionActiva = historial.find((r) => r.activa) ?? null;
   const isAcreditada = resolucionActiva?.estado === "acreditada";
 
   return (
-    <ScreenContainer variant="full-width">
+    <ScreenContainer>
       <PageHeader
         title={moduleInfo.title}
         description={moduleInfo.description}
         breadcrumbMode="none"
+        headerExtra={
+          canViewAdmin ? (
+            <Tooltip>
+              <TooltipTrigger>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => navigate(ROUTES.SINAES_ADMIN)}
+                >
+                  <SystemIcons.auth.EyeSlash className={ICON_SIZES.md} />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent side="bottom">
+                <p>Vista administrativa</p>
+              </TooltipContent>
+            </Tooltip>
+          ) : undefined
+        }
       />
 
       {/* ─ Hero acreditación ─ */}
