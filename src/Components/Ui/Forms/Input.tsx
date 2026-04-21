@@ -56,23 +56,13 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(({
     }
   };
 
-  // Generar helperText dinámico con contador de caracteres
-  const getHelperText = () => {
-    if (characterCount) {
-      const currentLength = value ? value.toString().length : 0;
-      const counter = maxLength ? `${currentLength}/${maxLength} caracteres` : `${currentLength} caracteres`;
-      return helperText ? `${helperText} (${counter})` : counter;
-    }
-    return helperText;
-  };
-
   // Floating label variant (nuevo diseño por defecto)
   if (variant === 'floating') {
     // Detectar si el input tiene contenido
     const hasValue = Boolean(value && value.toString().trim() !== '');
 
     return (
-      <div className="space-y-2">
+      <div className="space-y-1">
         <div className="relative">
           {/* Input */}
           <input
@@ -151,11 +141,16 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(({
           </p>
         )}
 
-        {/* Helper text */}
-        {getHelperText() && !error && (
-          <p className={`text-gris-una ${TYPOGRAPHY.form.helper}`}>
-            {getHelperText()}
-          </p>
+        {/* Helper text + character count */}
+        {!error && (helperText || characterCount) && (
+          <div className={`flex items-center ${TYPOGRAPHY.form.helper} text-gris-una`}>
+            {helperText && <span className="flex-1">{helperText}</span>}
+            {characterCount && value && (
+              <span className="ml-auto">
+                {value ? value.toString().length : 0}{maxLength ? `/${maxLength}` : ''} caracteres
+              </span>
+            )}
+          </div>
         )}
       </div>
     );
@@ -206,11 +201,16 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(({
         </p>
       )}
 
-      {/* Helper text */}
-      {getHelperText() && !error && (
-        <p className={`text-gris-una ${TYPOGRAPHY.form.helper}`}>
-          {getHelperText()}
-        </p>
+      {/* Helper text + character count */}
+      {!error && (helperText || characterCount) && (
+        <div className={`flex items-center ${TYPOGRAPHY.form.helper} text-gris-una`}>
+          {helperText && <span className="flex-1">{helperText}</span>}
+          {characterCount && (
+            <span className="ml-auto">
+              {value ? value.toString().length : 0}{maxLength ? `/${maxLength}` : ''} caracteres
+            </span>
+          )}
+        </div>
       )}
     </div>
   );
