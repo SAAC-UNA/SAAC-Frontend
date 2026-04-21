@@ -5,25 +5,23 @@
  * Vista "elementos": árbol de elementos del modelo flexible seleccionado.
  */
 
-import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import React, { useMemo, useState } from "react";
 import { ScreenContainer } from "@/Components/Ui/Layout/ScreenContainer";
 import {
   PageHeader,
   Button,
   LoadingSpinner,
-  StatusBadge,
-  TableActionButton,
+  StructureModelCard,
   Tooltip,
   TooltipContent,
   TooltipTrigger,
 } from "@/Components/Ui/Index";
-import { MODELO_TIPO_BADGE } from "@/Constants/StatusBadges";
 import { Modal } from "@/Components/Ui/Modals/Modal";
 import { SuccessModal } from "@/Components/Ui/Modals/SuccessModal";
 import { StructureModelFormModal } from "./Components/StructureModelFormModal";
 import { StructureModelDeleteModal } from "./Components/StructureModelDeleteModal";
 import { useStructureModels } from "@/Hooks/UseStructureModels";
+import { useAccreditationCycles } from "@/Hooks/UseAccreditationCycles";
 import { useToast } from "@/Context/ToastContext";
 import type {
   StructureModel,
@@ -43,6 +41,15 @@ const StructureModelsPage: React.FC = () => {
     toggleActive,
     deleteModel,
   } = useStructureModels();
+  const { cycles, isLoading: isLoadingCycles } = useAccreditationCycles();
+
+  const modelIdsWithCycles = useMemo(() => {
+    return new Set(cycles.map((cycle) => cycle.modelo_estructura_id));
+  }, [cycles]);
+
+  const hasAssociatedCycles = (modelId: number): boolean => {
+    return modelIdsWithCycles.has(modelId);
+  };
 
   const [formModal, setFormModal] = useState<{
     isOpen: boolean;
@@ -81,6 +88,13 @@ const StructureModelsPage: React.FC = () => {
       formModal.model.modelo_estructura_id,
       form as EditModelForm,
     );
+  };
+
+  const handleFormConfirm = async (form: CreateModelForm | EditModelForm) => {
+    if (formModal.model) {
+      return handleEditConfirm(form);
+    }
+    return handleCreateConfirm(form);
   };
 
   const handleToggleActive = (model: StructureModel) => {
@@ -163,22 +177,29 @@ const StructureModelsPage: React.FC = () => {
         <LoadingSpinner variant="loader" />
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
-          {models.map((model) => (
-            <ModelCard
-              key={model.modelo_estructura_id}
-              model={model}
-              onEdit={() => setFormModal({ isOpen: true, model })}
-              onToggleActive={() => handleToggleActive(model)}
-              onDelete={() =>
-                setDeleteModal({
-                  isOpen: true,
-                  model,
-                  loading: false,
-                  hasCiclos: false,
-                })
-              }
-            />
-          ))}
+          {models.map((model) => {
+            const modelHasCycles = hasAssociatedCycles(
+              model.modelo_estructura_id,
+            );
+
+            return (
+              <StructureModelCard
+                key={model.modelo_estructura_id}
+                model={model}
+                hasCiclos={modelHasCycles}
+                onEdit={() => setFormModal({ isOpen: true, model })}
+                onToggleActive={() => handleToggleActive(model)}
+                onDelete={() =>
+                  setDeleteModal({
+                    isOpen: true,
+                    model,
+                    loading: false,
+                    hasCiclos: modelHasCycles,
+                  })
+                }
+              />
+            );
+          })}
 
           {models.length === 0 && (
             <p
@@ -193,19 +214,18 @@ const StructureModelsPage: React.FC = () => {
         </div>
       )}
 
-      {/* Modal crear */}
+      {/* Modal crear/editar */}
       <StructureModelFormModal
-        isOpen={formModal.isOpen && !formModal.model}
-        onClose={() => setFormModal({ isOpen: false, model: null })}
-        onConfirm={handleCreateConfirm}
-      />
-
-      {/* Modal editar */}
-      <StructureModelFormModal
-        isOpen={formModal.isOpen && !!formModal.model}
+        isOpen={formModal.isOpen}
         onClose={() => setFormModal({ isOpen: false, model: null })}
         model={formModal.model}
-        onConfirm={handleEditConfirm}
+        onConfirm={handleFormConfirm}
+        hasAssociatedCycles={
+          formModal.model
+            ? hasAssociatedCycles(formModal.model.modelo_estructura_id)
+            : false
+        }
+        isCycleCheckLoading={isLoadingCycles}
       />
 
       {/* Modal eliminar */}
@@ -255,7 +275,7 @@ const StructureModelsPage: React.FC = () => {
           <p
             className={cn(
               TYPOGRAPHY.modal.body,
-              "text-gris-una-2 leading-relaxed",
+              "text-gris-una-2 leading-relaxed wrap-anywhere",
             )}
           >
             ¿Está seguro de que desea{" "}
@@ -277,136 +297,6 @@ const StructureModelsPage: React.FC = () => {
         }
       />
     </ScreenContainer>
-  );
-};
-
-// ── ModelCard ─────────────────────────────────────────────────────────────────
-
-/** Tamaño ligeramente mayor al estándar de tabla (32px → 36px) */
-const CARD_ACTION_BTN = "!size-9 !p-1.5";
-
-interface ModelCardProps {
-  model: StructureModel;
-  onEdit: () => void;
-  onToggleActive: () => void;
-  onDelete: () => void;
-  hasCiclos?: boolean;
-}
-
-const ModelCard: React.FC<ModelCardProps> = ({
-  model,
-  onEdit,
-  onToggleActive,
-  onDelete,
-  hasCiclos = false,
-}) => {
-  const navigate = useNavigate();
-  const isTradicional = model.tipo === "tradicional";
-
-  return (
-    <div
-      className={cn(
-        "flex flex-col gap-2 p-4 rounded-corner bg-blanco-una border border-blanco-una shadow-md",
-        "transition-shadow hover:shadow-lg",
-        !model.activo && "opacity-60",
-      )}
-    >
-      {/* Header: nombre + badges */}
-      <div className="flex items-start justify-between gap-2">
-        <div className="flex-1 min-w-0">
-          <h3
-            className={cn(
-              TYPOGRAPHY.pageSubtitle,
-              "font-bold text-negro-una truncate",
-            )}
-            title={model.nombre}
-          >
-            {model.nombre}
-          </h3>
-          {model.version && (
-            <span className={cn(TYPOGRAPHY.form.helper, "text-gris-una")}>
-              v{model.version}
-            </span>
-          )}
-        </div>
-        <div className="flex flex-col items-end gap-1 shrink-0">
-          <StatusBadge
-            label={MODELO_TIPO_BADGE[model.tipo]?.label ?? model.tipo}
-            colorClasses={
-              MODELO_TIPO_BADGE[model.tipo]?.colorClasses ??
-              "bg-gris-light text-gris-una"
-            }
-          />
-          <StatusBadge
-            label={model.activo ? "Activo" : "Inactivo"}
-            colorClasses={
-              model.activo
-                ? "text-verde-dark bg-verde-ring"
-                : "text-error-dark bg-error-ring"
-            }
-          />
-        </div>
-      </div>
-
-      {/* Descripción */}
-      {model.descripcion && (
-        <p className={cn(TYPOGRAPHY.form.helper, "text-gris-una line-clamp-2")}>
-          {model.descripcion}
-        </p>
-      )}
-
-      {/* Acciones */}
-      <div className="flex items-center justify-end gap-1 pt-2">
-        <TableActionButton
-          action="view"
-          tooltip="Ver estructura"
-          className={CARD_ACTION_BTN}
-          onClick={() =>
-            navigate(
-              isTradicional
-                ? "/estructura/listar"
-                : `/estructura/listar?modelo=${model.modelo_estructura_id}`,
-            )
-          }
-        />
-        <TableActionButton
-          action="edit"
-          tooltip={
-            isTradicional ? "Este modelo no se puede editar" : "Editar modelo"
-          }
-          className={CARD_ACTION_BTN}
-          onClick={onEdit}
-          disabled={isTradicional}
-        />
-        <TableActionButton
-          action="power"
-          isActive={model.activo}
-          tooltip={
-            isTradicional
-              ? "Este modelo no se puede desactivar"
-              : model.activo
-                ? "Desactivar modelo"
-                : "Activar modelo"
-          }
-          className={CARD_ACTION_BTN}
-          onClick={onToggleActive}
-          disabled={isTradicional}
-        />
-        <TableActionButton
-          action="delete"
-          tooltip={
-            isTradicional
-              ? "Este modelo no se puede eliminar"
-              : hasCiclos
-                ? "Eliminar bloqueado, tiene ciclos asociados"
-                : "Eliminar modelo"
-          }
-          className={CARD_ACTION_BTN}
-          onClick={onDelete}
-          disabled={isTradicional || hasCiclos}
-        />
-      </div>
-    </div>
   );
 };
 

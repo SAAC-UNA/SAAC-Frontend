@@ -258,7 +258,7 @@ export const Modal: React.FC<ModalProps> = React.memo(({
                   {/* Ícono + texto + botón cerrar en una sola fila */}
                   <div className="relative z-10 flex items-center justify-between gap-3">
                     <div className="flex items-center gap-3 min-w-0">
-                      <div className="w-11 h-11 rounded-[10px] flex items-center justify-center bg-white/20 border border-white/35 flex-shrink-0">
+                      <div className="w-11 h-11 rounded-[10px] flex items-center justify-center bg-white/20 border border-white/35 shrink-0">
                         {heroIcon ?? <cfg.Icon className={`${ICON_SIZES.md} text-blanco-una`}/>}
                       </div>
                       <div className="flex flex-col min-w-0">
@@ -268,12 +268,12 @@ export const Modal: React.FC<ModalProps> = React.memo(({
                         {(subtitle || heroBadge) && (
                           <div className="flex items-center gap-2 mt-0.5 flex-wrap">
                             {subtitle && (
-                              <span className={cn('text-white/70 leading-snug', TYPOGRAPHY.form.helper)}>
+                              <span className={cn('text-white/70 leading-snug wrap-anywhere', TYPOGRAPHY.form.helper)}>
                                 {subtitle}
                               </span>
                             )}
                             {heroBadge && (
-                              <span className={cn('text-white/70 leading-snug', TYPOGRAPHY.form.helper)}>
+                              <span className={cn('text-white/70 leading-snug wrap-anywhere', TYPOGRAPHY.form.helper)}>
                                 · {heroBadge}
                               </span>
                             )}
@@ -287,7 +287,7 @@ export const Modal: React.FC<ModalProps> = React.memo(({
                         onClick={handleClose}
                         disabled={isPending}
                         aria-label="Cerrar modal"
-                        className="w-7 h-7 rounded-corner flex items-center justify-center bg-white/15 border border-white/30 text-white/90 hover:bg-white/30 transition-colors duration-150 disabled:opacity-50 flex-shrink-0"
+                        className="w-7 h-7 rounded-corner flex items-center justify-center bg-white/15 border border-white/30 text-white/90 hover:bg-white/30 transition-colors duration-150 disabled:opacity-50 shrink-0"
                       >
                         <SystemIcons.interface.closeCircle className={`${ICON_SIZES.md}`} />
                       </button>
@@ -304,7 +304,7 @@ export const Modal: React.FC<ModalProps> = React.memo(({
                 HEADER sin hero (modo sin variante)
             ════════════════════════════════════ */}
             {!cfg && (
-              <div className="flex items-center justify-between border-b border-gray-100 bg-gradient-to-r from-gray-50 to-white px-5 py-4 flex-shrink-0">
+              <div className="flex items-center justify-between border-b border-gray-100 bg-linear-to-r from-gray-50 to-white px-5 py-4 shrink-0">
                 <p className={cn('font-bold text-negro-una-2 tracking-tight', TYPOGRAPHY.modal.title)}>
                   {title}
                 </p>
@@ -335,7 +335,7 @@ export const Modal: React.FC<ModalProps> = React.memo(({
                 FOOTER
             ════════════════════════════════════ */}
             {hasFooter && (
-              <div className="flex items-center justify-between gap-3 px-4 py-3 border-t border-gray-100 bg-gray-50/60 flex-shrink-0">
+              <div className="flex items-center justify-between gap-3 px-4 py-3 border-t border-gray-100 bg-gray-50/60 shrink-0">
                 {/* Meta izquierda */}
                 <span
                   className={cn(
@@ -348,7 +348,7 @@ export const Modal: React.FC<ModalProps> = React.memo(({
                 </span>
 
                 {/* Acciones derecha */}
-                <div className="flex items-center gap-2.5 flex-shrink-0">
+                <div className="flex items-center gap-2.5 shrink-0">
                   {footerButtons ? (
                     footerButtons
                   ) : (

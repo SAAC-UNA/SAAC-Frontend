@@ -167,6 +167,67 @@ export const getNavigationItems = (
   }
 
   {
+    const acreditacionChildren: NavItem[] = [];
+
+    if (
+      hasAccess({
+        requireAnyCapabilities: [CAPABILITIES.ACCREDITATION_MODEL_VIEW],
+        requireAnyPermissions: ["modelos.view"],
+      })
+    ) {
+      acreditacionChildren.push({
+        id: "modelos-acreditacion",
+        label: "Modelos de Acreditación",
+        icon: nutIcon,
+        href: ROUTES.STRUCTURE_MODELS,
+        isActive: false,
+      });
+    }
+
+    if (
+      hasAccess({
+        requireAnyCapabilities: [CAPABILITIES.ACCREDITATION_CYCLE_VIEW],
+        requireAnyPermissions: ["ciclos.view"],
+      })
+    ) {
+      acreditacionChildren.push({
+        id: "ciclos-acreditacion",
+        label: "Ciclos de Acreditación",
+        icon: calendarIcon,
+        href: ROUTES.ACCREDITATION_CYCLES,
+        isActive: false,
+      });
+    }
+
+    if (
+      hasAccess({
+        requireAnyCapabilities: [CAPABILITIES.ACCREDITATION_PROCESS_VIEW],
+        requireAnyPermissions: ["procesos.view"],
+      })
+    ) {
+      acreditacionChildren.push({
+        id: "procesos-acreditacion",
+        label: "Procesos de Acreditación",
+        icon: processIcon,
+        href: ROUTES.ACCREDITATION_PROCESSES,
+        isActive: false,
+      });
+    }
+
+    if (acreditacionChildren.length > 0) {
+      items.push({
+        id: "acreditacion",
+        label: "Acreditación",
+        icon: processIcon,
+        href: "#",
+        isActive: false,
+        isExpandable: true,
+        children: acreditacionChildren,
+      });
+    }
+  }
+
+  {
     const evidenciaChildren: NavItem[] = [];
 
     if (
@@ -275,67 +336,6 @@ export const getNavigationItems = (
         isActive: false,
         isExpandable: true,
         children: solicitudChildren,
-      });
-    }
-  }
-
-  {
-    const acreditacionChildren: NavItem[] = [];
-
-    if (
-      hasAccess({
-        requireAnyCapabilities: [CAPABILITIES.ACCREDITATION_MODEL_VIEW],
-        requireAnyPermissions: ["modelos.view"],
-      })
-    ) {
-      acreditacionChildren.push({
-        id: "modelos-acreditacion",
-        label: "Modelos de Acreditación",
-        icon: nutIcon,
-        href: ROUTES.STRUCTURE_MODELS,
-        isActive: false,
-      });
-    }
-
-    if (
-      hasAccess({
-        requireAnyCapabilities: [CAPABILITIES.ACCREDITATION_CYCLE_VIEW],
-        requireAnyPermissions: ["ciclos.view"],
-      })
-    ) {
-      acreditacionChildren.push({
-        id: "ciclos-acreditacion",
-        label: "Ciclos de Acreditación",
-        icon: calendarIcon,
-        href: ROUTES.ACCREDITATION_CYCLES,
-        isActive: false,
-      });
-    }
-
-    if (
-      hasAccess({
-        requireAnyCapabilities: [CAPABILITIES.ACCREDITATION_PROCESS_VIEW],
-        requireAnyPermissions: ["procesos.view"],
-      })
-    ) {
-      acreditacionChildren.push({
-        id: "procesos-acreditacion",
-        label: "Procesos de Acreditación",
-        icon: processIcon,
-        href: ROUTES.ACCREDITATION_PROCESSES,
-        isActive: false,
-      });
-    }
-
-    if (acreditacionChildren.length > 0) {
-      items.push({
-        id: "acreditacion",
-        label: "Acreditación",
-        icon: processIcon,
-        href: "#",
-        isActive: false,
-        isExpandable: true,
-        children: acreditacionChildren,
       });
     }
   }

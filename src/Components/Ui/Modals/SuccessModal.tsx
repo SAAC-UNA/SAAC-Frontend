@@ -228,7 +228,7 @@ export const SuccessModal: React.FC<SuccessModalProps> = ({
             {title}
           </h2>
 
-          <p className="text-sm text-gray-600 relative z-10 break-words">
+          <p className="text-sm text-gray-600 relative z-10 break-words [overflow-wrap:anywhere]">
             {message}
           </p>
         </div>

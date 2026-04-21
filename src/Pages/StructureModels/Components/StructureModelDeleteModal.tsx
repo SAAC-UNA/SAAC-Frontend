@@ -72,14 +72,14 @@ export const StructureModelDeleteModal: React.FC<Props> = ({
       }
     >
       <div className="flex flex-col gap-3">
-        <p className={cn(TYPOGRAPHY.modal.body, 'text-gris-una-2 leading-relaxed')}>
+        <p className={cn(TYPOGRAPHY.modal.body, 'text-gris-una-2 leading-relaxed wrap-anywhere')}>
           ¿Está seguro de eliminar el modelo{' '}
           <span className="font-bold text-negro-una">"{model.nombre}"</span>?
           Se eliminarán todos los elementos que definen su estructura.
         </p>
 
         <div className="mt-1">
-          <div className={cn(TYPOGRAPHY.form.helper, 'text-gris-una-2 mb-2 flex flex-wrap items-center gap-1.5')}>
+          <div className={cn(TYPOGRAPHY.form.helper, 'text-gris-una-2 mb-2 flex flex-wrap items-center gap-1.5 wrap-anywhere')}>
             <span>Para confirmar, escriba el nombre exacto del modelo:</span>
             <span className={cn(TYPOGRAPHY.modal.body, 'text-error font-bold')}>
               {model.nombre}

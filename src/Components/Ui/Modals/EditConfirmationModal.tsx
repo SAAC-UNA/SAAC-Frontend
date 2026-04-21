@@ -62,9 +62,9 @@ export const EditConfirmationModal: React.FC<EditConfirmationModalProps> = ({
             showCancel
             showConfirm
         >
-            <p className={cn(TYPOGRAPHY.modal.body, 'text-gris-una-2 leading-relaxed')}>{finalMessage}</p>
+            <p className={cn(TYPOGRAPHY.modal.body, 'text-gris-una-2 leading-relaxed wrap-anywhere')}>{finalMessage}</p>
             {description && (
-                <div className="mt-3 p-3 bg-[var(--color-info-light)] border border-[var(--color-info-ring)] rounded-corner">
+                <div className="mt-3 p-3 bg-info-light border border-info-ring rounded-corner">
                     <p className={cn(TYPOGRAPHY.modal.body, 'text-info-dark')}>{description}</p>
                 </div>
             )}

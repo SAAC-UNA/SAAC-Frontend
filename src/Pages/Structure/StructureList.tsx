@@ -22,7 +22,6 @@ import { SearchInput } from "@/Components/Ui/Forms/SearchInput";
 import { Button } from "@/Components/Ui/Buttons/Button";
 import { truncateText } from "@/Utils";
 import { useToast } from "@/Context/ToastContext";
-import { CustomSelect } from "@/Components/Ui/Forms/SingleSelect";
 import { FlexibleElementTable } from "./Components/FlexibleElementTable";
 import { StructureElementFormModal } from "@/Pages/StructureModels/Components/StructureElementFormModal";
 import { useStructureModels } from "@/Hooks/UseStructureModels";
@@ -32,7 +31,6 @@ import type {
   CreateFlexibleElementForm,
   EditFlexibleElementForm,
 } from "@/Types/StructureModelTypes";
-import { Card } from "@/Components/Ui/Layout/Card";
 
 const StructureList: React.FC = () => {
   // Obtener información del módulo desde ModuleInfo
@@ -51,39 +49,27 @@ const StructureList: React.FC = () => {
 
   // ── Selector de modelo ─────────────────────────────────────────────────────
   const { models } = useStructureModels();
-  const [searchParams, setSearchParams] = useSearchParams();
+  const [searchParams] = useSearchParams();
 
-  const SESSION_KEY = "saac.structure.lastModel";
+  const getModelFromSearchParams = (
+    params: URLSearchParams,
+  ): number | null => {
+    const urlRaw = params.get("modelo");
+    if (urlRaw === null) return null;
+    if (urlRaw === "0") return null;
+
+    const parsed = Number(urlRaw);
+    return Number.isFinite(parsed) && parsed > 0 ? parsed : null;
+  };
 
   const initialModelId = (): number | null => {
-    // Prioridad 1: parámetro URL (viene de una tarjeta de modelo)
-    const urlRaw = searchParams.get("modelo");
-    if (urlRaw && urlRaw !== "0") {
-      const parsed = Number(urlRaw);
-      if (Number.isFinite(parsed) && parsed > 0) return parsed;
-    }
-    // Prioridad 2: último modelo usado en esta sesión
-    const stored = sessionStorage.getItem(SESSION_KEY);
-    if (stored && stored !== "0") {
-      const parsed = Number(stored);
-      if (Number.isFinite(parsed) && parsed > 0) return parsed;
-    }
-    // Por defecto: Modelo Tradicional
-    return null;
+    return getModelFromSearchParams(searchParams);
   };
 
   const [selectedModelId, setSelectedModelId] = useState<number | null>(
     initialModelId,
   );
   const isFlexible = selectedModelId !== null;
-
-  // Sincronizar selección con sessionStorage
-  useEffect(() => {
-    sessionStorage.setItem(
-      SESSION_KEY,
-      selectedModelId !== null ? String(selectedModelId) : "0",
-    );
-  }, [selectedModelId]);
 
   const {
     elements,
@@ -94,31 +80,10 @@ const StructureList: React.FC = () => {
     toggleActive: toggleFlexActive,
   } = useStructureElements(selectedModelId);
 
-  const modelOptions = useMemo(
-    () => [
-      { value: "0", label: "Modelo Tradicional" },
-      ...models
-        .filter((m) => m.tipo === "elemento_flexible")
-        .map((m) => ({
-          value: String(m.modelo_estructura_id),
-          label: m.nombre,
-        })),
-    ],
-    [models],
-  );
-
   const selectedModel = useMemo(
     () => models.find(m => m.modelo_estructura_id === selectedModelId) ?? null,
     [models, selectedModelId]
   );
-
-  const handleModelChange = (val: string) => {
-    const newId = val === "0" ? null : Number(val);
-    setSelectedModelId(newId);
-    setSearchQuery("");
-    // Actualizar URL para que el botón "atrás" refleje el estado correcto
-    setSearchParams(newId ? { modelo: String(newId) } : {}, { replace: true });
-  };
 
   // Cargar árbol al montar la página
   useEffect(() => {
@@ -164,6 +129,15 @@ const StructureList: React.FC = () => {
 
   // Estado para búsqueda
   const [searchQuery, setSearchQuery] = useState("");
+
+  // Sin dropdown visible, la ruta es la fuente de verdad
+  useEffect(() => {
+    const routeModelId = getModelFromSearchParams(searchParams);
+    if (routeModelId !== selectedModelId) {
+      setSelectedModelId(routeModelId);
+      setSearchQuery("");
+    }
+  }, [searchParams, selectedModelId]);
 
   // ── Estados modales para modo flexible ────────────────────────────────────
   const [flexFormModal, setFlexFormModal] = useState<{
@@ -384,16 +358,6 @@ const StructureList: React.FC = () => {
           breadcrumbMode="none"
           headerExtra={
             <div className="flex flex-col sm:flex-row w-full gap-2 shrink-0 lg:w-auto items-end">
-              <Card className="w-80">
-                <CustomSelect
-                  label="Modelo"
-                  value={
-                    selectedModelId === null ? "0" : String(selectedModelId)
-                  }
-                  onChange={handleModelChange}
-                  options={modelOptions}
-                />
-              </Card>
               <SearchInput
                 placeholder="Buscar elementos..."
                 value={searchQuery}

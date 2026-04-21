@@ -60,7 +60,7 @@ export const CreateConfirmationModal: React.FC<CreateConfirmationModalProps> = (
             showCancel
             showConfirm
         >
-            <p className="text-sm text-gris-una-2 leading-relaxed">{finalMessage}</p>
+            <p className="text-sm text-gris-una-2 leading-relaxed break-words [overflow-wrap:anywhere]">{finalMessage}</p>
             {description && (
                 <div className="mt-3 p-4 bg-gray-50 rounded-corner">
                     <p className="text-sm text-gray-600">

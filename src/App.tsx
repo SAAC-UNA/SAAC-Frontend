@@ -1,5 +1,5 @@
 import { lazy, Suspense, useEffect, useState } from "react";
-import { BrowserRouter, Routes, Route, Navigate, useParams } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate, useLocation, useParams } from "react-router-dom";
 import { ROUTES } from "@/Constants/ROUTES";
 import { AuthProvider } from "@/Context/AuthContext";
 import { NavigationProvider } from "@/Context/NavigationContext";
@@ -113,6 +113,17 @@ const PageLoader = () => (
 const RedirectToState = ({ to }: { to: string }) => {
   const { id } = useParams<{ id: string }>();
   return <Navigate to={to} state={{ id: id ? Number(id) : undefined }} replace />;
+};
+
+const RedirectWithSearch = ({ to }: { to: string }) => {
+  const location = useLocation();
+  return (
+    <Navigate
+      to={{ pathname: to, search: location.search }}
+      state={location.state}
+      replace
+    />
+  );
 };
 
 function App() {
@@ -267,7 +278,7 @@ function App() {
                                 </ProtectedRoute>
                               }
                             />
-                            <Route path="/estructura/listar" element={<Navigate to={ROUTES.STRUCTURE} replace />} />
+                            <Route path="/estructura/listar" element={<RedirectWithSearch to={ROUTES.STRUCTURE} />} />
 
                             {/* Modelos de Acreditación - Administrador y Superusuario */}
                             <Route

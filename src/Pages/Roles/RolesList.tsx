@@ -6,7 +6,7 @@
  */
 
 import React, { useState, useEffect, lazy, Suspense } from "react";
-import { RolesTable } from "./Components/RolesTable";
+import { RolesCards } from "./Components/RolesCards";
 import { PageHeader, ScreenContainer } from "@/Components/Ui/Index";
 import { SearchInput } from "@/Components/Ui/Forms/SearchInput";
 import { Button } from "@/Components/Ui/Buttons/Button";
@@ -198,15 +198,16 @@ const RolesRepository: React.FC = () => {
           }
         ></PageHeader>
 
-        <RolesTable
-          onEdit={handleEditRole}
-          onDelete={handleDeleteRole}
-          onViewPermissions={handleViewPermissions}
-          onToggleStatus={handleToggleStatus}
+        <RolesCards
           roles={roles}
           isLoading={isLoading}
           error={error}
           searchQuery={searchQuery}
+          onRetry={loadRoles}
+          onViewPermissions={handleViewPermissions}
+          onEdit={handleEditRole}
+          onToggleStatus={handleToggleStatus}
+          onDelete={handleDeleteRole}
         />
       </ScreenContainer>
 
