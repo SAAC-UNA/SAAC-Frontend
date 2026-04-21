@@ -58,8 +58,8 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(({
 
   // Generar helperText dinámico con contador de caracteres
   const getHelperText = () => {
-    if (characterCount && value) {
-      const currentLength = value.toString().length;
+    if (characterCount) {
+      const currentLength = value ? value.toString().length : 0;
       const counter = maxLength ? `${currentLength}/${maxLength} caracteres` : `${currentLength} caracteres`;
       return helperText ? `${helperText} (${counter})` : counter;
     }

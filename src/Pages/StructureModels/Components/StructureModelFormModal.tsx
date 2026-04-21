@@ -14,13 +14,15 @@ import { Textarea } from '@/Components/Ui/Forms/Textarea';
 import { Button } from '@/Components/Ui/Buttons/Button';
 import { SystemIcons } from '@/Components/Ui/Icons/SystemIcons';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/Components/Ui/Index';
+import { StatusBadge } from '@/Components/Ui/Feedback/StatusBadge';
+import { BADGE_COLORS } from '@/Constants/StatusBadges';
 import { useToast } from '@/Context/ToastContext';
 import { useStructureElements } from '@/Hooks/UseStructureElements';
 import { buildHierarchyPath } from '@/Components/Ui/Cards/StructureModelCard';
 import { Card as KanbanCard, CardContent as KanbanCardContent } from '@/Components/Ui/KanbanBoard/card';
-import { Badge as KanbanBadge } from '@/Components/Ui/KanbanBoard/badge';
 import type { StructureModel, CreateModelForm, EditModelForm, TipoJerarquia } from '@/Types/StructureModelTypes';
 import { cn } from '@/Utils/ClassNames';
+import { Card } from '@/Components/Ui/Layout/Card';
 
 interface JerarquiaRow extends TipoJerarquia {}
 
@@ -382,13 +384,13 @@ export const StructureModelFormModal: React.FC<Props> = ({
           </div>
 
           <div className="space-y-3">
-            <div className="rounded-corner border border-gris-light bg-gris-light/15 p-4 space-y-4">
+            <Card className="p-4 space-y-4">
               <div className="grid grid-cols-1 xl:grid-cols-2 gap-4 items-start">
-                <div className="space-y-3">
+                <div className="space-y-4">
                   <div className="flex items-center gap-2">
-                    <span className="text-sm font-medium text-negro-una">
+                    <p className="text-xs font-semibold uppercase tracking-wider text-gris-una-2">
                       Jerarquía de tipos de elemento
-                    </span>
+                    </p>
                     <Tooltip>
                       <TooltipTrigger asChild>
                         <button
@@ -410,17 +412,16 @@ export const StructureModelFormModal: React.FC<Props> = ({
                   )}
 
                   <div className="space-y-2">
-                    <p className="text-xs font-semibold uppercase tracking-wider text-gris-una-2">
-                      Jerarquía actual
-                    </p>
-
                     {hierarchyBreadcrumbs.length > 0 ? (
                       <div className="flex flex-wrap items-center gap-1.5">
                         {hierarchyBreadcrumbs.map((item, idx) => (
                           <React.Fragment key={`${item}-${idx}`}>
-                            <span className="px-2.5 py-1 rounded-full bg-gris-light/60 text-[11px] font-medium text-negro-una wrap-anywhere">
-                              {item}
-                            </span>
+                            <StatusBadge
+                              label={item}
+                              colorClasses={BADGE_COLORS.gris.colorClasses}
+                              badgeClassName="rounded-full wrap-anywhere"
+                              size="md"
+                            />
                             {idx < hierarchyBreadcrumbs.length - 1 && (
                               <SystemIcons.interface.chevronRight className="w-3.5 h-3.5 text-gris-una" />
                             )}
@@ -441,7 +442,6 @@ export const StructureModelFormModal: React.FC<Props> = ({
                       value={newHierarchyType}
                       maxLength={50}
                       characterCount
-                      helperText="Máx. 50"
                       disabled={!canEditHierarchy}
                       placeholder="Ej: Dimension, Pauta, Fuente"
                       onChange={e => setNewHierarchyType(e.target.value)}
@@ -465,16 +465,18 @@ export const StructureModelFormModal: React.FC<Props> = ({
                   </div>
                 </div>
               </div>
-            </div>
+            </Card>
 
-            <div className="rounded-corner border border-gris-light bg-blanco-una-2/30 p-3">
+            <Card className="p-3">
               <div className="flex items-center justify-between mb-2">
-                <span className="text-xs font-semibold text-gris-una-2">
-                  Jerarquía definida
-                </span>
-                <KanbanBadge className="bg-azul-una/10 text-azul-una border-transparent">
-                  {form.tipos_jerarquia.length} niveles
-                </KanbanBadge>
+                <p className="text-xs font-semibold uppercase tracking-wider text-gris-una-2">
+                    Jerarquía definida
+                </p>
+                <StatusBadge
+                  label={`${form.tipos_jerarquia.length} niveles`}
+                  colorClasses={BADGE_COLORS.info.colorClasses}
+                  size="md"
+                />
               </div>
 
               <div className="overflow-x-auto pb-1">
@@ -488,18 +490,19 @@ export const StructureModelFormModal: React.FC<Props> = ({
                         onDragOver={(e) => canEditHierarchy && e.preventDefault()}
                         onDrop={() => canEditHierarchy && handleDropLinearLevel(idx)}
                         className={cn(
-                          'min-w-65 border-gris-light bg-blanco-una',
+                          'min-w-65 border-gris-light bg-blanco-una shadow-none',
                           canEditHierarchy && draggedHierarchyIndex === idx && 'opacity-70',
                         )}
                       >
-                        <KanbanCardContent className="p-3 space-y-2">
+                        <KanbanCardContent className="p-3 space-y-4">
                           <div className="flex items-center justify-between">
-                            <KanbanBadge className="bg-verde-ring text-verde-dark border-transparent">
-                              Nivel {idx + 1}
-                            </KanbanBadge>
+                            <StatusBadge
+                              label={`Nivel ${idx + 1}`}
+                              colorClasses={BADGE_COLORS.verde.colorClasses}
+                              size="md"
+                            />
                             <button
                               type="button"
-                              title="Quitar nivel"
                               onClick={() => handleRemoveLinearLevel(idx)}
                               disabled={!canEditHierarchy}
                               className={cn(
@@ -542,7 +545,7 @@ export const StructureModelFormModal: React.FC<Props> = ({
                   )}
                 </div>
               </div>
-            </div>
+            </Card>
           </div>
         </div>
       </EntityFormModal>
