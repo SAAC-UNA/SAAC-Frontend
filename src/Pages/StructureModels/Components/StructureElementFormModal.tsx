@@ -243,6 +243,7 @@ export const StructureElementFormModal: React.FC<Props> = ({
             onChange={e => setForm(p => ({ ...p, nomenclatura: e.target.value }))}
             error={errors.nomenclatura}
             maxLength={20}
+            characterCount
             placeholder="Ej: P1, C2.1"
           />
           <CustomSelect

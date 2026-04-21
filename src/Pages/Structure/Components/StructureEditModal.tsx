@@ -218,6 +218,7 @@ export const StructureEditModal: React.FC<StructureEditModalProps> = ({
               label="Nomenclatura"
               variant="floating"
               type="text"
+              characterCount
               value={formData.nomenclature}
               onChange={(e) => handleInputChange('nomenclature', e.target.value)}
               placeholder="Nomenclatura única o identificativa del elemento"
@@ -233,6 +234,7 @@ export const StructureEditModal: React.FC<StructureEditModalProps> = ({
               label="Nombre"
               variant="floating"
               type="text"
+              characterCount
               value={formData.name}
               onChange={(e) => handleInputChange('name', e.target.value)}
               placeholder="Nombre completo y descriptivo"
