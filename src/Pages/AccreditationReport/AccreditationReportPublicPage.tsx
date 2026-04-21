@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import { ScreenContainer, PageHeader, Tooltip, TooltipTrigger, TooltipContent } from "@/Components/Ui/Index";
 import { getModuleInfo } from "@/Constants/ModuleInfo";
 import { StatusBadge } from "@/Components/Ui/Feedback/StatusBadge";
@@ -18,10 +18,32 @@ import { DataTable } from "@/Components/Ui/Table/DataTable";
 import type { DataTableColumn } from "@/Components/Ui/Table/DataTable";
 import { TableActionButton } from "@/Components/Ui/Buttons/TableActionButton";
 import { useFirstColumnConfig } from "@/Hooks/UseFirstColumnConfig";
+import { fetchReports } from "@/Services/AccreditationReportService";
+import type { AccreditationReportApi } from "@/Types/AccreditationReportTypes";
 
 // ─── Tipos SINAES ───────────────────────────────────────────────────────────
 
-type EstadoAcreditacion = "acreditada" | "no_acreditada";
+interface ResolucionArchivo {
+  id: string;
+  nombre_original: string;
+  tamanio: number;
+  url: string;
+}
+
+interface Resolucion {
+  id: string;
+  numero_resolucion: string;
+  estado: "publicado" | "despublicado";
+  fecha_publicacion: string;
+  vigencia_inicio: string;
+  vigencia_fin: string;
+  esta_vigente: boolean;
+  esta_acreditada: boolean;
+  observaciones: string | null;
+  archivo: ResolucionArchivo;
+  publicado_por: { id: number; nombre: string };
+  publicado_at: string;
+}
 
 // ─── Tipos Informe Final ────────────────────────────────────────────────────
 
@@ -60,58 +82,45 @@ interface InformePublicado {
 }
 
 interface Resolucion {
-  id: number;
-  numero: string;
-  estado: EstadoAcreditacion;
+  id: string;
+  numero_resolucion: string;
+  estado: "publicado" | "despublicado";
+  fecha_publicacion: string;
   vigencia_inicio: string;
   vigencia_fin: string;
-  archivo_nombre: string;
-  archivo_size: string;
-  publicado_por: string;
-  publicado_en: string;
-  activa: boolean;
+  esta_vigente: boolean;
+  observaciones: string | null;
+  archivo: ResolucionArchivo;
+  publicado_por: { id: number; nombre: string };
+  publicado_at: string;
 }
 
-// ─── Datos mock SINAES ──────────────────────────────────────────────────────
+// ─── Mapeo API → tipo local ──────────────────────────────────────────────────
 
-const MOCK_HISTORIAL: Resolucion[] = [
-  {
-    id: 1,
-    numero: "R-021-2026",
-    estado: "acreditada",
-    vigencia_inicio: "2026-01-01",
-    vigencia_fin: "2030-12-31",
-    archivo_nombre: "resolucion_sinaes_r021_2026.pdf",
-    archivo_size: "1.2 MB",
-    publicado_por: "José Jara Arias",
-    publicado_en: "2026-04-10T09:14:00",
-    activa: true,
-  },
-  {
-    id: 2,
-    numero: "R-004-2021",
-    estado: "acreditada",
-    vigencia_inicio: "2021-01-01",
-    vigencia_fin: "2025-12-31",
-    archivo_nombre: "resolucion_sinaes_r004_2021.pdf",
-    archivo_size: "980 KB",
-    publicado_por: "Cristina Zúñiga Cárdenas",
-    publicado_en: "2021-01-03T08:00:00",
-    activa: false,
-  },
-  {
-    id: 3,
-    numero: "R-117-2016",
-    estado: "acreditada",
-    vigencia_inicio: "2016-06-01",
-    vigencia_fin: "2020-12-31",
-    archivo_nombre: "resolucion_sinaes_r117_2016.pdf",
-    archivo_size: "760 KB",
-    publicado_por: "Naydelin Jirón Castellón",
-    publicado_en: "2016-06-15T10:00:00",
-    activa: false,
-  },
-];
+function mapApiToResolucion(api: AccreditationReportApi): Resolucion {
+  return {
+    id: String(api.informe_acreditacion_id),
+    numero_resolucion: api.numero_resolucion,
+    estado: api.estado,
+    fecha_publicacion: api.fecha_publicacion ?? api.fecha_resolucion,
+    vigencia_inicio: api.vigencia_desde,
+    vigencia_fin: api.vigencia_hasta,
+    esta_vigente: api.is_vigente,
+    esta_acreditada: api.esta_acreditada,
+    observaciones: api.observaciones,
+    archivo: {
+      id: String(api.archivo?.archivo_id ?? ""),
+      nombre_original: api.archivo?.nombre_original ?? "",
+      tamanio: api.archivo?.tamanio ?? 0,
+      url: api.archivo?.url_publica ?? "#",
+    },
+    publicado_por: {
+      id: api.publicado_por?.usuario_id ?? 0,
+      nombre: api.publicado_por?.nombre ?? "",
+    },
+    publicado_at: api.fecha_publicacion ?? new Date().toISOString(),
+  };
+}
 
 // ─── Datos mock Informe Final ───────────────────────────────────────────────
 
@@ -368,21 +377,30 @@ export const AccreditationReportPublicPage: React.FC = () => {
   const { canAccess } = useAuth();
   const canViewAdmin = canAccess({ requireAnyPermissions: REPORTS_ACCESS_PERMISSIONS });
   const [activeTab, setActiveTab] = useState<Tab>("Resolución SINAES");
-  const historial = MOCK_HISTORIAL;
-  const resolucionActiva = historial.find((r) => r.activa) ?? null;
-  const isAcreditada = resolucionActiva?.estado === "acreditada";
+  const [historial, setHistorial] = useState<Resolucion[]>([]);
+
+  useEffect(() => {
+    fetchReports()
+      .then((res) => setHistorial(res.data.map(mapApiToResolucion)))
+      .catch(() => {/* errores silenciados en la página pública */});
+  }, []);
+
+  const resolucionActiva = historial.find((r) => r.esta_vigente) ?? null;
+  const isAcreditada = resolucionActiva?.esta_acreditada ?? false;
   const firstColumn = useFirstColumnConfig();
 
   const historialColumns = useMemo<DataTableColumn<ResolucionRow>[]>(() => [
     {
-      key: "numero",
+      key: "numero_resolucion",
       header: "Resolución",
       align: "left",
       width: firstColumn.width,
       render: (_, r) => (
         <div className="flex flex-col">
-          <span className={cn("font-bold text-negro-una-2", TYPOGRAPHY.table.cell)}>Nº {r.numero}</span>
-          <p className={cn("text-gris-una mt-0.5", TYPOGRAPHY.table.helper)}>{formatDate(r.publicado_en)} · {r.archivo_size}</p>
+          <span className={cn("font-bold text-negro-una-2", TYPOGRAPHY.table.cell)}>Nº {r.numero_resolucion}</span>
+          <p className={cn("text-gris-una mt-0.5", TYPOGRAPHY.table.helper)}>
+            {formatDate(r.publicado_at)} · {(r.archivo.tamanio / 1024 / 1024).toFixed(1)} MB
+          </p>
         </div>
       ),
     },
@@ -404,8 +422,8 @@ export const AccreditationReportPublicPage: React.FC = () => {
       width: TABLE_COLUMN_WIDTHS.status,
       render: (_, r) => (
         <StatusBadge
-          label={r.activa ? "Activa" : "Archivada"}
-          colorClasses={r.activa ? BADGE_COLORS.verde.colorClasses : BADGE_COLORS.gris.colorClasses}
+          label={r.esta_acreditada ? "Acreditada" : "No acreditada"}
+          colorClasses={r.esta_acreditada ? BADGE_COLORS.verde.colorClasses : BADGE_COLORS.error.colorClasses}
         />
       ),
     },
@@ -416,8 +434,8 @@ export const AccreditationReportPublicPage: React.FC = () => {
       width: TABLE_COLUMN_WIDTHS.status,
       render: (_, r) => (
         <StatusBadge
-          label={r.estado === "acreditada" ? "Acreditada" : "No acreditada"}
-          colorClasses={r.estado === "acreditada" ? BADGE_COLORS.verde.colorClasses : BADGE_COLORS.error.colorClasses}
+          label={r.esta_vigente ? "Vigente" : "Archivada"}
+          colorClasses={r.esta_vigente ? BADGE_COLORS.verde.colorClasses : BADGE_COLORS.gris.colorClasses}
         />
       ),
     },
@@ -426,12 +444,12 @@ export const AccreditationReportPublicPage: React.FC = () => {
       header: "Acciones",
       align: "center",
       width: TABLE_COLUMN_WIDTHS.actions,
-      render: () => (
+      render: (_, r) => (
         <div className="flex items-center justify-center gap-1">
           <TableActionButton
             action="view"
             tooltip="Ver PDF"
-            onClick={() => window.open("#", "_blank")}
+            onClick={() => window.open(r.archivo.url, "_blank")}
           />
           <TableActionButton
             action="custom"
@@ -511,12 +529,12 @@ export const AccreditationReportPublicPage: React.FC = () => {
                 : "Carrera Sin Acreditación Vigente"}
             </p>
             <p className={cn("mt-1", TYPOGRAPHY.table.cell, "text-negro-una-2")}>
-              Resolución SINAES Nº {resolucionActiva.numero}
+              Resolución SINAES Nº {resolucionActiva.numero_resolucion}
               &nbsp;·&nbsp;
               Vigente del {formatDate(resolucionActiva.vigencia_inicio)} al {formatDate(resolucionActiva.vigencia_fin)}
             </p>
             <p className={cn("mt-0.5 text-gris-una", TYPOGRAPHY.table.helper)}>
-              Publicado por {resolucionActiva.publicado_por} el {formatDate(resolucionActiva.publicado_en)}
+              Publicado por {resolucionActiva.publicado_por.nombre} el {formatDate(resolucionActiva.publicado_at)}
             </p>
           </div>
         </div>

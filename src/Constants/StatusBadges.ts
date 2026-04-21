@@ -34,22 +34,22 @@ export const BADGE_COLORS: Record<string, BadgeColorConfig> = {
 
 /** Estados de publicación de evidencia — enum PascalCase (EVIDENCIA.estado) */
 export const EVIDENCE_STATUS_BADGE: Record<EvidencePublicationStatus, StatusBadgeConfig> = {
-  'Pendiente': { label: 'Pendiente', colorClasses: BADGE_COLORS.gris.colorClasses },
+  'Pendiente':  { label: 'Pendiente', colorClasses: BADGE_COLORS.gris.colorClasses },
   'En Proceso': { label: 'En proceso', colorClasses: BADGE_COLORS.warning.colorClasses },
-  'Aprobado': { label: 'Aprobado', colorClasses: BADGE_COLORS.verde.colorClasses },
-  'Rechazado': { label: 'Rechazado', colorClasses: BADGE_COLORS.error.colorClasses },
+  'Aprobado':   { label: 'Aprobado', colorClasses: BADGE_COLORS.verde.colorClasses },
+  'Rechazado':  { label: 'Rechazado', colorClasses: BADGE_COLORS.error.colorClasses },
   'Completado': { label: 'Completado', colorClasses: BADGE_COLORS.verde.colorClasses },
-  'Vencido': { label: 'Vencido', colorClasses: BADGE_COLORS.rose.colorClasses },
-  'Observada': { label: 'Observada', colorClasses: BADGE_COLORS.info.colorClasses },
-  'Validada': { label: 'Validada', colorClasses: BADGE_COLORS.verde.colorClasses },
+  'Vencido':    { label: 'Vencido', colorClasses: BADGE_COLORS.rose.colorClasses },
+  'Observada':  { label: 'Observada', colorClasses: BADGE_COLORS.info.colorClasses },
+  'Validada':   { label: 'Validada', colorClasses: BADGE_COLORS.verde.colorClasses },
 };
 
 /** Estados de asignación de evidencia a responsable (modelo tradicional — snake_case) */
 export const ASSIGNMENT_STATUS_BADGE: Record<AssignmentStatus, StatusBadgeConfig> = {
-  pendiente: { label: 'Pendiente', colorClasses: BADGE_COLORS.slate.colorClasses },
+  pendiente:   { label: 'Pendiente', colorClasses: BADGE_COLORS.slate.colorClasses },
   en_progreso: { label: 'En progreso', colorClasses: BADGE_COLORS.warning.colorClasses },
-  completado: { label: 'Completado', colorClasses: BADGE_COLORS.verde.colorClasses },
-  vencido: { label: 'Vencido', colorClasses: BADGE_COLORS.rose.colorClasses },
+  completado:  { label: 'Completado', colorClasses: BADGE_COLORS.verde.colorClasses },
+  vencido:     { label: 'Vencido', colorClasses: BADGE_COLORS.rose.colorClasses },
 };
 
 /** Estados de asignación de elemento (modelo flexible — PascalCase del backend) */
@@ -63,8 +63,8 @@ export const ELEMENT_ASSIGNMENT_STATUS_BADGE: Record<string, StatusBadgeConfig> 
 /** Estados de solicitud de ampliación de plazo */
 export const EXTENSION_REQUEST_STATUS_BADGE: Record<ExtensionRequestStatus, StatusBadgeConfig> = {
   pendiente: { label: 'Pendiente', colorClasses: BADGE_COLORS.slate.colorClasses },
-  aprobada:  { label: 'Aprobado',  colorClasses: BADGE_COLORS.verde.colorClasses },
-  rechazada: { label: 'Rechazado', colorClasses: BADGE_COLORS.error.colorClasses },
+  aprobada:  { label: 'Aprobada',  colorClasses: BADGE_COLORS.verde.colorClasses },
+  rechazada: { label: 'Rechazada', colorClasses: BADGE_COLORS.error.colorClasses },
   cancelada: { label: 'Cancelada', colorClasses: BADGE_COLORS.gris.colorClasses },
 };
 
@@ -89,19 +89,24 @@ export const COMPROMISO_STATUS_BADGE: Record<string, StatusBadgeConfig> = {
 };
 
 export const AUDIT_ACTION_BADGE: Record<string, StatusBadgeConfig> = {
-  crear: { label: 'Crear', colorClasses: BADGE_COLORS.teal.colorClasses },
-  editar: { label: 'Editar', colorClasses: BADGE_COLORS.warning.colorClasses },
-  eliminar: { label: 'Eliminar', colorClasses: BADGE_COLORS.error.colorClasses },
-  consultar: { label: 'Consultar', colorClasses: BADGE_COLORS.slate.colorClasses },
-  login: { label: 'Login', colorClasses: BADGE_COLORS.verde.colorClasses },
-  logout: { label: 'Logout', colorClasses: BADGE_COLORS.error.colorClasses },
-  login_fallido: { label: 'Login fallido', colorClasses: BADGE_COLORS.rose.colorClasses },
-  activar: { label: 'Activar', colorClasses: BADGE_COLORS.teal.colorClasses },
-  desactivar: { label: 'Desactivar', colorClasses: BADGE_COLORS.gris.colorClasses },
-  asignar_rol: { label: 'Asignar rol', colorClasses: BADGE_COLORS.morado.colorClasses },
-  asignar_permisos: { label: 'Asignar permisos', colorClasses: BADGE_COLORS.indigo.colorClasses },
-  exportar: { label: 'Exportar', colorClasses: BADGE_COLORS.teal.colorClasses },
-  asignar: { label: 'Asignar', colorClasses: BADGE_COLORS.info.colorClasses },
+  crear:             { label: 'Crear', colorClasses: BADGE_COLORS.teal.colorClasses },
+  editar:            { label: 'Editar', colorClasses: BADGE_COLORS.warning.colorClasses },
+  eliminar:          { label: 'Eliminar', colorClasses: BADGE_COLORS.error.colorClasses },
+  consultar:         { label: 'Consultar', colorClasses: BADGE_COLORS.slate.colorClasses },
+  login:             { label: 'Login', colorClasses: BADGE_COLORS.verde.colorClasses },
+  logout:            { label: 'Logout', colorClasses: BADGE_COLORS.error.colorClasses },
+  login_fallido:     { label: 'Login fallido', colorClasses: BADGE_COLORS.rose.colorClasses },
+  activar:           { label: 'Activar', colorClasses: BADGE_COLORS.teal.colorClasses },
+  desactivar:        { label: 'Desactivar', colorClasses: BADGE_COLORS.gris.colorClasses },
+  asignar_rol:       { label: 'Asignar rol', colorClasses: BADGE_COLORS.morado.colorClasses },
+  asignar_permisos:  { label: 'Asignar permisos', colorClasses: BADGE_COLORS.indigo.colorClasses },
+  exportar:          { label: 'Exportar', colorClasses: BADGE_COLORS.teal.colorClasses },
+  asignar:           { label: 'Asignar', colorClasses: BADGE_COLORS.info.colorClasses },
+  notificar:         { label: 'Notificar', colorClasses: BADGE_COLORS.info.colorClasses },
+  notificar_fallido: { label: 'Notif. fallida', colorClasses: BADGE_COLORS.rose.colorClasses },
+  retroalimentar:    { label: 'Retroalimentar', colorClasses: BADGE_COLORS.morado.colorClasses },
+  publicar:          { label: 'Publicar', colorClasses: BADGE_COLORS.verde.colorClasses },
+  despublicar:       { label: 'Despublicar', colorClasses: BADGE_COLORS.warning.colorClasses },
 };
 
 /**
