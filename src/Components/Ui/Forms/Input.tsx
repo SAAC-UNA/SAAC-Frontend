@@ -15,6 +15,8 @@ interface InputProps extends Omit<React.InputHTMLAttributes<HTMLInputElement>, '
   validateOnChange?: boolean;
   characterCount?: boolean;
   maxLength?: number;
+  leftIcon?: React.ReactNode;
+  rightElement?: React.ReactNode;
 }
 
 export const Input = forwardRef<HTMLInputElement, InputProps>(({
@@ -33,6 +35,8 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(({
   characterCount = false,
   maxLength,
   onChange,
+  leftIcon,
+  rightElement,
   ...props
 }, ref) => {
   const generatedId = useId();
@@ -64,6 +68,11 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(({
     return (
       <div className="space-y-1">
         <div className="relative">
+          {leftIcon && (
+            <span className="absolute left-[14px] top-1/2 -translate-y-1/2 z-[2] pointer-events-none text-slate">
+              {leftIcon}
+            </span>
+          )}
           {/* Input */}
           <input
             ref={ref}
@@ -72,7 +81,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(({
             maxLength={maxLength}
             className={cn(
               // Base styles - Similar al login de tu compañera
-              `w-full h-10 px-4 ${TYPOGRAPHY.form.input} border rounded-corner transition-all duration-300`,
+              `w-full h-10 ${TYPOGRAPHY.form.input} border rounded-corner transition-all duration-300`,
               'focus:outline-none focus:border-gris-una',
               'disabled:bg-gris-una/10 disabled:cursor-not-allowed',
               'peer', // Para usar peer selectors de Tailwind
@@ -84,6 +93,10 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(({
               error
                 ? 'border-error' 
                 : 'border-gris-light bg-blanco-una',
+
+              // Padding dinámico según iconos
+              leftIcon ? 'pl-11' : 'pl-4',
+              'pr-4',
               
               // Custom classes
               className
@@ -95,13 +108,19 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(({
             {...props}
           />
 
+          {rightElement && (
+            <div className="absolute right-[14px] top-1/2 -translate-y-1/2 flex items-center gap-2 z-[2]">
+              {rightElement}
+            </div>
+          )}
+
           {/* Floating Label */}
           {label && (
             <label 
               htmlFor={inputId}
               className={cn(
                 // Base floating label styles - Inspirado en el login
-                'absolute left-4 transition-all duration-300 pointer-events-none',
+                `absolute ${leftIcon ? 'left-11' : 'left-4'} transition-all duration-300 pointer-events-none`,
                 'transform',
                 
                 // Tamaño del texto del label (más pequeño)

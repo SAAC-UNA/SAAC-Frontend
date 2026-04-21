@@ -9,7 +9,7 @@ import { useAuth } from "@/Context/AuthContext";
 import { SystemIcons } from "@/Components/Ui/Icons/SystemIcons";
 import { useToast } from "@/Hooks/useToast";
 import { ValidationError } from "@/Services/AuthService";
-import { cn } from "@/Utils/ClassNames";
+import { Input } from "@/Components/Ui/Forms/Input";
 import IsotipoSAAC from "../../../public/Images/IsotipoSAAC.svg?react";
 import { Grainient } from "@/Components/Ui/Backgrounds/Grainient";
 import {
@@ -56,24 +56,6 @@ export const Login = () => {
     }
     setFormState((prev) => ({ ...prev, loading: false }));
   };
-
-  const inputBase =
-    "w-full h-full pl-11 text-[0.95rem] tracking-[0.5px] rounded-corner border-2 bg-white/75 font-poppins transition-all duration-300 focus:outline-none peer placeholder-transparent disabled:opacity-50 disabled:cursor-not-allowed";
-
-  const labelBase = cn(
-    "absolute left-11 top-1/2 -translate-y-1/2 pointer-events-none",
-    "text-[0.95rem] font-medium text-slate transition-all duration-300",
-    "peer-focus:top-0 peer-focus:-translate-y-1/2 peer-focus:scale-75 peer-focus:font-bold peer-focus:text-azul-una-2",
-    "peer-[:not(:placeholder-shown)]:top-0 peer-[:not(:placeholder-shown)]:-translate-y-1/2 peer-[:not(:placeholder-shown)]:scale-75",
-    "floating-label-halo"
-  );
-
-  const inputBorderNormal =
-    "border-slate-light focus:border-azul-una-2 focus:shadow-[0_0_0_3px_rgba(43,87,218,0.1)]";
-  const inputBorderError =
-    "border-rojo-una shadow-[0_0_0_3px_rgba(200,16,46,0.1)]";
-  const labelErrorColor =
-    "text-rojo-una peer-[:not(:placeholder-shown)]:text-rojo-una peer-focus:text-rojo-una";
 
   return (
     <div className="min-h-screen flex w-full relative overflow-hidden items-center justify-center p-5 gap-[60px] [html:has(&)]:overflow-y-hidden">
@@ -122,84 +104,60 @@ export const Login = () => {
 
           <form onSubmit={handleSubmit} className="flex flex-col gap-5 mb-5">
             {/* Cédula */}
-            <div className="relative h-12 flex items-center">
-              <span className="absolute left-[14px] top-1/2 -translate-y-1/2 z-[2] text-slate">
-                {SystemIcons.users.user({ size: "sm" })}
-              </span>
-              <input
-                id="cedula"
-                type="text"
-                value={cedula}
-                onChange={(e) =>
-                  setFormState((prev) => ({ ...prev, cedula: e.target.value }))
-                }
-                required
-                disabled={loading}
-                placeholder=""
-                className={cn(
-                  inputBase,
-                  "pr-4",
-                  error ? inputBorderError : inputBorderNormal
-                )}
-              />
-              <label
-                htmlFor="cedula"
-                className={cn(labelBase, error && labelErrorColor)}
-              >
-                Identificación
-              </label>
-            </div>
+            <Input
+              id="cedula"
+              type="text"
+              label="Identificación"
+              value={cedula}
+              onChange={(e) =>
+                setFormState((prev) => ({ ...prev, cedula: e.target.value }))
+              }
+              disabled={loading}
+              error={error || undefined}
+              className="h-12 border-2"
+              leftIcon={SystemIcons.users.user({ size: "sm" })}
+            />
 
             {/* Contraseña */}
-            <div className="relative h-12 flex items-center">
-              <span className="absolute left-[14px] top-1/2 -translate-y-1/2 z-[2] text-slate">
-                {SystemIcons.auth.lock({ size: "sm" })}
-              </span>
-              <input
-                id="password"
-                type={showPassword ? "text" : "password"}
-                value={password}
-                onChange={(e) =>
-                  setFormState((prev) => ({
-                    ...prev,
-                    password: e.target.value,
-                  }))
-                }
-                required
-                disabled={loading}
-                placeholder=""
-                className={cn(
-                  inputBase,
-                  "pr-[70px]",
-                  error ? inputBorderError : inputBorderNormal
-                )}
-              />
-              <label
-                htmlFor="password"
-                className={cn(labelBase, error && labelErrorColor)}
-              >
-                Contraseña
-              </label>
-              <button
-                type="button"
-                className="absolute right-[14px] top-1/2 -translate-y-1/2 bg-transparent border-none cursor-pointer text-slate text-[0.75rem] font-semibold uppercase tracking-[0.5px] transition-colors duration-200 hover:text-azul-una-2 disabled:opacity-50 disabled:cursor-not-allowed p-0"
-                onClick={() => setShowPassword(!showPassword)}
-                disabled={loading}
-              >
-                {showPassword ? "Ocultar" : "Mostrar"}
-              </button>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <span className="absolute -right-6 top-1/2 -translate-y-1/2 cursor-help text-slate">
-                    {SystemIcons.interface.informationCircle({ size: "sm" })}
-                  </span>
-                </TooltipTrigger>
-                <TooltipContent side="bottom">
-                  Ingrese la contraseña que emplea en los demás sistemas de la
-                  universidad
-                </TooltipContent>
-              </Tooltip>
-            </div>
+            <Input
+              id="password"
+              type={showPassword ? "text" : "password"}
+              label="Contraseña"
+              value={password}
+              onChange={(e) =>
+                setFormState((prev) => ({
+                  ...prev,
+                  password: e.target.value,
+                }))
+              }
+              disabled={loading}
+              error={error || undefined}
+              className="h-12 border-2 pr-24"
+              leftIcon={SystemIcons.auth.lock({ size: "sm" })}
+              rightElement={
+                <>
+                  <button
+                    type="button"
+                    className="bg-transparent border-none cursor-pointer text-slate text-[0.75rem] font-semibold uppercase tracking-[0.5px] transition-colors duration-200 hover:text-azul-una-2 disabled:opacity-50 disabled:cursor-not-allowed p-0 leading-none flex items-center"
+                    onClick={() => setShowPassword(!showPassword)}
+                    disabled={loading}
+                  >
+                    {showPassword ? "Ocultar" : "Mostrar"}
+                  </button>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <span className="cursor-help text-slate">
+                        {SystemIcons.interface.informationCircle({ size: "sm" })}
+                      </span>
+                    </TooltipTrigger>
+                    <TooltipContent side="bottom">
+                      Ingrese la contraseña que emplea en los demás sistemas de la
+                      universidad
+                    </TooltipContent>
+                  </Tooltip>
+                </>
+              }
+            />
 
             <div className="text-center">
               <a
