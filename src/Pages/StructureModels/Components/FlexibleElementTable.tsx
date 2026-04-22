@@ -21,7 +21,7 @@ import {
   BADGE_COLORS,
   getBadgeColorForString,
 } from '@/Constants/StatusBadges';
-import { FlexibleElementDetail } from './FlexibleElementDetail';
+import { StructureElementDetail } from '../../Structure/Components/StructureElementDetail';
 
 interface FlexibleElementTableProps {
   elements: FlexibleElement[];
@@ -297,11 +297,12 @@ export const FlexibleElementTable: React.FC<FlexibleElementTableProps> = ({
         }
       />
 
-      <FlexibleElementDetail
+      <StructureElementDetail
+        mode="flexible"
         isOpen={detailModal.isOpen}
         onClose={() => setDetailModal({ isOpen: false, element: null })}
         element={detailModal.element}
-        elements={elements}
+        allElements={elements}
       />
     </>
   );
