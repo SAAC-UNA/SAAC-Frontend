@@ -240,7 +240,7 @@ export const PublicLinkModal: React.FC<PublicLinkModalProps> = ({
                     <ButtonWithTooltip
                       variant="tableView"
                       size="sm"
-                      tooltip="Copiar enlace"
+                      tooltip={copiedToClipboard ? "¡Enlace copiado!" : "Copiar enlace"}
                       onClick={handleCopyLink}
                       className="p-1"
                       aria-label="Copiar enlace"

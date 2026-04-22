@@ -17,7 +17,7 @@
  */
 
 import React, { useState, useMemo, useCallback, useRef } from 'react';
-import { StructureElementDetail } from './StructureElementDetail';
+import { StructureElementDetail } from './StructureDetailModal';
 import { DataTable } from '@/components/index';
 import { TYPOGRAPHY } from '@/Constants/Typography';
 import { useDebounce } from '@/Hooks/UseDebounce';

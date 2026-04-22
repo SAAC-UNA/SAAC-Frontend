@@ -1,4 +1,5 @@
 /**
+ * ! Esta página no pertenece a Modelos de acreditación, ni flexible ni tradicional
  * StructureElementsView - Vista de elementos de un modelo flexible.
  *
  * Usa FlexibleElementTable como implementación canónica de listado para evitar
@@ -12,7 +13,7 @@ import { DeleteConfirmationModal } from '@/Components/Ui/Modals/DeleteConfirmati
 import { Modal } from '@/Components/Ui/Modals/Modal';
 import { SuccessModal } from '@/Components/Ui/Modals/SuccessModal';
 import { StructureElementFormModal } from './StructureElementFormModal';
-import { FlexibleElementTable } from './FlexibleElementTable';
+import { FlexibleElementTable } from './StructureElementTable';
 import { useStructureElements } from '@/Hooks/UseStructureElements';
 import { useToast } from '@/Context/ToastContext';
 import type {
@@ -121,7 +122,7 @@ export const StructureElementsView: React.FC<Props> = ({ model }) => {
   return (
     <div>
       <PageHeader
-        title="Gestión de Estructura"
+        title="Gestiónaaas de Estructura"
         description={
           model.version ? `${model.nombre} · v${model.version}` : model.nombre
         }
@@ -174,7 +175,7 @@ export const StructureElementsView: React.FC<Props> = ({ model }) => {
             ? 'Solo se puede eliminar si no tiene elementos hijos.'
             : undefined
         }
-        confirmLabel="Eliminar"
+        confirmLabel="Sí, eliminar"
         cancelLabel="Cancelar"
         variant="danger"
         isLoading={deleteModal.loading}

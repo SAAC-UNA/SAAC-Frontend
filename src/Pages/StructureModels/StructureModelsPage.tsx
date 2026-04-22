@@ -1,4 +1,5 @@
 /**
+ * ! Esta página no pertenece a Modelos de acreditación, ni flexible ni tradicional
  * StructureModelsPage - Página de gestión de modelos de acreditación.
  *
  * Vista "modelos": tarjetas de cada modelo (tradicional + flexibles).
@@ -19,7 +20,7 @@ import {
 } from "@/Components/Ui/Index";
 import { Modal } from "@/Components/Ui/Modals/Modal";
 import { SuccessModal } from "@/Components/Ui/Modals/SuccessModal";
-import { StructureElementsView } from "./Components/StructureElementsView";
+import { StructureElementsView } from "../Structure/Components/StructureElementView";
 import { StructureModelFormModal } from "./Components/StructureModelFormModal";
 import { StructureModelDeleteModal } from "./Components/StructureModelDeleteModal";
 import { useStructureModels } from "@/Hooks/UseStructureModels";
