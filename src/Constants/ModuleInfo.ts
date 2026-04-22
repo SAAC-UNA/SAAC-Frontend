@@ -280,7 +280,7 @@ const MODULE_INFO: Record<string, ModuleInfo> = {
   accreditation_cycles: {
     title: "Ciclos de Acreditación",
     subtitle: "Acreditación por Carrera y Sede",
-    description: "Gestiona los ciclos de acreditación por carrera y sede.",
+    description: "Gestione los ciclos de acreditación por carrera y sede.",
     shortDescription: "Gestionar ciclos de acreditación",
   },
 
