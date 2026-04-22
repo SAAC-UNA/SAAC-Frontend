@@ -18,6 +18,7 @@ import { DataTable } from "@/Components/Ui/Table/DataTable";
 import type { DataTableColumn } from "@/Components/Ui/Table/DataTable";
 import { TableActionButton } from "@/Components/Ui/Buttons/TableActionButton";
 import { useFirstColumnConfig } from "@/Hooks/UseFirstColumnConfig";
+import { useOperationalContextSnapshot } from "@/Hooks/useOperationalContextSnapshot";
 import { fetchReports } from "@/Services/AccreditationReportService";
 import type { AccreditationReportApi } from "@/Types/AccreditationReportTypes";
 
@@ -375,15 +376,19 @@ export const AccreditationReportPublicPage: React.FC = () => {
   const moduleInfo = getModuleInfo("accreditation_report_public");
   const navigate = useNavigate();
   const { canAccess } = useAuth();
+  const { careerCampusId } = useOperationalContextSnapshot();
   const canViewAdmin = canAccess({ requireAnyPermissions: REPORTS_ACCESS_PERMISSIONS });
   const [activeTab, setActiveTab] = useState<Tab>("Resolución SINAES");
   const [historial, setHistorial] = useState<Resolucion[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    fetchReports()
+    setIsLoading(true);
+    fetchReports(careerCampusId ? { carrera_campus_id: careerCampusId } : {})
       .then((res) => setHistorial(res.data.map(mapApiToResolucion)))
-      .catch(() => {/* errores silenciados en la página pública */});
-  }, []);
+      .catch(() => {/* errores silenciados en la página pública */})
+      .finally(() => setIsLoading(false));
+  }, [careerCampusId]);
 
   const resolucionActiva = historial.find((r) => r.esta_vigente) ?? null;
   const isAcreditada = resolucionActiva?.esta_acreditada ?? false;
@@ -541,7 +546,7 @@ export const AccreditationReportPublicPage: React.FC = () => {
       )}
 
       {/* Sin resolución publicada */}
-      {!resolucionActiva && (
+      {!isLoading && !resolucionActiva && (
         <div className="flex items-center gap-3 p-4 bg-gris-fondo border border-gris-claro rounded-xl mb-6">
           <SystemIcons.interface.informationCircle className={cn(ICON_SIZES.md, "text-gris-una shrink-0")} />
           <p className={cn("text-gris-una", TYPOGRAPHY.table.cell)}>
@@ -579,7 +584,7 @@ export const AccreditationReportPublicPage: React.FC = () => {
               data={historial as ResolucionRow[]}
               columns={historialColumns}
               searchable={false}
-              emptyMessage="Sin resoluciones registradas."
+              emptyMessage={isLoading ? "Cargando resoluciones..." : "Sin resoluciones registradas."}
               unstyled
             />
           </Card>

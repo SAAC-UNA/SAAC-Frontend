@@ -32,6 +32,7 @@ import type {
 } from "@/Types/StructureModelTypes";
 import { cn } from "@/Utils/ClassNames";
 import { TYPOGRAPHY } from "@/Constants/Typography";
+import { getModuleInfo } from "@/Constants/ModuleInfo";
 
 const StructureModelsPage: React.FC = () => {
   const { showToast } = useToast();
@@ -67,6 +68,8 @@ const StructureModelsPage: React.FC = () => {
     model: StructureModel | null;
     loading: boolean;
   }>({ isOpen: false, model: null, loading: false });
+
+  const moduleInfo = getModuleInfo("accreditation_models");
 
   // ── Handlers ──────────────────────────────────────────────────────────────
 
@@ -140,8 +143,8 @@ const StructureModelsPage: React.FC = () => {
   return (
     <ScreenContainer>
       <PageHeader
-        title="Modelos de Acreditación"
-        description="Gestiona los modelos de estructura que definen cómo se organiza el proceso de acreditación."
+        title={moduleInfo.title}
+        description={moduleInfo.description}
         breadcrumbMode="none"
         headerExtra={
           <Tooltip>

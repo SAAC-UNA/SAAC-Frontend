@@ -48,6 +48,17 @@ export interface PublishReportPayload {
   observaciones?: string;
 }
 
+// ─── Payload para editar ──────────────────────────────────────────────────────
+
+export interface UpdateReportPayload {
+  archivo?: File;              // PDF de reemplazo (opcional)
+  numero_resolucion?: string;
+  vigencia_desde?: string;     // Y-m-d
+  vigencia_hasta?: string;     // Y-m-d
+  esta_acreditada?: boolean;
+  observaciones?: string | null;
+}
+
 // ─── Filtros de listado público ───────────────────────────────────────────────
 
 export interface ListReportsParams {
@@ -55,4 +66,5 @@ export interface ListReportsParams {
   sede_id?: number;
   carrera_campus_id?: number;
   per_page?: number;
+  include_unpublished?: boolean;
 }

@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useEffect, useCallback } from "react";
+import React, { useState, useMemo, useEffect, useCallback, useRef } from "react";
 import { ScreenContainer, PageHeader, Tooltip, TooltipTrigger, TooltipContent } from "@/Components/Ui/Index";
 import { StatusBadge } from "@/Components/Ui/Feedback/StatusBadge";
 import { Button } from "@/Components/Ui/Buttons/Button";
@@ -28,7 +28,7 @@ import { DatePicker } from "@/Components/Ui/Calendar/DatePicker";
 import { RadioGroupCards } from "@/Components/Ui/Forms/RadioGroupCards";
 import type { RadioCardOption } from "@/Components/Ui/Forms/RadioGroupCards";
 import { useOperationalContextSnapshot } from "@/Hooks/useOperationalContextSnapshot";
-import { fetchReports, publishReport, unpublishReport } from "@/Services/AccreditationReportService";
+import { fetchAdminReports, fetchReportByCycle, publishReport, unpublishReport, updateReport, deleteReport } from "@/Services/AccreditationReportService";
 import type { AccreditationReportApi } from "@/Types/AccreditationReportTypes";
 
 // ─── Tipos ─────────────────────────────────────────────────────────────────
@@ -176,7 +176,7 @@ const InformeModal: React.FC<InformeModalProps> = ({ isOpen, onClose, initial, o
             Cancelar
           </Button>
           <Button variant="primary" disabled={!isCompleto} onClick={() => onSave(form)}>
-            {isEditing ? "Guardar cambios" : "Publicar"}
+            {isEditing ? "Guardar" : "Publicar"}
           </Button>
         </>
       }
@@ -263,33 +263,49 @@ interface ResolucionModalProps {
   onClose: () => void;
   onSave: (data: ResolucionFormData) => void;
   isLoading?: boolean;
+  initial?: Resolucion | null;
 }
 
-const ResolucionModal: React.FC<ResolucionModalProps> = ({ isOpen, onClose, onSave, isLoading }) => {
+const ResolucionModal: React.FC<ResolucionModalProps> = ({ isOpen, onClose, onSave, isLoading, initial }) => {
   const [form, setForm] = useState<ResolucionFormData>(EMPTY_RESOLUCION_FORM);
+  const isEditing = initial != null;
 
   useEffect(() => {
-    if (isOpen) setForm(EMPTY_RESOLUCION_FORM);
-  }, [isOpen]);
+    if (isOpen) {
+      setForm(
+        initial
+          ? {
+              numero_resolucion: initial.numero_resolucion,
+              vigencia_inicio: initial.vigencia_inicio,
+              vigencia_fin: initial.vigencia_fin,
+              esta_acreditada: initial.esta_acreditada,
+              observaciones: initial.observaciones ?? "",
+              archivo: null,
+            }
+          : EMPTY_RESOLUCION_FORM
+      );
+    }
+  }, [isOpen, initial]);
 
   const archivoProgress: FileUploadProgressItem[] = useMemo(
     () => (form.archivo ? [{ file: form.archivo, status: "pending" as const, progress: 0 }] : []),
     [form.archivo],
   );
 
-  const isCompleto =
-    form.numero_resolucion.trim() !== "" &&
-    form.vigencia_inicio !== "" &&
-    form.vigencia_fin !== "" &&
-    form.archivo !== null;
+  const isCompleto = isEditing
+    ? form.numero_resolucion.trim() !== "" && form.vigencia_inicio !== "" && form.vigencia_fin !== ""
+    : form.numero_resolucion.trim() !== "" &&
+      form.vigencia_inicio !== "" &&
+      form.vigencia_fin !== "" &&
+      form.archivo !== null;
 
   return (
     <Modal
       isOpen={isOpen}
       onClose={onClose}
-      title="Nueva resolución"
+      title={isEditing ? "Editar resolución" : "Nueva resolución"}
       subtitle="Resolución SINAES"
-      variant="success"
+      variant={isEditing ? "info" : "success"}
       size="lg"
       footerButtons={
         <>
@@ -297,7 +313,7 @@ const ResolucionModal: React.FC<ResolucionModalProps> = ({ isOpen, onClose, onSa
             Cancelar
           </Button>
           <Button variant="primary" disabled={!isCompleto || isLoading} isLoading={isLoading} onClick={() => onSave(form)}>
-            Publicar
+            {isEditing ? "Guardar" : "Publicar"}
           </Button>
         </>
       }
@@ -363,6 +379,11 @@ const ResolucionModal: React.FC<ResolucionModalProps> = ({ isOpen, onClose, onSa
             maxFiles={1}
             hint="Solo PDF oficial · Máx. 20 MB"
           />
+          {isEditing && !form.archivo && (
+            <p className={cn("text-gris-una mt-2", TYPOGRAPHY.table.helper)}>
+              Archivo actual: <span className="font-medium text-negro-una-2">{initial?.archivo.nombre_original}</span>. Deja el campo vacío para conservarlo.
+            </p>
+          )}
           {archivoProgress.length > 0 && (
             <FileUploadProgress
               files={archivoProgress}
@@ -381,22 +402,16 @@ interface DespublicarModalProps {
   isOpen: boolean;
   onClose: () => void;
   resolucion: Resolucion | null;
-  onConfirm: (motivo: string) => void;
+  onConfirm: () => void;
   isLoading?: boolean;
 }
 
 const DespublicarModal: React.FC<DespublicarModalProps> = ({ isOpen, onClose, resolucion, onConfirm, isLoading }) => {
-  const [motivo, setMotivo] = useState("");
-
-  useEffect(() => {
-    if (isOpen) setMotivo("");
-  }, [isOpen]);
-
   return (
     <Modal
       isOpen={isOpen}
       onClose={onClose}
-      title="Despublicar resolución"
+      title="Ocultar resolución"
       subtitle={resolucion ? `Nº ${resolucion.numero_resolucion}` : undefined}
       variant="warning"
       size="md"
@@ -405,29 +420,24 @@ const DespublicarModal: React.FC<DespublicarModalProps> = ({ isOpen, onClose, re
           <Button variant="outline" onClick={onClose} disabled={isLoading}>
             Cancelar
           </Button>
-          <Button variant="warning" isLoading={isLoading} onClick={() => onConfirm(motivo)}>
-            Sí, despublicar
+          <Button variant="warning" isLoading={isLoading} onClick={onConfirm}>
+            Sí, ocultar
           </Button>
         </>
       }
     >
       <div className="space-y-4">
+        <p className={cn("text-negro-una-2", TYPOGRAPHY.body)}>
+          ¿Está seguro que desea ocultar esta resolución?
+        </p>
         {resolucion?.esta_vigente && (
           <div className="flex items-start gap-2 p-3 bg-warning-ring/30 border border-warning/40 rounded-lg">
             <SystemIcons.interface.informationCircle className={cn(ICON_SIZES.sm, "text-warning-dark shrink-0 mt-0.5")} />
             <p className={cn("text-warning-dark", TYPOGRAPHY.table.helper)}>
-              Esta es la resolución actualmente vigente. Al despublicarla la carrera quedará sin resolución activa.
+              Esta es la resolución actualmente vigente. Al ocultarla la carrera quedará sin resolución activa.
             </p>
           </div>
         )}
-        <Textarea
-          label="Motivo (opcional)"
-          placeholder="Ej: Se detectó un error en la resolución indicada."
-          value={motivo}
-          onChange={(e) => setMotivo(e.target.value)}
-          maxLength={500}
-          rows={3}
-        />
       </div>
     </Modal>
   );
@@ -444,30 +454,65 @@ export const AccreditationReportAdminPage: React.FC = () => {
   const moduleInfo = getModuleInfo("accreditation_report_admin");
   const [activeTab, setActiveTab] = useState<Tab>("Resolución SINAES");
   const { cycleId, careerCampusId } = useOperationalContextSnapshot();
+  const historialErrorToastShownRef = useRef(false);
 
   // ─ Estado historial de resoluciones ─
   const [historial, setHistorial] = useState<Resolucion[]>([]);
   const [isLoadingHistorial, setIsLoadingHistorial] = useState(false);
   const [isSavingResolucion, setIsSavingResolucion] = useState(false);
   const [isDespublicando, setIsDespublicando] = useState(false);
+  const [selectedCycleHasReport, setSelectedCycleHasReport] = useState(false);
 
   const loadHistorial = useCallback(async () => {
+    if (!careerCampusId) {
+      setHistorial([]);
+      setIsLoadingHistorial(false);
+      historialErrorToastShownRef.current = false;
+      return;
+    }
+
     setIsLoadingHistorial(true);
     try {
-      const res = await fetchReports(
-        careerCampusId ? { carrera_campus_id: careerCampusId } : {}
+      const res = await fetchAdminReports(
+        { carrera_campus_id: careerCampusId, include_unpublished: true }
       );
       setHistorial(res.data.map(mapApiToResolucion));
+      historialErrorToastShownRef.current = false;
     } catch {
-      showToast({ type: "error", title: "Error", message: "No se pudo cargar el historial de resoluciones." });
+      if (!historialErrorToastShownRef.current) {
+        showToast({ type: "error", title: "Error", message: "No se pudo cargar el historial de resoluciones." });
+        historialErrorToastShownRef.current = true;
+      }
     } finally {
       setIsLoadingHistorial(false);
     }
   }, [careerCampusId, showToast]);
 
+  const loadSelectedCycleReport = useCallback(async () => {
+    if (!cycleId) {
+      setSelectedCycleHasReport(false);
+      return;
+    }
+
+    try {
+      const report = await fetchReportByCycle(cycleId);
+      setSelectedCycleHasReport(report !== null);
+    } catch {
+      setSelectedCycleHasReport(false);
+    }
+  }, [cycleId]);
+
+  useEffect(() => {
+    historialErrorToastShownRef.current = false;
+  }, [careerCampusId]);
+
   useEffect(() => {
     loadHistorial();
   }, [loadHistorial]);
+
+  useEffect(() => {
+    void loadSelectedCycleReport();
+  }, [loadSelectedCycleReport]);
 
   // ─ Estado informe final ─
   const [versiones, setVersiones] = useState<VersionInforme[]>(MOCK_VERSIONES_INFORME);
@@ -477,7 +522,53 @@ export const AccreditationReportAdminPage: React.FC = () => {
 
   // ─ Estado modales de resolución ─
   const [showResolucionModal, setShowResolucionModal] = useState(false);
+  const [editingResolucion, setEditingResolucion] = useState<Resolucion | null>(null);
+  const [deletingResolucion, setDeletingResolucion] = useState<Resolucion | null>(null);
+  const [isEditingResolucion, setIsEditingResolucion] = useState(false);
+  const [isDeletingResolucion, setIsDeletingResolucion] = useState(false);
   const [despublicandoResolucion, setDespublicandoResolucion] = useState<Resolucion | null>(null);
+
+  const handleEditResolucion = async (data: ResolucionFormData) => {
+    if (!editingResolucion) return;
+    setIsEditingResolucion(true);
+    try {
+      await updateReport(Number(editingResolucion.id), {
+        archivo: data.archivo ?? undefined,
+        numero_resolucion: data.numero_resolucion,
+        vigencia_desde: data.vigencia_inicio,
+        vigencia_hasta: data.vigencia_fin,
+        esta_acreditada: data.esta_acreditada,
+        observaciones: data.observaciones || undefined,
+      });
+      showToast({ type: "success", title: "Resolución actualizada", message: `La resolución Nº ${data.numero_resolucion} fue actualizada correctamente.` });
+      setEditingResolucion(null);
+      await loadHistorial();
+    } catch (err) {
+      const response = (err as { response?: { status?: number; data?: { message?: string; errors?: Record<string, string[]> } } })?.response;
+      const status = response?.status ?? 0;
+      const detail = status === 422
+        ? (response?.data?.errors ? Object.values(response.data.errors).flat().join(' ') : response?.data?.message ?? "Verificá los datos.")
+        : "No se pudo actualizar la resolución. Inténtelo de nuevo.";
+      showToast({ type: "error", title: "Error al editar", message: detail });
+    } finally {
+      setIsEditingResolucion(false);
+    }
+  };
+
+  const handleDeleteResolucion = async () => {
+    if (!deletingResolucion) return;
+    setIsDeletingResolucion(true);
+    try {
+      await deleteReport(Number(deletingResolucion.id));
+      showToast({ type: "success", title: "Resolución eliminada", message: `La resolución Nº ${deletingResolucion.numero_resolucion} fue eliminada del sistema.` });
+      setDeletingResolucion(null);
+      await loadHistorial();
+    } catch {
+      showToast({ type: "error", title: "Error al eliminar", message: "No se pudo eliminar la resolución." });
+    } finally {
+      setIsDeletingResolucion(false);
+    }
+  };
 
   const handleSaveResolucion = async (data: ResolucionFormData) => {
     if (!cycleId || !data.archivo) return;
@@ -494,23 +585,35 @@ export const AccreditationReportAdminPage: React.FC = () => {
       showToast({ type: "success", title: "Resolución publicada", message: `La resolución Nº ${data.numero_resolucion} fue publicada correctamente.` });
       setShowResolucionModal(false);
       await loadHistorial();
-    } catch {
-      showToast({ type: "error", title: "Error al publicar", message: "No se pudo publicar la resolución. Verificá los datos e intentá de nuevo." });
+    } catch (err) {
+      const response = (err as { response?: { status?: number; data?: { message?: string; errors?: Record<string, string[]> } } })?.response;
+      const status = response?.status ?? 0;
+      let detail: string;
+      if (status === 422 && response?.data?.errors) {
+        detail = Object.values(response.data.errors).flat().join(' ');
+      } else if (status === 422 && response?.data?.message) {
+        detail = response.data.message;
+      } else if (status === 404) {
+        detail = "No se encontró el ciclo de acreditación. Verifique que el contexto operacional esté configurado correctamente.";
+      } else {
+        detail = "No se pudo publicar la resolución. Inténtelo de nuevo más tarde.";
+      }
+      showToast({ type: "error", title: "Error al publicar", message: detail });
     } finally {
       setIsSavingResolucion(false);
     }
   };
 
-  const handleDespublicarResolucion = async (motivo: string) => {
+  const handleDespublicarResolucion = async () => {
     if (!despublicandoResolucion) return;
     setIsDespublicando(true);
     try {
-      await unpublishReport(Number(despublicandoResolucion.id), motivo || undefined);
-      showToast({ type: "success", title: "Resolución despublicada", message: `La resolución Nº ${despublicandoResolucion.numero_resolucion} fue despublicada.` });
+      await unpublishReport(Number(despublicandoResolucion.id));
+      showToast({ type: "success", title: "Resolución ocultada", message: `La resolución Nº ${despublicandoResolucion.numero_resolucion} fue ocultada.` });
       setDespublicandoResolucion(null);
       await loadHistorial();
     } catch {
-      showToast({ type: "error", title: "Error al despublicar", message: "No se pudo despublicar la resolución." });
+      showToast({ type: "error", title: "Error al ocultar", message: "No se pudo ocultar la resolución." });
     } finally {
       setIsDespublicando(false);
     }
@@ -572,6 +675,13 @@ export const AccreditationReportAdminPage: React.FC = () => {
   };
 
   const firstColumn = useFirstColumnConfig();
+  const createResolutionDisabled = !cycleId || selectedCycleHasReport;
+  const createResolutionTooltip = !cycleId
+    ? "Seleccione un ciclo de acreditación para publicar una resolución"
+    : selectedCycleHasReport
+      ? "El ciclo seleccionado ya tiene una resolución registrada. Ocultarla no libera el ciclo; para continuar, edítela o elimínela."
+      : "Publicar nueva resolución SINAES";
+
   // ─ Columnas historial ─────────────────────────────────────────────────────
   const historialColumns = useMemo<DataTableColumn<ResolucionRow>[]>(() => [
     {
@@ -633,8 +743,12 @@ export const AccreditationReportAdminPage: React.FC = () => {
       width: TABLE_COLUMN_WIDTHS.status,
       render: (_, r) => (
         <StatusBadge
-          label={r.esta_vigente ? "Vigente" : "Archivada"}
-          colorClasses={r.esta_vigente ? BADGE_COLORS.verde.colorClasses : BADGE_COLORS.gris.colorClasses}
+          label={r.estado === "publicado" ? "Publicado" : "Oculto"}
+          colorClasses={
+            r.estado === "publicado"
+              ? BADGE_COLORS.verde.colorClasses
+              : BADGE_COLORS.warning.colorClasses
+          }
         />
       ),
     },
@@ -658,9 +772,19 @@ export const AccreditationReportAdminPage: React.FC = () => {
             onClick={() => {}}
           />
           <TableActionButton
-            action="delete"
-            tooltip="Despublicar"
+            action="edit"
+            tooltip="Editar"
+            onClick={() => setEditingResolucion(r as Resolucion)}
+          />
+          <TableActionButton
+            action="power"
+            tooltip="Ocultar"
             onClick={() => setDespublicandoResolucion(r as Resolucion)}
+          />
+          <TableActionButton
+            action="delete"
+            tooltip="Eliminar"
+            onClick={() => setDeletingResolucion(r as Resolucion)}
           />
         </div>
       ),
@@ -753,15 +877,20 @@ export const AccreditationReportAdminPage: React.FC = () => {
             {activeTab === "Resolución SINAES" ? (
               <Tooltip>
                 <TooltipTrigger asChild>
-                  <Button
-                    variant="secondary"
-                    size="sm"
-                  onClick={() => setShowResolucionModal(true)}
-                  >
-                    Crear
-                  </Button>
+                  <span tabIndex={createResolutionDisabled ? 0 : undefined}>
+                    <Button
+                      variant="secondary"
+                      size="sm"
+                      disabled={createResolutionDisabled}
+                      onClick={() => setShowResolucionModal(true)}
+                    >
+                      Crear
+                    </Button>
+                  </span>
                 </TooltipTrigger>
-                <TooltipContent side="bottom">Publicar nueva resolución SINAES</TooltipContent>
+                <TooltipContent side="left">
+                  {createResolutionTooltip}
+                </TooltipContent>
               </Tooltip>
             ) : (
               <Tooltip>
@@ -817,16 +946,30 @@ export const AccreditationReportAdminPage: React.FC = () => {
       {activeTab === "Resolución SINAES" && (
         <div className="space-y-6">
 
+          {cycleId && selectedCycleHasReport && (
+            <div className="rounded-lg border border-warning-ring bg-warning-light px-4 py-3">
+              <p className={cn("text-warning-dark", TYPOGRAPHY.table.helper)}>
+                El ciclo seleccionado ya tiene una resolución registrada. Ocultarla solo la quita de la vista pública; para continuar, edite o elimine la existente.
+              </p>
+            </div>
+          )}
+
           {/* Historial de resoluciones */}
           <Card>
             <p className={cn("uppercase tracking-wider font-semibold text-gris-una px-4 pt-4 mb-4", TYPOGRAPHY.table.helper)}>
-              Historial de resoluciones publicadas
+              Historial de resoluciones registradas
             </p>
             <DataTable<ResolucionRow>
               data={historial as ResolucionRow[]}
               columns={historialColumns}
               searchable={false}
-              emptyMessage={isLoadingHistorial ? "Cargando resoluciones..." : "Sin resoluciones registradas."}
+              emptyMessage={
+                !careerCampusId
+                  ? "Seleccione una carrera y sede para ver el historial."
+                  : isLoadingHistorial
+                    ? "Cargando resoluciones..."
+                    : "Sin resoluciones registradas."
+              }
               unstyled
             />
           </Card>
@@ -861,7 +1004,29 @@ export const AccreditationReportAdminPage: React.FC = () => {
         isLoading={isSavingResolucion}
       />
 
-      {/* ──────────── Modal: Despublicar Resolución ──────────── */}
+      {/* ──────────── Modal: Editar Resolución ──────────── */}
+      <ResolucionModal
+        isOpen={editingResolucion !== null}
+        onClose={() => setEditingResolucion(null)}
+        onSave={handleEditResolucion}
+        isLoading={isEditingResolucion}
+        initial={editingResolucion}
+      />
+
+      {/* ──────────── Modal: Eliminar Resolución ──────────── */}
+      <DeleteConfirmationModal
+        isOpen={deletingResolucion !== null}
+        onClose={() => setDeletingResolucion(null)}
+        onConfirm={handleDeleteResolucion}
+        title="Eliminar resolución"
+        itemName={deletingResolucion?.numero_resolucion ?? ""}
+        confirmLabel="Sí, eliminar"
+        variant="danger"
+        isLoading={isDeletingResolucion}
+        footerMeta="Esta acción eliminará permanentemente la resolución y su PDF del sistema."
+      />
+
+      {/* ──────────── Modal: Ocultar Resolución ──────────── */}
       <DespublicarModal
         isOpen={despublicandoResolucion !== null}
         onClose={() => setDespublicandoResolucion(null)}

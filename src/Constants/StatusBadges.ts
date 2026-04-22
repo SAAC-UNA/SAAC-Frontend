@@ -106,7 +106,7 @@ export const AUDIT_ACTION_BADGE: Record<string, StatusBadgeConfig> = {
   notificar_fallido: { label: 'Notif. fallida', colorClasses: BADGE_COLORS.rose.colorClasses },
   retroalimentar:    { label: 'Retroalimentar', colorClasses: BADGE_COLORS.morado.colorClasses },
   publicar:          { label: 'Publicar', colorClasses: BADGE_COLORS.verde.colorClasses },
-  despublicar:       { label: 'Despublicar', colorClasses: BADGE_COLORS.warning.colorClasses },
+  despublicar:       { label: 'Ocultar', colorClasses: BADGE_COLORS.warning.colorClasses },
 };
 
 /**

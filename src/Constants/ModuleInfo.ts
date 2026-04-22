@@ -275,6 +275,44 @@ const MODULE_INFO: Record<string, ModuleInfo> = {
       "Consulte el estado de acreditación, el informe final publicado y el historial de resoluciones",
     shortDescription: "Ver informe de acreditación",
   },
+
+  // Ciclos de Acreditación
+  accreditation_cycles: {
+    title: "Ciclos de Acreditación",
+    subtitle: "Acreditación por Carrera y Sede",
+    description: "Gestiona los ciclos de acreditación por carrera y sede.",
+    shortDescription: "Gestionar ciclos de acreditación",
+  },
+
+  // Modelos de Acreditación
+  accreditation_models: {
+    title: "Modelos de Acreditación",
+    subtitle: "Modelos de Estructura",
+    description: "Gestione los modelos de estructura que definen cómo se organiza el proceso de acreditación.",
+    shortDescription: "Gestionar modelos de acreditación",
+  },
+
+  // Compromisos de Mejora — vistas específicas
+  improvement_commitments_list: {
+    title: "Compromisos de Mejora",
+    subtitle: "Listado de Compromisos",
+    description: "Lista los compromisos de mejora registrados en el sistema.",
+    shortDescription: "Ver compromisos de mejora",
+  },
+
+  improvement_commitments_create: {
+    title: "Configurar Compromiso de Mejora",
+    subtitle: "Nueva Configuración",
+    description: "Seleccione criterios y configure las asignaciones del compromiso de mejora.",
+    shortDescription: "Configurar compromiso de mejora",
+  },
+
+  improvement_commitments_detail: {
+    title: "Detalle del Compromiso",
+    subtitle: "Información del Compromiso",
+    description: "Revise la información general, selecciones y evidencias del compromiso.",
+    shortDescription: "Ver detalle del compromiso",
+  },
 };
 
 /**

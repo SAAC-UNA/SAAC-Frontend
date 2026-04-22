@@ -10,6 +10,7 @@ import {
   StatusBadge,
 } from "@/Components/Ui/Index";
 import { improvementCommitmentService } from "@/Services/ImprovementCommitmentService";
+import { getModuleInfo } from "@/Constants/ModuleInfo";
 import type { CompromisoMejora } from "@/Types/ImprovementCommitmentTypes";
 
 const formatDate = (value?: string) => {
@@ -58,6 +59,7 @@ const getStatusBadge = (estado?: string, isOverdue?: boolean) => {
 const CompromisoDetalle: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
+  const moduleInfo = getModuleInfo("improvement_commitments_detail");
   const id = (location.state as { id?: number } | null)?.id;
 
   if (!id) {
@@ -110,8 +112,8 @@ const CompromisoDetalle: React.FC = () => {
   return (
     <ScreenContainer>
       <PageHeader
-        title="Detalle del compromiso"
-        description="Información general, selecciones y evidencias asociadas."
+        title={moduleInfo.title}
+        description={moduleInfo.description}
         breadcrumbMode="cycle-only"
         headerExtra={
           <Button
