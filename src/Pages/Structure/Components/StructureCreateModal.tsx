@@ -47,6 +47,13 @@ interface StructureCreateModalProps {
   onSuccess?: () => void;
 }
 
+const resolveErrorTitle = (error: unknown, fallback: string): string => {
+  if (error instanceof Error && error.message.trim().length > 0) {
+    return error.message;
+  }
+  return fallback;
+};
+
 export const StructureCreateModal: React.FC<StructureCreateModalProps> = ({
   isOpen,
   onClose,
@@ -240,8 +247,7 @@ export const StructureCreateModal: React.FC<StructureCreateModalProps> = ({
     } catch (error) {
       showToast({
         type: 'error',
-        title: 'Error al crear elemento',
-        message: error instanceof Error ? error.message : 'No se pudo crear el elemento'
+        title: resolveErrorTitle(error, 'Error al guardar el elemento'),
       });
       setConfirmOpen(false);
     }
@@ -302,7 +308,7 @@ export const StructureCreateModal: React.FC<StructureCreateModalProps> = ({
               value={formData.nomenclature}
               onChange={(e) => handleFieldChange('nomenclature', e.target.value)}
               error={errors.nomenclature}
-              placeholder="Ej: UNA, SEDE-01, FAC-ING"
+              placeholder="Ej: P1, C2.1, FAC-ING"
               maxLength={VALIDATION_RULES.NOMENCLATURE_MAX_LENGTH}
               characterCount
               size="sm"
@@ -318,7 +324,7 @@ export const StructureCreateModal: React.FC<StructureCreateModalProps> = ({
               value={formData.name}
               onChange={(e) => handleFieldChange('name', e.target.value)}
               error={errors.name}
-              placeholder="Nombre descriptivo del elemento"
+              placeholder="Ej: Gestión Institucional"
               maxLength={VALIDATION_RULES.NAME_MAX_LENGTH}
               characterCount
               size="sm"
@@ -359,10 +365,9 @@ export const StructureCreateModal: React.FC<StructureCreateModalProps> = ({
 
       <SuccessModal
         isOpen={successState.isOpen}
-        title="¡Elemento creado exitosamente!"
-        message={`El elemento "${truncateText(successState.elementName)}" ha sido creado correctamente.`}
+        title="Elemento creado"
+        message={`El elemento "${truncateText(successState.elementName)}" fue creado exitosamente.`}
         onClose={handleSuccessClose}
-        autoClose={true}
       />
     </>
   );

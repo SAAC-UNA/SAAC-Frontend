@@ -267,6 +267,7 @@ export const StructureElementFormModal: React.FC<Props> = ({
             value={form.descripcion}
             onChange={e => setForm(p => ({ ...p, descripcion: e.target.value }))}
             error={errors.descripcion}
+            placeholder="Descripción detallada del elemento"
             maxLength={500}
             characterCount
             rows={3}
@@ -296,11 +297,11 @@ export const StructureElementFormModal: React.FC<Props> = ({
 
       <SuccessModal
         isOpen={success.isOpen}
-        title={isEditing ? 'Elemento actualizado' : 'Elemento agregado'}
+        title={isEditing ? 'Elemento actualizado' : 'Elemento creado'}
         message={
           isEditing
             ? `El elemento "${success.name}" fue actualizado exitosamente.`
-            : `El elemento "${success.name}" fue agregado exitosamente.`
+            : `El elemento "${success.name}" fue creado exitosamente.`
         }
         onClose={handleSuccessClose}
       />

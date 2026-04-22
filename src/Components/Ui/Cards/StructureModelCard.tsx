@@ -157,7 +157,7 @@ export const StructureModelCard: React.FC<StructureModelCardProps> = ({
         navigate(
           isTradicional
             ? `${ROUTES.STRUCTURE}?modelo=0`
-            : `${ROUTES.STRUCTURE}?modelo=${model.modelo_estructura_id}`,
+            : `${ROUTES.STRUCTURE_MODELS}?modelo=${model.modelo_estructura_id}`,
         ),
     },
     {

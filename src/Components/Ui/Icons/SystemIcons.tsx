@@ -746,8 +746,6 @@ export const SystemIcons = {
 
     informe: ({ className, size, color }: IconProps) => (
       <svg
-        width={size}
-        height={size}
         fill={color || "currentColor"}
         viewBox="0 0 24 24"
         xmlns="http://www.w3.org/2000/svg"
@@ -759,8 +757,6 @@ export const SystemIcons = {
 
     medal: ({ className, size, color }: IconProps) => (
       <svg
-        width={size}
-        height={size}
         fill={color || "currentColor"}
         viewBox="0 0 24 24"
         xmlns="http://www.w3.org/2000/svg"
@@ -917,8 +913,6 @@ export const SystemIcons = {
 
     ShieldSlash: ({ className, size, color }: IconProps) => (
       <svg
-        width={size}
-        height={size}
         fill={color || "currentColor"}
         viewBox="0 0 24 24"
         xmlns="http://www.w3.org/2000/svg"

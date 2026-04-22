@@ -1,40 +1,55 @@
 /**
- * StructureList - Página principal de listado de elementos de estructura
+ * StructureList - Página principal de elementos de estructura tradicional.
  *
- * Esta página coordina el componente StructureTable y maneja la navegación
- * entre las diferentes acciones (crear, editar, eliminar).
+ * Esta página maneja exclusivamente el dominio tradicional.
+ * Si llega una query de modelo flexible (?modelo=<id>), redirige a
+ * la página de modelos de estructura.
  */
 
-import React, { useState, useEffect, useMemo } from "react";
-import { useSearchParams } from "react-router-dom";
+import React, { useEffect, useMemo, useState } from "react";
+import { useNavigate, useSearchParams } from "react-router-dom";
+import { ROUTES } from "@/Constants/ROUTES";
 import { StructureTable } from "./Components/StructureTable";
 import { StructureEditModal } from "./Components/StructureEditModal";
 import { StructureCreateModal } from "./Components/StructureCreateModal";
 import { ScreenContainer } from "@/Components/Ui/Layout/ScreenContainer";
 import { PageHeader } from "@/Components/Ui/Index";
+import { LoadingSpinner } from "@/Components/Ui/Feedback/Loading";
 import { Modal } from "@/Components/Ui/Modals/Modal";
 import { getModuleInfo } from "@/Constants/ModuleInfo";
 import type { StructureElement } from "@/Types/StructureTypes";
 import { useStructure } from "@/Hooks/UseStructure";
+import { useStructureModels } from "@/Hooks/UseStructureModels";
 import { DeleteConfirmationModal } from "@/Components/Ui/Modals/DeleteConfirmationModal";
 import { SuccessModal } from "@/Components/Ui/Modals/SuccessModal";
 import { SearchInput } from "@/Components/Ui/Forms/SearchInput";
 import { Button } from "@/Components/Ui/Buttons/Button";
 import { truncateText } from "@/Utils";
 import { useToast } from "@/Context/ToastContext";
-import { FlexibleElementTable } from "./Components/FlexibleElementTable";
-import { StructureElementFormModal } from "@/Pages/StructureModels/Components/StructureElementFormModal";
-import { useStructureModels } from "@/Hooks/UseStructureModels";
-import { useStructureElements } from "@/Hooks/UseStructureElements";
-import type {
-  FlexibleElement,
-  CreateFlexibleElementForm,
-  EditFlexibleElementForm,
-} from "@/Types/StructureModelTypes";
+
+const getFlexibleModelIdFromSearchParams = (
+  params: URLSearchParams,
+): number | null => {
+  const raw = params.get("modelo");
+  if (raw === null || raw === "0") return null;
+
+  const parsed = Number(raw);
+  return Number.isFinite(parsed) && parsed > 0 ? parsed : null;
+};
+
+const resolveErrorTitle = (error: unknown, fallback: string): string => {
+  if (error instanceof Error && error.message.trim().length > 0) {
+    return error.message;
+  }
+  return fallback;
+};
 
 const StructureList: React.FC = () => {
-  // Obtener información del módulo desde ModuleInfo
   const moduleInfo = getModuleInfo("structure_list");
+
+  const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const flexibleModelId = getFlexibleModelIdFromSearchParams(searchParams);
 
   const { showToast } = useToast();
 
@@ -47,50 +62,34 @@ const StructureList: React.FC = () => {
     treeData,
   } = useStructure();
 
-  // ── Selector de modelo ─────────────────────────────────────────────────────
   const { models } = useStructureModels();
-  const [searchParams] = useSearchParams();
 
-  const getModelFromSearchParams = (
-    params: URLSearchParams,
-  ): number | null => {
-    const urlRaw = params.get("modelo");
-    if (urlRaw === null) return null;
-    if (urlRaw === "0") return null;
+  const traditionalModelDescription = useMemo(() => {
+    const traditionalModel = models.find(
+      (model) => model.tipo === "tradicional",
+    );
 
-    const parsed = Number(urlRaw);
-    return Number.isFinite(parsed) && parsed > 0 ? parsed : null;
-  };
+    if (!traditionalModel) {
+      return "Modelo tradicional";
+    }
 
-  const initialModelId = (): number | null => {
-    return getModelFromSearchParams(searchParams);
-  };
+    return traditionalModel.version
+      ? `${traditionalModel.nombre} · v${traditionalModel.version}`
+      : traditionalModel.nombre;
+  }, [models]);
 
-  const [selectedModelId, setSelectedModelId] = useState<number | null>(
-    initialModelId,
-  );
-  const isFlexible = selectedModelId !== null;
-
-  const {
-    elements,
-    isLoading: elemLoading,
-    createElement,
-    updateElement: updateFlexElement,
-    deleteElement: deleteFlexElement,
-    toggleActive: toggleFlexActive,
-  } = useStructureElements(selectedModelId);
-
-  const selectedModel = useMemo(
-    () => models.find(m => m.modelo_estructura_id === selectedModelId) ?? null,
-    [models, selectedModelId]
-  );
-
-  // Cargar árbol al montar la página
   useEffect(() => {
     loadTree();
   }, [loadTree]);
 
-  // Estado para el modal de confirmación de eliminación
+  useEffect(() => {
+    if (flexibleModelId !== null) {
+      navigate(`${ROUTES.STRUCTURE_MODELS}?modelo=${flexibleModelId}`, {
+        replace: true,
+      });
+    }
+  }, [flexibleModelId, navigate]);
+
   const [deleteModalState, setDeleteModalState] = useState<{
     isOpen: boolean;
     element: StructureElement | null;
@@ -99,7 +98,6 @@ const StructureList: React.FC = () => {
     element: null,
   });
 
-  // Estado para el modal de confirmación de activar/desactivar
   const [toggleActiveModalState, setToggleActiveModalState] = useState<{
     isOpen: boolean;
     element: StructureElement | null;
@@ -118,43 +116,14 @@ const StructureList: React.FC = () => {
     action: "activate",
   });
 
-  // Estado para el modal de creación
   const [createModalOpen, setCreateModalOpen] = useState(false);
 
-  // Estado para el modal de edición
   const [editModalState, setEditModalState] = useState<{
     isOpen: boolean;
     element: StructureElement | null;
   }>({ isOpen: false, element: null });
 
-  // Estado para búsqueda
   const [searchQuery, setSearchQuery] = useState("");
-
-  // Sin dropdown visible, la ruta es la fuente de verdad
-  useEffect(() => {
-    const routeModelId = getModelFromSearchParams(searchParams);
-    if (routeModelId !== selectedModelId) {
-      setSelectedModelId(routeModelId);
-      setSearchQuery("");
-    }
-  }, [searchParams, selectedModelId]);
-
-  // ── Estados modales para modo flexible ────────────────────────────────────
-  const [flexFormModal, setFlexFormModal] = useState<{
-    isOpen: boolean;
-    element: FlexibleElement | null;
-  }>({ isOpen: false, element: null });
-
-  const [flexDeleteModal, setFlexDeleteModal] = useState<{
-    isOpen: boolean;
-    element: FlexibleElement | null;
-    loading: boolean;
-  }>({ isOpen: false, element: null, loading: false });
-
-  const [flexToggleModal, setFlexToggleModal] = useState<{
-    isOpen: boolean;
-    element: FlexibleElement | null;
-  }>({ isOpen: false, element: null });
 
   const handleEditElement = (element: StructureElement) => {
     setEditModalState({ isOpen: true, element });
@@ -168,7 +137,6 @@ const StructureList: React.FC = () => {
   };
 
   const handleToggleActive = async (element: StructureElement) => {
-    // Cargar los datos si están vacíos
     if (treeData.length === 0) {
       await loadTree();
     }
@@ -179,7 +147,6 @@ const StructureList: React.FC = () => {
     });
   };
 
-  // Verificar si un elemento tiene hijos buscando en todos los elementos
   const hasChildren = (element: StructureElement): boolean => {
     const flattenTree = (nodes: StructureElement[]): StructureElement[] => {
       return nodes.reduce((acc, node) => {
@@ -196,38 +163,34 @@ const StructureList: React.FC = () => {
   };
 
   const confirmDeleteElement = async () => {
-    if (deleteModalState.element) {
-      try {
-        const result = await deleteElement(
-          deleteModalState.element.type,
-          deleteModalState.element.id,
-        );
+    if (!deleteModalState.element) return;
 
-        if (result) {
-          const elementName =
-            deleteModalState.element.name ||
-            deleteModalState.element.nomenclature ||
-            "Elemento";
-          setDeleteModalState({ isOpen: false, element: null });
+    try {
+      const result = await deleteElement(
+        deleteModalState.element.type,
+        deleteModalState.element.id,
+      );
 
-          // Mostrar modal de éxito
-          setSuccessModalState({
-            isOpen: true,
-            elementName: elementName,
-            action: "delete",
-          });
-        }
-      } catch (error) {
-        showToast({
-          type: "error",
-          title: "Error al eliminar elemento",
-          message:
-            error instanceof Error
-              ? error.message
-              : "No se pudo eliminar el elemento",
-        });
-        setDeleteModalState({ isOpen: false, element: null });
-      }
+      if (!result) return;
+
+      const elementName =
+        deleteModalState.element.name ||
+        deleteModalState.element.nomenclature ||
+        "Elemento";
+
+      setDeleteModalState({ isOpen: false, element: null });
+
+      setSuccessModalState({
+        isOpen: true,
+        elementName,
+        action: "delete",
+      });
+    } catch (error) {
+      showToast({
+        type: "error",
+        title: resolveErrorTitle(error, "Error al eliminar el elemento"),
+      });
+      setDeleteModalState({ isOpen: false, element: null });
     }
   };
 
@@ -243,6 +206,7 @@ const StructureList: React.FC = () => {
 
     try {
       let changed = false;
+
       if (element.active) {
         changed = await deactivateElement(element.type, element.id);
       } else {
@@ -256,23 +220,17 @@ const StructureList: React.FC = () => {
 
       const elementName = element.name || element.nomenclature || "Elemento";
 
-      // Cerrar modal de confirmación
       setToggleActiveModalState({ isOpen: false, element: null });
 
-      // Mostrar modal de éxito
       setSuccessModalState({
         isOpen: true,
-        elementName: elementName,
-        action: action,
+        elementName,
+        action,
       });
     } catch (error) {
       showToast({
         type: "error",
-        title: "Error al cambiar estado",
-        message:
-          error instanceof Error
-            ? error.message
-            : "No se pudo cambiar el estado del elemento",
+        title: resolveErrorTitle(error, "Error al cambiar el estado"),
       });
       setToggleActiveModalState({ isOpen: false, element: null });
     }
@@ -280,65 +238,6 @@ const StructureList: React.FC = () => {
 
   const cancelToggleActive = () => {
     setToggleActiveModalState({ isOpen: false, element: null });
-  };
-
-  const handleCreateElement = () => {
-    setCreateModalOpen(true);
-  };
-
-  // ── Handlers modo flexible ─────────────────────────────────────────────────
-  const handleFlexEdit = (el: FlexibleElement) =>
-    setFlexFormModal({ isOpen: true, element: el });
-  const handleFlexDelete = (el: FlexibleElement) =>
-    setFlexDeleteModal({ isOpen: true, element: el, loading: false });
-  const handleFlexToggleActive = (el: FlexibleElement) =>
-    setFlexToggleModal({ isOpen: true, element: el });
-
-  const handleFlexFormConfirm = async (
-    form: CreateFlexibleElementForm | EditFlexibleElementForm,
-    id?: number,
-  ) => {
-    if (id !== undefined)
-      return updateFlexElement(id, form as EditFlexibleElementForm);
-    return createElement(form as CreateFlexibleElementForm);
-  };
-
-  const confirmFlexDelete = async () => {
-    if (!flexDeleteModal.element) return;
-    const elName = flexDeleteModal.element.tipo;
-    setFlexDeleteModal((p) => ({ ...p, loading: true }));
-    const result = await deleteFlexElement(flexDeleteModal.element.elemento_id);
-    setFlexDeleteModal({ isOpen: false, element: null, loading: false });
-    if (result.success) {
-      setSuccessModalState({
-        isOpen: true,
-        elementName: elName,
-        action: "delete",
-      });
-    } else {
-      showToast({
-        type: "error",
-        title: result.error ?? "Error al eliminar el elemento",
-      });
-    }
-  };
-
-  const confirmFlexToggle = async () => {
-    if (!flexToggleModal.element) return;
-    const el = flexToggleModal.element;
-    const action: "activate" | "deactivate" = el.activo
-      ? "deactivate"
-      : "activate";
-    const result = await toggleFlexActive(el.elemento_id, !el.activo);
-    setFlexToggleModal({ isOpen: false, element: null });
-    if (result.success) {
-      setSuccessModalState({ isOpen: true, elementName: el.tipo, action });
-    } else {
-      showToast({
-        type: "error",
-        title: result.error ?? "Error al cambiar el estado",
-      });
-    }
   };
 
   const closeSuccessModal = () => {
@@ -349,12 +248,20 @@ const StructureList: React.FC = () => {
     });
   };
 
+  if (flexibleModelId !== null) {
+    return (
+      <ScreenContainer>
+        <LoadingSpinner variant="loader" />
+      </ScreenContainer>
+    );
+  }
+
   return (
     <>
       <ScreenContainer>
         <PageHeader
           title={moduleInfo.title}
-          description={moduleInfo.description}
+          description={traditionalModelDescription}
           breadcrumbMode="none"
           headerExtra={
             <div className="flex flex-col sm:flex-row w-full gap-2 shrink-0 lg:w-auto items-end">
@@ -365,11 +272,7 @@ const StructureList: React.FC = () => {
                 className="w-full sm:w-72"
               />
               <Button
-                onClick={
-                  isFlexible
-                    ? () => setFlexFormModal({ isOpen: true, element: null })
-                    : handleCreateElement
-                }
+                onClick={() => setCreateModalOpen(true)}
                 variant="secondary"
               >
                 Crear
@@ -377,28 +280,17 @@ const StructureList: React.FC = () => {
             </div>
           }
         />
-        {isFlexible ? (
-          <FlexibleElementTable
-            elements={elements}
-            isLoading={elemLoading}
-            searchQuery={searchQuery}
-            onEdit={handleFlexEdit}
-            onDelete={handleFlexDelete}
-            onToggleActive={handleFlexToggleActive}
-          />
-        ) : (
-          <StructureTable
-            treeData={treeData}
-            isLoading={isLoading}
-            onEdit={handleEditElement}
-            onDelete={handleDeleteElement}
-            onToggleActive={handleToggleActive}
-            searchQuery={searchQuery}
-          />
-        )}
+
+        <StructureTable
+          treeData={treeData}
+          isLoading={isLoading}
+          onEdit={handleEditElement}
+          onDelete={handleDeleteElement}
+          onToggleActive={handleToggleActive}
+          searchQuery={searchQuery}
+        />
       </ScreenContainer>
 
-      {/* Modal de confirmación de eliminación*/}
       <DeleteConfirmationModal
         isOpen={deleteModalState.isOpen}
         onClose={cancelDeleteElement}
@@ -415,7 +307,6 @@ const StructureList: React.FC = () => {
         isLoading={isLoading}
       />
 
-      {/* Modal de confirmación para activar */}
       {toggleActiveModalState.element &&
         !toggleActiveModalState.element.active && (
           <Modal
@@ -451,7 +342,6 @@ const StructureList: React.FC = () => {
           </Modal>
         )}
 
-      {/* Modal de confirmación para inactivar */}
       {toggleActiveModalState.element &&
         toggleActiveModalState.element.active && (
           <Modal
@@ -487,7 +377,7 @@ const StructureList: React.FC = () => {
             </p>
           </Modal>
         )}
-      {/* Modal de creación */}
+
       <StructureCreateModal
         isOpen={createModalOpen}
         onClose={() => setCreateModalOpen(false)}
@@ -497,7 +387,6 @@ const StructureList: React.FC = () => {
         }}
       />
 
-      {/* Modal de edición */}
       <StructureEditModal
         isOpen={editModalState.isOpen}
         onClose={() => setEditModalState({ isOpen: false, element: null })}
@@ -508,7 +397,6 @@ const StructureList: React.FC = () => {
         }}
       />
 
-      {/* Modal de éxito (compartido entre modo tradicional y flexible) */}
       <SuccessModal
         isOpen={successModalState.isOpen}
         onClose={closeSuccessModal}
@@ -519,86 +407,14 @@ const StructureList: React.FC = () => {
               ? "Elemento inactivado"
               : "Elemento eliminado"
         }
-        message={`El elemento "${truncateText(successModalState.elementName)}" ha sido ${
+        message={`El elemento "${truncateText(successModalState.elementName)}" fue ${
           successModalState.action === "activate"
             ? "activado"
             : successModalState.action === "deactivate"
               ? "inactivado"
               : "eliminado"
-        } correctamente.`}
+        } exitosamente.`}
       />
-
-      {/* ── Modales modo flexible ───────────────────────────────────────────── */}
-
-      {/* Modal crear/editar elemento flexible */}
-      {isFlexible && selectedModelId && (
-        <StructureElementFormModal
-          isOpen={flexFormModal.isOpen}
-          onClose={() => setFlexFormModal({ isOpen: false, element: null })}
-          modelId={selectedModelId}
-          tiposJerarquia={selectedModel?.tipos_jerarquia}
-          element={flexFormModal.element}
-          allElements={elements}
-          isLoadingElements={elemLoading}
-          onConfirm={handleFlexFormConfirm}
-        />
-      )}
-
-      {/* Modal eliminar elemento flexible */}
-      <DeleteConfirmationModal
-        isOpen={flexDeleteModal.isOpen}
-        onClose={() =>
-          setFlexDeleteModal({ isOpen: false, element: null, loading: false })
-        }
-        onConfirm={confirmFlexDelete}
-        title="Confirmar Eliminación"
-        itemName={truncateText(flexDeleteModal.element?.tipo || "")}
-        confirmLabel="Eliminar"
-        cancelLabel="Cancelar"
-        variant="danger"
-        isLoading={flexDeleteModal.loading}
-      />
-
-      {/* Modal activar elemento flexible */}
-      {flexToggleModal.element && !flexToggleModal.element.activo && (
-        <Modal
-          isOpen={flexToggleModal.isOpen}
-          onClose={() => setFlexToggleModal({ isOpen: false, element: null })}
-          onConfirm={confirmFlexToggle}
-          variant="success"
-          title="Confirmar activación"
-          confirmLabel="Sí, activar"
-          cancelLabel="Cancelar"
-          showCancel
-          showConfirm
-        >
-          <p className="text-sm text-gris-una-2 leading-relaxed">
-            ¿Está seguro de que desea activar{" "}
-            <strong>"{truncateText(flexToggleModal.element.tipo)}"</strong>?
-          </p>
-        </Modal>
-      )}
-
-      {/* Modal inactivar elemento flexible */}
-      {flexToggleModal.element && flexToggleModal.element.activo && (
-        <Modal
-          isOpen={flexToggleModal.isOpen}
-          onClose={() => setFlexToggleModal({ isOpen: false, element: null })}
-          onConfirm={confirmFlexToggle}
-          variant="info"
-          title="Confirmar inactivación"
-          confirmLabel="Sí, inactivar"
-          cancelLabel="Cancelar"
-          showCancel
-          showConfirm
-          footerMeta="Esta acción puede ser revertida en el futuro"
-        >
-          <p className="text-sm text-gris-una-2 leading-relaxed">
-            ¿Está seguro de que desea inactivar{" "}
-            <strong>"{truncateText(flexToggleModal.element.tipo)}"</strong>?
-          </p>
-        </Modal>
-      )}
     </>
   );
 };

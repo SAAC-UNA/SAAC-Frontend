@@ -77,6 +77,7 @@ function extractBackendError(err: unknown, fallback: string): string {
 export interface UseStructureModelsReturn {
   models: StructureModel[];
   isLoading: boolean;
+  hasLoaded: boolean;
   error: string | null;
   loadModels: () => Promise<void>;
   createModel: (form: CreateModelForm) => Promise<{ success: boolean; error?: string }>;
@@ -162,6 +163,7 @@ export function useStructureModels(): UseStructureModelsReturn {
   return {
     models: _st.data,
     isLoading: _st.loading || opLoading,
+    hasLoaded: _loaded,
     error: _st.error,
     loadModels,
     createModel,

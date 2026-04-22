@@ -29,6 +29,13 @@ interface StructureEditModalProps {
   onSuccess?: () => void;
 }
 
+const resolveErrorTitle = (error: unknown, fallback: string): string => {
+  if (error instanceof Error && error.message.trim().length > 0) {
+    return error.message;
+  }
+  return fallback;
+};
+
 export const StructureEditModal: React.FC<StructureEditModalProps> = ({
   isOpen,
   onClose,
@@ -180,8 +187,7 @@ export const StructureEditModal: React.FC<StructureEditModalProps> = ({
     } catch (error) {
       showToast({
         type: 'error',
-        title: 'Error al editar elemento',
-        message: error instanceof Error ? error.message : 'No se pudo editar el elemento'
+        title: resolveErrorTitle(error, 'Error al guardar el elemento'),
       });
       setConfirmOpen(false);
     }
@@ -221,7 +227,7 @@ export const StructureEditModal: React.FC<StructureEditModalProps> = ({
               characterCount
               value={formData.nomenclature}
               onChange={(e) => handleInputChange('nomenclature', e.target.value)}
-              placeholder="Nomenclatura única o identificativa del elemento"
+              placeholder="Ej: P1, C2.1, FAC-ING"
               error={errors.nomenclature}
               maxLength={VALIDATION_RULES.NOMENCLATURE_MAX_LENGTH}
               required={config.requiredFields.includes('nomenclature')}
@@ -237,7 +243,7 @@ export const StructureEditModal: React.FC<StructureEditModalProps> = ({
               characterCount
               value={formData.name}
               onChange={(e) => handleInputChange('name', e.target.value)}
-              placeholder="Nombre completo y descriptivo"
+              placeholder="Ej: Gestión Institucional"
               error={errors.name}
               maxLength={VALIDATION_RULES.NAME_MAX_LENGTH}
               required={config.requiredFields.includes('name')}
@@ -277,10 +283,9 @@ export const StructureEditModal: React.FC<StructureEditModalProps> = ({
 
       <SuccessModal
         isOpen={successState.isOpen}
-        title="¡Elemento editado exitosamente!"
-        message={`El elemento "${truncateText(successState.elementName)}" ha sido modificado correctamente.`}
+        title="Elemento actualizado"
+        message={`El elemento "${truncateText(successState.elementName)}" fue actualizado exitosamente.`}
         onClose={handleSuccessClose}
-        autoClose={true}
       />
     </>
   );

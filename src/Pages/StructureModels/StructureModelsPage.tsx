@@ -5,7 +5,8 @@
  * Vista "elementos": árbol de elementos del modelo flexible seleccionado.
  */
 
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
+import { useSearchParams } from "react-router-dom";
 import { ScreenContainer } from "@/Components/Ui/Layout/ScreenContainer";
 import {
   PageHeader,
@@ -18,6 +19,7 @@ import {
 } from "@/Components/Ui/Index";
 import { Modal } from "@/Components/Ui/Modals/Modal";
 import { SuccessModal } from "@/Components/Ui/Modals/SuccessModal";
+import { StructureElementsView } from "./Components/StructureElementsView";
 import { StructureModelFormModal } from "./Components/StructureModelFormModal";
 import { StructureModelDeleteModal } from "./Components/StructureModelDeleteModal";
 import { useStructureModels } from "@/Hooks/UseStructureModels";
@@ -31,17 +33,67 @@ import type {
 import { cn } from "@/Utils/ClassNames";
 import { TYPOGRAPHY } from "@/Constants/Typography";
 
+const getModelIdFromSearchParams = (params: URLSearchParams): number | null => {
+  const raw = params.get("modelo");
+  if (raw === null || raw === "0") return null;
+
+  const parsed = Number(raw);
+  return Number.isFinite(parsed) && parsed > 0 ? parsed : null;
+};
+
+const notifiedInvalidModelIds = new Set<number>();
+
 const StructureModelsPage: React.FC = () => {
+  const [searchParams, setSearchParams] = useSearchParams();
   const { showToast } = useToast();
   const {
     models,
     isLoading,
+    hasLoaded,
     createModel,
     updateModel,
     toggleActive,
     deleteModel,
   } = useStructureModels();
   const { cycles, isLoading: isLoadingCycles } = useAccreditationCycles();
+
+  const selectedModelId = useMemo(
+    () => getModelIdFromSearchParams(searchParams),
+    [searchParams],
+  );
+
+  const selectedModel = useMemo(
+    () =>
+      selectedModelId === null
+        ? null
+        : models.find((m) => m.modelo_estructura_id === selectedModelId) ?? null,
+    [models, selectedModelId],
+  );
+
+  useEffect(() => {
+    if (!hasLoaded || selectedModelId === null) return;
+
+    if (!selectedModel || selectedModel.tipo !== "elemento_flexible") {
+      const nextSearchParams = new URLSearchParams(searchParams);
+      nextSearchParams.delete("modelo");
+      setSearchParams(nextSearchParams, { replace: true });
+
+      if (!selectedModel && !notifiedInvalidModelIds.has(selectedModelId)) {
+        notifiedInvalidModelIds.add(selectedModelId);
+        showToast({
+          type: "error",
+          title: "El modelo seleccionado no existe o no está disponible.",
+        });
+      }
+    }
+  }, [
+    hasLoaded,
+    searchParams,
+    selectedModel,
+    selectedModelId,
+    setSearchParams,
+    showToast,
+  ]);
 
   const modelIdsWithCycles = useMemo(() => {
     return new Set(cycles.map((cycle) => cycle.modelo_estructura_id));
@@ -150,6 +202,14 @@ const StructureModelsPage: React.FC = () => {
   };
 
   // ── Render ────────────────────────────────────────────────────────────────
+
+  if (selectedModel && selectedModel.tipo === "elemento_flexible") {
+    return (
+      <ScreenContainer>
+        <StructureElementsView model={selectedModel} />
+      </ScreenContainer>
+    );
+  }
 
   return (
     <ScreenContainer>
