@@ -218,13 +218,13 @@ const MODULE_INFO: Record<string, ModuleInfo> = {
     shortDescription: "Aprobar criterios por bloques",
   },
 
-  // Gestión de Informes Finales
+  // Gestión de Enlaces
   final_reports: {
-    title: "Gestión de Informes Finales",
+    title: "Gestión de Enlaces",
     subtitle: "Enlaces Públicos y Exportación",
     description:
-      "Genere enlaces públicos para los entregables de criterios aprobados y exporte informes",
-    shortDescription: "Gestionar informes finales",
+      "Genere enlaces públicos para los entregables de criterios aprobados y exporte tablas en Excel o PDF",
+    shortDescription: "Gestionar enlaces públicos",
   },
 
   structure_list: {
