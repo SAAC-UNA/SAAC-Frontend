@@ -29,6 +29,7 @@ import { useToast } from "@/Context/ToastContext";
 import { TYPOGRAPHY } from "@/Constants/Typography";
 import { cn } from "@/Utils/ClassNames";
 import { TABLE_PAGE_SIZE } from "@/Constants/TablePagination";
+import { getModuleInfo } from "@/Constants/ModuleInfo";
 import type {
   AccreditationCycle,
   CreateAccreditationCycleForm,
@@ -169,11 +170,13 @@ const AccreditationCyclesPage: React.FC = () => {
 
   // ── Render ────────────────────────────────────────────────────────────────
 
+  const moduleInfo = getModuleInfo("accreditation_cycles");
+
   return (
     <ScreenContainer>
       <PageHeader
-        title="Ciclos de Acreditación"
-        description="Gestiona los ciclos de acreditación por carrera y sede."
+        title={moduleInfo.title}
+        description={moduleInfo.description}
         breadcrumbMode="none"
         headerExtra={
           canCreate ? (

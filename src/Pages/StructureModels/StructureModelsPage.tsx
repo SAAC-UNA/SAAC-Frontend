@@ -33,6 +33,7 @@ import type {
 } from "@/Types/StructureModelTypes";
 import { cn } from "@/Utils/ClassNames";
 import { TYPOGRAPHY } from "@/Constants/Typography";
+import { getModuleInfo } from "@/Constants/ModuleInfo";
 
 const getModelIdFromSearchParams = (params: URLSearchParams): number | null => {
   const raw = params.get("modelo");
@@ -128,6 +129,8 @@ const StructureModelsPage: React.FC = () => {
     loading: boolean;
   }>({ isOpen: false, model: null, loading: false });
 
+  const moduleInfo = getModuleInfo("accreditation_models");
+
   // ── Handlers ──────────────────────────────────────────────────────────────
 
   const handleCreateConfirm = async (form: CreateModelForm | EditModelForm) => {
@@ -215,8 +218,8 @@ const StructureModelsPage: React.FC = () => {
   return (
     <ScreenContainer>
       <PageHeader
-        title="Modelos de Acreditación"
-        description="Gestiona los modelos de estructura que definen cómo se organiza el proceso de acreditación."
+        title={moduleInfo.title}
+        description={moduleInfo.description}
         breadcrumbMode="none"
         headerExtra={
           <Tooltip>

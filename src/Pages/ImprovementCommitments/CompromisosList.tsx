@@ -10,6 +10,7 @@ import {
   StatusBadge,
 } from "@/Components/Ui/Index";
 import { improvementCommitmentService } from "@/Services/ImprovementCommitmentService";
+import { getModuleInfo } from "@/Constants/ModuleInfo";
 import type { CompromisoMejora } from "@/Types/ImprovementCommitmentTypes";
 
 const formatDate = (value?: string) => {
@@ -57,6 +58,7 @@ const getStatusBadge = (estado?: string, isOverdue?: boolean) => {
 
 const CompromisosList: React.FC = () => {
   const navigate = useNavigate();
+  const moduleInfo = getModuleInfo("improvement_commitments_list");
   const [compromisos, setCompromisos] = useState<CompromisoMejora[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -97,8 +99,8 @@ const CompromisosList: React.FC = () => {
   return (
     <ScreenContainer>
       <PageHeader
-        title="Compromisos de Mejora"
-        description="Listado de compromisos registrados en el sistema."
+        title={moduleInfo.title}
+        description={moduleInfo.description}
         breadcrumbMode="cycle-only"
         headerExtra={
           <Button onClick={() => navigate(ROUTES.COMMITMENTS_NEW)}>

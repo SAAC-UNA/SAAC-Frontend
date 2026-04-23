@@ -10,7 +10,7 @@ import { SystemIcons } from "@/Components/Ui/Icons/SystemIcons";
 import { useToast } from "@/Hooks/useToast";
 import { ValidationError } from "@/Services/AuthService";
 import { Input } from "@/Components/Ui/Forms/Input";
-import IsotipoSAAC from "../../../public/Images/IsotipoSAAC.svg?react";
+import IsotipoSAAC from "@/Assets/IsotipoSAAC.svg?react";
 import { Grainient } from "@/Components/Ui/Backgrounds/Grainient";
 import {
   Tooltip,

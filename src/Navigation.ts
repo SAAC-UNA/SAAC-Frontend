@@ -383,7 +383,7 @@ export const getNavigationItems = (
     ) {
       informeChildren.push({
         id: "gestion-informes",
-        label: "Gestión de Informes",
+        label: "Gestión de Enlaces",
         icon: reportsIcon,
         href: ROUTES.REPORTS,
         isActive: false,

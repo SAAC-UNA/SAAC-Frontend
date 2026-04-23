@@ -3,10 +3,10 @@
  * HU023 - Gestión de Informes Finales
  */
 
-import React from 'react';
-import { Modal } from '@/Components/Ui/Modals/Modal';
-import { TYPOGRAPHY } from '@/Constants/Typography';
-import { cn } from '@/Utils/ClassNames';
+import React from "react";
+import { Modal } from "@/Components/Ui/Modals/Modal";
+import { TYPOGRAPHY } from "@/Constants/Typography";
+import { cn } from "@/Utils/ClassNames";
 
 interface GenerateLinksConfirmModalProps {
   isOpen: boolean;
@@ -14,18 +14,29 @@ interface GenerateLinksConfirmModalProps {
   onConfirm: () => void;
   isLoading?: boolean;
   isFlexible?: boolean;
+  flexibleSourceLabel?: string;
 }
 
-export const GenerateLinksConfirmModal: React.FC<GenerateLinksConfirmModalProps> = ({
+const pluralizeSpanish = (label: string): string => {
+  const trimmed = label.trim().toLowerCase();
+  if (!trimmed) return "fuentes";
+  if (trimmed.endsWith("s")) return trimmed;
+  return /[aeiou]$/i.test(trimmed) ? `${trimmed}s` : `${trimmed}es`;
+};
+
+export const GenerateLinksConfirmModal: React.FC<
+  GenerateLinksConfirmModalProps
+> = ({
   isOpen,
   onClose,
   onConfirm,
   isLoading = false,
   isFlexible = false,
+  flexibleSourceLabel = "fuente",
 }) => {
   const scopeText = isFlexible
-    ? 'todas las fuentes de las pautas aprobadas'
-    : 'todas las evidencias de los criterios aprobados';
+    ? `todos los ${pluralizeSpanish(flexibleSourceLabel)} de los elementos aprobados`
+    : "todas las evidencias de los criterios aprobados";
 
   return (
     <Modal
@@ -41,10 +52,12 @@ export const GenerateLinksConfirmModal: React.FC<GenerateLinksConfirmModalProps>
       showCancel
       cancelLabel="Cancelar"
     >
-      <p className={cn(TYPOGRAPHY.modal.body, 'text-gris-una-2 leading-relaxed')}>
-        ¿Está seguro que desea generar enlaces públicos para{' '}
-        <strong className="text-negro-una">{scopeText}</strong>?
-        Esta acción puede tardar un momento.
+      <p
+        className={cn(TYPOGRAPHY.modal.body, "text-gris-una-2 leading-relaxed")}
+      >
+        ¿Está seguro que desea generar enlaces públicos para{" "}
+        <strong className="text-negro-una">{scopeText}</strong>? Esta acción
+        puede tardar un momento.
       </p>
     </Modal>
   );

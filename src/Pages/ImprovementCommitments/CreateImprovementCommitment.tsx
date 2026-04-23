@@ -39,7 +39,7 @@ import type { SelectOption } from '@/Components/Ui/Forms/SingleSelect';
 
 
 const CreateImprovementCommitment: React.FC = () => {
-  const moduleInfo = getModuleInfo("improvement_commitments");
+  const moduleInfo = getModuleInfo("improvement_commitments_create");
   const { showToast } = useToast();
   const navigate = useNavigate();
   const location = useLocation();
@@ -545,8 +545,8 @@ const CreateImprovementCommitment: React.FC = () => {
         <div className="space-y-4">
           {/* Header */}
           <PageHeader
-            title={`Configurar ${moduleInfo.title.replace('Compromisos de Mejora', 'Compromiso de Mejora')}`}
-            description="Seleccione criterios y configure las asignaciones"
+            title={moduleInfo.title}
+            description={moduleInfo.description}
             breadcrumbMode="cycle-only"
             headerExtra={
               <div className="flex gap-4 items-center">
