@@ -572,30 +572,34 @@ const FinalReports: React.FC = () => {
     });
   };
 
-  const downloadCsv = (
-    rows: Array<{ criterio: string; evidencia: string; link: string }>,
-  ) => {
-    const escapeCsv = (value: string) => `"${value.replace(/"/g, '""')}"`;
-    const header = [
-      isFlexible ? "Fuente" : "Criterio",
-      isFlexible ? "Archivo" : "Evidencia",
-      "Enlace",
-    ]
-      .map(escapeCsv)
-      .join(",");
-    const lines = rows.map((row) =>
-      [row.criterio, row.evidencia, row.link].map(escapeCsv).join(","),
-    );
-    const csvContent = `\ufeff${[header, ...lines].join("\n")}`;
-    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement("a");
-    link.href = url;
-    link.download = `informe_evidencias_${selectedProcesoId}_${Date.now()}.csv`;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    URL.revokeObjectURL(url);
+  const downloadExcel = async () => {
+    try {
+      const response = await axiosInstance.get(
+        "/estructura/evidencias/export/excel",
+        { responseType: "blob" },
+      );
+
+      const blob = new Blob([response.data], {
+        type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+      });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = `informe_evidencias_${selectedProcesoId}_${Date.now()}.xlsx`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+    } catch (error: any) {
+      console.error("Error exportando Excel:", error);
+      showToast({
+        type: "error",
+        title: "Error al exportar",
+        message:
+          error?.response?.data?.message ||
+          "No se pudo generar el informe en Excel",
+      });
+    }
   };
 
   const exportToPdf = (
@@ -620,21 +624,20 @@ const FinalReports: React.FC = () => {
     });
   };
 
-  const handleExportInforme = (format: ExportFormat) => {
+  const handleExportInforme = async (format: ExportFormat) => {
     if (!selectedProcesoId) {
       showToast({ type: "error", title: "Seleccione un proceso primero" });
       return;
     }
 
-    const rows = buildReportRows();
-    if (rows.length === 0) {
-      showToast({ type: "warning", title: "No hay evidencias para exportar" });
-      return;
-    }
-
     if (format === "excel") {
-      downloadCsv(rows);
+      await downloadExcel();
     } else {
+      const rows = buildReportRows();
+      if (rows.length === 0) {
+        showToast({ type: "warning", title: "No hay evidencias para exportar" });
+        return;
+      }
       exportToPdf(rows);
     }
   };

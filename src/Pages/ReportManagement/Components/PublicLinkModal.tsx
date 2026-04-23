@@ -245,7 +245,11 @@ export const PublicLinkModal: React.FC<PublicLinkModalProps> = ({
                       className="p-1"
                       aria-label="Copiar enlace"
                     >
-                      <SystemIcons.actions.copyLink className={ICON_SIZES.sm} />
+                      {copiedToClipboard ? (
+                        <SystemIcons.interface.check className={ICON_SIZES.sm} />
+                      ) : (
+                        <SystemIcons.actions.copyLink className={ICON_SIZES.sm} />
+                      )}
                     </ButtonWithTooltip>
                     <ButtonWithTooltip
                       variant="tableDelete"

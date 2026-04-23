@@ -399,7 +399,7 @@ export const getNavigationItems = (
     ) {
       informeChildren.push({
         id: "informe-gestion",
-        label: "Informe de Acreditación",
+        label: "Informes de Acreditación",
         icon: medalIcon,
         href: ROUTES.SINAES_ADMIN,
         isActive: false,
