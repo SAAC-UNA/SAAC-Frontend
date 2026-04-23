@@ -155,9 +155,9 @@ export const StructureModelCard: React.FC<StructureModelCardProps> = ({
       tooltip: "Ver estructura",
       onClick: () =>
         navigate(
-          isTradicional
-            ? `${ROUTES.STRUCTURE}?modelo=0`
-            : `${ROUTES.STRUCTURE_MODELS}?modelo=${model.modelo_estructura_id}`,
+          `${ROUTES.STRUCTURE_MODELS}?modelo=${
+            isTradicional ? 0 : model.modelo_estructura_id
+          }`,
         ),
     },
     {

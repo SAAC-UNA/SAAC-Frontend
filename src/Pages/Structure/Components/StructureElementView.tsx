@@ -1,20 +1,17 @@
 /**
- * ! Esta página no pertenece a Modelos de acreditación, ni flexible ni tradicional
  * StructureElementsView - Vista de elementos de un modelo flexible.
  *
- * Usa FlexibleElementTable como implementación canónica de listado para evitar
- * divergencias visuales y de comportamiento entre pantallas.
+ * El título y la descripción del encabezado son inyectados por el contenedor
+ * (StructureModelsPage) para mantener una sola fuente de verdad del layout.
  */
 
 import React, { useState } from 'react';
 import { Button } from '@/Components/Ui/Buttons/Button';
 import { PageHeader } from '@/Components/Ui/Index';
-import { DeleteConfirmationModal } from '@/Components/Ui/Modals/DeleteConfirmationModal';
 import { Modal } from '@/Components/Ui/Modals/Modal';
 import { SuccessModal } from '@/Components/Ui/Modals/SuccessModal';
 import { StructureElementFormModal } from './StructureElementFormModal';
 import { FlexibleElementTable } from './StructureElementTable';
-import { useStructureElements } from '@/Hooks/UseStructureElements';
 import { useToast } from '@/Context/ToastContext';
 import type {
   FlexibleElement,
@@ -26,30 +23,42 @@ import { truncateText } from '@/Utils';
 
 interface Props {
   model: StructureModel;
+  title?: string;
+  description?: string;
+  elements: FlexibleElement[];
+  isLoadingElements: boolean;
+  onCreateElement: (
+    form: CreateFlexibleElementForm,
+  ) => Promise<{ success: boolean; error?: string }>;
+  onUpdateElement: (
+    id: number,
+    form: EditFlexibleElementForm,
+  ) => Promise<{ success: boolean; error?: string }>;
+  onToggleElement: (
+    id: number,
+    active: boolean,
+  ) => Promise<{ success: boolean; error?: string }>;
+  onDeleteRequest: (element: FlexibleElement) => void;
 }
 
-export const StructureElementsView: React.FC<Props> = ({ model }) => {
+export const StructureElementsView: React.FC<Props> = ({
+  model,
+  title,
+  description,
+  elements,
+  isLoadingElements,
+  onCreateElement,
+  onUpdateElement,
+  onToggleElement,
+  onDeleteRequest,
+}) => {
   const { showToast } = useToast();
-  const {
-    elements,
-    isLoading,
-    createElement,
-    updateElement,
-    deleteElement,
-    toggleActive,
-  } = useStructureElements(model.modelo_estructura_id);
 
   const [formModal, setFormModal] = useState<{
     isOpen: boolean;
     element: FlexibleElement | null;
     defaultParentId: number | null;
   }>({ isOpen: false, element: null, defaultParentId: null });
-
-  const [deleteModal, setDeleteModal] = useState<{
-    isOpen: boolean;
-    element: FlexibleElement | null;
-    loading: boolean;
-  }>({ isOpen: false, element: null, loading: false });
 
   const [toggleModal, setToggleModal] = useState<{
     isOpen: boolean;
@@ -68,29 +77,9 @@ export const StructureElementsView: React.FC<Props> = ({ model }) => {
     id?: number,
   ) => {
     if (id !== undefined) {
-      return updateElement(id, form as EditFlexibleElementForm);
+      return onUpdateElement(id, form as EditFlexibleElementForm);
     }
-    return createElement(form as CreateFlexibleElementForm);
-  };
-
-  const handleDelete = async () => {
-    if (!deleteModal.element) return;
-
-    const element = deleteModal.element;
-    setDeleteModal((prev) => ({ ...prev, loading: true }));
-    const result = await deleteElement(element.elemento_id);
-    setDeleteModal({ isOpen: false, element: null, loading: false });
-
-    if (result.success) {
-      setSuccessModal({
-        isOpen: true,
-        title: 'Elemento eliminado',
-        message: `El elemento "${truncateText(element.tipo)}" fue eliminado exitosamente.`,
-      });
-      return;
-    }
-
-    showToast({ type: 'error', title: result.error ?? 'Error al eliminar el elemento' });
+    return onCreateElement(form as CreateFlexibleElementForm);
   };
 
   const handleToggleRequest = (element: FlexibleElement) => {
@@ -103,7 +92,7 @@ export const StructureElementsView: React.FC<Props> = ({ model }) => {
     const element = toggleModal.element;
     setToggleModal((prev) => ({ ...prev, loading: true }));
     const nextState = !element.activo;
-    const result = await toggleActive(element.elemento_id, nextState);
+    const result = await onToggleElement(element.elemento_id, nextState);
     setToggleModal({ isOpen: false, element: null, loading: false });
 
     if (result.success) {
@@ -122,9 +111,10 @@ export const StructureElementsView: React.FC<Props> = ({ model }) => {
   return (
     <div>
       <PageHeader
-        title="Gestiónaaas de Estructura"
+        title={title ?? "Gestión de Estructura"}
         description={
-          model.version ? `${model.nombre} · v${model.version}` : model.nombre
+          description
+          ?? (model.version ? `${model.nombre} · v${model.version}` : model.nombre)
         }
         headerExtra={
           <Button
@@ -141,13 +131,11 @@ export const StructureElementsView: React.FC<Props> = ({ model }) => {
 
       <FlexibleElementTable
         elements={elements}
-        isLoading={isLoading}
+        isLoading={isLoadingElements}
         onEdit={(element) =>
           setFormModal({ isOpen: true, element, defaultParentId: null })
         }
-        onDelete={(element) =>
-          setDeleteModal({ isOpen: true, element, loading: false })
-        }
+        onDelete={onDeleteRequest}
         onToggleActive={handleToggleRequest}
       />
 
@@ -158,27 +146,12 @@ export const StructureElementsView: React.FC<Props> = ({ model }) => {
         }
         modelId={model.modelo_estructura_id}
         tiposJerarquia={model.tipos_jerarquia}
+        tiposAsignables={model.tipos_asignables}
         element={formModal.element}
         defaultParentId={formModal.defaultParentId}
         allElements={elements}
+        isLoadingElements={isLoadingElements}
         onConfirm={handleFormConfirm}
-      />
-
-      <DeleteConfirmationModal
-        isOpen={deleteModal.isOpen}
-        onClose={() => setDeleteModal({ isOpen: false, element: null, loading: false })}
-        onConfirm={handleDelete}
-        itemName={deleteModal.element?.tipo}
-        title="Eliminar elemento"
-        description={
-          deleteModal.element
-            ? 'Solo se puede eliminar si no tiene elementos hijos.'
-            : undefined
-        }
-        confirmLabel="Sí, eliminar"
-        cancelLabel="Cancelar"
-        variant="danger"
-        isLoading={deleteModal.loading}
       />
 
       {toggleModal.element && (

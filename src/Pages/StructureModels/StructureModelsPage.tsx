@@ -1,9 +1,8 @@
 /**
- * ! Esta página no pertenece a Modelos de acreditación, ni flexible ni tradicional
  * StructureModelsPage - Página de gestión de modelos de acreditación.
  *
  * Vista "modelos": tarjetas de cada modelo (tradicional + flexibles).
- * Vista "elementos": árbol de elementos del modelo flexible seleccionado.
+ * Vista "estructura": elementos del modelo seleccionado (?modelo=0 tradicional, ?modelo=<id> flexible).
  */
 
 import React, { useEffect, useMemo, useState } from "react";
@@ -18,29 +17,34 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/Components/Ui/Index";
+import { DeleteConfirmationModal } from "@/Components/Ui/Modals/DeleteConfirmationModal";
 import { Modal } from "@/Components/Ui/Modals/Modal";
 import { SuccessModal } from "@/Components/Ui/Modals/SuccessModal";
 import { StructureElementsView } from "../Structure/Components/StructureElementView";
+import StructureList from "../Structure/StructureList";
 import { StructureModelFormModal } from "./Components/StructureModelFormModal";
 import { StructureModelDeleteModal } from "./Components/StructureModelDeleteModal";
 import { useStructureModels } from "@/Hooks/UseStructureModels";
 import { useAccreditationCycles } from "@/Hooks/UseAccreditationCycles";
+import { useStructureElements } from "@/Hooks/UseStructureElements";
 import { useToast } from "@/Context/ToastContext";
 import type {
   StructureModel,
+  FlexibleElement,
   CreateModelForm,
   EditModelForm,
 } from "@/Types/StructureModelTypes";
 import { cn } from "@/Utils/ClassNames";
+import { truncateText } from "@/Utils";
 import { TYPOGRAPHY } from "@/Constants/Typography";
 import { getModuleInfo } from "@/Constants/ModuleInfo";
 
 const getModelIdFromSearchParams = (params: URLSearchParams): number | null => {
   const raw = params.get("modelo");
-  if (raw === null || raw === "0") return null;
+  if (raw === null) return null;
 
   const parsed = Number(raw);
-  return Number.isFinite(parsed) && parsed > 0 ? parsed : null;
+  return Number.isInteger(parsed) && parsed >= 0 ? parsed : null;
 };
 
 const notifiedInvalidModelIds = new Set<number>();
@@ -72,8 +76,22 @@ const StructureModelsPage: React.FC = () => {
     [models, selectedModelId],
   );
 
+  const flexibleModelId =
+    selectedModel?.tipo === "elemento_flexible"
+      ? selectedModel.modelo_estructura_id
+      : null;
+
+  const {
+    elements: flexibleElements,
+    isLoading: isLoadingFlexibleElements,
+    createElement: createFlexibleElement,
+    updateElement: updateFlexibleElement,
+    deleteElement: deleteFlexibleElement,
+    toggleActive: toggleFlexibleElement,
+  } = useStructureElements(flexibleModelId);
+
   useEffect(() => {
-    if (!hasLoaded || selectedModelId === null) return;
+    if (!hasLoaded || selectedModelId === null || selectedModelId === 0) return;
 
     if (!selectedModel || selectedModel.tipo !== "elemento_flexible") {
       const nextSearchParams = new URLSearchParams(searchParams);
@@ -129,7 +147,14 @@ const StructureModelsPage: React.FC = () => {
     loading: boolean;
   }>({ isOpen: false, model: null, loading: false });
 
+  const [flexDeleteModal, setFlexDeleteModal] = useState<{
+    isOpen: boolean;
+    element: FlexibleElement | null;
+    loading: boolean;
+  }>({ isOpen: false, element: null, loading: false });
+
   const moduleInfo = getModuleInfo("accreditation_models");
+  const structureModuleInfo = getModuleInfo("structure_list");
 
   // ── Handlers ──────────────────────────────────────────────────────────────
 
@@ -205,12 +230,84 @@ const StructureModelsPage: React.FC = () => {
     }
   };
 
+  const handleFlexibleDeleteConfirm = async () => {
+    if (!flexDeleteModal.element) return;
+
+    const element = flexDeleteModal.element;
+    setFlexDeleteModal((prev) => ({ ...prev, loading: true }));
+    const result = await deleteFlexibleElement(element.elemento_id);
+    setFlexDeleteModal({ isOpen: false, element: null, loading: false });
+
+    if (result.success) {
+      setSuccessModal({
+        isOpen: true,
+        title: "Elemento eliminado",
+        message: `El elemento "${truncateText(element.tipo)}" fue eliminado exitosamente.`,
+      });
+      return;
+    }
+
+    showToast({
+      type: "error",
+      title: result.error ?? "Error al eliminar el elemento",
+    });
+  };
+
   // ── Render ────────────────────────────────────────────────────────────────
+
+  if (selectedModelId === 0) {
+    return (
+      <StructureList
+        title={structureModuleInfo.title}
+        description={structureModuleInfo.description}
+      />
+    );
+  }
 
   if (selectedModel && selectedModel.tipo === "elemento_flexible") {
     return (
       <ScreenContainer>
-        <StructureElementsView model={selectedModel} />
+        <StructureElementsView
+          model={selectedModel}
+          title={structureModuleInfo.title}
+          description={structureModuleInfo.description}
+          elements={flexibleElements}
+          isLoadingElements={isLoadingFlexibleElements}
+          onCreateElement={createFlexibleElement}
+          onUpdateElement={updateFlexibleElement}
+          onToggleElement={toggleFlexibleElement}
+          onDeleteRequest={(element) =>
+            setFlexDeleteModal({ isOpen: true, element, loading: false })
+          }
+        />
+
+        <DeleteConfirmationModal
+          isOpen={flexDeleteModal.isOpen}
+          onClose={() =>
+            setFlexDeleteModal({ isOpen: false, element: null, loading: false })
+          }
+          onConfirm={handleFlexibleDeleteConfirm}
+          itemName={flexDeleteModal.element?.tipo}
+          title="Eliminar elemento"
+          description={
+            flexDeleteModal.element
+              ? "Solo se puede eliminar si no tiene elementos hijos."
+              : undefined
+          }
+          confirmLabel="Sí, eliminar"
+          cancelLabel="Cancelar"
+          variant="danger"
+          isLoading={flexDeleteModal.loading}
+        />
+
+        <SuccessModal
+          isOpen={successModal.isOpen}
+          title={successModal.title}
+          message={successModal.message}
+          onClose={() =>
+            setSuccessModal({ isOpen: false, title: "", message: "" })
+          }
+        />
       </ScreenContainer>
     );
   }

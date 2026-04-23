@@ -26,6 +26,8 @@ interface Props {
   modelId: number;
   /** Jerarquía de tipos del modelo. Si es null/vacío, el tipo es libre (texto). */
   tiposJerarquia?: TipoJerarquia[] | null;
+  /** Tipos asignables disponibles para el modelo (fallback si no hay jerarquía). */
+  tiposAsignables?: string[] | null;
   /** Si se pasa, el modal está en modo edición */
   element?: FlexibleElement | null;
   /** Padre preseleccionado para creación de hijos */
@@ -53,6 +55,7 @@ interface FormErrors {
   nombre?: string;
   nomenclatura?: string;
   descripcion?: string;
+  padre_id?: string;
 }
 
 const EMPTY: FormData = { tipo: '', nombre: '', nomenclatura: '', descripcion: '', categoria: '', padre_id: '' };
@@ -65,11 +68,24 @@ const CATEGORIA_OPTIONS = [
   { value: 'D', label: 'D' },
 ];
 
+const buildParentOptionLabel = (entry: FlexibleElement): string => {
+  const normalizedName = entry.nombre?.trim() || '';
+  const normalizedDescription = entry.descripcion?.trim() || '';
+  const mainLabel = normalizedName || normalizedDescription || entry.tipo;
+  const typeSuffix = mainLabel !== entry.tipo ? ` (${entry.tipo})` : '';
+  const nomenclaturePrefix = entry.nomenclatura?.trim()
+    ? `${entry.nomenclatura.trim()} – `
+    : '';
+
+  return `${nomenclaturePrefix}${mainLabel}${typeSuffix}`;
+};
+
 export const StructureElementFormModal: React.FC<Props> = ({
   isOpen,
   onClose,
   modelId,
   tiposJerarquia,
+  tiposAsignables,
   element,
   defaultParentId,
   allElements,
@@ -79,17 +95,71 @@ export const StructureElementFormModal: React.FC<Props> = ({
   const isEditing = !!element;
   const { showToast } = useToast();
 
-  // Si el modelo tiene jerarquía definida, el tipo es dropdown; si no, texto libre
-  const tipoOptions = useMemo(() => {
-    if (!tiposJerarquia?.length) return null;
-    return tiposJerarquia.map(t => ({ value: t.tipo, label: t.tipo }));
+  const effectiveHierarchy = useMemo<TipoJerarquia[]>(() => {
+    const normalized = (tiposJerarquia ?? [])
+      .map((entry) => ({
+        tipo: entry.tipo.trim(),
+        padre_tipo: entry.padre_tipo?.trim() || null,
+      }))
+      .filter((entry) => entry.tipo.length > 0);
+
+    if (normalized.length <= 1) return normalized;
+
+    const hasDefinedParents = normalized.some((entry) => entry.padre_tipo !== null);
+    if (hasDefinedParents) return normalized;
+
+    // Fallback defensivo: si backend devuelve todos los padre_tipo en null,
+    // se asume jerarquía lineal según el orden recibido.
+    return normalized.map((entry, index) => ({
+      ...entry,
+      padre_tipo: index === 0 ? null : normalized[index - 1]?.tipo ?? null,
+    }));
   }, [tiposJerarquia]);
+
+  // Prioridad de selector de tipo: jerarquía del modelo -> tipos asignables -> texto libre.
+  const tipoOptions = useMemo(() => {
+    if (effectiveHierarchy.length) {
+      return effectiveHierarchy.map((t) => ({ value: t.tipo, label: t.tipo }));
+    }
+
+    const normalizedAssignableTypes = Array.from(new Set(
+      (tiposAsignables ?? [])
+        .map((tipo) => tipo.trim())
+        .filter((tipo) => tipo.length > 0),
+    ));
+
+    if (normalizedAssignableTypes.length > 0) {
+      return normalizedAssignableTypes.map((tipo) => ({ value: tipo, label: tipo }));
+    }
+
+    return null;
+  }, [effectiveHierarchy, tiposAsignables]);
 
   const [form, setForm] = useState<FormData>(EMPTY);
   const [errors, setErrors] = useState<FormErrors>({});
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [opLoading, setOpLoading] = useState(false);
   const [success, setSuccess] = useState({ isOpen: false, name: '' });
+
+  const selectedHierarchyEntry = useMemo(() => {
+    if (!form.tipo.trim()) return null;
+    return effectiveHierarchy.find((entry) => entry.tipo === form.tipo) ?? null;
+  }, [effectiveHierarchy, form.tipo]);
+
+  const isRootTypeSelected = selectedHierarchyEntry
+    ? selectedHierarchyEntry.padre_tipo === null
+    : false;
+
+  const requiredParentType = selectedHierarchyEntry?.padre_tipo ?? null;
+
+  const matchingActiveParents = useMemo(() => {
+    if (!requiredParentType) return [];
+    return allElements.filter(
+      (entry) => entry.activo && entry.tipo === requiredParentType && entry.elemento_id !== element?.elemento_id,
+    );
+  }, [allElements, requiredParentType, element]);
+
+  const parentIsRequired = !isEditing && selectedHierarchyEntry !== null && !isRootTypeSelected;
 
   // Opciones de padre: filtradas por jerarquía si está definida
   const parentOptions = useMemo(() => {
@@ -98,25 +168,28 @@ export const StructureElementFormModal: React.FC<Props> = ({
     );
 
     // Con jerarquía: solo mostrar elementos del tipo-padre correcto
-    if (tiposJerarquia?.length && form.tipo) {
-      const jerarquiaEntry = tiposJerarquia.find(t => t.tipo === form.tipo);
-      if (jerarquiaEntry) {
-        if (!jerarquiaEntry.padre_tipo) {
+    if (selectedHierarchyEntry) {
+      if (!selectedHierarchyEntry.padre_tipo) {
           // Tipo raíz → no puede tener padre
-          return [{ value: '', label: 'Sin padre (tipo raíz)' }];
-        }
-        // Filtrar solo elementos del tipo-padre correcto
-        available = available.filter(el => el.tipo === jerarquiaEntry.padre_tipo);
+        return [{ value: '', label: 'Elemento raíz (sin padre)' }];
       }
+
+      // Filtrar solo elementos del tipo-padre correcto
+      available = available.filter((entry) => entry.tipo === selectedHierarchyEntry.padre_tipo);
+
+      return available.map((entry) => ({
+        value: String(entry.elemento_id),
+        label: buildParentOptionLabel(entry),
+      }));
     }
 
     const base = [{ value: '', label: 'Ninguno (elemento raíz)' }];
     const mapped = available.map(el => ({
       value: String(el.elemento_id),
-      label: `${el.nomenclatura ? el.nomenclatura + ' – ' : ''}${el.tipo}${el.descripcion ? ': ' + el.descripcion.slice(0, 40) : ''}`,
+      label: buildParentOptionLabel(el),
     }));
     return [...base, ...mapped];
-  }, [allElements, element, tiposJerarquia, form.tipo]);
+  }, [allElements, element, selectedHierarchyEntry]);
 
   useEffect(() => {
     if (isOpen) {
@@ -144,6 +217,15 @@ export const StructureElementFormModal: React.FC<Props> = ({
     const next: FormErrors = {};
     if (!form.tipo.trim()) next.tipo = 'El tipo es obligatorio.';
     else if (form.tipo.trim().length > 30) next.tipo = 'Máximo 30 caracteres.';
+    if (!isEditing && parentIsRequired) {
+      if (matchingActiveParents.length === 0) {
+        next.padre_id = requiredParentType
+          ? `No hay elementos activos de tipo "${requiredParentType}" para asignar como padre.`
+          : 'No hay elementos disponibles para asignar como padre.';
+      } else if (!form.padre_id) {
+        next.padre_id = 'Debe seleccionar un elemento padre para este tipo.';
+      }
+    }
     if (form.nombre.length > 100) next.nombre = 'Máximo 100 caracteres.';
     if (form.nomenclatura.length > 20) next.nomenclatura = 'Máximo 20 caracteres.';
     if (form.descripcion.length > 500) next.descripcion = 'Máximo 500 caracteres.';
@@ -254,12 +336,22 @@ export const StructureElementFormModal: React.FC<Props> = ({
           />
           {!isEditing && (
             <CustomSelect
-              label="Elemento padre"
+              label={isRootTypeSelected ? 'Elemento padre (raíz)' : 'Elemento padre'}
+              required={parentIsRequired}
               value={form.padre_id}
               onChange={val => setForm(p => ({ ...p, padre_id: val }))}
               options={isLoadingElements ? [] : parentOptions}
-              disabled={isLoadingElements}
-              placeholder={isLoadingElements ? 'Cargando elementos...' : 'Seleccionar...'}
+              disabled={isLoadingElements || isRootTypeSelected}
+              placeholder={
+                isLoadingElements
+                  ? 'Cargando elementos...'
+                  : isRootTypeSelected
+                    ? 'Elemento raíz (sin padre)'
+                    : form.tipo
+                      ? 'Seleccionar...'
+                      : 'Seleccione primero un tipo'
+              }
+              error={errors.padre_id}
             />
           )}
           <Textarea

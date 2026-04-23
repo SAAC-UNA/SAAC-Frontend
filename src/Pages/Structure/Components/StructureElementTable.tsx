@@ -30,7 +30,6 @@ interface FlexibleElementTableProps {
   onEdit?: (element: FlexibleElement) => void;
   onDelete?: (element: FlexibleElement) => void;
   onToggleActive?: (element: FlexibleElement) => void;
-  onAddChild?: (parent: FlexibleElement) => void;
   itemsPerPage?: number;
 }
 
@@ -41,7 +40,6 @@ export const FlexibleElementTable: React.FC<FlexibleElementTableProps> = ({
   onEdit,
   onDelete,
   onToggleActive,
-  onAddChild,
   itemsPerPage = TABLE_PAGE_SIZE.standard,
 }) => {
   const [currentPage, setCurrentPage] = useState(1);
@@ -232,13 +230,6 @@ export const FlexibleElementTable: React.FC<FlexibleElementTableProps> = ({
 
         return (
           <div className="flex items-center justify-center gap-2">
-            {onAddChild && (
-              <TableActionButton
-                action="add"
-                tooltip="Agregar hijo"
-                onClick={() => onAddChild(element)}
-              />
-            )}
             <TableActionButton
               action="view"
               tooltip="Ver detalles"

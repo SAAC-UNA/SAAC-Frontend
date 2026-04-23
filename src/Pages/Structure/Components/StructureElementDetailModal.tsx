@@ -98,18 +98,18 @@ export const FlexibleElementDetail: React.FC<FlexibleElementDetailProps> = ({
 
         <InfoCell label="Nomenclatura" className="col-start-1 col-end-4">
           <span className={cn(TYPOGRAPHY.modal.body, 'text-gris-una-2')}>
-            {element.nomenclatura || 'ΓÇö'}
+            {element.nomenclatura || 'Sin nomenclatura'}
           </span>
         </InfoCell>
 
-        <InfoCell label="Categor├¡a" className="col-start-4 col-end-7 items-start">
+        <InfoCell label="Categoria" className="col-start-4 col-end-7 items-start">
           {element.categoria ? (
             <StatusBadge
               label={element.categoria}
               colorClasses={getBadgeColorForString(element.categoria)}
             />
           ) : (
-            <span className={cn(TYPOGRAPHY.modal.body, 'text-gris-una-2')}>ΓÇö</span>
+            <span className={cn(TYPOGRAPHY.modal.body, 'text-gris-una-2')}>Sin categoria</span>
           )}
         </InfoCell>
 
@@ -117,7 +117,7 @@ export const FlexibleElementDetail: React.FC<FlexibleElementDetailProps> = ({
 
         <InfoCell label="Identificador" className="col-span-6">
           <span className={cn(TYPOGRAPHY.modal.body, 'text-gris-una-2')}>
-            {element.nombre || element.descripcion || 'ΓÇö'}
+            {element.nombre || element.descripcion || 'Sin identificador'}
           </span>
         </InfoCell>
 

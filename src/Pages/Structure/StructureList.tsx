@@ -10,8 +10,7 @@ import React, { useEffect, useMemo, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { ROUTES } from "@/Constants/ROUTES";
 import { StructureTable } from "./Components/StructureTable";
-import { StructureEditModal } from "./Components/StructureEditModal";
-import { StructureCreateModal } from "./Components/StructureCreateModal";
+import { StructureFormModal } from "./Components/StructureFormModal";
 import { ScreenContainer } from "@/Components/Ui/Layout/ScreenContainer";
 import { PageHeader } from "@/Components/Ui/Index";
 import { LoadingSpinner } from "@/Components/Ui/Feedback/Loading";
@@ -26,6 +25,11 @@ import { SearchInput } from "@/Components/Ui/Forms/SearchInput";
 import { Button } from "@/Components/Ui/Buttons/Button";
 import { truncateText } from "@/Utils";
 import { useToast } from "@/Context/ToastContext";
+
+interface StructureListProps {
+  title?: string;
+  description?: string;
+}
 
 const getFlexibleModelIdFromSearchParams = (
   params: URLSearchParams,
@@ -44,7 +48,10 @@ const resolveErrorTitle = (error: unknown, fallback: string): string => {
   return fallback;
 };
 
-const StructureList: React.FC = () => {
+const StructureList: React.FC<StructureListProps> = ({
+  title,
+  description,
+}) => {
   const moduleInfo = getModuleInfo("structure_list");
 
   const navigate = useNavigate();
@@ -77,6 +84,9 @@ const StructureList: React.FC = () => {
       ? `${traditionalModel.nombre} · v${traditionalModel.version}`
       : traditionalModel.nombre;
   }, [models]);
+
+  const headerTitle = title ?? moduleInfo.title;
+  const headerDescription = description ?? traditionalModelDescription;
 
   useEffect(() => {
     loadTree();
@@ -260,8 +270,8 @@ const StructureList: React.FC = () => {
     <>
       <ScreenContainer>
         <PageHeader
-          title={moduleInfo.title}
-          description={traditionalModelDescription}
+          title={headerTitle}
+          description={headerDescription}
           breadcrumbMode="none"
           headerExtra={
             <div className="flex flex-col sm:flex-row w-full gap-2 shrink-0 lg:w-auto items-end">
@@ -378,7 +388,8 @@ const StructureList: React.FC = () => {
           </Modal>
         )}
 
-      <StructureCreateModal
+      <StructureFormModal
+        mode="create"
         isOpen={createModalOpen}
         onClose={() => setCreateModalOpen(false)}
         onSuccess={() => {
@@ -387,7 +398,8 @@ const StructureList: React.FC = () => {
         }}
       />
 
-      <StructureEditModal
+      <StructureFormModal
+        mode="edit"
         isOpen={editModalState.isOpen}
         onClose={() => setEditModalState({ isOpen: false, element: null })}
         element={editModalState.element}
