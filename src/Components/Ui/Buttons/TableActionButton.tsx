@@ -47,7 +47,7 @@ interface TableActionButtonProps extends Omit<React.ButtonHTMLAttributes<HTMLBut
   /**
    * Variante personalizada del botón. Si se proporciona, anula la variante predefinida
    */
-  customVariant?: 'primary' | 'secondary' | 'tertiary' | 'outline' | 'ghost' | 'transparent' | 'success' | 'tableView' | 'tableEdit' | 'tableDelete' | 'tablePower' | 'tablePowerInactive' | 'tableList' | 'tableGris' | 'tableOrange';
+  customVariant?: 'primary' | 'secondary' | 'tertiary' | 'outline' | 'ghost' | 'transparent' | 'success' | 'tableView' | 'tableEdit' | 'tableDelete' | 'tablePower' | 'tablePowerInactive' | 'tableList' | 'tableGris' | 'tableOrange' | 'tableIndigo';
   
   /**
    * Clases CSS adicionales
