@@ -419,7 +419,7 @@ export const AccreditationReportAdminPage: React.FC = () => {
               <SearchInput
                 value={searchQuery}
                 onChange={setSearchQuery}
-                placeholder="Buscar por nombre, visibilidad o fecha..."
+                placeholder="Buscar por nombre, visibilidad..."
               />
             )}
             <Button
