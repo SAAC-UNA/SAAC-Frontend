@@ -4,18 +4,25 @@
  */
 
 import React, { useCallback, useEffect, useMemo, useState } from "react";
-import { ScreenContainer, PageHeader, Button } from "@/Components/Ui/Index";
+import {
+  ScreenContainer,
+  PageHeader,
+  Button,
+  LoadingSpinner,
+} from "@/Components/Ui/Index";
 import { StatusBadge } from "@/Components/Ui/Feedback/StatusBadge";
 import { SystemIcons } from "@/Components/Ui/Icons/SystemIcons";
 import { TYPOGRAPHY } from "@/Constants/Typography";
 import { BADGE_COLORS } from "@/Constants/StatusBadges";
-import { TABLE_COLUMN_WIDTHS } from "@/Constants/Components";
+import { TABLE_COLUMN_WIDTHS, ICON_SIZES } from "@/Constants/Components";
 import { cn } from "@/Utils/ClassNames";
 import { formatDate } from "@/Utils/DateUtils";
+import { truncateText } from "@/Utils/TextUtils";
 import { useToast } from "@/Context/ToastContext";
 import { getModuleInfo } from "@/Constants/ModuleInfo";
 import { Card } from "@/Components/Ui/Layout/Card";
-import { DropZone } from "@/Components/Ui/Upload/DropZone";
+import { FileUploader, FileUploadProgress } from "@/Components/Ui/Upload";
+import type { FileUploadProgressItem } from "@/Components/Ui/Upload";
 import { DataTable } from "@/Components/Ui/Table/DataTable";
 import type { DataTableColumn } from "@/Components/Ui/Table/DataTable";
 import { SearchInput } from "@/Components/Ui/Forms/SearchInput";
@@ -38,7 +45,19 @@ type TabType = (typeof TABS)[number];
 
 type ReportFileRow = ReportFileApi & Record<string, unknown>;
 
+const ModalSeparator: React.FC = () => (
+  <div className="col-span-5 py-1">
+    <hr className="border-gray-200" />
+  </div>
+);
+
 export const AccreditationReportAdminPage: React.FC = () => {
+  const normalizeSearchText = (value: string): string =>
+    value
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .toLowerCase();
+
   const { showToast } = useToast();
   const moduleInfo = getModuleInfo("accreditation_report_admin");
   const { processId } = useOperationalContextSnapshot();
@@ -51,7 +70,11 @@ export const AccreditationReportAdminPage: React.FC = () => {
   const [files, setFiles] = useState<ReportFileApi[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [showUploadModal, setShowUploadModal] = useState(false);
-  const [uploadArchivos, setUploadArchivos] = useState<File[]>([]);
+  const [uploadModalState, setUploadModalState] = useState<{
+    selectedFiles: File[];
+    uploadProgress: FileUploadProgressItem[];
+    uploaderKey: number;
+  }>({ selectedFiles: [], uploadProgress: [], uploaderKey: 0 });
   const [isUploading, setIsUploading] = useState(false);
 
   const [detailOpen, setDetailOpen] = useState(false);
@@ -60,6 +83,15 @@ export const AccreditationReportAdminPage: React.FC = () => {
 
   const [deleting, setDeleting] = useState<ReportFileApi | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
+
+  const selectedFiles = uploadModalState.selectedFiles;
+  const uploadProgress = uploadModalState.uploadProgress;
+  const uploaderKey = uploadModalState.uploaderKey;
+
+  const canSubmitUpload = (): boolean => {
+    if (!processId || isUploading) return false;
+    return selectedFiles.length > 0;
+  };
 
   const loadFiles = useCallback(async () => {
     if (!processId) {
@@ -88,8 +120,8 @@ export const AccreditationReportAdminPage: React.FC = () => {
 
   const openDetail = async (row: ReportFileApi) => {
     setDetailOpen(true);
+    setDetailRecord(row);
     setDetailLoading(true);
-    setDetailRecord(null);
     try {
       const full = await reportFileService.show(row.informe_archivo_id);
       setDetailRecord(full);
@@ -97,9 +129,8 @@ export const AccreditationReportAdminPage: React.FC = () => {
       showToast({
         type: "error",
         title: "Error al cargar detalle",
-        message: "No se pudo obtener la información completa del archivo.",
+        message: "No se pudo actualizar la información completa del archivo.",
       });
-      setDetailOpen(false);
     } finally {
       setDetailLoading(false);
     }
@@ -107,7 +138,7 @@ export const AccreditationReportAdminPage: React.FC = () => {
 
   const handleUpload = async () => {
     if (!processId) return;
-    if (uploadArchivos.length === 0) {
+    if (selectedFiles.length === 0) {
       showToast({
         type: "warning",
         title: "Validación",
@@ -117,17 +148,59 @@ export const AccreditationReportAdminPage: React.FC = () => {
     }
 
     setIsUploading(true);
+    setUploadModalState((prev) => ({
+      ...prev,
+      uploadProgress: selectedFiles.map((file) => ({
+        file,
+        status: "pending",
+        progress: 0,
+      })),
+    }));
+
     try {
-      await reportFileService.uploadFiles(processId, uploadArchivos, activeTab);
+      setUploadModalState((prev) => ({
+        ...prev,
+        uploadProgress: prev.uploadProgress.map((item) => ({
+          ...item,
+          status: "uploading",
+          progress: 50,
+        })),
+      }));
+
+      await reportFileService.uploadFiles(processId, selectedFiles, activeTab);
+
+      setUploadModalState((prev) => ({
+        ...prev,
+        uploadProgress: prev.uploadProgress.map((item) => ({
+          ...item,
+          status: "success",
+          progress: 100,
+        })),
+      }));
+
       showToast({
         type: "success",
         title: "Carga exitosa",
         message: "Los archivos se han subido correctamente.",
       });
       setShowUploadModal(false);
-      setUploadArchivos([]);
+      setUploadModalState((prev) => ({
+        ...prev,
+        selectedFiles: [],
+        uploaderKey: prev.uploaderKey + 1,
+      }));
       await loadFiles();
     } catch {
+      setUploadModalState((prev) => ({
+        ...prev,
+        uploadProgress: prev.uploadProgress.map((item) => ({
+          ...item,
+          status: "error",
+          progress: 0,
+          error: "No se pudo completar la subida",
+        })),
+      }));
+
       showToast({
         type: "error",
         title: "Error al subir",
@@ -169,62 +242,30 @@ export const AccreditationReportAdminPage: React.FC = () => {
         align: "left",
         width: firstColumn.width,
         render: (_, r) => (
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-gris-fondo flex items-center justify-center shrink-0 border border-gris-claro shadow-sm">
-              <SystemIcons.navigation.reports className="w-5 h-5 text-gris-una" />
-            </div>
-            <div className="flex flex-col min-w-0">
-              <span
+          <div className="flex flex-col">
+            <div className="flex flex-row items-baseline gap-1.5">
+              <p
                 className={cn(
-                  "font-bold text-negro-una leading-tight truncate",
+                  "font-bold leading-normal text-negro-una-2 shrink-0",
                   TYPOGRAPHY.table.cell,
                 )}
+                title={r.tipo}
               >
-                {r.nombre_original}
-              </span>
-              <span
-                className={cn("text-gris-una mt-0.5", TYPOGRAPHY.table.helper)}
+                {truncateText(r.tipo, firstColumn.maxLength)}
+              </p>
+              <p
+                className={cn(
+                  "font-bold leading-normal text-negro-una-2",
+                  TYPOGRAPHY.table.cell,
+                )}
+                title={r.nombre_original}
               >
-                {[
-                  (r.tamanio ?? 0) > 0
-                    ? `${((r.tamanio ?? 0) / 1024 / 1024).toFixed(2)} MB`
-                    : null,
-                ]
-                  .filter(Boolean)
-                  .join(" · ")}
-              </span>
+                {truncateText(r.nombre_original, firstColumn.maxLength)}
+              </p>
             </div>
-          </div>
-        ),
-      },
-      {
-        key: "fecha_subida",
-        header: "Fecha de Subida",
-        align: "left",
-        width: TABLE_COLUMN_WIDTHS.status,
-        render: (_, r) => (
-          <div className="flex flex-col">
-            <span
-              className={cn(
-                "font-medium text-negro-una-2",
-                TYPOGRAPHY.table.cell,
-              )}
-            >
+            <p className={cn("text-gris-una mt-1.5 -mb-0.5", TYPOGRAPHY.table.helper)}>
               {r.fecha_subida ? formatDate(r.fecha_subida) : "—"}
-            </span>
-            <span
-              className={cn(
-                "text-gris-una text-[10px]",
-                TYPOGRAPHY.table.helper,
-              )}
-            >
-              {r.fecha_subida
-                ? new Date(r.fecha_subida).toLocaleTimeString([], {
-                    hour: "2-digit",
-                    minute: "2-digit",
-                  })
-                : ""}
-            </span>
+            </p>
           </div>
         ),
       },
@@ -257,6 +298,71 @@ export const AccreditationReportAdminPage: React.FC = () => {
               onClick={() => void openDetail(r)}
             />
             <TableActionButton
+              action="power"
+              isActive={r.is_publico}
+              tooltip={r.is_publico ? "Hacer privado" : "Hacer público"}
+              onClick={async () => {
+                try {
+                  const updated = r.is_publico
+                    ? await reportFileService.revokePublic(r.informe_archivo_id)
+                    : await reportFileService.makePublic(r.informe_archivo_id);
+
+                  setFiles((prev) =>
+                    prev.map((f) =>
+                      f.informe_archivo_id === updated.informe_archivo_id
+                        ? updated
+                        : f,
+                    ),
+                  );
+
+                  showToast({
+                    type: "success",
+                    title: "Actualizado",
+                    message: r.is_publico
+                      ? "El archivo ahora es privado."
+                      : "El archivo ahora es público.",
+                  });
+                } catch {
+                  showToast({
+                    type: "error",
+                    title: "Error",
+                    message: "No se pudo cambiar la visibilidad.",
+                  });
+                }
+              }}
+            />
+
+            <TableActionButton
+              action="custom"
+              customIcon={SystemIcons.actions.copyLink({
+                className: TABLE_ACTION_BUTTON.icon,
+              })}
+              customVariant="tableIndigo"
+              tooltip={
+                r.is_publico && r.url_publica
+                  ? "Copiar enlace público"
+                  : "Disponible cuando el archivo sea público"
+              }
+              disabled={!r.is_publico || !r.url_publica}
+              onClick={async () => {
+                if (!r.url_publica) return;
+                try {
+                  await navigator.clipboard.writeText(r.url_publica);
+                  showToast({
+                    type: "success",
+                    title: "Copiado",
+                    message: "Enlace público copiado al portapapeles.",
+                  });
+                } catch {
+                  showToast({
+                    type: "error",
+                    title: "Error",
+                    message: "No se pudo copiar el enlace público.",
+                  });
+                }
+              }}
+            />
+            <TableActionButton
               action="custom"
               customIcon={SystemIcons.actions.download({
                 className: TABLE_ACTION_BUTTON.icon,
@@ -270,71 +376,6 @@ export const AccreditationReportAdminPage: React.FC = () => {
                 )
               }
             />
-            {r.is_publico ? (
-              <TableActionButton
-                action="power"
-                tooltip="Hacer privado"
-                onClick={async () => {
-                  try {
-                    const updated = await reportFileService.revokePublic(
-                      r.informe_archivo_id,
-                    );
-                    setFiles((prev) =>
-                      prev.map((f) =>
-                        f.informe_archivo_id === updated.informe_archivo_id
-                          ? updated
-                          : f,
-                      ),
-                    );
-                    showToast({
-                      type: "success",
-                      title: "Actualizado",
-                      message: "El archivo ahora es privado.",
-                    });
-                  } catch {
-                    showToast({
-                      type: "error",
-                      title: "Error",
-                      message: "No se pudo cambiar la visibilidad.",
-                    });
-                  }
-                }}
-              />
-            ) : (
-              <TableActionButton
-                action="custom"
-                customIcon={SystemIcons.interface.link({
-                  className: TABLE_ACTION_BUTTON.icon,
-                })}
-                customVariant="tablePower"
-                tooltip="Hacer público"
-                onClick={async () => {
-                  try {
-                    const updated = await reportFileService.makePublic(
-                      r.informe_archivo_id,
-                    );
-                    setFiles((prev) =>
-                      prev.map((f) =>
-                        f.informe_archivo_id === updated.informe_archivo_id
-                          ? updated
-                          : f,
-                      ),
-                    );
-                    showToast({
-                      type: "success",
-                      title: "Actualizado",
-                      message: "El archivo ahora es público.",
-                    });
-                  } catch {
-                    showToast({
-                      type: "error",
-                      title: "Error",
-                      message: "No se pudo cambiar la visibilidad.",
-                    });
-                  }
-                }}
-              />
-            )}
             <TableActionButton
               action="delete"
               tooltip="Eliminar"
@@ -347,6 +388,25 @@ export const AccreditationReportAdminPage: React.FC = () => {
     [firstColumn.width, showToast],
   );
 
+  const filteredFiles = useMemo(
+    () =>
+      files.filter((file) => {
+        if (file.tipo !== activeTab) return false;
+
+        const term = normalizeSearchText(searchQuery.trim());
+        if (!term) return true;
+
+        const visibilidad = file.is_publico ? "publico" : "privado";
+        const fechaFormateada = file.fecha_subida ? formatDate(file.fecha_subida) : "";
+        const fechaISO = file.fecha_subida ? file.fecha_subida.slice(0, 10) : "";
+
+        return [file.nombre_original, visibilidad, fechaFormateada, fechaISO]
+          .map((value) => normalizeSearchText(value ?? ""))
+          .some((value) => value.includes(term));
+      }),
+    [activeTab, files, searchQuery],
+  );
+
   return (
     <ScreenContainer>
       <PageHeader
@@ -354,14 +414,26 @@ export const AccreditationReportAdminPage: React.FC = () => {
         description={moduleInfo.description}
         breadcrumbMode="contextual"
         headerExtra={
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-3 flex-wrap justify-end">
+            {processId && (
+              <SearchInput
+                value={searchQuery}
+                onChange={setSearchQuery}
+                placeholder="Buscar por nombre, visibilidad..."
+              />
+            )}
             <Button
               variant="primary"
               size="sm"
               className="rounded-xl shadow-md shadow-rojo-una/10 bg-rojo-una hover:bg-rojo-una-2 text-blanco-una"
               disabled={!processId}
               onClick={() => {
-                setUploadArchivos([]);
+                setUploadModalState((prev) => ({
+                  ...prev,
+                  selectedFiles: [],
+                  uploadProgress: [],
+                  uploaderKey: prev.uploaderKey + 1,
+                }));
                 setShowUploadModal(true);
               }}
             >
@@ -391,16 +463,6 @@ export const AccreditationReportAdminPage: React.FC = () => {
         ))}
       </div>
 
-      {processId && (
-        <div className="flex justify-end mb-4">
-          <SearchInput
-            value={searchQuery}
-            onChange={setSearchQuery}
-            placeholder="Buscar por nombre de informe..."
-          />
-        </div>
-      )}
-
       {!processId && (
         <Card className="mb-6 p-12 flex flex-col items-center justify-center text-center bg-gris-fondo/30 border-dashed animate-in fade-in duration-700">
           <div className="w-20 h-20 rounded-full bg-gris-claro/30 flex items-center justify-center mb-4">
@@ -423,15 +485,7 @@ export const AccreditationReportAdminPage: React.FC = () => {
 
       {processId && (
         <DataTable<ReportFileRow>
-          data={
-            files.filter(
-              (f) =>
-                f.tipo === activeTab &&
-                f.nombre_original
-                  .toLowerCase()
-                  .includes(searchQuery.toLowerCase()),
-            ) as ReportFileRow[]
-          }
+          data={filteredFiles as ReportFileRow[]}
           columns={columns}
           searchable={false}
           emptyMessage={
@@ -448,39 +502,41 @@ export const AccreditationReportAdminPage: React.FC = () => {
         onClose={() => !isUploading && setShowUploadModal(false)}
         title="Subir Informes de Acreditación"
         subtitle="Seleccione los documentos oficiales que corresponden a los informes de acreditación."
+        variant="upload"
         size="lg"
+        footerMeta="Formatos permitidos: PDF, Word y Excel."
         footerButtons={
           <>
             <Button
               variant="outline"
               onClick={() => setShowUploadModal(false)}
               disabled={isUploading}
-              className="rounded-xl"
             >
-              Cancelar
+              Cerrar
             </Button>
-            <Button
-              variant="primary"
-              disabled={uploadArchivos.length === 0}
-              isLoading={isUploading}
-              onClick={() => void handleUpload()}
-              className="rounded-xl shadow-md shadow-rojo-una/10"
-            >
-              Comenzar Carga
-            </Button>
+            {(selectedFiles.length > 0 || isUploading) && (
+              <Button
+                variant="primary"
+                disabled={!canSubmitUpload()}
+                isLoading={isUploading}
+                onClick={() => void handleUpload()}
+                className="rounded-xl shadow-md shadow-rojo-una/10"
+              >
+                Subir
+              </Button>
+            )}
           </>
         }
       >
         <div className="space-y-6">
-          <div className="bg-azul-una/5 border border-azul-una/20 p-4 rounded-xl flex gap-3">
-            <SystemIcons.interface.informationCircle className="w-5 h-5 text-azul-una shrink-0 mt-0.5" />
-            <p className={cn("text-azul-una-dark", TYPOGRAPHY.table.helper)}>
-              Puede subir hasta 5 archivos simultáneamente. Los formatos
-              permitidos incluyen PDF, Word y Excel, con un tamaño máximo de 50
-              MB por archivo.
+          {!processId && (
+            <p className={cn("text-rojo-una", TYPOGRAPHY.modal.body)}>
+              No se encontró un proceso activo. No es posible subir archivos.
             </p>
-          </div>
+          )}
 
+          {processId && (
+            <>
           <div className="space-y-2">
             <p
               className={cn(
@@ -488,61 +544,20 @@ export const AccreditationReportAdminPage: React.FC = () => {
                 TYPOGRAPHY.form.label,
               )}
             >
-              <SystemIcons.interface.uploadArrow className="w-4 h-4" />
               Informes a subir
             </p>
-            <DropZone
-              onFilesSelected={(selected) =>
-                setUploadArchivos((prev) => [...prev, ...selected].slice(0, 5))
+            <FileUploader
+              key={`report-file-uploader-${uploaderKey}`}
+              onFilesSelected={(files) =>
+                setUploadModalState((prev) => ({ ...prev, selectedFiles: files }))
               }
               maxFiles={5}
-              hint="Arrastre informes aquí o haga clic para seleccionar"
+              disabled={isUploading}
             />
           </div>
 
-          {uploadArchivos.length > 0 && (
-            <div className="space-y-2 animate-in fade-in duration-300">
-              <p
-                className={cn(
-                  "text-xs font-bold text-gris-una uppercase tracking-wider",
-                )}
-              >
-                Lista de informes ({uploadArchivos.length}/5)
-              </p>
-              <ul className="space-y-2">
-                {uploadArchivos.map((f, i) => (
-                  <li
-                    key={`${f.name}-${i}`}
-                    className="flex items-center justify-between gap-3 bg-gris-fondo p-3 rounded-xl border border-gris-claro group"
-                  >
-                    <div className="flex items-center gap-3 min-w-0">
-                      <div className="w-8 h-8 rounded-lg bg-blanco-una flex items-center justify-center border border-gris-claro shrink-0">
-                        <SystemIcons.navigation.reports className="w-4 h-4 text-gris-una" />
-                      </div>
-                      <div className="flex flex-col min-w-0">
-                        <span className="text-sm font-medium text-negro-una truncate">
-                          {f.name}
-                        </span>
-                        <span className="text-[10px] text-gris-una">
-                          {(f.size / 1024 / 1024).toFixed(2)} MB
-                        </span>
-                      </div>
-                    </div>
-                    <button
-                      type="button"
-                      className="p-2 text-gris-una hover:text-rojo-una hover:bg-rojo-una/5 rounded-lg transition-colors"
-                      onClick={() =>
-                        setUploadArchivos((prev) =>
-                          prev.filter((_, j) => j !== i),
-                        )
-                      }
-                    >
-                      <SystemIcons.interface.closeCircle className="w-4 h-4" />
-                    </button>
-                  </li>
-                ))}
-              </ul>
-            </div>
+          {uploadProgress.length > 0 && <FileUploadProgress files={uploadProgress} />}
+            </>
           )}
         </div>
       </Modal>
@@ -555,61 +570,92 @@ export const AccreditationReportAdminPage: React.FC = () => {
           setDetailRecord(null);
         }}
         title="Detalles del Archivo"
+        subtitle={detailRecord?.tipo ?? "Archivo de informe"}
         variant="info"
         size="lg"
-        footerButtons={
-          <Button
-            variant="outline"
-            className="rounded-xl"
-            onClick={() => {
-              setDetailOpen(false);
-              setDetailRecord(null);
-            }}
-          >
-            Cerrar
-          </Button>
+        heroIcon={
+          <SystemIcons.modal.document
+            className={`${ICON_SIZES.md} text-blanco-una`}
+          />
         }
+        showCancel={false}
+        showConfirm={false}
       >
-        {detailLoading ? (
-          <div className="py-12 flex flex-col items-center justify-center">
-            <div className="w-12 h-12 border-4 border-azul-una/20 border-t-azul-una rounded-full animate-spin mb-4" />
-            <p className={cn("text-gris-una", TYPOGRAPHY.body)}>
-              Cargando información...
+        {!detailRecord && detailLoading ? (
+          <div className="relative py-12 min-h-40">
+            <LoadingSpinner variant="loader" />
+            <p
+              className={cn(
+                "absolute bottom-6 left-1/2 -translate-x-1/2 text-gris-una whitespace-nowrap",
+                TYPOGRAPHY.modal.body,
+              )}
+            >
+              Cargando información del archivo...
             </p>
           </div>
         ) : detailRecord ? (
-          <div className="space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="grid grid-cols-5 gap-x-4 gap-y-3">
+            <div className="col-start-1 col-end-4 flex flex-col gap-0.5">
+              <span
+                className={cn(
+                  TYPOGRAPHY.modal.body,
+                  "text-negro-una-2 font-semibold break-all",
+                )}
+              >
+                {detailRecord.nombre_original}
+              </span>
+              {detailRecord.tipo_mime?.trim() ? (
+                <span className={cn(TYPOGRAPHY.modal.body, "text-gris-una-2")}>
+                  {detailRecord.tipo_mime}
+                </span>
+              ) : null}
+            </div>
+
+            <div className="col-start-4 col-end-6 flex flex-col items-start gap-0.5">
+              <span
+                className={cn(
+                  "uppercase tracking-wider font-semibold text-gris-una-2",
+                  TYPOGRAPHY.modal.subtitle,
+                )}
+              >
+                Fecha de subida
+              </span>
+              <span className={cn(TYPOGRAPHY.modal.subtitle, "text-gris-una-2")}>
+                {detailRecord.fecha_subida
+                  ? `${formatDate(detailRecord.fecha_subida)} · ${new Date(detailRecord.fecha_subida).toLocaleTimeString([], {
+                      hour: "2-digit",
+                      minute: "2-digit",
+                    })}`
+                  : "—"}
+              </span>
+            </div>
+
+            <ModalSeparator />
+
+            <div className="col-span-5 grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="space-y-1">
-                <p className="text-[10px] font-bold text-gris-una uppercase tracking-widest">
-                  Nombre Original
-                </p>
-                <p className="text-sm font-bold text-negro-una break-all">
-                  {detailRecord.nombre_original}
-                </p>
-              </div>
-              <div className="space-y-1">
-                <p className="text-[10px] font-bold text-gris-una uppercase tracking-widest">
+                <p
+                  className={cn(
+                    "uppercase tracking-wider font-semibold text-gris-una-2",
+                    TYPOGRAPHY.modal.subtitle,
+                  )}
+                >
                   Tamaño
                 </p>
-                <p className="text-sm font-medium text-negro-una">
+                <p className={cn(TYPOGRAPHY.modal.body, "text-negro-una-2") }>
                   {detailRecord.tamanio && detailRecord.tamanio > 0
                     ? `${(detailRecord.tamanio / 1024 / 1024).toFixed(2)} MB`
                     : "—"}
                 </p>
               </div>
+
               <div className="space-y-1">
-                <p className="text-[10px] font-bold text-gris-una uppercase tracking-widest">
-                  Fecha de Subida
-                </p>
-                <p className="text-sm font-medium text-negro-una">
-                  {detailRecord.fecha_subida
-                    ? formatDate(detailRecord.fecha_subida)
-                    : "—"}
-                </p>
-              </div>
-              <div className="space-y-1">
-                <p className="text-[10px] font-bold text-gris-una uppercase tracking-widest">
+                <p
+                  className={cn(
+                    "uppercase tracking-wider font-semibold text-gris-una-2",
+                    TYPOGRAPHY.modal.subtitle,
+                  )}
+                >
                   Visibilidad
                 </p>
                 <div>
@@ -625,35 +671,6 @@ export const AccreditationReportAdminPage: React.FC = () => {
               </div>
             </div>
 
-            {detailRecord.url_publica && (
-              <div className="pt-4 border-t border-gris-claro">
-                <p className="text-sm font-bold text-negro-una mb-2">
-                  enlace publico
-                </p>
-                <div className="flex gap-2">
-                  <div className="flex-1 bg-gris-fondo p-3 rounded-xl border border-gris-claro text-xs font-mono truncate text-negro-una-2">
-                    {detailRecord.url_publica}
-                  </div>
-                  <Button
-                    variant="primary"
-                    size="sm"
-                    className="rounded-xl bg-azul-una hover:bg-azul-una-2 text-blanco-una px-3"
-                    onClick={() => {
-                      void navigator.clipboard.writeText(
-                        detailRecord.url_publica!,
-                      );
-                      showToast({
-                        type: "success",
-                        title: "Copiado",
-                        message: "Enlace copiado al portapapeles",
-                      });
-                    }}
-                  >
-                    <SystemIcons.actions.copy className="w-4 h-4" />
-                  </Button>
-                </div>
-              </div>
-            )}
           </div>
         ) : null}
       </Modal>
@@ -664,10 +681,10 @@ export const AccreditationReportAdminPage: React.FC = () => {
         onConfirm={() => void handleDelete()}
         title="Eliminar Archivo"
         itemName={deleting?.nombre_original ?? ""}
-        confirmLabel="Eliminar Archivo"
+        confirmLabel="Sí, eliminar"
         variant="danger"
         isLoading={isDeleting}
-        footerMeta="Esta acción no se puede deshacer. El archivo será removido permanentemente del informe."
+        footerMeta="Esta acción no se puede deshacer."
       />
     </ScreenContainer>
   );

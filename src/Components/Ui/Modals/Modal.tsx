@@ -6,7 +6,7 @@ import { Button } from '../Buttons/Button';
 import { TYPOGRAPHY } from '@/Constants/Typography';
 import { ICON_SIZES } from '@/Constants/Components';
 
-export type ModalVariant = 'info' | 'success' | 'danger' | 'warning' | 'neutral';
+export type ModalVariant = 'info' | 'success' | 'danger' | 'warning' | 'neutral' | 'upload';
 
 interface ModalProps {
   isOpen: boolean;
@@ -92,6 +92,13 @@ const VARIANT_CONFIG: Record<ModalVariant, VariantConfig> = {
     cardShadow: 'shadow-[0_4px_14px_rgba(107,114,128,0.22)]',
     Icon: ({ className }) => <SystemIcons.actions.view className={className} />,
     confirmVariant: 'secondary',
+  },
+  upload: {
+    cardBg: 'bg-teal',
+    cardShadow: 'shadow-[0_4px_14px_rgba(20,184,166,0.28)]',
+    Icon: ({ className }) => <SystemIcons.interface.uploadArrow className={className} />,
+    confirmVariant: 'primary',
+    metaColor: 'text-teal',
   },
 };
 
@@ -205,8 +212,7 @@ export const Modal: React.FC<ModalProps> = React.memo(({
       className="relative z-50"
     >
       <DialogBackdrop
-        transition
-        className="fixed inset-0 bg-[rgba(10,15,35,0.55)] backdrop-blur-[3px] transition-all duration-300 data-closed:opacity-0"
+        className="fixed inset-0 bg-[rgba(10,15,35,0.55)] backdrop-blur-[3px]"
       />
 
       <div className="fixed inset-0 z-10 w-screen overflow-y-auto">
@@ -219,14 +225,12 @@ export const Modal: React.FC<ModalProps> = React.memo(({
         >
           <DialogPanel
             ref={modalRef}
-            transition
             tabIndex={-1}
             className={cn(
               'relative flex flex-col w-full',
               'bg-blanco-una border border-none rounded-corner',
               'shadow-[0_6px_16px_rgba(0,0,0,0.10),0_2px_6px_rgba(0,0,0,0.06)]',
-              'transition-all duration-300 ease-out sm:mt-8 sm:mb-8',
-              'data-closed:translate-y-4 data-closed:opacity-0 data-closed:sm:scale-95',
+              'sm:mt-8 sm:mb-8',
               sizeClasses[size],
               maxHeightClasses[maxHeight],
               className,
@@ -258,7 +262,7 @@ export const Modal: React.FC<ModalProps> = React.memo(({
                   {/* Ícono + texto + botón cerrar en una sola fila */}
                   <div className="relative z-10 flex items-center justify-between gap-3">
                     <div className="flex items-center gap-3 min-w-0">
-                      <div className="w-11 h-11 rounded-[10px] flex items-center justify-center bg-white/20 border border-white/35 flex-shrink-0">
+                      <div className="w-11 h-11 rounded-[10px] flex items-center justify-center bg-white/20 border border-white/35 shrink-0">
                         {heroIcon ?? <cfg.Icon className={`${ICON_SIZES.md} text-blanco-una`}/>}
                       </div>
                       <div className="flex flex-col min-w-0">
@@ -287,7 +291,7 @@ export const Modal: React.FC<ModalProps> = React.memo(({
                         onClick={handleClose}
                         disabled={isPending}
                         aria-label="Cerrar modal"
-                        className="w-7 h-7 rounded-corner flex items-center justify-center bg-white/15 border border-white/30 text-white/90 hover:bg-white/30 transition-colors duration-150 disabled:opacity-50 flex-shrink-0"
+                        className="w-7 h-7 rounded-corner flex items-center justify-center bg-white/15 border border-white/30 text-white/90 hover:bg-white/30 transition-colors duration-150 disabled:opacity-50 shrink-0"
                       >
                         <SystemIcons.interface.closeCircle className={`${ICON_SIZES.md}`} />
                       </button>
@@ -304,7 +308,7 @@ export const Modal: React.FC<ModalProps> = React.memo(({
                 HEADER sin hero (modo sin variante)
             ════════════════════════════════════ */}
             {!cfg && (
-              <div className="flex items-center justify-between border-b border-gray-100 bg-gradient-to-r from-gray-50 to-white px-5 py-4 flex-shrink-0">
+              <div className="flex items-center justify-between border-b border-gray-100 bg-linear-to-r from-gray-50 to-white px-5 py-4 shrink-0">
                 <p className={cn('font-bold text-negro-una-2 tracking-tight', TYPOGRAPHY.modal.title)}>
                   {title}
                 </p>
@@ -335,7 +339,7 @@ export const Modal: React.FC<ModalProps> = React.memo(({
                 FOOTER
             ════════════════════════════════════ */}
             {hasFooter && (
-              <div className="flex items-center justify-between gap-3 px-4 py-3 border-t border-gray-100 bg-gray-50/60 flex-shrink-0">
+              <div className="flex items-center justify-between gap-3 px-4 py-3 border-t border-gray-100 bg-gray-50/60 shrink-0">
                 {/* Meta izquierda */}
                 <span
                   className={cn(
@@ -348,7 +352,7 @@ export const Modal: React.FC<ModalProps> = React.memo(({
                 </span>
 
                 {/* Acciones derecha */}
-                <div className="flex items-center gap-2.5 flex-shrink-0">
+                <div className="flex items-center gap-2.5 shrink-0">
                   {footerButtons ? (
                     footerButtons
                   ) : (
