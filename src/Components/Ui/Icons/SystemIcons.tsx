@@ -125,6 +125,25 @@ export const SystemIcons = {
       </svg>
     ),
 
+    configureCommitment: ({ className, size }: IconProps) => (
+      <svg
+        className={`${getSizeClasses(size)} ${className || ""}`}
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth="1.8"
+      >
+        <path d="M3.75 6h16.5" />
+        <path d="M3.75 12h16.5" />
+        <path d="M3.75 18h16.5" />
+        <circle cx="8.25" cy="6" r="2" fill="currentColor" stroke="none" />
+        <circle cx="15.75" cy="12" r="2" fill="currentColor" stroke="none" />
+        <circle cx="11.25" cy="18" r="2" fill="currentColor" stroke="none" />
+      </svg>
+    ),
+
     save: ({ className, size, color = "var(--color-verde)" }: IconProps) => (
       <svg
         className={`${getSizeClasses(size)} ${className || ""}`}

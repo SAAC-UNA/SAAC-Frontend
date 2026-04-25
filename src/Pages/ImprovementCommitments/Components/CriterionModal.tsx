@@ -214,6 +214,7 @@ export const CriterionModal: React.FC<CriterionModalProps> = ({
       isOpen={isOpen}
       onClose={onClose}
       title={modoEdicion ? `Editar Criterio: ${criterio.nomenclatura}` : `Configurar Criterio: ${criterio.nomenclatura}`}
+      subtitle={criterio.descripcion || undefined}
       size="lg"
       variant={modoEdicion ? 'warning' : 'info'}
       heroIcon={modoEdicion
@@ -232,11 +233,6 @@ export const CriterionModal: React.FC<CriterionModalProps> = ({
         </div>
       ) : (
         <div className="space-y-6">
-          {/* Descripción del criterio */}
-          <div className="bg-gray-50 rounded-lg p-4">
-            <p className="text-sm text-gris-una">{criterio.descripcion}</p>
-          </div>
-
           {/* Selección de Evidencias */}
           <div>
             <div className="flex items-center justify-between mb-2">

@@ -198,6 +198,7 @@ export const ElementoModal: React.FC<ElementoModalProps> = ({
       isOpen={isOpen}
       onClose={onClose}
       title={modoEdicion ? `Editar Elemento: ${elementoTitle}` : `Configurar Elemento: ${elementoTitle}`}
+      subtitle={elemento.descripcion || undefined}
       size="lg"
       variant={modoEdicion ? 'warning' : 'info'}
       heroIcon={
@@ -217,13 +218,6 @@ export const ElementoModal: React.FC<ElementoModalProps> = ({
         </div>
       ) : (
         <div className="space-y-6">
-          {/* Descripción del elemento */}
-          {elemento.descripcion && (
-            <div className="bg-gray-50 rounded-lg p-4">
-              <p className="text-sm text-gris-una">{elemento.descripcion}</p>
-            </div>
-          )}
-
           {/* Fuentes a incluir */}
           {hijos.length > 0 && (
             <div>

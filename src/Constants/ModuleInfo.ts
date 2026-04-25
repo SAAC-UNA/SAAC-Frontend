@@ -303,7 +303,7 @@ const MODULE_INFO: Record<string, ModuleInfo> = {
   improvement_commitments_create: {
     title: "Configurar Compromiso de Mejora",
     subtitle: "Nueva Configuración",
-    description: "Seleccione criterios y configure las asignaciones del compromiso de mejora.",
+    description: "Seleccione elementos y configure sus asignaciones.",
     shortDescription: "Configurar compromiso de mejora",
   },
 

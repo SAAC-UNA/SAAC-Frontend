@@ -45,6 +45,14 @@ export interface FilterButtonProps<T = string> {
   className?: string;
   /** Deshabilitar el filtro */
   disabled?: boolean;
+  /** Resaltar el botón principal cuando hay filtro activo */
+  highlightWhenActive?: boolean;
+  /** Mostrar badge con valor de filtro seleccionado */
+  showActiveBadge?: boolean;
+  /** Mostrar botón de limpiar filtros */
+  showClearButton?: boolean;
+  /** Tooltip del botón de limpiar */
+  clearButtonTooltipText?: string;
 }
 
 export function FilterButton<T = string>({
@@ -53,7 +61,11 @@ export function FilterButton<T = string>({
   value,
   onChange,
   className,
-  disabled = false
+  disabled = false,
+  highlightWhenActive = true,
+  showActiveBadge = true,
+  showClearButton = false,
+  clearButtonTooltipText = 'Limpiar filtros',
 }: FilterButtonProps<T>) {
   const [isOpen, setIsOpen] = useState(false);
   const [dropdownPosition, setDropdownPosition] = useState<'left' | 'right'>('left');
@@ -97,6 +109,10 @@ export function FilterButton<T = string>({
     setIsOpen(false);
   };
 
+  const resetFilter = () => {
+    onChange(options[0].value);
+  };
+
   const selectedOption = options.find(opt => opt.value === value);
   const hasActiveFilter = value !== options[0]?.value; // Asume que la primera opción es "Todos" o default
 
@@ -113,7 +129,7 @@ export function FilterButton<T = string>({
               disabled={disabled}
               className={cn(
                 "border border-blanco-una-2 bg-blanco-una-2",
-                hasActiveFilter && "bg-azul-una/10"
+                hasActiveFilter && highlightWhenActive && "bg-azul-una/10"
               )}
             >
               <SystemIcons.interface.filter className={ICON_SIZES.md} color="currentColor" />
@@ -126,7 +142,7 @@ export function FilterButton<T = string>({
       </Tooltip>
 
       {/* Badge de filtro activo con botón para eliminar */}
-      {hasActiveFilter && selectedOption && (
+      {showActiveBadge && hasActiveFilter && selectedOption && (
         <div className="flex items-center gap-1 px-2 py-1 rounded-full bg-azul-una text-white">
           <span className="text-xs font-medium whitespace-nowrap">
             {selectedOption.label}
@@ -135,7 +151,7 @@ export function FilterButton<T = string>({
             type="button"
             onClick={(e) => {
               e.stopPropagation();
-              onChange(options[0].value); // Reset al primer valor (default)
+              resetFilter(); // Reset al primer valor (default)
             }}
             className="ml-1 hover:bg-white/20 rounded-full p-0.5 transition-colors"
             aria-label="Eliminar filtro"
@@ -143,6 +159,27 @@ export function FilterButton<T = string>({
             <SystemIcons.actions.cancel className={ICON_SIZES.sm} color="currentColor" />
           </button>
         </div>
+      )}
+
+      {showClearButton && (
+        <Tooltip>
+          <TooltipTrigger>
+            <div className="inline-flex">
+              <Button
+                type="button"
+                variant="ghost"
+                onClick={resetFilter}
+                disabled={disabled || !hasActiveFilter}
+                className="border border-blanco-una-2 bg-blanco-una-2"
+              >
+                <SystemIcons.interface.clearFilters className={ICON_SIZES.md} color="currentColor" />
+              </Button>
+            </div>
+          </TooltipTrigger>
+          <TooltipContent side="top">
+            {hasActiveFilter ? clearButtonTooltipText : 'No hay filtros activos'}
+          </TooltipContent>
+        </Tooltip>
       )}
 
       {/* Dropdown menu - Se posiciona automáticamente según espacio disponible */}

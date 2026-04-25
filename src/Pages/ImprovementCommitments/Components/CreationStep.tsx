@@ -113,6 +113,14 @@ export const CreationStep: React.FC<CreationStepProps> = ({
     }
     return map;
   }, [elementos, leafElementIds]);
+
+  const elementosById = useMemo(() => {
+    const map = new Map<number, FlexibleElement>();
+    for (const elemento of elementos) {
+      map.set(elemento.elemento_id, elemento);
+    }
+    return map;
+  }, [elementos]);
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = TABLE_PAGE_SIZE.standard;
   const firstColumn = useFirstColumnConfig();
@@ -181,10 +189,19 @@ export const CreationStep: React.FC<CreationStepProps> = ({
     let filtered = criterios;
     if (searchTerm) {
       const term = searchTerm.toLowerCase();
-      filtered = filtered.filter(c =>
-        c.nomenclatura.toLowerCase().includes(term) ||
-        c.descripcion.toLowerCase().includes(term)
-      );
+      const selectedIds = new Set(formData.criterios_seleccionados.map(c => c.criterio_id));
+      filtered = filtered.filter(c => {
+        const estadoLabel = selectedIds.has(c.criterio_id) ? 'seleccionado' : 'pendiente';
+        const componenteInfo = c.component
+          ? `${c.component.nomenclatura ?? ''} ${c.component.nombre ?? ''}`.toLowerCase()
+          : '';
+        return (
+          (c.nomenclatura ?? '').toLowerCase().includes(term) ||
+          (c.descripcion ?? '').toLowerCase().includes(term) ||
+          estadoLabel.includes(term) ||
+          componenteInfo.includes(term)
+        );
+      });
     }
     if (statusFilter === 'seleccionados') {
       const ids = formData.criterios_seleccionados.map(c => c.criterio_id);
@@ -201,12 +218,22 @@ export const CreationStep: React.FC<CreationStepProps> = ({
     let filtered = listedElementos;
     if (searchTerm) {
       const term = searchTerm.toLowerCase();
-      filtered = filtered.filter(e =>
-        (e.nombre ?? '').toLowerCase().includes(term) ||
-        (e.nomenclatura ?? '').toLowerCase().includes(term) ||
-        (e.descripcion ?? '').toLowerCase().includes(term) ||
-        e.tipo.toLowerCase().includes(term)
-      );
+      const selectedIds = new Set((formData.elementos_seleccionados ?? []).map(e => e.elemento_id));
+      filtered = filtered.filter(e => {
+        const estadoLabel = selectedIds.has(e.elemento_id) ? 'seleccionado' : 'pendiente';
+        const padreEl = e.padre_id !== null ? elementosById.get(e.padre_id) : undefined;
+        const padreInfo = padreEl
+          ? `${padreEl.nomenclatura ?? ''} ${padreEl.nombre ?? ''} ${padreEl.descripcion ?? ''}`.toLowerCase()
+          : '';
+        return (
+          (e.nombre ?? '').toLowerCase().includes(term) ||
+          (e.nomenclatura ?? '').toLowerCase().includes(term) ||
+          (e.descripcion ?? '').toLowerCase().includes(term) ||
+          (e.tipo ?? '').toLowerCase().includes(term) ||
+          estadoLabel.includes(term) ||
+          padreInfo.includes(term)
+        );
+      });
     }
     const elementosSeleccionados = formData.elementos_seleccionados ?? [];
     if (statusFilter === 'seleccionados') {
@@ -217,7 +244,7 @@ export const CreationStep: React.FC<CreationStepProps> = ({
       filtered = filtered.filter(e => !ids.includes(e.elemento_id));
     }
     return filtered;
-  }, [listedElementos, searchTerm, statusFilter, formData.elementos_seleccionados]);
+  }, [listedElementos, searchTerm, statusFilter, formData.elementos_seleccionados, elementosById]);
 
   // Paginación — igual en ambos modelos
   const totalPages = Math.max(1, Math.ceil((isFlexible ? elementosFiltrados : criteriosFiltrados).length / itemsPerPage));
@@ -297,42 +324,28 @@ export const CreationStep: React.FC<CreationStepProps> = ({
       header: 'Criterio',
       align: 'left',
       width: firstColumn.width,
-      render: (_, criterio) => (
-        <div className="flex flex-col">
-          <p
-            className={`block font-sans antialiased font-bold leading-normal text-negro-una-2 ${TYPOGRAPHY.table.cell}`}
-            title={criterio.nomenclatura}
-          >
-            {truncateText(criterio.nomenclatura, firstColumn.maxLength)}
-          </p>
-          <p
-            className={`block font-sans antialiased font-normal leading-normal text-gris-una ${TYPOGRAPHY.table.helper}`}
-            title={criterio.descripcion}
-          >
-            {truncateText(criterio.descripcion, firstColumn.maxLength)}
-          </p>
-        </div>
-      ),
-    },
-    {
-      key: 'estado',
-      header: 'Estado',
-      align: 'center',
-      width: TABLE_COLUMN_WIDTHS.status,
       render: (_, criterio) => {
-        const seleccionado = formData.criterios_seleccionados.some(
-          c => c.criterio_id === criterio.criterio_id
-        );
+        const criterioTitle = [criterio.nomenclatura, criterio.descripcion]
+          .filter(Boolean)
+          .join(' - ');
+        const parentInfo = criterio.component
+          ? [criterio.component.nomenclatura, criterio.component.nombre].filter(Boolean).join(' - ')
+          : 'Sin padre';
+
         return (
-          <div className="flex justify-center">
-            <StatusBadge
-              label={seleccionado ? CRITERIO_SELECTION_STATUS_BADGE.seleccionado.label : CRITERIO_SELECTION_STATUS_BADGE.pendiente.label}
-              colorClasses={
-                seleccionado
-                  ? CRITERIO_SELECTION_STATUS_BADGE.seleccionado.colorClasses
-                  : CRITERIO_SELECTION_STATUS_BADGE.pendiente.colorClasses
-              }
-            />
+          <div className="flex flex-col">
+            <p
+              className={`block font-sans antialiased font-bold leading-normal text-negro-una-2 ${TYPOGRAPHY.table.cell}`}
+              title={criterioTitle}
+            >
+              {truncateText(criterioTitle, firstColumn.maxLength)}
+            </p>
+            <p
+              className={`block font-sans antialiased font-normal leading-normal text-gris-una ${TYPOGRAPHY.table.helper}`}
+              title={parentInfo}
+            >
+              {truncateText(parentInfo, firstColumn.maxLength)}
+            </p>
           </div>
         );
       },
@@ -355,7 +368,30 @@ export const CreationStep: React.FC<CreationStepProps> = ({
             <UserAvatars users={avatars} size={28} maxVisible={5} tooltipPlacement="top" />
           </div>
         ) : (
-          <span className={`${TYPOGRAPHY.table.helper} text-gris-una/50`}>Sin destinatarios</span>
+          <span className={`${TYPOGRAPHY.table.cell} text-gris-una/70`}>Sin destinatarios</span>
+        );
+      },
+    },
+    {
+      key: 'estado',
+      header: 'Estado',
+      align: 'left',
+      width: TABLE_COLUMN_WIDTHS.status,
+      render: (_, criterio) => {
+        const seleccionado = formData.criterios_seleccionados.some(
+          c => c.criterio_id === criterio.criterio_id
+        );
+        return (
+          <div className="flex justify-start">
+            <StatusBadge
+              label={seleccionado ? CRITERIO_SELECTION_STATUS_BADGE.seleccionado.label : CRITERIO_SELECTION_STATUS_BADGE.pendiente.label}
+              colorClasses={
+                seleccionado
+                  ? CRITERIO_SELECTION_STATUS_BADGE.seleccionado.colorClasses
+                  : CRITERIO_SELECTION_STATUS_BADGE.pendiente.colorClasses
+              }
+            />
+          </div>
         );
       },
     },
@@ -379,7 +415,7 @@ export const CreationStep: React.FC<CreationStepProps> = ({
               disabled={seleccionado}
               className={TABLE_ACTION_BUTTON.button}
             >
-              <SystemIcons.structure.nut className={TABLE_ACTION_BUTTON.icon} />
+              <SystemIcons.actions.configureCommitment className={TABLE_ACTION_BUTTON.icon} />
             </ButtonWithTooltip>
 
             <ButtonWithTooltip
@@ -423,44 +459,32 @@ export const CreationStep: React.FC<CreationStepProps> = ({
       header: 'Elemento',
       align: 'left',
       width: firstColumn.width,
-      render: (_, elemento) => (
-        <div className="flex flex-col pl-2">
-          <p
-            className={`block font-sans antialiased font-bold leading-normal text-negro-una-2 ${TYPOGRAPHY.table.cell}`}
-            title={elemento.nomenclatura ?? elemento.nombre ?? elemento.tipo}
-          >
-            {truncateText(elemento.nomenclatura ?? elemento.nombre ?? elemento.tipo, firstColumn.maxLength)}
-          </p>
-          {(elemento.nombre || elemento.descripcion) && (
+      render: (_, elemento) => {
+        const elementoMainName = elemento.nomenclatura ?? elemento.nombre ?? elemento.tipo;
+        const elementoTitle = [elementoMainName, elemento.descripcion]
+          .filter(Boolean)
+          .join(' - ');
+        const parentElement = elemento.padre_id !== null ? elementosById.get(elemento.padre_id) : undefined;
+        const parentInfo = parentElement
+          ? [parentElement.nomenclatura ?? parentElement.nombre ?? parentElement.tipo, parentElement.descripcion]
+              .filter(Boolean)
+              .join(' - ')
+          : 'Sin padre';
+
+        return (
+          <div className="flex flex-col">
+            <p
+              className={`block font-sans antialiased font-bold leading-normal text-negro-una-2 ${TYPOGRAPHY.table.cell}`}
+              title={elementoTitle}
+            >
+              {truncateText(elementoTitle, firstColumn.maxLength)}
+            </p>
             <p
               className={`block font-sans antialiased font-normal leading-normal text-gris-una ${TYPOGRAPHY.table.helper}`}
-              title={elemento.nombre ?? elemento.descripcion ?? ''}
+              title={parentInfo}
             >
-              {truncateText(elemento.nombre ?? elemento.descripcion ?? '', firstColumn.maxLength)}
+              {truncateText(parentInfo, firstColumn.maxLength)}
             </p>
-          )}
-        </div>
-      ),
-    },
-    {
-      key: 'estado',
-      header: 'Estado',
-      align: 'center',
-      width: TABLE_COLUMN_WIDTHS.status,
-      render: (_, elemento) => {
-        const seleccionado = (formData.elementos_seleccionados ?? []).some(
-          e => e.elemento_id === elemento.elemento_id
-        );
-        return (
-          <div className="flex justify-center">
-            <StatusBadge
-              label={seleccionado ? CRITERIO_SELECTION_STATUS_BADGE.seleccionado.label : CRITERIO_SELECTION_STATUS_BADGE.pendiente.label}
-              colorClasses={
-                seleccionado
-                  ? CRITERIO_SELECTION_STATUS_BADGE.seleccionado.colorClasses
-                  : CRITERIO_SELECTION_STATUS_BADGE.pendiente.colorClasses
-              }
-            />
           </div>
         );
       },
@@ -483,7 +507,30 @@ export const CreationStep: React.FC<CreationStepProps> = ({
             <UserAvatars users={avatars} size={28} maxVisible={5} tooltipPlacement="top" />
           </div>
         ) : (
-          <span className={`${TYPOGRAPHY.table.helper} text-gris-una/50`}>Sin destinatarios</span>
+          <span className={`${TYPOGRAPHY.table.cell} text-gris-una/70`}>Sin destinatarios</span>
+        );
+      },
+    },
+    {
+      key: 'estado',
+      header: 'Estado',
+      align: 'left',
+      width: TABLE_COLUMN_WIDTHS.status,
+      render: (_, elemento) => {
+        const seleccionado = (formData.elementos_seleccionados ?? []).some(
+          e => e.elemento_id === elemento.elemento_id
+        );
+        return (
+          <div className="flex justify-start">
+            <StatusBadge
+              label={seleccionado ? CRITERIO_SELECTION_STATUS_BADGE.seleccionado.label : CRITERIO_SELECTION_STATUS_BADGE.pendiente.label}
+              colorClasses={
+                seleccionado
+                  ? CRITERIO_SELECTION_STATUS_BADGE.seleccionado.colorClasses
+                  : CRITERIO_SELECTION_STATUS_BADGE.pendiente.colorClasses
+              }
+            />
+          </div>
         );
       },
     },
@@ -508,7 +555,7 @@ export const CreationStep: React.FC<CreationStepProps> = ({
               disabled={seleccionado}
               className={TABLE_ACTION_BUTTON.button}
             >
-              <SystemIcons.structure.nut className={TABLE_ACTION_BUTTON.icon} />
+              <SystemIcons.actions.configureCommitment className={TABLE_ACTION_BUTTON.icon} />
             </ButtonWithTooltip>
             <ButtonWithTooltip
               variant="tableEdit"
@@ -541,7 +588,7 @@ export const CreationStep: React.FC<CreationStepProps> = ({
         );
       },
     },
-  ], [firstColumn, formData.elementos_seleccionados, hijosDeElemento]);
+  ], [firstColumn, formData.elementos_seleccionados, elementosById]);
 
   if (loading) {
     return (
@@ -633,6 +680,7 @@ export const CreationStep: React.FC<CreationStepProps> = ({
         title="Eliminar criterio"
         itemName={criterionToDelete?.nombre}
         message="¿Está seguro de que desea eliminar este criterio del compromiso?"
+        confirmLabel="Sí, eliminar"
       />
 
       {/* Modal de Confirmación para Eliminar Elemento */}
@@ -643,6 +691,7 @@ export const CreationStep: React.FC<CreationStepProps> = ({
         title="Eliminar elemento"
         itemName={elementoToDelete?.nombre}
         message="¿Está seguro de que desea eliminar este elemento del compromiso?"
+        confirmLabel="Sí, eliminar"
       />
     </>
   );

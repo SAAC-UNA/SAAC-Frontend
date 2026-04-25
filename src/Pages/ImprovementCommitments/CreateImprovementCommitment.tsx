@@ -30,10 +30,7 @@ import type {
 import type { FlexibleElement } from "@/Types/StructureModelTypes";
 // Importar componentes de los pasos
 import { CreationStep } from './Components/CreationStep';
-import type { StatusFilter } from './Components/CreationStep';
 import { SearchInput } from '@/Components/Ui/Forms/SearchInput';
-import { FilterButton } from '@/Components/Ui/Buttons/FilterButton';
-import type { FilterOption } from '@/Components/Ui/Buttons/FilterButton';
 import { CustomSelect } from '@/Components/Ui/Forms/SingleSelect';
 import type { SelectOption } from '@/Components/Ui/Forms/SingleSelect';
 
@@ -76,10 +73,8 @@ const CreateImprovementCommitment: React.FC = () => {
 
   const [creationFilter, setCreationFilter] = useState<{
     searchTerm: string;
-    statusFilter: StatusFilter;
   }>({
     searchTerm: "",
-    statusFilter: "todos",
   });
 
   const [cicloOptions, setCicloOptions] = useState<SelectOption[]>([]);
@@ -88,11 +83,6 @@ const CreateImprovementCommitment: React.FC = () => {
     setFormData(prev => ({ ...prev, ciclo_acreditacion_id: parseInt(value) }));
   };
 
-  const filterOptions: FilterOption<StatusFilter>[] = [
-    { value: "todos", label: "Todos" },
-    { value: "seleccionados", label: "Seleccionados" },
-    { value: "pendientes", label: "Pendientes" },
-  ];
 
   const [formData, setFormData] = useState<CompromisoFormData>({
     ciclo_acreditacion_id: cicloId ? parseInt(cicloId) : null,
@@ -549,30 +539,25 @@ const CreateImprovementCommitment: React.FC = () => {
             description={moduleInfo.description}
             breadcrumbMode="cycle-only"
             headerExtra={
-              <div className="flex gap-4 items-center">
-                <CustomSelect
-                  label="Ciclo"
-                  value={formData.ciclo_acreditacion_id?.toString() || ''}
-                  options={cicloOptions}
-                  placeholder="Seleccione un ciclo..."
-                  onChange={handleCicloChange}
-                  required
-                  error={errors.ciclo_acreditacion_id}
-                  size="sm"
-                  disabled={fromProcess}
-                  className="w-60"
-                />
+              <div className="flex gap-4 items-center flex-wrap">
+                {!fromProcess && (
+                  <CustomSelect
+                    label="Ciclo"
+                    value={formData.ciclo_acreditacion_id?.toString() || ''}
+                    options={cicloOptions}
+                    placeholder="Seleccione un ciclo..."
+                    onChange={handleCicloChange}
+                    required
+                    error={errors.ciclo_acreditacion_id}
+                    size="sm"
+                    className="w-60"
+                  />
+                )}
                 <SearchInput
                   value={creationFilter.searchTerm}
                   onChange={(v) => setCreationFilter(prev => ({ ...prev, searchTerm: v }))}
-                  placeholder="Buscar por nomenclatura o descripción..."
+                  placeholder="Buscar elementos..."
                   className="w-72"
-                />
-                <FilterButton
-                  tooltipText="Filtrar por estado"
-                  options={filterOptions}
-                  value={creationFilter.statusFilter}
-                  onChange={(v) => setCreationFilter(prev => ({ ...prev, statusFilter: v as StatusFilter }))}
                 />
               </div>
             }
@@ -591,7 +576,7 @@ const CreateImprovementCommitment: React.FC = () => {
             errors={errors}
             cicloFijo={fromProcess}
             searchTerm={creationFilter.searchTerm}
-            statusFilter={creationFilter.statusFilter}
+            statusFilter="todos"
             modeloTipo={modeloTipo}
             modeloId={modeloIdRaw}
             onCiclosLoaded={setCicloOptions}
