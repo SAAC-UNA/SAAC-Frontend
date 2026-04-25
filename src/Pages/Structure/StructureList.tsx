@@ -33,7 +33,10 @@ import type {
   EditFlexibleElementForm,
 } from "@/Types/StructureModelTypes";
 import { Card } from "@/Components/Ui/Layout/Card";
-import { Breadcrumb, type BreadcrumbItem } from "@/Components/Ui/Feedback/Breadcrumb";
+import {
+  Breadcrumb,
+  type BreadcrumbItem,
+} from "@/Components/Ui/Feedback/Breadcrumb";
 import { ROUTES } from "@/Constants/ROUTES";
 
 type StructureLocationState = {
@@ -122,8 +125,9 @@ const StructureList: React.FC = () => {
   );
 
   const selectedModel = useMemo(
-    () => models.find(m => m.modelo_estructura_id === selectedModelId) ?? null,
-    [models, selectedModelId]
+    () =>
+      models.find((m) => m.modelo_estructura_id === selectedModelId) ?? null,
+    [models, selectedModelId],
   );
 
   const currentStructureLabel = useMemo(() => {
@@ -137,7 +141,10 @@ const StructureList: React.FC = () => {
   const breadcrumbItems = useMemo<BreadcrumbItem[]>(() => {
     const items: BreadcrumbItem[] = [];
 
-    if (lockModelSelection || navigationState?.from === ROUTES.STRUCTURE_MODELS) {
+    if (
+      lockModelSelection ||
+      navigationState?.from === ROUTES.STRUCTURE_MODELS
+    ) {
       items.push({
         label: "Modelos de Acreditación",
         href: ROUTES.STRUCTURE_MODELS,
