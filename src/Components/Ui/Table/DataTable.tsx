@@ -82,6 +82,7 @@ export interface DataTableProps<T = unknown> {
     totalPages: number;
     onPageChange: (page: number) => void;
   };
+  paginationExtra?: React.ReactNode;
 
   // Estados
   loading?: boolean;
@@ -163,6 +164,7 @@ export const DataTable = React.memo(<T extends Record<string, unknown>>({
   customFilters,
   primaryAction,
   pagination,
+  paginationExtra,
   loading = false,
   emptyMessage = "No hay datos para mostrar",
   className,
@@ -426,13 +428,16 @@ export const DataTable = React.memo(<T extends Record<string, unknown>>({
       </div>
 
       {/* Paginación */}
-      {pagination && pagination.totalPages > 1 && (
-        <div className="flex items-center justify-center py-1">
-          <Pagination
-            currentPage={pagination.currentPage}
-            totalPages={pagination.totalPages}
-            onPageChange={pagination.onPageChange}
-          />
+      {(paginationExtra || (pagination && pagination.totalPages > 1)) && (
+        <div className="flex items-center justify-center gap-2 py-1">
+          {paginationExtra}
+          {pagination && pagination.totalPages > 1 && (
+            <Pagination
+              currentPage={pagination.currentPage}
+              totalPages={pagination.totalPages}
+              onPageChange={pagination.onPageChange}
+            />
+          )}
         </div>
       )}
     </div>

@@ -5,7 +5,8 @@
  *  - Crear ciclo (Administrador / Superusuario)
  *  - Editar ciclo (solo si estado === 'activo'; Administrador / Superusuario)
  *  - Eliminar ciclo con confirmación por nombre (Administrador / Superusuario)
- *  - Reactivar ciclo (solo Superusuario)
+ *  - Activar/Inactivar ciclo desde acciones (según permisos)
+ *  - Marcar ciclo como completado desde acciones
  */
 
 import React, { useState, useRef, useMemo } from "react";
@@ -92,7 +93,13 @@ const AccreditationCyclesPage: React.FC = () => {
     loading: boolean;
   }>({ isOpen: false, cycle: null, loading: false });
 
-  const [reactivateModal, setReactivateModal] = useState<{
+  const [toggleStatusModal, setToggleStatusModal] = useState<{
+    isOpen: boolean;
+    cycle: AccreditationCycle | null;
+    loading: boolean;
+  }>({ isOpen: false, cycle: null, loading: false });
+
+  const [completeModal, setCompleteModal] = useState<{
     isOpen: boolean;
     cycle: AccreditationCycle | null;
     loading: boolean;
@@ -128,6 +135,7 @@ const AccreditationCyclesPage: React.FC = () => {
 
   const handleDeleteConfirm = async (confirmacion: string) => {
     if (!deleteModal.cycle) return;
+    const cycleName = deleteModal.cycle.nombre;
     setDeleteModal((p) => ({ ...p, loading: true }));
     const result = await deleteCycle(
       deleteModal.cycle.ciclo_acreditacion_id,
@@ -138,34 +146,67 @@ const AccreditationCyclesPage: React.FC = () => {
       setSuccessModal({
         isOpen: true,
         title: "Ciclo eliminado",
-        message: "El ciclo fue eliminado exitosamente.",
+        message: `El ciclo "${cycleName}" fue eliminado exitosamente.`,
       });
     } else {
       showToast({
         type: "error",
-        title: result.error ?? "Error al eliminar el ciclo",
+        title: "No se pudo eliminar el ciclo",
+        message: result.error ?? "No fue posible completar la eliminación en este momento.",
       });
     }
   };
 
   const confirmReactivate = async () => {
-    if (!reactivateModal.cycle) return;
-    setReactivateModal((p) => ({ ...p, loading: true }));
-    const cycle = reactivateModal.cycle;
-    const result = await reactivateCycle(cycle.ciclo_acreditacion_id);
-    setReactivateModal({ isOpen: false, cycle: null, loading: false });
+    if (!toggleStatusModal.cycle) return;
+
+    setToggleStatusModal((p) => ({ ...p, loading: true }));
+    const cycle = toggleStatusModal.cycle;
+    const result =
+      cycle.estado === "activo"
+        ? await updateCycle(cycle.ciclo_acreditacion_id, { estado: "inactivo" })
+        : await reactivateCycle(cycle.ciclo_acreditacion_id);
+
+    setToggleStatusModal({ isOpen: false, cycle: null, loading: false });
+
     if (result.success) {
+      const nowActive = cycle.estado !== "activo";
       setSuccessModal({
         isOpen: true,
-        title: "Ciclo reactivado",
-        message: `El ciclo "${cycle.nombre}" fue reactivado correctamente.`,
+        title: nowActive ? "Ciclo activado" : "Ciclo inactivado",
+        message: `El ciclo "${cycle.nombre}" fue ${nowActive ? "activado" : "inactivado"} correctamente.`,
       });
     } else {
       showToast({
         type: "error",
-        title: result.error ?? "Error al reactivar el ciclo",
+        title: result.error ?? "Error al actualizar el estado del ciclo",
       });
     }
+  };
+
+  const confirmMarkAsCompleted = async () => {
+    if (!completeModal.cycle) return;
+
+    setCompleteModal((p) => ({ ...p, loading: true }));
+    const cycle = completeModal.cycle;
+    const result = await updateCycle(cycle.ciclo_acreditacion_id, {
+      estado: "completado",
+    });
+    setCompleteModal({ isOpen: false, cycle: null, loading: false });
+
+    if (result.success) {
+      setSuccessModal({
+        isOpen: true,
+        title: "Ciclo completado",
+        message: `El ciclo "${cycle.nombre}" fue marcado como completado.`,
+      });
+      return;
+    }
+
+    showToast({
+      type: "error",
+      title: result.error ?? "Error al marcar el ciclo como completado",
+    });
   };
 
   // ── Render ────────────────────────────────────────────────────────────────
@@ -209,8 +250,11 @@ const AccreditationCyclesPage: React.FC = () => {
         onDelete={(cycle) =>
           setDeleteModal({ isOpen: true, cycle, loading: false })
         }
-        onReactivate={(cycle) =>
-          setReactivateModal({ isOpen: true, cycle, loading: false })
+        onToggleStatus={(cycle) =>
+          setToggleStatusModal({ isOpen: true, cycle, loading: false })
+        }
+        onMarkComplete={(cycle) =>
+          setCompleteModal({ isOpen: true, cycle, loading: false })
         }
         canEdit={canEdit}
         canDelete={canDelete}
@@ -250,22 +294,30 @@ const AccreditationCyclesPage: React.FC = () => {
         isLoading={deleteModal.loading}
       />
 
-      {/* Modal reactivar */}
-      {reactivateModal.cycle && (
+      {/* Modal activar/inactivar */}
+      {toggleStatusModal.cycle && (
         <Modal
-          isOpen={reactivateModal.isOpen}
+          isOpen={toggleStatusModal.isOpen}
           onClose={() =>
-            setReactivateModal({ isOpen: false, cycle: null, loading: false })
+            setToggleStatusModal({ isOpen: false, cycle: null, loading: false })
           }
           onConfirm={confirmReactivate}
-          variant="success"
-          title="Confirmar reactivación"
-          confirmLabel="Sí, reactivar"
+          variant={toggleStatusModal.cycle.estado === "activo" ? "info" : "success"}
+          title={
+            toggleStatusModal.cycle.estado === "activo"
+              ? "Confirmar inactivación"
+              : "Confirmar activación"
+          }
+          confirmLabel={toggleStatusModal.cycle.estado === "activo" ? "Sí, inactivar" : "Sí, activar"}
           cancelLabel="Cancelar"
-          confirmLoading={reactivateModal.loading}
+          confirmLoading={toggleStatusModal.loading}
           showCancel
           showConfirm
-          footerMeta="Solo usuarios con permiso de reactivación pueden continuar"
+          footerMeta={
+            toggleStatusModal.cycle.estado === "activo"
+              ? "Esta acción puede revertirse posteriormente"
+              : "Se validará que no exista otro ciclo activo en la misma carrera-sede"
+          }
         >
           <p
             className={cn(
@@ -273,11 +325,44 @@ const AccreditationCyclesPage: React.FC = () => {
               "text-gris-una-2 leading-relaxed",
             )}
           >
-            ¿Está seguro de reactivar el ciclo{" "}
+            ¿Está seguro de {toggleStatusModal.cycle.estado === "activo" ? "inactivar" : "activar"} el ciclo{" "}
             <strong className="text-negro-una">
-              "{reactivateModal.cycle.nombre}"
+              "{toggleStatusModal.cycle.nombre}"
             </strong>
-            ? Se establecerá como el ciclo activo para su carrera-sede.
+            ?
+            {toggleStatusModal.cycle.estado !== "activo" &&
+              " Se establecerá como el ciclo activo para su carrera-sede."}
+          </p>
+        </Modal>
+      )}
+
+      {/* Modal marcar completado */}
+      {completeModal.cycle && (
+        <Modal
+          isOpen={completeModal.isOpen}
+          onClose={() =>
+            setCompleteModal({ isOpen: false, cycle: null, loading: false })
+          }
+          onConfirm={confirmMarkAsCompleted}
+          variant="success"
+          title="Confirmar marcado como completado"
+          confirmLabel="Sí, marcar"
+          cancelLabel="Cancelar"
+          confirmLoading={completeModal.loading}
+          showCancel
+          showConfirm
+        >
+          <p
+            className={cn(
+              TYPOGRAPHY.modal.body,
+              "text-gris-una-2 leading-relaxed",
+            )}
+          >
+            ¿Está seguro de marcar como completado el ciclo{" "}
+            <strong className="text-negro-una">
+              "{completeModal.cycle.nombre}"
+            </strong>
+            ?
           </p>
         </Modal>
       )}

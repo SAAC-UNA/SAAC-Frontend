@@ -4,7 +4,7 @@
  * Flujo: EntityFormModal → CreateConfirmationModal / EditConfirmationModal → SuccessModal
  */
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { EntityFormModal } from '@/Components/Ui/Modals/EntityFormModal';
 import { CreateConfirmationModal } from '@/Components/Ui/Modals/CreateConfirmationModal';
 import { EditConfirmationModal } from '@/Components/Ui/Modals/EditConfirmationModal';
@@ -16,7 +16,6 @@ import { useCareerCampuses } from '@/Hooks/UseCareerCampuses';
 import { useStructureModels } from '@/Hooks/UseStructureModels';
 import type {
   AccreditationCycle,
-  AccreditationCycleStatus,
   CreateAccreditationCycleForm,
   EditAccreditationCycleForm,
 } from '@/Types/AccreditationCycleTypes';
@@ -34,7 +33,6 @@ interface FormData {
   nombre: string;
   carrera_sede_id: string;
   modelo_estructura_id: string;
-  estado: AccreditationCycleStatus;
 }
 
 interface FormErrors {
@@ -47,14 +45,7 @@ const EMPTY: FormData = {
   nombre: '',
   carrera_sede_id: '',
   modelo_estructura_id: '',
-  estado: 'activo',
 };
-
-const STATUS_OPTIONS = [
-  { value: 'activo', label: 'Activo' },
-  { value: 'inactivo', label: 'Inactivo' },
-  { value: 'completado', label: 'Completado' },
-];
 
 export const AccreditationCycleFormModal: React.FC<Props> = ({
   isOpen,
@@ -81,7 +72,6 @@ export const AccreditationCycleFormModal: React.FC<Props> = ({
               nombre: cycle.nombre,
               carrera_sede_id: String(cycle.carrera_sede_id),
               modelo_estructura_id: String(cycle.modelo_estructura_id),
-              estado: cycle.estado,
             }
           : EMPTY,
       );
@@ -98,6 +88,16 @@ export const AccreditationCycleFormModal: React.FC<Props> = ({
   const modelOptions = models
     .filter(m => m.activo)
     .map(m => ({ value: String(m.modelo_estructura_id), label: m.nombre }));
+
+  const hasChanges = useMemo(() => {
+    if (!isEditing || !cycle) return true;
+
+    return (
+      form.nombre !== cycle.nombre
+      || form.carrera_sede_id !== String(cycle.carrera_sede_id)
+      || form.modelo_estructura_id !== String(cycle.modelo_estructura_id)
+    );
+  }, [cycle, form, isEditing]);
 
   const validate = (): boolean => {
     const next: FormErrors = {};
@@ -117,6 +117,7 @@ export const AccreditationCycleFormModal: React.FC<Props> = ({
   };
 
   const handleSubmitRequest = () => {
+    if (isEditing && !hasChanges) return;
     if (validate()) setConfirmOpen(true);
   };
 
@@ -127,7 +128,6 @@ export const AccreditationCycleFormModal: React.FC<Props> = ({
           nombre: form.nombre.trim(),
           carrera_sede_id: Number(form.carrera_sede_id),
           modelo_estructura_id: Number(form.modelo_estructura_id),
-          estado: form.estado,
         }
       : {
           nombre: form.nombre.trim(),
@@ -159,6 +159,7 @@ export const AccreditationCycleFormModal: React.FC<Props> = ({
         title={isEditing ? 'Editar Ciclo' : 'Crear Ciclo de Acreditación'}
         subtitle={isEditing ? cycle?.nombre : undefined}
         confirmLabel={isEditing ? 'Guardar' : 'Crear'}
+        confirmDisabled={isEditing ? !hasChanges : false}
         isEditing={isEditing}
         size="lg"
       >
@@ -199,15 +200,6 @@ export const AccreditationCycleFormModal: React.FC<Props> = ({
             searchPlaceholder="Buscar modelo..."
             placeholder="Seleccione un modelo"
           />
-
-          {isEditing && (
-            <CustomSelect
-              label="Estado"
-              value={form.estado}
-              options={STATUS_OPTIONS}
-              onChange={v => setForm(p => ({ ...p, estado: v as AccreditationCycleStatus }))}
-            />
-          )}
         </div>
       </EntityFormModal>
 

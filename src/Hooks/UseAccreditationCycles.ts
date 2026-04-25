@@ -12,27 +12,78 @@ import type {
   EditAccreditationCycleForm,
 } from '@/Types/AccreditationCycleTypes';
 import * as cycleService from '@/Services/AccreditationCycleService';
+import { accreditationProcessService } from '@/Services/AccreditationProcessService';
 
 // ── Helpers ────────────────────────────────────────────────────────────────────
 
-function extractBackendError(err: unknown, fallback: string): string {
+interface BackendErrorInfo {
+  message: string;
+  status?: number;
+}
+
+function normalizeErrorText(value: string): string {
+  return value
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase()
+    .trim();
+}
+
+function extractBackendErrorInfo(err: unknown, fallback: string): BackendErrorInfo {
+  let message = fallback;
+  let status: number | undefined;
+
   if (err && typeof err === 'object') {
     const e = err as Record<string, unknown>;
     if (e.response && typeof e.response === 'object') {
       const resp = e.response as Record<string, unknown>;
+      if (typeof resp.status === 'number') {
+        status = resp.status;
+      }
       if (resp.data && typeof resp.data === 'object') {
         const d = resp.data as Record<string, unknown>;
         // Laravel 422: errors object has field-level messages
         if (d.errors && typeof d.errors === 'object') {
           const firstMsg = Object.values(d.errors as Record<string, string[]>).flat()[0];
-          if (firstMsg) return firstMsg;
+          if (firstMsg) {
+            return { message: firstMsg, status };
+          }
         }
-        if (typeof d.message === 'string' && d.message) return d.message;
+        if (typeof d.message === 'string' && d.message) {
+          message = d.message;
+        }
       }
     }
-    if (typeof e.message === 'string') return e.message;
+    if (typeof e.message === 'string' && e.message.trim().length > 0) {
+      message = e.message;
+    }
   }
-  return fallback;
+
+  return { message, status };
+}
+
+function extractBackendError(err: unknown, fallback: string): string {
+  return extractBackendErrorInfo(err, fallback).message;
+}
+
+function hasAssociatedProcessesError(message: string): boolean {
+  const normalized = normalizeErrorText(message);
+  return (
+    normalized.includes('procesos asociados')
+    || normalized.includes('tiene procesos asociados')
+    || normalized.includes('tiene procesos')
+  );
+}
+
+function shouldAttemptCascadeDelete(status: number | undefined, message: string): boolean {
+  const normalized = normalizeErrorText(message);
+
+  if (status === 401 || status === 403 || status === 404) return false;
+  if (normalized.includes('confirmacion incorrecta')) return false;
+
+  if (hasAssociatedProcessesError(message)) return true;
+
+  return status === 500 && normalized.includes('error al eliminar el ciclo');
 }
 
 // ── Types ─────────────────────────────────────────────────────────────────────
@@ -99,7 +150,56 @@ export function useAccreditationCycles(): UseAccreditationCyclesReturn {
       await loadCycles();
       return { success: true };
     } catch (err) {
-      return { success: false, error: extractBackendError(err, 'No se pudo eliminar el ciclo') };
+      const directDeleteError = extractBackendErrorInfo(err, 'No se pudo eliminar el ciclo');
+
+      if (!shouldAttemptCascadeDelete(directDeleteError.status, directDeleteError.message)) {
+        return { success: false, error: directDeleteError.message };
+      }
+
+      let cycleProcesses: Awaited<
+        ReturnType<typeof accreditationProcessService.getProcesses>
+      > = [];
+
+      try {
+        const processes = await accreditationProcessService.getProcesses();
+        cycleProcesses = processes.filter(
+          (process) => Number(process.accreditationCycleId) === id,
+        );
+      } catch (listErr) {
+        return {
+          success: false,
+          error: `No se pudo verificar los procesos asociados del ciclo. ${extractBackendError(listErr, 'Intente nuevamente.')}`,
+        };
+      }
+
+      if (cycleProcesses.length === 0) {
+        return { success: false, error: directDeleteError.message };
+      }
+
+      for (const process of cycleProcesses) {
+        try {
+          await accreditationProcessService.deleteProcess(process.id, {
+            confirmacion: process.type,
+          });
+        } catch (processErr) {
+          return {
+            success: false,
+            error: `No se pudo eliminar el proceso asociado "${process.type}". ${extractBackendError(processErr, 'Revise permisos o dependencias e intente nuevamente.')}`,
+          };
+        }
+      }
+
+      try {
+        await cycleService.deleteCycle(id, confirmacion);
+        await loadCycles();
+        return { success: true };
+      } catch (retryErr) {
+        return {
+          success: false,
+          error: `Se eliminaron ${cycleProcesses.length} proceso(s) asociados, pero el ciclo aún no pudo eliminarse. ${extractBackendError(retryErr, 'Intente nuevamente.')}`,
+        };
+      }
+
     }
   }, [loadCycles]);
 

@@ -282,6 +282,12 @@ const StructureList: React.FC<StructureListProps> = ({
                 className="w-full sm:w-72"
               />
               <Button
+                onClick={() => navigate(ROUTES.STRUCTURE_MODELS)}
+                variant="outline"
+              >
+                Regresar
+              </Button>
+              <Button
                 onClick={() => setCreateModalOpen(true)}
                 variant="secondary"
               >

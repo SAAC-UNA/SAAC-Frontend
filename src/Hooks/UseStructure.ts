@@ -77,26 +77,56 @@ let _inflight: Promise<void> | null = null;
 const _subs = new Set<() => void>();
 
 /**
- * Recoge el ID del elemento objetivo y el de todos sus descendientes
- * en la lista plana, siguiendo relaciones parentElementId.
+ * Determina el tipo de padre esperado según la jerarquía tradicional.
  */
-function collectDescendantIds(
+function getExpectedParentType(elementType: ElementType): ElementType | null {
+  const parentTypeMap: Record<ElementType, ElementType | null> = {
+    university: null,
+    campus: 'university',
+    career: 'campus',
+    dimension: null,
+    component: 'dimension',
+    criteria: 'component',
+    standard: 'criteria',
+    evidence: 'criteria',
+  };
+
+  return parentTypeMap[elementType];
+}
+
+function getElementCompositeKey(elementType: ElementType, elementId: string): string {
+  return `${elementType}:${elementId}`;
+}
+
+/**
+ * Recoge la clave compuesta (tipo:id) del elemento objetivo y la de todos
+ * sus descendientes en la lista plana, evitando colisiones de IDs entre tipos.
+ */
+function collectDescendantKeys(
   elements: StructureElement[],
-  targetId: string
+  targetType: ElementType,
+  targetId: string,
 ): Set<string> {
-  const ids = new Set<string>([targetId]);
-  // Iterar hasta que no se añadan más ids (BFS con conjunto creciente)
+  const keys = new Set<string>([getElementCompositeKey(targetType, targetId)]);
+  // Iterar hasta que no se añadan más claves (BFS con conjunto creciente)
   let changed = true;
   while (changed) {
     changed = false;
     for (const el of elements) {
-      if (!ids.has(el.id) && el.parentElementId && ids.has(el.parentElementId)) {
-        ids.add(el.id);
-        changed = true;
-      }
+      const currentKey = getElementCompositeKey(el.type, el.id);
+      if (keys.has(currentKey) || !el.parentElementId) continue;
+
+      const expectedParentType = getExpectedParentType(el.type);
+      if (!expectedParentType) continue;
+
+      const parentKey = getElementCompositeKey(expectedParentType, el.parentElementId);
+      if (!keys.has(parentKey)) continue;
+
+      keys.add(currentKey);
+      changed = true;
     }
   }
-  return ids;
+  return keys;
 }
 
 /**
@@ -105,11 +135,16 @@ function collectDescendantIds(
  */
 function updateActiveWithDescendants(
   elements: StructureElement[],
+  elementType: ElementType,
   elementId: string,
   active: boolean
 ): StructureElement[] {
-  const affectedIds = collectDescendantIds(elements, elementId);
-  return elements.map(el => affectedIds.has(el.id) ? { ...el, active } : el);
+  const affectedKeys = collectDescendantKeys(elements, elementType, elementId);
+  return elements.map(el => (
+    affectedKeys.has(getElementCompositeKey(el.type, el.id))
+      ? { ...el, active }
+      : el
+  ));
 }
 
 function getOverrideKey(type: ElementType, id: string): string {
@@ -399,7 +434,7 @@ export const useStructure = (): UseStructureReturn => {
     async (elementType: ElementType, elementId: string): Promise<boolean> => {
       setMutating(true);
       const previousData = _st.data;
-      _set({ data: updateActiveWithDescendants(_st.data, elementId, true) });
+      _set({ data: updateActiveWithDescendants(_st.data, elementType, elementId, true) });
 
       try {
         await structureService.setActive(elementType, elementId, true);
@@ -434,7 +469,7 @@ export const useStructure = (): UseStructureReturn => {
     async (elementType: ElementType, elementId: string): Promise<boolean> => {
       setMutating(true);
       const previousData = _st.data;
-      _set({ data: updateActiveWithDescendants(_st.data, elementId, false) });
+      _set({ data: updateActiveWithDescendants(_st.data, elementType, elementId, false) });
 
       try {
         await structureService.setActive(elementType, elementId, false);

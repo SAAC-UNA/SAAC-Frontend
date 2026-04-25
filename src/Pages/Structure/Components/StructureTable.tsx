@@ -175,16 +175,24 @@ export const StructureTable: React.FC<StructureTableProps> = ({
         return parentTypeMap[elementType];
     };
 
-    const getParentName = useCallback((element: StructureElement): string => {
-        if (!element.parentElementId) return 'Sin elemento padre';
+    const resolveParentElement = useCallback((element: StructureElement): StructureElement | null => {
+        if (!element.parentElementId) return null;
         const expectedParentType = getExpectedParentType(element.type);
-        if (!expectedParentType) return 'Sin elemento padre';
-        const parent = allElements.find(el =>
-            el.type === expectedParentType &&
-            el.id === element.parentElementId
+        if (!expectedParentType) return null;
+
+        return (
+            allElements.find((candidate) => (
+                candidate.type === expectedParentType
+                && candidate.id === element.parentElementId
+            )) || null
         );
-        return parent?.name || parent?.nomenclature || parent?.description || 'Elemento padre no encontrado';
     }, [allElements]);
+
+    const getParentName = useCallback((element: StructureElement): string => {
+        const parent = resolveParentElement(element);
+        if (!parent) return 'Sin elemento padre';
+        return parent?.name || parent?.nomenclature || parent?.description || 'Elemento padre no encontrado';
+    }, [resolveParentElement]);
 
     // Configuración de columnas de la tabla
     const columns: DataTableColumn<StructureElement>[] = useMemo(() => [
@@ -266,7 +274,8 @@ export const StructureTable: React.FC<StructureTableProps> = ({
         render: (_, element) => {
             // Lógica para bloquear botones
             const canDelete = !element.hasChildren; // Solo puede eliminar si NO tiene hijos
-            const canActivate = element.active || !element.parentElement || element.parentElement.active; // Puede activar si ya está activo, o si no tiene padre, o si el padre está activo
+            const parentElement = resolveParentElement(element);
+            const canActivate = element.active || !parentElement || parentElement.active; // Puede activar si ya está activo, o si no tiene padre, o si el padre está activo
             
             return (
                 <div className="flex items-center justify-center gap-2">

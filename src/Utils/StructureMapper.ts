@@ -49,9 +49,45 @@ const ELEMENT_TYPE_TO_PARENT_FIELD: Record<ElementType, string | null> = {
 export function mapBackendToFrontend(data: any, type: ElementType): StructureElement {
   const idField = ELEMENT_TYPE_TO_ID_FIELD[type];
   const parentField = ELEMENT_TYPE_TO_PARENT_FIELD[type];
+
+  const resolveParentIdFromRelations = (): string | undefined => {
+    if (type === 'campus') {
+      const relationParentId =
+        data?.university?.universidad_id
+        ?? data?.university?.id
+        ?? data?.universidad?.universidad_id
+        ?? data?.universidad?.id;
+
+      if (relationParentId !== undefined && relationParentId !== null && relationParentId !== '') {
+        return String(relationParentId);
+      }
+    }
+
+    if (type === 'career') {
+      const firstCampus = Array.isArray(data?.campuses) && data.campuses.length > 0
+        ? data.campuses[0]
+        : Array.isArray(data?.sedes) && data.sedes.length > 0
+          ? data.sedes[0]
+          : null;
+
+      const relationParentId =
+        firstCampus?.sede_id
+        ?? firstCampus?.id
+        ?? data?.campus?.sede_id
+        ?? data?.campus?.id;
+
+      if (relationParentId !== undefined && relationParentId !== null && relationParentId !== '') {
+        return String(relationParentId);
+      }
+    }
+
+    return undefined;
+  };
   
   // Intentar obtener el ID del campo específico o del genérico "id"
   const elementId = data[idField] || data.id;
+  const parentFromField = parentField ? data[parentField] : undefined;
+  const resolvedParentId = parentFromField ?? resolveParentIdFromRelations();
 
   return {
     id: String(elementId),
@@ -59,7 +95,10 @@ export function mapBackendToFrontend(data: any, type: ElementType): StructureEle
     name: data.nombre || undefined,
     description: data.descripcion || undefined,
     type: type,
-    parentElementId: parentField && data[parentField] ? String(data[parentField]) : undefined,
+    parentElementId:
+      resolvedParentId !== undefined && resolvedParentId !== null && resolvedParentId !== ''
+        ? String(resolvedParentId)
+        : undefined,
     active: data.activo !== undefined ? Boolean(data.activo) : true, // Default true si no viene
     createdAt: data.created_at ? new Date(data.created_at) : new Date(),
     updatedAt: data.updated_at ? new Date(data.updated_at) : undefined,

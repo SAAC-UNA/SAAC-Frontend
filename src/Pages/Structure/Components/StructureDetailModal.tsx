@@ -128,12 +128,9 @@ export const StructureElementDetail: React.FC<StructureElementDetailProps> = ({
           <Separator />
 
           <InfoCell label="Elemento padre" className="col-span-6">
-            <div className="flex items-center gap-2">
-              <span className="w-1.5 h-1.5 rounded-full bg-azul-una shrink-0" />
-              <span className={cn(TYPOGRAPHY.modal.body, 'text-gris-una-2')}>
-                {getParentLabel()}
-              </span>
-            </div>
+            <span className={cn(TYPOGRAPHY.modal.body, 'text-gris-una-2')}>
+              {getParentLabel()}
+            </span>
           </InfoCell>
         </div>
       </Modal>
@@ -196,10 +193,9 @@ export const StructureElementDetail: React.FC<StructureElementDetailProps> = ({
 
         {/* div5 — Elemento padre */}
         <InfoCell label="Elemento padre" className="col-span-6">
-          <div className="flex items-center gap-2">
-            <span className="w-1.5 h-1.5 rounded-full bg-azul-una shrink-0" />
-            <span className={cn(TYPOGRAPHY.modal.body, 'text-gris-una-2')}>{resolvedParentName}</span>
-          </div>
+          <span className={cn(TYPOGRAPHY.modal.body, 'text-gris-una-2')}>
+            {resolvedParentName}
+          </span>
         </InfoCell>
 
         {/* Descripción (opcional, si existe) */}
