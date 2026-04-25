@@ -1,12 +1,11 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import {
   Card,
-  CustomSelect,
   LoadingSpinner,
   PageHeader,
   ScreenContainer,
-  type SelectOption,
 } from "@/Components/Ui/Index";
+import { ButtonWithTooltip } from "@/Components/Ui/Buttons/ButtonWithTooltip";
 import { useAuth } from "@/Context/AuthContext";
 import { useToast } from "@/Hooks/useToast";
 import { userService } from "@/Services/UserService";
@@ -22,6 +21,14 @@ import {
 } from "@/Services/GlobalFilterContextService";
 import type { AuditLog } from "@/Types/AuditLogTypes";
 import type { ExtensionRequest } from "@/Types/ExtensionRequestTypes";
+import { SystemIcons } from "@/Components/Ui/Icons/SystemIcons";
+import { ROUTES } from "@/Constants/ROUTES";
+import { useOperationalContextSnapshot } from "@/Hooks/useOperationalContextSnapshot";
+import {
+  Breadcrumb,
+  type BreadcrumbItem,
+} from "@/Components/Ui/Feedback/Breadcrumb";
+import { Link, useNavigate } from "react-router-dom";
 
 const isProfessorRole = (roles: string[]): boolean =>
   roles.some((role) => role.toLowerCase() === "profesor");
@@ -33,11 +40,6 @@ const isSuperUserRole = (roles: string[]): boolean =>
       normalizedRole === "superusuario" || normalizedRole === "super usuario"
     );
   });
-
-const toOption = (value: number, label: string): SelectOption => ({
-  value: String(value),
-  label,
-});
 
 interface ProfessorDashboardMetrics {
   activeAssignments: number;
@@ -61,7 +63,64 @@ interface SuperUserDashboardMetrics {
   auditTotal: number;
 }
 
+// Mini-header que muestra el contexto activo con navegación específica por paso
+const ContextMiniHeader: React.FC = () => {
+  const snapshot = useOperationalContextSnapshot();
+  const { userRoleNames } = useAuth();
+  const isSuper = isSuperUserRole(userRoleNames);
+
+  const items: BreadcrumbItem[] = [];
+
+  // Carrera: solo superusuario, va al paso career
+  if (isSuper && snapshot.careerLabel) {
+    items.push({
+      label: snapshot.careerLabel,
+      href: `${ROUTES.CONTEXT_SELECTOR}?step=career`,
+      tooltip: "Cambiar carrera",
+    });
+  }
+
+  // Ciclo: va al paso cycle (mantiene carrera en snapshot)
+  if (snapshot.cycleLabel) {
+    items.push({
+      label: snapshot.cycleLabel,
+      href: `${ROUTES.CONTEXT_SELECTOR}?step=cycle`,
+      tooltip: snapshot.careerLabel ?? "Cambiar ciclo",
+    });
+  }
+
+  // Proceso: va al paso process (mantiene carrera + ciclo en snapshot)
+  if (snapshot.processLabel) {
+    items.push({
+      label: snapshot.processLabel,
+      href: `${ROUTES.CONTEXT_SELECTOR}?step=process`,
+      tooltip: snapshot.cycleLabel ?? "Cambiar proceso",
+    });
+  }
+
+  if (items.length === 0) {
+    return (
+      <div className="mb-4">
+        <Link
+          to={ROUTES.CONTEXT_SELECTOR}
+          className="inline-flex items-center gap-2 rounded-full border border-azul-claro/30 bg-white px-4 py-2 text-sm font-semibold text-azul-una shadow-sm transition hover:-translate-y-0.5 hover:border-azul-una/30 hover:bg-azul-50"
+        >
+          <span aria-hidden="true">*</span>
+          Seleccionar contexto
+        </Link>
+      </div>
+    );
+  }
+
+  return (
+    <div className="mb-4">
+      <Breadcrumb items={items} />
+    </div>
+  );
+};
+
 const HomePage: React.FC = () => {
+  const navigate = useNavigate();
   const { userRoleNames, user } = useAuth();
   const toast = useToast();
   const toastRef = useRef(toast);
@@ -80,8 +139,9 @@ const HomePage: React.FC = () => {
   );
 
   const [loading, setLoading] = useState(true);
-  const [saving, setSaving] = useState(false);
+  const saving = false;
   const [catalog, setCatalog] = useState<GlobalFilterCatalog | null>(null);
+  const superSnapshot = useOperationalContextSnapshot();
   const [fixedCareer, setFixedCareer] = useState<GlobalFilterCareer | null>(
     null,
   );
@@ -358,12 +418,6 @@ const HomePage: React.FC = () => {
     );
   }, [catalog, fixedCareer]);
 
-  const cycleOptions = useMemo<SelectOption[]>(() => {
-    return availableCycles.map((cycle) =>
-      toOption(cycle.ciclo_acreditacion_id, cycle.nombre),
-    );
-  }, [availableCycles]);
-
   const availableProcesses = useMemo(() => {
     if (!catalog || !cycleId) {
       return [];
@@ -373,12 +427,6 @@ const HomePage: React.FC = () => {
       (process) => process.ciclo_acreditacion_id === Number(cycleId),
     );
   }, [catalog, cycleId]);
-
-  const processOptions = useMemo<SelectOption[]>(() => {
-    return availableProcesses.map((process) =>
-      toOption(process.proceso_id, process.tipo_proceso),
-    );
-  }, [availableProcesses]);
 
   const selectedCycleLabel = useMemo(() => {
     return (
@@ -395,9 +443,6 @@ const HomePage: React.FC = () => {
       )?.tipo_proceso ?? "No seleccionado"
     );
   }, [availableProcesses, processId]);
-
-  const cycleRequired = availableCycles.length > 0;
-  const processRequired = Boolean(cycleId) && availableProcesses.length > 0;
 
   useEffect(() => {
     if (!cycleId) {
@@ -427,49 +472,6 @@ const HomePage: React.FC = () => {
       setProcessId("");
     }
   }, [availableProcesses, processId]);
-
-  const persistContextSelection = async (
-    nextCycleId: string,
-    nextProcessId: string,
-  ) => {
-    if (!fixedCareer) {
-      toastRef.current.error("No tiene una carrera asociada.");
-      return;
-    }
-
-    setSaving(true);
-
-    try {
-      const selectedCycle =
-        availableCycles.find(
-          (cycle) => String(cycle.ciclo_acreditacion_id) === nextCycleId,
-        ) ?? null;
-      const selectedProcess =
-        availableProcesses.find(
-          (process) => String(process.proceso_id) === nextProcessId,
-        ) ?? null;
-
-      await globalFilterContextService.updateContext({
-        career_campus_id: fixedCareer.carrera_sede_id,
-        ciclo_acreditacion_id: nextCycleId ? Number(nextCycleId) : null,
-        proceso_id: nextProcessId ? Number(nextProcessId) : null,
-      });
-
-      globalFilterContextService.syncContextSnapshot({
-        careerCampusId: fixedCareer.carrera_sede_id,
-        cycleId: nextCycleId ? Number(nextCycleId) : null,
-        processId: nextProcessId ? Number(nextProcessId) : null,
-        careerLabel: `${fixedCareer.carrera_nombre} - ${fixedCareer.sede_nombre}`,
-        campusLabel: fixedCareer.sede_nombre,
-        cycleLabel: selectedCycle?.nombre ?? null,
-        processLabel: selectedProcess?.tipo_proceso ?? null,
-      });
-    } catch {
-      toastRef.current.error("No se pudo aplicar el contexto.");
-    } finally {
-      setSaving(false);
-    }
-  };
 
   if (isProfessor) {
     return (
@@ -565,6 +567,7 @@ const HomePage: React.FC = () => {
   if (isSuperUser) {
     return (
       <ScreenContainer variant="full-width" className="space-y-6 pt-8 md:pt-12">
+        <ContextMiniHeader />
         <div className="text-center py-2">
           <h1 className="text-4xl font-bold text-negro-una leading-tight">
             Sistema de Acreditación y Autoevaluación de Carreras
@@ -575,6 +578,45 @@ const HomePage: React.FC = () => {
           <p className="mt-1 text-sm text-gris-una">
             Tablero técnico TI (datos reales)
           </p>
+        </div>
+
+        {/* Card de contexto activo */}
+        <div className="max-w-6xl mx-auto w-full">
+          <Card className="relative w-full max-w-sm p-5 sm:p-6 border border-azul-una/20 bg-linear-to-br from-azul-una/10 via-blanco-una to-rojo-una/5 shadow-sm">
+            <p className="text-xs font-semibold uppercase tracking-[0.25em] text-azul-una mb-3">
+              Espacio de Trabajo
+            </p>
+            <div className="space-y-2">
+              {[
+                { label: "Carrera / Sede", value: superSnapshot.careerLabel },
+                { label: "Ciclo", value: superSnapshot.cycleLabel },
+                { label: "Proceso", value: superSnapshot.processLabel },
+              ].map((row) => (
+                <div
+                  key={row.label}
+                  className="rounded-corner border border-blanco-una/40 p-2"
+                >
+                  <p className="text-xs uppercase tracking-wide text-gris-una">
+                    {row.label}
+                  </p>
+                  <p className="mt-1 text-base font-semibold text-negro-una">
+                    {row.value ?? "No seleccionado"}
+                  </p>
+                </div>
+              ))}
+            </div>
+            <ButtonWithTooltip
+              tooltip="Abre el selector para ajustar ciclo y proceso de trabajo."
+              tooltipPosition="top"
+              variant="secondary"
+              size="sm"
+              className="absolute bottom-4 right-4 min-w-0 p-0"
+              style={{ width: 48, height: 48, padding: 0 }}
+              onClick={() => navigate(ROUTES.CONTEXT_SELECTOR)}
+            >
+              <SystemIcons.structure.hierarchy className="w-5 h-5" />
+            </ButtonWithTooltip>
+          </Card>
         </div>
 
         <div className="max-w-6xl mx-auto w-full">
@@ -705,6 +747,7 @@ const HomePage: React.FC = () => {
 
   return (
     <ScreenContainer>
+      <ContextMiniHeader />
       <PageHeader
         title="Panel inicial"
         description="Seleccione el contexto de trabajo para navegar y consultar solo la informacion correspondiente."
@@ -713,48 +756,59 @@ const HomePage: React.FC = () => {
       />
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
-        <Card className="lg:col-span-5 p-5 sm:p-6 border border-azul-una/20 bg-linear-to-br from-azul-una/10 via-blanco-una to-rojo-una/5 shadow-sm">
+        <Card className="relative lg:col-span-5 min-h-56 p-5 sm:p-6 border border-azul-una/20 bg-linear-to-br from-azul-una/10 via-blanco-una to-rojo-una/5 shadow-sm">
           <p className="text-xs font-semibold uppercase tracking-[0.25em] text-azul-una mb-3">
-            Resumen
-          </p>
-          <h2 className="text-2xl font-bold text-negro-una leading-tight mb-2">
-            Bienvenido al panel de trabajo
-          </h2>
-          <p className="text-sm text-gris-una leading-relaxed mb-5">
-            Desde aquí se define el contexto operativo y se accede a las vistas
-            generales del sistema.
+            Espacio de Trabajo
           </p>
 
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-            <div className="rounded-corner border border-azul-una/15 bg-white/80 p-3">
-              <p className="text-xs uppercase tracking-wide text-azul-una">
-                Ciclos
+          <div className="space-y-2">
+            <div className="rounded-corner border border-blanco-una/40 p-2">
+              <p className="text-xs uppercase tracking-wide text-gris-una">
+                Carrera / Sede
               </p>
-              <p className="mt-1 text-xl font-semibold text-negro-una">
-                {availableCycles.length}
-              </p>
-            </div>
-            <div className="rounded-corner border border-rojo-una/15 bg-white/80 p-3">
-              <p className="text-xs uppercase tracking-wide text-rojo-una">
-                Procesos
-              </p>
-              <p className="mt-1 text-xl font-semibold text-negro-una">
-                {availableProcesses.length}
+              <p className="mt-1 text-base font-semibold text-negro-una">
+                {fixedCareer
+                  ? `${fixedCareer.carrera_nombre} - ${fixedCareer.sede_nombre}`
+                  : "No seleccionado"}
               </p>
             </div>
-            <div className="rounded-corner border border-verde/15 bg-white/80 p-3">
-              <p className="text-xs uppercase tracking-wide text-verde">
-                Estado
+            <div className="rounded-corner border border-blanco-una/40 p-2">
+              <p className="text-xs uppercase tracking-wide text-gris-una">
+                Ciclo
               </p>
-              <p className="mt-1 text-sm font-semibold text-negro-una">
-                {saving
-                  ? "Actualizando"
-                  : cycleId || processId
-                    ? "Activo"
-                    : "Listo"}
+              <p className="mt-1 text-base font-semibold text-negro-una">
+                {selectedCycleLabel}
+              </p>
+            </div>
+            <div className="rounded-corner border border-blanco-una/40 p-2">
+              <p className="text-xs uppercase tracking-wide text-gris-una">
+                Proceso
+              </p>
+              <p className="mt-1 text-base font-semibold text-negro-una">
+                {selectedProcessLabel}
               </p>
             </div>
           </div>
+
+          {(saving || !(cycleId || processId)) && (
+            <p className="text-xs text-gris-una mt-3">
+              {saving
+                ? "Actualizando contexto..."
+                : "Selecciona tu contexto para comenzar."}
+            </p>
+          )}
+
+          <ButtonWithTooltip
+            tooltip="Abre el selector para ajustar ciclo y proceso de trabajo."
+            tooltipPosition="top"
+            variant="secondary"
+            size="sm"
+            className="absolute bottom-4 right-4 min-w-0 p-0"
+            style={{ width: 48, height: 48, padding: 0 }}
+            onClick={() => navigate(ROUTES.CONTEXT_SELECTOR)}
+          >
+            <SystemIcons.structure.hierarchy className="w-5 h-5" />
+          </ButtonWithTooltip>
         </Card>
 
         <div className="lg:col-span-7 space-y-4">
@@ -766,148 +820,77 @@ const HomePage: React.FC = () => {
               </p>
             </Card>
           ) : (
-            <>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <Card className="p-4 border border-azul-una/20 bg-azul-una/5">
-                  <p className="text-xs uppercase tracking-wide text-azul-una mb-2">
-                    Carrera
-                  </p>
-                  <p className="text-base font-semibold text-negro-una">
-                    {fixedCareer.carrera_nombre}
-                  </p>
-                </Card>
-
-                <Card className="p-4 border border-rojo-una/20 bg-rojo-una/5">
-                  <p className="text-xs uppercase tracking-wide text-rojo-una mb-2">
-                    Sede
-                  </p>
-                  <p className="text-base font-semibold text-negro-una">
-                    {fixedCareer.sede_nombre}
-                  </p>
-                </Card>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <Card className="p-4 border border-gris-light/40 space-y-3">
-                  <div>
-                    <p className="text-xs uppercase tracking-wide text-gris-una">
-                      Paso 1
-                    </p>
-                    <h3 className="text-sm font-semibold text-negro-una mt-1">
-                      Seleccione ciclo
-                    </h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div
+                className="min-h-56 cursor-pointer"
+                onClick={() => navigate(ROUTES.EVIDENCE_MY)}
+              >
+                <Card className="min-h-56 p-5 border border-azul-una/20 bg-azul-una/5 hover:shadow-xl transition">
+                  <div className="flex items-start justify-between gap-4">
+                    <div>
+                      <p className="text-xs uppercase tracking-wide text-azul-una">
+                        Asignaciones
+                      </p>
+                      <p className="mt-3 text-xl font-bold text-negro-una">
+                        {availableCycles.length} ciclos activos
+                      </p>
+                      <p className="text-sm text-gris-una mt-2">
+                        Gestiona las evidencias y entregables disponibles en tu
+                        ciclo actual.
+                      </p>
+                    </div>
+                    <SystemIcons.work.myEvidences className="w-8 h-8 text-azul-una" />
                   </div>
-
-                  <CustomSelect
-                    label="Ciclo"
-                    placeholder="Seleccione un ciclo"
-                    options={cycleOptions}
-                    value={cycleId}
-                    disabled={cycleOptions.length === 0}
-                    onChange={(value) => {
-                      setCycleId(value);
-                      setProcessId("");
-                      void persistContextSelection(value, "");
-                    }}
-                  />
-
-                  {!cycleRequired && (
-                    <p className="text-xs text-gris-una">
-                      No hay ciclos disponibles para esta carrera. Puede
-                      continuar sin seleccionar ciclo.
-                    </p>
-                  )}
                 </Card>
+              </div>
 
-                <Card className="p-4 border border-gris-light/40 space-y-3">
-                  <div>
-                    <p className="text-xs uppercase tracking-wide text-gris-una">
-                      Paso 2
-                    </p>
-                    <h3 className="text-sm font-semibold text-negro-una mt-1">
-                      Seleccione proceso
-                    </h3>
+              <div
+                className="min-h-56 cursor-pointer"
+                onClick={() => navigate(ROUTES.EXTENSION_REQUESTS_MY)}
+              >
+                <Card className="min-h-56 p-5 border border-rojo-una/20 bg-rojo-una/5 hover:shadow-xl transition">
+                  <div className="flex items-start justify-between gap-4">
+                    <div>
+                      <p className="text-xs uppercase tracking-wide text-rojo-una">
+                        Solicitudes
+                      </p>
+                      <p className="mt-3 text-xl font-bold text-negro-una">
+                        {availableProcesses.length} procesos activos
+                      </p>
+                      <p className="text-sm text-gris-una mt-2">
+                        Revisa el estado y los detalles de tus solicitudes de
+                        extensión.
+                      </p>
+                    </div>
+                    <SystemIcons.interface.clock className="w-8 h-8 text-rojo-una" />
                   </div>
-
-                  <CustomSelect
-                    label="Proceso"
-                    placeholder="Seleccione un proceso"
-                    options={processOptions}
-                    value={processId}
-                    disabled={!cycleId || !processRequired}
-                    onChange={(value) => {
-                      setProcessId(value);
-                      void persistContextSelection(cycleId, value);
-                    }}
-                  />
-
-                  {Boolean(cycleId) && !processRequired && (
-                    <p className="text-xs text-gris-una">
-                      No hay procesos disponibles para el ciclo seleccionado.
-                      Puede continuar sin seleccionar proceso.
-                    </p>
-                  )}
                 </Card>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <Card className="p-4 border border-verde/20 bg-verde/5">
-                  <p className="text-xs uppercase tracking-wide text-verde mb-2">
-                    Estado del contexto
-                  </p>
-                  <p className="text-sm font-semibold text-negro-una">
-                    {saving
-                      ? "Actualizando..."
-                      : cycleId || processId
-                        ? "Configuracion en progreso"
-                        : "Pendiente de seleccion"}
-                  </p>
-                  <p className="text-xs text-gris-una mt-2">
-                    Los cambios se guardan automaticamente.
-                  </p>
-                </Card>
-
-                <Card className="p-4 border border-azul-una/20 bg-azul-una/5">
-                  <p className="text-xs uppercase tracking-wide text-azul-una mb-2">
-                    Disponibilidad
-                  </p>
-                  <p className="text-sm text-negro-una">
-                    Ciclos:{" "}
-                    <span className="font-semibold">
-                      {availableCycles.length}
-                    </span>
-                  </p>
-                  <p className="text-sm text-negro-una mt-1">
-                    Procesos del ciclo:{" "}
-                    <span className="font-semibold">
-                      {availableProcesses.length}
-                    </span>
-                  </p>
-                </Card>
-
-                <Card className="p-4 border border-rojo-una/20 bg-rojo-una/5">
-                  <p className="text-xs uppercase tracking-wide text-rojo-una mb-2">
-                    Seleccion actual
-                  </p>
-                  <p
-                    className="text-sm text-negro-una truncate"
-                    title={selectedCycleLabel}
-                  >
-                    Ciclo:{" "}
-                    <span className="font-semibold">{selectedCycleLabel}</span>
-                  </p>
-                  <p
-                    className="text-sm text-negro-una mt-1 truncate"
-                    title={selectedProcessLabel}
-                  >
-                    Proceso:{" "}
-                    <span className="font-semibold">
-                      {selectedProcessLabel}
-                    </span>
-                  </p>
+              <div
+                className="min-h-56 cursor-pointer"
+                onClick={() => navigate(ROUTES.EVIDENCE_SEARCH)}
+              >
+                <Card className="min-h-56 p-5 border border-verde/20 bg-verde/5 hover:shadow-xl transition">
+                  <div className="flex items-start justify-between gap-4">
+                    <div>
+                      <p className="text-xs uppercase tracking-wide text-verde">
+                        Evidencias
+                      </p>
+                      <p className="mt-3 text-xl font-bold text-negro-una">
+                        {selectedProcessLabel !== "No seleccionado"
+                          ? "Activo"
+                          : "N/A"}
+                      </p>
+                      <p className="text-sm text-gris-una mt-2">
+                        Busca y gestiona evidencias dentro de tu contexto.
+                      </p>
+                    </div>
+                    <SystemIcons.interface.search className="w-8 h-8 text-verde" />
+                  </div>
                 </Card>
               </div>
-            </>
+            </div>
           )}
         </div>
       </div>

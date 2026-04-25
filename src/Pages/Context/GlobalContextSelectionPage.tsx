@@ -15,6 +15,7 @@ import {
   globalFilterContextService,
   type GlobalFilterCatalog,
 } from "@/Services/GlobalFilterContextService";
+import { ROUTES } from "@/Constants/ROUTES";
 
 type SelectionState = {
   careerCampusId: string;
@@ -63,7 +64,7 @@ export const GlobalContextSelectionPage = () => {
 
   useEffect(() => {
     if (isProfessor) {
-      navigate("/", { replace: true });
+      navigate(ROUTES.HOME, { replace: true });
       return;
     }
 
@@ -250,7 +251,7 @@ export const GlobalContextSelectionPage = () => {
       });
 
       const fromPath = (location.state as NavigationState | null)?.from;
-      navigate(fromPath || "/", { replace: true });
+      navigate(fromPath || ROUTES.HOME, { replace: true });
     } catch {
       toast.error("No se pudo guardar el contexto seleccionado.");
     } finally {

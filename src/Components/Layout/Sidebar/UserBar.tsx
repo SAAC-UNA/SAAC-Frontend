@@ -18,8 +18,13 @@ import { buttonVariants } from "@/Components/Ui/Buttons/Button";
 import { DROPDOWN_VARIANTS_UP, SPRING_SIDEBAR } from "@/Constants/Animations";
 import { NotificationDropdown } from "@/Components/Notifications/NotificationDropdown";
 import NotificationCenter from "@/Components/Notifications/NotificationModal";
-import { Tooltip, TooltipTrigger, TooltipContent } from "@/Components/Ui/Feedback/Tooltip";
+import {
+  Tooltip,
+  TooltipTrigger,
+  TooltipContent,
+} from "@/Components/Ui/Feedback/Tooltip";
 import { TYPOGRAPHY } from "@/Constants/Typography";
+import { ROUTES } from "@/Constants/ROUTES";
 
 interface UserWidgetProps {
   className?: string;
@@ -61,7 +66,7 @@ export const UserWidget: React.FC<UserWidgetProps> = ({
     const gap = 8;
     const left = Math.min(
       rect.right + gap,
-      window.innerWidth - DROPDOWN_WIDTH - gap
+      window.innerWidth - DROPDOWN_WIDTH - gap,
     );
     const anchorY = rect.top + rect.height / 2;
     const bottom = Math.max(gap, window.innerHeight - anchorY);
@@ -106,7 +111,7 @@ export const UserWidget: React.FC<UserWidgetProps> = ({
 
   const handleLogout = () => {
     logout();
-    navigate("/login");
+    navigate(ROUTES.LOGIN);
   };
 
   if (!user) return null;
@@ -123,7 +128,14 @@ export const UserWidget: React.FC<UserWidgetProps> = ({
 
   return (
     <>
-      <div className={cn(collapsed ? "flex flex-col items-center gap-2" : "flex items-center gap-3 min-w-0", className)}>
+      <div
+        className={cn(
+          collapsed
+            ? "flex flex-col items-center gap-2"
+            : "flex items-center gap-3 min-w-0",
+          className,
+        )}
+      >
         {/* Ícono usuario con tooltip — solo en modo colapsado */}
         {collapsed && (
           <Tooltip>
@@ -139,7 +151,9 @@ export const UserWidget: React.FC<UserWidgetProps> = ({
             </TooltipTrigger>
             <TooltipContent side="right">
               <p className={`${TYPOGRAPHY.body} font-semibold`}>{user.name}</p>
-              <p className={`${TYPOGRAPHY.form.helper} font-semibold`}>{roleName}</p>
+              <p className={`${TYPOGRAPHY.form.helper} font-semibold`}>
+                {roleName}
+              </p>
             </TooltipContent>
           </Tooltip>
         )}
@@ -147,23 +161,23 @@ export const UserWidget: React.FC<UserWidgetProps> = ({
         {/* ? Nombre y rol — oculto en modo colapsado */}
         {!collapsed && (
           <div className="flex h-9 flex-col items-start justify-center translate-y-0.5">
-          <span
-            className={cn(
-              "font-semibold leading-none text-xs",
-              dark ? "text-blanco-una" : "text-negro-una",
-            )}
-          >
-            {user.name}
-          </span>
-          <span
-            className={cn(
-              "-mt-0.5 leading-none text-[11px]",
-              dark ? "text-blanco-una/70" : "text-gris-una",
-            )}
-          >
-            {roleName}
-          </span>
-        </div>
+            <span
+              className={cn(
+                "font-semibold leading-none text-xs",
+                dark ? "text-blanco-una" : "text-negro-una",
+              )}
+            >
+              {user.name}
+            </span>
+            <span
+              className={cn(
+                "-mt-0.5 leading-none text-[11px]",
+                dark ? "text-blanco-una/70" : "text-gris-una",
+              )}
+            >
+              {roleName}
+            </span>
+          </div>
         )}
 
         {/* Botón notificaciones */}
@@ -179,8 +193,8 @@ export const UserWidget: React.FC<UserWidgetProps> = ({
                   aria-expanded={isNotifOpen}
                   aria-haspopup="dialog"
                   className={cn(
-                    buttonVariants({ variant: 'sidebarAction', size: 'none' }),
-                    bellHovered && '!bg-transparent'
+                    buttonVariants({ variant: "sidebarAction", size: "none" }),
+                    bellHovered && "!bg-transparent",
                   )}
                   onMouseEnter={() => setBellHovered(true)}
                   onMouseLeave={() => setBellHovered(false)}
@@ -220,8 +234,8 @@ export const UserWidget: React.FC<UserWidgetProps> = ({
               onClick={handleLogout}
               aria-label="Cerrar sesión"
               className={cn(
-                buttonVariants({ variant: 'sidebarAction', size: 'none' }),
-                logoutHovered && '!bg-transparent'
+                buttonVariants({ variant: "sidebarAction", size: "none" }),
+                logoutHovered && "!bg-transparent",
               )}
               onMouseEnter={() => setLogoutHovered(true)}
               onMouseLeave={() => setLogoutHovered(false)}

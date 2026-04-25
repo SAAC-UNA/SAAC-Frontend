@@ -85,7 +85,7 @@ export const NavigationProvider: React.FC<NavigationProviderProps> = ({
     if (path.startsWith(ROUTES.EVIDENCE_MY)) {
       return { activeId: "misEvidenciasAsignadas", parentId: "evidencias" };
     }
-    if (path.startsWith("/evidencias")) {
+    if (path.startsWith("/entregables")) {
       return { activeId: "evidenciasAsignar", parentId: "evidencias" };
     }
     if (path.startsWith(ROUTES.AUDIT_LOG)) {

@@ -33,6 +33,7 @@ import type {
 import { cn } from "@/Utils/ClassNames";
 import { TYPOGRAPHY } from "@/Constants/Typography";
 import { getModuleInfo } from "@/Constants/ModuleInfo";
+import { ROUTES } from "@/Constants/ROUTES";
 
 const StructureModelsPage: React.FC = () => {
   const { showToast } = useToast();
@@ -365,11 +366,14 @@ const ModelCard: React.FC<ModelCardProps> = ({
           tooltip="Ver estructura"
           className={CARD_ACTION_BTN}
           onClick={() =>
-            navigate(
-              isTradicional
-                ? "/estructura/listar"
-                : `/estructura/listar?modelo=${model.modelo_estructura_id}`,
-            )
+            navigate(ROUTES.STRUCTURE, {
+              state: {
+                modelId: isTradicional ? null : model.modelo_estructura_id,
+                modelName: model.nombre,
+                lockModelSelection: true,
+                from: ROUTES.STRUCTURE_MODELS,
+              },
+            })
           }
         />
         <TableActionButton

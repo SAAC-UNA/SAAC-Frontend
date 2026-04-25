@@ -84,23 +84,16 @@ export const getNavigationItems = (
 ): NavItem[] => {
   const access = normalizeAccessInput(accessInput);
   const hasAccess = (rule?: AccessRule) => evaluateAccess(access, rule);
-  const isSuperUser = (access.roles ?? []).some((role) => {
-    const normalizedRole = role.toLowerCase();
-    return (
-      normalizedRole === "superusuario" || normalizedRole === "super usuario"
-    );
-  });
   const hasCycleSelection = access.context?.cycleId !== null;
   const hasProcessSelection = access.context?.processId !== null;
-  const hasContextualSelection =
-    isSuperUser || (hasCycleSelection && hasProcessSelection);
+  const hasContextualSelection = hasCycleSelection && hasProcessSelection;
 
   const items: NavItem[] = [
     {
       id: "inicio",
       label: "Inicio",
       icon: homeIcon,
-      href: "/",
+      href: ROUTES.HOME,
       isActive: false,
     },
   ];
@@ -313,6 +306,7 @@ export const getNavigationItems = (
     }
 
     if (
+      hasCycleSelection &&
       hasAccess({
         requireAnyCapabilities: [CAPABILITIES.ACCREDITATION_PROCESS_VIEW],
         requireAnyPermissions: ["procesos.view"],
@@ -406,15 +400,17 @@ export const getNavigationItems = (
       });
     }
 
-    items.push({
-      id: "informe",
-      label: "Informes",
-      icon: informeIcon,
-      href: "#",
-      isActive: false,
-      isExpandable: true,
-      children: informeChildren,
-    });
+    if (informeChildren.length > 0) {
+      items.push({
+        id: "informe",
+        label: "Informes",
+        icon: informeIcon,
+        href: "#",
+        isActive: false,
+        isExpandable: true,
+        children: informeChildren,
+      });
+    }
   }
 
   return items;

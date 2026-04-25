@@ -28,10 +28,9 @@ export interface UserPermission {
 }
 
 export interface Career {
-  carrera_id: number;
   carrera_sede_id: number;
+  carrera_id: number;
   nombre: string;
-  facultad_id: number;
 }
 
 export interface User {
