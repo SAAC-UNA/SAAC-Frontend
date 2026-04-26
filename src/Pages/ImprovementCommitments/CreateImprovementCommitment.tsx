@@ -594,7 +594,6 @@ const CreateImprovementCommitment: React.FC = () => {
                 maxLength={100}
                 characterCount
                 error={errors.descripcion}
-                helperText="Máximo 100 caracteres"
               />
             </div>
             {!fromProcess && (

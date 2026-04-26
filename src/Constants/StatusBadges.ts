@@ -6,6 +6,7 @@
 import type { EvidencePublicationStatus } from '@/Types/EvidenceSearchTypes';
 import type { AssignmentStatus } from '@/Types/EvidenceAssignmentTypes';
 import type { ExtensionRequestStatus } from '@/Types/ExtensionRequestTypes';
+import type { AccreditationCycleStatus } from '@/Types/AccreditationCycleTypes';
 
 export interface StatusBadgeConfig {
   label: string;
@@ -66,6 +67,13 @@ export const EXTENSION_REQUEST_STATUS_BADGE: Record<ExtensionRequestStatus, Stat
   aprobada:  { label: 'Aprobada',  colorClasses: BADGE_COLORS.verde.colorClasses },
   rechazada: { label: 'Rechazada', colorClasses: BADGE_COLORS.error.colorClasses },
   cancelada: { label: 'Cancelada', colorClasses: BADGE_COLORS.gris.colorClasses },
+};
+
+/** Estados de ciclo de acreditación */
+export const ACCREDITATION_CYCLE_STATUS_BADGE: Record<AccreditationCycleStatus, StatusBadgeConfig> = {
+  activo:     { label: 'Activo',     colorClasses: 'text-verde-dark bg-verde-ring' },
+  inactivo:   { label: 'Inactivo',   colorClasses: 'text-error-dark bg-error-ring' },
+  completado: { label: 'Completado', colorClasses: 'text-info-dark bg-info-ring' },
 };
 
 /** Estado activo/inactivo de un usuario */

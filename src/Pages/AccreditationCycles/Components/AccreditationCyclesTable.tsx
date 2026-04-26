@@ -9,23 +9,9 @@ import { TABLE_TRUNCATE } from "@/Constants/TableTruncate";
 import { TABLE_COLUMN_WIDTHS } from "@/Constants/Components";
 import { cn } from "@/Utils/ClassNames";
 import { formatDateShort } from "@/Utils/DateUtils";
+import { ACCREDITATION_CYCLE_STATUS_BADGE } from "@/Constants/StatusBadges";
 import type { DataTableColumn } from "@/Components/Ui/Table/DataTable";
-import type {
-  AccreditationCycle,
-  AccreditationCycleStatus,
-} from "@/Types/AccreditationCycleTypes";
-
-const STATUS_LABEL: Record<AccreditationCycleStatus, string> = {
-  activo: "Activo",
-  inactivo: "Inactivo",
-  completado: "Completado",
-};
-
-const STATUS_COLOR: Record<AccreditationCycleStatus, string> = {
-  activo: "text-verde-dark bg-verde-ring",
-  inactivo: "text-error-dark bg-error-ring",
-  completado: "text-info-dark bg-info-ring",
-};
+import type { AccreditationCycle } from "@/Types/AccreditationCycleTypes";
 
 interface AccreditationCyclesTableProps {
   cycles: AccreditationCycle[];
@@ -140,7 +126,7 @@ export const AccreditationCyclesTable: React.FC<
         render: (_, item) => {
           if (!item.fecha_inicio && !item.fecha_fin) {
             return (
-              <span className={`${TYPOGRAPHY.table.helper} text-gris-una/60`}>
+              <span className={`${TYPOGRAPHY.table.helper} text-gris-una`}>
                 —
               </span>
             );
@@ -149,12 +135,12 @@ export const AccreditationCyclesTable: React.FC<
           return (
             <div className="flex flex-col items-start">
               <p
-                className={`block font-sans antialiased font-normal leading-normal text-negro-una-2 ${TYPOGRAPHY.table.helper}`}
+                className={`block font-sans antialiased font-normal leading-normal text-negro-una-2 ${TYPOGRAPHY.table.cell}`}
               >
                 Inicio: {formatDateShort(item.fecha_inicio)}
               </p>
               <p
-                className={`block font-sans antialiased font-normal leading-normal text-negro-una-2 ${TYPOGRAPHY.table.helper}`}
+                className={`block font-sans antialiased font-normal leading-normal text-negro-una-2 ${TYPOGRAPHY.table.cell}`}
               >
                 Fin: {formatDateShort(item.fecha_fin)}
               </p>
@@ -167,18 +153,22 @@ export const AccreditationCyclesTable: React.FC<
         header: "Estado",
         align: "left",
         width: TABLE_COLUMN_WIDTHS.status,
-        render: (_, item) => (
-          <div className="flex items-start">
-            <StatusBadge
-              label={STATUS_LABEL[item.estado]}
-              colorClasses={STATUS_COLOR[item.estado]}
-            />
-          </div>
-        ),
+        render: (_, item) => {
+          const statusBadge = ACCREDITATION_CYCLE_STATUS_BADGE[item.estado];
+
+          return (
+            <div className="flex items-start">
+              <StatusBadge
+                label={statusBadge.label}
+                colorClasses={statusBadge.colorClasses}
+              />
+            </div>
+          );
+        },
       },
       {
         key: "actions",
-        header: "Acciones",
+        header: "Accionees",
         align: "center",
         width: TABLE_COLUMN_WIDTHS.actionsLarge,
         render: (_, item) => (

@@ -139,13 +139,13 @@ export const AccreditationCycleFormModal: React.FC<Props> = ({
 
   const generatedCycleName = React.useMemo(() => {
     if (!form.fecha_inicio || !form.fecha_fin)
-      return "Completa las fechas para generar el nombre";
+      return "Complete las fechas para generar el nombre";
 
     const startYear = Number(form.fecha_inicio.slice(0, 4));
     const endYear = Number(form.fecha_fin.slice(0, 4));
 
     if (!Number.isFinite(startYear) || !Number.isFinite(endYear)) {
-      return "Completa las fechas para generar el nombre";
+      return "Complete las fechas para generar el nombre";
     }
 
     return startYear === endYear
@@ -225,7 +225,7 @@ export const AccreditationCycleFormModal: React.FC<Props> = ({
           >
             <p
               className={cn(
-                TYPOGRAPHY.form.helper,
+                TYPOGRAPHY.modal.body,
                 "uppercase tracking-wide font-semibold",
                 generatedNameStyle.text,
               )}
@@ -234,8 +234,8 @@ export const AccreditationCycleFormModal: React.FC<Props> = ({
             </p>
             <p
               className={cn(
-                "mt-1 font-semibold",
-                TYPOGRAPHY.form.helper,
+                "mt-1 font-normal",
+                TYPOGRAPHY.modal.body,
                 generatedNameStyle.text,
               )}
             >

@@ -77,6 +77,17 @@ export const EvidenceAssignmentView: React.FC<EvidenceAssignmentViewProps> = ({
   flexElements,
   flexElementsLoading,
 }) => {
+  const confirmButtonLabel = isSubmitting ? "Asignando..." : "Asignar";
+  const confirmButton = (
+    <Button
+      variant="secondary"
+      onClick={onFormSubmit}
+      disabled={isSubmitting}
+    >
+      {confirmButtonLabel}
+    </Button>
+  );
+
   const getEvidenceBreadcrumb = (evidenciaId: number): BreadcrumbItem[] => {
     const ev = evidenceById[evidenciaId];
     if (!ev) return [{ label: 'N/A' }];
@@ -92,6 +103,7 @@ export const EvidenceAssignmentView: React.FC<EvidenceAssignmentViewProps> = ({
         title={moduleInfo.title}
         description={moduleInfo.description}
         breadcrumbMode="contextual"
+        headerExtra={confirmButton}
       />
 
       {criteriaLoading ? (
@@ -704,25 +716,19 @@ export const EvidenceAssignmentView: React.FC<EvidenceAssignmentViewProps> = ({
 
           {/* ── Botón de confirmación ── */}
           <div className="flex justify-end pt-2 pb-6">
-            <Button
-              variant="primary"
-              size="lg"
-              onClick={onFormSubmit}
-              disabled={isSubmitting}
-            >
-              {isSubmitting ? "Asignando..." : "Confirmar"}
-            </Button>
+            {confirmButton}
           </div>
         </div>
       )}
 
-      {/* â”€â”€ Modales â”€â”€ */}
+      {/* ── Modales ── */}
       <EditConfirmationModal
         isOpen={showConfirmModal}
         onClose={onCloseConfirmModal}
         onConfirm={onConfirmedSubmit}
         title="Confirmar asignación de evidencias"
         message={`¿Desea asignar ${formData.selectedEvidences.length} ${formData.selectedEvidences.length === 1 ? "evidencia" : "evidencias"} a los destinatarios seleccionados?`}
+        confirmLabel="Sí, asignar"
         isLoading={isSubmitting}
       />
 

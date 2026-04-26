@@ -163,16 +163,18 @@ export const TableActionButton = React.memo<TableActionButtonProps>(({
   }
   
   return (
-    <ButtonWithTooltip
-      variant={variant as any}
-      size="sm"
-      tooltip={tooltip}
-      onClick={onClick}
-      className={className}
-      disabled={disabled}
-      {...props}
-    >
-      {icon}
-    </ButtonWithTooltip>
+    <span className={`${TABLE_ACTION_BUTTON.button} inline-flex items-center justify-center shrink-0 leading-none`}>
+      <ButtonWithTooltip
+        variant={variant as any}
+        size="sm"
+        tooltip={tooltip}
+        onClick={onClick}
+        className={className}
+        disabled={disabled}
+        {...props}
+      >
+        {icon}
+      </ButtonWithTooltip>
+    </span>
   );
 });

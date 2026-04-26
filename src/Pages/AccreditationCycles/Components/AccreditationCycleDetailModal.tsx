@@ -10,25 +10,13 @@ import { SystemIcons } from "@/Components/Ui/Icons/SystemIcons";
 import { cn } from "@/Utils/ClassNames";
 import { TYPOGRAPHY } from "@/Constants/Typography";
 import { ICON_SIZES } from "@/Constants/Components";
-import { MODELO_TIPO_BADGE } from "@/Constants/StatusBadges";
-import type {
-  AccreditationCycle,
-  AccreditationCycleStatus,
-} from "@/Types/AccreditationCycleTypes";
+import {
+  ACCREDITATION_CYCLE_STATUS_BADGE,
+  MODELO_TIPO_BADGE,
+} from "@/Constants/StatusBadges";
+import type { AccreditationCycle } from "@/Types/AccreditationCycleTypes";
 
 // ── Status helpers ─────────────────────────────────────────────────────────────
-
-const STATUS_LABEL: Record<AccreditationCycleStatus, string> = {
-  activo: "Activo",
-  inactivo: "Inactivo",
-  completado: "Completado",
-};
-
-const STATUS_COLOR: Record<AccreditationCycleStatus, string> = {
-  activo: "text-verde-dark bg-verde-ring",
-  inactivo: "text-error-dark bg-error-ring",
-  completado: "text-info-dark bg-info-ring",
-};
 
 // ── Helper components ─────────────────────────────────────────────────────────
 
@@ -96,6 +84,7 @@ export const AccreditationCycleDetailModal: React.FC<
 
   const cs = cycle.carrera_sede;
   const modelo = cycle.modelo_estructura;
+  const cycleStatusBadge = ACCREDITATION_CYCLE_STATUS_BADGE[cycle.estado];
 
   return (
     <DetailsModal
@@ -123,8 +112,8 @@ export const AccreditationCycleDetailModal: React.FC<
         {/* div2 — Estado */}
         <InfoCell label="Estado" className="col-start-4 col-end-7 items-start">
           <StatusBadge
-            label={STATUS_LABEL[cycle.estado]}
-            colorClasses={STATUS_COLOR[cycle.estado]}
+            label={cycleStatusBadge.label}
+            colorClasses={cycleStatusBadge.colorClasses}
           />
         </InfoCell>
 

@@ -7,11 +7,11 @@ import { UserAvatars } from '@/Components/Ui/UserAvatars/UserAvatars';
 import type { UserAvatarsUser } from '@/Components/Ui/UserAvatars/UserAvatars';
 
 import { TYPOGRAPHY } from '@/Constants/Typography';
-import { TABLE_COLUMN_WIDTHS } from '@/Constants/Components';
+import { TABLE_ACTION_BUTTON, TABLE_COLUMN_WIDTHS } from '@/Constants/Components';
 import { BADGE_COLORS } from '@/Constants/StatusBadges';
 import { useFirstColumnConfig } from '@/Hooks/UseFirstColumnConfig';
 
-const ICON = 'size-4 shrink-0';
+const ICON = TABLE_ACTION_BUTTON.icon;
 import type { DataTableColumn } from '@/Components/Ui/Table/DataTable';
 
 export type BlockApprovalStatus = 'pendiente' | 'aprobado' | 'rechazado' | 'incompleto';
@@ -189,8 +189,8 @@ export const BlockApprovalTable: React.FC<BlockApprovalTableProps> = ({
           <div className="flex items-center justify-center gap-2" onClick={e => e.stopPropagation()}>
             <TableActionButton
               action="custom"
-              customIcon={<SystemIcons.actions.linkedResources className={ICON} />}
-              customVariant="tableList"
+              customIcon={<SystemIcons.actions.view className={ICON} />}
+              customVariant="tableView"
               tooltip={isFlexible ? 'Ver fuentes asociadas' : 'Ver evidencias asociadas'}
               onClick={() => onOpenCriterionEvidences(item)}
             />

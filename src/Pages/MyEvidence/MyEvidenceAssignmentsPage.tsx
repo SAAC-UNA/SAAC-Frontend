@@ -238,34 +238,31 @@ export const MyEvidenceAssignmentsPage: React.FC = () => {
     }
   };
 
-  // Auto-seleccionar el primer ciclo disponible al cargar
+  // Ciclos disponibles: solo ciclos donde el usuario tiene asignaciones.
+  // userCycles se usa únicamente para enriquecer nombre y tipo de modelo.
   const availableCycles = useMemo(() => {
-    if (userCycles.length > 0) {
-      return userCycles.map((c) => ({
-        ciclo_id: c.ciclo_acreditacion_id,
-        nombre: c.nombre,
-        isFlexible: c.tipo_modelo === "elemento_flexible",
-      }));
-    }
-
-    // Fallback: inferir desde las asignaciones si el endpoint no responde
+    const cycleMetadata = new Map(
+      userCycles.map((cycle) => [cycle.ciclo_acreditacion_id, cycle]),
+    );
     const cycleMap = new Map<number, { nombre: string; isFlexible: boolean }>();
 
     for (const a of assignments) {
       const cicloId = a.proceso?.ciclo_acreditacion_id;
       if (cicloId && !cycleMap.has(cicloId)) {
+        const metadata = cycleMetadata.get(cicloId);
         cycleMap.set(cicloId, {
-          nombre: `Ciclo ${cicloId}`,
-          isFlexible: false,
+          nombre: metadata?.nombre ?? `Ciclo ${cicloId}`,
+          isFlexible: metadata?.tipo_modelo === "elemento_flexible",
         });
       }
     }
 
     for (const a of flexState.assignments) {
       const cicloId = a.process?.ciclo_acreditacion_id;
-      if (cicloId && !cycleMap.has(cicloId)) {
+      if (cicloId) {
+        const metadata = cycleMetadata.get(cicloId);
         cycleMap.set(cicloId, {
-          nombre: `Ciclo ${cicloId}`,
+          nombre: metadata?.nombre ?? `Ciclo ${cicloId}`,
           isFlexible: true,
         });
       }
@@ -278,7 +275,18 @@ export const MyEvidenceAssignmentsPage: React.FC = () => {
   }, [userCycles, assignments, flexState.assignments]);
 
   useEffect(() => {
-    if (availableCycles.length > 0 && selectedCycleId === null) {
+    if (availableCycles.length === 0) {
+      if (selectedCycleId !== null) {
+        setSelectedCycleId(null);
+      }
+      return;
+    }
+
+    const selectedCycleExists = availableCycles.some(
+      (cycle) => cycle.ciclo_id === selectedCycleId,
+    );
+
+    if (selectedCycleId === null || !selectedCycleExists) {
       setSelectedCycleId(availableCycles[0].ciclo_id);
     }
   }, [availableCycles, selectedCycleId]);

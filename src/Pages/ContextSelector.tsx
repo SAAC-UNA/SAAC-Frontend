@@ -27,6 +27,7 @@ const stepClasses: Record<
     text: string;
     dotBg: string;
     hoverShadow: string;
+    cardSize: string;
   }
 > = {
   career: {
@@ -34,18 +35,21 @@ const stepClasses: Record<
     text: "text-info",
     dotBg: "bg-info",
     hoverShadow: CARD_HOVER_SHADOWS.info,
+    cardSize: "h-40",
   },
   cycle: {
     label: "Ciclo",
     text: "text-error",
     dotBg: "bg-error",
     hoverShadow: CARD_HOVER_SHADOWS.error,
+    cardSize: "h-32",
   },
   process: {
     label: "Proceso",
     text: "text-verde",
     dotBg: "bg-verde",
     hoverShadow: CARD_HOVER_SHADOWS.verde,
+    cardSize: "h-32",
   },
 };
 
@@ -467,7 +471,10 @@ const ContextSelector: React.FC = () => {
                   key={card.id}
                   onClick={() => handleCardClick(card.id)}
                   disabled={saving}
-                  className="group w-full max-w-xs h-40 text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-negro-una rounded-corner"
+                  className={cn(
+                    "group w-full max-w-xs text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-negro-una rounded-corner",
+                    cls.cardSize,
+                  )}
                 >
                   <Card
                     className={cn(
