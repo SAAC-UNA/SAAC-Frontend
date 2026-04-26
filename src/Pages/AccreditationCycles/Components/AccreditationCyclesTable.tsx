@@ -168,7 +168,7 @@ export const AccreditationCyclesTable: React.FC<
       },
       {
         key: "actions",
-        header: "Accionees",
+        header: "Acciones",
         align: "center",
         width: TABLE_COLUMN_WIDTHS.actionsLarge,
         render: (_, item) => (
