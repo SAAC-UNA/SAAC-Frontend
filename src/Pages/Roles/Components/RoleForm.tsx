@@ -536,7 +536,7 @@ export const RoleForm: React.FC<RoleFormProps> = ({
 
   return (
     <form ref={formRef} onSubmit={handleSubmit} className="w-full">
-      <Card className="p-4 space-y-5 ">
+      <div className="p-4 space-y-5 ">
         <Input
           label="Nombre del Rol"
           placeholder="Ej: Administrador, Docente..."
@@ -609,7 +609,7 @@ export const RoleForm: React.FC<RoleFormProps> = ({
             </Button>
           </div>
         )}
-      </Card>
+      </div>
     </form>
   );
 };

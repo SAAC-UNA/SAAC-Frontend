@@ -174,7 +174,7 @@ export const EditUserForm: React.FC<EditUserFormProps> = ({
       setCareerCampuses(
         data.map((cs) => ({
           value: String(cs.carrera_sede_id),
-          label: `${cs.carrera_nombre} – ${cs.sede_nombre}`,
+          label: `${cs.sede_nombre} – ${cs.carrera_nombre}`,
         })),
       );
     } catch {
@@ -283,7 +283,10 @@ export const EditUserForm: React.FC<EditUserFormProps> = ({
 
                 {isLoadingRoles ? (
                   <div className="relative py-8 min-h-[200px]">
-                    <LoadingSpinner variant="loader" />
+                    <LoadingSpinner 
+                    variant="loader"
+                    size="sm"
+                    />
                   </div>
                 ) : (
                   <CustomSelect
@@ -364,36 +367,37 @@ export const EditUserForm: React.FC<EditUserFormProps> = ({
 
         {/* Sección carrera-sede — ancho completo, solo si tiene permiso */}
         {canAssignCareers && (
-          <div className="mt-6 pt-6 border-t border-gris-una-1">
+          <div className="mt-6 pt-6 border-t border-gris-light">
             <h3
-              className={`${TYPOGRAPHY.pageSubtitle} font-semibold text-negro-una-2 mb-4`}
+              className={`${TYPOGRAPHY.pageSubtitle} font-semibold text-negro-una-2 mb-6`}
             >
-              Asignación de Carrera-Sede
+              Asignación de Sede-Carrera
             </h3>
-            <p className={`${TYPOGRAPHY.form.helper} text-gris-una-2 mb-4`}>
-              El usuario solo verá información de las carrera-sedes asignadas.
-              Podés asignar más de una.
+            <div className="pt-3">
+              {isLoadingCareers ? (
+                <div className="relative h-20 overflow-hidden">
+                  <LoadingSpinner variant="loader" size="sm" />
+                </div>
+              ) : careerCampuses.length === 0 ? (
+                <p className={`${TYPOGRAPHY.form.helper} text-gris-una-2`}>
+                  No hay sede-carreras disponibles para asignar.
+                </p>
+              ) : (
+                <MultiSelect
+                  label="Sede-Carrera asignadas"
+                  options={careerCampuses}
+                  value={selectedCareerSedeIds}
+                  onChange={setSelectedCareerSedeIds}
+                  placeholder="Seleccionar sede-carrera..."
+                  minItemsForSearch={0}
+                  className="w-full"
+                />
+              )}
+            </div>
+            <p className={`mt-2 ${TYPOGRAPHY.form.helper} text-warning`}>
+              El usuario solo verá información de la sede-carrera asignada.
+              Puede asignar más de una.
             </p>
-            {isLoadingCareers ? (
-              <div className="relative py-6 min-h-20">
-                <LoadingSpinner variant="loader" />
-              </div>
-            ) : careerCampuses.length === 0 ? (
-              <p className={`${TYPOGRAPHY.form.helper} text-gris-una-2`}>
-                No hay carrera-sedes disponibles para asignar.
-              </p>
-            ) : (
-              <MultiSelect
-                label="Carrera-Sedes asignadas"
-                options={careerCampuses}
-                value={selectedCareerSedeIds}
-                onChange={setSelectedCareerSedeIds}
-                placeholder="Seleccionar carrera-sedes..."
-                showSelectAll={careerCampuses.length > 2}
-                searchable={careerCampuses.length > 5}
-                className="w-full"
-              />
-            )}
           </div>
         )}
       </div>
