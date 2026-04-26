@@ -1,6 +1,13 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
-import { Card, LoadingSpinner, ScreenContainer } from "@/Components/Ui/Index";
-import { ButtonWithTooltip } from "@/Components/Ui/Buttons/ButtonWithTooltip";
+import {
+  Button,
+  Card,
+  LoadingSpinner,
+  ScreenContainer,
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/Components/Ui/Index";
 import { useAuth } from "@/Context/AuthContext";
 import { useToast } from "@/Hooks/useToast";
 import { userService } from "@/Services/UserService";
@@ -17,6 +24,9 @@ import {
 import type { ExtensionRequest } from "@/Types/ExtensionRequestTypes";
 import { SystemIcons } from "@/Components/Ui/Icons/SystemIcons";
 import { ROUTES } from "@/Constants/ROUTES";
+import { getModuleInfo } from "@/Constants/ModuleInfo";
+import { CARD_HOVER_SHADOWS } from "@/Constants/CardHoverShadows";
+import { TYPOGRAPHY } from "@/Constants/Typography";
 import { useOperationalContextSnapshot } from "@/Hooks/useOperationalContextSnapshot";
 import { getNavigationItems } from "@/Navigation";
 import {
@@ -39,6 +49,15 @@ const isSuperUserRole = (roles: string[]): boolean =>
       normalizedRole === "superusuario" || normalizedRole === "super usuario"
     );
   });
+
+const getModuleCardText = (moduleKey: string) => {
+  const moduleInfo = getModuleInfo(moduleKey);
+
+  return {
+    title: moduleInfo.title,
+    description: moduleInfo.description,
+  };
+};
 
 interface TeacherDashboardMetrics {
   activeAssignments: number;
@@ -452,148 +471,133 @@ const HomePage: React.FC = () => {
   const dashboardQuickCards = useMemo(() => {
     const routeMeta: Record<string, Omit<DashboardQuickCard, "href">> = {
       [ROUTES.EVIDENCE_MY]: {
-        title: "Mis Entregas",
-        description: "Revisa y gestiona tus entregables asignados.",
+        ...getModuleCardText("my_evidence_assignments"),
         icon: (
-          <span className="text-azul-una">
+          <span className="text-info">
             {getIconByName("myEvidences", "xl")}
           </span>
         ),
-        cardClassName: "border border-azul-una/20 bg-azul-una/5",
-        titleClassName: "text-azul-una",
+        cardClassName: CARD_HOVER_SHADOWS.info,
+        titleClassName: "text-info",
       },
       [ROUTES.EVIDENCE_ASSIGN]: {
-        title: "Asignar Entregables",
-        description: "Administra asignaciones por criterio y proceso.",
+        ...getModuleCardText("evidence_assignment_wizard"),
         icon: (
-          <span className="text-azul-una">
+          <span className="text-teal">
             {getIconByName("assignEvidence", "xl")}
           </span>
         ),
-        cardClassName: "border border-azul-una/20 bg-azul-una/5",
-        titleClassName: "text-azul-una",
+        cardClassName: CARD_HOVER_SHADOWS.teal,
+        titleClassName: "text-teal",
       },
       [ROUTES.EVIDENCE_SEARCH]: {
-        title: "Buscar Entregables",
-        description: "Consulta evidencia dentro del contexto activo.",
+        ...getModuleCardText("evidence_search"),
         icon: (
           <span className="text-verde">{getIconByName("search", "xl")}</span>
         ),
-        cardClassName: "border border-verde/20 bg-verde/5",
+        cardClassName: CARD_HOVER_SHADOWS.verde,
         titleClassName: "text-verde",
       },
       [ROUTES.EXTENSION_REQUESTS_MY]: {
-        title: "Mis Solicitudes",
-        description: "Da seguimiento al estado de tus solicitudes.",
+        ...getModuleCardText("extension_requests_my"),
         icon: (
-          <span className="text-rojo-una">{getIconByName("clock", "xl")}</span>
+          <span className="text-error">{getIconByName("clock", "xl")}</span>
         ),
-        cardClassName: "border border-rojo-una/20 bg-rojo-una/5",
-        titleClassName: "text-rojo-una",
+        cardClassName: CARD_HOVER_SHADOWS.error,
+        titleClassName: "text-error",
       },
       [ROUTES.EXTENSION_REQUESTS_MANAGE]: {
-        title: "Gestionar Solicitudes",
-        description: "Aprueba o rechaza solicitudes de ampliación.",
+        ...getModuleCardText("extension_requests_manage"),
         icon: (
-          <span className="text-rojo-una">{getIconByName("clock", "xl")}</span>
+          <span className="text-error">{getIconByName("clock", "xl")}</span>
         ),
-        cardClassName: "border border-rojo-una/20 bg-rojo-una/5",
-        titleClassName: "text-rojo-una",
+        cardClassName: CARD_HOVER_SHADOWS.error,
+        titleClassName: "text-error",
       },
       [ROUTES.BLOCK_APPROVAL]: {
-        title: "Aprobación de Bloques",
-        description: "Valida el avance por bloque y criterios.",
+        ...getModuleCardText("block_approval"),
         icon: (
           <span className="text-verde">
             {getIconByName("check-circle", "xl")}
           </span>
         ),
-        cardClassName: "border border-verde/20 bg-verde/5",
+        cardClassName: CARD_HOVER_SHADOWS.verde,
         titleClassName: "text-verde",
       },
       [ROUTES.ACCREDITATION_CYCLES]: {
-        title: "Ciclos de Acreditación",
-        description: "Configura y administra ciclos de trabajo.",
+        ...getModuleCardText("accreditation_cycles"),
         icon: (
-          <span className="text-azul-una">
+          <span className="text-naranja">
             {getIconByName("calendar", "xl")}
           </span>
         ),
-        cardClassName: "border border-azul-una/20 bg-azul-una/5",
-        titleClassName: "text-azul-una",
+        cardClassName: CARD_HOVER_SHADOWS.naranja,
+        titleClassName: "text-naranja",
       },
       [ROUTES.ACCREDITATION_PROCESSES]: {
-        title: "Procesos de Acreditación",
-        description: "Gestiona procesos según ciclo y carrera.",
+        ...getModuleCardText("accreditation_processes"),
         icon: (
           <span className="text-verde">
             {getIconByName("box-archive", "xl")}
           </span>
         ),
-        cardClassName: "border border-verde/20 bg-verde/5",
+        cardClassName: CARD_HOVER_SHADOWS.verde,
         titleClassName: "text-verde",
       },
       [ROUTES.STRUCTURE_MODELS]: {
-        title: "Modelos de Acreditación",
-        description: "Mantén la estructura base de evaluación.",
+        ...getModuleCardText("accreditation_models"),
         icon: (
-          <span className="text-azul-una">{getIconByName("nut", "xl")}</span>
+          <span className="text-slate">{getIconByName("nut", "xl")}</span>
         ),
-        cardClassName: "border border-azul-una/20 bg-azul-una/5",
-        titleClassName: "text-azul-una",
+        cardClassName: CARD_HOVER_SHADOWS.slate,
+        titleClassName: "text-slate",
       },
       [ROUTES.USERS]: {
-        title: "Usuarios",
-        description: "Gestiona cuentas y estados de acceso.",
+        ...getModuleCardText("users"),
         icon: (
           <span className="text-warning">{getIconByName("user", "xl")}</span>
         ),
-        cardClassName: "border border-warning/20 bg-warning/10",
+        cardClassName: CARD_HOVER_SHADOWS.warning,
         titleClassName: "text-warning",
       },
       [ROUTES.ROLES]: {
-        title: "Roles",
-        description: "Configura perfiles y permisos del sistema.",
+        ...getModuleCardText("roles"),
         icon: (
-          <span className="text-warning">{getIconByName("shield", "xl")}</span>
+          <span className="text-info">{getIconByName("shield", "xl")}</span>
         ),
-        cardClassName: "border border-warning/20 bg-warning/10",
-        titleClassName: "text-warning",
+        cardClassName: CARD_HOVER_SHADOWS.info,
+        titleClassName: "text-info",
       },
       [ROUTES.AUDIT_LOG]: {
-        title: "Bitácora",
-        description: "Audita actividad y trazabilidad del sistema.",
+        ...getModuleCardText("auditlog"),
         icon: (
-          <span className="text-negro-una">
+          <span className="text-error">
             {getIconByName("edit-element", "xl")}
           </span>
         ),
-        cardClassName: "border border-negro-una/20 bg-negro-una/5",
-        titleClassName: "text-negro-una",
+        cardClassName: CARD_HOVER_SHADOWS.error,
+        titleClassName: "text-error",
       },
       [ROUTES.REPORTS]: {
-        title: "Gestión de Enlaces",
-        description: "Administra enlaces e información pública.",
+        ...getModuleCardText("final_reports"),
         icon: (
           <span className="text-info">{getIconByName("reports", "xl")}</span>
         ),
-        cardClassName: "border border-info/20 bg-info/10",
+        cardClassName: CARD_HOVER_SHADOWS.info,
         titleClassName: "text-info",
       },
       [ROUTES.SINAES_ADMIN]: {
-        title: "Informes de Acreditación",
-        description: "Consulta y prepara informes institucionales.",
+        ...getModuleCardText("accreditation_report_admin"),
         icon: <span className="text-info">{getIconByName("medal", "xl")}</span>,
-        cardClassName: "border border-info/20 bg-info/10",
+        cardClassName: CARD_HOVER_SHADOWS.info,
         titleClassName: "text-info",
       },
       [ROUTES.CONTEXT_SELECTOR]: {
-        title: "Cambiar Contexto",
-        description: "Actualiza carrera, ciclo y proceso activos.",
+        ...getModuleCardText("context_selector"),
         icon: (
           <SystemIcons.structure.hierarchy className="w-8 h-8 text-negro-una" />
         ),
-        cardClassName: "border border-negro-una/20 bg-negro-una/5",
+        cardClassName: CARD_HOVER_SHADOWS.negroUna,
         titleClassName: "text-negro-una",
       },
     };
@@ -731,38 +735,39 @@ const HomePage: React.FC = () => {
   if (isTeacher) {
     return (
       <ScreenContainer variant="full-width" className="space-y-6 pt-8 md:pt-12">
-        <div className="w-full max-w-6xl mx-auto text-center">
+        <div className="w-full max-w-6xl mx-auto mt-10 md:mt-12 text-center">
           <h1 className="text-3xl md:text-4xl font-bold text-negro-una leading-tight">
             Panel de Inicio
           </h1>
         </div>
 
-        <div className="max-w-6xl mx-auto w-full mt-8 md:mt-12 lg:mt-16">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="max-w-6xl mx-auto w-full mt-10 md:mt-12 flex justify-center">
+          <div className="w-full grid grid-cols-1 md:grid-cols-2 gap-4 justify-items-center">
             {dashboardQuickCards.map((card) => (
               <div
                 key={card.href}
-                className="min-h-48 cursor-pointer"
+                className="w-full min-h-48 cursor-pointer"
                 onClick={() => navigate(card.href)}
               >
                 <Card
-                  className={`h-full p-5 hover:shadow-xl transition ${card.cardClassName}`}
+                  className={`h-full p-5 transition-all duration-200 ${card.cardClassName}`}
                 >
-                  <div className="h-full flex items-start justify-between gap-4">
-                    <div className="h-full flex flex-col justify-center">
+                  <div className="grid grid-cols-3 grid-rows-4 gap-0 h-full">
+                    <div className="col-start-1 col-end-3 row-start-1 row-end-3 flex items-center">
                       <p
-                        className={`text-xs uppercase tracking-wide ${card.titleClassName}`}
+                        className={`${TYPOGRAPHY.pageTitle} font-bold text-negro-una`}
                       >
-                        Acceso rápido
-                      </p>
-                      <p className="mt-3 text-xl font-bold text-negro-una">
                         {card.title}
                       </p>
-                      <p className="text-sm text-gris-una mt-2">
+                    </div>
+                    <div className="col-start-3 col-end-4 row-start-1 row-end-3 flex items-center justify-end">
+                      {card.icon}
+                    </div>
+                    <div className="col-start-1 col-end-4 row-start-3 row-end-5">
+                      <p className="text-sm text-gris-una">
                         {card.description}
                       </p>
                     </div>
-                    {card.icon}
                   </div>
                 </Card>
               </div>
@@ -777,16 +782,18 @@ const HomePage: React.FC = () => {
     return (
       <ScreenContainer variant="full-width" className="space-y-6 pt-4 md:pt-6">
         <ContextMiniHeader className="mb-2" />
-        <div className="w-full max-w-screen-2xl mx-auto px-1 md:px-2 pt-3 md:pt-4 text-center">
+        <div className="w-full max-w-screen-2xl mx-auto px-1 md:px-2 mt-10 md:mt-12 text-center">
           <h1 className="text-3xl md:text-4xl font-bold text-negro-una leading-tight">
             Panel de Inicio
           </h1>
         </div>
 
-        <div className="max-w-screen-2xl mx-auto w-full px-1 md:px-2 flex items-start justify-center">
+        <div className="max-w-screen-2xl mx-auto w-full px-1 md:px-2 mt-10 md:mt-12 flex items-center justify-center">
           <div className="w-full max-w-screen-xl grid grid-cols-1 lg:grid-cols-12 gap-4 items-stretch">
-            <Card className="relative lg:col-span-3 w-full h-full min-h-[22rem] p-4 pb-14 border border-azul-una/20 bg-azul-una/5 shadow-sm">
-              <p className="text-xs uppercase tracking-wide text-azul-una mb-3">
+            <Card className="relative lg:col-span-3 w-full h-full min-h-[24rem] p-5 pb-20">
+              <p
+                className={`${TYPOGRAPHY.pageTitle} font-bold text-negro-una mb-3`}
+              >
                 Espacio de Trabajo
               </p>
               <div className="space-y-2">
@@ -796,29 +803,34 @@ const HomePage: React.FC = () => {
                   { label: "Ciclo", value: superSnapshot.cycleLabel },
                   { label: "Proceso", value: superSnapshot.processLabel },
                 ].map((row) => (
-                  <div
-                    key={row.label}
-                    className="pb-2 border-b border-azul-una/10 last:border-b-0"
-                  >
-                    <p className="text-xs uppercase tracking-wide text-gris-una">
+                  <div key={row.label} className="pb-2">
+                    <p
+                      className={`${TYPOGRAPHY.form.label} font-bold text-negro-una`}
+                    >
                       {row.label}
                     </p>
-                    <p className="mt-0.5 text-base font-semibold text-negro-una leading-snug">
+                    <p
+                      className={`mt-0.5 ${TYPOGRAPHY.body} font-normal text-gris-una-3 leading-snug`}
+                    >
                       {row.value ?? "No seleccionado"}
                     </p>
                   </div>
                 ))}
               </div>
-              <ButtonWithTooltip
-                tooltip="Abre el selector para ajustar ciclo y proceso de trabajo."
-                tooltipPosition="top"
-                variant="secondary"
-                size="sm"
-                className="absolute bottom-3 right-3 !bg-negro-una !text-blanco-una hover:!bg-negro-una/90 !shadow-none hover:!shadow-none px-3 py-1.5"
-                onClick={() => navigate(ROUTES.CONTEXT_SELECTOR)}
-              >
-                Cambiar
-              </ButtonWithTooltip>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    variant="outline"
+                    className="absolute bottom-5 left-1/2 -translate-x-1/2 px-3 py-1.5"
+                    onClick={() => navigate(ROUTES.CONTEXT_SELECTOR)}
+                  >
+                    Cambiar
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent side="top">
+                  Abra el selector para ajustar ciclo y proceso de trabajo.
+                </TooltipContent>
+              </Tooltip>
             </Card>
 
             <div className="lg:col-span-9 h-full">
@@ -826,27 +838,28 @@ const HomePage: React.FC = () => {
                 {dashboardQuickCards.map((card) => (
                   <div
                     key={card.href}
-                    className="h-full min-h-[10.5rem] cursor-pointer"
+                    className="h-full min-h-[11.5rem] cursor-pointer"
                     onClick={() => navigate(card.href)}
                   >
                     <Card
-                      className={`h-full p-4 hover:shadow-xl transition ${card.cardClassName}`}
+                      className={`h-full p-4 transition-all duration-200 ${card.cardClassName}`}
                     >
-                      <div className="h-full flex items-start justify-between gap-4">
-                        <div className="h-full flex flex-col justify-center">
+                      <div className="grid grid-cols-3 grid-rows-4 gap-0 h-full">
+                        <div className="col-start-1 col-end-3 row-start-1 row-end-3 flex items-center">
                           <p
-                            className={`text-xs uppercase tracking-wide ${card.titleClassName}`}
+                            className={`${TYPOGRAPHY.pageTitle} font-bold text-negro-una`}
                           >
-                            Acceso rápido
-                          </p>
-                          <p className="mt-2 text-lg font-bold text-negro-una">
                             {card.title}
                           </p>
-                          <p className="text-sm text-gris-una mt-2">
+                        </div>
+                        <div className="col-start-3 col-end-4 row-start-1 row-end-3 flex items-center justify-end">
+                          {card.icon}
+                        </div>
+                        <div className="col-start-1 col-end-4 row-start-3 row-end-5">
+                          <p className="text-sm text-gris-una">
                             {card.description}
                           </p>
                         </div>
-                        {card.icon}
                       </div>
                     </Card>
                   </div>
@@ -870,48 +883,66 @@ const HomePage: React.FC = () => {
   return (
     <ScreenContainer>
       <ContextMiniHeader />
-      <div className="w-full mb-4 pt-2 md:pt-3 text-center">
+      <div className="w-full mt-10 md:mt-12 text-center">
         <h1 className="text-3xl md:text-4xl font-bold text-negro-una leading-tight">
           Panel de Inicio
         </h1>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
-        <Card className="relative lg:col-span-4 min-h-56 p-4 pb-14 border border-azul-una/20 bg-azul-una/5 shadow-sm self-start">
-          <p className="text-xs uppercase tracking-wide text-azul-una mb-3">
+      <div className="w-full max-w-screen-xl mx-auto mt-10 md:mt-12 grid grid-cols-1 lg:grid-cols-12 gap-4 items-stretch">
+        <Card className="relative lg:col-span-4 min-h-72 p-5 pb-20 self-start">
+          <p
+            className={`${TYPOGRAPHY.body} font-semibold text-negro-una mb-3`}
+          >
             Espacio de Trabajo
           </p>
 
           <div className="space-y-2">
-            <div className="pb-2 border-b border-azul-una/10">
-              <p className="text-xs uppercase tracking-wide text-gris-una">
+            <div className="pb-2">
+              <p
+                className={`${TYPOGRAPHY.form.label} font-semibold text-negro-una`}
+              >
                 Carrera
               </p>
-              <p className="mt-0.5 text-base font-semibold text-negro-una leading-snug">
+              <p
+                className={`mt-0.5 ${TYPOGRAPHY.body} font-normal text-gris-una-3 leading-snug`}
+              >
                 {fixedCareer ? fixedCareer.carrera_nombre : "No seleccionado"}
               </p>
             </div>
-            <div className="pb-2 border-b border-azul-una/10">
-              <p className="text-xs uppercase tracking-wide text-gris-una">
+            <div className="pb-2">
+              <p
+                className={`${TYPOGRAPHY.form.label} font-semibold text-negro-una`}
+              >
                 Sede
               </p>
-              <p className="mt-0.5 text-base font-semibold text-negro-una leading-snug">
+              <p
+                className={`mt-0.5 ${TYPOGRAPHY.body} font-normal text-gris-una-3 leading-snug`}
+              >
                 {fixedCareer ? fixedCareer.sede_nombre : "No seleccionado"}
               </p>
             </div>
-            <div className="pb-2 border-b border-azul-una/10">
-              <p className="text-xs uppercase tracking-wide text-gris-una">
+            <div className="pb-2">
+              <p
+                className={`${TYPOGRAPHY.form.label} font-semibold text-negro-una`}
+              >
                 Ciclo
               </p>
-              <p className="mt-0.5 text-base font-semibold text-negro-una leading-snug">
+              <p
+                className={`mt-0.5 ${TYPOGRAPHY.body} font-normal text-gris-una-3 leading-snug`}
+              >
                 {selectedCycleLabel}
               </p>
             </div>
             <div>
-              <p className="text-xs uppercase tracking-wide text-gris-una">
+              <p
+                className={`${TYPOGRAPHY.form.label} font-semibold text-negro-una`}
+              >
                 Proceso
               </p>
-              <p className="mt-0.5 text-base font-semibold text-negro-una leading-snug">
+              <p
+                className={`mt-0.5 ${TYPOGRAPHY.body} font-normal text-gris-una-3 leading-snug`}
+              >
                 {selectedProcessLabel}
               </p>
             </div>
@@ -921,56 +952,62 @@ const HomePage: React.FC = () => {
             <p className="text-xs text-gris-una mt-3">
               {saving
                 ? "Actualizando contexto..."
-                : "Selecciona tu contexto para comenzar."}
+                : "Seleccione su contexto para comenzar."}
             </p>
           )}
 
-          <ButtonWithTooltip
-            tooltip="Abre el selector para ajustar ciclo y proceso de trabajo."
-            tooltipPosition="top"
-            variant="secondary"
-            size="sm"
-            className="absolute bottom-3 right-3 !bg-negro-una !text-blanco-una hover:!bg-negro-una/90 !shadow-none hover:!shadow-none px-3 py-1.5"
-            onClick={() => navigate(ROUTES.CONTEXT_SELECTOR)}
-          >
-            Cambiar
-          </ButtonWithTooltip>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                variant="secondary"
+                size="sm"
+                className="absolute bottom-5 left-1/2 -translate-x-1/2 px-3 py-1.5"
+                onClick={() => navigate(ROUTES.CONTEXT_SELECTOR)}
+              >
+                Cambiar
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent side="top">
+              Abra el selector para ajustar ciclo y proceso de trabajo.
+            </TooltipContent>
+          </Tooltip>
         </Card>
 
         <div className="lg:col-span-8 space-y-4">
           {!fixedCareer ? (
-            <Card className="p-5 border border-rojo-una/20 bg-rojo-una/5">
-              <p className="text-sm font-semibold text-rojo-una-2">
+            <Card className="p-5">
+              <p className="text-sm font-semibold text-negro-una">
                 Su usuario no tiene una carrera asociada. Solicite la asignacion
                 de carrera para continuar.
               </p>
             </Card>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 justify-items-center">
               {dashboardQuickCards.map((card) => (
                 <div
                   key={card.href}
-                  className="min-h-56 cursor-pointer"
+                  className="w-full min-h-72 cursor-pointer"
                   onClick={() => navigate(card.href)}
                 >
                   <Card
-                    className={`min-h-56 p-5 hover:shadow-xl transition ${card.cardClassName}`}
+                    className={`min-h-72 p-5 transition-all duration-200 ${card.cardClassName}`}
                   >
-                    <div className="h-full flex items-start justify-between gap-4">
-                      <div className="h-full flex flex-col justify-center">
+                    <div className="grid grid-cols-3 grid-rows-4 gap-0 h-full">
+                      <div className="col-start-1 col-end-3 row-start-1 row-end-3 flex items-center">
                         <p
-                          className={`text-xs uppercase tracking-wide ${card.titleClassName}`}
+                          className={`${TYPOGRAPHY.pageTitle} font-bold text-negro-una`}
                         >
-                          Acceso rápido
-                        </p>
-                        <p className="mt-3 text-xl font-bold text-negro-una">
                           {card.title}
                         </p>
-                        <p className="text-sm text-gris-una mt-2">
+                      </div>
+                      <div className="col-start-3 col-end-4 row-start-1 row-end-3 flex items-center justify-end">
+                        {card.icon}
+                      </div>
+                      <div className="col-start-1 col-end-4 row-start-3 row-end-5">
+                        <p className="text-sm text-gris-una">
                           {card.description}
                         </p>
                       </div>
-                      {card.icon}
                     </div>
                   </Card>
                 </div>

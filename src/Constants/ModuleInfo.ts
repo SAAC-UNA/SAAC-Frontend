@@ -21,15 +21,22 @@ const MODULE_INFO: Record<string, ModuleInfo> = {
     title: "Panel Principal",
     subtitle: "Sistema SAAC-UNA",
     description:
-      "Acceda a todas las funcionalidades de acreditación y autoevaluación de carreras",
+      "Acceda a todas las funcionalidades de acreditación y autoevaluación de carreras.",
     shortDescription: "Panel principal de funcionalidades",
   },
 
   // Gestión de Roles
+  context_selector: {
+    title: "Cambiar Contexto",
+    subtitle: "Carrera, Ciclo y Proceso",
+    description: "Actualice carrera, ciclo y proceso activos.",
+    shortDescription: "Cambiar contexto de trabajo",
+  },
+
   roles: {
     title: "Gestión de Roles",
     subtitle: "Administración de Roles y Permisos",
-    description: "Cree, edite y administre los roles y permisos disponibles",
+    description: "Cree, edite y administre los roles y permisos disponibles.",
     shortDescription: "Administrar roles y permisos",
   },
 
@@ -37,7 +44,7 @@ const MODULE_INFO: Record<string, ModuleInfo> = {
     title: "Crear Nuevo Rol",
     subtitle: "Definición de Rol y Permisos",
     description:
-      "Defina un nuevo rol asignando los permisos correspondientes para los usuarios",
+      "Defina un nuevo rol asignando los permisos correspondientes para los usuarios.",
     shortDescription: "Crear nuevo rol con permisos",
   },
 
@@ -45,14 +52,14 @@ const MODULE_INFO: Record<string, ModuleInfo> = {
     title: "Editar Rol",
     subtitle: "Modificación de Rol y Permisos",
     description:
-      "Modifique la información del rol seleccionado y sus permisos asignados",
+      "Modifique la información del rol seleccionado y sus permisos asignados.",
     shortDescription: "Editar rol existente",
   },
 
   roles_list: {
     title: "Gestión de Roles",
     subtitle: "Administración de Roles y Permisos",
-    description: "Cree, edite y administre los roles y permisos disponibles",
+    description: "Cree, edite y administre los roles y permisos disponibles.",
     shortDescription: "Administrar roles y permisos",
   },
 
@@ -61,7 +68,7 @@ const MODULE_INFO: Record<string, ModuleInfo> = {
     title: "Gestión de Usuarios",
     subtitle: "Administración de Usuarios",
     description:
-      "Administre los usuarios, sus roles y permisos de acceso a las funcionalidades",
+      "Administre los usuarios, sus roles y permisos de acceso a las funcionalidades.",
     shortDescription: "Administrar usuarios",
   },
 
@@ -69,14 +76,14 @@ const MODULE_INFO: Record<string, ModuleInfo> = {
     title: "Crear Nuevo Usuario",
     subtitle: "Registro de Usuario",
     description:
-      "Registre un nuevo usuario y asigne los roles correspondientes para su acceso",
+      "Registre un nuevo usuario y asigne los roles correspondientes para su acceso.",
     shortDescription: "Registrar nuevo usuario",
   },
 
   users_edit: {
     title: "Editar Usuario",
     subtitle: "Modificación de Usuario",
-    description: "Gestione los roles y permisos del usuario",
+    description: "Gestione los roles y permisos del usuario.",
     shortDescription: "Editar usuario existente",
   },
 
@@ -93,7 +100,7 @@ const MODULE_INFO: Record<string, ModuleInfo> = {
     title: "Asignación de Entregables",
     subtitle: "Wizard de Asignación",
     description:
-      "Asigne entregables específicos a usuarios y roles del sistema de manera guiada",
+      "Asigne entregables específicos a usuarios y roles del sistema de manera guiada.",
     shortDescription: "Asignar entregables a usuarios",
   },
 
@@ -101,7 +108,7 @@ const MODULE_INFO: Record<string, ModuleInfo> = {
     title: "Asignar Entregables",
     subtitle: "Proceso de Asignación Guiado",
     description:
-      "Complete el proceso de asignación de entregables siguiendo los pasos",
+      "Complete el proceso de asignación de entregables siguiendo los pasos.",
     shortDescription: "Wizard de asignación de entregables",
   },
 
@@ -110,7 +117,7 @@ const MODULE_INFO: Record<string, ModuleInfo> = {
     title: "Mis Entregables Asignados",
     subtitle: "Entregables Pendientes y Completados",
     description:
-      "Visualice y administre los entregables que le han sido asignados",
+      "Visualice y administre los entregables que le han sido asignados.",
     shortDescription: "Ver entregables asignados a mí",
   },
 
@@ -119,7 +126,7 @@ const MODULE_INFO: Record<string, ModuleInfo> = {
     title: "Subir Entregables",
     subtitle: "Carga de Archivos",
     description:
-      "Suba archivos digitales como respaldo de los entregables del proceso de acreditación",
+      "Suba archivos digitales como respaldo de los entregables del proceso de acreditación.",
     shortDescription: "Subir archivos de entregables",
   },
 
@@ -137,7 +144,7 @@ const MODULE_INFO: Record<string, ModuleInfo> = {
     title: "Mis Solicitudes de Ampliación",
     subtitle: "Solicitudes de Extensión de Plazo",
     description:
-      "Visualice el estado de sus solicitudes de ampliación de plazo para evidencias",
+      "Visualice el estado de sus solicitudes de ampliación de plazo para evidencias.",
     shortDescription: "Ver mis solicitudes de ampliación",
   },
 
@@ -145,7 +152,7 @@ const MODULE_INFO: Record<string, ModuleInfo> = {
     title: "Gestión de Solicitudes de Ampliación",
     subtitle: "Revisión y Aprobación de Solicitudes",
     description:
-      "Revise y gestione las solicitudes de ampliación de plazo para evidencias",
+      "Revise y gestione las solicitudes de ampliación de plazo para evidencias.",
     shortDescription: "Gestionar solicitudes de ampliación",
   },
 
@@ -154,7 +161,7 @@ const MODULE_INFO: Record<string, ModuleInfo> = {
     title: "Gestión de Reportes",
     subtitle: "Generación de Reportes",
     description:
-      "Genere y administre reportes académicos y administrativos con datos actualizados",
+      "Genere y administre reportes académicos y administrativos con datos actualizados.",
     shortDescription: "Generar y administrar reportes",
   },
 
@@ -163,7 +170,7 @@ const MODULE_INFO: Record<string, ModuleInfo> = {
     title: "Gestión de Programas",
     subtitle: "Programas Académicos",
     description:
-      "Administre los programas académicos y sus configuraciones institucionales",
+      "Administre los programas académicos y sus configuraciones institucionales.",
     shortDescription: "Administrar programas académicos",
   },
 
@@ -172,7 +179,7 @@ const MODULE_INFO: Record<string, ModuleInfo> = {
     title: "Gestión de Ciclos",
     subtitle: "Ciclos Académicos",
     description:
-      "Administre los ciclos académicos, periodos de estudio y calendarios institucionales",
+      "Administre los ciclos académicos, periodos de estudio y calendarios institucionales.",
     shortDescription: "Administrar ciclos académicos",
   },
 
@@ -181,7 +188,7 @@ const MODULE_INFO: Record<string, ModuleInfo> = {
     title: "Bitácora del Sistema",
     subtitle: "Registro de Auditoría",
     description:
-      "Consulte todos los registros de acciones realizadas en el sistema",
+      "Consulte todos los registros de acciones realizadas en el sistema.",
     shortDescription: "Ver bitácora del sistema",
   },
 
@@ -189,7 +196,7 @@ const MODULE_INFO: Record<string, ModuleInfo> = {
     title: "Bitácora del Sistema",
     subtitle: "Consulta de Registros",
     description:
-      "Visualice y filtre todos los registros de auditoría del sistema",
+      "Visualice y filtre todos los registros de auditoría del sistema.",
     shortDescription: "Consultar bitácora",
   },
 
@@ -197,7 +204,7 @@ const MODULE_INFO: Record<string, ModuleInfo> = {
     title: "Lista de Roles",
     subtitle: "Roles Existentes",
     description:
-      "Visualiza y administra todos los roles existentes con sus permisos asignados",
+      "Visualiza y administra todos los roles existentes con sus permisos asignados.",
     shortDescription: "Ver todos los roles existentes",
   },
   // Gestión de Estructura
@@ -205,7 +212,7 @@ const MODULE_INFO: Record<string, ModuleInfo> = {
     title: "Gestión de Estructura",
     subtitle: "Administración de Elementos del Repositorio",
     description:
-      "Cree, edite y administre los elementos de la estructura del repositorio",
+      "Cree, edite y administre los elementos de la estructura del repositorio.",
     shortDescription: "Administrar elementos de la estructura",
   },
 
@@ -214,7 +221,7 @@ const MODULE_INFO: Record<string, ModuleInfo> = {
     title: "Aprobación de Bloques",
     subtitle: "Validación de Criterios",
     description:
-      "Seleccione un proceso para ver y aprobar los criterios correspondientes validando que todos los entregables estén adjuntados",
+      "Seleccione un proceso para ver y aprobar los criterios correspondientes validando que todos los entregables estén adjuntados.",
     shortDescription: "Aprobar criterios por bloques",
   },
 
@@ -223,7 +230,7 @@ const MODULE_INFO: Record<string, ModuleInfo> = {
     title: "Gestión de Enlaces",
     subtitle: "Enlaces Públicos y Exportación",
     description:
-      "Genere enlaces públicos para los entregables de criterios aprobados y exporte tablas en Excel o PDF",
+      "Genere enlaces públicos para los entregables de criterios aprobados y exporte tablas en Excel o PDF.",
     shortDescription: "Gestionar enlaces públicos",
   },
 
@@ -231,7 +238,7 @@ const MODULE_INFO: Record<string, ModuleInfo> = {
     title: "Gestión de Estructura",
     subtitle: "Elementos de la Estructura",
     description:
-      "Visualice y administre todos los elementos existentes en la estructura del repositorio",
+      "Visualice y administre todos los elementos existentes en la estructura del repositorio.",
     shortDescription: "Ver todos los elementos",
   },
 
@@ -247,7 +254,7 @@ const MODULE_INFO: Record<string, ModuleInfo> = {
     title: "Compromisos de Mejora",
     subtitle: "Gestión de Compromisos",
     description:
-      "Gestione los compromisos de mejora vinculados a criterios y entregables",
+      "Gestione los compromisos de mejora vinculados a criterios y entregables.",
     shortDescription: "Gestionar compromisos de mejora",
   },
 
@@ -255,7 +262,7 @@ const MODULE_INFO: Record<string, ModuleInfo> = {
     title: "Procesos de Acreditación",
     subtitle: "Gestión de Procesos",
     description:
-      "Gestione los procesos de acreditación asociados a ciclos de acreditación",
+      "Gestione los procesos de acreditación asociados a ciclos de acreditación.",
     shortDescription: "Gestionar procesos de acreditación",
   },
 
@@ -264,7 +271,7 @@ const MODULE_INFO: Record<string, ModuleInfo> = {
     title: "Informes de Acreditación",
     subtitle: "Gestión Administrativa",
     description:
-      "Administre y pruebe los archivos físicos de informes de acreditación asociados al proceso seleccionado",
+      "Administre y pruebe los archivos físicos de informes de acreditación asociados al proceso seleccionado.",
     shortDescription: "Gestionar informes de acreditación",
   },
 
@@ -272,7 +279,7 @@ const MODULE_INFO: Record<string, ModuleInfo> = {
     title: "Informes de Acreditación",
     subtitle: "Vista Pública",
     description:
-      "Consulte los informes de acreditación publicados y su estado de acceso público",
+      "Consulte los informes de acreditación publicados y su estado de acceso público.",
     shortDescription: "Ver informes de acreditación",
   },
 
