@@ -1,9 +1,9 @@
 /**
  * ButtonWithTooltip - Wrapper que combina Button con Tooltip de forma simple
- * 
+ *
  * Este componente simplifica el uso de botones con tooltips, especialmente
  * útil para botones de tabla que necesitan explicar su función.
- * 
+ *
  * Uso:
  * <ButtonWithTooltip
  *   variant="tableView"
@@ -14,14 +14,34 @@
  * </ButtonWithTooltip>
  */
 
-import React from 'react';
-import { Button, Tooltip, TooltipContent, TooltipTrigger } from '@/Components/Ui/Index';
-import type { ComponentSize } from '@/constants/ComponentSizes';
+import React from "react";
+import {
+  Button,
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/Components/Ui/Index";
+import type { ComponentSize } from "@/constants/ComponentSizes";
 
-type ButtonVariant = 'primary' | 'secondary' | 'tertiary' | 'outline' | 'ghost' | 'transparent' | 'success' | 'tableView' | 'tableEdit' | 'tableDelete' | 'tablePower' | 'tablePowerInactive';
-type TooltipPosition = 'top' | 'bottom' | 'left' | 'right';
+type ButtonVariant =
+  | "primary"
+  | "secondary"
+  | "tertiary"
+  | "outline"
+  | "ghost"
+  | "transparent"
+  | "success"
+  | "tableView"
+  | "tableEdit"
+  | "tableDelete"
+  | "tablePower"
+  | "tablePowerInactive";
+type TooltipPosition = "top" | "bottom" | "left" | "right";
 
-interface ButtonWithTooltipProps extends Omit<React.ButtonHTMLAttributes<HTMLButtonElement>, 'title'> {
+interface ButtonWithTooltipProps extends Omit<
+  React.ButtonHTMLAttributes<HTMLButtonElement>,
+  "title"
+> {
   variant?: ButtonVariant;
   size?: ComponentSize;
   tooltip: string;
@@ -34,10 +54,10 @@ interface ButtonWithTooltipProps extends Omit<React.ButtonHTMLAttributes<HTMLBut
 }
 
 export const ButtonWithTooltip: React.FC<ButtonWithTooltipProps> = ({
-  variant = 'primary',
-  size = 'sm',
+  variant = "primary",
+  size = "sm",
   tooltip,
-  tooltipPosition = 'top',
+  tooltipPosition = "top",
   isLoading = false,
   fullWidth = false,
   flex = false,
@@ -47,29 +67,35 @@ export const ButtonWithTooltip: React.FC<ButtonWithTooltipProps> = ({
   children,
   ...props
 }) => {
+  const buttonElement = (
+    <Button
+      variant={variant}
+      size={size}
+      isLoading={isLoading}
+      fullWidth={fullWidth}
+      flex={flex}
+      responsive={responsive}
+      className={className}
+      disabled={disabled}
+      style={disabled ? { pointerEvents: "none" } : undefined}
+      {...props}
+    >
+      {children}
+    </Button>
+  );
+
   return (
     <Tooltip>
-      <TooltipTrigger asChild>
-        <span style={disabled ? { pointerEvents: 'auto', display: 'inline-flex' } : undefined}>
-          <Button
-            variant={variant}
-            size={size}
-            isLoading={isLoading}
-            fullWidth={fullWidth}
-            flex={flex}
-            responsive={responsive}
-            className={className}
-            disabled={disabled}
-            style={disabled ? { pointerEvents: 'none' } : undefined}
-            {...props}
-          >
-            {children}
-          </Button>
-        </span>
-      </TooltipTrigger>
-      <TooltipContent side={tooltipPosition}>
-        {tooltip}
-      </TooltipContent>
+      {disabled ? (
+        <TooltipTrigger>
+          <span style={{ pointerEvents: "auto", display: "inline-flex" }}>
+            {buttonElement}
+          </span>
+        </TooltipTrigger>
+      ) : (
+        <TooltipTrigger asChild>{buttonElement}</TooltipTrigger>
+      )}
+      <TooltipContent side={tooltipPosition}>{tooltip}</TooltipContent>
     </Tooltip>
   );
 };

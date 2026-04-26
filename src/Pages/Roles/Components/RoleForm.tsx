@@ -539,7 +539,7 @@ export const RoleForm: React.FC<RoleFormProps> = ({
       <Card className="p-4 space-y-5 ">
         <Input
           label="Nombre del Rol"
-          placeholder="Ej: Administrador, Profesor..."
+          placeholder="Ej: Administrador, Docente..."
           value={formData.name}
           onChange={(e) => setFieldValue("name", e.target.value)}
           onFocus={() => handleFieldFocus("name")}

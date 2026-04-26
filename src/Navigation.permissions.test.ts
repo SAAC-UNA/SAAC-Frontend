@@ -46,9 +46,9 @@ describe("Navigation permissions", () => {
     expect(childIds).not.toContain("roles");
   });
 
-  it("muestra navegacion reducida para perfil tipo profesor", () => {
+  it("muestra navegacion reducida para perfil tipo docente", () => {
     const items = getNavigationItems({
-      roles: ["Profesor"],
+      roles: ["Docente"],
       permissions: [
         "evidencias.view",
         "archivos.upload",

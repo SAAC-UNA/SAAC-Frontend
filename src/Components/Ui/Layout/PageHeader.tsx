@@ -17,6 +17,7 @@ interface PageHeaderProps {
   title: string;
   subtitle?: string;
   description?: string;
+  titleClassName?: string;
   className?: string;
   children?: React.ReactNode; // Para botones de acción, breadcrumbs, etc.
   headerExtra?: React.ReactNode; // Para contenido adicional al lado del título
@@ -27,6 +28,7 @@ export const PageHeader: React.FC<PageHeaderProps> = ({
   title,
   subtitle,
   description,
+  titleClassName,
   className,
   children,
   headerExtra,
@@ -170,6 +172,7 @@ export const PageHeader: React.FC<PageHeaderProps> = ({
             className={cn(
               "font-poppins font-bold text-negro-una mb-2",
               TYPOGRAPHY.pageTitle,
+              titleClassName,
             )}
           >
             {title}

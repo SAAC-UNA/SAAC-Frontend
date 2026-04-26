@@ -168,6 +168,48 @@ const ContextSelector: React.FC = () => {
       }));
   }, [catalog, selectedCycleId]);
 
+  const selectedCareerLabel = useMemo(() => {
+    if (!catalog?.careers) return null;
+    const careerId = isCareerFixed
+      ? String(catalog?.context?.career_campus_id ?? "")
+      : selectedCareerId;
+    if (!careerId) return null;
+
+    const careerObj = catalog.careers.find(
+      (c: any) => String(c.carrera_sede_id) === careerId,
+    );
+
+    return careerObj
+      ? `${careerObj.carrera_nombre} - ${careerObj.sede_nombre}`
+      : null;
+  }, [catalog, isCareerFixed, selectedCareerId]);
+
+  const selectedCycleLabel = useMemo(() => {
+    if (!catalog?.cycles || !selectedCycleId) return null;
+    const cycleObj = catalog.cycles.find(
+      (cy: any) => String(cy.ciclo_acreditacion_id) === selectedCycleId,
+    );
+    return cycleObj?.nombre ?? null;
+  }, [catalog, selectedCycleId]);
+
+  const previousStepSelection = useMemo(() => {
+    if (step === "cycle" && showCareerStep) {
+      return {
+        label: "Carrera seleccionada",
+        value: selectedCareerLabel ?? "Aún no seleccionada",
+      };
+    }
+
+    if (step === "process") {
+      return {
+        label: "Ciclo seleccionado",
+        value: selectedCycleLabel ?? "Aún no seleccionado",
+      };
+    }
+
+    return null;
+  }, [step, showCareerStep, selectedCareerLabel, selectedCycleLabel]);
+
   const handleSelectCareer = (careerId: string) => {
     const careerObj = catalog?.careers.find(
       (c: any) => String(c.carrera_sede_id) === careerId,
@@ -324,6 +366,14 @@ const ContextSelector: React.FC = () => {
             Autoevaluación de las Carreras
           </h1>
           <p className="mt-3 text-base text-gris-una">{stepSubtitle[step]}</p>
+          {previousStepSelection && (
+            <p className="mt-2 text-sm text-gris-una">
+              <span className="font-semibold text-negro-una">
+                {previousStepSelection.label}:
+              </span>{" "}
+              {previousStepSelection.value}
+            </p>
+          )}
         </div>
 
         {/* Indicadores de paso */}

@@ -14,24 +14,32 @@ interface RequireOperationalContextProps {
 export const RequireOperationalContext = ({
   children,
 }: RequireOperationalContextProps) => {
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, userRoleNames } = useAuth();
   const location = useLocation();
   const [checkingContext, setCheckingContext] = useState(true);
   const [hasCompleteContext, setHasCompleteContext] = useState(false);
   const isOnSelectorPage = location.pathname === ROUTES.CONTEXT_SELECTOR;
+  const isTeacher = userRoleNames.some((role) => {
+    const normalizedRole = role.toLowerCase();
+    return normalizedRole === "profesor" || normalizedRole === "docente";
+  });
 
   const snapshot = getOperationalContextSnapshot();
   const hasLocalContext = snapshot.cycleId !== null;
 
   const needsContextRedirect =
-    isAuthenticated && !isOnSelectorPage && !hasLocalContext;
+    isAuthenticated && !isTeacher && !isOnSelectorPage && !hasLocalContext;
 
   useEffect(() => {
     let isMounted = true;
 
     const checkContext = async () => {
       // Si no hay sesión o estamos en el selector, no bloqueamos la navegación.
-      if (!isAuthenticated || location.pathname === ROUTES.CONTEXT_SELECTOR) {
+      if (
+        !isAuthenticated ||
+        isTeacher ||
+        location.pathname === ROUTES.CONTEXT_SELECTOR
+      ) {
         if (isMounted) {
           setHasCompleteContext(true);
           setCheckingContext(false);
@@ -85,7 +93,7 @@ export const RequireOperationalContext = ({
     return () => {
       isMounted = false;
     };
-  }, [isAuthenticated, location.pathname]);
+  }, [isAuthenticated, isTeacher, location.pathname]);
 
   if (needsContextRedirect) {
     return (
@@ -105,7 +113,7 @@ export const RequireOperationalContext = ({
     );
   }
 
-  if (!hasCompleteContext && !isOnSelectorPage) {
+  if (!isTeacher && !hasCompleteContext && !isOnSelectorPage) {
     return (
       <Navigate
         to={ROUTES.CONTEXT_SELECTOR}

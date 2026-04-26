@@ -4,22 +4,24 @@
  * Flujo: EntityFormModal → CreateConfirmationModal / EditConfirmationModal → SuccessModal
  */
 
-import React, { useState, useEffect } from 'react';
-import { EntityFormModal } from '@/Components/Ui/Modals/EntityFormModal';
-import { CreateConfirmationModal } from '@/Components/Ui/Modals/CreateConfirmationModal';
-import { EditConfirmationModal } from '@/Components/Ui/Modals/EditConfirmationModal';
-import { SuccessModal } from '@/Components/Ui/Modals/SuccessModal';
-import { Input } from '@/Components/Ui/Forms/Input';
-import { CustomSelect } from '@/Components/Ui/Index';
-import { useToast } from '@/Context/ToastContext';
-import { useCareerCampuses } from '@/Hooks/UseCareerCampuses';
-import { useStructureModels } from '@/Hooks/UseStructureModels';
+import React, { useState, useEffect } from "react";
+import { EntityFormModal } from "@/Components/Ui/Modals/EntityFormModal";
+import { CreateConfirmationModal } from "@/Components/Ui/Modals/CreateConfirmationModal";
+import { EditConfirmationModal } from "@/Components/Ui/Modals/EditConfirmationModal";
+import { SuccessModal } from "@/Components/Ui/Modals/SuccessModal";
+import { DatePicker } from "@/Components/Ui/Calendar/DatePicker";
+import { CustomSelect } from "@/Components/Ui/Index";
+import { TYPOGRAPHY } from "@/Constants/Typography";
+import { useToast } from "@/Context/ToastContext";
+import { useCareerCampuses } from "@/Hooks/UseCareerCampuses";
+import { useStructureModels } from "@/Hooks/UseStructureModels";
+import { cn } from "@/Utils/ClassNames";
 import type {
   AccreditationCycle,
   AccreditationCycleStatus,
   CreateAccreditationCycleForm,
   EditAccreditationCycleForm,
-} from '@/Types/AccreditationCycleTypes';
+} from "@/Types/AccreditationCycleTypes";
 
 interface Props {
   isOpen: boolean;
@@ -31,29 +33,32 @@ interface Props {
 }
 
 interface FormData {
-  nombre: string;
   carrera_sede_id: string;
   modelo_estructura_id: string;
+  fecha_inicio: string;
+  fecha_fin: string;
   estado: AccreditationCycleStatus;
 }
 
 interface FormErrors {
-  nombre?: string;
   carrera_sede_id?: string;
   modelo_estructura_id?: string;
+  fecha_inicio?: string;
+  fecha_fin?: string;
 }
 
 const EMPTY: FormData = {
-  nombre: '',
-  carrera_sede_id: '',
-  modelo_estructura_id: '',
-  estado: 'activo',
+  carrera_sede_id: "",
+  modelo_estructura_id: "",
+  fecha_inicio: "",
+  fecha_fin: "",
+  estado: "activo",
 };
 
 const STATUS_OPTIONS = [
-  { value: 'activo', label: 'Activo' },
-  { value: 'inactivo', label: 'Inactivo' },
-  { value: 'completado', label: 'Completado' },
+  { value: "activo", label: "Activo" },
+  { value: "inactivo", label: "Inactivo" },
+  { value: "completado", label: "Completado" },
 ];
 
 export const AccreditationCycleFormModal: React.FC<Props> = ({
@@ -71,16 +76,17 @@ export const AccreditationCycleFormModal: React.FC<Props> = ({
   const [errors, setErrors] = useState<FormErrors>({});
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [opLoading, setOpLoading] = useState(false);
-  const [success, setSuccess] = useState({ isOpen: false, name: '' });
+  const [success, setSuccess] = useState({ isOpen: false, name: "" });
 
   useEffect(() => {
     if (isOpen) {
       setForm(
         cycle
           ? {
-              nombre: cycle.nombre,
               carrera_sede_id: String(cycle.carrera_sede_id),
               modelo_estructura_id: String(cycle.modelo_estructura_id),
+              fecha_inicio: cycle.fecha_inicio ?? "",
+              fecha_fin: cycle.fecha_fin ?? "",
               estado: cycle.estado,
             }
           : EMPTY,
@@ -90,31 +96,61 @@ export const AccreditationCycleFormModal: React.FC<Props> = ({
     }
   }, [isOpen, cycle]);
 
-  const careerOptions = careerCampuses.map(cs => ({
+  const careerOptions = careerCampuses.map((cs) => ({
     value: String(cs.carrera_sede_id),
     label: `${cs.carrera_nombre} – ${cs.sede_nombre}`,
   }));
 
   const modelOptions = models
-    .filter(m => m.activo)
-    .map(m => ({ value: String(m.modelo_estructura_id), label: m.nombre }));
+    .filter((m) => m.activo)
+    .map((m) => ({ value: String(m.modelo_estructura_id), label: m.nombre }));
 
   const validate = (): boolean => {
     const next: FormErrors = {};
-    if (!form.nombre.trim()) {
-      next.nombre = 'El nombre es obligatorio.';
-    } else if (form.nombre.trim().length > 100) {
-      next.nombre = 'Máximo 100 caracteres.';
-    }
     if (!form.carrera_sede_id) {
-      next.carrera_sede_id = 'Debe seleccionar una carrera-sede.';
+      next.carrera_sede_id = "Debe seleccionar una carrera-sede.";
     }
     if (!form.modelo_estructura_id) {
-      next.modelo_estructura_id = 'Debe seleccionar un modelo de estructura.';
+      next.modelo_estructura_id = "Debe seleccionar un modelo de estructura.";
+    }
+    if (!form.fecha_inicio) {
+      next.fecha_inicio = "La fecha de inicio es obligatoria.";
+    }
+    if (!form.fecha_fin) {
+      next.fecha_fin = "La fecha de fin es obligatoria.";
+    } else if (form.fecha_inicio && form.fecha_fin < form.fecha_inicio) {
+      next.fecha_fin =
+        "La fecha de fin debe ser mayor o igual a la fecha de inicio.";
     }
     setErrors(next);
     return Object.keys(next).length === 0;
   };
+
+  const generatedCycleName = React.useMemo(() => {
+    if (!form.fecha_inicio || !form.fecha_fin)
+      return "Completa las fechas para generar el nombre";
+
+    const startYear = Number(form.fecha_inicio.slice(0, 4));
+    const endYear = Number(form.fecha_fin.slice(0, 4));
+
+    if (!Number.isFinite(startYear) || !Number.isFinite(endYear)) {
+      return "Completa las fechas para generar el nombre";
+    }
+
+    return startYear === endYear
+      ? `Ciclo ${startYear}`
+      : `Ciclo ${startYear}-${endYear}`;
+  }, [form.fecha_inicio, form.fecha_fin]);
+
+  const generatedNameStyle = isEditing
+    ? {
+        container: "border-warning/25 bg-warning/10",
+        text: "text-warning",
+      }
+    : {
+        container: "border-verde/25 bg-verde/10",
+        text: "text-verde",
+      };
 
   const handleSubmitRequest = () => {
     if (validate()) setConfirmOpen(true);
@@ -122,31 +158,37 @@ export const AccreditationCycleFormModal: React.FC<Props> = ({
 
   const handleConfirm = async () => {
     setOpLoading(true);
-    const payload: CreateAccreditationCycleForm | EditAccreditationCycleForm = isEditing
-      ? {
-          nombre: form.nombre.trim(),
-          carrera_sede_id: Number(form.carrera_sede_id),
-          modelo_estructura_id: Number(form.modelo_estructura_id),
-          estado: form.estado,
-        }
-      : {
-          nombre: form.nombre.trim(),
-          carrera_sede_id: Number(form.carrera_sede_id),
-          modelo_estructura_id: Number(form.modelo_estructura_id),
-        };
+    const payload: CreateAccreditationCycleForm | EditAccreditationCycleForm =
+      isEditing
+        ? {
+            carrera_sede_id: Number(form.carrera_sede_id),
+            modelo_estructura_id: Number(form.modelo_estructura_id),
+            fecha_inicio: form.fecha_inicio,
+            fecha_fin: form.fecha_fin,
+            estado: form.estado,
+          }
+        : {
+            carrera_sede_id: Number(form.carrera_sede_id),
+            modelo_estructura_id: Number(form.modelo_estructura_id),
+            fecha_inicio: form.fecha_inicio,
+            fecha_fin: form.fecha_fin,
+          };
 
     const result = await onConfirm(payload);
     setOpLoading(false);
     setConfirmOpen(false);
     if (result.success) {
-      setSuccess({ isOpen: true, name: form.nombre.trim() });
+      setSuccess({ isOpen: true, name: generatedCycleName });
     } else {
-      showToast({ type: 'error', title: result.error ?? 'Error al guardar el ciclo' });
+      showToast({
+        type: "error",
+        title: result.error ?? "Error al guardar el ciclo",
+      });
     }
   };
 
   const handleSuccessClose = () => {
-    setSuccess({ isOpen: false, name: '' });
+    setSuccess({ isOpen: false, name: "" });
     onClose();
   };
 
@@ -156,30 +198,45 @@ export const AccreditationCycleFormModal: React.FC<Props> = ({
         isOpen={isOpen && !confirmOpen && !success.isOpen}
         onClose={onClose}
         onConfirm={handleSubmitRequest}
-        title={isEditing ? 'Editar Ciclo' : 'Crear Ciclo de Acreditación'}
+        title={isEditing ? "Editar Ciclo" : "Crear Ciclo de Acreditación"}
         subtitle={isEditing ? cycle?.nombre : undefined}
-        confirmLabel={isEditing ? 'Guardar' : 'Crear'}
+        confirmLabel={isEditing ? "Guardar" : "Crear"}
         isEditing={isEditing}
         size="lg"
       >
         <div className="flex flex-col gap-4">
-          <Input
-            label="Nombre del ciclo"
-            required
-            value={form.nombre}
-            onChange={e => setForm(p => ({ ...p, nombre: e.target.value }))}
-            error={errors.nombre}
-            maxLength={50}
-            characterCount
-            placeholder="Ej: Ciclo 2026-2030"
-          />
+          <div
+            className={cn(
+              "rounded-corner border px-3 py-2",
+              generatedNameStyle.container,
+            )}
+          >
+            <p
+              className={cn(
+                TYPOGRAPHY.form.helper,
+                "uppercase tracking-wide font-semibold",
+                generatedNameStyle.text,
+              )}
+            >
+              Nombre generado automaticamente
+            </p>
+            <p
+              className={cn(
+                "mt-1 font-semibold",
+                TYPOGRAPHY.form.helper,
+                generatedNameStyle.text,
+              )}
+            >
+              {generatedCycleName}
+            </p>
+          </div>
 
           <CustomSelect
             label="Carrera – Sede"
             required
             value={form.carrera_sede_id}
             options={careerOptions}
-            onChange={v => setForm(p => ({ ...p, carrera_sede_id: v }))}
+            onChange={(v) => setForm((p) => ({ ...p, carrera_sede_id: v }))}
             error={errors.carrera_sede_id}
             disabled={loadingCareers}
             searchable
@@ -192,7 +249,9 @@ export const AccreditationCycleFormModal: React.FC<Props> = ({
             required
             value={form.modelo_estructura_id}
             options={modelOptions}
-            onChange={v => setForm(p => ({ ...p, modelo_estructura_id: v }))}
+            onChange={(v) =>
+              setForm((p) => ({ ...p, modelo_estructura_id: v }))
+            }
             error={errors.modelo_estructura_id}
             disabled={loadingModels}
             searchable
@@ -200,12 +259,45 @@ export const AccreditationCycleFormModal: React.FC<Props> = ({
             placeholder="Seleccione un modelo"
           />
 
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <DatePicker
+              label="Fecha de inicio"
+              required
+              value={form.fecha_inicio}
+              onChange={(date) =>
+                setForm((p) => {
+                  const next = { ...p, fecha_inicio: date };
+                  if (next.fecha_fin && date && next.fecha_fin < date) {
+                    next.fecha_fin = "";
+                  }
+                  return next;
+                })
+              }
+              maxDate={form.fecha_fin || undefined}
+              error={errors.fecha_inicio}
+            />
+
+            <DatePicker
+              label="Fecha de fin"
+              required
+              value={form.fecha_fin}
+              onChange={(date) => setForm((p) => ({ ...p, fecha_fin: date }))}
+              minDate={form.fecha_inicio || undefined}
+              error={errors.fecha_fin}
+            />
+          </div>
+
           {isEditing && (
             <CustomSelect
               label="Estado"
               value={form.estado}
               options={STATUS_OPTIONS}
-              onChange={v => setForm(p => ({ ...p, estado: v as AccreditationCycleStatus }))}
+              onChange={(v) =>
+                setForm((p) => ({
+                  ...p,
+                  estado: v as AccreditationCycleStatus,
+                }))
+              }
             />
           )}
         </div>
@@ -217,7 +309,7 @@ export const AccreditationCycleFormModal: React.FC<Props> = ({
           onClose={() => setConfirmOpen(false)}
           onConfirm={handleConfirm}
           isLoading={opLoading}
-          itemName={form.nombre.trim()}
+          itemName={generatedCycleName}
         />
       ) : (
         <CreateConfirmationModal
@@ -225,13 +317,13 @@ export const AccreditationCycleFormModal: React.FC<Props> = ({
           onClose={() => setConfirmOpen(false)}
           onConfirm={handleConfirm}
           isLoading={opLoading}
-          itemName={form.nombre.trim()}
+          itemName={generatedCycleName}
         />
       )}
 
       <SuccessModal
         isOpen={success.isOpen}
-        title={isEditing ? 'Ciclo actualizado' : 'Ciclo creado'}
+        title={isEditing ? "Ciclo actualizado" : "Ciclo creado"}
         message={
           isEditing
             ? `El ciclo "${success.name}" fue actualizado correctamente.`
