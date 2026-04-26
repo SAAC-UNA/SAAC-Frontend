@@ -18,15 +18,12 @@ import { Modal } from "@/Components/Ui/Modals/Modal";
 import { getModuleInfo } from "@/Constants/ModuleInfo";
 import type { StructureElement } from "@/Types/StructureTypes";
 import { useStructure } from "@/Hooks/UseStructure";
-import { useStructureModels } from "@/Hooks/UseStructureModels";
 import { DeleteConfirmationModal } from "@/Components/Ui/Modals/DeleteConfirmationModal";
 import { SuccessModal } from "@/Components/Ui/Modals/SuccessModal";
 import { SearchInput } from "@/Components/Ui/Forms/SearchInput";
 import { Button } from "@/Components/Ui/Buttons/Button";
 import { truncateText } from "@/Utils";
 import { useToast } from "@/Context/ToastContext";
-import { CustomSelect } from "@/Components/Ui/Forms/SingleSelect";
-import { Card } from "@/Components/Ui/Layout/Card";
 import {
   Breadcrumb,
   type BreadcrumbItem,
@@ -70,10 +67,6 @@ const StructureList: React.FC<StructureListProps> = ({
   const navigationState =
     (location.state as StructureLocationState | null) ?? null;
   const lockModelSelection = navigationState?.lockModelSelection === true;
-  const lockedModelId =
-    typeof navigationState?.modelId === "number" && navigationState.modelId > 0
-      ? navigationState.modelId
-      : null;
 
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
@@ -90,50 +83,7 @@ const StructureList: React.FC<StructureListProps> = ({
     treeData,
   } = useStructure();
 
-  const { models } = useStructureModels();
-
-  const SESSION_KEY = "saac.structure.lastModel";
-
-  const initialModelId = (): number | null => {
-    // Prioridad 1: estado de navegación (viene de la tarjeta de un modelo)
-    if (lockModelSelection) {
-      return lockedModelId;
-    }
-    // Prioridad 2: último modelo usado en esta sesión
-    const stored = sessionStorage.getItem(SESSION_KEY);
-    if (stored && stored !== "0") {
-      const parsed = Number(stored);
-      if (Number.isFinite(parsed) && parsed > 0) return parsed;
-    }
-    // Por defecto: Modelo Tradicional
-    return null;
-  };
-
-  const [selectedModelId, setSelectedModelId] = useState<number | null>(
-    initialModelId,
-  );
-
-  // Sincronizar selección con sessionStorage
-  useEffect(() => {
-    sessionStorage.setItem(
-      SESSION_KEY,
-      selectedModelId !== null ? String(selectedModelId) : "0",
-    );
-  }, [selectedModelId]);
-
-  const selectedModel = useMemo(
-    () =>
-      models.find((m) => m.modelo_estructura_id === selectedModelId) ?? null,
-    [models, selectedModelId],
-  );
-
-  const currentStructureLabel = useMemo(() => {
-    if (lockModelSelection && navigationState?.modelName) {
-      return navigationState.modelName;
-    }
-
-    return selectedModel?.nombre ?? "Modelo Tradicional";
-  }, [lockModelSelection, navigationState?.modelName, selectedModel?.nombre]);
+const currentStructureLabel = navigationState?.modelName ?? moduleInfo.title;
 
   const breadcrumbItems = useMemo<BreadcrumbItem[]>(() => {
     const items: BreadcrumbItem[] = [];
@@ -155,34 +105,6 @@ const StructureList: React.FC<StructureListProps> = ({
 
     return items;
   }, [currentStructureLabel, lockModelSelection, navigationState?.from]);
-
-  const modelOptions = useMemo(
-    () => [
-      { value: "0", label: "Modelo Tradicional" },
-      ...models
-        .filter((m) => m.tipo !== "tradicional")
-        .map((m) => ({
-          value: String(m.modelo_estructura_id),
-          label: m.nombre,
-        })),
-    ],
-    [models],
-  );
-
-  const handleModelChange = (val: string) => {
-    const newId = val === "0" ? null : Number(val);
-    setSelectedModelId(newId);
-    setSearchQuery("");
-  };
-
-  useEffect(() => {
-    if (!lockModelSelection) {
-      return;
-    }
-
-    setSelectedModelId(lockedModelId);
-    setSearchQuery("");
-  }, [lockModelSelection, lockedModelId]);
 
   const headerTitle = title ?? moduleInfo.title;
   const headerDescription = description ?? currentStructureLabel;
@@ -376,18 +298,6 @@ const StructureList: React.FC<StructureListProps> = ({
           breadcrumbMode="none"
           headerExtra={
             <div className="flex flex-col sm:flex-row w-full gap-2 shrink-0 lg:w-auto items-end">
-              {!lockModelSelection && (
-                <Card className="w-80">
-                  <CustomSelect
-                    label="Modelo"
-                    value={
-                      selectedModelId === null ? "0" : String(selectedModelId)
-                    }
-                    onChange={handleModelChange}
-                    options={modelOptions}
-                  />
-                </Card>
-              )}
               <SearchInput
                 placeholder="Buscar elementos..."
                 value={searchQuery}

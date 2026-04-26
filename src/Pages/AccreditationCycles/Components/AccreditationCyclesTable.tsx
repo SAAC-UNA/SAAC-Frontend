@@ -200,23 +200,31 @@ export const AccreditationCyclesTable: React.FC<
                 disabled={item.estado === "completado"}
               />
             )}
-            {canReactivate && item.estado !== "completado" && (
+            {canReactivate && (
               <TableActionButton
                 action="power"
                 tooltip={
-                  item.estado === "activo"
-                    ? "Inactivar ciclo"
-                    : "Activar ciclo"
+                  item.estado === "completado"
+                    ? "No se puede cambiar el estado de un ciclo completado"
+                    : item.estado === "activo"
+                      ? "Inactivar ciclo"
+                      : "Activar ciclo"
                 }
                 onClick={() => onToggleStatus?.(item)}
                 isActive={item.estado === "activo"}
+                disabled={item.estado === "completado"}
               />
             )}
-            {canEdit && item.estado === "activo" && (
+            {canEdit && (
               <TableActionButton
                 action="markComplete"
-                tooltip="Marcar como completado"
+                tooltip={
+                  item.estado !== "activo"
+                    ? "Solo se puede completar un ciclo activo"
+                    : "Marcar como completado"
+                }
                 onClick={() => onMarkComplete?.(item)}
+                disabled={item.estado !== "activo"}
               />
             )}
             {canDelete && (
