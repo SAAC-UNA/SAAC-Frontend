@@ -41,6 +41,9 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(({
 }, ref) => {
   const generatedId = useId();
   const inputId = id || generatedId;
+  const characterCountText = characterCount
+    ? `${value ? value.toString().length : 0}${maxLength ? `/${maxLength}` : ''} caracteres`
+    : '';
 
   // Función para manejar cambios con validación en tiempo real
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -114,6 +117,18 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(({
             </div>
           )}
 
+          {characterCount && (
+            <span
+              className={cn(
+                'absolute right-3 bottom-0 z-[2] translate-y-1/2 scale-75 origin-right px-1 floating-label-halo',
+                TYPOGRAPHY.form.label,
+                error ? 'text-error' : 'text-gris-una',
+              )}
+            >
+              {characterCountText}
+            </span>
+          )}
+
           {/* Floating Label */}
           {label && (
             <label 
@@ -160,15 +175,10 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(({
           </p>
         )}
 
-        {/* Helper text + character count */}
-        {!error && (helperText || characterCount) && (
+        {/* Helper text */}
+        {!error && helperText && (
           <div className={`flex items-center ${TYPOGRAPHY.form.helper} text-gris-una`}>
-            {helperText && <span className="flex-1">{helperText}</span>}
-            {characterCount && value && (
-              <span className="ml-auto">
-                {value ? value.toString().length : 0}{maxLength ? `/${maxLength}` : ''} caracteres
-              </span>
-            )}
+            <span className="flex-1">{helperText}</span>
           </div>
         )}
       </div>
@@ -189,28 +199,42 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(({
         </label>
       )}
 
-      {/* Input */}
-      <input
-        ref={ref}
-        id={inputId}
-        maxLength={maxLength}
-        className={cn(
-          // Base styles
-          `w-full h-10 border rounded-corner transition-all duration-200 px-3 py-2 ${TYPOGRAPHY.form.input}`,
-          'focus:outline-none focus:ring-1 focus:ring-gris-una/20 focus:border-transparent',
-          'placeholder-gris-una/60 disabled:bg-gris-una/10 disabled:cursor-not-allowed',
-          
-          // State variants
-          error
-            ? 'border-rojo-una-2/5 bg-rojo-una-2/2' 
-            : 'border-gris-una/5 bg-gris-una/10',
-          
-          // Custom classes
-          className
+      <div className="relative">
+        {/* Input */}
+        <input
+          ref={ref}
+          id={inputId}
+          maxLength={maxLength}
+          className={cn(
+            // Base styles
+            `w-full h-10 border rounded-corner transition-all duration-200 px-3 py-2 ${TYPOGRAPHY.form.input}`,
+            'focus:outline-none focus:ring-1 focus:ring-gris-una/20 focus:border-transparent',
+            'placeholder-gris-una/60 disabled:bg-gris-una/10 disabled:cursor-not-allowed',
+            
+            // State variants
+            error
+              ? 'border-rojo-una-2/5 bg-rojo-una-2/2' 
+              : 'border-gris-una/5 bg-gris-una/10',
+            
+            // Custom classes
+            className
+          )}
+          onChange={handleChange}
+          {...props}
+        />
+
+        {characterCount && (
+          <span
+            className={cn(
+              'absolute right-3 bottom-0 translate-y-1/2 scale-75 origin-right px-1 floating-label-halo',
+              TYPOGRAPHY.form.label,
+              error ? 'text-error' : 'text-gris-una',
+            )}
+          >
+            {characterCountText}
+          </span>
         )}
-        onChange={handleChange}
-        {...props}
-      />
+      </div>
 
       {/* Error message */}
       {error && (
@@ -220,15 +244,10 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(({
         </p>
       )}
 
-      {/* Helper text + character count */}
-      {!error && (helperText || characterCount) && (
+      {/* Helper text */}
+      {!error && helperText && (
         <div className={`flex items-center ${TYPOGRAPHY.form.helper} text-gris-una`}>
-          {helperText && <span className="flex-1">{helperText}</span>}
-          {characterCount && (
-            <span className="ml-auto">
-              {value ? value.toString().length : 0}{maxLength ? `/${maxLength}` : ''} caracteres
-            </span>
-          )}
+          <span className="flex-1">{helperText}</span>
         </div>
       )}
     </div>

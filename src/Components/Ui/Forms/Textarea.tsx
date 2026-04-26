@@ -40,6 +40,9 @@ export const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(({
 }, ref) => {
   const generatedId = useId();
   const textareaId = id || generatedId;
+  const characterCountText = characterCount
+    ? `${value ? value.toString().length : 0}${maxLength ? `/${maxLength}` : ''} caracteres`
+    : '';
 
   // Función para manejar cambios con validación en tiempo real
   const handleChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
@@ -101,6 +104,18 @@ export const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(({
             {...props}
           />
 
+          {characterCount && (
+            <span
+              className={cn(
+                'absolute right-3 bottom-0 z-[2] translate-y-1/2 scale-75 origin-right px-1 floating-label-halo',
+                TYPOGRAPHY.form.label,
+                error ? 'text-rojo-una-2' : 'text-gris-una',
+              )}
+            >
+              {characterCountText}
+            </span>
+          )}
+
           {/* Floating Label */}
           {label && (
             <label 
@@ -147,15 +162,10 @@ export const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(({
           </p>
         )}
 
-        {/* Helper text + character count */}
-        {!error && (helperText || characterCount) && (
+        {/* Helper text */}
+        {!error && helperText && (
           <div className={`flex items-center ${TYPOGRAPHY.form.helper} text-gris-una`}>
-            {helperText && <span className="flex-1">{helperText}</span>}
-            {characterCount && value && (
-              <span className="ml-auto">
-                {value ? value.toString().length : 0}{maxLength ? `/${maxLength}` : ''} caracteres
-              </span>
-            )}
+            <span className="flex-1">{helperText}</span>
           </div>
         )}
       </div>
@@ -176,32 +186,46 @@ export const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(({
         </label>
       )}
 
-      {/* Textarea */}
-      <textarea
-        ref={ref}
-        id={textareaId}
-        rows={rows}
-        maxLength={maxLength}
-        className={cn(
-          // Base styles actualizados para consistencia con Input
-          `w-full border rounded-corner transition-all duration-300 px-4 py-3 ${TYPOGRAPHY.form.input}`,
-          'focus:outline-none focus:border-gris-una',
-          'placeholder-gris-una/60 disabled:bg-gris-una/10 disabled:cursor-not-allowed',
-          
-          // Forzar resize-none siempre para evitar redimensionamiento
-          '!resize-none',
-          
-          // State variants - actualizados para consistencia con Input
-          error 
-            ? 'border-rojo-una-2' 
-            : 'border-gris-una bg-blanco-una-2',
-          
-          // Custom classes
-          className
+      <div className="relative">
+        {/* Textarea */}
+        <textarea
+          ref={ref}
+          id={textareaId}
+          rows={rows}
+          maxLength={maxLength}
+          className={cn(
+            // Base styles actualizados para consistencia con Input
+            `w-full border rounded-corner transition-all duration-300 px-4 py-3 ${TYPOGRAPHY.form.input}`,
+            'focus:outline-none focus:border-gris-una',
+            'placeholder-gris-una/60 disabled:bg-gris-una/10 disabled:cursor-not-allowed',
+            
+            // Forzar resize-none siempre para evitar redimensionamiento
+            '!resize-none',
+            
+            // State variants - actualizados para consistencia con Input
+            error 
+              ? 'border-rojo-una-2' 
+              : 'border-gris-una bg-blanco-una-2',
+            
+            // Custom classes
+            className
+          )}
+          onChange={handleChange}
+          {...props}
+        />
+
+        {characterCount && (
+          <span
+            className={cn(
+              'absolute right-3 bottom-0 translate-y-1/2 scale-75 origin-right px-1 floating-label-halo',
+              TYPOGRAPHY.form.label,
+              error ? 'text-rojo-una-2' : 'text-gris-una',
+            )}
+          >
+            {characterCountText}
+          </span>
         )}
-        onChange={handleChange}
-        {...props}
-      />
+      </div>
 
       {/* Error message */}
       {error && (
@@ -211,15 +235,10 @@ export const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(({
         </p>
       )}
 
-      {/* Helper text + character count */}
-      {!error && (helperText || characterCount) && (
+      {/* Helper text */}
+      {!error && helperText && (
         <div className={`flex items-center ${TYPOGRAPHY.form.helper} text-gris-una`}>
-          {helperText && <span className="flex-1">{helperText}</span>}
-          {characterCount && (
-            <span className="ml-auto">
-              {value ? value.toString().length : 0}{maxLength ? `/${maxLength}` : ''} caracteres
-            </span>
-          )}
+          <span className="flex-1">{helperText}</span>
         </div>
       )}
     </div>
