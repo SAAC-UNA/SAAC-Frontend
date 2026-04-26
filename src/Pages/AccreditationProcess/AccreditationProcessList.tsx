@@ -274,6 +274,48 @@ export const AccreditationProcessList: React.FC = () => {
     setFormModalState({ isOpen: true, process });
   };
 
+  const handleToggleProcessStatus = async (process: AccreditationProcess) => {
+    const nextStatus = process.status === "activo" ? "inactivo" : "activo";
+    const formData: AccreditationProcessFormData = {
+      type: process.type,
+      accreditationCycleId: process.accreditationCycleId,
+      status: nextStatus,
+      startDate: process.startDate,
+      estimatedEndDate: process.estimatedEndDate,
+    };
+
+    validateBusinessRules(formData, process.id);
+
+    const updated = await accreditationProcessService.updateProcess(process.id, {
+      ciclo_acreditacion_id: Number(process.accreditationCycleId),
+      tipo_proceso: process.type,
+      fecha_inicio: process.startDate,
+      fecha_finalizacion: process.estimatedEndDate,
+      activo: nextStatus === "activo",
+    });
+
+    setProcesses((prev) =>
+      prev.map((item) =>
+        item.id === process.id
+          ? {
+              ...item,
+              ...updated,
+              id: process.id,
+              accreditationCycleId:
+                updated.accreditationCycleId || process.accreditationCycleId,
+              accreditationCycleName:
+                updated.accreditationCycleName || process.accreditationCycleName,
+              type: updated.type || process.type,
+              status: updated.status || nextStatus,
+              startDate: updated.startDate || process.startDate,
+              estimatedEndDate:
+                updated.estimatedEndDate || process.estimatedEndDate,
+            }
+          : item,
+      ),
+    );
+  };
+
   const handleDeleteProcess = (process: AccreditationProcess) => {
     setDeleteModalState({ isOpen: true, process });
   };
@@ -338,6 +380,7 @@ export const AccreditationProcessList: React.FC = () => {
         onEdit={handleEditProcess}
         onDelete={handleDeleteProcess}
         onConfigure={handleConfigureProcess}
+        onToggleStatus={handleToggleProcessStatus}
       />
 
       <AccreditationProcessFormModal

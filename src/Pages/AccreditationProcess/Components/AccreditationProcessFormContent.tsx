@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { CustomSelect } from "@/Components/Ui/Index";
-import { DateRangePicker, type DateRange } from "@/Components/Ui/Calendar/DateRangePicker";
+import { DatePicker } from "@/Components/Ui/Calendar/DatePicker";
 import type {
   AccreditationCycle,
   AccreditationProcess,
@@ -25,11 +25,6 @@ interface ValidationErrors {
 const PROCESS_TYPE_OPTIONS = [
   { value: "Autoevaluación", label: "Autoevaluación" },
   { value: "Compromiso de mejora", label: "Compromiso de mejora" },
-];
-
-const STATUS_OPTIONS = [
-  { value: "activo", label: "Activo" },
-  { value: "inactivo", label: "Inactivo" },
 ];
 
 export const AccreditationProcessFormContent: React.FC<
@@ -153,36 +148,28 @@ export const AccreditationProcessFormContent: React.FC<
         />
       </div>
 
-      <DateRangePicker
-        label="Periodo del Proceso"
-        value={{ from: formData.startDate, to: formData.estimatedEndDate }}
-        onChange={(range: DateRange) => {
-          setFormData((prev) => ({
-            ...prev,
-            startDate: range.from || "",
-            estimatedEndDate: range.to || "",
-          }));
-          setErrors((prev) => ({ ...prev, startDate: undefined, estimatedEndDate: undefined }));
-        }}
-        error={errors.startDate || errors.estimatedEndDate}
-        className="text-sidebar"
-        required
-      />
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+        <DatePicker
+          label="Fecha inicio"
+          value={formData.startDate}
+          onChange={(value) => handleFieldChange("startDate", value)}
+          maxDate={formData.estimatedEndDate || undefined}
+          error={errors.startDate}
+          className="text-sidebar"
+          required
+        />
 
-      <CustomSelect
-        label="Estado"
-        options={STATUS_OPTIONS}
-        value={formData.status}
-        onChange={(value) =>
-          handleFieldChange(
-            "status",
-            value as AccreditationProcessFormData["status"],
-          )
-        }
-        placeholder="Seleccione estado..."
-        className="text-sidebar"
-        required
-      />
+        <DatePicker
+          label="Fecha fin"
+          value={formData.estimatedEndDate}
+          onChange={(value) => handleFieldChange("estimatedEndDate", value)}
+          minDate={formData.startDate || undefined}
+          error={errors.estimatedEndDate}
+          className="text-sidebar"
+          required
+        />
+      </div>
+
     </form>
   );
 };

@@ -17,6 +17,7 @@ import { ButtonWithTooltip } from './ButtonWithTooltip';
 import { TABLE_ACTION_BUTTON } from '@/Constants/Components';
 
 export type TableActionType = 'view' | 'edit' | 'delete' | 'power' | 'add' | 'uploadArrow' | 'search' | 'roles' | 'users' | 'clock' | 'markComplete' | 'markInProgress' | 'approveRequest' | 'rejectRequest' | 'custom' | 'list' | 'comment';
+type TooltipPosition = 'top' | 'bottom' | 'left' | 'right';
 
 interface TableActionButtonProps extends Omit<React.ButtonHTMLAttributes<HTMLButtonElement>, 'onClick'> {
   /**
@@ -58,6 +59,11 @@ interface TableActionButtonProps extends Omit<React.ButtonHTMLAttributes<HTMLBut
    * Si el botón está deshabilitado
    */
   disabled?: boolean;
+
+  /**
+   * Posición del tooltip respecto al botón
+   */
+  tooltipPosition?: TooltipPosition;
 }
 
 /**
@@ -146,6 +152,7 @@ export const TableActionButton = React.memo<TableActionButtonProps>(({
   customVariant,
   className = TABLE_ACTION_BUTTON.button,
   disabled = false,
+  tooltipPosition = 'top',
   ...props
 }) => {
   // Obtener configuración base
@@ -168,6 +175,7 @@ export const TableActionButton = React.memo<TableActionButtonProps>(({
         variant={variant as any}
         size="sm"
         tooltip={tooltip}
+        tooltipPosition={tooltipPosition}
         onClick={onClick}
         className={className}
         disabled={disabled}

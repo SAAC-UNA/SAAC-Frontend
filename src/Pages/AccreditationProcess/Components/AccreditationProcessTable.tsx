@@ -7,8 +7,9 @@ import { StatusBadge } from "@/Components/Ui/Feedback/StatusBadge";
 import { TableActionButton } from "@/Components/Ui/Buttons/TableActionButton";
 import { SystemIcons } from "@/Components/Ui/Icons/SystemIcons";
 import { TABLE_COLUMN_WIDTHS, TABLE_ACTION_BUTTON } from "@/Constants/Components";
+import { ACCREDITATION_CYCLE_STATUS_BADGE } from "@/Constants/StatusBadges";
 import { TYPOGRAPHY } from "@/Constants/Typography";
-import { formatDateShort } from "@/Utils/DateUtils";
+import { formatDate } from "@/Utils/DateUtils";
 import { truncateText } from '@/Utils';
 import { useFirstColumnConfig } from "@/Hooks/UseFirstColumnConfig";
 import type { AccreditationProcess as AccreditationProcessRow } from "@/Types/AccreditationProcessTypes";
@@ -21,6 +22,7 @@ interface AccreditationProcessTableProps {
   onView?: (process: AccreditationProcessRow) => void;
   onDelete?: (process: AccreditationProcessRow) => void;
   onConfigure?: (process: AccreditationProcessRow) => void;
+  onToggleStatus?: (process: AccreditationProcessRow) => void;
 }
 
 const normalizeText = (value?: string) => {
@@ -34,7 +36,7 @@ const normalizeText = (value?: string) => {
 
 export const AccreditationProcessTable: React.FC<
   AccreditationProcessTableProps
-> = ({ processes, isLoading, searchQuery = "", onEdit, onView, onDelete, onConfigure }) => {
+> = ({ processes, isLoading, searchQuery = "", onEdit, onView, onDelete, onConfigure, onToggleStatus }) => {
   const [currentPage, setCurrentPage] = useState(1);
   const debouncedSearchQuery = useDebounce(searchQuery, 300);
   const firstColumn = useFirstColumnConfig();
@@ -89,15 +91,15 @@ export const AccreditationProcessTable: React.FC<
         <div className="flex flex-col">
           <p
             className={`block font-sans antialiased font-bold leading-normal text-negro-una-2 ${TYPOGRAPHY.table.cell}`}
-            title={process.accreditationCycleName}
-          >
-            {process.accreditationCycleName}
-          </p>
-          <p
-            className={`block font-sans antialiased font-normal leading-normal text-gris-una ${TYPOGRAPHY.table.helper}`}
             title={process.careerName || "Sin carrera"}
           >
             {process.careerName || "Sin carrera"}
+          </p>
+          <p
+            className={`block font-sans antialiased font-normal leading-normal text-gris-una ${TYPOGRAPHY.table.helper}`}
+            title={process.accreditationCycleName} 
+          >
+            {process.accreditationCycleName}
           </p>
         </div>
       ),
@@ -118,22 +120,27 @@ export const AccreditationProcessTable: React.FC<
       ),
     },
     {
-      key: "period",
-      header: "Periodo",
+      key: "startDate",
+      header: "Fecha inicio",
       align: "left",
       render: (_, process) => (
-        <div className="flex flex-col items-start">
-          <p
-            className={`block font-sans antialiased font-normal leading-normal text-negro-una-2 ${TYPOGRAPHY.table.cell}`}
-          >
-            Inicio: {formatDateShort(process.startDate)}
-          </p>
-          <p
-            className={`block font-sans antialiased font-normal leading-normal text-negro-una-2 ${TYPOGRAPHY.table.cell}`}
-          >
-            Fin: {formatDateShort(process.estimatedEndDate)}
-          </p>
-        </div>
+        <p
+          className={`block font-sans antialiased font-normal leading-normal text-negro-una-2 ${TYPOGRAPHY.table.cell}`}
+        >
+          {formatDate(process.startDate)}
+        </p>
+      ),
+    },
+    {
+      key: "estimatedEndDate",
+      header: "Fecha fin",
+      align: "left",
+      render: (_, process) => (
+        <p
+          className={`block font-sans antialiased font-normal leading-normal text-negro-una-2 ${TYPOGRAPHY.table.cell}`}
+        >
+          {formatDate(process.estimatedEndDate)}
+        </p>
       ),
     },
     {
@@ -141,23 +148,24 @@ export const AccreditationProcessTable: React.FC<
       header: "Estado",
       align: "left",
       width: TABLE_COLUMN_WIDTHS.status,
-      render: (_, process) => (
-        <div className="flex justify-start">
-          <StatusBadge
-            label={process.status === "activo" ? "Activo" : "Inactivo"}
-            colorClasses={
-              process.status === "activo"
-                ? "text-verde-dark bg-verde-ring"
-                : "text-error-dark bg-error-ring"
-            }
-          />
-        </div>
-      ),
+      render: (_, process) => {
+        const statusBadge = ACCREDITATION_CYCLE_STATUS_BADGE[process.status];
+
+        return (
+          <div className="flex justify-start">
+            <StatusBadge
+              label={statusBadge.label}
+              colorClasses={statusBadge.colorClasses}
+            />
+          </div>
+        );
+      },
     },
     {
       key: "actions",
       header: "Acciones",
       align: "center",
+      width: TABLE_COLUMN_WIDTHS.actionsLarge,
       render: (_, process) => (
         <div className="flex items-center justify-center gap-2">
           <TableActionButton
@@ -172,11 +180,17 @@ export const AccreditationProcessTable: React.FC<
           />
           <TableActionButton
             action="custom"
-            tooltip={process.type === "Compromiso de mejora" ? "Configurar compromisos" : "Solo disponible para Compromisos de mejora"}
+            tooltip={process.type === "Compromiso de mejora" ? "Configurar compromisos" : "Disponible solo para compromisos"}
             onClick={() => onConfigure?.(process)}
             disabled={process.type !== "Compromiso de mejora"}
             customIcon={<SystemIcons.structure.nut className={TABLE_ACTION_BUTTON.icon} />}
             customVariant="tableView"
+          />
+          <TableActionButton
+            action="power"
+            tooltip={process.status === "activo" ? "Inactivar proceso" : "Activar proceso"}
+            onClick={() => onToggleStatus?.(process)}
+            isActive={process.status === "activo"}
           />
           <TableActionButton
             action="delete"
@@ -186,7 +200,7 @@ export const AccreditationProcessTable: React.FC<
         </div>
       ),
     },
-  ], [onView, onEdit, onDelete, onConfigure, firstColumn]);
+  ], [onView, onEdit, onDelete, onConfigure, onToggleStatus, firstColumn]);
 
   return (
     <div className="w-full">
