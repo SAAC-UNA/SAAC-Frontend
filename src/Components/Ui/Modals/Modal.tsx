@@ -1,10 +1,12 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Dialog, DialogBackdrop, DialogPanel } from '@headlessui/react';
+import { AnimatePresence, motion } from 'framer-motion';
 import { SystemIcons } from '@/Components/Ui/Icons/SystemIcons';
 import { cn } from '@/Utils/ClassNames';
 import { Button } from '../Buttons/Button';
 import { TYPOGRAPHY } from '@/Constants/Typography';
 import { ICON_SIZES } from '@/Constants/Components';
+import { MODAL_BACKDROP_VARIANTS, MODAL_PANEL_VARIANTS } from '@/Constants/Animations';
 
 export type ModalVariant = 'info' | 'success' | 'danger' | 'warning' | 'neutral' | 'upload';
 
@@ -203,39 +205,50 @@ export const Modal: React.FC<ModalProps> = React.memo(({
   // Determinar si renderizar footer
   const hasFooter = !!(footerButtons || onConfirm || showCancel || footerMeta);
 
-  if (!isOpen) return null;
-
   return (
-    <Dialog
-      open={isOpen}
-      onClose={closable ? handleClose : () => {}}
-      className="relative z-50"
-    >
-      <DialogBackdrop
-        className="fixed inset-0 bg-[rgba(10,15,35,0.55)] backdrop-blur-[3px]"
-      />
-
-      <div className="fixed inset-0 z-10 w-screen overflow-y-auto">
-        <div
-          className="flex min-h-full items-center justify-center p-4"
-          role="presentation"
-          onClick={(e) => {
-            if (e.target === e.currentTarget && closable && !isPending) onClose();
-          }}
+    <AnimatePresence>
+      {isOpen && (
+        <Dialog
+          static
+          open={isOpen}
+          onClose={closable ? handleClose : () => {}}
+          className="relative z-50"
         >
-          <DialogPanel
-            ref={modalRef}
-            tabIndex={-1}
-            className={cn(
-              'relative flex flex-col w-full',
-              'bg-blanco-una border border-none rounded-corner',
-              'shadow-[0_6px_16px_rgba(0,0,0,0.10),0_2px_6px_rgba(0,0,0,0.06)]',
-              'sm:mt-8 sm:mb-8',
-              sizeClasses[size],
-              maxHeightClasses[maxHeight],
-              className,
-            )}
-          >
+          <DialogBackdrop
+            as={motion.div}
+            variants={MODAL_BACKDROP_VARIANTS}
+            initial="hidden"
+            animate="visible"
+            exit="exit"
+            className="fixed inset-0 bg-[rgba(10,15,35,0.55)] backdrop-blur-[3px]"
+          />
+
+          <div className="fixed inset-0 z-10 w-screen overflow-y-auto">
+            <div
+              className="flex min-h-full items-center justify-center p-4"
+              role="presentation"
+              onClick={(e) => {
+                if (e.target === e.currentTarget && closable && !isPending) onClose();
+              }}
+            >
+              <DialogPanel
+                as={motion.div}
+                ref={modalRef}
+                tabIndex={-1}
+                variants={MODAL_PANEL_VARIANTS}
+                initial="hidden"
+                animate="visible"
+                exit="exit"
+                className={cn(
+                  'relative flex flex-col w-full',
+                  'bg-blanco-una border border-none rounded-corner',
+                  'shadow-[0_6px_16px_rgba(0,0,0,0.10),0_2px_6px_rgba(0,0,0,0.06)]',
+                  'sm:mt-8 sm:mb-8',
+                  sizeClasses[size],
+                  maxHeightClasses[maxHeight],
+                  className,
+                )}
+              >
             {/* ════════════════════════════════════
                 HÉRO CARD — tarjeta de color interna
             ════════════════════════════════════ */}
@@ -385,9 +398,11 @@ export const Modal: React.FC<ModalProps> = React.memo(({
               </div>
             )}
             </div>
-          </DialogPanel>
-        </div>
-      </div>
-    </Dialog>
+              </DialogPanel>
+            </div>
+          </div>
+        </Dialog>
+      )}
+    </AnimatePresence>
   );
 });

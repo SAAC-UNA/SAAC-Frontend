@@ -67,6 +67,50 @@ export const PAGE_TRANSITION_VARIANTS = {
   },
 };
 
+// Modal base: backdrop suave + panel con spring breve.
+export const MODAL_BACKDROP_VARIANTS = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: { duration: 0.18, ease: [0.23, 1, 0.32, 1] as [number, number, number, number] },
+  },
+  exit: {
+    opacity: 0,
+    transition: { duration: 0.14, ease: [0.32, 0, 0.67, 0] as [number, number, number, number] },
+  },
+};
+
+export const MODAL_PANEL_VARIANTS = {
+  hidden: {
+    opacity: 0,
+    y: 18,
+    scale: 0.96,
+    filter: 'blur(4px)',
+  },
+  visible: {
+    opacity: 1,
+    y: 0,
+    scale: 1,
+    filter: 'blur(0px)',
+    transition: {
+      type: 'spring' as const,
+      damping: 28,
+      stiffness: 360,
+      mass: 0.75,
+    },
+  },
+  exit: {
+    opacity: 0,
+    y: 10,
+    scale: 0.98,
+    filter: 'blur(2px)',
+    transition: {
+      duration: 0.14,
+      ease: [0.32, 0, 0.67, 0] as [number, number, number, number],
+    },
+  },
+};
+
 // Patrón OSS Hero: contenedor de stagger para secciones dentro de una página
 export const OSS_HERO_CONTAINER: import('framer-motion').Variants = {
   initial: {},
