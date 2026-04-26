@@ -8,6 +8,7 @@ import { Navigate } from "react-router-dom";
 import { useAuth } from "@/Context/AuthContext";
 import type { ReactNode } from "react";
 import { LoadingSpinner } from "./Feedback/Loading";
+import { ROUTES } from "@/Constants/ROUTES";
 
 interface ProtectedRouteProps {
   children: ReactNode;
@@ -39,7 +40,7 @@ export const ProtectedRoute = ({
 
   // Si la verificación terminó y no está autenticado, redirigir a login
   if (!isAuthenticated) {
-    return <Navigate to="/login" replace />;
+    return <Navigate to={ROUTES.LOGIN} replace />;
   }
 
   // Si requiere roles específicos, validar

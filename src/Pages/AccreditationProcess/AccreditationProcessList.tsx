@@ -131,11 +131,12 @@ export const AccreditationProcessList: React.FC = () => {
 
   const visibleProcesses = useMemo(() => {
     if (!selectedContextCycleId) {
-      return processes;
+      return [];
     }
 
     return processes.filter(
-      (process) => process.accreditationCycleId === selectedContextCycleId,
+      (process) =>
+        String(process.accreditationCycleId) === String(selectedContextCycleId),
     );
   }, [processes, selectedContextCycleId]);
 
@@ -250,9 +251,13 @@ export const AccreditationProcessList: React.FC = () => {
   };
 
   const handleConfigureProcess = (process: AccreditationProcess) => {
-    const matchedCycle = cycles.find(c => c.id === process.accreditationCycleId);
-    const modeloTipo = process.modeloEstructuraTipo ?? matchedCycle?.modeloEstructuraTipo;
-    const modeloId = process.modeloEstructuraId ?? matchedCycle?.modeloEstructuraId;
+    const matchedCycle = cycles.find(
+      (c) => c.id === process.accreditationCycleId,
+    );
+    const modeloTipo =
+      process.modeloEstructuraTipo ?? matchedCycle?.modeloEstructuraTipo;
+    const modeloId =
+      process.modeloEstructuraId ?? matchedCycle?.modeloEstructuraId;
     navigate(ROUTES.COMMITMENTS_NEW, {
       state: {
         procesoId: process.id,
@@ -290,7 +295,10 @@ export const AccreditationProcessList: React.FC = () => {
         prev.filter((process) => process.id !== processToDelete.id),
       );
       setDeleteModalState({ isOpen: false, process: null });
-      setDeleteSuccessState({ isOpen: true, processType: processToDelete.type });
+      setDeleteSuccessState({
+        isOpen: true,
+        processType: processToDelete.type,
+      });
     } finally {
       setIsDeleting(false);
     }

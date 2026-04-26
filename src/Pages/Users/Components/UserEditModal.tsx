@@ -7,14 +7,14 @@
  * 3. Al confirmar la operación → llama onSuccess y muestra SuccessModal
  */
 
-import React, { useRef, useState } from 'react';
-import { EntityFormModal } from '@/Components/Ui/Modals/EntityFormModal';
-import { EditConfirmationModal } from '@/Components/Ui/Modals/EditConfirmationModal';
-import { SuccessModal } from '@/Components/Ui/Modals/SuccessModal';
-import { EditUserForm } from './EditUserForm';
-import { userService } from '@/Services/UserService';
-import type { User } from '@/Services/UserService';
-import { useToast } from '@/Context/ToastContext';
+import React, { useRef, useState } from "react";
+import { EntityFormModal } from "@/Components/Ui/Modals/EntityFormModal";
+import { EditConfirmationModal } from "@/Components/Ui/Modals/EditConfirmationModal";
+import { SuccessModal } from "@/Components/Ui/Modals/SuccessModal";
+import { EditUserForm } from "./EditUserForm";
+import { userService } from "@/Services/UserService";
+import type { User } from "@/Services/UserService";
+import { useToast } from "@/Context/ToastContext";
 
 interface UserEditModalProps {
   isOpen: boolean;
@@ -24,7 +24,7 @@ interface UserEditModalProps {
 }
 
 const truncate = (text: string, max = 35) =>
-  text.length > max ? text.slice(0, max).trim() + '…' : text;
+  text.length > max ? text.slice(0, max).trim() + "…" : text;
 
 export const UserEditModal: React.FC<UserEditModalProps> = ({
   isOpen,
@@ -38,13 +38,19 @@ export const UserEditModal: React.FC<UserEditModalProps> = ({
 
   const [confirmState, setConfirmState] = useState<{
     isOpen: boolean;
-    userData: { userId: number; roleName: string; userName: string } | null;
+    userData: {
+      userId: number;
+      roleName: string;
+      userName: string;
+      careerSedeIds: number[];
+      careersChanged: boolean;
+    } | null;
   }>({ isOpen: false, userData: null });
 
   const [successState, setSuccessState] = useState<{
     isOpen: boolean;
     userName: string;
-  }>({ isOpen: false, userName: '' });
+  }>({ isOpen: false, userName: "" });
 
   // Ref para disparar el submit del formulario desde el botón del modal
   const submitRef = useRef<(() => void) | null>(null);
@@ -53,7 +59,13 @@ export const UserEditModal: React.FC<UserEditModalProps> = ({
     submitRef.current?.();
   };
 
-  const handleFormSubmit = (userData: { userId: number; roleName: string; userName: string }) => {
+  const handleFormSubmit = (userData: {
+    userId: number;
+    roleName: string;
+    userName: string;
+    careerSedeIds: number[];
+    careersChanged: boolean;
+  }) => {
     setConfirmState({ isOpen: true, userData });
   };
 
@@ -61,16 +73,28 @@ export const UserEditModal: React.FC<UserEditModalProps> = ({
     if (!confirmState.userData) return;
     setIsSubmitting(true);
     try {
-      const { userId, roleName, userName } = confirmState.userData;
-      await userService.assignUserRole(userId, roleName);
+      const { userId, roleName, userName, careerSedeIds, careersChanged } =
+        confirmState.userData;
+      const roleChanged = roleName !== user?.role;
+
+      if (roleChanged) {
+        await userService.assignUserRole(userId, roleName);
+      }
+      if (careersChanged) {
+        await userService.assignCareers(userId, careerSedeIds);
+      }
+
       setConfirmState({ isOpen: false, userData: null });
       setSuccessState({ isOpen: true, userName });
     } catch (error) {
-      console.error('Error al actualizar usuario:', error);
+      console.error("Error al actualizar usuario:", error);
       showToast({
-        type: 'error',
-        title: 'Error al actualizar usuario',
-        message: error instanceof Error ? error.message : 'No se pudo asignar el rol al usuario'
+        type: "error",
+        title: "Error al actualizar usuario",
+        message:
+          error instanceof Error
+            ? error.message
+            : "No se pudo guardar los cambios del usuario",
       });
       setConfirmState({ isOpen: false, userData: null });
     } finally {
@@ -79,7 +103,7 @@ export const UserEditModal: React.FC<UserEditModalProps> = ({
   };
 
   const handleSuccessClose = () => {
-    setSuccessState({ isOpen: false, userName: '' });
+    setSuccessState({ isOpen: false, userName: "" });
     onSuccess?.();
     onClose();
   };
@@ -119,7 +143,11 @@ export const UserEditModal: React.FC<UserEditModalProps> = ({
         onClose={() => setConfirmState({ isOpen: false, userData: null })}
         onConfirm={handleConfirmUpdate}
         title="Confirmar edición de usuario"
-        itemName={confirmState.userData?.userName ? truncate(confirmState.userData.userName) : ''}
+        itemName={
+          confirmState.userData?.userName
+            ? truncate(confirmState.userData.userName)
+            : ""
+        }
         itemType="usuario"
         confirmLabel="Guardar"
         isLoading={isSubmitting}
@@ -129,7 +157,7 @@ export const UserEditModal: React.FC<UserEditModalProps> = ({
       <SuccessModal
         isOpen={successState.isOpen}
         title="¡Usuario actualizado exitosamente!"
-        message={`El rol del usuario "${truncate(successState.userName)}" ha sido actualizado correctamente.`}
+        message={`Los cambios del usuario "${truncate(successState.userName)}" han sido guardados correctamente.`}
         onClose={handleSuccessClose}
         autoClose={true}
       />

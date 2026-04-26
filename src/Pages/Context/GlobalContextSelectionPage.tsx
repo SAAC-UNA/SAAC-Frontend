@@ -15,6 +15,7 @@ import {
   globalFilterContextService,
   type GlobalFilterCatalog,
 } from "@/Services/GlobalFilterContextService";
+import { ROUTES } from "@/Constants/ROUTES";
 
 type SelectionState = {
   careerCampusId: string;
@@ -32,8 +33,11 @@ const emptySelection: SelectionState = {
   processId: "",
 };
 
-const isProfessorRole = (roles: string[]): boolean =>
-  roles.some((role) => role.toLowerCase() === "profesor");
+const isTeacherRole = (roles: string[]): boolean =>
+  roles.some((role) => {
+    const normalizedRole = role.toLowerCase();
+    return normalizedRole === "profesor" || normalizedRole === "docente";
+  });
 
 const toOption = (value: number, label: string): SelectOption => ({
   value: String(value),
@@ -56,14 +60,14 @@ export const GlobalContextSelectionPage = () => {
   const [catalog, setCatalog] = useState<GlobalFilterCatalog | null>(null);
   const [selection, setSelection] = useState<SelectionState>(emptySelection);
 
-  const isProfessor = useMemo(
-    () => isProfessorRole(userRoleNames),
+  const isTeacher = useMemo(
+    () => isTeacherRole(userRoleNames),
     [userRoleNames],
   );
 
   useEffect(() => {
-    if (isProfessor) {
-      navigate("/", { replace: true });
+    if (isTeacher) {
+      navigate(ROUTES.HOME, { replace: true });
       return;
     }
 
@@ -94,7 +98,7 @@ export const GlobalContextSelectionPage = () => {
     return () => {
       isMounted = false;
     };
-  }, [isProfessor, navigate]);
+  }, [isTeacher, navigate]);
 
   const careerOptions = useMemo<SelectOption[]>(() => {
     if (!catalog) {
@@ -250,7 +254,7 @@ export const GlobalContextSelectionPage = () => {
       });
 
       const fromPath = (location.state as NavigationState | null)?.from;
-      navigate(fromPath || "/", { replace: true });
+      navigate(fromPath || ROUTES.HOME, { replace: true });
     } catch {
       toast.error("No se pudo guardar el contexto seleccionado.");
     } finally {

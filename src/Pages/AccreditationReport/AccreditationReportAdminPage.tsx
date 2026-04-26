@@ -1,937 +1,458 @@
-import React, { useState, useMemo, useEffect, useCallback, useRef } from "react";
-import { ScreenContainer, PageHeader, Tooltip, TooltipTrigger, TooltipContent } from "@/Components/Ui/Index";
+/**
+ * Página mínima para probar los endpoints `informes-archivos` (HU archivos de informe).
+ * Solo carga de archivos físicos (multipart). Usa el proceso del filtro global o un ID manual.
+ */
+
+import React, { useCallback, useEffect, useMemo, useState } from "react";
+import {
+  ScreenContainer,
+  PageHeader,
+  Button,
+  LoadingSpinner,
+} from "@/Components/Ui/Index";
 import { StatusBadge } from "@/Components/Ui/Feedback/StatusBadge";
-import { Button } from "@/Components/Ui/Buttons/Button";
-import { Input, Textarea } from "@/Components/Ui/Index";
 import { SystemIcons } from "@/Components/Ui/Icons/SystemIcons";
 import { TYPOGRAPHY } from "@/Constants/Typography";
 import { BADGE_COLORS } from "@/Constants/StatusBadges";
-import { ICON_SIZES, TABLE_COLUMN_WIDTHS } from "@/Constants/Components";
+import { TABLE_COLUMN_WIDTHS, ICON_SIZES } from "@/Constants/Components";
 import { cn } from "@/Utils/ClassNames";
 import { formatDate } from "@/Utils/DateUtils";
+import { truncateText } from "@/Utils/TextUtils";
 import { useToast } from "@/Context/ToastContext";
 import { getModuleInfo } from "@/Constants/ModuleInfo";
-import { useNavigate } from "react-router-dom";
-import { ROUTES } from "@/Constants/ROUTES";
 import { Card } from "@/Components/Ui/Layout/Card";
-import { DropZone } from "@/Components/Ui/Upload/DropZone";
-import { FileUploadProgress } from "@/Components/Ui/Upload/FileUploadProgress";
-import type { FileUploadProgressItem } from "@/Components/Ui/Upload/FileUploadProgress";
+import { FileUploader, FileUploadProgress } from "@/Components/Ui/Upload";
+import type { FileUploadProgressItem } from "@/Components/Ui/Upload";
 import { DataTable } from "@/Components/Ui/Table/DataTable";
 import type { DataTableColumn } from "@/Components/Ui/Table/DataTable";
+import { SearchInput } from "@/Components/Ui/Forms/SearchInput";
 import { TableActionButton } from "@/Components/Ui/Buttons/TableActionButton";
 import { TABLE_ACTION_BUTTON } from "@/Constants/Components";
-import { useFirstColumnConfig } from '@/Hooks/UseFirstColumnConfig';
+import { useFirstColumnConfig } from "@/Hooks/UseFirstColumnConfig";
 import { Modal } from "@/Components/Ui/Modals/Modal";
 import { DeleteConfirmationModal } from "@/Components/Ui/Modals/DeleteConfirmationModal";
-import { DatePicker } from "@/Components/Ui/Calendar/DatePicker";
-import { RadioGroupCards } from "@/Components/Ui/Forms/RadioGroupCards";
-import type { RadioCardOption } from "@/Components/Ui/Forms/RadioGroupCards";
 import { useOperationalContextSnapshot } from "@/Hooks/useOperationalContextSnapshot";
-import { fetchAdminReports, fetchReportByCycle, publishReport, unpublishReport, updateReport, deleteReport } from "@/Services/AccreditationReportService";
-import type { AccreditationReportApi } from "@/Types/AccreditationReportTypes";
+import { reportFileService } from "@/Services/ReportFileService";
+import type { ReportFileApi } from "@/Types/ReportFileTypes";
 
-// ─── Tipos ─────────────────────────────────────────────────────────────────
+const TABS = [
+  "Informes Universitarios",
+  "Informes SINAES",
+  "Resoluciones SINAES",
+  "Certificaciones",
+] as const;
+type TabType = (typeof TABS)[number];
 
-interface ResolucionArchivo {
-  id: string;
-  nombre_original: string;
-  tamanio: number;
-  url: string;
-}
+type ReportFileRow = ReportFileApi & Record<string, unknown>;
 
-interface Resolucion {
-  id: string;
-  numero_resolucion: string;
-  estado: "publicado" | "despublicado";
-  fecha_publicacion: string;
-  vigencia_inicio: string;
-  vigencia_fin: string;
-  esta_vigente: boolean;
-  esta_acreditada: boolean;
-  observaciones: string | null;
-  archivo: ResolucionArchivo;
-  publicado_por: { id: number; nombre: string };
-  publicado_at: string;
-}
-
-// ─── Tipos informe ───────────────────────────────────────────────────────────
-
-interface VersionInforme {
-  id: number;
-  descripcion: string;
-  archivo_nombre: string;
-  archivo_size: string;
-  publicado_por: string;
-  publicado_en: string;
-  activa: boolean;
-}
-
-type VersionInformeRow = VersionInforme & Record<string, unknown>;
-
-interface InformeFormData {
-  descripcion: string;
-  archivo: File | null;
-}
-
-const EMPTY_INFORME_FORM: InformeFormData = {
-  descripcion: "",
-  archivo: null,
-};
-
-// DataTable requiere T extends Record<string, unknown>
-type ResolucionRow = Resolucion & Record<string, unknown>;
-
-// ─── Mapeo API → tipo local ──────────────────────────────────────────────────
-
-function mapApiToResolucion(api: AccreditationReportApi): Resolucion {
-  return {
-    id: String(api.informe_acreditacion_id),
-    numero_resolucion: api.numero_resolucion,
-    estado: api.estado,
-    fecha_publicacion: api.fecha_publicacion ?? api.fecha_resolucion,
-    vigencia_inicio: api.vigencia_desde,
-    vigencia_fin: api.vigencia_hasta,
-    esta_vigente: api.is_vigente,
-    esta_acreditada: api.esta_acreditada,
-    observaciones: api.observaciones,
-    archivo: {
-      id: String(api.archivo?.archivo_id ?? ""),
-      nombre_original: api.archivo?.nombre_original ?? "",
-      tamanio: api.archivo?.tamanio ?? 0,
-      url: api.archivo?.url_publica ?? "#",
-    },
-    publicado_por: {
-      id: api.publicado_por?.usuario_id ?? 0,
-      nombre: api.publicado_por?.nombre ?? "",
-    },
-    publicado_at: api.fecha_publicacion ?? new Date().toISOString(),
-  };
-}
-
-// ─── Mock publicación de informe ─────────────────────────────────────────────
-
-const MOCK_VERSIONES_INFORME: VersionInforme[] = [
-  {
-    id: 1,
-    descripcion: "Publicación inicial del informe final institucional",
-    archivo_nombre: "informe_final_institucional_2026.pdf",
-    archivo_size: "3.4 MB",
-    publicado_por: "José Jara Arias",
-    publicado_en: "2026-04-10T14:30:00",
-    activa: true,
-  },
-  {
-    id: 2,
-    descripcion: "Actualización de criterios de la dimensión 3",
-    archivo_nombre: "informe_final_institucional_v2_2026.pdf",
-    archivo_size: "3.6 MB",
-    publicado_por: "Cristina Zúñiga Cárdenas",
-    publicado_en: "2026-03-01T10:00:00",
-    activa: false,
-  },
-];
-
-// ─── Modal de informe final ────────────────────────────────────────────────────
-
-interface InformeModalProps {
-  isOpen: boolean;
-  onClose: () => void;
-  initial?: VersionInforme | null;
-  onSave: (data: InformeFormData) => void;
-}
-
-const InformeModal: React.FC<InformeModalProps> = ({ isOpen, onClose, initial, onSave }) => {
-  const [form, setForm] = useState<InformeFormData>(EMPTY_INFORME_FORM);
-
-  useEffect(() => {
-    if (isOpen) {
-      setForm(
-        initial
-          ? { descripcion: initial.descripcion, archivo: null }
-          : EMPTY_INFORME_FORM,
-      );
-    }
-  }, [isOpen, initial]);
-
-  const archivoProgress: FileUploadProgressItem[] = useMemo(
-    () => (form.archivo ? [{ file: form.archivo, status: "pending" as const, progress: 0 }] : []),
-    [form.archivo],
-  );
-
-  const isEditing = initial != null;
-  const isCompleto = isEditing ? true : form.archivo !== null;
-
-  return (
-    <Modal
-      isOpen={isOpen}
-      onClose={onClose}
-      title={isEditing ? "Editar versión" : "Publicar informe final"}
-      subtitle="Informe Final Institucional"
-      variant={isEditing ? "info" : "success"}
-      size="lg"
-      footerButtons={
-        <>
-          <Button variant="outline" onClick={onClose}>
-            Cancelar
-          </Button>
-          <Button variant="primary" disabled={!isCompleto} onClick={() => onSave(form)}>
-            {isEditing ? "Guardar" : "Publicar"}
-          </Button>
-        </>
-      }
-    >
-      <div className="space-y-5">
-        <Input
-          label="Descripción"
-          placeholder="Ej: Publicación inicial del informe final 2026"
-          value={form.descripcion}
-          onChange={(e) => setForm((p) => ({ ...p, descripcion: e.target.value }))}
-        />
-
-        <div>
-          <p className={cn("font-medium text-negro-una-2 mb-2", TYPOGRAPHY.form.label)}>
-            PDF del informe <span className="text-error-dark">*</span>
-          </p>
-          <DropZone
-            onFilesSelected={(files) =>
-              setForm((p) => ({
-                ...p,
-                archivo: files.find((f) => f.type === "application/pdf") ?? files[0] ?? null,
-              }))
-            }
-            accept=".pdf"
-            maxFiles={1}
-            hint="Solo PDF · Máx. 50 MB"
-          />
-          {isEditing && !form.archivo && (
-            <p className={cn("text-gris-una mt-2", TYPOGRAPHY.table.helper)}>
-              Archivo actual: <span className="font-medium text-negro-una-2">{initial?.archivo_nombre}</span> · {initial?.archivo_size}. Deja el campo vacío para conservarlo.
-            </p>
-          )}
-          {archivoProgress.length > 0 && (
-            <FileUploadProgress
-              files={archivoProgress}
-              onCancel={() => setForm((p) => ({ ...p, archivo: null }))}
-            />
-          )}
-        </div>
-      </div>
-    </Modal>
-  );
-};
-
-// ─── Tipos y constantes del modal de resolución ────────────────────────────
-
-interface ResolucionFormData {
-  numero_resolucion: string;
-  vigencia_inicio: string;
-  vigencia_fin: string;
-  esta_acreditada: boolean;
-  observaciones: string;
-  archivo: File | null;
-}
-
-const EMPTY_RESOLUCION_FORM: ResolucionFormData = {
-  numero_resolucion: "",
-  vigencia_inicio: "",
-  vigencia_fin: "",
-  esta_acreditada: true,
-  observaciones: "",
-  archivo: null,
-};
-
-const ACREDITADA_OPTIONS: RadioCardOption[] = [
-  {
-    value: "true",
-    label: "Acreditada",
-    description: "La carrera cumple con los estándares SINAES",
-    icon: SystemIcons.interface.checkCircle({ size: "md", className: "text-verde-dark" }),
-    iconBg: "bg-verde-ring",
-  },
-  {
-    value: "false",
-    label: "No acreditada",
-    description: "La carrera no cumple con los estándares requeridos",
-    icon: SystemIcons.auth.ShieldSlash({ size: "md", className: "text-error-dark" }),
-    iconBg: "bg-error-ring",
-  },
-];
-
-interface ResolucionModalProps {
-  isOpen: boolean;
-  onClose: () => void;
-  onSave: (data: ResolucionFormData) => void;
-  isLoading?: boolean;
-  initial?: Resolucion | null;
-}
-
-const ResolucionModal: React.FC<ResolucionModalProps> = ({ isOpen, onClose, onSave, isLoading, initial }) => {
-  const [form, setForm] = useState<ResolucionFormData>(EMPTY_RESOLUCION_FORM);
-  const isEditing = initial != null;
-
-  useEffect(() => {
-    if (isOpen) {
-      setForm(
-        initial
-          ? {
-              numero_resolucion: initial.numero_resolucion,
-              vigencia_inicio: initial.vigencia_inicio,
-              vigencia_fin: initial.vigencia_fin,
-              esta_acreditada: initial.esta_acreditada,
-              observaciones: initial.observaciones ?? "",
-              archivo: null,
-            }
-          : EMPTY_RESOLUCION_FORM
-      );
-    }
-  }, [isOpen, initial]);
-
-  const archivoProgress: FileUploadProgressItem[] = useMemo(
-    () => (form.archivo ? [{ file: form.archivo, status: "pending" as const, progress: 0 }] : []),
-    [form.archivo],
-  );
-
-  const isCompleto = isEditing
-    ? form.numero_resolucion.trim() !== "" && form.vigencia_inicio !== "" && form.vigencia_fin !== ""
-    : form.numero_resolucion.trim() !== "" &&
-      form.vigencia_inicio !== "" &&
-      form.vigencia_fin !== "" &&
-      form.archivo !== null;
-
-  return (
-    <Modal
-      isOpen={isOpen}
-      onClose={onClose}
-      title={isEditing ? "Editar resolución" : "Nueva resolución"}
-      subtitle="Resolución SINAES"
-      variant={isEditing ? "info" : "success"}
-      size="lg"
-      footerButtons={
-        <>
-          <Button variant="outline" onClick={onClose} disabled={isLoading}>
-            Cancelar
-          </Button>
-          <Button variant="primary" disabled={!isCompleto || isLoading} isLoading={isLoading} onClick={() => onSave(form)}>
-            {isEditing ? "Guardar" : "Publicar"}
-          </Button>
-        </>
-      }
-    >
-      <div className="space-y-5">
-        <Input
-          label="Número de resolución"
-          placeholder="Ej: R-022-2026"
-          value={form.numero_resolucion}
-          onChange={(e) => setForm((p) => ({ ...p, numero_resolucion: e.target.value }))}
-          maxLength={100}
-          characterCount
-          required
-        />
-
-        <RadioGroupCards
-          name="esta_acreditada"
-          label="Resultado de acreditación"
-          value={String(form.esta_acreditada)}
-          onChange={(v) => setForm((p) => ({ ...p, esta_acreditada: v === "true" }))}
-          options={ACREDITADA_OPTIONS}
-          required
-        />
-
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <DatePicker
-            label="Vigencia desde"
-            value={form.vigencia_inicio}
-            onChange={(d) => setForm((p) => ({ ...p, vigencia_inicio: d }))}
-            required
-          />
-          <DatePicker
-            label="Vigencia hasta"
-            value={form.vigencia_fin}
-            minDate={form.vigencia_inicio || undefined}
-            onChange={(d) => setForm((p) => ({ ...p, vigencia_fin: d }))}
-            required
-          />
-        </div>
-
-        <Textarea
-          label="Observaciones"
-          placeholder="Ej: Informe aprobado en sesión ordinaria del 20 de mayo."
-          value={form.observaciones}
-          onChange={(e) => setForm((p) => ({ ...p, observaciones: e.target.value }))}
-          maxLength={1000}
-          characterCount
-          rows={3}
-        />
-
-        <div>
-          <p className={cn("font-medium text-negro-una-2 mb-2", TYPOGRAPHY.form.label)}>
-            PDF de la resolución <span className="text-error-dark">*</span>
-          </p>
-          <DropZone
-            onFilesSelected={(files) =>
-              setForm((p) => ({
-                ...p,
-                archivo: files.find((f) => f.type === "application/pdf") ?? files[0] ?? null,
-              }))
-            }
-            accept=".pdf"
-            maxFiles={1}
-            hint="Solo PDF oficial · Máx. 20 MB"
-          />
-          {isEditing && !form.archivo && (
-            <p className={cn("text-gris-una mt-2", TYPOGRAPHY.table.helper)}>
-              Archivo actual: <span className="font-medium text-negro-una-2">{initial?.archivo.nombre_original}</span>. Deja el campo vacío para conservarlo.
-            </p>
-          )}
-          {archivoProgress.length > 0 && (
-            <FileUploadProgress
-              files={archivoProgress}
-              onCancel={() => setForm((p) => ({ ...p, archivo: null }))}
-            />
-          )}
-        </div>
-      </div>
-    </Modal>
-  );
-};
-
-// ─── Modal de despublicación ─────────────────────────────────────────────────
-
-interface DespublicarModalProps {
-  isOpen: boolean;
-  onClose: () => void;
-  resolucion: Resolucion | null;
-  onConfirm: () => void;
-  isLoading?: boolean;
-}
-
-const DespublicarModal: React.FC<DespublicarModalProps> = ({ isOpen, onClose, resolucion, onConfirm, isLoading }) => {
-  return (
-    <Modal
-      isOpen={isOpen}
-      onClose={onClose}
-      title="Ocultar resolución"
-      subtitle={resolucion ? `Nº ${resolucion.numero_resolucion}` : undefined}
-      variant="warning"
-      size="md"
-      footerButtons={
-        <>
-          <Button variant="outline" onClick={onClose} disabled={isLoading}>
-            Cancelar
-          </Button>
-          <Button variant="warning" isLoading={isLoading} onClick={onConfirm}>
-            Sí, ocultar
-          </Button>
-        </>
-      }
-    >
-      <div className="space-y-4">
-        <p className={cn("text-negro-una-2", TYPOGRAPHY.body)}>
-          ¿Está seguro que desea ocultar esta resolución?
-        </p>
-        {resolucion?.esta_vigente && (
-          <div className="flex items-start gap-2 p-3 bg-warning-ring/30 border border-warning/40 rounded-lg">
-            <SystemIcons.interface.informationCircle className={cn(ICON_SIZES.sm, "text-warning-dark shrink-0 mt-0.5")} />
-            <p className={cn("text-warning-dark", TYPOGRAPHY.table.helper)}>
-              Esta es la resolución actualmente vigente. Al ocultarla la carrera quedará sin resolución activa.
-            </p>
-          </div>
-        )}
-      </div>
-    </Modal>
-  );
-};
-
-// ─── Componente principal ────────────────────────────────────────────────────
-
-const TABS = ["Resolución SINAES", "Informe Final Institucional"] as const;
-type Tab = (typeof TABS)[number];
+const ModalSeparator: React.FC = () => (
+  <div className="col-span-5 py-1">
+    <hr className="border-gray-200" />
+  </div>
+);
 
 export const AccreditationReportAdminPage: React.FC = () => {
+  const normalizeSearchText = (value: string): string =>
+    value
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .toLowerCase();
+
   const { showToast } = useToast();
-  const navigate = useNavigate();
   const moduleInfo = getModuleInfo("accreditation_report_admin");
-  const [activeTab, setActiveTab] = useState<Tab>("Resolución SINAES");
-  const { cycleId, careerCampusId } = useOperationalContextSnapshot();
-  const historialErrorToastShownRef = useRef(false);
-
-  // ─ Estado historial de resoluciones ─
-  const [historial, setHistorial] = useState<Resolucion[]>([]);
-  const [isLoadingHistorial, setIsLoadingHistorial] = useState(false);
-  const [isSavingResolucion, setIsSavingResolucion] = useState(false);
-  const [isDespublicando, setIsDespublicando] = useState(false);
-  const [selectedCycleHasReport, setSelectedCycleHasReport] = useState(false);
-
-  const loadHistorial = useCallback(async () => {
-    if (!careerCampusId) {
-      setHistorial([]);
-      setIsLoadingHistorial(false);
-      historialErrorToastShownRef.current = false;
-      return;
-    }
-
-    setIsLoadingHistorial(true);
-    try {
-      const res = await fetchAdminReports(
-        { carrera_campus_id: careerCampusId, include_unpublished: true }
-      );
-      setHistorial(res.data.map(mapApiToResolucion));
-      historialErrorToastShownRef.current = false;
-    } catch {
-      if (!historialErrorToastShownRef.current) {
-        showToast({ type: "error", title: "Error", message: "No se pudo cargar el historial de resoluciones." });
-        historialErrorToastShownRef.current = true;
-      }
-    } finally {
-      setIsLoadingHistorial(false);
-    }
-  }, [careerCampusId, showToast]);
-
-  const loadSelectedCycleReport = useCallback(async () => {
-    if (!cycleId) {
-      setSelectedCycleHasReport(false);
-      return;
-    }
-
-    try {
-      const report = await fetchReportByCycle(cycleId);
-      setSelectedCycleHasReport(report !== null);
-    } catch {
-      setSelectedCycleHasReport(false);
-    }
-  }, [cycleId]);
-
-  useEffect(() => {
-    historialErrorToastShownRef.current = false;
-  }, [careerCampusId]);
-
-  useEffect(() => {
-    loadHistorial();
-  }, [loadHistorial]);
-
-  useEffect(() => {
-    void loadSelectedCycleReport();
-  }, [loadSelectedCycleReport]);
-
-  // ─ Estado informe final ─
-  const [versiones, setVersiones] = useState<VersionInforme[]>(MOCK_VERSIONES_INFORME);
-  const [showInformeModal, setShowInformeModal] = useState(false);
-  const [editingVersion, setEditingVersion] = useState<VersionInforme | null>(null);
-  const [deletingVersion, setDeletingVersion] = useState<VersionInforme | null>(null);
-
-  // ─ Estado modales de resolución ─
-  const [showResolucionModal, setShowResolucionModal] = useState(false);
-  const [editingResolucion, setEditingResolucion] = useState<Resolucion | null>(null);
-  const [deletingResolucion, setDeletingResolucion] = useState<Resolucion | null>(null);
-  const [isEditingResolucion, setIsEditingResolucion] = useState(false);
-  const [isDeletingResolucion, setIsDeletingResolucion] = useState(false);
-  const [despublicandoResolucion, setDespublicandoResolucion] = useState<Resolucion | null>(null);
-
-  const handleEditResolucion = async (data: ResolucionFormData) => {
-    if (!editingResolucion) return;
-    setIsEditingResolucion(true);
-    try {
-      await updateReport(Number(editingResolucion.id), {
-        archivo: data.archivo ?? undefined,
-        numero_resolucion: data.numero_resolucion,
-        vigencia_desde: data.vigencia_inicio,
-        vigencia_hasta: data.vigencia_fin,
-        esta_acreditada: data.esta_acreditada,
-        observaciones: data.observaciones || undefined,
-      });
-      showToast({ type: "success", title: "Resolución actualizada", message: `La resolución Nº ${data.numero_resolucion} fue actualizada correctamente.` });
-      setEditingResolucion(null);
-      await loadHistorial();
-    } catch (err) {
-      const response = (err as { response?: { status?: number; data?: { message?: string; errors?: Record<string, string[]> } } })?.response;
-      const status = response?.status ?? 0;
-      const detail = status === 422
-        ? (response?.data?.errors ? Object.values(response.data.errors).flat().join(' ') : response?.data?.message ?? "Verificá los datos.")
-        : "No se pudo actualizar la resolución. Inténtelo de nuevo.";
-      showToast({ type: "error", title: "Error al editar", message: detail });
-    } finally {
-      setIsEditingResolucion(false);
-    }
-  };
-
-  const handleDeleteResolucion = async () => {
-    if (!deletingResolucion) return;
-    setIsDeletingResolucion(true);
-    try {
-      await deleteReport(Number(deletingResolucion.id));
-      showToast({ type: "success", title: "Resolución eliminada", message: `La resolución Nº ${deletingResolucion.numero_resolucion} fue eliminada del sistema.` });
-      setDeletingResolucion(null);
-      await loadHistorial();
-    } catch {
-      showToast({ type: "error", title: "Error al eliminar", message: "No se pudo eliminar la resolución." });
-    } finally {
-      setIsDeletingResolucion(false);
-    }
-  };
-
-  const handleSaveResolucion = async (data: ResolucionFormData) => {
-    if (!cycleId || !data.archivo) return;
-    setIsSavingResolucion(true);
-    try {
-      await publishReport(cycleId, {
-        archivo: data.archivo,
-        numero_resolucion: data.numero_resolucion,
-        vigencia_desde: data.vigencia_inicio,
-        vigencia_hasta: data.vigencia_fin,
-        esta_acreditada: data.esta_acreditada,
-        observaciones: data.observaciones || undefined,
-      });
-      showToast({ type: "success", title: "Resolución publicada", message: `La resolución Nº ${data.numero_resolucion} fue publicada correctamente.` });
-      setShowResolucionModal(false);
-      await loadHistorial();
-    } catch (err) {
-      const response = (err as { response?: { status?: number; data?: { message?: string; errors?: Record<string, string[]> } } })?.response;
-      const status = response?.status ?? 0;
-      let detail: string;
-      if (status === 422 && response?.data?.errors) {
-        detail = Object.values(response.data.errors).flat().join(' ');
-      } else if (status === 422 && response?.data?.message) {
-        detail = response.data.message;
-      } else if (status === 404) {
-        detail = "No se encontró el ciclo de acreditación. Verifique que el contexto operacional esté configurado correctamente.";
-      } else {
-        detail = "No se pudo publicar la resolución. Inténtelo de nuevo más tarde.";
-      }
-      showToast({ type: "error", title: "Error al publicar", message: detail });
-    } finally {
-      setIsSavingResolucion(false);
-    }
-  };
-
-  const handleDespublicarResolucion = async () => {
-    if (!despublicandoResolucion) return;
-    setIsDespublicando(true);
-    try {
-      await unpublishReport(Number(despublicandoResolucion.id));
-      showToast({ type: "success", title: "Resolución ocultada", message: `La resolución Nº ${despublicandoResolucion.numero_resolucion} fue ocultada.` });
-      setDespublicandoResolucion(null);
-      await loadHistorial();
-    } catch {
-      showToast({ type: "error", title: "Error al ocultar", message: "No se pudo ocultar la resolución." });
-    } finally {
-      setIsDespublicando(false);
-    }
-  };
-
-  const handleSaveInforme = (data: InformeFormData) => {
-    if (editingVersion) {
-      setVersiones((prev) =>
-        prev.map((v) =>
-          v.id === editingVersion.id
-            ? {
-                ...v,
-                descripcion: data.descripcion,
-                ...(data.archivo
-                  ? {
-                      archivo_nombre: data.archivo.name,
-                      archivo_size: `${(data.archivo.size / 1024 / 1024).toFixed(1)} MB`,
-                    }
-                  : {}),
-              }
-            : v,
-        ),
-      );
-      showToast({
-        type: "success",
-        title: "Versión actualizada",
-        message: "Los cambios fueron guardados correctamente.",
-      });
-    } else {
-      const nueva: VersionInforme = {
-        id: Date.now(),
-        descripcion: data.descripcion,
-        archivo_nombre: data.archivo?.name ?? "informe.pdf",
-        archivo_size: data.archivo ? `${(data.archivo.size / 1024 / 1024).toFixed(1)} MB` : "—",
-        publicado_por: "Usuario actual",
-        publicado_en: new Date().toISOString(),
-        activa: true,
-      };
-      setVersiones((prev) => [nueva, ...prev.map((v) => ({ ...v, activa: false }))]);
-      showToast({
-        type: "success",
-        title: "Informe publicado",
-        message: "El informe final institucional fue publicado correctamente.",
-      });
-    }
-    setShowInformeModal(false);
-    setEditingVersion(null);
-  };
-
-  const handleDeleteVersion = () => {
-    if (!deletingVersion) return;
-    setVersiones((prev) => prev.filter((v) => v.id !== deletingVersion.id));
-    showToast({
-      type: "success",
-      title: "Versión eliminada",
-      message: `La versión "${deletingVersion.descripcion}" fue eliminada.`,
-    });
-    setDeletingVersion(null);
-  };
-
+  const { processId } = useOperationalContextSnapshot();
   const firstColumn = useFirstColumnConfig();
-  const createResolutionDisabled = !cycleId || selectedCycleHasReport;
-  const createResolutionTooltip = !cycleId
-    ? "Seleccione un ciclo de acreditación para publicar una resolución"
-    : selectedCycleHasReport
-      ? "El ciclo seleccionado ya tiene una resolución registrada. Ocultarla no libera el ciclo; para continuar, edítela o elimínela."
-      : "Publicar nueva resolución SINAES";
 
-  // ─ Columnas historial ─────────────────────────────────────────────────────
-  const historialColumns = useMemo<DataTableColumn<ResolucionRow>[]>(() => [
-    {
-      key: "numero_resolucion",
-      header: "Resolución",
-      align: "left",
-      width: firstColumn.width,
-      render: (_, r) => (
-        <div className="flex flex-col">
-          <span className={cn("font-bold text-negro-una-2", TYPOGRAPHY.table.cell)}>
-            Nº {r.numero_resolucion}
-          </span>
-          <p className={cn("text-gris-una mt-0.5", TYPOGRAPHY.table.helper)}>
-            {r.archivo.nombre_original} · {(r.archivo.tamanio / 1024 / 1024).toFixed(1)} MB
-          </p>
-        </div>
-      ),
-    },
-    {
-      key: "publicado",
-      header: "Publicado por",
-      align: "left",
-      width: TABLE_COLUMN_WIDTHS.status,
-      render: (_, r) => (
-        <div className="flex flex-col gap-0.5">
-          <span className={cn("font-semibold text-negro-una-2", TYPOGRAPHY.table.helper)}>{r.publicado_por.nombre}</span>
-          <span className={cn("text-gris-una", TYPOGRAPHY.table.helper)}>{formatDate(r.publicado_at)}</span>
-        </div>
-      ),
-    },
-    {
-      key: "vigencia",
-      header: "Vigencia",
-      align: "left",
-      width: TABLE_COLUMN_WIDTHS.status,
-      render: (_, r) => (
-        <div className="flex flex-col gap-0.5">
-          <span className={cn("text-gris-una", TYPOGRAPHY.table.helper)}>{formatDate(r.vigencia_inicio)}</span>
-          <span className={cn("text-gris-una", TYPOGRAPHY.table.helper)}>{formatDate(r.vigencia_fin)}</span>
-        </div>
-      ),
-    },
-    {
-      key: "acreditacion",
-      header: "Acreditación",
-      align: "left",
-      width: TABLE_COLUMN_WIDTHS.status,
-      render: (_, r) => (
-        <StatusBadge
-          label={r.esta_acreditada ? "Acreditada" : "No acreditada"}
-          colorClasses={r.esta_acreditada ? BADGE_COLORS.verde.colorClasses : BADGE_COLORS.error.colorClasses}
-        />
-      ),
-    },
-    {
-      key: "estado",
-      header: "Estado",
-      align: "left",
-      width: TABLE_COLUMN_WIDTHS.status,
-      render: (_, r) => (
-        <StatusBadge
-          label={r.estado === "publicado" ? "Publicado" : "Oculto"}
-          colorClasses={
-            r.estado === "publicado"
-              ? BADGE_COLORS.verde.colorClasses
-              : BADGE_COLORS.warning.colorClasses
-          }
-        />
-      ),
-    },
-    {
-      key: "actions",
-      header: "Acciones",
-      align: "center",
-      width: TABLE_COLUMN_WIDTHS.actions,
-      render: (_, r) => (
-        <div className="flex items-center justify-center gap-1">
-          <TableActionButton
-            action="view"
-            tooltip="Ver PDF"
-            onClick={() => window.open(r.archivo.url, "_blank")}
-          />
-          <TableActionButton
-            action="custom"
-            customIcon={SystemIcons.actions.download({ className: TABLE_ACTION_BUTTON.icon })}
-            customVariant="tablePower"
-            tooltip="Descargar PDF"
-            onClick={() => {}}
-          />
-          <TableActionButton
-            action="edit"
-            tooltip="Editar"
-            onClick={() => setEditingResolucion(r as Resolucion)}
-          />
-          <TableActionButton
-            action="power"
-            tooltip="Ocultar"
-            onClick={() => setDespublicandoResolucion(r as Resolucion)}
-          />
-          <TableActionButton
-            action="delete"
-            tooltip="Eliminar"
-            onClick={() => setDeletingResolucion(r as Resolucion)}
-          />
-        </div>
-      ),
-    },
-  ], [firstColumn.width]);
+  const [activeTab, setActiveTab] = useState<TabType>(
+    "Informes Universitarios",
+  );
+  const [searchQuery, setSearchQuery] = useState("");
+  const [files, setFiles] = useState<ReportFileApi[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [showUploadModal, setShowUploadModal] = useState(false);
+  const [uploadModalState, setUploadModalState] = useState<{
+    selectedFiles: File[];
+    uploadProgress: FileUploadProgressItem[];
+    uploaderKey: number;
+  }>({ selectedFiles: [], uploadProgress: [], uploaderKey: 0 });
+  const [isUploading, setIsUploading] = useState(false);
 
-  // ─ Columnas versiones de informe ──────────────────────────────────────────
-  const versionesColumns = useMemo<DataTableColumn<VersionInformeRow>[]>(() => [
-    {
-      key: "descripcion",
-      header: "Descripción",
-      align: "left",
-      width: firstColumn.width,
-      render: (_, v) => (
-        <div className="flex flex-col">
-          <span className={cn("font-bold text-negro-una-2", TYPOGRAPHY.table.cell)}>{v.descripcion}</span>
-          <p className={cn("text-gris-una mt-0.5", TYPOGRAPHY.table.helper)}>{v.archivo_nombre} · {v.archivo_size}</p>
-        </div>
-      ),
-    },
-    {
-      key: "publicado",
-      header: "Publicado por",
-      align: "left",
-      width: TABLE_COLUMN_WIDTHS.status,
-      render: (_, v) => (
-        <div className="flex flex-col gap-0.5">
-          <span className={cn("font-semibold text-negro-una-2", TYPOGRAPHY.table.helper)}>{v.publicado_por}</span>
-          <span className={cn("text-gris-una", TYPOGRAPHY.table.helper)}>{formatDate(v.publicado_en)}</span>
-        </div>
-      ),
-    },
-    {
-      key: "estado",
-      header: "Estado",
-      align: "left",
-      width: TABLE_COLUMN_WIDTHS.status,
-      render: (_, v) => (
-        <StatusBadge
-          label={v.activa ? "Activa" : "Archivada"}
-          colorClasses={v.activa ? BADGE_COLORS.verde.colorClasses : BADGE_COLORS.gris.colorClasses}
-        />
-      ),
-    },
-    {
-      key: "actions",
-      header: "Acciones",
-      align: "center",
-      width: TABLE_COLUMN_WIDTHS.actionsLarge,
-      render: (_, v) => (
-        <div className="flex items-center justify-center gap-1">
-          <TableActionButton
-            action="view"
-            tooltip="Ver PDF"
-            onClick={() => window.open("#", "_blank")}
+  const [detailOpen, setDetailOpen] = useState(false);
+  const [detailLoading, setDetailLoading] = useState(false);
+  const [detailRecord, setDetailRecord] = useState<ReportFileApi | null>(null);
+
+  const [deleting, setDeleting] = useState<ReportFileApi | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
+
+  const selectedFiles = uploadModalState.selectedFiles;
+  const uploadProgress = uploadModalState.uploadProgress;
+  const uploaderKey = uploadModalState.uploaderKey;
+
+  const canSubmitUpload = (): boolean => {
+    if (!processId || isUploading) return false;
+    return selectedFiles.length > 0;
+  };
+
+  const loadFiles = useCallback(async () => {
+    if (!processId) {
+      setFiles([]);
+      return;
+    }
+    setIsLoading(true);
+    try {
+      const list = await reportFileService.list(processId);
+      setFiles(list);
+    } catch {
+      showToast({
+        type: "error",
+        title: "Error al cargar archivos",
+        message: "No se pudieron obtener los archivos del informe.",
+      });
+      setFiles([]);
+    } finally {
+      setIsLoading(false);
+    }
+  }, [processId, showToast]);
+
+  useEffect(() => {
+    void loadFiles();
+  }, [loadFiles]);
+
+  const openDetail = async (row: ReportFileApi) => {
+    setDetailOpen(true);
+    setDetailRecord(row);
+    setDetailLoading(true);
+    try {
+      const full = await reportFileService.show(row.informe_archivo_id);
+      setDetailRecord(full);
+    } catch {
+      showToast({
+        type: "error",
+        title: "Error al cargar detalle",
+        message: "No se pudo actualizar la información completa del archivo.",
+      });
+    } finally {
+      setDetailLoading(false);
+    }
+  };
+
+  const handleUpload = async () => {
+    if (!processId) return;
+    if (selectedFiles.length === 0) {
+      showToast({
+        type: "warning",
+        title: "Validación",
+        message: "Seleccione al menos un archivo.",
+      });
+      return;
+    }
+
+    setIsUploading(true);
+    setUploadModalState((prev) => ({
+      ...prev,
+      uploadProgress: selectedFiles.map((file) => ({
+        file,
+        status: "pending",
+        progress: 0,
+      })),
+    }));
+
+    try {
+      setUploadModalState((prev) => ({
+        ...prev,
+        uploadProgress: prev.uploadProgress.map((item) => ({
+          ...item,
+          status: "uploading",
+          progress: 50,
+        })),
+      }));
+
+      await reportFileService.uploadFiles(processId, selectedFiles, activeTab);
+
+      setUploadModalState((prev) => ({
+        ...prev,
+        uploadProgress: prev.uploadProgress.map((item) => ({
+          ...item,
+          status: "success",
+          progress: 100,
+        })),
+      }));
+
+      showToast({
+        type: "success",
+        title: "Carga exitosa",
+        message: "Los archivos se han subido correctamente.",
+      });
+      setShowUploadModal(false);
+      setUploadModalState((prev) => ({
+        ...prev,
+        selectedFiles: [],
+        uploaderKey: prev.uploaderKey + 1,
+      }));
+      await loadFiles();
+    } catch {
+      setUploadModalState((prev) => ({
+        ...prev,
+        uploadProgress: prev.uploadProgress.map((item) => ({
+          ...item,
+          status: "error",
+          progress: 0,
+          error: "No se pudo completar la subida",
+        })),
+      }));
+
+      showToast({
+        type: "error",
+        title: "Error al subir",
+        message: "Hubo un problema al procesar la carga de archivos.",
+      });
+    } finally {
+      setIsUploading(false);
+    }
+  };
+
+  const handleDelete = async () => {
+    if (!deleting) return;
+    setIsDeleting(true);
+    try {
+      await reportFileService.remove(deleting.informe_archivo_id);
+      showToast({
+        type: "success",
+        title: "Archivo eliminado",
+        message: "El archivo ha sido eliminado.",
+      });
+      setDeleting(null);
+      await loadFiles();
+    } catch {
+      showToast({
+        type: "error",
+        title: "Error al eliminar",
+        message: "No se pudo eliminar el archivo.",
+      });
+    } finally {
+      setIsDeleting(false);
+    }
+  };
+
+  const columns = useMemo<DataTableColumn<ReportFileRow>[]>(
+    () => [
+      {
+        key: "nombre_original",
+        header: "Nombre del Archivo",
+        align: "left",
+        width: firstColumn.width,
+        render: (_, r) => (
+          <div className="flex flex-col">
+            <div className="flex flex-row items-baseline gap-1.5">
+              <p
+                className={cn(
+                  "font-bold leading-normal text-negro-una-2 shrink-0",
+                  TYPOGRAPHY.table.cell,
+                )}
+                title={r.tipo}
+              >
+                {truncateText(r.tipo, firstColumn.maxLength)}
+              </p>
+              <p
+                className={cn(
+                  "font-bold leading-normal text-negro-una-2",
+                  TYPOGRAPHY.table.cell,
+                )}
+                title={r.nombre_original}
+              >
+                {truncateText(r.nombre_original, firstColumn.maxLength)}
+              </p>
+            </div>
+            <p className={cn("text-gris-una mt-1.5 -mb-0.5", TYPOGRAPHY.table.helper)}>
+              {r.fecha_subida ? formatDate(r.fecha_subida) : "—"}
+            </p>
+          </div>
+        ),
+      },
+      {
+        key: "is_publico",
+        header: "Visibilidad",
+        align: "left",
+        width: TABLE_COLUMN_WIDTHS.status,
+        render: (_, r) => (
+          <StatusBadge
+            label={r.is_publico ? "Público" : "Privado"}
+            colorClasses={
+              r.is_publico
+                ? BADGE_COLORS.verde.colorClasses
+                : BADGE_COLORS.gris.colorClasses
+            }
           />
-          <TableActionButton
-            action="custom"
-            customIcon={SystemIcons.actions.download({ className: TABLE_ACTION_BUTTON.icon })}
-            customVariant="tablePower"
-            tooltip="Descargar PDF"
-            onClick={() => {}}
-          />
-          <TableActionButton
-            action="edit"
-            tooltip="Editar"
-            onClick={() => {
-              setEditingVersion(v as VersionInforme);
-              setShowInformeModal(true);
-            }}
-          />
-          <TableActionButton
-            action="delete"
-            tooltip="Eliminar"
-            onClick={() => setDeletingVersion(v as VersionInforme)}
-          />
-        </div>
-      ),
-    },
-  ], []);
+        ),
+      },
+      {
+        key: "actions",
+        header: "Acciones",
+        align: "center",
+        width: TABLE_COLUMN_WIDTHS.actionsLarge,
+        render: (_, r) => (
+          <div className="flex items-center justify-center gap-1">
+            <TableActionButton
+              action="view"
+              tooltip="Ver detalles"
+              onClick={() => void openDetail(r)}
+            />
+            <TableActionButton
+              action="power"
+              isActive={r.is_publico}
+              tooltip={r.is_publico ? "Hacer privado" : "Hacer público"}
+              onClick={async () => {
+                try {
+                  const updated = r.is_publico
+                    ? await reportFileService.revokePublic(r.informe_archivo_id)
+                    : await reportFileService.makePublic(r.informe_archivo_id);
+
+                  setFiles((prev) =>
+                    prev.map((f) =>
+                      f.informe_archivo_id === updated.informe_archivo_id
+                        ? updated
+                        : f,
+                    ),
+                  );
+
+                  showToast({
+                    type: "success",
+                    title: "Actualizado",
+                    message: r.is_publico
+                      ? "El archivo ahora es privado."
+                      : "El archivo ahora es público.",
+                  });
+                } catch {
+                  showToast({
+                    type: "error",
+                    title: "Error",
+                    message: "No se pudo cambiar la visibilidad.",
+                  });
+                }
+              }}
+            />
+
+            <TableActionButton
+              action="custom"
+              customIcon={SystemIcons.actions.copyLink({
+                className: TABLE_ACTION_BUTTON.icon,
+              })}
+              customVariant="tableIndigo"
+              tooltip={
+                r.is_publico && r.url_publica
+                  ? "Copiar enlace público"
+                  : "Disponible cuando el archivo sea público"
+              }
+              disabled={!r.is_publico || !r.url_publica}
+              onClick={async () => {
+                if (!r.url_publica) return;
+                try {
+                  await navigator.clipboard.writeText(r.url_publica);
+                  showToast({
+                    type: "success",
+                    title: "Copiado",
+                    message: "Enlace público copiado al portapapeles.",
+                  });
+                } catch {
+                  showToast({
+                    type: "error",
+                    title: "Error",
+                    message: "No se pudo copiar el enlace público.",
+                  });
+                }
+              }}
+            />
+            <TableActionButton
+              action="custom"
+              customIcon={SystemIcons.actions.download({
+                className: TABLE_ACTION_BUTTON.icon,
+              })}
+              customVariant="tablePower"
+              tooltip="Descargar archivo"
+              onClick={() =>
+                window.open(
+                  reportFileService.getDownloadUrl(r.informe_archivo_id),
+                  "_blank",
+                )
+              }
+            />
+            <TableActionButton
+              action="delete"
+              tooltip="Eliminar"
+              onClick={() => setDeleting(r)}
+            />
+          </div>
+        ),
+      },
+    ],
+    [firstColumn.width, showToast],
+  );
+
+  const filteredFiles = useMemo(
+    () =>
+      files.filter((file) => {
+        if (file.tipo !== activeTab) return false;
+
+        const term = normalizeSearchText(searchQuery.trim());
+        if (!term) return true;
+
+        const visibilidad = file.is_publico ? "publico" : "privado";
+        const fechaFormateada = file.fecha_subida ? formatDate(file.fecha_subida) : "";
+        const fechaISO = file.fecha_subida ? file.fecha_subida.slice(0, 10) : "";
+
+        return [file.nombre_original, visibilidad, fechaFormateada, fechaISO]
+          .map((value) => normalizeSearchText(value ?? ""))
+          .some((value) => value.includes(term));
+      }),
+    [activeTab, files, searchQuery],
+  );
 
   return (
-    <ScreenContainer variant="full-width">
+    <ScreenContainer>
       <PageHeader
         title={moduleInfo.title}
         description={moduleInfo.description}
         breadcrumbMode="contextual"
         headerExtra={
-          <div className="flex items-center gap-2">
-            {activeTab === "Resolución SINAES" ? (
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <span tabIndex={createResolutionDisabled ? 0 : undefined}>
-                    <Button
-                      variant="secondary"
-                      size="sm"
-                      disabled={createResolutionDisabled}
-                      onClick={() => setShowResolucionModal(true)}
-                    >
-                      Crear
-                    </Button>
-                  </span>
-                </TooltipTrigger>
-                <TooltipContent side="left">
-                  {createResolutionTooltip}
-                </TooltipContent>
-              </Tooltip>
-            ) : (
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button
-                    variant="secondary"
-                    size="sm"
-                    onClick={() => setShowInformeModal(true)}
-                  >
-                    Crear
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent side="bottom">Publicar nueva versión del informe</TooltipContent>
-              </Tooltip>
+          <div className="flex items-center gap-3 flex-wrap justify-end">
+            {processId && (
+              <SearchInput
+                value={searchQuery}
+                onChange={setSearchQuery}
+                placeholder="Buscar por nombre, visibilidad..."
+              />
             )}
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => navigate(ROUTES.REPORTS_PUBLIC)}
-                >
-                  <SystemIcons.actions.view className={ICON_SIZES.md} />
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent side="bottom">
-                <p>Ver vista pública</p>
-              </TooltipContent>
-            </Tooltip>
+            <Button
+              variant="primary"
+              size="sm"
+              className="rounded-xl shadow-md shadow-rojo-una/10 bg-rojo-una hover:bg-rojo-una-2 text-blanco-una"
+              disabled={!processId}
+              onClick={() => {
+                setUploadModalState((prev) => ({
+                  ...prev,
+                  selectedFiles: [],
+                  uploadProgress: [],
+                  uploaderKey: prev.uploaderKey + 1,
+                }));
+                setShowUploadModal(true);
+              }}
+            >
+              Subir
+            </Button>
           </div>
         }
       />
 
-      {/* ─ Tabs ─ */}
-      <div className="flex border-b border-gris-light mb-6 gap-0">
+      <div className="flex flex-wrap border-b border-gris-light mb-6 gap-0">
         {TABS.map((tab) => (
           <button
             key={tab}
-            onClick={() => setActiveTab(tab)}
+            onClick={() => {
+              setActiveTab(tab);
+              setSearchQuery("");
+            }}
             className={cn(
-              "px-5 py-2.5 text-sm font-medium border-b-2 -mb-px transition-colors",
+              "px-5 py-2.5 text-sm font-medium border-b-2 -mb-px transition-colors whitespace-nowrap",
               activeTab === tab
                 ? "border-rojo-una-2 text-rojo-una-2"
                 : "border-transparent text-gris-una hover:text-negro-una-2",
@@ -942,124 +463,228 @@ export const AccreditationReportAdminPage: React.FC = () => {
         ))}
       </div>
 
-      {/* ──────────── Tab: Resolución SINAES ──────────── */}
-      {activeTab === "Resolución SINAES" && (
-        <div className="space-y-6">
+      {!processId && (
+        <Card className="mb-6 p-12 flex flex-col items-center justify-center text-center bg-gris-fondo/30 border-dashed animate-in fade-in duration-700">
+          <div className="w-20 h-20 rounded-full bg-gris-claro/30 flex items-center justify-center mb-4">
+            <SystemIcons.interface.informationCircle className="w-10 h-10 text-gris-una" />
+          </div>
+          <h3
+            className={cn(
+              "text-xl font-bold text-negro-una",
+              TYPOGRAPHY.pageSubtitle,
+            )}
+          >
+            Seleccione un proceso
+          </h3>
+          <p className={cn("mt-2 text-gris-una max-w-md", TYPOGRAPHY.body)}>
+            Para gestionar los informes de acreditación, primero debe
+            seleccionar una carrera, ciclo y proceso en el filtro superior.
+          </p>
+        </Card>
+      )}
 
-          {cycleId && selectedCycleHasReport && (
-            <div className="rounded-lg border border-warning-ring bg-warning-light px-4 py-3">
-              <p className={cn("text-warning-dark", TYPOGRAPHY.table.helper)}>
-                El ciclo seleccionado ya tiene una resolución registrada. Ocultarla solo la quita de la vista pública; para continuar, edite o elimine la existente.
-              </p>
-            </div>
+      {processId && (
+        <DataTable<ReportFileRow>
+          data={filteredFiles as ReportFileRow[]}
+          columns={columns}
+          searchable={false}
+          emptyMessage={
+            isLoading
+              ? "Cargando informes..."
+              : "No hay informes registrados para esta categoría."
+          }
+        />
+      )}
+
+      {/* Modal de Carga */}
+      <Modal
+        isOpen={showUploadModal}
+        onClose={() => !isUploading && setShowUploadModal(false)}
+        title="Subir Informes de Acreditación"
+        subtitle="Seleccione los documentos oficiales que corresponden a los informes de acreditación."
+        variant="upload"
+        size="lg"
+        footerMeta="Formatos permitidos: PDF, Word y Excel."
+        footerButtons={
+          <>
+            <Button
+              variant="outline"
+              onClick={() => setShowUploadModal(false)}
+              disabled={isUploading}
+            >
+              Cerrar
+            </Button>
+            {(selectedFiles.length > 0 || isUploading) && (
+              <Button
+                variant="primary"
+                disabled={!canSubmitUpload()}
+                isLoading={isUploading}
+                onClick={() => void handleUpload()}
+                className="rounded-xl shadow-md shadow-rojo-una/10"
+              >
+                Subir
+              </Button>
+            )}
+          </>
+        }
+      >
+        <div className="space-y-6">
+          {!processId && (
+            <p className={cn("text-rojo-una", TYPOGRAPHY.modal.body)}>
+              No se encontró un proceso activo. No es posible subir archivos.
+            </p>
           )}
 
-          {/* Historial de resoluciones */}
-          <Card>
-            <p className={cn("uppercase tracking-wider font-semibold text-gris-una px-4 pt-4 mb-4", TYPOGRAPHY.table.helper)}>
-              Historial de resoluciones registradas
+          {processId && (
+            <>
+          <div className="space-y-2">
+            <p
+              className={cn(
+                "font-bold text-negro-una mb-2 flex items-center gap-2",
+                TYPOGRAPHY.form.label,
+              )}
+            >
+              Informes a subir
             </p>
-            <DataTable<ResolucionRow>
-              data={historial as ResolucionRow[]}
-              columns={historialColumns}
-              searchable={false}
-              emptyMessage={
-                !careerCampusId
-                  ? "Seleccione una carrera y sede para ver el historial."
-                  : isLoadingHistorial
-                    ? "Cargando resoluciones..."
-                    : "Sin resoluciones registradas."
+            <FileUploader
+              key={`report-file-uploader-${uploaderKey}`}
+              onFilesSelected={(files) =>
+                setUploadModalState((prev) => ({ ...prev, selectedFiles: files }))
               }
-              unstyled
+              maxFiles={5}
+              disabled={isUploading}
             />
-          </Card>
+          </div>
+
+          {uploadProgress.length > 0 && <FileUploadProgress files={uploadProgress} />}
+            </>
+          )}
         </div>
-      )}
+      </Modal>
 
-      {/* ──────────── Tab: Informe Final Institucional ──────────── */}
-      {activeTab === "Informe Final Institucional" && (
-        <div className="space-y-6">
-
-          {/* Tabla de versiones */}
-          <Card>
-            <p className={cn("uppercase tracking-wider font-semibold text-gris-una px-4 pt-4 mb-4", TYPOGRAPHY.table.helper)}>
-              Versiones publicadas
+      {/* Modal de Detalle */}
+      <Modal
+        isOpen={detailOpen}
+        onClose={() => {
+          setDetailOpen(false);
+          setDetailRecord(null);
+        }}
+        title="Detalles del Archivo"
+        subtitle={detailRecord?.tipo ?? "Archivo de informe"}
+        variant="info"
+        size="lg"
+        heroIcon={
+          <SystemIcons.modal.document
+            className={`${ICON_SIZES.md} text-blanco-una`}
+          />
+        }
+        showCancel={false}
+        showConfirm={false}
+      >
+        {!detailRecord && detailLoading ? (
+          <div className="relative py-12 min-h-40">
+            <LoadingSpinner variant="loader" />
+            <p
+              className={cn(
+                "absolute bottom-6 left-1/2 -translate-x-1/2 text-gris-una whitespace-nowrap",
+                TYPOGRAPHY.modal.body,
+              )}
+            >
+              Cargando información del archivo...
             </p>
-            <DataTable<VersionInformeRow>
-              data={versiones as VersionInformeRow[]}
-              columns={versionesColumns}
-              searchable={false}
-              emptyMessage="Sin versiones publicadas."
-              unstyled
-            />
-          </Card>
-        </div>
-      )}
+          </div>
+        ) : detailRecord ? (
+          <div className="grid grid-cols-5 gap-x-4 gap-y-3">
+            <div className="col-start-1 col-end-4 flex flex-col gap-0.5">
+              <span
+                className={cn(
+                  TYPOGRAPHY.modal.body,
+                  "text-negro-una-2 font-semibold break-all",
+                )}
+              >
+                {detailRecord.nombre_original}
+              </span>
+              {detailRecord.tipo_mime?.trim() ? (
+                <span className={cn(TYPOGRAPHY.modal.body, "text-gris-una-2")}>
+                  {detailRecord.tipo_mime}
+                </span>
+              ) : null}
+            </div>
 
-      {/* ──────────── Modal: Publicar Resolución ──────────── */}
-      <ResolucionModal
-        isOpen={showResolucionModal}
-        onClose={() => setShowResolucionModal(false)}
-        onSave={handleSaveResolucion}
-        isLoading={isSavingResolucion}
-      />
+            <div className="col-start-4 col-end-6 flex flex-col items-start gap-0.5">
+              <span
+                className={cn(
+                  "uppercase tracking-wider font-semibold text-gris-una-2",
+                  TYPOGRAPHY.modal.subtitle,
+                )}
+              >
+                Fecha de subida
+              </span>
+              <span className={cn(TYPOGRAPHY.modal.subtitle, "text-gris-una-2")}>
+                {detailRecord.fecha_subida
+                  ? `${formatDate(detailRecord.fecha_subida)} · ${new Date(detailRecord.fecha_subida).toLocaleTimeString([], {
+                      hour: "2-digit",
+                      minute: "2-digit",
+                    })}`
+                  : "—"}
+              </span>
+            </div>
 
-      {/* ──────────── Modal: Editar Resolución ──────────── */}
-      <ResolucionModal
-        isOpen={editingResolucion !== null}
-        onClose={() => setEditingResolucion(null)}
-        onSave={handleEditResolucion}
-        isLoading={isEditingResolucion}
-        initial={editingResolucion}
-      />
+            <ModalSeparator />
 
-      {/* ──────────── Modal: Eliminar Resolución ──────────── */}
+            <div className="col-span-5 grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="space-y-1">
+                <p
+                  className={cn(
+                    "uppercase tracking-wider font-semibold text-gris-una-2",
+                    TYPOGRAPHY.modal.subtitle,
+                  )}
+                >
+                  Tamaño
+                </p>
+                <p className={cn(TYPOGRAPHY.modal.body, "text-negro-una-2") }>
+                  {detailRecord.tamanio && detailRecord.tamanio > 0
+                    ? `${(detailRecord.tamanio / 1024 / 1024).toFixed(2)} MB`
+                    : "—"}
+                </p>
+              </div>
+
+              <div className="space-y-1">
+                <p
+                  className={cn(
+                    "uppercase tracking-wider font-semibold text-gris-una-2",
+                    TYPOGRAPHY.modal.subtitle,
+                  )}
+                >
+                  Visibilidad
+                </p>
+                <div>
+                  <StatusBadge
+                    label={detailRecord.is_publico ? "Público" : "Privado"}
+                    colorClasses={
+                      detailRecord.is_publico
+                        ? BADGE_COLORS.verde.colorClasses
+                        : BADGE_COLORS.gris.colorClasses
+                    }
+                  />
+                </div>
+              </div>
+            </div>
+
+          </div>
+        ) : null}
+      </Modal>
+
       <DeleteConfirmationModal
-        isOpen={deletingResolucion !== null}
-        onClose={() => setDeletingResolucion(null)}
-        onConfirm={handleDeleteResolucion}
-        title="Eliminar resolución"
-        itemName={deletingResolucion?.numero_resolucion ?? ""}
+        isOpen={deleting !== null}
+        onClose={() => setDeleting(null)}
+        onConfirm={() => void handleDelete()}
+        title="Eliminar Archivo"
+        itemName={deleting?.nombre_original ?? ""}
         confirmLabel="Sí, eliminar"
         variant="danger"
-        isLoading={isDeletingResolucion}
-        footerMeta="Esta acción eliminará permanentemente la resolución y su PDF del sistema."
-      />
-
-      {/* ──────────── Modal: Ocultar Resolución ──────────── */}
-      <DespublicarModal
-        isOpen={despublicandoResolucion !== null}
-        onClose={() => setDespublicandoResolucion(null)}
-        resolucion={despublicandoResolucion}
-        onConfirm={handleDespublicarResolucion}
-        isLoading={isDespublicando}
-      />
-
-      {/* ──────────── Modal: Publicar informe final ──────────── */}
-      <InformeModal
-        isOpen={showInformeModal}
-        onClose={() => {
-          setShowInformeModal(false);
-          setEditingVersion(null);
-        }}
-        initial={editingVersion}
-        onSave={handleSaveInforme}
-      />
-
-      {/* ──────────── Modal: Eliminar versión de informe ──────────── */}
-      <DeleteConfirmationModal
-        isOpen={deletingVersion !== null}
-        onClose={() => setDeletingVersion(null)}
-        onConfirm={handleDeleteVersion}
-        title="Eliminar versión"
-        itemName={deletingVersion?.descripcion ?? ""}
-        confirmLabel="Sí, eliminar"
-        variant={deletingVersion?.activa ? "warning" : "danger"}
-        footerMeta={
-          deletingVersion?.activa
-            ? "Esta es la versión activa. Al eliminarla, ninguna versión quedará publicada."
-            : "Esta acción no se puede deshacer"
-        }
+        isLoading={isDeleting}
+        footerMeta="Esta acción no se puede deshacer."
       />
     </ScreenContainer>
   );

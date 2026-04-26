@@ -84,23 +84,16 @@ export const getNavigationItems = (
 ): NavItem[] => {
   const access = normalizeAccessInput(accessInput);
   const hasAccess = (rule?: AccessRule) => evaluateAccess(access, rule);
-  const isSuperUser = (access.roles ?? []).some((role) => {
-    const normalizedRole = role.toLowerCase();
-    return (
-      normalizedRole === "superusuario" || normalizedRole === "super usuario"
-    );
-  });
   const hasCycleSelection = access.context?.cycleId !== null;
   const hasProcessSelection = access.context?.processId !== null;
-  const hasContextualSelection =
-    isSuperUser || (hasCycleSelection && hasProcessSelection);
+  const hasContextualSelection = hasCycleSelection && hasProcessSelection;
 
   const items: NavItem[] = [
     {
       id: "inicio",
       label: "Inicio",
       icon: homeIcon,
-      href: "/",
+      href: ROUTES.HOME,
       isActive: false,
     },
   ];
@@ -340,6 +333,68 @@ export const getNavigationItems = (
     }
   }
 
+  {
+    const acreditacionChildren: NavItem[] = [];
+
+    if (
+      hasAccess({
+        requireAnyCapabilities: [CAPABILITIES.ACCREDITATION_MODEL_VIEW],
+        requireAnyPermissions: ["modelos.view"],
+      })
+    ) {
+      acreditacionChildren.push({
+        id: "modelos-acreditacion",
+        label: "Modelos de Acreditación",
+        icon: nutIcon,
+        href: ROUTES.STRUCTURE_MODELS,
+        isActive: false,
+      });
+    }
+
+    if (
+      hasAccess({
+        requireAnyCapabilities: [CAPABILITIES.ACCREDITATION_CYCLE_VIEW],
+        requireAnyPermissions: ["ciclos.view"],
+      })
+    ) {
+      acreditacionChildren.push({
+        id: "ciclos-acreditacion",
+        label: "Ciclos de Acreditación",
+        icon: calendarIcon,
+        href: ROUTES.ACCREDITATION_CYCLES,
+        isActive: false,
+      });
+    }
+
+    if (
+      hasCycleSelection &&
+      hasAccess({
+        requireAnyCapabilities: [CAPABILITIES.ACCREDITATION_PROCESS_VIEW],
+        requireAnyPermissions: ["procesos.view"],
+      })
+    ) {
+      acreditacionChildren.push({
+        id: "procesos-acreditacion",
+        label: "Procesos de Acreditación",
+        icon: processIcon,
+        href: ROUTES.ACCREDITATION_PROCESSES,
+        isActive: false,
+      });
+    }
+
+    if (acreditacionChildren.length > 0) {
+      items.push({
+        id: "acreditacion",
+        label: "Acreditación",
+        icon: processIcon,
+        href: "#",
+        isActive: false,
+        isExpandable: true,
+        children: acreditacionChildren,
+      });
+    }
+  }
+
   if (hasContextualSelection) {
     const evaluacionChildren: NavItem[] = [];
 
@@ -399,22 +454,24 @@ export const getNavigationItems = (
     ) {
       informeChildren.push({
         id: "informe-gestion",
-        label: "Informe de Acreditación",
+        label: "Informes de Acreditación",
         icon: medalIcon,
         href: ROUTES.SINAES_ADMIN,
         isActive: false,
       });
     }
 
-    items.push({
-      id: "informe",
-      label: "Informes",
-      icon: informeIcon,
-      href: "#",
-      isActive: false,
-      isExpandable: true,
-      children: informeChildren,
-    });
+    if (informeChildren.length > 0) {
+      items.push({
+        id: "informe",
+        label: "Informes",
+        icon: informeIcon,
+        href: "#",
+        isActive: false,
+        isExpandable: true,
+        children: informeChildren,
+      });
+    }
   }
 
   return items;

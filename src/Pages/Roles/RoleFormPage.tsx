@@ -9,8 +9,8 @@
  * - Redirección después de operaciones exitosas
  *
  * Rutas compatibles:
- * - /roles/crear -> Modo crear
- * - /roles/editar/:id -> Modo editar
+ * - /roles/nuevo -> Modo crear
+ * - /roles/editar -> Modo editar (id en location.state)
  */
 import React, { useEffect, useState } from "react";
 import { ROUTES } from "@/Constants/ROUTES";

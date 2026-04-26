@@ -2,13 +2,15 @@
  * AccreditationCycleTypes - Tipos para Ciclos de Acreditación (HU-030)
  */
 
-export type AccreditationCycleStatus = 'activo' | 'inactivo' | 'completado';
+export type AccreditationCycleStatus = "activo" | "inactivo" | "completado";
 
 export interface AccreditationCycle {
   ciclo_acreditacion_id: number;
   carrera_sede_id: number;
   modelo_estructura_id: number;
   nombre: string;
+  fecha_inicio: string | null;
+  fecha_fin: string | null;
   estado: AccreditationCycleStatus;
   created_at: string;
   updated_at: string;
@@ -34,14 +36,16 @@ export interface CareerCampus {
 }
 
 export interface CreateAccreditationCycleForm {
-  nombre: string;
   carrera_sede_id: number;
   modelo_estructura_id: number;
+  fecha_inicio: string;
+  fecha_fin: string;
 }
 
 export interface EditAccreditationCycleForm {
-  nombre?: string;
   carrera_sede_id?: number;
   modelo_estructura_id?: number;
+  fecha_inicio?: string;
+  fecha_fin?: string;
   estado?: AccreditationCycleStatus;
 }

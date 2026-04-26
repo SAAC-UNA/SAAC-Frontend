@@ -6,7 +6,7 @@ import { Button } from '../Buttons/Button';
 import { TYPOGRAPHY } from '@/Constants/Typography';
 import { ICON_SIZES } from '@/Constants/Components';
 
-export type ModalVariant = 'info' | 'success' | 'danger' | 'warning' | 'neutral';
+export type ModalVariant = 'info' | 'success' | 'danger' | 'warning' | 'neutral' | 'upload';
 
 interface ModalProps {
   isOpen: boolean;
@@ -92,6 +92,13 @@ const VARIANT_CONFIG: Record<ModalVariant, VariantConfig> = {
     cardShadow: 'shadow-[0_4px_14px_rgba(107,114,128,0.22)]',
     Icon: ({ className }) => <SystemIcons.actions.view className={className} />,
     confirmVariant: 'secondary',
+  },
+  upload: {
+    cardBg: 'bg-teal',
+    cardShadow: 'shadow-[0_4px_14px_rgba(20,184,166,0.28)]',
+    Icon: ({ className }) => <SystemIcons.interface.uploadArrow className={className} />,
+    confirmVariant: 'primary',
+    metaColor: 'text-teal',
   },
 };
 
@@ -205,8 +212,7 @@ export const Modal: React.FC<ModalProps> = React.memo(({
       className="relative z-50"
     >
       <DialogBackdrop
-        transition
-        className="fixed inset-0 bg-[rgba(10,15,35,0.55)] backdrop-blur-[3px] transition-all duration-300 data-closed:opacity-0"
+        className="fixed inset-0 bg-[rgba(10,15,35,0.55)] backdrop-blur-[3px]"
       />
 
       <div className="fixed inset-0 z-10 w-screen overflow-y-auto">
@@ -219,14 +225,12 @@ export const Modal: React.FC<ModalProps> = React.memo(({
         >
           <DialogPanel
             ref={modalRef}
-            transition
             tabIndex={-1}
             className={cn(
               'relative flex flex-col w-full',
               'bg-blanco-una border border-none rounded-corner',
               'shadow-[0_6px_16px_rgba(0,0,0,0.10),0_2px_6px_rgba(0,0,0,0.06)]',
-              'transition-all duration-300 ease-out sm:mt-8 sm:mb-8',
-              'data-closed:translate-y-4 data-closed:opacity-0 data-closed:sm:scale-95',
+              'sm:mt-8 sm:mb-8',
               sizeClasses[size],
               maxHeightClasses[maxHeight],
               className,

@@ -6,8 +6,11 @@ import {
   type GlobalFilterCatalog,
 } from "@/Services/GlobalFilterContextService";
 
-const isProfessorRole = (roles: string[]): boolean =>
-  roles.some((role) => role.toLowerCase() === "profesor");
+const isTeacherRole = (roles: string[]): boolean =>
+  roles.some((role) => {
+    const normalizedRole = role.toLowerCase();
+    return normalizedRole === "profesor" || normalizedRole === "docente";
+  });
 
 const isSuperUserRole = (roles: string[]): boolean =>
   roles.some((role) => {
@@ -64,8 +67,8 @@ export const useOperationalContextStatus = () => {
   const [loading, setLoading] = useState(false);
   const [hasOperationalContext, setHasOperationalContext] = useState(true);
 
-  const isProfessor = useMemo(
-    () => isProfessorRole(userRoleNames),
+  const isTeacher = useMemo(
+    () => isTeacherRole(userRoleNames),
     [userRoleNames],
   );
   const isSuperUser = useMemo(
@@ -74,7 +77,7 @@ export const useOperationalContextStatus = () => {
   );
 
   const refreshContextStatus = useCallback(async () => {
-    if (!isAuthenticated || isProfessor || isSuperUser) {
+    if (!isAuthenticated || isTeacher || isSuperUser) {
       setHasOperationalContext(true);
       setLoading(false);
       return;
@@ -89,7 +92,7 @@ export const useOperationalContextStatus = () => {
     } finally {
       setLoading(false);
     }
-  }, [isAuthenticated, isProfessor, isSuperUser]);
+  }, [isAuthenticated, isTeacher, isSuperUser]);
 
   useEffect(() => {
     refreshContextStatus();

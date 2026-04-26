@@ -6,8 +6,8 @@
  * la página de modelos de estructura.
  */
 
-import React, { useEffect, useMemo, useState } from "react";
-import { useNavigate, useSearchParams } from "react-router-dom";
+import React, { useState, useEffect, useMemo } from "react";
+import { useNavigate, useSearchParams, useLocation } from "react-router-dom";
 import { ROUTES } from "@/Constants/ROUTES";
 import { StructureTable } from "./Components/StructureTable";
 import { StructureFormModal } from "./Components/StructureFormModal";
@@ -25,6 +25,19 @@ import { SearchInput } from "@/Components/Ui/Forms/SearchInput";
 import { Button } from "@/Components/Ui/Buttons/Button";
 import { truncateText } from "@/Utils";
 import { useToast } from "@/Context/ToastContext";
+import { CustomSelect } from "@/Components/Ui/Forms/SingleSelect";
+import { Card } from "@/Components/Ui/Layout/Card";
+import {
+  Breadcrumb,
+  type BreadcrumbItem,
+} from "@/Components/Ui/Feedback/Breadcrumb";
+
+type StructureLocationState = {
+  modelId?: number | null;
+  modelName?: string;
+  lockModelSelection?: boolean;
+  from?: string;
+};
 
 interface StructureListProps {
   title?: string;
@@ -53,6 +66,14 @@ const StructureList: React.FC<StructureListProps> = ({
   description,
 }) => {
   const moduleInfo = getModuleInfo("structure_list");
+  const location = useLocation();
+  const navigationState =
+    (location.state as StructureLocationState | null) ?? null;
+  const lockModelSelection = navigationState?.lockModelSelection === true;
+  const lockedModelId =
+    typeof navigationState?.modelId === "number" && navigationState.modelId > 0
+      ? navigationState.modelId
+      : null;
 
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
@@ -71,23 +92,102 @@ const StructureList: React.FC<StructureListProps> = ({
 
   const { models } = useStructureModels();
 
-  const traditionalModelDescription = useMemo(() => {
-    const traditionalModel = models.find(
-      (model) => model.tipo === "tradicional",
-    );
+  const SESSION_KEY = "saac.structure.lastModel";
 
-    if (!traditionalModel) {
-      return "Modelo tradicional";
+  const initialModelId = (): number | null => {
+    // Prioridad 1: estado de navegación (viene de la tarjeta de un modelo)
+    if (lockModelSelection) {
+      return lockedModelId;
+    }
+    // Prioridad 2: último modelo usado en esta sesión
+    const stored = sessionStorage.getItem(SESSION_KEY);
+    if (stored && stored !== "0") {
+      const parsed = Number(stored);
+      if (Number.isFinite(parsed) && parsed > 0) return parsed;
+    }
+    // Por defecto: Modelo Tradicional
+    return null;
+  };
+
+  const [selectedModelId, setSelectedModelId] = useState<number | null>(
+    initialModelId,
+  );
+
+  // Sincronizar selección con sessionStorage
+  useEffect(() => {
+    sessionStorage.setItem(
+      SESSION_KEY,
+      selectedModelId !== null ? String(selectedModelId) : "0",
+    );
+  }, [selectedModelId]);
+
+  const selectedModel = useMemo(
+    () =>
+      models.find((m) => m.modelo_estructura_id === selectedModelId) ?? null,
+    [models, selectedModelId],
+  );
+
+  const currentStructureLabel = useMemo(() => {
+    if (lockModelSelection && navigationState?.modelName) {
+      return navigationState.modelName;
     }
 
-    return traditionalModel.version
-      ? `${traditionalModel.nombre} · v${traditionalModel.version}`
-      : traditionalModel.nombre;
-  }, [models]);
+    return selectedModel?.nombre ?? "Modelo Tradicional";
+  }, [lockModelSelection, navigationState?.modelName, selectedModel?.nombre]);
+
+  const breadcrumbItems = useMemo<BreadcrumbItem[]>(() => {
+    const items: BreadcrumbItem[] = [];
+
+    if (
+      lockModelSelection ||
+      navigationState?.from === ROUTES.STRUCTURE_MODELS
+    ) {
+      items.push({
+        label: "Modelos de Acreditación",
+        href: ROUTES.STRUCTURE_MODELS,
+      });
+    }
+
+    items.push({
+      label: currentStructureLabel,
+      current: true,
+    });
+
+    return items;
+  }, [currentStructureLabel, lockModelSelection, navigationState?.from]);
+
+  const modelOptions = useMemo(
+    () => [
+      { value: "0", label: "Modelo Tradicional" },
+      ...models
+        .filter((m) => m.tipo !== "tradicional")
+        .map((m) => ({
+          value: String(m.modelo_estructura_id),
+          label: m.nombre,
+        })),
+    ],
+    [models],
+  );
+
+  const handleModelChange = (val: string) => {
+    const newId = val === "0" ? null : Number(val);
+    setSelectedModelId(newId);
+    setSearchQuery("");
+  };
+
+  useEffect(() => {
+    if (!lockModelSelection) {
+      return;
+    }
+
+    setSelectedModelId(lockedModelId);
+    setSearchQuery("");
+  }, [lockModelSelection, lockedModelId]);
 
   const headerTitle = title ?? moduleInfo.title;
-  const headerDescription = description ?? traditionalModelDescription;
+  const headerDescription = description ?? currentStructureLabel;
 
+  // Cargar árbol al montar la página
   useEffect(() => {
     loadTree();
   }, [loadTree]);
@@ -269,12 +369,25 @@ const StructureList: React.FC<StructureListProps> = ({
   return (
     <>
       <ScreenContainer>
+        <Breadcrumb items={breadcrumbItems} className="mb-3" />
         <PageHeader
           title={headerTitle}
           description={headerDescription}
           breadcrumbMode="none"
           headerExtra={
             <div className="flex flex-col sm:flex-row w-full gap-2 shrink-0 lg:w-auto items-end">
+              {!lockModelSelection && (
+                <Card className="w-80">
+                  <CustomSelect
+                    label="Modelo"
+                    value={
+                      selectedModelId === null ? "0" : String(selectedModelId)
+                    }
+                    onChange={handleModelChange}
+                    options={modelOptions}
+                  />
+                </Card>
+              )}
               <SearchInput
                 placeholder="Buscar elementos..."
                 value={searchQuery}

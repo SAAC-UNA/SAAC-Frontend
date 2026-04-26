@@ -16,14 +16,13 @@ describe("Navigation permissions", () => {
     expect(ids).not.toContain("evaluacion");
   });
 
-  it("muestra Acreditacion para encargado con permisos de lectura", () => {
+  it("muestra Proceso de Acreditacion cuando hay ciclo seleccionado", () => {
     const items = getNavigationItems({
       roles: ["Encargado de Acreditación"],
-      permissions: [
-        "procesos.view",
-        "modelos.view",
-        "ciclos.view",
-      ],
+      permissions: ["procesos.view", "modelos.view", "ciclos.view"],
+      context: {
+        cycleId: 1,
+      },
     });
 
     const acreditacion = items.find((item) => item.id === "acreditacion");
@@ -47,9 +46,9 @@ describe("Navigation permissions", () => {
     expect(childIds).not.toContain("roles");
   });
 
-  it("muestra navegacion reducida para perfil tipo profesor", () => {
+  it("muestra navegacion reducida para perfil tipo docente", () => {
     const items = getNavigationItems({
-      roles: ["Profesor"],
+      roles: ["Docente"],
       permissions: [
         "evidencias.view",
         "archivos.upload",

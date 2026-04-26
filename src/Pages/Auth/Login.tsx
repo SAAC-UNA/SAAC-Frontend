@@ -12,6 +12,7 @@ import { ValidationError } from "@/Services/AuthService";
 import { Input } from "@/Components/Ui/Forms/Input";
 import IsotipoSAAC from "@/Assets/IsotipoSAAC.svg?react";
 import { Grainient } from "@/Components/Ui/Backgrounds/Grainient";
+import { ROUTES } from "@/Constants/ROUTES";
 import {
   Tooltip,
   TooltipTrigger,
@@ -38,7 +39,7 @@ export const Login = () => {
 
     try {
       await login({ cedula, password });
-      navigate("/");
+      navigate(ROUTES.HOME);
     } catch (err) {
       const errorMessage =
         err instanceof Error ? err.message : "Error al iniciar sesión";
@@ -147,12 +148,14 @@ export const Login = () => {
                   <Tooltip>
                     <TooltipTrigger asChild>
                       <span className="cursor-help text-slate">
-                        {SystemIcons.interface.informationCircle({ size: "sm" })}
+                        {SystemIcons.interface.informationCircle({
+                          size: "sm",
+                        })}
                       </span>
                     </TooltipTrigger>
                     <TooltipContent side="bottom">
-                      Ingrese la contraseña que emplea en los demás sistemas de la
-                      universidad
+                      Ingrese la contraseña que emplea en los demás sistemas de
+                      la universidad
                     </TooltipContent>
                   </Tooltip>
                 </>

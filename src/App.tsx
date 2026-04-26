@@ -1,5 +1,5 @@
 import { lazy, Suspense, useEffect, useState } from "react";
-import { BrowserRouter, Routes, Route, Navigate, useLocation, useParams } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { ROUTES } from "@/Constants/ROUTES";
 import { AuthProvider } from "@/Context/AuthContext";
 import { NavigationProvider } from "@/Context/NavigationContext";
@@ -39,6 +39,7 @@ const StructureList = lazy(() => import("@/Pages/Structure/StructureList"));
 const StructureModelsPage = lazy(
   () => import("@/Pages/StructureModels/StructureModelsPage"),
 );
+const ContextSelector = lazy(() => import("@/Pages/ContextSelector"));
 const AccreditationCyclesPage = lazy(
   () => import("@/Pages/AccreditationCycles/AccreditationCyclesPage"),
 );
@@ -77,10 +78,14 @@ const FinalReports = lazy(() =>
   import("./Pages/ReportManagement").then((m) => ({ default: m.FinalReports })),
 );
 const AccreditationReportAdminPage = lazy(() =>
-  import("./Pages/AccreditationReport").then((m) => ({ default: m.AccreditationReportAdminPage })),
+  import("./Pages/AccreditationReport").then((m) => ({
+    default: m.AccreditationReportAdminPage,
+  })),
 );
 const AccreditationReportPublicPage = lazy(() =>
-  import("./Pages/AccreditationReport").then((m) => ({ default: m.AccreditationReportPublicPage })),
+  import("./Pages/AccreditationReport").then((m) => ({
+    default: m.AccreditationReportPublicPage,
+  })),
 );
 
 // HU-016: Paginas de solicitudes de ampliacion
@@ -104,27 +109,6 @@ const PageLoader = () => (
     <LoadingSpinner variant="loader" />
   </div>
 );
-
-/**
- * RedirectToState - Redirige rutas antiguas con :id pasando el ID por navigation state.
- * Mantiene compatibilidad con links/bookmarks que contengan el ID en la URL,
- * sin exponerlo de nuevo en la URL de destino.
- */
-const RedirectToState = ({ to }: { to: string }) => {
-  const { id } = useParams<{ id: string }>();
-  return <Navigate to={to} state={{ id: id ? Number(id) : undefined }} replace />;
-};
-
-const RedirectWithSearch = ({ to }: { to: string }) => {
-  const location = useLocation();
-  return (
-    <Navigate
-      to={{ pathname: to, search: location.search }}
-      state={location.state}
-      replace
-    />
-  );
-};
 
 function App() {
   const [contextRenderKey, setContextRenderKey] = useState(0);
@@ -162,10 +146,13 @@ function App() {
           <NavigationProvider>
             <Routes>
               {/* Rutas publicas */}
-              <Route path="/login" element={<Login />} />
-              <Route path="/session-expired" element={<SessionExpired />} />
+              <Route path={ROUTES.LOGIN} element={<Login />} />
               <Route
-                path="/p/:token"
+                path={ROUTES.SESSION_EXPIRED}
+                element={<SessionExpired />}
+              />
+              <Route
+                path={ROUTES.PUBLIC_FOLDER}
                 element={
                   <Suspense fallback={<PageLoader />}>
                     <PublicFolderPage />
@@ -183,6 +170,10 @@ function App() {
                           <Routes key={`context-${contextRenderKey}`}>
                             {/* Pagina de inicio */}
                             <Route path="/" element={<HomePage />} />
+                            <Route
+                              path={ROUTES.CONTEXT_SELECTOR}
+                              element={<ContextSelector />}
+                            />
 
                             {/* Roles - Solo Superusuario */}
                             <Route
@@ -220,10 +211,6 @@ function App() {
                                 </ProtectedRoute>
                               }
                             />
-                            {/* Redirects de compatibilidad - Roles */}
-                            <Route path="/roles/listar" element={<Navigate to={ROUTES.ROLES} replace />} />
-                            <Route path="/roles/crear" element={<Navigate to={ROUTES.ROLES_NEW} replace />} />
-                            <Route path="/roles/editar/:id" element={<RedirectToState to={ROUTES.ROLES_EDIT} />} />
 
                             {/* Bitacora del Sistema - Solo Superusuario */}
                             <Route
@@ -263,9 +250,6 @@ function App() {
                                 </ProtectedRoute>
                               }
                             />
-                            {/* Redirects de compatibilidad - Usuarios */}
-                            <Route path="/usuarios/listar" element={<Navigate to={ROUTES.USERS} replace />} />
-                            <Route path="/usuarios/editar/:id" element={<RedirectToState to={ROUTES.USERS_EDIT} />} />
 
                             {/* Estructura - Todos los autenticados */}
                             <Route
@@ -278,7 +262,6 @@ function App() {
                                 </ProtectedRoute>
                               }
                             />
-                            <Route path="/estructura/listar" element={<RedirectWithSearch to={ROUTES.STRUCTURE} />} />
 
                             {/* Modelos de Acreditación - Administrador y Superusuario */}
                             <Route
@@ -348,9 +331,6 @@ function App() {
                                 </ProtectedRoute>
                               }
                             />
-                            {/* Redirects de compatibilidad - Evidencias */}
-                            <Route path="/mis-evidencias-asignadas" element={<Navigate to={ROUTES.EVIDENCE_MY} replace />} />
-                            <Route path="/evidencias/busqueda-avanzada" element={<Navigate to={ROUTES.EVIDENCE_SEARCH} replace />} />
 
                             {/* HU-016: Solicitudes de Ampliación */}
                             <Route
@@ -378,8 +358,6 @@ function App() {
                                 </ProtectedRoute>
                               }
                             />
-                            {/* Redirect de compatibilidad - Solicitudes */}
-                            <Route path="/solicitudes-ampliacion/mis-solicitudes" element={<Navigate to={ROUTES.EXTENSION_REQUESTS_MY} replace />} />
 
                             {/* Compromisos de Mejora - Todos los autenticados */}
                             <Route
@@ -436,11 +414,6 @@ function App() {
                                 </ProtectedRoute>
                               }
                             />
-                            {/* Redirects de compatibilidad - Compromisos */}
-                            <Route path="/compromisos/listar" element={<Navigate to={ROUTES.COMMITMENTS} replace />} />
-                            <Route path="/compromisos/crear" element={<Navigate to={ROUTES.COMMITMENTS_NEW} replace />} />
-                            <Route path="/compromisos/ver/:id" element={<RedirectToState to={ROUTES.COMMITMENTS_DETAIL} />} />
-                            <Route path="/compromisos/editar/:id" element={<RedirectToState to={ROUTES.COMMITMENTS_EDIT} />} />
 
                             {/* Procesos de Acreditacion - Todos los autenticados */}
                             <Route
@@ -453,7 +426,6 @@ function App() {
                                 </ProtectedRoute>
                               }
                             />
-                            <Route path="/procesos-acreditacion/listar" element={<Navigate to={ROUTES.ACCREDITATION_PROCESSES} replace />} />
 
                             {/* Aprobacion de Bloques - Todos los autenticados */}
                             <Route
@@ -483,15 +455,18 @@ function App() {
                                 </ProtectedRoute>
                               }
                             />
-                            <Route path="/gestion-informes" element={<Navigate to={ROUTES.REPORTS} replace />} />
 
                             {/* Resolución SINAES — Admin (requiere permisos de reportes) */}
                             <Route
                               path={ROUTES.SINAES_ADMIN}
                               element={
                                 <ProtectedRoute
-                                  requireCapabilities={[CAPABILITIES.REPORTS_ACCESS]}
-                                  requirePermissions={REPORTS_ACCESS_PERMISSIONS}
+                                  requireCapabilities={[
+                                    CAPABILITIES.REPORTS_ACCESS,
+                                  ]}
+                                  requirePermissions={
+                                    REPORTS_ACCESS_PERMISSIONS
+                                  }
                                 >
                                   <AccreditationReportAdminPage />
                                 </ProtectedRoute>
@@ -507,7 +482,7 @@ function App() {
                             {/* Redirigir cualquier ruta no encontrada */}
                             <Route
                               path="*"
-                              element={<Navigate to="/" replace />}
+                              element={<Navigate to={ROUTES.HOME} replace />}
                             />
                           </Routes>
                         </Suspense>

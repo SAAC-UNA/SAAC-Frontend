@@ -9,7 +9,7 @@
  * - Redirección después de operaciones exitosas
  *
  * Rutas compatibles:
- * - /usuarios/editar/:id -> Editar usuario
+ * - /usuarios/editar -> Editar usuario (id en location.state)
  */
 import React, { useEffect, useState } from "react";
 import { Navigate, useLocation, useNavigate } from "react-router-dom";

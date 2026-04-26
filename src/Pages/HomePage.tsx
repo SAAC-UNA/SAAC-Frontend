@@ -1,12 +1,6 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
-import {
-  Card,
-  CustomSelect,
-  LoadingSpinner,
-  PageHeader,
-  ScreenContainer,
-  type SelectOption,
-} from "@/Components/Ui/Index";
+import { Card, LoadingSpinner, ScreenContainer } from "@/Components/Ui/Index";
+import { ButtonWithTooltip } from "@/Components/Ui/Buttons/ButtonWithTooltip";
 import { useAuth } from "@/Context/AuthContext";
 import { useToast } from "@/Hooks/useToast";
 import { userService } from "@/Services/UserService";
@@ -20,11 +14,23 @@ import {
   type GlobalFilterCareer,
   type GlobalFilterCatalog,
 } from "@/Services/GlobalFilterContextService";
-import type { AuditLog } from "@/Types/AuditLogTypes";
 import type { ExtensionRequest } from "@/Types/ExtensionRequestTypes";
+import { SystemIcons } from "@/Components/Ui/Icons/SystemIcons";
+import { ROUTES } from "@/Constants/ROUTES";
+import { useOperationalContextSnapshot } from "@/Hooks/useOperationalContextSnapshot";
+import { getNavigationItems } from "@/Navigation";
+import {
+  Breadcrumb,
+  type BreadcrumbItem,
+} from "@/Components/Ui/Feedback/Breadcrumb";
+import { getIconByName } from "@/Components/Ui/Icons/SystemIcons";
+import { Link, useNavigate } from "react-router-dom";
 
-const isProfessorRole = (roles: string[]): boolean =>
-  roles.some((role) => role.toLowerCase() === "profesor");
+const isTeacherRole = (roles: string[]): boolean =>
+  roles.some((role) => {
+    const normalizedRole = role.toLowerCase();
+    return normalizedRole === "profesor" || normalizedRole === "docente";
+  });
 
 const isSuperUserRole = (roles: string[]): boolean =>
   roles.some((role) => {
@@ -34,13 +40,9 @@ const isSuperUserRole = (roles: string[]): boolean =>
     );
   });
 
-const toOption = (value: number, label: string): SelectOption => ({
-  value: String(value),
-  label,
-});
-
-interface ProfessorDashboardMetrics {
+interface TeacherDashboardMetrics {
   activeAssignments: number;
+  completedAssignments: number;
   totalRequests: number;
   reviewedRequests: number;
   pendingRequests: number;
@@ -61,8 +63,88 @@ interface SuperUserDashboardMetrics {
   auditTotal: number;
 }
 
+interface DashboardQuickCard {
+  href: string;
+  title: string;
+  description: string;
+  icon: React.ReactNode;
+  cardClassName: string;
+  titleClassName: string;
+}
+
+// Mini-header que muestra el contexto activo con navegación específica por paso
+interface ContextMiniHeaderProps {
+  className?: string;
+}
+
+const ContextMiniHeader: React.FC<ContextMiniHeaderProps> = ({ className }) => {
+  const snapshot = useOperationalContextSnapshot();
+  const { userRoleNames } = useAuth();
+  const isSuper = isSuperUserRole(userRoleNames);
+
+  const rawCareerLabel = snapshot.careerLabel ?? "";
+  const resolvedCampusTooltip = snapshot.campusLabel
+    ? snapshot.campusLabel
+    : rawCareerLabel.includes(" - ")
+      ? rawCareerLabel.split(" - ").slice(1).join(" - ").trim() || null
+      : null;
+  const resolvedCareerLabel = rawCareerLabel.includes(" - ")
+    ? rawCareerLabel.split(" - ")[0].trim()
+    : rawCareerLabel;
+
+  const items: BreadcrumbItem[] = [];
+
+  // Carrera: solo superusuario, va al paso career
+  if (isSuper && resolvedCareerLabel) {
+    items.push({
+      label: resolvedCareerLabel,
+      href: `${ROUTES.CONTEXT_SELECTOR}?step=career`,
+      tooltip: resolvedCampusTooltip ?? "Cambiar carrera",
+    });
+  }
+
+  // Ciclo: va al paso cycle (mantiene carrera en snapshot)
+  if (snapshot.cycleLabel) {
+    items.push({
+      label: snapshot.cycleLabel,
+      href: `${ROUTES.CONTEXT_SELECTOR}?step=cycle`,
+      tooltip: snapshot.careerLabel ?? "Cambiar ciclo",
+    });
+  }
+
+  // Proceso: va al paso process (mantiene carrera + ciclo en snapshot)
+  if (snapshot.processLabel) {
+    items.push({
+      label: snapshot.processLabel,
+      href: `${ROUTES.CONTEXT_SELECTOR}?step=process`,
+      tooltip: snapshot.cycleLabel ?? "Cambiar proceso",
+    });
+  }
+
+  if (items.length === 0) {
+    return (
+      <div className={className ?? "mb-4"}>
+        <Link
+          to={ROUTES.CONTEXT_SELECTOR}
+          className="inline-flex items-center gap-2 rounded-full border border-azul-claro/30 bg-white px-4 py-2 text-sm font-semibold text-azul-una shadow-sm transition hover:-translate-y-0.5 hover:border-azul-una/30 hover:bg-azul-50"
+        >
+          <span aria-hidden="true">*</span>
+          Seleccionar contexto
+        </Link>
+      </div>
+    );
+  }
+
+  return (
+    <div className={className ?? "mb-4"}>
+      <Breadcrumb items={items} />
+    </div>
+  );
+};
+
 const HomePage: React.FC = () => {
-  const { userRoleNames, user } = useAuth();
+  const navigate = useNavigate();
+  const { userRoleNames, userPermissionNames, user } = useAuth();
   const toast = useToast();
   const toastRef = useRef(toast);
 
@@ -70,8 +152,8 @@ const HomePage: React.FC = () => {
     toastRef.current = toast;
   }, [toast]);
 
-  const isProfessor = useMemo(
-    () => isProfessorRole(userRoleNames),
+  const isTeacher = useMemo(
+    () => isTeacherRole(userRoleNames),
     [userRoleNames],
   );
   const isSuperUser = useMemo(
@@ -80,23 +162,24 @@ const HomePage: React.FC = () => {
   );
 
   const [loading, setLoading] = useState(true);
-  const [saving, setSaving] = useState(false);
+  const saving = false;
   const [catalog, setCatalog] = useState<GlobalFilterCatalog | null>(null);
+  const superSnapshot = useOperationalContextSnapshot();
   const [fixedCareer, setFixedCareer] = useState<GlobalFilterCareer | null>(
     null,
   );
   const [cycleId, setCycleId] = useState("");
   const [processId, setProcessId] = useState("");
-  const [professorMetrics, setProfessorMetrics] =
-    useState<ProfessorDashboardMetrics>({
-      activeAssignments: 0,
-      totalRequests: 0,
-      reviewedRequests: 0,
-      pendingRequests: 0,
-      approvedRequests: 0,
-      rejectedRequests: 0,
-    });
-  const [superMetrics, setSuperMetrics] = useState<SuperUserDashboardMetrics>({
+  const [, setTeacherMetrics] = useState<TeacherDashboardMetrics>({
+    activeAssignments: 0,
+    completedAssignments: 0,
+    totalRequests: 0,
+    reviewedRequests: 0,
+    pendingRequests: 0,
+    approvedRequests: 0,
+    rejectedRequests: 0,
+  });
+  const [, setSuperMetrics] = useState<SuperUserDashboardMetrics>({
     usersTotal: 0,
     usersActive: 0,
     usersInactive: 0,
@@ -108,24 +191,6 @@ const HomePage: React.FC = () => {
     rejectedRequests: 0,
     auditTotal: 0,
   });
-  const [superRecentLogs, setSuperRecentLogs] = useState<AuditLog[]>([]);
-  const [professorNow, setProfessorNow] = useState<Date>(() => new Date());
-
-  const professorDateTimeLabel = useMemo(() => {
-    const timeLabel = new Intl.DateTimeFormat(undefined, {
-      hour: "numeric",
-      minute: "2-digit",
-    }).format(professorNow);
-
-    const dayLabel = new Intl.DateTimeFormat(undefined, {
-      weekday: "long",
-      day: "numeric",
-      month: "long",
-    }).format(professorNow);
-
-    return `Son las ${timeLabel} del ${dayLabel}`;
-  }, [professorNow]);
-
   const loadSuperUserDashboard = async () => {
     try {
       const [
@@ -161,7 +226,7 @@ const HomePage: React.FC = () => {
           page: 1,
           per_page: 1,
         }),
-        auditLogService.getAuditLogs({ page: 1, per_page: 8 }),
+        auditLogService.getAuditLogs({ page: 1, per_page: 1 }),
       ]);
 
       const totalUsers = users.length;
@@ -183,8 +248,6 @@ const HomePage: React.FC = () => {
         rejectedRequests: rejectedTrad.meta.total + rejectedFlex.meta.total,
         auditTotal: auditResponse.total,
       });
-
-      setSuperRecentLogs(auditResponse.data);
     } catch {
       toastRef.current.error(
         "No se pudo cargar el tablero TI con datos reales.",
@@ -194,17 +257,7 @@ const HomePage: React.FC = () => {
     }
   };
 
-  useEffect(() => {
-    const intervalId = window.setInterval(() => {
-      setProfessorNow(new Date());
-    }, 30000);
-
-    return () => {
-      window.clearInterval(intervalId);
-    };
-  }, []);
-
-  const getProfessorUserId = (): number | null => {
+  const getTeacherUserId = (): number | null => {
     const userWithOptionalId = user as {
       usuario_id?: number;
       id?: number;
@@ -228,8 +281,8 @@ const HomePage: React.FC = () => {
     ).length;
   };
 
-  const loadProfessorDashboard = async () => {
-    const userId = getProfessorUserId();
+  const loadTeacherDashboard = async () => {
+    const userId = getTeacherUserId();
     if (!userId) {
       return;
     }
@@ -248,10 +301,20 @@ const HomePage: React.FC = () => {
       ]);
 
       const activeTraditionalAssignments = traditionalAssignments.filter(
-        (assignment) => assignment.estado !== "completado",
+        (assignment) =>
+          (assignment.estado ?? "").toLowerCase() !== "completado",
       ).length;
       const activeFlexibleAssignments = flexibleAssignments.filter(
-        (assignment) => assignment.estado.toLowerCase() !== "completado",
+        (assignment) =>
+          (assignment.estado ?? "").toLowerCase() !== "completado",
+      ).length;
+      const completedTraditionalAssignments = traditionalAssignments.filter(
+        (assignment) =>
+          (assignment.estado ?? "").toLowerCase() === "completado",
+      ).length;
+      const completedFlexibleAssignments = flexibleAssignments.filter(
+        (assignment) =>
+          (assignment.estado ?? "").toLowerCase() === "completado",
       ).length;
 
       const allRequests = [
@@ -259,9 +322,11 @@ const HomePage: React.FC = () => {
         ...flexibleRequests.data,
       ];
 
-      setProfessorMetrics({
+      setTeacherMetrics({
         activeAssignments:
           activeTraditionalAssignments + activeFlexibleAssignments,
+        completedAssignments:
+          completedTraditionalAssignments + completedFlexibleAssignments,
         totalRequests: allRequests.length,
         reviewedRequests: calculateReviewedRequests(allRequests),
         pendingRequests: countByStatus(allRequests, "pendiente"),
@@ -269,13 +334,13 @@ const HomePage: React.FC = () => {
         rejectedRequests: countByStatus(allRequests, "rechazada"),
       });
     } catch {
-      toastRef.current.error("No se pudo cargar el resumen del profesor.");
+      toastRef.current.error("No se pudo cargar el resumen del docente.");
     }
   };
 
   useEffect(() => {
-    if (isProfessor) {
-      void loadProfessorDashboard();
+    if (isTeacher) {
+      void loadTeacherDashboard();
       setLoading(false);
       return;
     }
@@ -332,7 +397,7 @@ const HomePage: React.FC = () => {
     return () => {
       mounted = false;
     };
-  }, [isProfessor, isSuperUser]);
+  }, [isTeacher, isSuperUser]);
 
   useEffect(() => {
     if (!isSuperUser) {
@@ -358,12 +423,6 @@ const HomePage: React.FC = () => {
     );
   }, [catalog, fixedCareer]);
 
-  const cycleOptions = useMemo<SelectOption[]>(() => {
-    return availableCycles.map((cycle) =>
-      toOption(cycle.ciclo_acreditacion_id, cycle.nombre),
-    );
-  }, [availableCycles]);
-
   const availableProcesses = useMemo(() => {
     if (!catalog || !cycleId) {
       return [];
@@ -373,12 +432,6 @@ const HomePage: React.FC = () => {
       (process) => process.ciclo_acreditacion_id === Number(cycleId),
     );
   }, [catalog, cycleId]);
-
-  const processOptions = useMemo<SelectOption[]>(() => {
-    return availableProcesses.map((process) =>
-      toOption(process.proceso_id, process.tipo_proceso),
-    );
-  }, [availableProcesses]);
 
   const selectedCycleLabel = useMemo(() => {
     return (
@@ -396,8 +449,255 @@ const HomePage: React.FC = () => {
     );
   }, [availableProcesses, processId]);
 
-  const cycleRequired = availableCycles.length > 0;
-  const processRequired = Boolean(cycleId) && availableProcesses.length > 0;
+  const dashboardQuickCards = useMemo(() => {
+    const routeMeta: Record<string, Omit<DashboardQuickCard, "href">> = {
+      [ROUTES.EVIDENCE_MY]: {
+        title: "Mis Entregas",
+        description: "Revisa y gestiona tus entregables asignados.",
+        icon: (
+          <span className="text-azul-una">
+            {getIconByName("myEvidences", "xl")}
+          </span>
+        ),
+        cardClassName: "border border-azul-una/20 bg-azul-una/5",
+        titleClassName: "text-azul-una",
+      },
+      [ROUTES.EVIDENCE_ASSIGN]: {
+        title: "Asignar Entregables",
+        description: "Administra asignaciones por criterio y proceso.",
+        icon: (
+          <span className="text-azul-una">
+            {getIconByName("assignEvidence", "xl")}
+          </span>
+        ),
+        cardClassName: "border border-azul-una/20 bg-azul-una/5",
+        titleClassName: "text-azul-una",
+      },
+      [ROUTES.EVIDENCE_SEARCH]: {
+        title: "Buscar Entregables",
+        description: "Consulta evidencia dentro del contexto activo.",
+        icon: (
+          <span className="text-verde">{getIconByName("search", "xl")}</span>
+        ),
+        cardClassName: "border border-verde/20 bg-verde/5",
+        titleClassName: "text-verde",
+      },
+      [ROUTES.EXTENSION_REQUESTS_MY]: {
+        title: "Mis Solicitudes",
+        description: "Da seguimiento al estado de tus solicitudes.",
+        icon: (
+          <span className="text-rojo-una">{getIconByName("clock", "xl")}</span>
+        ),
+        cardClassName: "border border-rojo-una/20 bg-rojo-una/5",
+        titleClassName: "text-rojo-una",
+      },
+      [ROUTES.EXTENSION_REQUESTS_MANAGE]: {
+        title: "Gestionar Solicitudes",
+        description: "Aprueba o rechaza solicitudes de ampliación.",
+        icon: (
+          <span className="text-rojo-una">{getIconByName("clock", "xl")}</span>
+        ),
+        cardClassName: "border border-rojo-una/20 bg-rojo-una/5",
+        titleClassName: "text-rojo-una",
+      },
+      [ROUTES.BLOCK_APPROVAL]: {
+        title: "Aprobación de Bloques",
+        description: "Valida el avance por bloque y criterios.",
+        icon: (
+          <span className="text-verde">
+            {getIconByName("check-circle", "xl")}
+          </span>
+        ),
+        cardClassName: "border border-verde/20 bg-verde/5",
+        titleClassName: "text-verde",
+      },
+      [ROUTES.ACCREDITATION_CYCLES]: {
+        title: "Ciclos de Acreditación",
+        description: "Configura y administra ciclos de trabajo.",
+        icon: (
+          <span className="text-azul-una">
+            {getIconByName("calendar", "xl")}
+          </span>
+        ),
+        cardClassName: "border border-azul-una/20 bg-azul-una/5",
+        titleClassName: "text-azul-una",
+      },
+      [ROUTES.ACCREDITATION_PROCESSES]: {
+        title: "Procesos de Acreditación",
+        description: "Gestiona procesos según ciclo y carrera.",
+        icon: (
+          <span className="text-verde">
+            {getIconByName("box-archive", "xl")}
+          </span>
+        ),
+        cardClassName: "border border-verde/20 bg-verde/5",
+        titleClassName: "text-verde",
+      },
+      [ROUTES.STRUCTURE_MODELS]: {
+        title: "Modelos de Acreditación",
+        description: "Mantén la estructura base de evaluación.",
+        icon: (
+          <span className="text-azul-una">{getIconByName("nut", "xl")}</span>
+        ),
+        cardClassName: "border border-azul-una/20 bg-azul-una/5",
+        titleClassName: "text-azul-una",
+      },
+      [ROUTES.USERS]: {
+        title: "Usuarios",
+        description: "Gestiona cuentas y estados de acceso.",
+        icon: (
+          <span className="text-warning">{getIconByName("user", "xl")}</span>
+        ),
+        cardClassName: "border border-warning/20 bg-warning/10",
+        titleClassName: "text-warning",
+      },
+      [ROUTES.ROLES]: {
+        title: "Roles",
+        description: "Configura perfiles y permisos del sistema.",
+        icon: (
+          <span className="text-warning">{getIconByName("shield", "xl")}</span>
+        ),
+        cardClassName: "border border-warning/20 bg-warning/10",
+        titleClassName: "text-warning",
+      },
+      [ROUTES.AUDIT_LOG]: {
+        title: "Bitácora",
+        description: "Audita actividad y trazabilidad del sistema.",
+        icon: (
+          <span className="text-negro-una">
+            {getIconByName("edit-element", "xl")}
+          </span>
+        ),
+        cardClassName: "border border-negro-una/20 bg-negro-una/5",
+        titleClassName: "text-negro-una",
+      },
+      [ROUTES.REPORTS]: {
+        title: "Gestión de Enlaces",
+        description: "Administra enlaces e información pública.",
+        icon: (
+          <span className="text-info">{getIconByName("reports", "xl")}</span>
+        ),
+        cardClassName: "border border-info/20 bg-info/10",
+        titleClassName: "text-info",
+      },
+      [ROUTES.SINAES_ADMIN]: {
+        title: "Informes de Acreditación",
+        description: "Consulta y prepara informes institucionales.",
+        icon: <span className="text-info">{getIconByName("medal", "xl")}</span>,
+        cardClassName: "border border-info/20 bg-info/10",
+        titleClassName: "text-info",
+      },
+      [ROUTES.CONTEXT_SELECTOR]: {
+        title: "Cambiar Contexto",
+        description: "Actualiza carrera, ciclo y proceso activos.",
+        icon: (
+          <SystemIcons.structure.hierarchy className="w-8 h-8 text-negro-una" />
+        ),
+        cardClassName: "border border-negro-una/20 bg-negro-una/5",
+        titleClassName: "text-negro-una",
+      },
+    };
+
+    const contextCycleId =
+      superSnapshot.cycleId ?? (cycleId ? Number(cycleId) : null);
+    const contextProcessId =
+      superSnapshot.processId ?? (processId ? Number(processId) : null);
+
+    const visibleItems = getNavigationItems({
+      roles: userRoleNames,
+      permissions: userPermissionNames,
+      context: {
+        hasOperationalContext: true,
+        cycleId: contextCycleId,
+        processId: contextProcessId,
+      },
+    });
+
+    const visibleRoutes = new Set(
+      visibleItems
+        .flatMap((item) =>
+          item.children && item.children.length > 0 ? item.children : [item],
+        )
+        .map((item) => item.href)
+        .filter((href): href is string => Boolean(href && href !== "#")),
+    );
+
+    if (!isTeacher) {
+      visibleRoutes.add(ROUTES.CONTEXT_SELECTOR);
+    }
+
+    const priorities = isSuperUser
+      ? [
+          ROUTES.USERS,
+          ROUTES.ROLES,
+          ROUTES.AUDIT_LOG,
+          ROUTES.STRUCTURE_MODELS,
+          ROUTES.ACCREDITATION_CYCLES,
+          ROUTES.ACCREDITATION_PROCESSES,
+          ROUTES.REPORTS,
+          ROUTES.SINAES_ADMIN,
+          ROUTES.CONTEXT_SELECTOR,
+        ]
+      : isTeacher
+        ? [
+            ROUTES.EVIDENCE_MY,
+            ROUTES.EXTENSION_REQUESTS_MY,
+            ROUTES.EVIDENCE_SEARCH,
+          ]
+        : [
+            ROUTES.EVIDENCE_ASSIGN,
+            ROUTES.EVIDENCE_MY,
+            ROUTES.EXTENSION_REQUESTS_MANAGE,
+            ROUTES.EXTENSION_REQUESTS_MY,
+            ROUTES.EVIDENCE_SEARCH,
+            ROUTES.BLOCK_APPROVAL,
+            ROUTES.ACCREDITATION_PROCESSES,
+            ROUTES.ACCREDITATION_CYCLES,
+            ROUTES.REPORTS,
+            ROUTES.SINAES_ADMIN,
+            ROUTES.CONTEXT_SELECTOR,
+          ];
+
+    return priorities
+      .filter((href) => visibleRoutes.has(href) && Boolean(routeMeta[href]))
+      .slice(0, isSuperUser ? 6 : 4)
+      .map((href) => ({ href, ...routeMeta[href] }));
+  }, [
+    cycleId,
+    isTeacher,
+    isSuperUser,
+    processId,
+    superSnapshot.cycleId,
+    superSnapshot.processId,
+    userPermissionNames,
+    userRoleNames,
+  ]);
+
+  const superContextLabels = useMemo(() => {
+    const careerFromSnapshot = superSnapshot.careerLabel ?? "No seleccionado";
+    const campusFromSnapshot = superSnapshot.campusLabel ?? null;
+
+    if (campusFromSnapshot) {
+      return {
+        career: careerFromSnapshot,
+        campus: campusFromSnapshot,
+      };
+    }
+
+    if (careerFromSnapshot.includes(" - ")) {
+      const [careerPart, ...campusParts] = careerFromSnapshot.split(" - ");
+      const parsedCampus = campusParts.join(" - ").trim();
+      return {
+        career: careerPart.trim() || "No seleccionado",
+        campus: parsedCampus || "No seleccionado",
+      };
+    }
+
+    return {
+      career: careerFromSnapshot,
+      campus: "No seleccionado",
+    };
+  }, [superSnapshot.careerLabel, superSnapshot.campusLabel]);
 
   useEffect(() => {
     if (!cycleId) {
@@ -428,134 +728,45 @@ const HomePage: React.FC = () => {
     }
   }, [availableProcesses, processId]);
 
-  const persistContextSelection = async (
-    nextCycleId: string,
-    nextProcessId: string,
-  ) => {
-    if (!fixedCareer) {
-      toastRef.current.error("No tiene una carrera asociada.");
-      return;
-    }
-
-    setSaving(true);
-
-    try {
-      const selectedCycle =
-        availableCycles.find(
-          (cycle) => String(cycle.ciclo_acreditacion_id) === nextCycleId,
-        ) ?? null;
-      const selectedProcess =
-        availableProcesses.find(
-          (process) => String(process.proceso_id) === nextProcessId,
-        ) ?? null;
-
-      await globalFilterContextService.updateContext({
-        career_campus_id: fixedCareer.carrera_sede_id,
-        ciclo_acreditacion_id: nextCycleId ? Number(nextCycleId) : null,
-        proceso_id: nextProcessId ? Number(nextProcessId) : null,
-      });
-
-      globalFilterContextService.syncContextSnapshot({
-        careerCampusId: fixedCareer.carrera_sede_id,
-        cycleId: nextCycleId ? Number(nextCycleId) : null,
-        processId: nextProcessId ? Number(nextProcessId) : null,
-        careerLabel: `${fixedCareer.carrera_nombre} - ${fixedCareer.sede_nombre}`,
-        campusLabel: fixedCareer.sede_nombre,
-        cycleLabel: selectedCycle?.nombre ?? null,
-        processLabel: selectedProcess?.tipo_proceso ?? null,
-      });
-    } catch {
-      toastRef.current.error("No se pudo aplicar el contexto.");
-    } finally {
-      setSaving(false);
-    }
-  };
-
-  if (isProfessor) {
+  if (isTeacher) {
     return (
       <ScreenContainer variant="full-width" className="space-y-6 pt-8 md:pt-12">
-        <div className="text-center py-2">
-          <h1 className="text-4xl font-bold text-negro-una leading-tight">
-            Sistema de Acreditación y Autoevaluación de Carreras
+        <div className="w-full max-w-6xl mx-auto text-center">
+          <h1 className="text-3xl md:text-4xl font-bold text-negro-una leading-tight">
+            Panel de Inicio
           </h1>
-          <p className="mt-2 text-base font-semibold text-gris-una">
-            {professorDateTimeLabel}
-          </p>
         </div>
 
-        <div className="max-w-6xl mx-auto w-full">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 place-items-center">
-            <Card className="w-full max-w-sm min-h-56 p-5 border border-azul-una/20 bg-azul-una/5 text-center flex flex-col items-center justify-center">
-              <p className="text-xs uppercase tracking-wide text-azul-una mb-2">
-                Asignaciones activas
-              </p>
-              <p className="text-5xl font-bold text-negro-una leading-none">
-                {professorMetrics.activeAssignments}
-              </p>
-              <p className="text-sm text-gris-una mt-3">
-                Entregables que aun requieren trabajo.
-              </p>
-            </Card>
-
-            <Card className="w-full max-w-sm min-h-56 p-5 border border-rojo-una/20 bg-rojo-una/5 text-center flex flex-col items-center justify-center">
-              <p className="text-xs uppercase tracking-wide text-rojo-una mb-2">
-                Mis solicitudes
-              </p>
-              <p className="text-5xl font-bold text-negro-una leading-none">
-                {professorMetrics.totalRequests}
-              </p>
-              <p className="text-sm text-gris-una mt-3">
-                Solicitudes de ampliacion enviadas.
-              </p>
-            </Card>
-
-            <Card className="w-full max-w-sm min-h-56 p-5 border border-verde/20 bg-verde/5 text-center flex flex-col items-center justify-center">
-              <p className="text-xs uppercase tracking-wide text-verde mb-2">
-                Retroalimentacion
-              </p>
-              <p className="text-5xl font-bold text-negro-una leading-none">
-                {professorMetrics.reviewedRequests}
-              </p>
-              <p className="text-sm text-gris-una mt-3">
-                Solicitudes ya revisadas por encargados.
-              </p>
-            </Card>
-
-            <Card className="w-full max-w-sm min-h-56 p-5 border border-warning/20 bg-warning/10 text-center flex flex-col items-center justify-center">
-              <p className="text-xs uppercase tracking-wide text-warning mb-2">
-                Pendientes
-              </p>
-              <p className="text-5xl font-bold text-negro-una leading-none">
-                {professorMetrics.pendingRequests}
-              </p>
-              <p className="text-sm text-gris-una mt-3">
-                Solicitudes en espera de respuesta.
-              </p>
-            </Card>
-
-            <Card className="w-full max-w-sm min-h-56 p-5 border border-info/20 bg-info/10 text-center flex flex-col items-center justify-center">
-              <p className="text-xs uppercase tracking-wide text-info mb-2">
-                Aprobadas
-              </p>
-              <p className="text-5xl font-bold text-negro-una leading-none">
-                {professorMetrics.approvedRequests}
-              </p>
-              <p className="text-sm text-gris-una mt-3">
-                Solicitudes autorizadas por encargado.
-              </p>
-            </Card>
-
-            <Card className="w-full max-w-sm min-h-56 p-5 border border-rojo-una-2/25 bg-rojo-una-2/10 text-center flex flex-col items-center justify-center">
-              <p className="text-xs uppercase tracking-wide text-rojo-una-2 mb-2">
-                Rechazadas
-              </p>
-              <p className="text-5xl font-bold text-negro-una leading-none">
-                {professorMetrics.rejectedRequests}
-              </p>
-              <p className="text-sm text-gris-una mt-3">
-                Solicitudes rechazadas por encargado.
-              </p>
-            </Card>
+        <div className="max-w-6xl mx-auto w-full mt-8 md:mt-12 lg:mt-16">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {dashboardQuickCards.map((card) => (
+              <div
+                key={card.href}
+                className="min-h-48 cursor-pointer"
+                onClick={() => navigate(card.href)}
+              >
+                <Card
+                  className={`h-full p-5 hover:shadow-xl transition ${card.cardClassName}`}
+                >
+                  <div className="h-full flex items-start justify-between gap-4">
+                    <div className="h-full flex flex-col justify-center">
+                      <p
+                        className={`text-xs uppercase tracking-wide ${card.titleClassName}`}
+                      >
+                        Acceso rápido
+                      </p>
+                      <p className="mt-3 text-xl font-bold text-negro-una">
+                        {card.title}
+                      </p>
+                      <p className="text-sm text-gris-una mt-2">
+                        {card.description}
+                      </p>
+                    </div>
+                    {card.icon}
+                  </div>
+                </Card>
+              </div>
+            ))}
           </div>
         </div>
       </ScreenContainer>
@@ -564,131 +775,84 @@ const HomePage: React.FC = () => {
 
   if (isSuperUser) {
     return (
-      <ScreenContainer variant="full-width" className="space-y-6 pt-8 md:pt-12">
-        <div className="text-center py-2">
-          <h1 className="text-4xl font-bold text-negro-una leading-tight">
-            Sistema de Acreditación y Autoevaluación de Carreras
+      <ScreenContainer variant="full-width" className="space-y-6 pt-4 md:pt-6">
+        <ContextMiniHeader className="mb-2" />
+        <div className="w-full max-w-screen-2xl mx-auto px-1 md:px-2 pt-3 md:pt-4 text-center">
+          <h1 className="text-3xl md:text-4xl font-bold text-negro-una leading-tight">
+            Panel de Inicio
           </h1>
-          <p className="mt-2 text-base font-semibold text-gris-una">
-            {professorDateTimeLabel}
-          </p>
-          <p className="mt-1 text-sm text-gris-una">
-            Tablero técnico TI (datos reales)
-          </p>
         </div>
 
-        <div className="max-w-6xl mx-auto w-full">
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
-            <Card className="lg:col-span-8 p-5 border border-negro-una bg-negro-una text-blanco-una">
-              <div className="flex items-center justify-between mb-4 font-mono">
-                <p className="text-xs tracking-[0.25em] text-blanco-una/70 uppercase">
-                  BITACORA_RECIENTE
-                </p>
-                <p className="text-xs text-blanco-una/70">
-                  total registros: {superMetrics.auditTotal}
-                </p>
-              </div>
-
-              <div className="rounded-corner border border-blanco-una/20 p-4 bg-negro-una-2/60 font-mono text-xs space-y-2 max-h-80 overflow-auto">
-                {superRecentLogs.length === 0 ? (
-                  <p className="text-blanco-una/70">
-                    Sin eventos para mostrar.
-                  </p>
-                ) : (
-                  superRecentLogs.map((auditLog) => (
-                    <p
-                      key={auditLog.bitacora_id}
-                      className="text-blanco-una/85 wrap-break-word"
-                    >
-                      [{new Date(auditLog.fecha_hora).toLocaleString()}]{" "}
-                      {auditLog.modulo ?? "sistema"} -{" "}
-                      {auditLog.tipo_accion.descripcion} -{" "}
-                      {auditLog.usuario?.email ?? "usuario-desconocido"}
+        <div className="max-w-screen-2xl mx-auto w-full px-1 md:px-2 flex items-start justify-center">
+          <div className="w-full max-w-screen-xl grid grid-cols-1 lg:grid-cols-12 gap-4 items-stretch">
+            <Card className="relative lg:col-span-3 w-full h-full min-h-[22rem] p-4 pb-14 border border-azul-una/20 bg-azul-una/5 shadow-sm">
+              <p className="text-xs uppercase tracking-wide text-azul-una mb-3">
+                Espacio de Trabajo
+              </p>
+              <div className="space-y-2">
+                {[
+                  { label: "Carrera", value: superContextLabels.career },
+                  { label: "Sede", value: superContextLabels.campus },
+                  { label: "Ciclo", value: superSnapshot.cycleLabel },
+                  { label: "Proceso", value: superSnapshot.processLabel },
+                ].map((row) => (
+                  <div
+                    key={row.label}
+                    className="pb-2 border-b border-azul-una/10 last:border-b-0"
+                  >
+                    <p className="text-xs uppercase tracking-wide text-gris-una">
+                      {row.label}
                     </p>
-                  ))
-                )}
+                    <p className="mt-0.5 text-base font-semibold text-negro-una leading-snug">
+                      {row.value ?? "No seleccionado"}
+                    </p>
+                  </div>
+                ))}
               </div>
+              <ButtonWithTooltip
+                tooltip="Abre el selector para ajustar ciclo y proceso de trabajo."
+                tooltipPosition="top"
+                variant="secondary"
+                size="sm"
+                className="absolute bottom-3 right-3 !bg-negro-una !text-blanco-una hover:!bg-negro-una/90 !shadow-none hover:!shadow-none px-3 py-1.5"
+                onClick={() => navigate(ROUTES.CONTEXT_SELECTOR)}
+              >
+                Cambiar
+              </ButtonWithTooltip>
             </Card>
 
-            <Card className="lg:col-span-4 p-5 border border-azul-una/20 bg-azul-una/5">
-              <p className="text-xs uppercase tracking-[0.2em] text-azul-una mb-3">
-                SUPERVISION
-              </p>
-              <div className="space-y-3 text-sm">
-                <div className="flex items-center justify-between">
-                  <span className="text-gris-una">Usuarios</span>
-                  <span className="font-semibold text-negro-una">
-                    {superMetrics.usersTotal}
-                  </span>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-gris-una">Usuarios activos</span>
-                  <span className="font-semibold text-negro-una">
-                    {superMetrics.usersActive}
-                  </span>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-gris-una">Usuarios inactivos</span>
-                  <span className="font-semibold text-negro-una">
-                    {superMetrics.usersInactive}
-                  </span>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-gris-una">Roles</span>
-                  <span className="font-semibold text-negro-una">
-                    {superMetrics.rolesTotal}
-                  </span>
-                </div>
+            <div className="lg:col-span-9 h-full">
+              <div className="h-full grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 auto-rows-fr">
+                {dashboardQuickCards.map((card) => (
+                  <div
+                    key={card.href}
+                    className="h-full min-h-[10.5rem] cursor-pointer"
+                    onClick={() => navigate(card.href)}
+                  >
+                    <Card
+                      className={`h-full p-4 hover:shadow-xl transition ${card.cardClassName}`}
+                    >
+                      <div className="h-full flex items-start justify-between gap-4">
+                        <div className="h-full flex flex-col justify-center">
+                          <p
+                            className={`text-xs uppercase tracking-wide ${card.titleClassName}`}
+                          >
+                            Acceso rápido
+                          </p>
+                          <p className="mt-2 text-lg font-bold text-negro-una">
+                            {card.title}
+                          </p>
+                          <p className="text-sm text-gris-una mt-2">
+                            {card.description}
+                          </p>
+                        </div>
+                        {card.icon}
+                      </div>
+                    </Card>
+                  </div>
+                ))}
               </div>
-            </Card>
-
-            <Card className="lg:col-span-4 p-4 border border-verde/20 bg-verde/5">
-              <p className="text-xs uppercase tracking-wide text-verde mb-2">
-                Estructura
-              </p>
-              <p className="text-4xl font-bold text-negro-una">
-                {superMetrics.careersTotal}
-              </p>
-              <p className="text-sm text-gris-una mt-2">
-                carreras/sedes registradas
-              </p>
-              <p className="text-sm text-negro-una mt-2">
-                Ciclos:{" "}
-                <span className="font-semibold">
-                  {superMetrics.cyclesTotal}
-                </span>
-              </p>
-              <p className="text-sm text-negro-una">
-                Procesos:{" "}
-                <span className="font-semibold">
-                  {superMetrics.processesTotal}
-                </span>
-              </p>
-            </Card>
-
-            <Card className="lg:col-span-4 p-4 border border-warning/20 bg-warning/10">
-              <p className="text-xs uppercase tracking-wide text-warning mb-2">
-                Solicitudes pendientes
-              </p>
-              <p className="text-4xl font-bold text-negro-una">
-                {superMetrics.pendingRequests}
-              </p>
-              <p className="text-sm text-gris-una mt-2">
-                requieren revisión de encargados
-              </p>
-            </Card>
-
-            <Card className="lg:col-span-4 p-4 border border-rojo-una/20 bg-rojo-una/5">
-              <p className="text-xs uppercase tracking-wide text-rojo-una mb-2">
-                Solicitudes rechazadas
-              </p>
-              <p className="text-4xl font-bold text-negro-una">
-                {superMetrics.rejectedRequests}
-              </p>
-              <p className="text-sm text-gris-una mt-2">
-                trazabilidad para análisis técnico/funcional
-              </p>
-            </Card>
+            </div>
           </div>
         </div>
       </ScreenContainer>
@@ -705,59 +869,75 @@ const HomePage: React.FC = () => {
 
   return (
     <ScreenContainer>
-      <PageHeader
-        title="Panel inicial"
-        description="Seleccione el contexto de trabajo para navegar y consultar solo la informacion correspondiente."
-        className="mb-4"
-        breadcrumbMode="none"
-      />
+      <ContextMiniHeader />
+      <div className="w-full mb-4 pt-2 md:pt-3 text-center">
+        <h1 className="text-3xl md:text-4xl font-bold text-negro-una leading-tight">
+          Panel de Inicio
+        </h1>
+      </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
-        <Card className="lg:col-span-5 p-5 sm:p-6 border border-azul-una/20 bg-linear-to-br from-azul-una/10 via-blanco-una to-rojo-una/5 shadow-sm">
-          <p className="text-xs font-semibold uppercase tracking-[0.25em] text-azul-una mb-3">
-            Resumen
-          </p>
-          <h2 className="text-2xl font-bold text-negro-una leading-tight mb-2">
-            Bienvenido al panel de trabajo
-          </h2>
-          <p className="text-sm text-gris-una leading-relaxed mb-5">
-            Desde aquí se define el contexto operativo y se accede a las vistas
-            generales del sistema.
+        <Card className="relative lg:col-span-4 min-h-56 p-4 pb-14 border border-azul-una/20 bg-azul-una/5 shadow-sm self-start">
+          <p className="text-xs uppercase tracking-wide text-azul-una mb-3">
+            Espacio de Trabajo
           </p>
 
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-            <div className="rounded-corner border border-azul-una/15 bg-white/80 p-3">
-              <p className="text-xs uppercase tracking-wide text-azul-una">
-                Ciclos
+          <div className="space-y-2">
+            <div className="pb-2 border-b border-azul-una/10">
+              <p className="text-xs uppercase tracking-wide text-gris-una">
+                Carrera
               </p>
-              <p className="mt-1 text-xl font-semibold text-negro-una">
-                {availableCycles.length}
-              </p>
-            </div>
-            <div className="rounded-corner border border-rojo-una/15 bg-white/80 p-3">
-              <p className="text-xs uppercase tracking-wide text-rojo-una">
-                Procesos
-              </p>
-              <p className="mt-1 text-xl font-semibold text-negro-una">
-                {availableProcesses.length}
+              <p className="mt-0.5 text-base font-semibold text-negro-una leading-snug">
+                {fixedCareer ? fixedCareer.carrera_nombre : "No seleccionado"}
               </p>
             </div>
-            <div className="rounded-corner border border-verde/15 bg-white/80 p-3">
-              <p className="text-xs uppercase tracking-wide text-verde">
-                Estado
+            <div className="pb-2 border-b border-azul-una/10">
+              <p className="text-xs uppercase tracking-wide text-gris-una">
+                Sede
               </p>
-              <p className="mt-1 text-sm font-semibold text-negro-una">
-                {saving
-                  ? "Actualizando"
-                  : cycleId || processId
-                    ? "Activo"
-                    : "Listo"}
+              <p className="mt-0.5 text-base font-semibold text-negro-una leading-snug">
+                {fixedCareer ? fixedCareer.sede_nombre : "No seleccionado"}
+              </p>
+            </div>
+            <div className="pb-2 border-b border-azul-una/10">
+              <p className="text-xs uppercase tracking-wide text-gris-una">
+                Ciclo
+              </p>
+              <p className="mt-0.5 text-base font-semibold text-negro-una leading-snug">
+                {selectedCycleLabel}
+              </p>
+            </div>
+            <div>
+              <p className="text-xs uppercase tracking-wide text-gris-una">
+                Proceso
+              </p>
+              <p className="mt-0.5 text-base font-semibold text-negro-una leading-snug">
+                {selectedProcessLabel}
               </p>
             </div>
           </div>
+
+          {(saving || !(cycleId || processId)) && (
+            <p className="text-xs text-gris-una mt-3">
+              {saving
+                ? "Actualizando contexto..."
+                : "Selecciona tu contexto para comenzar."}
+            </p>
+          )}
+
+          <ButtonWithTooltip
+            tooltip="Abre el selector para ajustar ciclo y proceso de trabajo."
+            tooltipPosition="top"
+            variant="secondary"
+            size="sm"
+            className="absolute bottom-3 right-3 !bg-negro-una !text-blanco-una hover:!bg-negro-una/90 !shadow-none hover:!shadow-none px-3 py-1.5"
+            onClick={() => navigate(ROUTES.CONTEXT_SELECTOR)}
+          >
+            Cambiar
+          </ButtonWithTooltip>
         </Card>
 
-        <div className="lg:col-span-7 space-y-4">
+        <div className="lg:col-span-8 space-y-4">
           {!fixedCareer ? (
             <Card className="p-5 border border-rojo-una/20 bg-rojo-una/5">
               <p className="text-sm font-semibold text-rojo-una-2">
@@ -766,148 +946,36 @@ const HomePage: React.FC = () => {
               </p>
             </Card>
           ) : (
-            <>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <Card className="p-4 border border-azul-una/20 bg-azul-una/5">
-                  <p className="text-xs uppercase tracking-wide text-azul-una mb-2">
-                    Carrera
-                  </p>
-                  <p className="text-base font-semibold text-negro-una">
-                    {fixedCareer.carrera_nombre}
-                  </p>
-                </Card>
-
-                <Card className="p-4 border border-rojo-una/20 bg-rojo-una/5">
-                  <p className="text-xs uppercase tracking-wide text-rojo-una mb-2">
-                    Sede
-                  </p>
-                  <p className="text-base font-semibold text-negro-una">
-                    {fixedCareer.sede_nombre}
-                  </p>
-                </Card>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <Card className="p-4 border border-gris-light/40 space-y-3">
-                  <div>
-                    <p className="text-xs uppercase tracking-wide text-gris-una">
-                      Paso 1
-                    </p>
-                    <h3 className="text-sm font-semibold text-negro-una mt-1">
-                      Seleccione ciclo
-                    </h3>
-                  </div>
-
-                  <CustomSelect
-                    label="Ciclo"
-                    placeholder="Seleccione un ciclo"
-                    options={cycleOptions}
-                    value={cycleId}
-                    disabled={cycleOptions.length === 0}
-                    onChange={(value) => {
-                      setCycleId(value);
-                      setProcessId("");
-                      void persistContextSelection(value, "");
-                    }}
-                  />
-
-                  {!cycleRequired && (
-                    <p className="text-xs text-gris-una">
-                      No hay ciclos disponibles para esta carrera. Puede
-                      continuar sin seleccionar ciclo.
-                    </p>
-                  )}
-                </Card>
-
-                <Card className="p-4 border border-gris-light/40 space-y-3">
-                  <div>
-                    <p className="text-xs uppercase tracking-wide text-gris-una">
-                      Paso 2
-                    </p>
-                    <h3 className="text-sm font-semibold text-negro-una mt-1">
-                      Seleccione proceso
-                    </h3>
-                  </div>
-
-                  <CustomSelect
-                    label="Proceso"
-                    placeholder="Seleccione un proceso"
-                    options={processOptions}
-                    value={processId}
-                    disabled={!cycleId || !processRequired}
-                    onChange={(value) => {
-                      setProcessId(value);
-                      void persistContextSelection(cycleId, value);
-                    }}
-                  />
-
-                  {Boolean(cycleId) && !processRequired && (
-                    <p className="text-xs text-gris-una">
-                      No hay procesos disponibles para el ciclo seleccionado.
-                      Puede continuar sin seleccionar proceso.
-                    </p>
-                  )}
-                </Card>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <Card className="p-4 border border-verde/20 bg-verde/5">
-                  <p className="text-xs uppercase tracking-wide text-verde mb-2">
-                    Estado del contexto
-                  </p>
-                  <p className="text-sm font-semibold text-negro-una">
-                    {saving
-                      ? "Actualizando..."
-                      : cycleId || processId
-                        ? "Configuracion en progreso"
-                        : "Pendiente de seleccion"}
-                  </p>
-                  <p className="text-xs text-gris-una mt-2">
-                    Los cambios se guardan automaticamente.
-                  </p>
-                </Card>
-
-                <Card className="p-4 border border-azul-una/20 bg-azul-una/5">
-                  <p className="text-xs uppercase tracking-wide text-azul-una mb-2">
-                    Disponibilidad
-                  </p>
-                  <p className="text-sm text-negro-una">
-                    Ciclos:{" "}
-                    <span className="font-semibold">
-                      {availableCycles.length}
-                    </span>
-                  </p>
-                  <p className="text-sm text-negro-una mt-1">
-                    Procesos del ciclo:{" "}
-                    <span className="font-semibold">
-                      {availableProcesses.length}
-                    </span>
-                  </p>
-                </Card>
-
-                <Card className="p-4 border border-rojo-una/20 bg-rojo-una/5">
-                  <p className="text-xs uppercase tracking-wide text-rojo-una mb-2">
-                    Seleccion actual
-                  </p>
-                  <p
-                    className="text-sm text-negro-una truncate"
-                    title={selectedCycleLabel}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {dashboardQuickCards.map((card) => (
+                <div
+                  key={card.href}
+                  className="min-h-56 cursor-pointer"
+                  onClick={() => navigate(card.href)}
+                >
+                  <Card
+                    className={`min-h-56 p-5 hover:shadow-xl transition ${card.cardClassName}`}
                   >
-                    Ciclo:{" "}
-                    <span className="font-semibold">{selectedCycleLabel}</span>
-                  </p>
-                  <p
-                    className="text-sm text-negro-una mt-1 truncate"
-                    title={selectedProcessLabel}
-                  >
-                    Proceso:{" "}
-                    <span className="font-semibold">
-                      {selectedProcessLabel}
-                    </span>
-                  </p>
-                </Card>
-              </div>
-            </>
+                    <div className="h-full flex items-start justify-between gap-4">
+                      <div className="h-full flex flex-col justify-center">
+                        <p
+                          className={`text-xs uppercase tracking-wide ${card.titleClassName}`}
+                        >
+                          Acceso rápido
+                        </p>
+                        <p className="mt-3 text-xl font-bold text-negro-una">
+                          {card.title}
+                        </p>
+                        <p className="text-sm text-gris-una mt-2">
+                          {card.description}
+                        </p>
+                      </div>
+                      {card.icon}
+                    </div>
+                  </Card>
+                </div>
+              ))}
+            </div>
           )}
         </div>
       </div>

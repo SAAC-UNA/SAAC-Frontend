@@ -1,29 +1,45 @@
 /**
  * EditUserForm - Formulario para editar roles de usuarios
- * 
+ *
  * Características:
  * - Información del usuario (solo lectura)
  * - MultiSelect para seleccionar roles
  * - Vista previa de permisos por rol
  * - Layout responsivo similar a CreateRoleForm
  * - Integración con hooks de roles
- * 
+ *
  * Props:
  * @param user - Usuario a editar
  * @param onSubmit - Callback ejecutado al guardar exitosamente
  * @param onCancel - Callback ejecutado al cancelar la operación
  */
-import React, { useState, useEffect } from 'react';
-import { Input, CustomSelect, Button, LoadingSpinner, BackendErrorAlert } from '@/components/Ui/Index';
-import { roleService } from '@/Services/RoleService';
-import type { User } from '@/Services/UserService';
-import type { Role, BackendPermission } from '@/Services/RoleService';
-import type { SelectOption } from '@/Components/Ui/Forms/SingleSelect';
-import { TYPOGRAPHY } from '@/Constants/Typography';
+import React, { useState, useEffect } from "react";
+import {
+  Input,
+  CustomSelect,
+  Button,
+  LoadingSpinner,
+  BackendErrorAlert,
+  MultiSelect,
+} from "@/components/Ui/Index";
+import type { MultiSelectOption } from "@/Components/Ui/Index";
+import { roleService } from "@/Services/RoleService";
+import { userService } from "@/Services/UserService";
+import type { User } from "@/Services/UserService";
+import type { Role, BackendPermission } from "@/Services/RoleService";
+import type { SelectOption } from "@/Components/Ui/Forms/SingleSelect";
+import { TYPOGRAPHY } from "@/Constants/Typography";
+import { useAuth } from "@/Context/AuthContext";
 
 interface EditUserFormProps {
   user: User;
-  onSubmit?: (userData: { userId: number; roleName: string; userName: string }) => void;
+  onSubmit?: (userData: {
+    userId: number;
+    roleName: string;
+    userName: string;
+    careerSedeIds: number[];
+    careersChanged: boolean;
+  }) => void;
   onCancel?: () => void;
   /** Ref para que el padre dispare el submit externamente */
   submitRef?: React.MutableRefObject<(() => void) | null>;
@@ -41,41 +57,79 @@ export const EditUserForm: React.FC<EditUserFormProps> = ({
   hideButtons = false,
   onHasChangesChange,
 }) => {
-  
+  const { canAccess } = useAuth();
+  const canAssignCareers = canAccess({
+    requireAnyPermissions: ["usuarios.assign", "usuarios.approve"],
+  });
+
   // Estados para roles
-  const [rolesState, setRolesState] = useState<{ roles: Role[]; isLoadingRoles: boolean; error: string | null }>({ roles: [], isLoadingRoles: true, error: null });
+  const [rolesState, setRolesState] = useState<{
+    roles: Role[];
+    isLoadingRoles: boolean;
+    error: string | null;
+  }>({ roles: [], isLoadingRoles: true, error: null });
   const roles = rolesState.roles;
   const isLoadingRoles = rolesState.isLoadingRoles;
   const error = rolesState.error;
+
   // Estado del formulario
-  const [formState, setFormState] = useState<{ selectedRole: string; previewPermissions: string[] | BackendPermission[]; hasChanges: boolean }>({ selectedRole: '', previewPermissions: [], hasChanges: false });
+  const [formState, setFormState] = useState<{
+    selectedRole: string;
+    previewPermissions: string[] | BackendPermission[];
+    hasChanges: boolean;
+  }>({ selectedRole: "", previewPermissions: [], hasChanges: false });
   const selectedRole = formState.selectedRole;
   const previewPermissions = formState.previewPermissions;
   const hasChanges = formState.hasChanges;
   const isSaving = false;
 
+  // Estado carrera-sedes
+  const [careerCampuses, setCareerCampuses] = useState<MultiSelectOption[]>([]);
+  const [isLoadingCareers, setIsLoadingCareers] = useState(false);
+  const [selectedCareerSedeIds, setSelectedCareerSedeIds] = useState<string[]>(
+    [],
+  );
+  const [initialCareerSedeIds, setInitialCareerSedeIds] = useState<string[]>(
+    [],
+  );
+
   // Cargar roles al montar el componente
   useEffect(() => {
     loadRoles();
+    if (canAssignCareers) loadCareerCampuses();
   }, []);
 
   // Establecer rol actual del usuario
   useEffect(() => {
     if (roles.length > 0 && user.role) {
-      const currentRole = roles.find(role => role.name === user.role);
+      const currentRole = roles.find((role) => role.name === user.role);
       if (currentRole) {
-        setFormState(prev => ({...prev, selectedRole: currentRole.name}));
+        setFormState((prev) => ({ ...prev, selectedRole: currentRole.name }));
         updatePermissionsPreview(currentRole.name);
       }
     }
   }, [roles, user.role]);
 
-  // Detectar cambios en el rol seleccionado
+  // Pre-seleccionar carreras actuales del usuario
   useEffect(() => {
-    const roleHasChanged = selectedRole !== '' && selectedRole !== user.role;
-    setFormState(prev => ({...prev, hasChanges: roleHasChanged}));
-    onHasChangesChange?.(roleHasChanged);
-  }, [selectedRole, user.role]);
+    if (user.careers && user.careers.length > 0) {
+      const ids = user.careers.map((c) => String(c.carrera_sede_id));
+      setSelectedCareerSedeIds(ids);
+      setInitialCareerSedeIds(ids);
+    }
+  }, [user.careers]);
+
+  // Detectar cambios (rol o carreras)
+  useEffect(() => {
+    const roleHasChanged = selectedRole !== "" && selectedRole !== user.role;
+    const careersHaveChanged =
+      canAssignCareers &&
+      JSON.stringify([...selectedCareerSedeIds].sort()) !==
+        JSON.stringify([...initialCareerSedeIds].sort());
+    const anyChange = roleHasChanged || careersHaveChanged;
+    setFormState((prev) => ({ ...prev, hasChanges: anyChange }));
+    onHasChangesChange?.(anyChange);
+  }, [selectedRole, user.role, selectedCareerSedeIds, initialCareerSedeIds]);
 
   // Exponer handleSubmit via ref para que el padre lo dispare
   useEffect(() => {
@@ -88,16 +142,45 @@ export const EditUserForm: React.FC<EditUserFormProps> = ({
    * Cargar roles disponibles
    */
   const loadRoles = async () => {
-    setRolesState(prev => ({ ...prev, isLoadingRoles: true, error: null }));
+    setRolesState((prev) => ({ ...prev, isLoadingRoles: true, error: null }));
 
     try {
       const response = await roleService.listarRoles();
       if (response.data) {
-        setRolesState({ roles: response.data, isLoadingRoles: false, error: null });
+        setRolesState({
+          roles: response.data,
+          isLoadingRoles: false,
+          error: null,
+        });
       }
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Error cargando roles';
-      setRolesState(prev => ({ ...prev, isLoadingRoles: false, error: errorMessage }));
+      const errorMessage =
+        err instanceof Error ? err.message : "Error cargando roles";
+      setRolesState((prev) => ({
+        ...prev,
+        isLoadingRoles: false,
+        error: errorMessage,
+      }));
+    }
+  };
+
+  /**
+   * Cargar carrera-sedes disponibles para el actor
+   */
+  const loadCareerCampuses = async () => {
+    setIsLoadingCareers(true);
+    try {
+      const data = await userService.listCareerCampuses();
+      setCareerCampuses(
+        data.map((cs) => ({
+          value: String(cs.carrera_sede_id),
+          label: `${cs.carrera_nombre} – ${cs.sede_nombre}`,
+        })),
+      );
+    } catch {
+      // silencioso: si falla no bloqueamos el resto del form
+    } finally {
+      setIsLoadingCareers(false);
     }
   };
 
@@ -106,15 +189,18 @@ export const EditUserForm: React.FC<EditUserFormProps> = ({
    */
   const updatePermissionsPreview = (roleName: string) => {
     if (!roleName) {
-      setFormState(prev => ({...prev, previewPermissions: []}));
+      setFormState((prev) => ({ ...prev, previewPermissions: [] }));
       return;
     }
 
-    const role = roles.find(r => r.name === roleName);
+    const role = roles.find((r) => r.name === roleName);
     if (role) {
-      setFormState(prev => ({...prev, previewPermissions: role.permissions}));
+      setFormState((prev) => ({
+        ...prev,
+        previewPermissions: role.permissions,
+      }));
     } else {
-      setFormState(prev => ({...prev, previewPermissions: []}));
+      setFormState((prev) => ({ ...prev, previewPermissions: [] }));
     }
   };
 
@@ -122,7 +208,7 @@ export const EditUserForm: React.FC<EditUserFormProps> = ({
    * Manejar cambio en la selección de rol
    */
   const handleRoleChange = (newRole: string) => {
-    setFormState(prev => ({...prev, selectedRole: newRole}));
+    setFormState((prev) => ({ ...prev, selectedRole: newRole }));
     updatePermissionsPreview(newRole);
   };
 
@@ -131,24 +217,31 @@ export const EditUserForm: React.FC<EditUserFormProps> = ({
    */
   const handleSubmit = async () => {
     if (!selectedRole) {
-      setRolesState(prev => ({ ...prev, error: 'Debe seleccionar un rol' }));
+      setRolesState((prev) => ({ ...prev, error: "Debe seleccionar un rol" }));
       return;
     }
 
     // Pasar los datos al componente padre en lugar de hacer la llamada directamente
+    const careersChanged =
+      canAssignCareers &&
+      JSON.stringify([...selectedCareerSedeIds].sort()) !==
+        JSON.stringify([...initialCareerSedeIds].sort());
+
     onSubmit?.({
       userId: user.id,
       roleName: selectedRole,
-      userName: user.name
+      userName: user.name,
+      careerSedeIds: selectedCareerSedeIds.map(Number),
+      careersChanged,
     });
   };
 
   /**
    * Preparar opciones para el CustomSelect
    */
-  const roleOptions: SelectOption[] = roles.map(role => ({
+  const roleOptions: SelectOption[] = roles.map((role) => ({
     value: role.name,
-    label: role.description ? `${role.name}` : role.name
+    label: role.description ? `${role.name}` : role.name,
   }));
 
   return (
@@ -161,7 +254,7 @@ export const EditUserForm: React.FC<EditUserFormProps> = ({
             <BackendErrorAlert
               error={error}
               onRetry={async () => {
-                setRolesState(prev => ({ ...prev, error: null }));
+                setRolesState((prev) => ({ ...prev, error: null }));
                 await loadRoles();
               }}
             />
@@ -173,7 +266,9 @@ export const EditUserForm: React.FC<EditUserFormProps> = ({
           {/* Columna izquierda: Gestión de Roles y Permisos */}
           <div>
             {/* Título de sección - alineado con subtítulo derecho */}
-            <h3 className={`${TYPOGRAPHY.pageSubtitle} font-semibold text-negro-una-2 mb-6`}>
+            <h3
+              className={`${TYPOGRAPHY.pageSubtitle} font-semibold text-negro-una-2 mb-6`}
+            >
               Gestión de Roles
             </h3>
 
@@ -185,7 +280,7 @@ export const EditUserForm: React.FC<EditUserFormProps> = ({
                     (Solo se permite un rol por usuario)
                   </span>
                 </div>
-                
+
                 {isLoadingRoles ? (
                   <div className="relative py-8 min-h-[200px]">
                     <LoadingSpinner variant="loader" />
@@ -209,14 +304,18 @@ export const EditUserForm: React.FC<EditUserFormProps> = ({
                     label={`Permisos del rol (${previewPermissions.length})`}
                     options={previewPermissions.map((permission, index) => ({
                       value: index.toString(),
-                      label: typeof permission === 'string' ? permission : permission.label,
+                      label:
+                        typeof permission === "string"
+                          ? permission
+                          : permission.label,
                     }))}
                     value="" // Sin valor seleccionado
                     readonly={true}
                     className="w-full"
                   />
                   <p className={`mt-2 ${TYPOGRAPHY.form.helper} text-warning`}>
-                    Los permisos son propios del rol y no pueden modificarse desde aquí.
+                    Los permisos son propios del rol y no pueden modificarse
+                    desde aquí.
                   </p>
                 </div>
               )}
@@ -226,7 +325,9 @@ export const EditUserForm: React.FC<EditUserFormProps> = ({
           {/* Columna derecha: Estado/Rol y Datos del usuario */}
           <div>
             {/* Título de sección - alineado con subtítulo izquierdo */}
-            <h3 className={`${TYPOGRAPHY.pageSubtitle} font-semibold text-negro-una-2 mb-6`}>
+            <h3
+              className={`${TYPOGRAPHY.pageSubtitle} font-semibold text-negro-una-2 mb-6`}
+            >
               Información Personal
             </h3>
 
@@ -239,7 +340,7 @@ export const EditUserForm: React.FC<EditUserFormProps> = ({
                     &nbsp; {/* Espaciado invisible para alineación */}
                   </span>
                 </div>
-                
+
                 <Input
                   label="Nombre"
                   value={user.name}
@@ -260,6 +361,41 @@ export const EditUserForm: React.FC<EditUserFormProps> = ({
             </div>
           </div>
         </div>
+
+        {/* Sección carrera-sede — ancho completo, solo si tiene permiso */}
+        {canAssignCareers && (
+          <div className="mt-6 pt-6 border-t border-gris-una-1">
+            <h3
+              className={`${TYPOGRAPHY.pageSubtitle} font-semibold text-negro-una-2 mb-4`}
+            >
+              Asignación de Carrera-Sede
+            </h3>
+            <p className={`${TYPOGRAPHY.form.helper} text-gris-una-2 mb-4`}>
+              El usuario solo verá información de las carrera-sedes asignadas.
+              Podés asignar más de una.
+            </p>
+            {isLoadingCareers ? (
+              <div className="relative py-6 min-h-20">
+                <LoadingSpinner variant="loader" />
+              </div>
+            ) : careerCampuses.length === 0 ? (
+              <p className={`${TYPOGRAPHY.form.helper} text-gris-una-2`}>
+                No hay carrera-sedes disponibles para asignar.
+              </p>
+            ) : (
+              <MultiSelect
+                label="Carrera-Sedes asignadas"
+                options={careerCampuses}
+                value={selectedCareerSedeIds}
+                onChange={setSelectedCareerSedeIds}
+                placeholder="Seleccionar carrera-sedes..."
+                showSelectAll={careerCampuses.length > 2}
+                searchable={careerCampuses.length > 5}
+                className="w-full"
+              />
+            )}
+          </div>
+        )}
       </div>
 
       {/* Botones de acción */}
@@ -284,7 +420,7 @@ export const EditUserForm: React.FC<EditUserFormProps> = ({
               standardWidth={true}
               size="sm"
             >
-              {isSaving ? 'Guardando...' : 'Guardar'}
+              {isSaving ? "Guardando..." : "Guardar"}
             </Button>
           </div>
         </div>

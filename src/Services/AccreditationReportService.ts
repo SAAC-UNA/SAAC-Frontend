@@ -1,5 +1,5 @@
 /**
- * AccreditationReportService — Comunicación con la API de Informes de Acreditación (HU-027)
+ * AccreditationReportService — Comunicación con la API de Informes de Acreditación (HU-026)
  *
  * Rutas del backend:
  *   GET    /api/informes-acreditacion                              → fetchReports()
@@ -67,10 +67,7 @@ export async function publishReport(
 ): Promise<AccreditationReportApi> {
   const formData = new FormData();
   formData.append('archivo', payload.archivo);
-  formData.append('numero_resolucion', payload.numero_resolucion);
-  formData.append('vigencia_desde', payload.vigencia_desde);
-  formData.append('vigencia_hasta', payload.vigencia_hasta);
-  formData.append('esta_acreditada', payload.esta_acreditada ? '1' : '0');
+  formData.append('proceso_id', payload.proceso_id.toString());
   if (payload.observaciones) {
     formData.append('observaciones', payload.observaciones);
   }
@@ -91,10 +88,6 @@ export async function updateReport(
 ): Promise<AccreditationReportApi> {
   const formData = new FormData();
   if (payload.archivo) formData.append('archivo', payload.archivo);
-  if (payload.numero_resolucion) formData.append('numero_resolucion', payload.numero_resolucion);
-  if (payload.vigencia_desde) formData.append('vigencia_desde', payload.vigencia_desde);
-  if (payload.vigencia_hasta) formData.append('vigencia_hasta', payload.vigencia_hasta);
-  if (payload.esta_acreditada !== undefined) formData.append('esta_acreditada', payload.esta_acreditada ? '1' : '0');
   if (payload.observaciones !== undefined) formData.append('observaciones', payload.observaciones ?? '');
 
   const { data } = await axiosInstance.put(

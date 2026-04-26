@@ -133,6 +133,7 @@ export const AdminFileUploadModal: React.FC<AdminFileUploadModalProps> = ({
       isOpen={isOpen}
       onClose={() => !uploading && onClose()}
       title="Agregar recursos a evidencia"
+      variant="upload"
       size="md"
       footerButtons={
         <>

@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 const logo = "/Images/IsotipoSAAC.svg";
 import { Button } from "@/Components/Ui/Buttons/Button";
+import { ROUTES } from "@/Constants/ROUTES";
 
 const REDIRECT_SECONDS = 5;
 
@@ -10,7 +11,7 @@ export const SessionExpired = () => {
   const [secondsLeft, setSecondsLeft] = useState(REDIRECT_SECONDS);
 
   const goToLoginNow = () => {
-    navigate("/login", { replace: true });
+    navigate(ROUTES.LOGIN, { replace: true });
   };
 
   useEffect(() => {
@@ -18,7 +19,7 @@ export const SessionExpired = () => {
       setSecondsLeft((prev) => {
         if (prev <= 1) {
           window.clearInterval(timer);
-          navigate("/login", { replace: true });
+          navigate(ROUTES.LOGIN, { replace: true });
           return 0;
         }
         return prev - 1;

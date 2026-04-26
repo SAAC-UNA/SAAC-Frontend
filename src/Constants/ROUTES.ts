@@ -30,6 +30,7 @@ export const ROUTES = {
   // Inicio
   // ---------------------------------------------------------------------------
   HOME: "/",
+  CONTEXT_SELECTOR: "/selector-procesos",
 
   // ---------------------------------------------------------------------------
   // Administración
@@ -56,11 +57,11 @@ export const ROUTES = {
   ACCREDITATION_PROCESSES: "/procesos-acreditacion",
 
   // ---------------------------------------------------------------------------
-  // Entregables (Evidencias)
+  // Entregables
   // ---------------------------------------------------------------------------
-  EVIDENCE_ASSIGN: "/evidencias/asignar",
-  EVIDENCE_MY: "/evidencias/mias",
-  EVIDENCE_SEARCH: "/evidencias/buscar",
+  EVIDENCE_ASSIGN: "/entregables/asignar",
+  EVIDENCE_MY: "/entregables/mias",
+  EVIDENCE_SEARCH: "/entregables/buscar",
 
   // ---------------------------------------------------------------------------
   // Solicitudes de Ampliación
@@ -84,37 +85,7 @@ export const ROUTES = {
   // ---------------------------------------------------------------------------
   // Informes
   // ---------------------------------------------------------------------------
-  REPORTS: "/informes",
+  REPORTS: "/gestion-enlaces",
   REPORTS_PUBLIC: "/informe-publico",
-  SINAES_ADMIN: "/resolucion-sinaes",
-} as const;
-
-// ---------------------------------------------------------------------------
-// Rutas antiguas — solo para redirects de compatibilidad en App.tsx.
-// NO usar estas rutas en navegación nueva.
-// ---------------------------------------------------------------------------
-export const LEGACY_ROUTES = {
-  ROLES_LIST: "/roles/listar",
-  ROLES_CREATE: "/roles/crear",
-  ROLES_EDIT_OLD: "/roles/editar/:id",
-
-  USERS_LIST: "/usuarios/listar",
-  USERS_EDIT_OLD: "/usuarios/editar/:id",
-
-  STRUCTURE_LIST: "/estructura/listar",
-  STRUCTURE_MODELS_OLD: "/estructura/modelos",
-
-  EVIDENCE_MY_OLD: "/mis-evidencias-asignadas",
-  EVIDENCE_SEARCH_OLD: "/evidencias/busqueda-avanzada",
-
-  EXTENSION_REQUESTS_MY_OLD: "/solicitudes-ampliacion/mis-solicitudes",
-
-  COMMITMENTS_LIST: "/compromisos/listar",
-  COMMITMENTS_CREATE: "/compromisos/crear",
-  COMMITMENTS_VIEW_OLD: "/compromisos/ver/:id",
-  COMMITMENTS_EDIT_OLD: "/compromisos/editar/:id",
-
-  ACCREDITATION_PROCESSES_LIST: "/procesos-acreditacion/listar",
-
-  REPORTS_OLD: "/gestion-informes",
+  SINAES_ADMIN: "/informes-acreditacion",
 } as const;

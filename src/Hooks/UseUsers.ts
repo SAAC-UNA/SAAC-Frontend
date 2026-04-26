@@ -7,8 +7,12 @@
  * - Activar/desactivar usuarios
  */
 
-import { useState, useCallback } from 'react';
-import { userService, type User, type BackendUser } from '@/Services/UserService';
+import { useState, useCallback } from "react";
+import {
+  userService,
+  type User,
+  type BackendUser,
+} from "@/Services/UserService";
 
 /**
  * Transforma los datos de usuario del backend al formato del frontend
@@ -19,11 +23,12 @@ const transformBackendUser = (backendUser: BackendUser): User => {
     name: backendUser.name,
     email: backendUser.email,
     status: backendUser.status,
-    role: backendUser.roles[0]?.name, // Tomamos el primer rol
-    directPermissions: backendUser.direct_permissions?.map(p => p.name) || [],
+    role: backendUser.roles[0]?.name,
+    careers: backendUser.careers || [],
+    directPermissions: backendUser.direct_permissions?.map((p) => p.name) || [],
     allPermissions: backendUser.all_permissions || [],
     createdAt: new Date(backendUser.created_at),
-    updatedAt: new Date(backendUser.updated_at)
+    updatedAt: new Date(backendUser.updated_at),
   };
 };
 
@@ -41,13 +46,16 @@ export const useUsers = () => {
 
     try {
       // Usar el servicio real del backend
-      const backendUsers = await userService.listUsers() as BackendUser[];
+      const backendUsers = (await userService.listUsers()) as BackendUser[];
       const transformedUsers = backendUsers.map(transformBackendUser);
       setUsers(transformedUsers);
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Error desconocido al cargar usuarios';
+      const errorMessage =
+        err instanceof Error
+          ? err.message
+          : "Error desconocido al cargar usuarios";
       setError(errorMessage);
-      console.error('Error en loadUsers:', err);
+      console.error("Error en loadUsers:", err);
     } finally {
       setIsLoading(false);
     }
@@ -61,10 +69,10 @@ export const useUsers = () => {
     setError(null);
 
     // Actualización optimista ANTES de la llamada
-    setUsers(prevUsers =>
-      prevUsers.map(user =>
-        user.id === userId ? { ...user, status: 'active' as const } : user
-      )
+    setUsers((prevUsers) =>
+      prevUsers.map((user) =>
+        user.id === userId ? { ...user, status: "active" as const } : user,
+      ),
     );
 
     try {
@@ -74,15 +82,18 @@ export const useUsers = () => {
       return response;
     } catch (err) {
       // Revertir cambio optimista en caso de error
-      setUsers(prevUsers =>
-        prevUsers.map(user =>
-          user.id === userId ? { ...user, status: 'inactive' as const } : user
-        )
+      setUsers((prevUsers) =>
+        prevUsers.map((user) =>
+          user.id === userId ? { ...user, status: "inactive" as const } : user,
+        ),
       );
-      
-      const errorMessage = err instanceof Error ? err.message : 'Error desconocido al activar usuario';
+
+      const errorMessage =
+        err instanceof Error
+          ? err.message
+          : "Error desconocido al activar usuario";
       setError(errorMessage);
-      console.error('Error en activarUsuario:', err);
+      console.error("Error en activarUsuario:", err);
       throw err;
     } finally {
       setIsLoading(false);
@@ -97,10 +108,10 @@ export const useUsers = () => {
     setError(null);
 
     // Actualización optimista ANTES de la llamada
-    setUsers(prevUsers =>
-      prevUsers.map(user =>
-        user.id === userId ? { ...user, status: 'inactive' as const } : user
-      )
+    setUsers((prevUsers) =>
+      prevUsers.map((user) =>
+        user.id === userId ? { ...user, status: "inactive" as const } : user,
+      ),
     );
 
     try {
@@ -110,15 +121,18 @@ export const useUsers = () => {
       return response;
     } catch (err) {
       // Revertir cambio optimista en caso de error
-      setUsers(prevUsers =>
-        prevUsers.map(user =>
-          user.id === userId ? { ...user, status: 'active' as const } : user
-        )
+      setUsers((prevUsers) =>
+        prevUsers.map((user) =>
+          user.id === userId ? { ...user, status: "active" as const } : user,
+        ),
       );
-      
-      const errorMessage = err instanceof Error ? err.message : 'Error desconocido al desactivar usuario';
+
+      const errorMessage =
+        err instanceof Error
+          ? err.message
+          : "Error desconocido al desactivar usuario";
       setError(errorMessage);
-      console.error('Error en desactivarUsuario:', err);
+      console.error("Error en desactivarUsuario:", err);
       throw err;
     } finally {
       setIsLoading(false);

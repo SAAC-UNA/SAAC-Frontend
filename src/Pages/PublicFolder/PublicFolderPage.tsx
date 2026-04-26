@@ -140,7 +140,7 @@ export default function PublicFolderPage() {
       });
 
       const blob = new Blob([response.data], {
-        type: response.headers["content-type"] || "application/octet-stream",
+        type: (response.headers["content-type"] as string) || "application/octet-stream",
       });
       const objectUrl = window.URL.createObjectURL(blob);
       const anchor = document.createElement("a");
