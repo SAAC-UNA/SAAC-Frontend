@@ -410,7 +410,7 @@ export const CreationStep: React.FC<CreationStepProps> = ({
               variant="tableView"
               size="sm"
               tooltip={seleccionado ? "Ya configurado" : "Configurar criterio"}
-              tooltipPosition="right"
+              tooltipPosition="top"
               onClick={() => !seleccionado && handleCriterioClick(criterio)}
               disabled={seleccionado}
               className={TABLE_ACTION_BUTTON.button}
@@ -550,7 +550,7 @@ export const CreationStep: React.FC<CreationStepProps> = ({
               variant="tableView"
               size="sm"
               tooltip={seleccionado ? 'Ya configurado' : 'Configurar elemento'}
-              tooltipPosition="right"
+              tooltipPosition="top"
               onClick={() => !seleccionado && handleElementoClick(elemento)}
               disabled={seleccionado}
               className={TABLE_ACTION_BUTTON.button}

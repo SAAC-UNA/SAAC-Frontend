@@ -270,6 +270,24 @@ export const SystemIcons = {
       </svg>
     ),
 
+    linkedResources: ({ className, size, color }: IconProps) => (
+      <svg
+        className={`${getSizeClasses(size)} ${className || ""}`}
+        width="24"
+        height="24"
+        fill={color || 'currentColor'}
+        viewBox="0 0 24 24"
+        xmlns="http://www.w3.org/2000/svg"
+      >
+        <path d="M10.8 2.4a1.2 1.2 0 1 0 0 2.4h2.4a1.2 1.2 0 1 0 0-2.4h-2.4Z" />
+        <path
+          fillRule="evenodd"
+          d="M4.8 6a2.4 2.4 0 0 1 2.4-2.4 3.6 3.6 0 0 0 3.6 3.6h2.4a3.6 3.6 0 0 0 3.6-3.6A2.4 2.4 0 0 1 19.2 6v13.2a2.4 2.4 0 0 1-2.4 2.4H7.2a2.4 2.4 0 0 1-2.4-2.4V6Zm3.6 4.8a1.2 1.2 0 1 0 0 2.4h.012a1.2 1.2 0 1 0 0-2.4H8.4Zm3.6 0a1.2 1.2 0 1 0 0 2.4h3.6a1.2 1.2 0 1 0 0-2.4H12Zm-3.6 4.8a1.2 1.2 0 1 0 0 2.4h.012a1.2 1.2 0 1 0 0-2.4H8.4Zm3.6 0a1.2 1.2 0 1 0 0 2.4h3.6a1.2 1.2 0 1 0 0-2.4H12Z"
+          clipRule="evenodd"
+        />
+      </svg>
+    ),
+
     comment: ({ className, size, color }: IconProps) => (
       <svg
         className={`${getSizeClasses(size)} ${className || ""}`}

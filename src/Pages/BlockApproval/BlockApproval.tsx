@@ -7,7 +7,7 @@ import { ApprovalModal } from './Components/ApprovalModal';
 import { EvidenceApprovalModal } from './Components/EvidenceApprovalModal';
 import { CriterionEvidencesModal } from './Components/CriterionEvidencesModal.tsx';
 import { SuccessModal } from '@/Components/Ui/Modals/SuccessModal';
-import { FilterButton, type FilterOption } from '@/Components/Ui/Buttons/FilterButton';
+import { SearchInput } from '@/Components/Ui/Forms/SearchInput';
 import { TABLE_PAGE_SIZE } from '@/Constants/TablePagination';
 import { BlockApprovalTable } from './Components/BlockApprovalTable';
 import type { Criterio, Evidencia, EvidenceApprovalItem, EvidenceApprovalStatus } from './Components/BlockApprovalTable';
@@ -46,8 +46,8 @@ const BlockApproval: React.FC = () => {
   const [filterState, setFilterState] = useState<{
     selectedProcesoId: number | null;
     currentPage: number;
-    approvalFilter: BlockApprovalStatus | "todos";
-  }>({ selectedProcesoId: null, currentPage: 1, approvalFilter: "todos" });
+    searchTerm: string;
+  }>({ selectedProcesoId: null, currentPage: 1, searchTerm: '' });
 
   // Aprobaciones individuales por criterio
   const [evidenceApprovalsByCriterion, setEvidenceApprovalsByCriterion] =
@@ -86,21 +86,13 @@ const BlockApproval: React.FC = () => {
   }>({ open: false, criterio: null });
 
   const { isLoading, criteria, evidences, processes } = dataState;
-  const { selectedProcesoId, currentPage, approvalFilter } = filterState;
+  const { selectedProcesoId, currentPage, searchTerm } = filterState;
   const itemsPerPage = TABLE_PAGE_SIZE.standard;
 
   const selectedProcess = useMemo(
     () => processes.find(p => p.proceso_id === selectedProcesoId) ?? null,
     [processes, selectedProcesoId]);
   const isFlexible = selectedProcess?.accreditation_cycle?.modelo_estructura?.tipo === 'elemento_flexible';
-
-  const filtroOptions: FilterOption<BlockApprovalStatus | 'todos'>[] = [
-    { value: 'pendiente',  label: 'Pendientes' },
-    { value: 'incompleto', label: 'Incompletos' },
-    { value: 'aprobado',   label: 'Aprobados' },
-    { value: 'rechazado',  label: 'Rechazados' },
-    { value: 'todos',      label: 'Todos' },
-  ];
 
   // Limpiar caché de evidencias y recargar datos cuando cambie el proceso
   useEffect(() => {
@@ -514,14 +506,41 @@ const BlockApproval: React.FC = () => {
     !!criterionEvidencesModal.criterio &&
     loadingEvidences.has(criterionEvidencesModal.criterio.id);
 
-  const filteredCriteria = useMemo(
-    () =>
-      criteria.filter(
-        (c) =>
-          approvalFilter === "todos" || c.estado_aprobacion === approvalFilter,
-      ),
-    [criteria, approvalFilter],
-  );
+  const filteredCriteria = useMemo(() => {
+    const term = searchTerm.trim().toLowerCase();
+    if (!term) {
+      return criteria;
+    }
+
+    return criteria.filter((criterio) => {
+      const status = criterio.estado_aprobacion ?? 'pendiente';
+      const statusLabel =
+        status === 'aprobado'
+          ? 'aprobado'
+          : status === 'rechazado'
+            ? 'rechazado'
+            : status === 'incompleto'
+              ? 'incompleto'
+              : 'pendiente';
+      const responsablesText = (criterio.responsables ?? [])
+        .map((user) => user.name ?? '')
+        .join(' ')
+        .toLowerCase();
+      const recursosCount = criterio.linked_count ?? 0;
+      const recursosText =
+        recursosCount > 0
+          ? `${recursosCount} ${recursosCount === 1 ? 'recurso' : 'recursos'}`
+          : 'sin recursos';
+
+      return (
+        (criterio.nomenclatura ?? '').toLowerCase().includes(term) ||
+        (criterio.descripcion ?? '').toLowerCase().includes(term) ||
+        statusLabel.includes(term) ||
+        responsablesText.includes(term) ||
+        recursosText.includes(term)
+      );
+    });
+  }, [criteria, searchTerm]);
 
   const totalPages = Math.ceil(filteredCriteria.length / itemsPerPage);
   const paginatedCriteria = useMemo(
@@ -684,12 +703,11 @@ const BlockApproval: React.FC = () => {
         breadcrumbMode="contextual"
         headerExtra={
           <div className="flex gap-4 items-end">
-            <FilterButton
-              tooltipText="Filtrar por estado"
-              options={filtroOptions}
-              value={approvalFilter}
+            <SearchInput
+              placeholder="Buscar elementos, responsables o estado..."
+              value={searchTerm}
               onChange={(value) =>
-                setFilterState((prev) => ({ ...prev, approvalFilter: value }))
+                setFilterState((prev) => ({ ...prev, searchTerm: value }))
               }
             />
           </div>

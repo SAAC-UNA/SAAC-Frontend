@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Modal } from '@/Components/Ui/Modals/Modal';
 import { Textarea } from '@/Components/Ui/Forms/Textarea';
-import { Input } from '@/Components/Ui/Forms/Input';
+import { DatePicker } from '@/Components/Ui/Calendar/DatePicker';
 import { TYPOGRAPHY } from '@/Constants/Typography';
 import { cn } from '@/Utils/ClassNames';
 
@@ -115,12 +115,11 @@ export const ApprovalModal: React.FC<ApprovalModalProps> = ({
 
         {/* Nueva fecha límite (solo al rechazar) */}
         {!isAprobar && (
-          <Input
+          <DatePicker
             label="Nueva fecha límite (opcional)"
-            type="date"
             value={nuevaFechaLimite}
-            onChange={(e) => setNuevaFechaLimite(e.target.value)}
-            min={new Date(Date.now() + 86400000).toISOString().split('T')[0]}
+            onChange={(value) => setNuevaFechaLimite(value)}
+            minDate={new Date(Date.now() + 86400000).toISOString().split('T')[0]}
             helperText="Si se indica, la fecha límite de todas las evidencias será actualizada"
           />
         )}

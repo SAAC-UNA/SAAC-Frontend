@@ -8,6 +8,8 @@ import type { UserAvatarsUser } from '@/Components/Ui/UserAvatars/UserAvatars';
 
 import { TYPOGRAPHY } from '@/Constants/Typography';
 import { TABLE_COLUMN_WIDTHS } from '@/Constants/Components';
+import { BADGE_COLORS } from '@/Constants/StatusBadges';
+import { useFirstColumnConfig } from '@/Hooks/UseFirstColumnConfig';
 
 const ICON = 'size-4 shrink-0';
 import type { DataTableColumn } from '@/Components/Ui/Table/DataTable';
@@ -96,12 +98,14 @@ export const BlockApprovalTable: React.FC<BlockApprovalTableProps> = ({
   onRechazar,
   onOpenCriterionEvidences,
 }) => {
+  const firstColumn = useFirstColumnConfig();
+
   const columns: DataTableColumn<Criterio>[] = useMemo(() => [
     {
       key: 'nomenclatura',
       header: isFlexible ? 'Elemento' : 'Criterio',
       align: 'left',
-      width: '38%',
+      width: firstColumn.width,
       render: (_, item) => (
         <div className="flex flex-col">
           <p
@@ -118,7 +122,7 @@ export const BlockApprovalTable: React.FC<BlockApprovalTableProps> = ({
       key: 'responsables',
       header: 'Responsables',
       align: 'center' as const,
-      width: '170px',
+      width: TABLE_COLUMN_WIDTHS.status,
       render: (_: unknown, item: Criterio) => {
         const users = item.responsables ?? [];
         if (users.length === 0) {
@@ -137,19 +141,24 @@ export const BlockApprovalTable: React.FC<BlockApprovalTableProps> = ({
     },
     {
       key: 'linked_count',
-      header: 'Elementos enlazados',
+      header: 'Recursos',
       align: 'center',
-      width: '200px',
+      width: TABLE_COLUMN_WIDTHS.status,
       render: (_, item) => {
         const count = item.linked_count ?? 0;
-        const label = isFlexible
-          ? `${count} ${count === 1 ? 'fuente de información' : 'fuentes de información'}`
-          : `${count} ${count === 1 ? 'evidencia' : 'evidencias'}`;
         return (
           <div className="flex justify-center">
-            <span className={`${TYPOGRAPHY.table.helper} text-gris-una`}>
-              {label}
-            </span>
+            {count > 0 ? (
+              <StatusBadge
+                label={`${count} ${count === 1 ? 'recurso' : 'recursos'}`}
+                colorClasses={BADGE_COLORS.info.colorClasses}
+              />
+            ) : (
+              <StatusBadge
+                label="Sin recursos"
+                colorClasses={BADGE_COLORS.gris.colorClasses}
+              />
+            )}
           </div>
         );
       },
@@ -179,7 +188,9 @@ export const BlockApprovalTable: React.FC<BlockApprovalTableProps> = ({
         return (
           <div className="flex items-center justify-center gap-2" onClick={e => e.stopPropagation()}>
             <TableActionButton
-              action="list"
+              action="custom"
+              customIcon={<SystemIcons.actions.linkedResources className={ICON} />}
+              customVariant="tableList"
               tooltip={isFlexible ? 'Ver fuentes asociadas' : 'Ver evidencias asociadas'}
               onClick={() => onOpenCriterionEvidences(item)}
             />
@@ -204,7 +215,7 @@ export const BlockApprovalTable: React.FC<BlockApprovalTableProps> = ({
         );
       },
     },
-  ], [onAprobar, onRechazar, onOpenCriterionEvidences, isFlexible, TYPOGRAPHY]);
+  ], [onAprobar, onRechazar, onOpenCriterionEvidences, isFlexible, TYPOGRAPHY, firstColumn.width]);
 
   if (!selectedProcesoId) {
     return (
