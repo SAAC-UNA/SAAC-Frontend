@@ -180,7 +180,7 @@ const EvidenciaResponsablesPanelAdmin: React.FC<
 
 const Separator: React.FC = () => (
   <div className="col-span-5 py-1">
-    <hr className="border-gray-200" />
+    <hr className="border-gris-light" />
   </div>
 );
 
@@ -290,7 +290,7 @@ export const EvidenceDetailsModal: React.FC<EvidenceDetailsModalProps> = ({
           {
             key: "acciones_retro",
             header: "Retroalimentación",
-            align: "center" as const,
+            align: "left" as const,
             width: TABLE_COLUMN_WIDTHS.actions,
             render: (_: unknown, item: EvidenceSearchResult) => (
               <div className="flex items-center justify-center">
