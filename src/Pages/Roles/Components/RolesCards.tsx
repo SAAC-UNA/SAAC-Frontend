@@ -7,6 +7,7 @@ import {
   LoadingSpinner,
 } from "@/Components/Ui/Index";
 import { TYPOGRAPHY } from "@/Constants/Typography";
+import { STATUS_BADGE, BADGE_COLORS } from "@/Constants/StatusBadges";
 import type { Role } from "@/Services/RoleService";
 import { cn } from "@/Utils/ClassNames";
 import { truncateText } from "@/Utils";
@@ -83,14 +84,9 @@ export const RolesCards: React.FC<RolesCardsProps> = ({
         const badges: ActionCardBadge[] = [
           {
             label: `${Array.isArray(role.permissions) ? role.permissions.length : 0} permisos`,
-            colorClasses: "bg-gris-light text-gris-una",
+            colorClasses: BADGE_COLORS.gris.colorClasses,
           },
-          {
-            label: role.is_active ? "Activo" : "Inactivo",
-            colorClasses: role.is_active
-              ? "text-verde-dark bg-verde-ring"
-              : "text-error-dark bg-error-ring",
-          },
+          STATUS_BADGE[role.is_active ? 'active' : 'inactive'],
         ];
 
         const actions: ActionCardAction[] = [

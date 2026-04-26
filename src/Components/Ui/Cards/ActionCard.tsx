@@ -5,6 +5,8 @@ import {
 } from "@/Components/Ui/Buttons/TableActionButton";
 import { StatusBadge } from "@/Components/Ui/Feedback/StatusBadge";
 import { TYPOGRAPHY } from "@/Constants/Typography";
+import { TABLE_TRUNCATE } from "@/Constants/TableTruncate";
+import { truncateText } from "@/Utils";
 import { cn } from "@/Utils/ClassNames";
 
 const DEFAULT_ACTION_CLASS = "!size-9 !p-1.5";
@@ -67,7 +69,7 @@ export const ActionCard: React.FC<ActionCardProps> = ({
           </h3>
 
           {subtitle && (
-            <span className={cn(TYPOGRAPHY.form.helper, "text-gris-una")}>{subtitle}</span>
+            <p className={cn(TYPOGRAPHY.form.helper, "text-gris-una")}>{truncateText(subtitle, TABLE_TRUNCATE.name)}</p>
           )}
         </div>
 
