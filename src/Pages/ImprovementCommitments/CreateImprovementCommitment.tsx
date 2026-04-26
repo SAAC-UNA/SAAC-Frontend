@@ -563,6 +563,63 @@ const CreateImprovementCommitment: React.FC = () => {
             }
           />
 
+          {/* Información y acciones del compromiso */}
+          <div className="space-y-4">
+            <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+              <Button
+                variant="secondary"
+                onClick={() => navigate(ROUTES.ACCREDITATION_PROCESSES)}
+                disabled={isSubmitting}
+                standardWidth
+                size="sm"
+                className="lg:mt-2"
+              >
+                Regresar
+              </Button>
+
+              <div className="w-full max-w-xl">
+                <Textarea
+                  label="Descripción del Compromiso (opcional)"
+                  value={formData.descripcion}
+                  onChange={(e) => updateFormData({ descripcion: e.target.value })}
+                  placeholder="Descripción general del compromiso de mejora..."
+                  rows={3}
+                  maxLength={100}
+                  characterCount
+                  error={errors.descripcion}
+                />
+              </div>
+
+              <Button
+                onClick={handleConfirmCreate}
+                disabled={isSubmitting}
+                variant="primary"
+                className="lg:mt-2"
+              >
+                Configurar
+              </Button>
+            </div>
+
+            {!fromProcess && (
+              <div className="flex justify-center">
+                <div className="w-80">
+                  <DateRangePicker
+                    label="Periodo del Compromiso"
+                    value={{ from: formData.fecha_inicio, to: formData.fecha_fin }}
+                    onChange={(range: DateRange) => {
+                      updateFormData({
+                        fecha_inicio: range?.from ?? '',
+                        fecha_fin: range?.to ?? '',
+                      });
+                    }}
+                    error={errors.fecha_inicio || errors.fecha_fin}
+                    required
+                  />
+                </div>
+              </div>
+            )}
+          </div>
+
           {/* Criterios / Elementos */}
           <CreationStep
             formData={formData}
@@ -582,57 +639,6 @@ const CreateImprovementCommitment: React.FC = () => {
             onCiclosLoaded={setCicloOptions}
           />
 
-          {/* Información opcional del compromiso */}
-          <div className="flex gap-4 items-start">
-            <div className="flex-1">
-              <Textarea
-                label="Descripción del Compromiso (opcional)"
-                value={formData.descripcion}
-                onChange={(e) => updateFormData({ descripcion: e.target.value })}
-                placeholder="Descripción general del compromiso de mejora..."
-                rows={3}
-                maxLength={100}
-                characterCount
-                error={errors.descripcion}
-              />
-            </div>
-            {!fromProcess && (
-              <div className="w-80">
-                <DateRangePicker
-                  label="Periodo del Compromiso"
-                  value={{ from: formData.fecha_inicio, to: formData.fecha_fin }}
-                  onChange={(range: DateRange) => {
-                    updateFormData({
-                      fecha_inicio: range?.from ?? '',
-                      fecha_fin: range?.to ?? '',
-                    });
-                  }}
-                  error={errors.fecha_inicio || errors.fecha_fin}
-                  required
-                />
-              </div>
-            )}
-          </div>
-
-          {/* Navigation */}
-          <div className="flex justify-between items-center mt-2">
-            <Button
-              variant="secondary"
-              onClick={() => navigate(ROUTES.ACCREDITATION_PROCESSES)}
-              disabled={isSubmitting}
-              standardWidth
-              size="sm"
-            >
-              Regresar
-            </Button>
-            <Button
-              onClick={handleConfirmCreate}
-              disabled={isSubmitting}
-              variant="primary"
-            >
-              Configurar
-            </Button>
-          </div>
         </div>
       </ScreenContainer>
 
