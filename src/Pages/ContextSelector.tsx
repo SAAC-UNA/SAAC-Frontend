@@ -7,6 +7,8 @@ import { cn } from "@/Utils/ClassNames";
 import { getOperationalContextSnapshot } from "@/Services/OperationalContextStore";
 import { ROUTES } from "@/Constants/ROUTES";
 import { SystemIcons } from "@/Components/Ui/Icons/SystemIcons";
+import { TYPOGRAPHY } from "@/Constants/Typography";
+import { CARD_HOVER_SHADOWS } from "@/Constants/CardHoverShadows";
 
 // Navegación por cards: Carrera (solo superusuario) → Ciclo → Proceso
 type Step = "career" | "cycle" | "process";
@@ -23,39 +25,27 @@ const stepClasses: Record<
   {
     label: string;
     text: string;
-    border: string;
-    bg: string;
-    hoverBorder: string;
-    hoverBg: string;
     dotBg: string;
+    hoverShadow: string;
   }
 > = {
   career: {
     label: "Carrera",
-    text: "text-azul-una",
-    border: "border-azul-una/20",
-    bg: "bg-azul-una/5",
-    hoverBorder: "group-hover:border-azul-una/50",
-    hoverBg: "group-hover:bg-azul-una/10",
-    dotBg: "bg-azul-una",
+    text: "text-info",
+    dotBg: "bg-info",
+    hoverShadow: CARD_HOVER_SHADOWS.info,
   },
   cycle: {
     label: "Ciclo",
-    text: "text-rojo-una",
-    border: "border-rojo-una/20",
-    bg: "bg-rojo-una/5",
-    hoverBorder: "group-hover:border-rojo-una/50",
-    hoverBg: "group-hover:bg-rojo-una/10",
-    dotBg: "bg-rojo-una",
+    text: "text-error",
+    dotBg: "bg-error",
+    hoverShadow: CARD_HOVER_SHADOWS.error,
   },
   process: {
     label: "Proceso",
     text: "text-verde",
-    border: "border-verde/20",
-    bg: "bg-verde/5",
-    hoverBorder: "group-hover:border-verde/50",
-    hoverBg: "group-hover:bg-verde/10",
     dotBg: "bg-verde",
+    hoverShadow: CARD_HOVER_SHADOWS.verde,
   },
 };
 
@@ -105,14 +95,16 @@ const ContextSelector: React.FC = () => {
     };
   }, []);
 
-  const isCareerFixed = Boolean(catalog?.context?.career_campus_id);
-  const showCareerStep = isSuperUser && !isCareerFixed;
+  const isCareerFixed =
+    !isSuperUser && Boolean(catalog?.context?.career_campus_id);
+  const showCareerStep = isSuperUser;
 
   // Paso inicial una vez que carga el catálogo
   useEffect(() => {
     if (!catalog) return;
 
-    const isFixed = Boolean(catalog?.context?.career_campus_id);
+    const isFixed =
+      !isSuperUser && Boolean(catalog?.context?.career_campus_id);
     const snapshot = getOperationalContextSnapshot();
     const validSteps: Step[] = ["career", "cycle", "process"];
     const isValidParam = stepParam && validSteps.includes(stepParam);
@@ -349,7 +341,7 @@ const ContextSelector: React.FC = () => {
   const cls = stepClasses[step];
 
   return (
-    <div className="min-h-[calc(100vh-5rem)] flex items-center justify-center px-6 py-10">
+    <div className="min-h-[calc(100vh-5rem)] px-6 py-10">
       {/* Overlay mientras guarda */}
       {saving && (
         <div className="fixed inset-0 bg-negro-una/20 flex items-center justify-center z-50">
@@ -357,17 +349,19 @@ const ContextSelector: React.FC = () => {
         </div>
       )}
 
-      <div className="w-full max-w-5xl flex flex-col items-center gap-8">
+      <div className="w-full max-w-5xl mx-auto flex flex-col items-center">
         {/* Encabezado */}
-        <div className="text-center">
-          <h1 className="text-4xl font-bold text-negro-una leading-tight">
+        <div className="mt-10 md:mt-12 text-center">
+          <h1 className="text-3xl md:text-4xl font-bold text-negro-una leading-tight">
             Sistema de Acreditación y
             <br />
             Autoevaluación de las Carreras
           </h1>
-          <p className="mt-3 text-base text-gris-una">{stepSubtitle[step]}</p>
+          <p className={`mt-3 ${TYPOGRAPHY.body} text-gris-una`}>
+            {stepSubtitle[step]}
+          </p>
           {previousStepSelection && (
-            <p className="mt-2 text-sm text-gris-una">
+            <p className={`mt-2 ${TYPOGRAPHY.body} text-gris-una`}>
               <span className="font-semibold text-negro-una">
                 {previousStepSelection.label}:
               </span>{" "}
@@ -377,7 +371,7 @@ const ContextSelector: React.FC = () => {
         </div>
 
         {/* Indicadores de paso */}
-        <div className="flex items-center gap-2">
+        <div className="mt-8 flex items-center gap-2">
           {steps.map((s, idx) => {
             const isPast = idx < currentStepIndex;
             const isCurrent = idx === currentStepIndex;
@@ -385,7 +379,7 @@ const ContextSelector: React.FC = () => {
               <React.Fragment key={s}>
                 <div
                   className={cn(
-                    "flex items-center gap-2 px-3 py-1 rounded-full text-sm font-medium transition-colors",
+                    `flex items-center gap-2 px-3 py-1 rounded-full ${TYPOGRAPHY.badge} font-medium transition-colors`,
                     isCurrent
                       ? `${stepClasses[s].dotBg} text-blanco-una`
                       : isPast
@@ -393,7 +387,6 @@ const ContextSelector: React.FC = () => {
                         : "bg-gris-una/20 text-gris-una",
                   )}
                 >
-                  <span className="text-xs font-bold">{idx + 1}</span>
                   <span>{stepClasses[s].label}</span>
                 </div>
                 {idx < steps.length - 1 && (
@@ -415,7 +408,7 @@ const ContextSelector: React.FC = () => {
 
         {/* Cards del paso actual */}
         {currentCards.length === 0 ? (
-          <div className="flex flex-col items-center gap-5 py-6 text-center">
+          <div className="mt-10 md:mt-12 flex flex-col items-center gap-5 py-6 text-center">
             {/* Icono de tabla vacía */}
             <div className="text-gris-una/40">
               <SystemIcons.modal.document className="w-20 h-20" />
@@ -423,12 +416,12 @@ const ContextSelector: React.FC = () => {
 
             {/* Título y descripción */}
             <div className="max-w-xs">
-              <p className="text-base font-semibold text-gris-una">
+              <p className={`${TYPOGRAPHY.body} font-semibold text-gris-una`}>
                 {step === "career" && "Sin carreras disponibles"}
                 {step === "cycle" && "Sin ciclos de acreditación"}
                 {step === "process" && "Sin procesos para este ciclo"}
               </p>
-              <p className="mt-1 text-sm text-gris-una/70">
+              <p className={`mt-1 ${TYPOGRAPHY.body} text-gris-una/70`}>
                 {step === "career" &&
                   "Tu usuario no tiene carreras asignadas. Contacta al administrador del sistema."}
                 {step === "cycle" &&
@@ -468,41 +461,41 @@ const ContextSelector: React.FC = () => {
           </div>
         ) : (
           <>
-            <div className="w-full flex flex-wrap justify-center gap-5">
+            <div className="mt-10 md:mt-12 w-full flex flex-wrap justify-center gap-5">
               {currentCards.map((card) => (
                 <button
                   key={card.id}
                   onClick={() => handleCardClick(card.id)}
                   disabled={saving}
-                  className="group w-full max-w-xs text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-negro-una rounded-corner"
+                  className="group w-full max-w-xs h-40 text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-negro-una rounded-corner"
                 >
                   <Card
                     className={cn(
-                      "h-full p-6 border shadow-sm cursor-pointer transition-all duration-200",
-                      cls.border,
-                      cls.bg,
-                      cls.hoverBorder,
-                      cls.hoverBg,
-                      "group-hover:shadow-md group-hover:scale-[1.02]",
+                      "h-full p-5 cursor-pointer transition-all duration-200",
+                      cls.hoverShadow,
                       "group-disabled:opacity-60 group-disabled:cursor-not-allowed",
                     )}
                   >
-                    <p
-                      className={cn(
-                        "text-xs uppercase tracking-wide font-semibold mb-3",
-                        cls.text,
-                      )}
-                    >
-                      {cls.label}
-                    </p>
-                    <p className="text-base font-semibold text-negro-una leading-snug">
-                      {card.label}
-                    </p>
-                    {card.sublabel && (
-                      <p className="text-sm text-gris-una mt-1">
-                        {card.sublabel}
+                    <div className="flex h-full flex-col gap-2">
+                      <p
+                        className={cn(
+                          `${TYPOGRAPHY.form.label} font-semibold`,
+                          cls.text,
+                        )}
+                      >
+                        {cls.label}
                       </p>
-                    )}
+                      <p
+                        className={`${TYPOGRAPHY.pageSubtitle} font-semibold text-negro-una leading-snug`}
+                      >
+                        {card.label}
+                      </p>
+                      {card.sublabel && (
+                        <p className={`${TYPOGRAPHY.body} text-gris-una`}>
+                          {card.sublabel}
+                        </p>
+                      )}
+                    </div>
                   </Card>
                 </button>
               ))}
@@ -512,9 +505,10 @@ const ContextSelector: React.FC = () => {
 
         {/* Botón volver — debajo de cards y estado vacío */}
         {canGoBack && (
-          <div>
+          <div className="mt-6">
             <Button variant="ghost" size="sm" onClick={handleBack}>
-              ← Volver
+              <SystemIcons.interface.back className="mr-2 w-4 h-4" />
+              Volver
             </Button>
           </div>
         )}
