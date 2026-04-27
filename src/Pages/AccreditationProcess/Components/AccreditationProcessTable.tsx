@@ -179,12 +179,11 @@ export const AccreditationProcessTable: React.FC<
             onClick={() => onEdit?.(process)}
           />
           <TableActionButton
-            action="custom"
+            action="nut"
             tooltip={process.type === "Compromiso de mejora" ? "Configurar compromisos" : "Disponible solo para compromisos"}
             onClick={() => onConfigure?.(process)}
             disabled={process.type !== "Compromiso de mejora"}
             customIcon={<SystemIcons.structure.nut className={TABLE_ACTION_BUTTON.icon} />}
-            customVariant="tableView"
           />
           <TableActionButton
             action="power"

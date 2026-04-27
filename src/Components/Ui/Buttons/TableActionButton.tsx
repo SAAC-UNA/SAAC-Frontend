@@ -16,7 +16,7 @@ import { SystemIcons } from '@/Components/Ui/Icons/SystemIcons';
 import { ButtonWithTooltip } from './ButtonWithTooltip';
 import { TABLE_ACTION_BUTTON } from '@/Constants/Components';
 
-export type TableActionType = 'view' | 'edit' | 'delete' | 'power' | 'add' | 'uploadArrow' | 'search' | 'roles' | 'users' | 'clock' | 'markComplete' | 'markInProgress' | 'approveRequest' | 'rejectRequest' | 'custom' | 'list' | 'comment';
+export type TableActionType = 'view' | 'edit' | 'delete' | 'power' | 'add' | 'uploadArrow' | 'search' | 'roles' | 'users' | 'clock' | 'markComplete' | 'markInProgress' | 'approveRequest' | 'rejectRequest' | 'custom' | 'list' | 'comment' | 'nut';
 type TooltipPosition = 'top' | 'bottom' | 'left' | 'right';
 
 interface TableActionButtonProps extends Omit<React.ButtonHTMLAttributes<HTMLButtonElement>, 'onClick'> {
@@ -48,7 +48,7 @@ interface TableActionButtonProps extends Omit<React.ButtonHTMLAttributes<HTMLBut
   /**
    * Variante personalizada del botón. Si se proporciona, anula la variante predefinida
    */
-  customVariant?: 'primary' | 'secondary' | 'tertiary' | 'outline' | 'ghost' | 'transparent' | 'success' | 'tableView' | 'tableEdit' | 'tableDelete' | 'tablePower' | 'tablePowerInactive' | 'tableList' | 'tableGris' | 'tableOrange' | 'tableIndigo';
+  customVariant?: 'primary' | 'secondary' | 'tertiary' | 'outline' | 'ghost' | 'transparent' | 'success' | 'tableView' | 'tableEdit' | 'tableDelete' | 'tablePower' | 'tablePowerInactive' | 'tableList' | 'tableGris' | 'tableOrange' | 'tableIndigo' | 'tablePurple';
   
   /**
    * Clases CSS adicionales
@@ -140,7 +140,11 @@ const actionConfig: Record<TableActionType, {
   comment: {
     icon: <SystemIcons.actions.comment className={TABLE_ACTION_BUTTON.icon} />,
     variant: 'tablePower'
-  } 
+  },
+  nut: {
+    icon: <SystemIcons.structure.nut className={TABLE_ACTION_BUTTON.icon} />,
+    variant: 'tableIndigo'
+  }
 };
 
 export const TableActionButton = React.memo<TableActionButtonProps>(({
