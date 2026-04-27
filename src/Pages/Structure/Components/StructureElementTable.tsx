@@ -19,7 +19,7 @@ import { StatusBadge } from '@/Components/Ui/Feedback/StatusBadge';
 import { TABLE_COLUMN_WIDTHS } from '@/Constants/Components';
 import {
   BADGE_COLORS,
-  getBadgeColorForString,
+  getFlexibleCategoryBadgeColor,
 } from '@/Constants/StatusBadges';
 import { FlexibleElementDetail } from './StructureElementDetailModal';
 
@@ -216,7 +216,7 @@ export const FlexibleElementTable: React.FC<FlexibleElementTableProps> = ({
           {element.categoria ? (
             <StatusBadge
               label={element.categoria}
-              colorClasses={getBadgeColorForString(element.categoria)}
+              colorClasses={getFlexibleCategoryBadgeColor(element.categoria)}
             />
           ) : (
             <span className={`${TYPOGRAPHY.table.cell} text-gris-una`}>-</span>

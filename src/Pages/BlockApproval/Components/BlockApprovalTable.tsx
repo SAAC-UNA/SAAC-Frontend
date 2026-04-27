@@ -166,12 +166,12 @@ export const BlockApprovalTable: React.FC<BlockApprovalTableProps> = ({
     {
       key: 'estado_aprobacion',
       header: 'Estado',
-      align: 'center',
+      align: 'left',
       width: TABLE_COLUMN_WIDTHS.status,
       render: (_, item) => {
         const config = BLOCK_STATUS_BADGE[item.estado_aprobacion ?? 'pendiente'];
         return (
-          <div className="flex justify-center">
+          <div className="flex justify-start">
             <StatusBadge label={config.label} colorClasses={config.colorClasses} />
           </div>
         );
@@ -184,7 +184,9 @@ export const BlockApprovalTable: React.FC<BlockApprovalTableProps> = ({
       width: TABLE_COLUMN_WIDTHS.actions,
       render: (_, item) => {
         const canApproveBlock = item.estado_aprobacion === 'pendiente';
-        const canRejectBlock  = item.estado_aprobacion !== 'aprobado';
+        const canRejectBlock =
+          item.estado_aprobacion === 'pendiente' ||
+          item.estado_aprobacion === 'incompleto';
         return (
           <div className="flex items-center justify-center gap-2" onClick={e => e.stopPropagation()}>
             <TableActionButton
@@ -207,7 +209,13 @@ export const BlockApprovalTable: React.FC<BlockApprovalTableProps> = ({
               action="custom"
               customIcon={<SystemIcons.interface.xCircle className={ICON} />}
               customVariant="tableDelete"
-              tooltip={canRejectBlock ? 'Rechazar bloque' : 'Bloque ya aprobado'}
+              tooltip={
+                canRejectBlock
+                  ? 'Rechazar bloque'
+                  : item.estado_aprobacion === 'rechazado'
+                    ? 'Bloque ya rechazado'
+                    : 'Bloque ya aprobado'
+              }
               onClick={() => onRechazar(item)}
               disabled={!canRejectBlock}
             />

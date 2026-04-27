@@ -18,7 +18,12 @@ export interface PaginatedCycles {
 }
 
 export async function getAllCycles(params: { page?: number; per_page?: number } = {}): Promise<PaginatedCycles> {
-  const { data } = await axiosInstance.get('/estructura/ciclos-acreditacion', { params });
+  // Override context params (career_campus_id, ciclo_acreditacion_id) so the
+  // operational context never narrows the full cycles list. The backend's
+  // BaseCareer scope still applies access control based on the user's roles.
+  const { data } = await axiosInstance.get('/estructura/ciclos-acreditacion', {
+    params: { career_campus_id: undefined, ciclo_acreditacion_id: undefined, proceso_id: undefined, ...params },
+  });
   // Backend returns Laravel paginator shape
   if (data && Array.isArray(data.data)) return data as PaginatedCycles;
   // Fallback for non-paginated response

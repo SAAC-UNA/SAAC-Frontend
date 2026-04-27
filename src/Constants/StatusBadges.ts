@@ -152,3 +152,29 @@ export const MODELO_TIPO_BADGE: Record<string, StatusBadgeConfig> = {
   tradicional:       { label: 'Tradicional',      colorClasses: BADGE_COLORS.info.colorClasses },
   elemento_flexible: { label: 'Elemento flexible', colorClasses: BADGE_COLORS.morado.colorClasses },
 };
+
+/** Colores fijos para categorías del modelo flexible (A-D). */
+export const FLEXIBLE_CATEGORY_BADGE_COLORS: Record<'A' | 'B' | 'C' | 'D', BadgeColorConfig> = {
+  A: { colorClasses: BADGE_COLORS.verde.colorClasses },
+  B: { colorClasses: BADGE_COLORS.warning.colorClasses },
+  C: { colorClasses: 'bg-orange-200 text-orange-700' },
+  D: { colorClasses: BADGE_COLORS.error.colorClasses },
+};
+
+/**
+ * Retorna el color de badge para categorías del modelo flexible.
+ * Para valores fuera de A-D, mantiene fallback determinista existente.
+ */
+export const getFlexibleCategoryBadgeColor = (value?: string | null): string => {
+  const normalized = (value ?? '').trim().toUpperCase();
+
+  if (normalized === 'A' || normalized === 'B' || normalized === 'C' || normalized === 'D') {
+    return FLEXIBLE_CATEGORY_BADGE_COLORS[normalized].colorClasses;
+  }
+
+  if (!normalized) {
+    return BADGE_COLORS.gris.colorClasses;
+  }
+
+  return getBadgeColorForString(normalized);
+};

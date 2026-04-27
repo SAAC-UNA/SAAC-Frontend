@@ -127,24 +127,17 @@ export const AccreditationCycleDetailModal: React.FC<
         <Separator />
 
         {/* div5 — Nombre del modelo */}
-        <InfoCell label="Nombre del modelo" className="col-start-1 col-end-3">
-          <span className={cn(TYPOGRAPHY.modal.body, "text-gris-una-2")}>
-            {modelo?.nombre ?? "—"}
-          </span>
-        </InfoCell>
-
-        {/* div6 — Tipo */}
-        <InfoCell label="Tipo" className="col-start-3 col-end-5">
-          {modelo?.tipo && MODELO_TIPO_BADGE[modelo.tipo] ? (
-            <StatusBadge
-              label={MODELO_TIPO_BADGE[modelo.tipo].label}
-              colorClasses={MODELO_TIPO_BADGE[modelo.tipo].colorClasses}
-            />
-          ) : (
+        <InfoCell label="Nombre del modelo" className="col-start-1 col-end-5">
+          <div className="flex flex-col gap-1">
             <span className={cn(TYPOGRAPHY.modal.body, "text-gris-una-2")}>
-              —
+              {modelo?.nombre ?? "—"}
             </span>
-          )}
+            {modelo?.tipo && MODELO_TIPO_BADGE[modelo.tipo] && (
+              <span className={cn(TYPOGRAPHY.form.helper, "text-gris-una")}> 
+                Tipo: {MODELO_TIPO_BADGE[modelo.tipo].label}
+              </span>
+            )}
+          </div>
         </InfoCell>
 
         {/* div7 — Versión */}

@@ -98,13 +98,20 @@ const toApiError = (error: unknown, fallbackMessage: string): ApiError => {
     error as {
       response?: {
         status?: number;
-        data?: { message?: string; errorMessage?: string };
+        data?: { message?: string; errorMessage?: string; errors?: Record<string, string[]> };
       };
     }
   )?.response;
 
+  // Laravel 422: prefer first field-level validation message over generic message
+  const validationErrors = response?.data?.errors;
+  const firstValidationMsg =
+    validationErrors && typeof validationErrors === 'object'
+      ? Object.values(validationErrors).flat()[0]
+      : undefined;
+
   const apiError = new Error(
-    response?.data?.message || response?.data?.errorMessage || fallbackMessage,
+    firstValidationMsg || response?.data?.message || response?.data?.errorMessage || fallbackMessage,
   ) as ApiError;
 
   apiError.status = response?.status;
@@ -119,10 +126,10 @@ const toArray = (raw: unknown): RawRecord[] => {
 };
 
 class AccreditationProcessService {
-  async getProcesses(): Promise<AccreditationProcess[]> {
+  async getProcesses(params?: Record<string, unknown>): Promise<AccreditationProcess[]> {
     try {
       const response =
-        await axiosInstance.get<ApiListResponse>(PROCESS_ENDPOINT);
+        await axiosInstance.get<ApiListResponse>(PROCESS_ENDPOINT, params ? { params } : undefined);
       const raw = response.data?.data ?? response.data ?? [];
       return toArray(raw).map(mapProcess);
     } catch (error: unknown) {
@@ -136,7 +143,9 @@ class AccreditationProcessService {
   async getCycles(): Promise<AccreditationCycle[]> {
     try {
       const response = await axiosInstance.get<ApiListResponse>(CYCLE_ENDPOINT, {
-        params: { per_page: 50 },
+        // Override context params so the full list of accessible cycles is returned,
+        // not just those filtered by the current operational career/cycle context.
+        params: { career_campus_id: undefined, ciclo_acreditacion_id: undefined, proceso_id: undefined, per_page: 50 },
       });
       const raw = response.data?.data ?? response.data ?? [];
       return toArray(raw).map(mapCycle);

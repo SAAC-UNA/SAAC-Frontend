@@ -6,7 +6,10 @@ import { ICON_SIZES } from '@/Constants/Components';
 import { cn } from '@/Utils/ClassNames';
 import { ELEMENT_TYPE_LABELS } from '@/Constants/StructureConstants';
 import { TYPOGRAPHY } from '@/Constants/Typography';
-import { BADGE_COLORS, getBadgeColorForString } from '@/Constants/StatusBadges';
+import {
+  BADGE_COLORS,
+  getFlexibleCategoryBadgeColor,
+} from '@/Constants/StatusBadges';
 import type { StructureElement } from '@/Types/StructureTypes';
 import type { FlexibleElement } from '@/Types/StructureModelTypes';
 import { formatDateShort } from '@/Utils/DateUtils';
@@ -110,7 +113,7 @@ export const StructureElementDetail: React.FC<StructureElementDetailProps> = ({
             {flexibleElement.categoria ? (
               <StatusBadge
                 label={flexibleElement.categoria}
-                colorClasses={getBadgeColorForString(flexibleElement.categoria)}
+                colorClasses={getFlexibleCategoryBadgeColor(flexibleElement.categoria)}
               />
             ) : (
               <span className={cn(TYPOGRAPHY.modal.body, 'text-gris-una-2')}>â€”</span>
@@ -123,6 +126,14 @@ export const StructureElementDetail: React.FC<StructureElementDetailProps> = ({
             <span className={cn(TYPOGRAPHY.modal.body, 'text-gris-una-2')}>
               {flexibleElement.nombre || flexibleElement.descripcion || 'â€”'}
             </span>
+          </InfoCell>
+
+          <Separator />
+
+          <InfoCell label="Descripción" className="col-span-6">
+            <p className={cn(TYPOGRAPHY.modal.body, 'text-gris-una-2 leading-relaxed wrap-break-word')}>
+              {flexibleElement.descripcion || '—'}
+            </p>
           </InfoCell>
 
           <Separator />

@@ -75,20 +75,23 @@ function buildLevels(tree: ElementTreeNode[], branchSels: number[][]): Level[] {
 
   const levels: Level[] = [{ nodes: tree, isLeafLevel: allLeaf(tree) }];
 
-  for (let i = 0; i < branchSels.length; i++) {
-    const prev = levels[i];
-    if (prev.isLeafLevel) break;
+  let depth = 0;
+  while (!levels[depth].isLeafLevel) {
+    const prev = levels[depth];
+    const selectedIds = branchSels[depth] ?? [];
 
-    const selectedIds = branchSels[i] ?? [];
-    if (selectedIds.length === 0) break;
+    // When something is selected: show only children of selected parents.
+    // When nothing is selected: show all children so the level is always visible
+    // (it will be disabled via the disabled prop, matching the traditional criterio→evidencia pattern).
+    const parentNodes =
+      selectedIds.length > 0
+        ? prev.nodes.filter((n) => selectedIds.includes(n.elemento_id))
+        : prev.nodes;
 
-    const children = prev.nodes
-      .filter((n) => selectedIds.includes(n.elemento_id))
-      .flatMap((n) => n.children)
-      .filter((n) => n.activo);
-
+    const children = parentNodes.flatMap((n) => n.children).filter((n) => n.activo);
     if (children.length === 0) break;
     levels.push({ nodes: children, isLeafLevel: allLeaf(children) });
+    depth++;
   }
 
   return levels;
@@ -179,9 +182,8 @@ export const ChainedMultiSelect: React.FC<ChainedMultiSelectProps> = ({
   }
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-6">
       {levels.map((level, levelIdx) => {
-        const isLastVisible = levelIdx === levels.length - 1;
         const isLeaf = level.isLeafLevel;
         const selectedInLevel = getSelectionForLevel(levelIdx, level);
         const options = level.nodes.filter((n) => n.activo).map(nodeToOption);
@@ -195,7 +197,7 @@ export const ChainedMultiSelect: React.FC<ChainedMultiSelectProps> = ({
             : `Seleccione ${labelPlural.toLowerCase()} de la ${prevLabel.toLowerCase()} elegida`;
 
         return (
-          <div key={levelIdx}>
+          <div key={levelIdx} className={!isLeaf ? 'pb-7' : ''}>
             <MultiSelect
               label={label}
               required={isLeaf && required}
@@ -212,13 +214,6 @@ export const ChainedMultiSelect: React.FC<ChainedMultiSelectProps> = ({
               deselectAllText="Deseleccionar todos"
               searchable
             />
-            {(!isLastVisible || !isLeaf) && (
-              <p className={`mt-1 ${TYPOGRAPHY.form.helper} text-gris-una`}>
-                {selectedInLevel.length > 0
-                  ? `${selectedInLevel.length} ${(selectedInLevel.length === 1 ? label : labelPlural).toLowerCase()} seleccionado${selectedInLevel.length !== 1 ? 's' : ''}`
-                  : `Seleccione al menos una ${label.toLowerCase()} para continuar.`}
-              </p>
-            )}
           </div>
         );
       })}
