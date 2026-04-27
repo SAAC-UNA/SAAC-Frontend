@@ -42,6 +42,7 @@ const mapProcess = (item: RawRecord): AccreditationProcess => {
   return {
     id: String(item.proceso_id ?? item.id),
     type: processTypeFromApi(item.tipo_proceso as string | undefined),
+    description: (item.descripcion as string | undefined) ?? undefined,
     accreditationCycleId: String(
       item.ciclo_acreditacion_id ?? cycleData.ciclo_acreditacion_id ?? "",
     ),

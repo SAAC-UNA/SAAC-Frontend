@@ -22,6 +22,7 @@ interface PageHeaderProps {
   children?: React.ReactNode; // Para botones de acción, breadcrumbs, etc.
   headerExtra?: React.ReactNode; // Para contenido adicional al lado del título
   breadcrumbMode?: "none" | "simple" | "cycle-only" | "contextual";
+  breadcrumbParent?: BreadcrumbItem;
 }
 
 export const PageHeader: React.FC<PageHeaderProps> = ({
@@ -33,6 +34,7 @@ export const PageHeader: React.FC<PageHeaderProps> = ({
   children,
   headerExtra,
   breadcrumbMode = "none",
+  breadcrumbParent,
 }) => {
   const { isMobile } = useBreakpoint();
   const [contextSnapshot, setContextSnapshot] =
@@ -72,10 +74,14 @@ export const PageHeader: React.FC<PageHeaderProps> = ({
     if (breadcrumbMode === "simple") {
       return subtitle
         ? ([
+            ...(breadcrumbParent ? [breadcrumbParent] : []),
             { label: subtitle },
             { label: title, current: true },
           ] as BreadcrumbItem[])
-        : ([{ label: title, current: true }] as BreadcrumbItem[]);
+        : ([
+            ...(breadcrumbParent ? [breadcrumbParent] : []),
+            { label: title, current: true },
+          ] as BreadcrumbItem[]);
     }
 
     if (breadcrumbMode === "cycle-only") {
@@ -101,6 +107,10 @@ export const PageHeader: React.FC<PageHeaderProps> = ({
             });
           },
         });
+
+        if (breadcrumbParent) {
+          items.push(breadcrumbParent);
+        }
 
         items.push({ label: title, current: true });
       }
@@ -149,7 +159,7 @@ export const PageHeader: React.FC<PageHeaderProps> = ({
     ];
 
     return items;
-  }, [breadcrumbMode, contextSnapshot, subtitle, title]);
+  }, [breadcrumbMode, breadcrumbParent, contextSnapshot, subtitle, title]);
 
   return (
     <div

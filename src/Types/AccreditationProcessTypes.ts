@@ -13,6 +13,7 @@ export type AccreditationProcessStatus = "activo" | "inactivo";
 export interface AccreditationProcess {
   id: string;
   type: string;
+  description?: string;
   accreditationCycleId: string;
   accreditationCycleName: string;
   careerName?: string;
@@ -29,6 +30,7 @@ export interface AccreditationProcess {
 
 export interface AccreditationProcessFormData {
   type: string;
+  description: string;
   accreditationCycleId: string;
   status: AccreditationProcessStatus;
   startDate: string;
@@ -37,6 +39,7 @@ export interface AccreditationProcessFormData {
 
 export interface AccreditationProcessApiPayload {
   tipo_proceso: string;
+  descripcion?: string;
   ciclo_acreditacion_id: number;
   fecha_inicio: string;
   fecha_finalizacion: string;

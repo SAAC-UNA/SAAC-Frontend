@@ -77,6 +77,25 @@ export const FlexibleElementDetail: React.FC<FlexibleElementDetailProps> = ({
       showConfirm={false}
     >
       <div className="grid grid-cols-6 gap-x-4 gap-y-3">
+        <InfoCell label="Identificador" className="col-span-6">
+          <span className={cn(TYPOGRAPHY.modal.body, 'text-gris-una-2')}>
+            {element.nombre || 'Sin identificador'}
+          </span>
+        </InfoCell>
+
+        {element.descripcion && (
+          <>
+            <Separator />
+            <InfoCell label="Descripción" className="col-span-6">
+              <p className={cn(TYPOGRAPHY.modal.body, 'text-gris-una-2 leading-relaxed')}>
+                {element.descripcion}
+              </p>
+            </InfoCell>
+          </>
+        )}
+
+        <Separator />
+
         <InfoCell label="Tipo de elemento" className="col-start-1 col-end-4">
           <span className={cn(TYPOGRAPHY.modal.body, 'text-gris-una-2 font-medium')}>
             {element.tipo}
@@ -111,14 +130,6 @@ export const FlexibleElementDetail: React.FC<FlexibleElementDetailProps> = ({
           ) : (
             <span className={cn(TYPOGRAPHY.modal.body, 'text-gris-una-2')}>Sin categoria</span>
           )}
-        </InfoCell>
-
-        <Separator />
-
-        <InfoCell label="Identificador" className="col-span-6">
-          <span className={cn(TYPOGRAPHY.modal.body, 'text-gris-una-2')}>
-            {element.nombre || element.descripcion || 'Sin identificador'}
-          </span>
         </InfoCell>
 
         <Separator />

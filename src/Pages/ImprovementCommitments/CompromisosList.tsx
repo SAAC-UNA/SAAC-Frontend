@@ -9,6 +9,11 @@ import {
   ScreenContainer,
   StatusBadge,
 } from "@/Components/Ui/Index";
+import {
+  BADGE_COLORS,
+  COMPROMISO_STATUS_BADGE,
+  type StatusBadgeConfig,
+} from "@/Constants/StatusBadges";
 import { improvementCommitmentService } from "@/Services/ImprovementCommitmentService";
 import { getModuleInfo } from "@/Constants/ModuleInfo";
 import type { CompromisoMejora } from "@/Types/ImprovementCommitmentTypes";
@@ -32,28 +37,17 @@ const formatDate = (value?: string) => {
 
 const getStatusBadge = (estado?: string, isOverdue?: boolean) => {
   if (isOverdue) {
-    return { label: "Vencido", colorClasses: "bg-rojo-una-2 text-blanco-una" };
+    return COMPROMISO_STATUS_BADGE.Vencido;
   }
 
-  switch (estado) {
-    case "Completado":
-      return { label: "Completado", colorClasses: "bg-verde text-blanco-una" };
-    case "En Progreso":
-      return {
-        label: "En progreso",
-        colorClasses: "bg-azul-una text-blanco-una",
-      };
-    case "Vencido":
-      return {
-        label: "Vencido",
-        colorClasses: "bg-rojo-una-2 text-blanco-una",
-      };
-    default:
-      return {
-        label: estado || "Pendiente",
-        colorClasses: "bg-gris-una text-blanco-una",
-      };
+  if (estado && Object.prototype.hasOwnProperty.call(COMPROMISO_STATUS_BADGE, estado)) {
+    return COMPROMISO_STATUS_BADGE[estado];
   }
+
+  return {
+    label: estado || "Pendiente",
+    colorClasses: BADGE_COLORS.gris.colorClasses,
+  } as StatusBadgeConfig;
 };
 
 const CompromisosList: React.FC = () => {

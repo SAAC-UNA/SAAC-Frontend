@@ -24,10 +24,6 @@ import { SearchInput } from "@/Components/Ui/Forms/SearchInput";
 import { Button } from "@/Components/Ui/Buttons/Button";
 import { truncateText } from "@/Utils";
 import { useToast } from "@/Context/ToastContext";
-import {
-  Breadcrumb,
-  type BreadcrumbItem,
-} from "@/Components/Ui/Feedback/Breadcrumb";
 
 type StructureLocationState = {
   modelId?: number | null;
@@ -39,6 +35,7 @@ type StructureLocationState = {
 interface StructureListProps {
   title?: string;
   description?: string;
+  showModelsBreadcrumb?: boolean;
 }
 
 const getFlexibleModelIdFromSearchParams = (
@@ -61,6 +58,7 @@ const resolveErrorTitle = (error: unknown, fallback: string): string => {
 const StructureList: React.FC<StructureListProps> = ({
   title,
   description,
+  showModelsBreadcrumb = false,
 }) => {
   const moduleInfo = getModuleInfo("structure_list");
   const location = useLocation();
@@ -83,28 +81,22 @@ const StructureList: React.FC<StructureListProps> = ({
     treeData,
   } = useStructure();
 
-const currentStructureLabel = navigationState?.modelName ?? moduleInfo.title;
+  const currentStructureLabel = navigationState?.modelName ?? moduleInfo.title;
 
-  const breadcrumbItems = useMemo<BreadcrumbItem[]>(() => {
-    const items: BreadcrumbItem[] = [];
-
+  const breadcrumbParent = useMemo(() => {
     if (
+      showModelsBreadcrumb ||
       lockModelSelection ||
       navigationState?.from === ROUTES.STRUCTURE_MODELS
     ) {
-      items.push({
+      return {
         label: "Modelos de Acreditación",
         href: ROUTES.STRUCTURE_MODELS,
-      });
+      };
     }
 
-    items.push({
-      label: currentStructureLabel,
-      current: true,
-    });
-
-    return items;
-  }, [currentStructureLabel, lockModelSelection, navigationState?.from]);
+    return undefined;
+  }, [lockModelSelection, navigationState?.from, showModelsBreadcrumb]);
 
   const headerTitle = title ?? moduleInfo.title;
   const headerDescription = description ?? currentStructureLabel;
@@ -291,11 +283,11 @@ const currentStructureLabel = navigationState?.modelName ?? moduleInfo.title;
   return (
     <>
       <ScreenContainer>
-        <Breadcrumb items={breadcrumbItems} className="mb-3" />
         <PageHeader
           title={headerTitle}
           description={headerDescription}
-          breadcrumbMode="none"
+          breadcrumbMode="simple"
+          breadcrumbParent={breadcrumbParent}
           headerExtra={
             <div className="flex flex-col sm:flex-row w-full gap-2 shrink-0 lg:w-auto items-end">
               <SearchInput
@@ -304,12 +296,6 @@ const currentStructureLabel = navigationState?.modelName ?? moduleInfo.title;
                 onChange={setSearchQuery}
                 className="w-full sm:w-72"
               />
-              <Button
-                onClick={() => navigate(ROUTES.STRUCTURE_MODELS)}
-                variant="outline"
-              >
-                Regresar
-              </Button>
               <Button
                 onClick={() => setCreateModalOpen(true)}
                 variant="secondary"

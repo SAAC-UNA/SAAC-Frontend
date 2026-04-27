@@ -353,8 +353,8 @@ export const CreationStep: React.FC<CreationStepProps> = ({
     {
       key: 'destinatarios',
       header: 'Destinatarios',
-      align: 'center',
-      width: '18%',
+      align: 'left',
+      width: TABLE_COLUMN_WIDTHS.status,
       render: (_, criterio) => {
         const config = formData.criterios_seleccionados.find(
           c => c.criterio_id === criterio.criterio_id
@@ -364,11 +364,11 @@ export const CreationStep: React.FC<CreationStepProps> = ({
           ...(config?.encargados_roles_info?.map(r => ({ id: `role-${r.id}`, name: r.name })) ?? config?.encargados_roles.map(id => ({ id: `role-${id}`, name: undefined })) ?? []),
         ];
         return avatars.length > 0 ? (
-          <div className="flex justify-center">
+          <div className="flex justify-start">
             <UserAvatars users={avatars} size={28} maxVisible={5} tooltipPlacement="top" />
           </div>
         ) : (
-          <span className={`${TYPOGRAPHY.table.cell} text-gris-una/70`}>Sin destinatarios</span>
+          <span className={`${TYPOGRAPHY.table.cell} text-gris-una`}>Sin destinatarios</span>
         );
       },
     },
@@ -493,7 +493,6 @@ export const CreationStep: React.FC<CreationStepProps> = ({
       key: 'destinatarios',
       header: 'Destinatarios',
       align: 'center',
-      width: '18%',
       render: (_, elemento) => {
         const config = (formData.elementos_seleccionados ?? []).find(
           e => e.elemento_id === elemento.elemento_id

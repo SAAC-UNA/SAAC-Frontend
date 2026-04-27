@@ -1,4 +1,4 @@
-import React from 'react';
+﻿import React from 'react';
 import { Modal } from '@/Components/Ui/Modals/Modal';
 import { StatusBadge } from '@/Components/Ui/Feedback/StatusBadge';
 import { SystemIcons } from '@/Components/Ui/Icons/SystemIcons';
@@ -102,18 +102,18 @@ export const StructureElementDetail: React.FC<StructureElementDetailProps> = ({
 
           <InfoCell label="Nomenclatura" className="col-start-1 col-end-4">
             <span className={cn(TYPOGRAPHY.modal.body, 'text-gris-una-2')}>
-              {flexibleElement.nomenclatura || '—'}
+              {flexibleElement.nomenclatura || 'â€”'}
             </span>
           </InfoCell>
 
-          <InfoCell label="Categoría" className="col-start-4 col-end-7 items-start">
+          <InfoCell label="CategorÃ­a" className="col-start-4 col-end-7 items-start">
             {flexibleElement.categoria ? (
               <StatusBadge
                 label={flexibleElement.categoria}
                 colorClasses={getBadgeColorForString(flexibleElement.categoria)}
               />
             ) : (
-              <span className={cn(TYPOGRAPHY.modal.body, 'text-gris-una-2')}>—</span>
+              <span className={cn(TYPOGRAPHY.modal.body, 'text-gris-una-2')}>â€”</span>
             )}
           </InfoCell>
 
@@ -121,7 +121,7 @@ export const StructureElementDetail: React.FC<StructureElementDetailProps> = ({
 
           <InfoCell label="Identificador" className="col-span-6">
             <span className={cn(TYPOGRAPHY.modal.body, 'text-gris-una-2')}>
-              {flexibleElement.nombre || flexibleElement.descripcion || '—'}
+              {flexibleElement.nombre || flexibleElement.descripcion || 'â€”'}
             </span>
           </InfoCell>
 
@@ -161,20 +161,31 @@ export const StructureElementDetail: React.FC<StructureElementDetailProps> = ({
       <div className="grid grid-cols-6 gap-x-4 gap-y-3">
 
         {/* div1 — Tipo de elemento */}
+        {traditionalElement.description && (
+          <>
+            <InfoCell label="Descripción" className="col-span-6">
+              <p className={cn(TYPOGRAPHY.modal.body, 'text-gris-una-2 leading-relaxed')}>
+                {traditionalElement.description}
+              </p>
+            </InfoCell>
+            <Separator />
+          </>
+        )}
+
         <InfoCell label="Tipo de elemento" className="col-start-1 col-end-4">
           <span className={cn(TYPOGRAPHY.modal.body, 'text-gris-una-2 font-medium')}>{typeLabel}</span>
         </InfoCell>
 
-        {/* div2 — Nombre */}
+        {/* div2 - Nombre */}
         <InfoCell label="Nombre" className="col-start-4 col-end-7">
           <span className={cn(TYPOGRAPHY.modal.body, 'text-gris-una-2')}>
-            {traditionalElement.name || traditionalElement.nomenclature || '—'}
+            {traditionalElement.name || traditionalElement.nomenclature || 'â€”'}
           </span>
         </InfoCell>
 
         <Separator />
 
-        {/* div3 — Estado */}
+        {/* div3 - Estado */}
         <InfoCell label="Estado" className="col-start-1 col-end-4 items-start">
           <StatusBadge
             label={traditionalElement.active ? 'Activo' : 'Inactivo'}
@@ -197,19 +208,6 @@ export const StructureElementDetail: React.FC<StructureElementDetailProps> = ({
             {resolvedParentName}
           </span>
         </InfoCell>
-
-        {/* Descripción (opcional, si existe) */}
-        {traditionalElement.description && (
-          <>
-            <Separator />
-            <InfoCell label="Descripción" className="col-span-6">
-              <p className={cn(TYPOGRAPHY.modal.body, 'text-gris-una-2 leading-relaxed')}>
-                {traditionalElement.description}
-              </p>
-            </InfoCell>
-          </>
-        )}
-
       </div>
     </Modal>
   );
