@@ -33,6 +33,7 @@ export interface BackendRole {
 export interface BackendCareer {
   carrera_sede_id: number;
   carrera_id: number;
+  sede_id: number;
   nombre: string | null;
 }
 

@@ -23,21 +23,18 @@ interface Props {
 interface FormData {
   entityType: CreateEntityType;
   universidadId: string;
-  sedeId: string;
   nombre: string;
 }
 
 interface FormErrors {
   entityType?: string;
   universidadId?: string;
-  sedeId?: string;
   nombre?: string;
 }
 
 const EMPTY_FORM: FormData = {
   entityType: 'universidad',
   universidadId: '',
-  sedeId: '',
   nombre: '',
 };
 
@@ -53,8 +50,6 @@ export const InstitutionalCreateModal: React.FC<Props> = ({
     createUniversity,
   } = useUniversities();
   const {
-    campuses,
-    isLoading: loadingCampuses,
     createCampus,
   } = useCampuses();
   const {
@@ -71,7 +66,6 @@ export const InstitutionalCreateModal: React.FC<Props> = ({
   const canCreateCarrera = canAccess({ requireAnyPermissions: ['carreras.create'] });
 
   const hasUniversidades = universities.length > 0;
-  const hasSedes = campuses.length > 0;
 
   const activeUniversities = useMemo(
     () => universities.filter((u) => u.activo),
@@ -82,16 +76,6 @@ export const InstitutionalCreateModal: React.FC<Props> = ({
     () => activeUniversities.map((u) => ({ value: String(u.universidad_id), label: u.nombre })),
     [activeUniversities],
   );
-
-  const campusOptions = useMemo(() => {
-    const source = form.universidadId
-      ? campuses.filter((c) => String(c.universidad_id) === form.universidadId)
-      : campuses;
-
-    return source
-      .filter((c) => c.activo)
-      .map((c) => ({ value: String(c.sede_id), label: c.nombre }));
-  }, [campuses, form.universidadId]);
 
   const entityTypeOptions = useMemo(() => ([
     {
@@ -107,9 +91,9 @@ export const InstitutionalCreateModal: React.FC<Props> = ({
     {
       value: 'carrera',
       label: 'Carrera',
-      disabled: !canCreateCarrera || !hasSedes,
+      disabled: !canCreateCarrera || !hasUniversidades,
     },
-  ]), [canCreateCarrera, canCreateSede, canCreateUniversidad, hasSedes, hasUniversidades]);
+  ]), [canCreateCarrera, canCreateSede, canCreateUniversidad, hasUniversidades]);
 
   useEffect(() => {
     if (!isOpen) return;
@@ -142,10 +126,6 @@ export const InstitutionalCreateModal: React.FC<Props> = ({
       }
     }
 
-    if (form.entityType === 'carrera' && !form.sedeId) {
-      nextErrors.sedeId = 'Debe seleccionar una sede.';
-    }
-
     setErrors(nextErrors);
     return Object.keys(nextErrors).length === 0;
   };
@@ -166,7 +146,10 @@ export const InstitutionalCreateModal: React.FC<Props> = ({
         universidad_id: Number(form.universidadId),
       });
     } else {
-      result = await createCareer({ nombre: form.nombre.trim() });
+      result = await createCareer({
+        nombre: form.nombre.trim(),
+        universidad_id: Number(form.universidadId),
+      });
     }
 
     setIsSubmitting(false);
@@ -209,7 +192,6 @@ export const InstitutionalCreateModal: React.FC<Props> = ({
                 ...prev,
                 entityType: value as CreateEntityType,
                 universidadId: '',
-                sedeId: '',
               }));
               setErrors({});
               setServerError('');
@@ -220,9 +202,9 @@ export const InstitutionalCreateModal: React.FC<Props> = ({
               Primero debe existir al menos una universidad para crear una sede.
             </span>
           )}
-          {!hasSedes && canCreateCarrera && (
+          {!hasUniversidades && canCreateCarrera && (
             <span className={cn(TYPOGRAPHY.form.helper, 'text-warning')}>
-              Primero debe existir al menos una sede para crear una carrera.
+              Primero debe existir al menos una universidad para crear una carrera.
             </span>
           )}
         </div>
@@ -239,36 +221,13 @@ export const InstitutionalCreateModal: React.FC<Props> = ({
               placeholder={loadingUniversities ? 'Cargando universidades...' : 'Seleccione una universidad'}
               disabled={loadingUniversities || universityOptions.length === 0}
               onChange={(value) => {
-                setForm((prev) => ({ ...prev, universidadId: value, sedeId: '' }));
-                setErrors((prev) => ({ ...prev, universidadId: undefined, sedeId: undefined }));
+                setForm((prev) => ({ ...prev, universidadId: value }));
+                setErrors((prev) => ({ ...prev, universidadId: undefined }));
                 setServerError('');
               }}
             />
             {errors.universidadId && (
               <span className={cn(TYPOGRAPHY.form.helper, 'text-error')}>{errors.universidadId}</span>
-            )}
-          </div>
-        )}
-
-        {form.entityType === 'carrera' && (
-          <div className="flex flex-col gap-1">
-            <label className={cn(TYPOGRAPHY.form.label, 'font-medium')}>
-              Sede padre <span className="text-error">*</span>
-            </label>
-            <CustomSelect
-              label="Sede padre"
-              options={campusOptions}
-              value={form.sedeId}
-              placeholder={loadingCampuses ? 'Cargando sedes...' : 'Seleccione una sede'}
-              disabled={loadingCampuses || campusOptions.length === 0 || !form.universidadId}
-              onChange={(value) => {
-                setForm((prev) => ({ ...prev, sedeId: value }));
-                setErrors((prev) => ({ ...prev, sedeId: undefined }));
-                setServerError('');
-              }}
-            />
-            {errors.sedeId && (
-              <span className={cn(TYPOGRAPHY.form.helper, 'text-error')}>{errors.sedeId}</span>
             )}
           </div>
         )}

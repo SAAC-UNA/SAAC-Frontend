@@ -47,3 +47,12 @@ export async function setCareerActive(id: number, active: boolean): Promise<Care
   const { data } = await axiosInstance.patch(`/estructura/carreras/${id}/active`, { active });
   return data.data ?? data;
 }
+
+/**
+ * Busca una entrada en CARRERA_SEDE con los IDs dados o la crea si no existe.
+ * Devuelve el carrera_sede_id resultante.
+ */
+export async function resolveOrCreateCareerCampus(carrera_id: number, sede_id: number): Promise<number> {
+  const { data } = await axiosInstance.post('/estructura/carrera-sede', { carrera_id, sede_id });
+  return data.carrera_sede_id as number;
+}

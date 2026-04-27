@@ -2,6 +2,11 @@
  * AccreditationCycleFormModal - Modal para crear o editar un Ciclo de Acreditación.
  *
  * Flujo: EntityFormModal → CreateConfirmationModal / EditConfirmationModal → SuccessModal
+ *
+ * Carrera y Sede se eligen por separado. Las opciones disponibles provienen de
+ * useCareerCampuses(), que el backend ya filtra según las asignaciones del usuario
+ * (Superusuario ve todos; otros roles solo sus carrera-sedes asignadas).
+ * El carrera_sede_id se resuelve localmente desde los pares ya cargados.
  */
 
 import React, { useState, useEffect, useMemo } from "react";
@@ -13,8 +18,12 @@ import { CustomSelect } from "@/Components/Ui/Index";
 import { YearRangePicker } from "@/Components/Ui/Calendar/YearRangePicker";
 import { TYPOGRAPHY } from "@/Constants/Typography";
 import { useToast } from "@/Context/ToastContext";
+import { useAuth } from "@/Context/AuthContext";
 import { useCareerCampuses } from "@/Hooks/UseCareerCampuses";
 import { useStructureModels } from "@/Hooks/UseStructureModels";
+import { useCareers } from "@/Hooks/UseCareers";
+import { useCampuses } from "@/Hooks/UseCampuses";
+import { resolveOrCreateCareerCampus } from "@/Services/CareerService";
 import { cn } from "@/Utils/ClassNames";
 import type {
   AccreditationCycle,
@@ -33,7 +42,8 @@ interface Props {
 }
 
 interface FormData {
-  carrera_sede_id: string;
+  carrera_id: string;
+  sede_id: string;
   modelo_estructura_id: string;
   fecha_inicio: string;
   fecha_fin: string;
@@ -41,14 +51,16 @@ interface FormData {
 }
 
 interface FormErrors {
-  carrera_sede_id?: string;
+  carrera_id?: string;
+  sede_id?: string;
   modelo_estructura_id?: string;
   fecha_inicio?: string;
   fecha_fin?: string;
 }
 
 const EMPTY: FormData = {
-  carrera_sede_id: "",
+  carrera_id: "",
+  sede_id: "",
   modelo_estructura_id: "",
   fecha_inicio: "",
   fecha_fin: "",
@@ -68,7 +80,13 @@ export const AccreditationCycleFormModal: React.FC<Props> = ({
 }) => {
   const isEditing = !!cycle;
   const { showToast } = useToast();
-  const { careerCampuses, isLoading: loadingCareers } = useCareerCampuses();
+  const { hasRole } = useAuth();
+  const isSuperUser = hasRole("Superusuario");
+  // useCareerCampuses ya filtra por asignaciones del usuario en el backend
+  const { careerCampuses, isLoading: loadingPairs } = useCareerCampuses();
+  // Para Superusuario: listas completas de carreras y sedes
+  const { careers, isLoading: loadingAllCareers } = useCareers();
+  const { campuses, isLoading: loadingAllCampuses } = useCampuses();
   const { models, isLoading: loadingModels } = useStructureModels();
 
   const [form, setForm] = useState<FormData>(EMPTY);
@@ -77,28 +95,67 @@ export const AccreditationCycleFormModal: React.FC<Props> = ({
   const [opLoading, setOpLoading] = useState(false);
   const [success, setSuccess] = useState({ isOpen: false, name: "" });
 
+  // Para no-Superusuario: único par asignado disponible
+  const singlePair = useMemo(
+    () => (!isSuperUser && careerCampuses.length > 0 ? careerCampuses[0] : null),
+    [isSuperUser, careerCampuses],
+  );
+
   useEffect(() => {
     if (isOpen) {
-      setForm(
-        cycle
-          ? {
-              carrera_sede_id: String(cycle.carrera_sede_id),
-              modelo_estructura_id: String(cycle.modelo_estructura_id),
-              fecha_inicio: toYearValue(cycle.fecha_inicio),
-              fecha_fin: toYearValue(cycle.fecha_fin),
-              estado: cycle.estado,
-            }
-          : EMPTY,
-      );
+      if (cycle) {
+        setForm({
+          carrera_id: String(cycle.carrera_sede?.carrera_id ?? ""),
+          sede_id: String(cycle.carrera_sede?.sede_id ?? ""),
+          modelo_estructura_id: String(cycle.modelo_estructura_id),
+          fecha_inicio: toYearValue(cycle.fecha_inicio),
+          fecha_fin: toYearValue(cycle.fecha_fin),
+          estado: cycle.estado,
+        });
+      } else if (singlePair) {
+        // Auto-seleccionar el par asignado para no-Superusuario
+        setForm({ ...EMPTY, carrera_id: String(singlePair.carrera_id), sede_id: String(singlePair.sede_id) });
+      } else {
+        setForm(EMPTY);
+      }
       setErrors({});
       setConfirmOpen(false);
     }
-  }, [isOpen, cycle]);
+  }, [isOpen, cycle, singlePair]);
 
-  const careerOptions = careerCampuses.map((cs) => ({
-    value: String(cs.carrera_sede_id),
-    label: `${cs.carrera_nombre} – ${cs.sede_nombre}`,
-  }));
+  // Carreras disponibles: Superusuario ve todas; otros las derivadas de sus pares
+  const careerOptions = useMemo(() => {
+    if (isSuperUser) {
+      return careers
+        .filter((c) => c.activo)
+        .map((c) => ({ value: String(c.carrera_id), label: c.nombre }));
+    }
+    const seen = new Set<string>();
+    return careerCampuses
+      .filter((p) => {
+        if (seen.has(String(p.carrera_id))) return false;
+        seen.add(String(p.carrera_id));
+        return true;
+      })
+      .map((p) => ({ value: String(p.carrera_id), label: p.carrera_nombre }));
+  }, [isSuperUser, careers, careerCampuses]);
+
+  // Sedes disponibles según el rol
+  const campusOptions = useMemo(() => {
+    if (!form.carrera_id) return [];
+    if (isSuperUser) {
+      // Mostrar todas las sedes; el backend valida al crear
+      return campuses.map((s) => ({ value: String(s.sede_id), label: s.nombre }));
+    }
+    return careerCampuses
+      .filter((p) => String(p.carrera_id) === form.carrera_id)
+      .map((p) => ({ value: String(p.sede_id), label: p.sede_nombre }));
+  }, [isSuperUser, form.carrera_id, campuses, careerCampuses]);
+
+  // Carrera select: espera a que carguen las opciones
+  // Sede select: solo espera a que se elija carrera (opciones cargan reactivamente)
+  const loadingCareerSelect = loadingPairs || (isSuperUser && loadingAllCareers);
+  const loadingCampusSelect = isSuperUser && loadingAllCampuses;
 
   const modelOptions = models
     .filter((m) => m.activo)
@@ -108,7 +165,8 @@ export const AccreditationCycleFormModal: React.FC<Props> = ({
     if (!isEditing || !cycle) return true;
 
     return (
-      form.carrera_sede_id !== String(cycle.carrera_sede_id)
+      form.carrera_id !== String(cycle.carrera_sede?.carrera_id ?? "")
+      || form.sede_id !== String(cycle.carrera_sede?.sede_id ?? "")
       || form.modelo_estructura_id !== String(cycle.modelo_estructura_id)
       || form.fecha_inicio !== toYearValue(cycle.fecha_inicio)
       || form.fecha_fin !== toYearValue(cycle.fecha_fin)
@@ -118,8 +176,11 @@ export const AccreditationCycleFormModal: React.FC<Props> = ({
 
   const validate = (): boolean => {
     const next: FormErrors = {};
-    if (!form.carrera_sede_id) {
-      next.carrera_sede_id = "Debe seleccionar una carrera-sede.";
+    if (!form.carrera_id) {
+      next.carrera_id = "Debe seleccionar una carrera.";
+    }
+    if (!form.sede_id) {
+      next.sede_id = "Debe seleccionar una sede.";
     }
     if (!form.modelo_estructura_id) {
       next.modelo_estructura_id = "Debe seleccionar un modelo de estructura.";
@@ -170,17 +231,43 @@ export const AccreditationCycleFormModal: React.FC<Props> = ({
 
   const handleConfirm = async () => {
     setOpLoading(true);
+
+    // Resolver carrera_sede_id: buscar en pares cargados; si no existe (Superusuario con combo nueva), crear via API
+    let carrera_sede_id: number | undefined;
+    const pair = careerCampuses.find(
+      (p) => String(p.carrera_id) === form.carrera_id && String(p.sede_id) === form.sede_id,
+    );
+    if (pair) {
+      carrera_sede_id = pair.carrera_sede_id;
+    } else if (isSuperUser) {
+      try {
+        carrera_sede_id = await resolveOrCreateCareerCampus(Number(form.carrera_id), Number(form.sede_id));
+      } catch {
+        setOpLoading(false);
+        setConfirmOpen(false);
+        showToast({ type: "error", title: "Error al resolver la combinación carrera-sede." });
+        return;
+      }
+    }
+
+    if (!carrera_sede_id) {
+      setOpLoading(false);
+      setConfirmOpen(false);
+      showToast({ type: "error", title: "Combinación carrera-sede no encontrada." });
+      return;
+    }
+
     const payload: CreateAccreditationCycleForm | EditAccreditationCycleForm =
       isEditing
         ? {
-            carrera_sede_id: Number(form.carrera_sede_id),
+            carrera_sede_id,
             modelo_estructura_id: Number(form.modelo_estructura_id),
             fecha_inicio: form.fecha_inicio,
             fecha_fin: form.fecha_fin,
             estado: form.estado,
           }
         : {
-            carrera_sede_id: Number(form.carrera_sede_id),
+            carrera_sede_id,
             modelo_estructura_id: Number(form.modelo_estructura_id),
             fecha_inicio: form.fecha_inicio,
             fecha_fin: form.fecha_fin,
@@ -243,18 +330,58 @@ export const AccreditationCycleFormModal: React.FC<Props> = ({
             </p>
           </div>
 
-          <CustomSelect
-            label="Carrera – Sede"
-            required
-            value={form.carrera_sede_id}
-            options={careerOptions}
-            onChange={(v) => setForm((p) => ({ ...p, carrera_sede_id: v }))}
-            error={errors.carrera_sede_id}
-            disabled={loadingCareers}
-            searchable
-            searchPlaceholder="Buscar carrera-sede..."
-            placeholder="Seleccione una carrera-sede"
-          />
+          {isSuperUser ? (
+            <>
+              <CustomSelect
+                label="Carrera"
+                required
+                value={form.carrera_id}
+                options={careerOptions}
+                onChange={(v) => {
+                  setForm((p) => ({ ...p, carrera_id: v, sede_id: "" }));
+                  if (errors.carrera_id) setErrors((p) => ({ ...p, carrera_id: undefined }));
+                }}
+                error={errors.carrera_id}
+                disabled={loadingCareerSelect}
+                searchable
+                searchPlaceholder="Buscar carrera..."
+                placeholder="Seleccione una carrera"
+              />
+              <CustomSelect
+                label="Sede"
+                required
+                value={form.sede_id}
+                options={campusOptions}
+                onChange={(v) => {
+                  setForm((p) => ({ ...p, sede_id: v }));
+                  if (errors.sede_id) setErrors((p) => ({ ...p, sede_id: undefined }));
+                }}
+                error={errors.sede_id}
+                disabled={loadingCampusSelect || !form.carrera_id}
+                searchable
+                searchPlaceholder="Buscar sede..."
+                placeholder={form.carrera_id ? "Seleccione una sede" : "Primero seleccione una carrera"}
+              />
+            </>
+          ) : (
+            <div className="rounded-corner border border-gris-light bg-blanco-una-2 px-4 py-3 flex flex-col gap-1">
+              <p className={cn(TYPOGRAPHY.form.label, "text-gris-una-2 mb-1")}>Carrera y Sede asignadas</p>
+              {loadingPairs ? (
+                <p className={cn(TYPOGRAPHY.body, "text-gris-una-2")}>Cargando...</p>
+              ) : singlePair ? (
+                <>
+                  <p className={cn(TYPOGRAPHY.body, "font-semibold text-negro-una-2")}>
+                    {singlePair.carrera_nombre}
+                  </p>
+                  <p className={cn(TYPOGRAPHY.body, "text-gris-una-2")}>
+                    {singlePair.sede_nombre}
+                  </p>
+                </>
+              ) : (
+                <p className={cn(TYPOGRAPHY.body, "text-warning")}>Sin sede-carrera asignada.</p>
+              )}
+            </div>
+          )}
 
           <CustomSelect
             label="Modelo de Estructura"

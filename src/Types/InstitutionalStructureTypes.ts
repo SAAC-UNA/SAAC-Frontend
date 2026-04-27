@@ -48,15 +48,18 @@ export interface Career {
   carrera_id: number;
   nombre: string;
   activo: boolean;
+  universidad_id: number;
   created_at?: string;
   updated_at?: string;
-  campuses?: Campus[];
+  university?: University;
 }
 
 export interface CreateCareerForm {
   nombre: string;
+  universidad_id: number;
 }
 
 export interface UpdateCareerForm {
   nombre: string;
+  universidad_id: number;
 }

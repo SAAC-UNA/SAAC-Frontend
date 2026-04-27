@@ -31,6 +31,8 @@ export interface AccreditationCycle {
 
 export interface CareerCampus {
   carrera_sede_id: number;
+  carrera_id: number;
+  sede_id: number;
   carrera_nombre: string;
   sede_nombre: string;
 }

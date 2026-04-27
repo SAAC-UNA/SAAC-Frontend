@@ -111,9 +111,7 @@ export const InstitutionalHierarchyTable: React.FC<Props> = ({
   const filteredRows = useMemo<UniversityRow[]>(() => {
     const universityRows = universities.map((university) => {
       const relatedCampuses = campuses.filter((campus) => campus.universidad_id === university.universidad_id);
-      const relatedCareers = careers.filter((career) =>
-        career.campuses?.some((campus) => campus.universidad_id === university.universidad_id),
-      );
+      const relatedCareers = careers.filter((career) => career.universidad_id === university.universidad_id);
 
       return {
         ...university,
@@ -130,12 +128,10 @@ export const InstitutionalHierarchyTable: React.FC<Props> = ({
       const relatedCampuses = campuses.filter((campus) => campus.universidad_id === university.universidad_id);
       if (relatedCampuses.some((campus) => matchesQuery(campus.nombre, normalizedQuery))) return true;
 
-      return careers.some((career) => {
-        const matchesCareerName = matchesQuery(career.nombre, normalizedQuery);
-        const belongsToUniversity = career.campuses?.some((campus) => campus.universidad_id === university.universidad_id);
-        const matchesCampusName = career.campuses?.some((campus) => matchesQuery(campus.nombre, normalizedQuery));
-        return !!belongsToUniversity && (matchesCareerName || !!matchesCampusName);
-      });
+      return careers.some((career) =>
+        career.universidad_id === university.universidad_id
+        && matchesQuery(career.nombre, normalizedQuery),
+      );
     });
   }, [campuses, careers, normalizedQuery, universities]);
 
@@ -158,84 +154,68 @@ export const InstitutionalHierarchyTable: React.FC<Props> = ({
     return filteredRows.slice(start, start + itemsPerPage);
   }, [boundedPage, filteredRows, itemsPerPage]);
 
-  const buildCareerChildren = (campus: Campus): ExpandableChildItem[] => {
-    const relatedCareers = careers.filter((career) =>
-      career.campuses?.some((careerCampus) => careerCampus.sede_id === campus.sede_id),
-    );
-
-    const visibleCareers = !normalizedQuery
-      ? relatedCareers
-      : relatedCareers.filter((career) => {
-          const campusNames = career.campuses?.map((item) => item.nombre).join(' ') ?? '';
-          return matchesQuery(career.nombre, normalizedQuery) || matchesQuery(campusNames, normalizedQuery);
-        });
-
-    return visibleCareers.map((career) => ({
-      key: `career-${career.carrera_id}`,
-      content: (
-        <div className="flex min-w-0 items-center justify-between gap-3">
-          <div className="min-w-0">
-            <p className={cn('font-semibold text-negro-una-2', TYPOGRAPHY.table.cell)} title={career.nombre}>
-              {truncateText(career.nombre, 48)}
-            </p>
-            <p className={cn('text-gris-una', TYPOGRAPHY.table.helper)}>
-              Carrera
-            </p>
-          </div>
-          <StatusBadge
-            label={career.activo ? 'Activo' : 'Inactivo'}
-            colorClasses={career.activo ? BADGE_COLORS.verde.colorClasses : BADGE_COLORS.error.colorClasses}
+  const buildCareerItem = (career: Career): ExpandableChildItem => ({
+    key: `career-${career.carrera_id}`,
+    content: (
+      <div className="flex min-w-0 items-center justify-between gap-3">
+        <div className="min-w-0">
+          <p className={cn('font-semibold text-negro-una-2', TYPOGRAPHY.table.cell)} title={career.nombre}>
+            {truncateText(career.nombre, 48)}
+          </p>
+          <p className={cn('text-gris-una', TYPOGRAPHY.table.helper)}>
+            Carrera
+          </p>
+        </div>
+        <StatusBadge
+          label={career.activo ? 'Activo' : 'Inactivo'}
+          colorClasses={career.activo ? BADGE_COLORS.verde.colorClasses : BADGE_COLORS.error.colorClasses}
+        />
+      </div>
+    ),
+    action: (
+      <div className="flex items-center gap-1">
+        {canEditCarrera && (
+          <TableActionButton
+            action="edit"
+            tooltip="Editar carrera"
+            onClick={() => setCareerFormModal({ isOpen: true, item: career })}
           />
-        </div>
-      ),
-      action: (
-        <div className="flex items-center gap-1">
-          {canEditCarrera && (
-            <TableActionButton
-              action="edit"
-              tooltip="Editar carrera"
-              onClick={() => setCareerFormModal({ isOpen: true, item: career })}
-            />
-          )}
-          {canEditCarrera && (
-            <TableActionButton
-              action="power"
-              tooltip={career.activo ? 'Inactivar carrera' : 'Activar carrera'}
-              isActive={career.activo}
-              onClick={() => setToggleModal({ isOpen: true, target: { type: 'carrera', item: career }, loading: false })}
-            />
-          )}
-          {canDeleteCarrera && (
-            <TableActionButton
-              action="delete"
-              tooltip="Eliminar carrera"
-              onClick={() => setDeleteModal({ isOpen: true, target: { type: 'carrera', item: career }, loading: false })}
-            />
-          )}
-        </div>
-      ),
-    }));
-  };
+        )}
+        {canEditCarrera && (
+          <TableActionButton
+            action="power"
+            tooltip={career.activo ? 'Inactivar carrera' : 'Activar carrera'}
+            isActive={career.activo}
+            onClick={() => setToggleModal({ isOpen: true, target: { type: 'carrera', item: career }, loading: false })}
+          />
+        )}
+        {canDeleteCarrera && (
+          <TableActionButton
+            action="delete"
+            tooltip="Eliminar carrera"
+            onClick={() => setDeleteModal({ isOpen: true, target: { type: 'carrera', item: career }, loading: false })}
+          />
+        )}
+      </div>
+    ),
+  });
 
   const buildCampusChildren = (university: University): ExpandableChildItem[] => {
     const relatedCampuses = campuses.filter((campus) => campus.universidad_id === university.universidad_id);
+    const relatedCareers = careers.filter((career) => career.universidad_id === university.universidad_id);
 
     const visibleCampuses = !normalizedQuery
       ? relatedCampuses
-      : relatedCampuses.filter((campus) => {
-          const relatedCareerNames = careers
-            .filter((career) => career.campuses?.some((careerCampus) => careerCampus.sede_id === campus.sede_id))
-            .map((career) => career.nombre)
-            .join(' ');
+      : relatedCampuses.filter((campus) =>
+          matchesQuery(campus.nombre, normalizedQuery)
+          || matchesQuery(university.nombre, normalizedQuery),
+        );
 
-          return (
-            matchesQuery(campus.nombre, normalizedQuery)
-            || matchesQuery(relatedCareerNames, normalizedQuery)
-            || matchesQuery(university.nombre, normalizedQuery)
-          );
-        });
+    const visibleCareers = !normalizedQuery
+      ? relatedCareers
+      : relatedCareers.filter((career) => matchesQuery(career.nombre, normalizedQuery));
 
-    return visibleCampuses.map((campus) => ({
+    const campusItems: ExpandableChildItem[] = visibleCampuses.map((campus) => ({
       key: `campus-${campus.sede_id}`,
       content: (
         <div className="flex min-w-0 items-center justify-between gap-3">
@@ -271,9 +251,11 @@ export const InstitutionalHierarchyTable: React.FC<Props> = ({
           )}
         </div>
       ),
-      children: buildCareerChildren(campus),
-      emptyChildrenMessage: 'Esta sede no tiene carreras asociadas.',
     }));
+
+    const careerItems: ExpandableChildItem[] = visibleCareers.map(buildCareerItem);
+
+    return [...campusItems, ...careerItems];
   };
 
   const columns: DataTableColumn<UniversityRow>[] = useMemo(() => [

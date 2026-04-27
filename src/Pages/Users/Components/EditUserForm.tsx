@@ -13,18 +13,18 @@
  * @param onSubmit - Callback ejecutado al guardar exitosamente
  * @param onCancel - Callback ejecutado al cancelar la operación
  */
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import {
   Input,
   CustomSelect,
   Button,
   LoadingSpinner,
   BackendErrorAlert,
-  MultiSelect,
 } from "@/components/Ui/Index";
-import type { MultiSelectOption } from "@/Components/Ui/Index";
 import { roleService } from "@/Services/RoleService";
-import { userService } from "@/Services/UserService";
+import { useCareers } from "@/Hooks/UseCareers";
+import { useCampuses } from "@/Hooks/UseCampuses";
+import { resolveOrCreateCareerCampus } from "@/Services/CareerService";
 import type { User } from "@/Services/UserService";
 import type { Role, BackendPermission } from "@/Services/RoleService";
 import type { SelectOption } from "@/Components/Ui/Forms/SingleSelect";
@@ -83,20 +83,20 @@ export const EditUserForm: React.FC<EditUserFormProps> = ({
   const hasChanges = formState.hasChanges;
   const isSaving = false;
 
-  // Estado carrera-sedes
-  const [careerCampuses, setCareerCampuses] = useState<MultiSelectOption[]>([]);
-  const [isLoadingCareers, setIsLoadingCareers] = useState(false);
-  const [selectedCareerSedeIds, setSelectedCareerSedeIds] = useState<string[]>(
-    [],
-  );
-  const [initialCareerSedeIds, setInitialCareerSedeIds] = useState<string[]>(
-    [],
-  );
+  // Par en construcción (antes de agregarlo a la lista)
+  const [pendingCarrera, setPendingCarrera] = useState("");
+  const [pendingSede, setPendingSede] = useState("");
+
+  // Lista de pares { carrera_id, sede_id } asignados al usuario
+  const [assignedPairs, setAssignedPairs] = useState<{ carrera_id: number; sede_id: number }[]>([]);
+  const [initialPairs, setInitialPairs] = useState<{ carrera_id: number; sede_id: number }[]>([]);
+
+  const { careers, isLoading: loadingCareers } = useCareers();
+  const { campuses, isLoading: loadingCampuses } = useCampuses();
 
   // Cargar roles al montar el componente
   useEffect(() => {
     loadRoles();
-    if (canAssignCareers) loadCareerCampuses();
   }, []);
 
   // Establecer rol actual del usuario
@@ -110,26 +110,25 @@ export const EditUserForm: React.FC<EditUserFormProps> = ({
     }
   }, [roles, user.role]);
 
-  // Pre-seleccionar carreras actuales del usuario
+  // Pre-seleccionar pares actuales del usuario
   useEffect(() => {
     if (user.careers && user.careers.length > 0) {
-      const ids = user.careers.map((c) => String(c.carrera_sede_id));
-      setSelectedCareerSedeIds(ids);
-      setInitialCareerSedeIds(ids);
+      const pairs = user.careers.map((c) => ({ carrera_id: c.carrera_id, sede_id: c.sede_id }));
+      setAssignedPairs(pairs);
+      setInitialPairs(pairs);
     }
   }, [user.careers]);
 
   // Detectar cambios (rol o carreras)
   useEffect(() => {
     const roleHasChanged = selectedRole !== "" && selectedRole !== user.role;
-    const careersHaveChanged =
-      canAssignCareers &&
-      JSON.stringify([...selectedCareerSedeIds].sort()) !==
-        JSON.stringify([...initialCareerSedeIds].sort());
+    const pairsStr = (p: { carrera_id: number; sede_id: number }[]) =>
+      JSON.stringify([...p].sort((a, b) => a.carrera_id - b.carrera_id || a.sede_id - b.sede_id));
+    const careersHaveChanged = canAssignCareers && pairsStr(assignedPairs) !== pairsStr(initialPairs);
     const anyChange = roleHasChanged || careersHaveChanged;
     setFormState((prev) => ({ ...prev, hasChanges: anyChange }));
     onHasChangesChange?.(anyChange);
-  }, [selectedRole, user.role, selectedCareerSedeIds, initialCareerSedeIds]);
+  }, [selectedRole, user.role, assignedPairs, initialPairs, canAssignCareers]);
 
   // Exponer handleSubmit via ref para que el padre lo dispare
   useEffect(() => {
@@ -165,23 +164,38 @@ export const EditUserForm: React.FC<EditUserFormProps> = ({
   };
 
   /**
-   * Cargar carrera-sedes disponibles para el actor
+   * Manejar envío del formulario
    */
-  const loadCareerCampuses = async () => {
-    setIsLoadingCareers(true);
-    try {
-      const data = await userService.listCareerCampuses();
-      setCareerCampuses(
-        data.map((cs) => ({
-          value: String(cs.carrera_sede_id),
-          label: `${cs.sede_nombre} – ${cs.carrera_nombre}`,
-        })),
-      );
-    } catch {
-      // silencioso: si falla no bloqueamos el resto del form
-    } finally {
-      setIsLoadingCareers(false);
+  const handleSubmit = async () => {
+    if (!selectedRole) {
+      setRolesState((prev) => ({ ...prev, error: "Debe seleccionar un rol" }));
+      return;
     }
+
+    // Resolver cada par carrera+sede a su carrera_sede_id
+    const careerSedeIds: number[] = [];
+    if (canAssignCareers && assignedPairs.length > 0) {
+      for (const pair of assignedPairs) {
+        const id = await resolveOrCreateCareerCampus(pair.carrera_id, pair.sede_id);
+        careerSedeIds.push(id);
+      }
+    }
+
+    const careersChanged =
+      canAssignCareers &&
+      (() => {
+        const pairsStr = (p: { carrera_id: number; sede_id: number }[]) =>
+          JSON.stringify([...p].sort((a, b) => a.carrera_id - b.carrera_id || a.sede_id - b.sede_id));
+        return pairsStr(assignedPairs) !== pairsStr(initialPairs);
+      })();
+
+    onSubmit?.({
+      userId: user.id,
+      roleName: selectedRole,
+      userName: user.name,
+      careerSedeIds,
+      careersChanged,
+    });
   };
 
   /**
@@ -213,36 +227,62 @@ export const EditUserForm: React.FC<EditUserFormProps> = ({
   };
 
   /**
-   * Manejar envío del formulario
-   */
-  const handleSubmit = async () => {
-    if (!selectedRole) {
-      setRolesState((prev) => ({ ...prev, error: "Debe seleccionar un rol" }));
-      return;
-    }
-
-    // Pasar los datos al componente padre en lugar de hacer la llamada directamente
-    const careersChanged =
-      canAssignCareers &&
-      JSON.stringify([...selectedCareerSedeIds].sort()) !==
-        JSON.stringify([...initialCareerSedeIds].sort());
-
-    onSubmit?.({
-      userId: user.id,
-      roleName: selectedRole,
-      userName: user.name,
-      careerSedeIds: selectedCareerSedeIds.map(Number),
-      careersChanged,
-    });
-  };
-
-  /**
    * Preparar opciones para el CustomSelect
    */
   const roleOptions: SelectOption[] = roles.map((role) => ({
     value: role.name,
     label: role.description ? `${role.name}` : role.name,
   }));
+
+  // Opciones de carrera (activas)
+  const careerOptions: SelectOption[] = useMemo(
+    () =>
+      careers
+        .filter((c) => c.activo)
+        .map((c) => ({ value: String(c.carrera_id), label: c.nombre })),
+    [careers],
+  );
+
+  // Universidad de la carrera seleccionada en el par pendiente
+  const selectedCareerUniversidadId = useMemo(() => {
+    if (!pendingCarrera) return null;
+    return careers.find((c) => c.carrera_id === Number(pendingCarrera))?.universidad_id ?? null;
+  }, [pendingCarrera, careers]);
+
+  // Sedes filtradas por universidad de la carrera pendiente
+  const campusOptions: SelectOption[] = useMemo(
+    () =>
+      selectedCareerUniversidadId === null
+        ? []
+        : campuses
+            .filter((s) => s.universidad_id === selectedCareerUniversidadId)
+            .map((s) => ({ value: String(s.sede_id), label: s.nombre })),
+    [selectedCareerUniversidadId, campuses],
+  );
+
+  // Label de un par para mostrarlo en la lista
+  const pairLabel = (pair: { carrera_id: number; sede_id: number }) => {
+    const c = careers.find((x) => x.carrera_id === pair.carrera_id);
+    const s = campuses.find((x) => x.sede_id === pair.sede_id);
+    return `${c?.nombre ?? pair.carrera_id} — ${s?.nombre ?? pair.sede_id}`;
+  };
+
+  const handleAddPair = () => {
+    if (!pendingCarrera || !pendingSede) return;
+    const newPair = { carrera_id: Number(pendingCarrera), sede_id: Number(pendingSede) };
+    const duplicate = assignedPairs.some(
+      (p) => p.carrera_id === newPair.carrera_id && p.sede_id === newPair.sede_id,
+    );
+    if (!duplicate) {
+      setAssignedPairs((prev) => [...prev, newPair]);
+    }
+    setPendingCarrera("");
+    setPendingSede("");
+  };
+
+  const handleRemovePair = (idx: number) => {
+    setAssignedPairs((prev) => prev.filter((_, i) => i !== idx));
+  };
 
   return (
     <div className="w-full">
@@ -373,30 +413,72 @@ export const EditUserForm: React.FC<EditUserFormProps> = ({
             >
               Asignación de Sede-Carrera
             </h3>
-            <div className="pt-3">
-              {isLoadingCareers ? (
-                <div className="relative h-20 overflow-hidden">
-                  <LoadingSpinner variant="loader" size="sm" />
-                </div>
-              ) : careerCampuses.length === 0 ? (
-                <p className={`${TYPOGRAPHY.form.helper} text-gris-una-2`}>
-                  No hay sede-carreras disponibles para asignar.
-                </p>
-              ) : (
-                <MultiSelect
-                  label="Sede-Carrera asignadas"
-                  options={careerCampuses}
-                  value={selectedCareerSedeIds}
-                  onChange={setSelectedCareerSedeIds}
-                  placeholder="Seleccionar sede-carrera..."
-                  minItemsForSearch={0}
-                  className="w-full"
+
+            {/* Selector de par pendiente */}
+            <div className="flex flex-wrap gap-3 items-end">
+              <div className="flex-1 min-w-45">
+                <CustomSelect
+                  label="Carrera"
+                  options={careerOptions}
+                  value={pendingCarrera}
+                  onChange={(v) => { setPendingCarrera(v); setPendingSede(""); }}
+                  placeholder="Seleccionar carrera..."
+                  disabled={loadingCareers}
                 />
-              )}
+              </div>
+              <div className="flex-1 min-w-45">
+                <CustomSelect
+                  label="Sede"
+                  options={campusOptions}
+                  value={pendingSede}
+                  onChange={setPendingSede}
+                  placeholder={pendingCarrera ? "Seleccionar sede..." : "Primero seleccione carrera"}
+                  disabled={!pendingCarrera || loadingCampuses}
+                />
+              </div>
+              <div className="pb-0.5">
+                <Button
+                  type="button"
+                  variant="primary"
+                  size="sm"
+                  onClick={handleAddPair}
+                  disabled={!pendingCarrera || !pendingSede}
+                >
+                  Agregar
+                </Button>
+              </div>
             </div>
+
+            {/* Lista de pares asignados */}
+            {assignedPairs.length > 0 ? (
+              <ul className="mt-4 space-y-2">
+                {assignedPairs.map((pair, idx) => (
+                  <li
+                    key={`${pair.carrera_id}-${pair.sede_id}`}
+                    className="flex items-center justify-between rounded-lg border border-gris-light bg-blanco-una-2 px-4 py-2"
+                  >
+                    <span className={`${TYPOGRAPHY.body} text-negro-una-2`}>
+                      {loadingCareers || loadingCampuses ? "Cargando..." : pairLabel(pair)}
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => handleRemovePair(idx)}
+                      className="ml-3 text-error hover:text-error/70 transition-colors"
+                      aria-label="Eliminar par"
+                    >
+                      ✕
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <p className={`mt-3 ${TYPOGRAPHY.form.helper} text-gris-una-2`}>
+                No hay sede-carreras asignadas.
+              </p>
+            )}
+
             <p className={`mt-2 ${TYPOGRAPHY.form.helper} text-warning`}>
-              El usuario solo verá información de la sede-carrera asignada.
-              Puede asignar más de una.
+              El usuario solo verá información de las sede-carreras asignadas.
             </p>
           </div>
         )}
