@@ -10,6 +10,7 @@
  */
 
 import React, { useState, useRef, useMemo } from "react";
+import { useNavigate } from "react-router-dom";
 import { ScreenContainer } from "@/Components/Ui/Layout/ScreenContainer";
 import {
   PageHeader,
@@ -31,6 +32,7 @@ import { TYPOGRAPHY } from "@/Constants/Typography";
 import { cn } from "@/Utils/ClassNames";
 import { TABLE_PAGE_SIZE } from "@/Constants/TablePagination";
 import { getModuleInfo } from "@/Constants/ModuleInfo";
+import { ROUTES } from "@/Constants/ROUTES";
 import type {
   AccreditationCycle,
   CreateAccreditationCycleForm,
@@ -38,6 +40,7 @@ import type {
 } from "@/Types/AccreditationCycleTypes";
 
 const AccreditationCyclesPage: React.FC = () => {
+  const navigate = useNavigate();
   const { canAccess } = useAuth();
   const { showToast } = useToast();
 
@@ -218,9 +221,25 @@ const AccreditationCyclesPage: React.FC = () => {
       <PageHeader
         title={moduleInfo.title}
         description={moduleInfo.description}
-        breadcrumbMode="none"
+        breadcrumbMode="cycle-only"
         headerExtra={
-          canCreate ? (
+          <div className="flex items-center gap-2">
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => navigate(ROUTES.ACCREDITATION_PROCESSES)}
+                >
+                  Ir a Procesos
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent side="bottom">
+                Ir a procesos de acreditación
+              </TooltipContent>
+            </Tooltip>
+
+            {canCreate && (
             <Tooltip>
               <TooltipTrigger asChild>
                 <Button
@@ -235,7 +254,8 @@ const AccreditationCyclesPage: React.FC = () => {
                 Crear nuevo ciclo de acreditación
               </TooltipContent>
             </Tooltip>
-          ) : undefined
+            )}
+          </div>
         }
       />
 

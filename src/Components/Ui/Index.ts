@@ -58,5 +58,7 @@ export type {
   DateRange,
   DateRangePickerProps,
 } from "./Calendar/DateRangePicker";
+export { YearPicker } from "./Calendar/YearPicker";
+export type { YearPickerProps } from "./Calendar/YearPicker";
 export { RadioGroupCards } from "./Forms/RadioGroupCards";
 export type { RadioCardOption } from "./Forms/RadioGroupCards";

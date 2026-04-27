@@ -55,11 +55,6 @@ const EMPTY: FormData = {
   estado: "activo",
 };
 
-const STATUS_OPTIONS = [
-  { value: "activo", label: "Activo" },
-  { value: "inactivo", label: "Inactivo" },
-  { value: "completado", label: "Completado" },
-];
 export const AccreditationCycleFormModal: React.FC<Props> = ({
   isOpen,
   onClose,
@@ -284,7 +279,6 @@ export const AccreditationCycleFormModal: React.FC<Props> = ({
                   return next;
                 })
               }
-              maxDate={form.fecha_fin || undefined}
               error={errors.fecha_inicio}
             />
 
@@ -297,20 +291,6 @@ export const AccreditationCycleFormModal: React.FC<Props> = ({
               error={errors.fecha_fin}
             />
           </div>
-
-          {isEditing && (
-            <CustomSelect
-              label="Estado"
-              value={form.estado}
-              options={STATUS_OPTIONS}
-              onChange={(v) =>
-                setForm((p) => ({
-                  ...p,
-                  estado: v as AccreditationCycleStatus,
-                }))
-              }
-            />
-          )}
         </div>
       </EntityFormModal>
 

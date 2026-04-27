@@ -6,7 +6,7 @@
  */
 
 import React, { useEffect, useMemo, useState } from "react";
-import { useSearchParams } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { ScreenContainer } from "@/Components/Ui/Layout/ScreenContainer";
 import {
   PageHeader,
@@ -38,6 +38,7 @@ import { cn } from "@/Utils/ClassNames";
 import { truncateText } from "@/Utils";
 import { TYPOGRAPHY } from "@/Constants/Typography";
 import { getModuleInfo } from "@/Constants/ModuleInfo";
+import { ROUTES } from "@/Constants/ROUTES";
 
 const getModelIdFromSearchParams = (params: URLSearchParams): number | null => {
   const raw = params.get("modelo");
@@ -50,6 +51,7 @@ const getModelIdFromSearchParams = (params: URLSearchParams): number | null => {
 const notifiedInvalidModelIds = new Set<number>();
 
 const StructureModelsPage: React.FC = () => {
+  const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const { showToast } = useToast();
   const {
@@ -320,18 +322,35 @@ const StructureModelsPage: React.FC = () => {
         description={moduleInfo.description}
         breadcrumbMode="simple"
         headerExtra={
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Button
-                variant="secondary"
-                size="sm"
-                onClick={() => setFormModal({ isOpen: true, model: null })}
-              >
-                Crear
-              </Button>
-            </TooltipTrigger>
-            <TooltipContent side="bottom">Crear nuevo modelo</TooltipContent>
-          </Tooltip>
+          <div className="flex items-center gap-2">
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => navigate(ROUTES.ACCREDITATION_CYCLES)}
+                >
+                  Ir a Ciclos
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent side="bottom">
+                Ir a ciclos de acreditación
+              </TooltipContent>
+            </Tooltip>
+
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  onClick={() => setFormModal({ isOpen: true, model: null })}
+                >
+                  Crear
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent side="bottom">Crear nuevo modelo</TooltipContent>
+            </Tooltip>
+          </div>
         }
       />
 
