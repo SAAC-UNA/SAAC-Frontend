@@ -33,6 +33,15 @@ interface Proceso {
   };
 }
 
+const normalizeSearchValue = (value: unknown): string => {
+  if (value === null || value === undefined) return '';
+
+  return String(value)
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase();
+};
+
 const BlockApproval: React.FC = () => {
   const moduleInfo = getModuleInfo("block_approval");
   const { showToast } = useToast();
@@ -84,6 +93,24 @@ const BlockApproval: React.FC = () => {
     open: boolean;
     criterio: Criterio | null;
   }>({ open: false, criterio: null });
+
+  const extractValidationMessage = (error: any, fallback: string): string => {
+    const validationErrors = error?.response?.data?.errors;
+
+    if (validationErrors && typeof validationErrors === 'object') {
+      for (const value of Object.values(validationErrors)) {
+        if (Array.isArray(value) && value.length > 0 && typeof value[0] === 'string') {
+          return value[0];
+        }
+
+        if (typeof value === 'string' && value.trim().length > 0) {
+          return value;
+        }
+      }
+    }
+
+    return error?.response?.data?.message || error?.message || fallback;
+  };
 
   const { isLoading, criteria, evidences, processes } = dataState;
   const { selectedProcesoId, currentPage, searchTerm } = filterState;
@@ -213,21 +240,9 @@ const BlockApproval: React.FC = () => {
           };
         });
 
-        // Include assignments ready for review and assignments with prior evaluator decisions.
-        // This prevents rejected rows from disappearing after they are reset to Pendiente.
-        const REVIEWABLE_ESTADOS = ['Completado', 'Observada', 'Validada'];
-        const reviewableAssignments: any[] = allAssignments.filter((a: any) => {
-          if (REVIEWABLE_ESTADOS.includes(a.estado)) {
-            return true;
-          }
-
-          const decisionsByUser = approvalsByElementAndUser.get(a.elemento_id);
-          if (!decisionsByUser) {
-            return false;
-          }
-
-          return !!decisionsByUser[String(a.usuario_id)];
-        });
+        // En esta pantalla se deben mantener visibles todas las asignaciones del proceso,
+        // incluyendo pendientes/rechazadas, para no perder filas tras acciones de aprobación.
+        const reviewableAssignments: any[] = allAssignments;
 
         // Group reviewable assignments by elemento_id
         const assignmentsByElement = new Map<number, any[]>();
@@ -352,13 +367,31 @@ const BlockApproval: React.FC = () => {
         const approvalsArray = approvalsResponse.data.data || approvalsResponse.data;
         const assignmentsArray = assignmentsResponse.data?.data || assignmentsResponse.data || [];
 
+        const reviewableAssignments = assignmentsArray;
+
+        const evidenceIdsByCriterion = new Map<number, Set<number>>();
+        reviewableAssignments.forEach((assignment: any) => {
+          const evidenceData = assignment?.evidencia ?? assignment?.evidence ?? null;
+          const criterionIdRaw = evidenceData?.criterio_id ?? assignment?.criterio_id;
+          const criterionId = Number(criterionIdRaw);
+          if (!Number.isFinite(criterionId)) return;
+
+          if (!evidenceIdsByCriterion.has(criterionId)) {
+            evidenceIdsByCriterion.set(criterionId, new Set<number>());
+          }
+
+          const evidenceIdRaw =
+            assignment?.evidencia_id ?? evidenceData?.evidencia_id ?? evidenceData?.id;
+          const evidenceId = Number(evidenceIdRaw);
+
+          if (Number.isFinite(evidenceId)) {
+            evidenceIdsByCriterion.get(criterionId)!.add(evidenceId);
+          }
+        });
+
         const linkedCountByCriterion = new Map<number, number>();
-        evidencesArray.forEach((ev: any) => {
-          const criterionId = ev.criterio_id;
-          linkedCountByCriterion.set(
-            criterionId,
-            (linkedCountByCriterion.get(criterionId) ?? 0) + 1,
-          );
+        evidenceIdsByCriterion.forEach((evidenceIds, criterionId) => {
+          linkedCountByCriterion.set(criterionId, evidenceIds.size);
         });
 
         const approvalsMap = new Map<string, BlockApprovalStatus>();
@@ -368,7 +401,7 @@ const BlockApproval: React.FC = () => {
         });
 
         const responsablesByCriterion = new Map<number, Map<number, string>>();
-        assignmentsArray.forEach((assignment: any) => {
+        reviewableAssignments.forEach((assignment: any) => {
           const evidenceData = assignment?.evidencia ?? assignment?.evidence ?? null;
           const criterionId = evidenceData?.criterio_id ?? assignment?.criterio_id;
           const userData = assignment?.usuario ?? assignment?.user ?? null;
@@ -392,7 +425,31 @@ const BlockApproval: React.FC = () => {
           }
         });
 
-        const criteriaWithStatus = criteriaArray.map((c: any) => {
+        const criterionIdsWithAssignments = new Set<number>(evidenceIdsByCriterion.keys());
+        const criterionIdsWithApprovals = new Set<number>();
+
+        approvalsArray.forEach((aprobacion: any) => {
+          if (selectedProcesoId && aprobacion?.proceso_id !== selectedProcesoId) {
+            return;
+          }
+
+          const criterionId = Number(aprobacion?.criterio_id);
+          if (Number.isFinite(criterionId)) {
+            criterionIdsWithApprovals.add(criterionId);
+          }
+        });
+
+        const visibleCriterionIds = new Set<number>([
+          ...criterionIdsWithAssignments,
+          ...criterionIdsWithApprovals,
+        ]);
+
+        const filteredCriteria = criteriaArray.filter((criterion: any) => {
+          const criterionId = Number(criterion?.id ?? criterion?.criterio_id);
+          return Number.isFinite(criterionId) && visibleCriterionIds.has(criterionId);
+        });
+
+        const criteriaWithStatus = filteredCriteria.map((c: any) => {
           const key = selectedProcesoId ? `${c.id}-${selectedProcesoId}` : '';
           const criterionId = c.id ?? c.criterio_id;
           const responsibleUsers = Array.from(
@@ -507,7 +564,7 @@ const BlockApproval: React.FC = () => {
     loadingEvidences.has(criterionEvidencesModal.criterio.id);
 
   const filteredCriteria = useMemo(() => {
-    const term = searchTerm.trim().toLowerCase();
+    const term = normalizeSearchValue(searchTerm.trim());
     if (!term) {
       return criteria;
     }
@@ -522,22 +579,35 @@ const BlockApproval: React.FC = () => {
             : status === 'incompleto'
               ? 'incompleto'
               : 'pendiente';
-      const responsablesText = (criterio.responsables ?? [])
+
+      const responsables = criterio.responsables ?? [];
+      const responsablesText = responsables
         .map((user) => user.name ?? '')
-        .join(' ')
-        .toLowerCase();
+        .join(' ');
+      const responsablesIds = responsables
+        .map((user) => String(user.id ?? ''))
+        .join(' ');
+
       const recursosCount = criterio.linked_count ?? 0;
       const recursosText =
         recursosCount > 0
           ? `${recursosCount} ${recursosCount === 1 ? 'recurso' : 'recursos'}`
           : 'sin recursos';
 
-      return (
-        (criterio.nomenclatura ?? '').toLowerCase().includes(term) ||
-        (criterio.descripcion ?? '').toLowerCase().includes(term) ||
-        statusLabel.includes(term) ||
-        responsablesText.includes(term) ||
-        recursosText.includes(term)
+      const searchableValues = [
+        criterio.nomenclatura ?? '',
+        criterio.descripcion ?? '',
+        `${criterio.nomenclatura ?? ''} ${criterio.descripcion ?? ''}`,
+        statusLabel,
+        status,
+        responsablesText,
+        responsablesIds,
+        String(recursosCount),
+        recursosText,
+      ];
+
+      return searchableValues.some((value) =>
+        normalizeSearchValue(value).includes(term),
       );
     });
   }, [criteria, searchTerm]);
@@ -558,20 +628,38 @@ const BlockApproval: React.FC = () => {
 
   // --- Handlers de BLOQUE ---
   const handleAprobar = useCallback((criterio: Criterio) => {
+    setCriterionEvidencesModal({ open: false, criterio: null });
+    setEvidenceModal((prev) => ({
+      ...prev,
+      isOpen: false,
+      successOpen: false,
+      criterio: null,
+      evidencia: null,
+    }));
     setApprovalState((prev) => ({
       ...prev,
       isOpen: true,
       action: "aprobar",
       criterion: criterio,
+      successOpen: false,
     }));
   }, []);
 
   const handleRechazar = useCallback((criterio: Criterio) => {
+    setCriterionEvidencesModal({ open: false, criterio: null });
+    setEvidenceModal((prev) => ({
+      ...prev,
+      isOpen: false,
+      successOpen: false,
+      criterio: null,
+      evidencia: null,
+    }));
     setApprovalState((prev) => ({
       ...prev,
       isOpen: true,
       action: "rechazar",
       criterion: criterio,
+      successOpen: false,
     }));
   }, []);
 
@@ -594,7 +682,11 @@ const BlockApproval: React.FC = () => {
       await axiosInstance.post(endpoint, {
         proceso_id: selectedProcesoId,
         comentario: comentario || null,
-        ...(nuevaFechaLimite ? { nueva_fecha_limite: nuevaFechaLimite } : {}),
+        ...(nuevaFechaLimite
+          ? isFlexible
+            ? { fecha_limite: nuevaFechaLimite }
+            : { nueva_fecha_limite: nuevaFechaLimite }
+          : {}),
       });
 
       setApprovalState((prev) => ({
@@ -613,8 +705,8 @@ const BlockApproval: React.FC = () => {
     } catch (error: any) {
       showToast({
         type: "error",
-        title: "Error al procesar la solicitud",
-        message: error.response?.data?.message || "Ocurrió un error inesperado",
+        title: "No se pudo rechazar/aprobar el bloque",
+        message: extractValidationMessage(error, 'Ocurrió un error inesperado al procesar el bloque.'),
       });
       setApprovalState((prev) => ({ ...prev, isOpen: false, criterion: null }));
     }
@@ -623,6 +715,13 @@ const BlockApproval: React.FC = () => {
   // --- Handlers de EVIDENCIA INDIVIDUAL ---
   const handleAprobarEvidencia = useCallback(
     (criterio: Criterio, evidencia: EvidenceApprovalItem) => {
+      setCriterionEvidencesModal({ open: false, criterio: null });
+      setApprovalState((prev) => ({
+        ...prev,
+        isOpen: false,
+        criterion: null,
+        successOpen: false,
+      }));
       setEvidenceModal({
         isOpen: true,
         action: "aprobar",
@@ -636,6 +735,12 @@ const BlockApproval: React.FC = () => {
 
   const handleRechazarEvidencia = useCallback(
     (criterio: Criterio, evidencia: EvidenceApprovalItem) => {
+      setCriterionEvidencesModal({ open: false, criterio: null });
+      setApprovalState((prev) => ({
+        ...prev,
+        isOpen: false,
+        criterion: null,
+      }));
       setEvidenceModal({
         isOpen: true,
         action: "rechazar",
@@ -728,7 +833,11 @@ const BlockApproval: React.FC = () => {
       />
 
       <CriterionEvidencesModal
-        isOpen={criterionEvidencesModal.open}
+        isOpen={
+          criterionEvidencesModal.open &&
+          !approvalState.isOpen &&
+          !evidenceModal.isOpen
+        }
         onClose={() =>
           setCriterionEvidencesModal({ open: false, criterio: null })
         }
@@ -754,8 +863,8 @@ const BlockApproval: React.FC = () => {
           }
           onConfirm={handleConfirmAction}
           action={approvalState.action}
+          isFlexible={isFlexible}
           criterio={approvalState.criterion}
-          evidencias={getEvidencesByCriterion(approvalState.criterion.id)}
         />
       )}
 

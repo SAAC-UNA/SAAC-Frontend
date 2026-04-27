@@ -9,14 +9,7 @@ interface Criterio {
   id: number;
   nomenclatura: string;
   descripcion: string;
-}
-
-interface Evidencia {
-  id: number;
-  nomenclatura: string;
-  descripcion: string;
-  criterio_id?: number;
-  archivo_adjuntado?: boolean;
+  linked_count?: number;
 }
 
 interface ApprovalModalProps {
@@ -24,8 +17,8 @@ interface ApprovalModalProps {
   onClose: () => void;
   onConfirm: (comentario: string, nuevaFechaLimite?: string) => void;
   action: 'aprobar' | 'rechazar';
+  isFlexible?: boolean;
   criterio: Criterio | null;
-  evidencias: Evidencia[];
 }
 
 export const ApprovalModal: React.FC<ApprovalModalProps> = ({
@@ -33,8 +26,8 @@ export const ApprovalModal: React.FC<ApprovalModalProps> = ({
   onClose,
   onConfirm,
   action,
-  criterio,
-  evidencias
+  isFlexible = false,
+  criterio
 }) => {
   const [comment, setComment] = useState('');
   const [nuevaFechaLimite, setNuevaFechaLimite] = useState('');
@@ -61,12 +54,14 @@ export const ApprovalModal: React.FC<ApprovalModalProps> = ({
 
   const isAprobar = action === 'aprobar';
   const title = isAprobar ? 'Aprobar Bloque' : 'Rechazar Bloque';
+  const subtitle = `${criterio.nomenclatura} - ${criterio.descripcion}`;
 
   return (
     <Modal
       isOpen={isOpen}
       onClose={onClose}
       title={title}
+      subtitle={subtitle}
       size="md"
       variant={isAprobar ? 'info' : 'danger'}
       showConfirm
@@ -85,33 +80,18 @@ export const ApprovalModal: React.FC<ApprovalModalProps> = ({
             : '¿Está seguro que desea rechazar este bloque? Todas las evidencias serán marcadas como rechazadas.'}
         </p>
 
-        {/* Información del criterio */}
-        <div className="flex flex-col gap-0.5 border-l-2 border-gris-light pl-3">
-          <span className={cn(TYPOGRAPHY.modal.body, 'font-semibold text-negro-una')}>
-            {criterio.nomenclatura}
-          </span>
-          <span className={cn(TYPOGRAPHY.modal.body, 'text-gris-una-2')}>
-            {criterio.descripcion}
-          </span>
-          <span className={cn(TYPOGRAPHY.modal.subtitle, 'text-gris-una mt-1')}>
-            {evidencias.length} {evidencias.length === 1 ? 'evidencia asociada' : 'evidencias asociadas'}
-          </span>
-        </div>
-
-        {/* Comentario */}
-        <Textarea
-          label="Comentario (opcional)"
-          value={comment}
-          onChange={(e) => setComment(e.target.value)}
-          rows={3}
-          maxLength={500}
-          characterCount
-          placeholder={
-            isAprobar
-              ? 'Agregue un comentario adicional si lo desea...'
-              : 'Agregue un comentario sobre el rechazo...'
-          }
-        />
+        {/* Comentario (solo al rechazar) */}
+        {!isAprobar && (
+          <Textarea
+            label="Comentario (opcional)"
+            value={comment}
+            onChange={(e) => setComment(e.target.value)}
+            rows={3}
+            maxLength={isFlexible ? 100 : 500}
+            characterCount
+            placeholder="Agregue un comentario sobre el rechazo..."
+          />
+        )}
 
         {/* Nueva fecha límite (solo al rechazar) */}
         {!isAprobar && (

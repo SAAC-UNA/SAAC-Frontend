@@ -243,7 +243,7 @@ const EvidenceDocumentsDropdown: React.FC<{
       {open && (
         <div className="mt-2 rounded-md border border-gris-light/80 bg-gris-light/20 px-2 py-2 space-y-1.5">
           {loading ? (
-            <div className="relative min-h-[72px]">
+            <div className="relative min-h-18">
               <LoadingSpinner variant="loader" />
             </div>
           ) : resources && resources.length > 0 ? (
@@ -345,9 +345,14 @@ export const CriterionEvidencesModal: React.FC<CriterionEvidencesModalProps> = (
                 rowKey: `${evidencia.evidencia_id}-sin-responsable`,
                 evidencia: {
                   ...evidencia,
-                  approval_status: fallbackDecision?.approval_status ?? 'pendiente',
+                  approval_status:
+                    fallbackDecision?.approval_status ??
+                    evidencia.approval_status ??
+                    'pendiente',
                   comentario_rechazo:
-                    fallbackDecision?.comentario_rechazo ?? null,
+                    fallbackDecision?.comentario_rechazo ??
+                    evidencia.comentario_rechazo ??
+                    null,
                 },
                 responsable: {
                   usuario_id: evidencia.asignacion?.usuario_id ?? null,
@@ -473,9 +478,14 @@ export const CriterionEvidencesModal: React.FC<CriterionEvidencesModalProps> = (
             rowKey: `${evidencia.evidencia_id}-${evidencia.asignacion?.usuario_id ?? 'sin-responsable'}`,
             evidencia: {
               ...evidencia,
-              approval_status: fallbackDecision?.approval_status ?? 'pendiente',
+              approval_status:
+                fallbackDecision?.approval_status ??
+                evidencia.approval_status ??
+                'pendiente',
               comentario_rechazo:
-                fallbackDecision?.comentario_rechazo ?? null,
+                fallbackDecision?.comentario_rechazo ??
+                evidencia.comentario_rechazo ??
+                null,
             },
             responsable: {
               usuario_id: evidencia.asignacion?.usuario_id ?? null,
@@ -504,6 +514,7 @@ export const CriterionEvidencesModal: React.FC<CriterionEvidencesModalProps> = (
   if (!criterio) return null;
 
   const blockIsApproved = criterio.estado_aprobacion === 'aprobado';
+  const blockIsRejected = criterio.estado_aprobacion === 'rechazado';
   const blockIsIncompleto = criterio.estado_aprobacion === 'incompleto';
   const showLoading = loading || loadingRows;
 
@@ -522,7 +533,7 @@ export const CriterionEvidencesModal: React.FC<CriterionEvidencesModalProps> = (
       showConfirm={false}
     >
       {showLoading ? (
-        <div className="relative min-h-[140px]">
+        <div className="relative min-h-35">
           <LoadingSpinner variant="loader" />
         </div>
       ) : displayRows.length === 0 ? (
@@ -541,9 +552,9 @@ export const CriterionEvidencesModal: React.FC<CriterionEvidencesModalProps> = (
             const isLocked =
               evidencia.approval_status === 'aprobado' && blockIsIncompleto;
             const canApprove =
-              !blockIsApproved && !isLocked && evidencia.approval_status !== 'aprobado';
+              !blockIsApproved && !blockIsRejected && !isLocked && evidencia.approval_status !== 'aprobado';
             const canReject =
-              !blockIsApproved && !isLocked && evidencia.approval_status !== 'rechazado';
+              !blockIsApproved && !blockIsRejected && !isLocked && evidencia.approval_status !== 'rechazado';
             const responsableLabel = row.responsable.nombre ?? 'Sin responsable identificado';
 
             return (
@@ -571,7 +582,7 @@ export const CriterionEvidencesModal: React.FC<CriterionEvidencesModalProps> = (
                     </p>
 
                     {evidencia.comentario_rechazo && (
-                      <p className={`mt-1 text-error-dark ${TYPOGRAPHY.table.helper}`}>
+                      <p className={`mt-1 text-error-dark whitespace-pre-wrap wrap-break-word ${TYPOGRAPHY.table.helper}`}>
                         Motivo: {evidencia.comentario_rechazo}
                       </p>
                     )}
@@ -589,7 +600,9 @@ export const CriterionEvidencesModal: React.FC<CriterionEvidencesModalProps> = (
                       variant="tablePower"
                       size="sm"
                       tooltip={
-                        isLocked
+                        blockIsRejected
+                          ? 'Bloque rechazado: acciones bloqueadas'
+                          : isLocked
                           ? `${isFlexible ? 'Fuente' : 'Evidencia'} aprobada (bloqueada)`
                           : canApprove
                             ? `Aprobar ${isFlexible ? 'fuente' : 'evidencia'}`
@@ -607,7 +620,9 @@ export const CriterionEvidencesModal: React.FC<CriterionEvidencesModalProps> = (
                       variant="tableDelete"
                       size="sm"
                       tooltip={
-                        isLocked
+                        blockIsRejected
+                          ? 'Bloque rechazado: acciones bloqueadas'
+                          : isLocked
                           ? `${isFlexible ? 'Fuente' : 'Evidencia'} aprobada (bloqueada)`
                           : canReject
                             ? `Rechazar ${isFlexible ? 'fuente' : 'evidencia'}`

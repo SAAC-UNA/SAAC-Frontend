@@ -5,7 +5,7 @@ import { cn } from '@/Utils/ClassNames';
 import { TYPOGRAPHY } from '@/Constants/Typography';
 import {
   BADGE_COLORS,
-  getBadgeColorForString,
+  getFlexibleCategoryBadgeColor,
 } from '@/Constants/StatusBadges';
 import type { FlexibleElement } from '@/Types/StructureModelTypes';
 
@@ -106,7 +106,7 @@ export const FlexibleElementDetail: React.FC<FlexibleElementDetailProps> = ({
           {element.categoria ? (
             <StatusBadge
               label={element.categoria}
-              colorClasses={getBadgeColorForString(element.categoria)}
+              colorClasses={getFlexibleCategoryBadgeColor(element.categoria)}
             />
           ) : (
             <span className={cn(TYPOGRAPHY.modal.body, 'text-gris-una-2')}>Sin categoria</span>
@@ -118,6 +118,14 @@ export const FlexibleElementDetail: React.FC<FlexibleElementDetailProps> = ({
         <InfoCell label="Identificador" className="col-span-6">
           <span className={cn(TYPOGRAPHY.modal.body, 'text-gris-una-2')}>
             {element.nombre || element.descripcion || 'Sin identificador'}
+          </span>
+        </InfoCell>
+
+        <Separator />
+
+        <InfoCell label="Descripcion" className="col-span-6">
+          <span className={cn(TYPOGRAPHY.modal.body, 'text-gris-una-2 leading-relaxed wrap-break-word')}>
+            {element.descripcion || 'Sin descripcion'}
           </span>
         </InfoCell>
 
