@@ -150,14 +150,6 @@ export const CriterionModal: React.FC<CriterionModalProps> = ({
     }));
   }, [roles, userCountByRole]);
 
-  const handleSelectAllEvidences = () => {
-    if (selectedEvidences.length === evidencias.length) {
-      setFormState(prev => ({...prev, selectedEvidences: []}));
-    } else {
-      setFormState(prev => ({...prev, selectedEvidences: evidencias.map(e => e.evidencia_id)}));
-    }
-  };
-
   const validate = (): boolean => {
     const newErrors: Record<string, string> = {};
 
@@ -207,8 +199,6 @@ export const CriterionModal: React.FC<CriterionModalProps> = ({
     onGuardar(config);
   };
 
-  const allSelected = selectedEvidences.length === evidencias.length && evidencias.length > 0;
-
   return (
     <Modal
       isOpen={isOpen}
@@ -237,26 +227,22 @@ export const CriterionModal: React.FC<CriterionModalProps> = ({
           <div>
             <div className="flex items-center justify-between mb-2">
               <p className="block text-sm font-medium text-negro-una">
-                Evidencias a incluir <span className="text-red-500">*</span>
+                Evidencias a incluir
               </p>
-              <button
-                type="button"
-                onClick={handleSelectAllEvidences}
-                className="text-xs text-rojo-una-2 hover:underline flex items-center gap-1"
-              >
-                <SystemIcons.interface.checkCircle size="xs" />
-                {allSelected ? 'Deseleccionar todas' : 'Seleccionar todas'}
-              </button>
             </div>
             
             <MultiSelect
-              label=""
+              label="Seleccione evidencias"
               options={evidenciaOptions}
               value={selectedEvidences.map(id => id.toString())}
               onChange={(values) => setFormState(prev => ({...prev, selectedEvidences: values.map(v => parseInt(v))}))}
               placeholder="Seleccione evidencias..."
               required
-              showSelectAll={false}
+              selectAllText="Seleccionar todos"
+              deselectAllText="Deseleccionar todos"
+              showSelectAll={true}
+              searchable={true}
+              minItemsForSearch={0}
             />
             
             {errors.evidencias && (
@@ -284,6 +270,8 @@ export const CriterionModal: React.FC<CriterionModalProps> = ({
                   selectAllText="Seleccionar todos"
                   deselectAllText="Deseleccionar todos"
                   showSelectAll={true}
+                  searchable={true}
+                  minItemsForSearch={0}
                 />
                 <p className="mt-1 text-xs text-gris-una">
                   {assignedUsers.length} usuario(s) seleccionado(s)
@@ -300,6 +288,8 @@ export const CriterionModal: React.FC<CriterionModalProps> = ({
                   selectAllText="Seleccionar todos"
                   deselectAllText="Deseleccionar todos"
                   showSelectAll={true}
+                  searchable={true}
+                  minItemsForSearch={0}
                 />
                 <p className="mt-1 text-xs text-gris-una">
                   {assignedRoles.length} rol(es) seleccionado(s)

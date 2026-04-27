@@ -191,7 +191,11 @@ export const StructureTable: React.FC<StructureTableProps> = ({
     const getParentName = useCallback((element: StructureElement): string => {
         const parent = resolveParentElement(element);
         if (!parent) return 'Sin elemento padre';
-        return parent?.name || parent?.nomenclature || parent?.description || 'Elemento padre no encontrado';
+        const parentDisplayName = parent.name || parent.description;
+        if (parentDisplayName && parent.nomenclature) {
+            return `${parent.nomenclature} - ${parentDisplayName}`;
+        }
+        return parentDisplayName || parent.nomenclature || 'Elemento padre no encontrado';
     }, [resolveParentElement]);
 
     // Configuración de columnas de la tabla
@@ -204,33 +208,49 @@ export const StructureTable: React.FC<StructureTableProps> = ({
             render: (_, element) => {
                 const hasName = Boolean(element.name);
                 const hasDesc = Boolean(element.description);
+                const parentLabel = element.parentElementId ? getParentName(element) : '';
+                const parentHelper = parentLabel ? (
+                    <p className={`${TYPOGRAPHY.table.helper} text-gris-una mt-0.5`} title={parentLabel}>
+                        {truncateText(parentLabel, firstColumn.maxLength)}
+                    </p>
+                ) : null;
+
                 if (hasName && hasDesc) {
                     return (
                         <div className="flex flex-col">
                             <p className={`block font-sans antialiased font-bold leading-normal text-negro-una-2 ${TYPOGRAPHY.table.cell}`} title={element.name}>
                                 {truncateText(element.name, firstColumn.maxLength)}
                             </p>
-                            <p className={`${TYPOGRAPHY.table.helper} text-gris-una mt-0.5`} title={element.description}>
-                                {truncateText(element.description, firstColumn.maxLength)}
-                            </p>
+                            {parentHelper}
                         </div>
                     );
                 }
                 if (hasName) {
                     return (
-                        <p className={`block font-sans antialiased font-bold leading-normal text-negro-una-2 ${TYPOGRAPHY.table.cell}`} title={element.name}>
-                            {truncateText(element.name, firstColumn.maxLength)}
-                        </p>
+                        <div className="flex flex-col">
+                            <p className={`block font-sans antialiased font-bold leading-normal text-negro-una-2 ${TYPOGRAPHY.table.cell}`} title={element.name}>
+                                {truncateText(element.name, firstColumn.maxLength)}
+                            </p>
+                            {parentHelper}
+                        </div>
                     );
                 }
                 if (hasDesc) {
                     return (
-                        <p className={`block font-sans antialiased font-normal leading-normal text-negro-una-2 ${TYPOGRAPHY.table.cell}`} title={element.description}>
-                            {truncateText(element.description, firstColumn.maxLength)}
-                        </p>
+                        <div className="flex flex-col">
+                            <p className={`block font-sans antialiased font-bold leading-normal text-negro-una-2 ${TYPOGRAPHY.table.cell}`} title={element.description}>
+                                {truncateText(element.description, firstColumn.maxLength)}
+                            </p>
+                            {parentHelper}
+                        </div>
                     );
                 }
-                return <span className={`${TYPOGRAPHY.table.cell} text-gris-una`}>—</span>;
+                return (
+                    <div className="flex flex-col">
+                        <span className={`${TYPOGRAPHY.table.cell} text-gris-una`}>—</span>
+                        {parentHelper}
+                    </div>
+                );
             }
         },
         {
@@ -240,7 +260,7 @@ export const StructureTable: React.FC<StructureTableProps> = ({
             //agregar espaciado
             render: (_, element) => (
                 <div className="flex flex-col justify-start">
-                    <p className={`block font-sans antialiased font-normal leading-normal text-negro-una-2 ${TYPOGRAPHY.table.cell}`}>
+                    <p className={`block font-sans antialiased font-bold leading-normal text-negro-una-2 ${TYPOGRAPHY.table.cell}`}>
                         {ELEMENT_TYPE_LABELS[element.type]}
                     </p>
                     {element.nomenclature && (

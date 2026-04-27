@@ -459,7 +459,7 @@ export const MultiSelect: React.FC<MultiSelectProps> = ({
               'focus:outline-none focus:border-gris-una',
               'disabled:bg-blanco-una disabled:cursor-not-allowed',
               'peer',
-              error ? 'border-rojo-una-2' : 'border-gris-light bg-blanco-una',
+              error ? 'border-error' : 'border-gris-light bg-blanco-una',
               disabled
                 ? 'bg-gris-una/10 border-gris-light text-gris-una'
                 : isOpen && 'border-gris-una/20'
@@ -501,14 +501,14 @@ export const MultiSelect: React.FC<MultiSelectProps> = ({
                 'peer-focus:top-0 peer-focus:scale-75 peer-focus:-translate-y-1/2',
                 'bg-transparent px-1 floating-label-halo',
                 error
-                  ? 'text-rojo-una-2'
+                  ? 'text-error'
                   : hasValue || isOpen
                     ? 'text-gris-una font-semibold'
                     : 'text-gris-una peer-focus:text-gris-una peer-focus:font-semibold',
               )}
             >
               {label}
-              {required && <span className="text-rojo-una-2 ml-1">*</span>}
+              {required && <span className="text-error ml-1">*</span>}
             </label>
           )}
         </div>
@@ -525,8 +525,8 @@ export const MultiSelect: React.FC<MultiSelectProps> = ({
 
         {/* Error */}
         {error && (
-          <p className={`text-rojo-una-2 ${TYPOGRAPHY.form.helper} flex items-center gap-2`}>
-            <SystemIcons.interface.alert className={`${ICON_SIZES.sm} shrink-0 text-rojo-una-2`} />
+          <p className={`text-error ${TYPOGRAPHY.form.helper} flex items-center gap-2`}>
+            <SystemIcons.interface.alert className={`${ICON_SIZES.sm} shrink-0 text-error`} />
             {error}
           </p>
         )}
@@ -543,7 +543,7 @@ export const MultiSelect: React.FC<MultiSelectProps> = ({
           disabled ? 'text-gris-una' : 'text-negro-una'
         )}>
           {label}
-          {required && <span className="text-rojo-una-2 ml-1">*</span>}
+          {required && <span className="text-error ml-1">*</span>}
         </label>
       )}
 
@@ -557,7 +557,7 @@ export const MultiSelect: React.FC<MultiSelectProps> = ({
           disabled
             ? 'bg-gris-una/10 border-gris-una/5 text-gris-una'
             : error
-              ? 'border-rojo-una-2'
+              ? 'border-error'
               : 'border-gris-una bg-blanco-una-2 hover:border-gris-una-2',
           isOpen && !disabled && 'border-gris-una-3'
         )}
@@ -594,8 +594,8 @@ export const MultiSelect: React.FC<MultiSelectProps> = ({
       )}
 
       {error && (
-        <p className={`text-rojo-una-2 ${TYPOGRAPHY.form.helper} flex items-center gap-2 mt-2`}>
-          <SystemIcons.interface.alert className={`${ICON_SIZES.sm} shrink-0 text-rojo-una-2`} />
+        <p className={`text-error ${TYPOGRAPHY.form.helper} flex items-center gap-2 mt-2`}>
+          <SystemIcons.interface.alert className={`${ICON_SIZES.sm} shrink-0 text-error`} />
           {error}
         </p>
       )}

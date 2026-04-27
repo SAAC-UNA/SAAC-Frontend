@@ -260,6 +260,7 @@ const StructureModelsPage: React.FC = () => {
       <StructureList
         title={structureModuleInfo.title}
         description={structureModuleInfo.description}
+        showModelsBreadcrumb
       />
     );
   }
@@ -317,7 +318,7 @@ const StructureModelsPage: React.FC = () => {
       <PageHeader
         title={moduleInfo.title}
         description={moduleInfo.description}
-        breadcrumbMode="none"
+        breadcrumbMode="simple"
         headerExtra={
           <Tooltip>
             <TooltipTrigger asChild>

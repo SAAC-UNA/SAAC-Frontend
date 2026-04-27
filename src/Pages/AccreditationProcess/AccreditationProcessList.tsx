@@ -181,6 +181,8 @@ export const AccreditationProcessList: React.FC = () => {
     processId?: string,
   ): Promise<AccreditationProcess | null> => {
     validateBusinessRules(formData, processId);
+    const isImprovementProcess = formData.type === "Compromiso de mejora";
+    const description = isImprovementProcess ? formData.description.trim() : "";
 
     const selectedCycle = cycles.find(
       (cycle) => cycle.id === formData.accreditationCycleId,
@@ -193,6 +195,7 @@ export const AccreditationProcessList: React.FC = () => {
       const created = await accreditationProcessService.createProcess({
         ciclo_acreditacion_id: Number(formData.accreditationCycleId),
         tipo_proceso: formData.type,
+        ...(isImprovementProcess && { descripcion: description }),
         fecha_inicio: formData.startDate,
         fecha_finalizacion: formData.estimatedEndDate,
         activo: formData.status === "activo",
@@ -201,6 +204,7 @@ export const AccreditationProcessList: React.FC = () => {
       const normalizedCreated: AccreditationProcess = {
         ...created,
         type: created.type || formData.type,
+        description: created.description ?? description,
         status: created.status || formData.status,
         startDate: created.startDate || formData.startDate,
         estimatedEndDate: created.estimatedEndDate || formData.estimatedEndDate,
@@ -218,6 +222,7 @@ export const AccreditationProcessList: React.FC = () => {
     const updated = await accreditationProcessService.updateProcess(processId, {
       ciclo_acreditacion_id: Number(formData.accreditationCycleId),
       tipo_proceso: formData.type,
+      ...(isImprovementProcess && { descripcion: description }),
       fecha_inicio: formData.startDate,
       fecha_finalizacion: formData.estimatedEndDate,
       activo: formData.status === "activo",
@@ -227,6 +232,7 @@ export const AccreditationProcessList: React.FC = () => {
       ...updated,
       id: processId,
       type: updated.type || formData.type,
+      description: updated.description ?? description,
       status: updated.status || formData.status,
       startDate: updated.startDate || formData.startDate,
       estimatedEndDate: updated.estimatedEndDate || formData.estimatedEndDate,
@@ -264,6 +270,7 @@ export const AccreditationProcessList: React.FC = () => {
         cicloId: process.accreditationCycleId,
         startDate: process.startDate,
         estimatedEndDate: process.estimatedEndDate,
+        description: process.description,
         modeloTipo,
         modeloId: modeloId ? parseInt(modeloId) : undefined,
       },
@@ -278,6 +285,7 @@ export const AccreditationProcessList: React.FC = () => {
     const nextStatus = process.status === "activo" ? "inactivo" : "activo";
     const formData: AccreditationProcessFormData = {
       type: process.type,
+      description: process.description || "",
       accreditationCycleId: process.accreditationCycleId,
       status: nextStatus,
       startDate: process.startDate,
@@ -289,6 +297,9 @@ export const AccreditationProcessList: React.FC = () => {
     const updated = await accreditationProcessService.updateProcess(process.id, {
       ciclo_acreditacion_id: Number(process.accreditationCycleId),
       tipo_proceso: process.type,
+      ...(process.type === "Compromiso de mejora" && {
+        descripcion: process.description?.trim() ?? "",
+      }),
       fecha_inicio: process.startDate,
       fecha_finalizacion: process.estimatedEndDate,
       activo: nextStatus === "activo",

@@ -18,7 +18,7 @@ import { StatusBadge } from '@/Components/Ui/Feedback/StatusBadge';
 import { BADGE_COLORS } from '@/Constants/StatusBadges';
 import { useToast } from '@/Context/ToastContext';
 import { useStructureElements } from '@/Hooks/UseStructureElements';
-import { buildHierarchyPath } from '@/Components/Ui/Cards/StructureModelCard';
+import { buildHierarchyPath } from '@/Components/Ui/Layout/StructureModelCard';
 import { Card as KanbanCard, CardContent as KanbanCardContent } from '@/Components/Ui/KanbanBoard/card';
 import type { StructureModel, CreateModelForm, EditModelForm, TipoJerarquia } from '@/Types/StructureModelTypes';
 import { cn } from '@/Utils/ClassNames';

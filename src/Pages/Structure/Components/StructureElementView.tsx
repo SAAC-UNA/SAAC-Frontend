@@ -6,7 +6,6 @@
  */
 
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { Button } from '@/Components/Ui/Buttons/Button';
 import { PageHeader } from '@/Components/Ui/Index';
 import { Modal } from '@/Components/Ui/Modals/Modal';
@@ -55,7 +54,6 @@ export const StructureElementsView: React.FC<Props> = ({
   onDeleteRequest,
 }) => {
   const { showToast } = useToast();
-  const navigate = useNavigate();
 
   const [formModal, setFormModal] = useState<{
     isOpen: boolean;
@@ -119,15 +117,13 @@ export const StructureElementsView: React.FC<Props> = ({
           description
           ?? (model.version ? `${model.nombre} · v${model.version}` : model.nombre)
         }
+        breadcrumbMode="simple"
+        breadcrumbParent={{
+          label: "Modelos de Acreditación",
+          href: ROUTES.STRUCTURE_MODELS,
+        }}
         headerExtra={
           <div className="flex items-center gap-2">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => navigate(ROUTES.STRUCTURE_MODELS)}
-            >
-              Regresar
-            </Button>
             <Button
               variant="secondary"
               size="sm"

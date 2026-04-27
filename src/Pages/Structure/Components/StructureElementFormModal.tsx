@@ -55,6 +55,7 @@ interface FormErrors {
   nombre?: string;
   nomenclatura?: string;
   descripcion?: string;
+  categoria?: string;
   padre_id?: string;
 }
 
@@ -159,7 +160,7 @@ export const StructureElementFormModal: React.FC<Props> = ({
     );
   }, [allElements, requiredParentType, element]);
 
-  const parentIsRequired = !isEditing && selectedHierarchyEntry !== null && !isRootTypeSelected;
+  const parentIsRequired = !isEditing && form.tipo.trim().length > 0 && !isRootTypeSelected;
 
   // Opciones de padre: filtradas por jerarquía si está definida
   const parentOptions = useMemo(() => {
@@ -217,6 +218,11 @@ export const StructureElementFormModal: React.FC<Props> = ({
     const next: FormErrors = {};
     if (!form.tipo.trim()) next.tipo = 'El tipo es obligatorio.';
     else if (form.tipo.trim().length > 30) next.tipo = 'Máximo 30 caracteres.';
+    if (!form.nombre.trim()) next.nombre = 'El nombre es obligatorio.';
+    else if (form.nombre.length > 100) next.nombre = 'Máximo 100 caracteres.';
+    if (!form.nomenclatura.trim()) next.nomenclatura = 'La nomenclatura es obligatoria.';
+    else if (form.nomenclatura.length > 20) next.nomenclatura = 'Máximo 20 caracteres.';
+    if (!form.categoria) next.categoria = 'La categoría es obligatoria.';
     if (!isEditing && parentIsRequired) {
       if (matchingActiveParents.length === 0) {
         next.padre_id = requiredParentType
@@ -226,8 +232,6 @@ export const StructureElementFormModal: React.FC<Props> = ({
         next.padre_id = 'Debe seleccionar un elemento padre para este tipo.';
       }
     }
-    if (form.nombre.length > 100) next.nombre = 'Máximo 100 caracteres.';
-    if (form.nomenclatura.length > 20) next.nomenclatura = 'Máximo 20 caracteres.';
     if (form.descripcion.length > 500) next.descripcion = 'Máximo 500 caracteres.';
     setErrors(next);
     return Object.keys(next).length === 0;
@@ -312,6 +316,7 @@ export const StructureElementFormModal: React.FC<Props> = ({
           )}
           <Input
             label="Nombre"
+            required
             value={form.nombre}
             onChange={e => setForm(p => ({ ...p, nombre: e.target.value }))}
             error={errors.nombre}
@@ -321,6 +326,7 @@ export const StructureElementFormModal: React.FC<Props> = ({
           />
           <Input
             label="Nomenclatura"
+            required
             value={form.nomenclatura}
             onChange={e => setForm(p => ({ ...p, nomenclatura: e.target.value }))}
             error={errors.nomenclatura}
@@ -330,9 +336,11 @@ export const StructureElementFormModal: React.FC<Props> = ({
           />
           <CustomSelect
             label="Categoría"
+            required
             value={form.categoria}
             onChange={val => setForm(p => ({ ...p, categoria: val }))}
             options={CATEGORIA_OPTIONS}
+            error={errors.categoria}
           />
           {!isEditing && (
             <CustomSelect

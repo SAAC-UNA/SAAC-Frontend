@@ -16,7 +16,6 @@ import { SuccessModal } from '@/Components/Ui/Modals/SuccessModal';
 import { CreateConfirmationModal } from '@/Components/Ui/Modals/CreateConfirmationModal';
 import { useToast } from '@/Context/ToastContext';
 import { improvementCommitmentService } from '@/Services/ImprovementCommitmentService';
-import { Textarea } from '@/Components/Ui/Forms/Textarea';
 import { DateRangePicker, type DateRange } from '@/Components/Ui/Calendar/DateRangePicker';
 import type {
   CompromisoFormData,
@@ -34,7 +33,6 @@ import { SearchInput } from '@/Components/Ui/Forms/SearchInput';
 import { CustomSelect } from '@/Components/Ui/Forms/SingleSelect';
 import type { SelectOption } from '@/Components/Ui/Forms/SingleSelect';
 
-
 const CreateImprovementCommitment: React.FC = () => {
   const moduleInfo = getModuleInfo("improvement_commitments_create");
   const { showToast } = useToast();
@@ -48,6 +46,7 @@ const CreateImprovementCommitment: React.FC = () => {
     cicloId?: string;
     startDate?: string;
     estimatedEndDate?: string;
+    description?: string;
     modeloTipo?: string;
     modeloId?: number;
   };
@@ -55,6 +54,7 @@ const CreateImprovementCommitment: React.FC = () => {
   const cicloId     = locationState.cicloId     ?? undefined;
   const startDate   = locationState.startDate   ?? undefined;
   const estimatedEndDate = locationState.estimatedEndDate ?? undefined;
+  const processDescription = locationState.description ?? '';
   const modeloTipo  = locationState.modeloTipo  ?? undefined;
   const modeloIdRaw = locationState.modeloId    ?? undefined;
 
@@ -87,7 +87,7 @@ const CreateImprovementCommitment: React.FC = () => {
   const [formData, setFormData] = useState<CompromisoFormData>({
     ciclo_acreditacion_id: cicloId ? parseInt(cicloId) : null,
     proceso_id: procesoId ? parseInt(procesoId) : undefined,
-    descripcion: '',
+    descripcion: processDescription,
     fecha_inicio: startDate ?? '',
     fecha_fin: estimatedEndDate ?? '',
     criterios_seleccionados: [],
@@ -538,6 +538,10 @@ const CreateImprovementCommitment: React.FC = () => {
             title={moduleInfo.title}
             description={moduleInfo.description}
             breadcrumbMode="cycle-only"
+            breadcrumbParent={{
+              label: "Procesos de Acreditación",
+              href: ROUTES.ACCREDITATION_PROCESSES,
+            }}
             headerExtra={
               <div className="flex gap-4 items-center flex-wrap">
                 {!fromProcess && (
@@ -559,47 +563,19 @@ const CreateImprovementCommitment: React.FC = () => {
                   placeholder="Buscar elementos..."
                   className="w-72"
                 />
+                <Button
+                  onClick={handleConfirmCreate}
+                  disabled={isSubmitting}
+                  variant="secondary"
+                >
+                  Configurar
+                </Button>
               </div>
             }
           />
 
           {/* Información y acciones del compromiso */}
           <div className="space-y-4">
-            <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
-              <Button
-                variant="secondary"
-                onClick={() => navigate(ROUTES.ACCREDITATION_PROCESSES)}
-                disabled={isSubmitting}
-                standardWidth
-                size="sm"
-                className="lg:mt-2"
-              >
-                Regresar
-              </Button>
-
-              <div className="w-full max-w-xl">
-                <Textarea
-                  label="Descripción del Compromiso (opcional)"
-                  value={formData.descripcion}
-                  onChange={(e) => updateFormData({ descripcion: e.target.value })}
-                  placeholder="Descripción general del compromiso de mejora..."
-                  rows={3}
-                  maxLength={100}
-                  characterCount
-                  error={errors.descripcion}
-                />
-              </div>
-
-              <Button
-                onClick={handleConfirmCreate}
-                disabled={isSubmitting}
-                variant="primary"
-                className="lg:mt-2"
-              >
-                Configurar
-              </Button>
-            </div>
-
             {!fromProcess && (
               <div className="flex justify-center">
                 <div className="w-80">

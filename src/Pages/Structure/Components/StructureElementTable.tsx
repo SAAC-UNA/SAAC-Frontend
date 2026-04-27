@@ -105,6 +105,18 @@ export const FlexibleElementTable: React.FC<FlexibleElementTableProps> = ({
     setCurrentPage(boundedCurrentPage);
   }
 
+  const getParentLabel = (element: FlexibleElement): string => {
+    if (!element.padre_id) return '';
+
+    const parent = elements.find((el) => el.elemento_id === element.padre_id);
+    if (!parent) return 'Elemento padre no encontrado';
+
+    const parentDisplayName = parent.nombre || parent.descripcion || parent.tipo;
+    return parent.nomenclatura
+      ? `${parent.nomenclatura} - ${parentDisplayName}`
+      : parentDisplayName;
+  };
+
   const columns: DataTableColumn<FlexibleElement>[] = [
     {
       key: 'descripcion',
@@ -114,6 +126,15 @@ export const FlexibleElementTable: React.FC<FlexibleElementTableProps> = ({
       render: (_, element) => {
         const hasNombre = Boolean(element.nombre);
         const hasDesc = Boolean(element.descripcion);
+        const parentLabel = getParentLabel(element);
+        const parentHelper = parentLabel ? (
+          <p
+            className={`${TYPOGRAPHY.table.helper} text-gris-una mt-0.5`}
+            title={parentLabel}
+          >
+            {truncateText(parentLabel, firstColumn.maxLength)}
+          </p>
+        ) : null;
 
         if (hasNombre && hasDesc) {
           return (
@@ -124,39 +145,45 @@ export const FlexibleElementTable: React.FC<FlexibleElementTableProps> = ({
               >
                 {truncateText(element.nombre, firstColumn.maxLength)}
               </p>
-              <p
-                className={`${TYPOGRAPHY.table.helper} text-gris-una mt-0.5`}
-                title={element.descripcion!}
-              >
-                {truncateText(element.descripcion, firstColumn.maxLength)}
-              </p>
+              {parentHelper}
             </div>
           );
         }
 
         if (hasNombre) {
           return (
-            <p
-              className={`block font-sans antialiased font-bold leading-normal text-negro-una-2 ${TYPOGRAPHY.table.cell}`}
-              title={element.nombre!}
-            >
-              {truncateText(element.nombre, firstColumn.maxLength)}
-            </p>
+            <div className="flex flex-col">
+              <p
+                className={`block font-sans antialiased font-bold leading-normal text-negro-una-2 ${TYPOGRAPHY.table.cell}`}
+                title={element.nombre!}
+              >
+                {truncateText(element.nombre, firstColumn.maxLength)}
+              </p>
+              {parentHelper}
+            </div>
           );
         }
 
         if (hasDesc) {
           return (
-            <p
-              className={`block font-sans antialiased font-normal leading-normal text-negro-una-2 ${TYPOGRAPHY.table.cell}`}
-              title={element.descripcion!}
-            >
-              {truncateText(element.descripcion, firstColumn.maxLength)}
-            </p>
+            <div className="flex flex-col">
+              <p
+                className={`block font-sans antialiased font-normal leading-normal text-negro-una-2 ${TYPOGRAPHY.table.cell}`}
+                title={element.descripcion!}
+              >
+                {truncateText(element.descripcion, firstColumn.maxLength)}
+              </p>
+              {parentHelper}
+            </div>
           );
         }
 
-        return <span className={`${TYPOGRAPHY.table.cell} text-gris-una`}>—</span>;
+        return (
+          <div className="flex flex-col">
+            <span className={`${TYPOGRAPHY.table.cell} text-gris-una`}>—</span>
+            {parentHelper}
+          </div>
+        );
       },
     },
     {

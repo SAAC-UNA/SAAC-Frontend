@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { CustomSelect } from "@/Components/Ui/Index";
 import { DatePicker } from "@/Components/Ui/Calendar/DatePicker";
+import { Textarea } from "@/Components/Ui/Forms/Textarea";
 import type {
   AccreditationCycle,
   AccreditationProcess,
@@ -17,10 +18,13 @@ interface AccreditationProcessFormContentProps {
 
 interface ValidationErrors {
   type?: string;
+  description?: string;
   accreditationCycleId?: string;
   startDate?: string;
   estimatedEndDate?: string;
 }
+
+const IMPROVEMENT_PROCESS_TYPE = "Compromiso de mejora";
 
 const PROCESS_TYPE_OPTIONS = [
   { value: "Autoevaluación", label: "Autoevaluación" },
@@ -34,6 +38,7 @@ export const AccreditationProcessFormContent: React.FC<
 
   const [formData, setFormData] = useState<AccreditationProcessFormData>({
     type: initialData?.type || "",
+    description: initialData?.description || "",
     accreditationCycleId: initialData?.accreditationCycleId || "",
     status: initialData?.status || "activo",
     startDate: initialData?.startDate || "",
@@ -41,6 +46,7 @@ export const AccreditationProcessFormContent: React.FC<
   });
 
   const [errors, setErrors] = useState<ValidationErrors>({});
+  const showDescription = formData.type === IMPROVEMENT_PROCESS_TYPE;
 
   const cycleOptions = useMemo(
     () =>
@@ -64,6 +70,7 @@ export const AccreditationProcessFormContent: React.FC<
 
     const hasChanges =
       formData.type !== (initialData?.type || "") ||
+      formData.description !== (initialData?.description || "") ||
       formData.accreditationCycleId !==
         (initialData?.accreditationCycleId || "") ||
       formData.status !== (initialData?.status || "activo") ||
@@ -78,6 +85,10 @@ export const AccreditationProcessFormContent: React.FC<
 
     if (!formData.type) {
       nextErrors.type = "El tipo de proceso es obligatorio";
+    }
+
+    if (showDescription && formData.description.length > 100) {
+      nextErrors.description = "La descripciÃ³n no puede exceder 100 caracteres";
     }
 
     if (!formData.accreditationCycleId) {
@@ -111,8 +122,18 @@ export const AccreditationProcessFormContent: React.FC<
     key: K,
     value: AccreditationProcessFormData[K],
   ) => {
-    setFormData((prev) => ({ ...prev, [key]: value }));
-    setErrors((prev) => ({ ...prev, [key]: undefined }));
+    setFormData((prev) => ({
+      ...prev,
+      [key]: value,
+      ...(key === "type" && value !== IMPROVEMENT_PROCESS_TYPE
+        ? { description: "" }
+        : {}),
+    }));
+    setErrors((prev) => ({
+      ...prev,
+      [key]: undefined,
+      ...(key === "type" ? { description: undefined } : {}),
+    }));
   };
 
   const handleSubmit = (event: React.FormEvent) => {
@@ -147,6 +168,19 @@ export const AccreditationProcessFormContent: React.FC<
           disabled={isEditing}
         />
       </div>
+
+      {showDescription && (
+        <Textarea
+          label="Descripción del Compromiso (opcional)"
+          value={formData.description}
+          onChange={(e) => handleFieldChange("description", e.target.value)}
+          placeholder="Descripción general del compromiso de mejora..."
+          rows={3}
+          maxLength={100}
+          characterCount
+          error={errors.description}
+        />
+      )}
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
         <DatePicker

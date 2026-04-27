@@ -9,7 +9,7 @@ import {
   ActionCard,
   type ActionCardAction,
   type ActionCardBadge,
-} from "./ActionCard";
+} from "../Layout/ActionCard";
 
 const TRADITIONAL_HIERARCHY = "Dimension > Componente > Criterio > Evidencia";
 
