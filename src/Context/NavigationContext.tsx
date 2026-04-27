@@ -76,6 +76,9 @@ export const NavigationProvider: React.FC<NavigationProviderProps> = ({
     if (path.startsWith(ROUTES.STRUCTURE)) {
       return { activeId: "estructura", parentId: "acreditacion" };
     }
+    if (path.startsWith(ROUTES.ACCREDITATION)) {
+      return { activeId: "gestion-acreditacion", parentId: "acreditacion" };
+    }
     if (path.startsWith(ROUTES.USERS)) {
       return { activeId: "usuarios", parentId: "administracion" };
     }

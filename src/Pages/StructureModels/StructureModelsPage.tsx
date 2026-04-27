@@ -1,5 +1,5 @@
 /**
- * StructureModelsPage - Página de gestión de modelos de acreditación.
+ * StructureModelsPage - PÃ¡gina de gestiÃ³n de modelos de acreditaciÃ³n.
  *
  * Vista "modelos": tarjetas de cada modelo (tradicional + flexibles).
  * Vista "estructura": elementos del modelo seleccionado (?modelo=0 tradicional, ?modelo=<id> flexible).
@@ -50,7 +50,15 @@ const getModelIdFromSearchParams = (params: URLSearchParams): number | null => {
 
 const notifiedInvalidModelIds = new Set<number>();
 
-const StructureModelsPage: React.FC = () => {
+type StructureModelsPageProps = {
+  embedded?: boolean;
+  onHeaderExtraChange?: (headerExtra: React.ReactNode) => void;
+};
+
+const StructureModelsPage: React.FC<StructureModelsPageProps> = ({
+  embedded = false,
+  onHeaderExtraChange,
+}) => {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const { showToast } = useToast();
@@ -104,7 +112,7 @@ const StructureModelsPage: React.FC = () => {
         notifiedInvalidModelIds.add(selectedModelId);
         showToast({
           type: "error",
-          title: "El modelo seleccionado no existe o no está disponible.",
+          title: "El modelo seleccionado no existe o no estÃ¡ disponible.",
         });
       }
     }
@@ -158,7 +166,51 @@ const StructureModelsPage: React.FC = () => {
   const moduleInfo = getModuleInfo("accreditation_models");
   const structureModuleInfo = getModuleInfo("structure_list");
 
-  // ── Handlers ──────────────────────────────────────────────────────────────
+  const headerExtra = useMemo(
+    () => (
+      <div className="flex items-center gap-2">
+        {!embedded && (
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => navigate(ROUTES.ACCREDITATION_CYCLES)}
+              >
+                Ir a Ciclos
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent side="bottom">
+              Ir a ciclos de acreditaciÃƒÂ³n
+            </TooltipContent>
+          </Tooltip>
+        )}
+
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button
+              variant="secondary"
+              size="sm"
+              onClick={() => setFormModal({ isOpen: true, model: null })}
+            >
+              Crear
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent side="bottom">Crear nuevo modelo</TooltipContent>
+        </Tooltip>
+      </div>
+    ),
+    [embedded, navigate],
+  );
+
+  useEffect(() => {
+    if (!embedded) return undefined;
+
+    onHeaderExtraChange?.(headerExtra);
+    return () => onHeaderExtraChange?.(null);
+  }, [embedded, headerExtra, onHeaderExtraChange]);
+
+  // â”€â”€ Handlers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
   const handleCreateConfirm = async (form: CreateModelForm | EditModelForm) => {
     return createModel(form as CreateModelForm);
@@ -255,7 +307,7 @@ const StructureModelsPage: React.FC = () => {
     });
   };
 
-  // ── Render ────────────────────────────────────────────────────────────────
+  // â”€â”€ Render â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
   if (selectedModelId === 0) {
     return (
@@ -297,7 +349,7 @@ const StructureModelsPage: React.FC = () => {
               ? "Solo se puede eliminar si no tiene elementos hijos."
               : undefined
           }
-          confirmLabel="Sí, eliminar"
+          confirmLabel="SÃ­, eliminar"
           cancelLabel="Cancelar"
           variant="danger"
           isLoading={flexDeleteModal.loading}
@@ -315,45 +367,16 @@ const StructureModelsPage: React.FC = () => {
     );
   }
 
-  return (
-    <ScreenContainer>
-      <PageHeader
-        title={moduleInfo.title}
-        description={moduleInfo.description}
-        breadcrumbMode="simple"
-        headerExtra={
-          <div className="flex items-center gap-2">
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => navigate(ROUTES.ACCREDITATION_CYCLES)}
-                >
-                  Ir a Ciclos
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent side="bottom">
-                Ir a ciclos de acreditación
-              </TooltipContent>
-            </Tooltip>
-
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button
-                  variant="secondary"
-                  size="sm"
-                  onClick={() => setFormModal({ isOpen: true, model: null })}
-                >
-                  Crear
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent side="bottom">Crear nuevo modelo</TooltipContent>
-            </Tooltip>
-          </div>
-        }
-      />
-
+  const content = (
+    <>
+      {!embedded && (
+        <PageHeader
+          title={moduleInfo.title}
+          description={moduleInfo.description}
+          breadcrumbMode="simple"
+          headerExtra={headerExtra}
+        />
+      )}
       {isLoading ? (
         <LoadingSpinner variant="loader" />
       ) : (
@@ -437,11 +460,11 @@ const StructureModelsPage: React.FC = () => {
           variant={toggleModal.model.activo ? "info" : "success"}
           title={
             toggleModal.model.activo
-              ? "Confirmar inactivación"
-              : "Confirmar activación"
+              ? "Confirmar inactivaciÃ³n"
+              : "Confirmar activaciÃ³n"
           }
           confirmLabel={
-            toggleModal.model.activo ? "Sí, inactivar" : "Sí, activar"
+            toggleModal.model.activo ? "SÃ­, inactivar" : "SÃ­, activar"
           }
           cancelLabel="Cancelar"
           confirmLoading={toggleModal.loading}
@@ -449,7 +472,7 @@ const StructureModelsPage: React.FC = () => {
           showConfirm
           footerMeta={
             toggleModal.model.activo
-              ? "Esta acción puede ser revertida"
+              ? "Esta acciÃ³n puede ser revertida"
               : undefined
           }
         >
@@ -459,7 +482,7 @@ const StructureModelsPage: React.FC = () => {
               "text-gris-una-2 leading-relaxed wrap-anywhere",
             )}
           >
-            ¿Está seguro de que desea{" "}
+            Â¿EstÃ¡ seguro de que desea{" "}
             {toggleModal.model.activo ? "inactivar" : "activar"} el modelo{" "}
             <strong className="text-negro-una">
               "{toggleModal.model.nombre}"
@@ -477,8 +500,12 @@ const StructureModelsPage: React.FC = () => {
           setSuccessModal({ isOpen: false, title: "", message: "" })
         }
       />
-    </ScreenContainer>
+    </>
   );
+
+  if (embedded) return content;
+
+  return <ScreenContainer>{content}</ScreenContainer>;
 };
 
 export default StructureModelsPage;

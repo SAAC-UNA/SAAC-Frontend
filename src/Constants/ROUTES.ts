@@ -53,6 +53,7 @@ export const ROUTES = {
   // ---------------------------------------------------------------------------
   // Acreditación
   // ---------------------------------------------------------------------------
+  ACCREDITATION: "/acreditacion",
   ACCREDITATION_CYCLES: "/ciclos-acreditacion",
   ACCREDITATION_PROCESSES: "/procesos-acreditacion",
 

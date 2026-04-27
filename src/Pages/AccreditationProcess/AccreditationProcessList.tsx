@@ -1,5 +1,5 @@
 /**
- * AccreditationProcessList - Página de listado de procesos de acreditación
+ * AccreditationProcessList - PÃ¡gina de listado de procesos de acreditaciÃ³n
  *
  * Basada en el patron de Gestion de Estructura: header con acciones y tabla separada.
  */
@@ -28,7 +28,15 @@ import { AccreditationProcessTable } from "./Components/AccreditationProcessTabl
 import { AccreditationProcessDetailsModal } from "./Components/AccreditationProcessDetailsModal";
 import { AccreditationProcessFormModal } from "./Components/AccreditationProcessFormModal";
 
-export const AccreditationProcessList: React.FC = () => {
+type AccreditationProcessListProps = {
+  embedded?: boolean;
+  onHeaderExtraChange?: (headerExtra: React.ReactNode) => void;
+};
+
+export const AccreditationProcessList: React.FC<AccreditationProcessListProps> = ({
+  embedded = false,
+  onHeaderExtraChange,
+}) => {
   const moduleInfo = getModuleInfo("accreditation_processes");
   const navigate = useNavigate();
 
@@ -157,7 +165,7 @@ export const AccreditationProcessList: React.FC = () => {
     }
 
     if (!formData.accreditationCycleId) {
-      throw new Error("Debe seleccionar un ciclo de acreditación.");
+      throw new Error("Debe seleccionar un ciclo de acreditaciÃ³n.");
     }
 
     const duplicateActive = processes.some(
@@ -331,9 +339,38 @@ export const AccreditationProcessList: React.FC = () => {
     setDeleteModalState({ isOpen: true, process });
   };
 
-  const handleCreateProcess = () => {
+  const handleCreateProcess = useCallback(() => {
     setFormModalState({ isOpen: true, process: null });
-  };
+  }, []);
+
+  const headerExtra = useMemo(
+    () => (
+      <div className="flex flex-col sm:flex-row w-full gap-2 shrink-0 lg:w-auto">
+        <SearchInput
+          placeholder="Buscar procesos..."
+          value={searchQuery}
+          onChange={setSearchQuery}
+          className="w-full sm:w-72 text-sidebar"
+        />
+        <Button
+          variant="secondary"
+          size="sm"
+          onClick={handleCreateProcess}
+          className="gap-2"
+        >
+          Crear
+        </Button>
+      </div>
+    ),
+    [handleCreateProcess, searchQuery],
+  );
+
+  useEffect(() => {
+    if (!embedded) return undefined;
+
+    onHeaderExtraChange?.(headerExtra);
+    return () => onHeaderExtraChange?.(null);
+  }, [embedded, headerExtra, onHeaderExtraChange]);
 
   const confirmDeleteProcess = async (confirmacion: string) => {
     if (!deleteModalState.process) return;
@@ -357,32 +394,16 @@ export const AccreditationProcessList: React.FC = () => {
     }
   };
 
-  return (
-    <ScreenContainer>
-      <PageHeader
-        title={moduleInfo.title}
-        description={moduleInfo.description}
-        breadcrumbMode="cycle-only"
-        headerExtra={
-          <div className="flex flex-col sm:flex-row w-full gap-2 shrink-0 lg:w-auto">
-            <SearchInput
-              placeholder="Buscar procesos..."
-              value={searchQuery}
-              onChange={setSearchQuery}
-              className="w-full sm:w-72 text-sidebar"
-            />
-            <Button
-              variant="secondary"
-              size="sm"
-              onClick={handleCreateProcess}
-              className="gap-2"
-            >
-              Crear
-            </Button>
-          </div>
-        }
-      />
-
+  const content = (
+    <>
+      {!embedded && (
+        <PageHeader
+          title={moduleInfo.title}
+          description={moduleInfo.description}
+          breadcrumbMode="cycle-only"
+          headerExtra={headerExtra}
+        />
+      )}
       <AccreditationProcessTable
         processes={visibleProcesses}
         isLoading={isLoading}
@@ -424,6 +445,10 @@ export const AccreditationProcessList: React.FC = () => {
         title="Proceso eliminado"
         message={`El proceso "${deleteSuccessState.processType}" ha sido eliminado correctamente.`}
       />
-    </ScreenContainer>
+    </>
   );
+
+  if (embedded) return content;
+
+  return <ScreenContainer>{content}</ScreenContainer>;
 };

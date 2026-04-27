@@ -1,5 +1,11 @@
 import { lazy, Suspense, useEffect, useState } from "react";
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import {
+  BrowserRouter,
+  Routes,
+  Route,
+  Navigate,
+  useLocation,
+} from "react-router-dom";
 import { ROUTES } from "@/Constants/ROUTES";
 import { AuthProvider } from "@/Context/AuthContext";
 import { NavigationProvider } from "@/Context/NavigationContext";
@@ -36,13 +42,10 @@ const EditUserPage = lazy(() =>
   import("./Pages/Users").then((m) => ({ default: m.EditUserPage })),
 );
 const StructureList = lazy(() => import("@/Pages/Structure/StructureList"));
-const StructureModelsPage = lazy(
-  () => import("@/Pages/StructureModels/StructureModelsPage"),
+const AccreditationModulePage = lazy(
+  () => import("@/Pages/Accreditation/AccreditationModulePage"),
 );
 const ContextSelector = lazy(() => import("@/Pages/ContextSelector"));
-const AccreditationCyclesPage = lazy(
-  () => import("@/Pages/AccreditationCycles/AccreditationCyclesPage"),
-);
 const EvidenceAssignment = lazy(
   () => import("./Pages/EvidenceAssignment/EvidenceAssignment"),
 );
@@ -67,11 +70,6 @@ const ImprovementCommitmentsList = lazy(
 );
 const ImprovementCommitmentDetail = lazy(
   () => import("./Pages/ImprovementCommitments/CompromisoDetalle"),
-);
-const AccreditationProcessList = lazy(() =>
-  import("./Pages/AccreditationProcess/AccreditationProcessList").then((m) => ({
-    default: m.AccreditationProcessList,
-  })),
 );
 const BlockApproval = lazy(() => import("./Pages/BlockApproval/BlockApproval"));
 const FinalReports = lazy(() =>
@@ -109,6 +107,23 @@ const PageLoader = () => (
     <LoadingSpinner variant="loader" />
   </div>
 );
+
+const RedirectToAccreditationSection = ({
+  section,
+}: {
+  section: "modelos" | "ciclos" | "procesos";
+}) => {
+  const location = useLocation();
+  const searchParams = new URLSearchParams(location.search);
+  searchParams.set("seccion", section);
+
+  return (
+    <Navigate
+      to={`${ROUTES.ACCREDITATION}?${searchParams.toString()}`}
+      replace
+    />
+  );
+};
 
 function App() {
   const [contextRenderKey, setContextRenderKey] = useState(0);
@@ -265,12 +280,32 @@ function App() {
 
                             {/* Modelos de Acreditación - Administrador y Superusuario */}
                             <Route
+                              path={ROUTES.ACCREDITATION}
+                              element={
+                                <ProtectedRoute
+                                  requireCapabilities={[
+                                    CAPABILITIES.ACCREDITATION_MODEL_VIEW,
+                                    CAPABILITIES.ACCREDITATION_CYCLE_VIEW,
+                                    CAPABILITIES.ACCREDITATION_PROCESS_VIEW,
+                                  ]}
+                                  requirePermissions={[
+                                    "modelos.view",
+                                    "ciclos.view",
+                                    "procesos.view",
+                                  ]}
+                                >
+                                  <AccreditationModulePage />
+                                </ProtectedRoute>
+                              }
+                            />
+
+                            <Route
                               path={ROUTES.STRUCTURE_MODELS}
                               element={
                                 <ProtectedRoute
                                   requirePermissions={["modelos.view"]}
                                 >
-                                  <StructureModelsPage />
+                                  <RedirectToAccreditationSection section="modelos" />
                                 </ProtectedRoute>
                               }
                             />
@@ -282,7 +317,7 @@ function App() {
                                 <ProtectedRoute
                                   requirePermissions={["ciclos.view"]}
                                 >
-                                  <AccreditationCyclesPage />
+                                  <RedirectToAccreditationSection section="ciclos" />
                                 </ProtectedRoute>
                               }
                             />
@@ -422,7 +457,7 @@ function App() {
                                 <ProtectedRoute
                                   requirePermissions={["procesos.view"]}
                                 >
-                                  <AccreditationProcessList />
+                                  <RedirectToAccreditationSection section="procesos" />
                                 </ProtectedRoute>
                               }
                             />
