@@ -9,7 +9,6 @@ import { EntityFormModal } from "@/Components/Ui/Modals/EntityFormModal";
 import { CreateConfirmationModal } from "@/Components/Ui/Modals/CreateConfirmationModal";
 import { EditConfirmationModal } from "@/Components/Ui/Modals/EditConfirmationModal";
 import { SuccessModal } from "@/Components/Ui/Modals/SuccessModal";
-import { DatePicker } from "@/Components/Ui/Calendar/DatePicker";
 import { CustomSelect } from "@/Components/Ui/Index";
 import { TYPOGRAPHY } from "@/Constants/Typography";
 import { useToast } from "@/Context/ToastContext";
@@ -22,6 +21,12 @@ import type {
   CreateAccreditationCycleForm,
   EditAccreditationCycleForm,
 } from "@/Types/AccreditationCycleTypes";
+
+const CURRENT_YEAR = new Date().getFullYear();
+const YEAR_OPTIONS = Array.from({ length: CURRENT_YEAR + 15 - 1999 }, (_, i) => {
+  const year = String(2000 + i);
+  return { value: year, label: year };
+});
 
 interface Props {
   isOpen: boolean;
@@ -120,13 +125,13 @@ export const AccreditationCycleFormModal: React.FC<Props> = ({
       next.modelo_estructura_id = "Debe seleccionar un modelo de estructura.";
     }
     if (!form.fecha_inicio) {
-      next.fecha_inicio = "La fecha de inicio es obligatoria.";
+      next.fecha_inicio = "El año de inicio es obligatorio.";
     }
     if (!form.fecha_fin) {
-      next.fecha_fin = "La fecha de fin es obligatoria.";
-    } else if (form.fecha_inicio && form.fecha_fin < form.fecha_inicio) {
+      next.fecha_fin = "El año de fin es obligatorio.";
+    } else if (form.fecha_inicio && Number(form.fecha_fin) < Number(form.fecha_inicio)) {
       next.fecha_fin =
-        "La fecha de fin debe ser mayor o igual a la fecha de inicio.";
+        "El año de fin debe ser mayor o igual al año de inicio.";
     }
     setErrors(next);
     return Object.keys(next).length === 0;
@@ -266,29 +271,36 @@ export const AccreditationCycleFormModal: React.FC<Props> = ({
             placeholder="Seleccione un modelo"
           />
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <DatePicker
-              label="Fecha de inicio"
+            <CustomSelect
+              label="Año de inicio"
               required
               value={form.fecha_inicio}
-              onChange={(date) =>
+              options={YEAR_OPTIONS}
+              onChange={(v) =>
                 setForm((p) => {
-                  const next = { ...p, fecha_inicio: date };
-                  if (next.fecha_fin && date && next.fecha_fin < date) {
+                  const next = { ...p, fecha_inicio: v };
+                  if (next.fecha_fin && v && Number(next.fecha_fin) < Number(v)) {
                     next.fecha_fin = "";
                   }
                   return next;
                 })
               }
               error={errors.fecha_inicio}
+              placeholder="Seleccione un año"
             />
 
-            <DatePicker
-              label="Fecha de fin"
+            <CustomSelect
+              label="Año de fin"
               required
               value={form.fecha_fin}
-              onChange={(date) => setForm((p) => ({ ...p, fecha_fin: date }))}
-              minDate={form.fecha_inicio || undefined}
+              options={
+                form.fecha_inicio
+                  ? YEAR_OPTIONS.filter((o) => Number(o.value) >= Number(form.fecha_inicio))
+                  : YEAR_OPTIONS
+              }
+              onChange={(v) => setForm((p) => ({ ...p, fecha_fin: v }))}
               error={errors.fecha_fin}
+              placeholder="Seleccione un año"
             />
           </div>
         </div>

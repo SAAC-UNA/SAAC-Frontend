@@ -8,7 +8,6 @@ import { TYPOGRAPHY } from "@/Constants/Typography";
 import { TABLE_TRUNCATE } from "@/Constants/TableTruncate";
 import { TABLE_COLUMN_WIDTHS } from "@/Constants/Components";
 import { cn } from "@/Utils/ClassNames";
-import { formatDateShort } from "@/Utils/DateUtils";
 import { ACCREDITATION_CYCLE_STATUS_BADGE } from "@/Constants/StatusBadges";
 import type { DataTableColumn } from "@/Components/Ui/Table/DataTable";
 import type { AccreditationCycle } from "@/Types/AccreditationCycleTypes";
@@ -137,12 +136,12 @@ export const AccreditationCyclesTable: React.FC<
               <p
                 className={`block font-sans antialiased font-normal leading-normal text-negro-una-2 ${TYPOGRAPHY.table.cell}`}
               >
-                Inicio: {formatDateShort(item.fecha_inicio)}
+                Inicio: {item.fecha_inicio ?? "—"}
               </p>
               <p
                 className={`block font-sans antialiased font-normal leading-normal text-negro-una-2 ${TYPOGRAPHY.table.cell}`}
               >
-                Fin: {formatDateShort(item.fecha_fin)}
+                Fin: {item.fecha_fin ?? "—"}
               </p>
             </div>
           );
