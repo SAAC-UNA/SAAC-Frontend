@@ -274,6 +274,15 @@ const MODULE_INFO: Record<string, ModuleInfo> = {
     shortDescription: "Gestionar procesos de acreditación",
   },
 
+  // Estructura Institucional
+  institutional_structure: {
+    title: "Estructura Institucional",
+    subtitle: "Universidades, Sedes y Carreras",
+    description:
+      "Gestione las universidades, sedes y carreras registradas en el sistema.",
+    shortDescription: "Gestionar estructura institucional",
+  },
+
   // Informes de Acreditación
   accreditation_report_admin: {
     title: "Informes de Acreditación",

@@ -13,31 +13,35 @@ import AccreditationCyclesPage from "@/Pages/AccreditationCycles/AccreditationCy
 import { AccreditationProcessList } from "@/Pages/AccreditationProcess";
 import type { CommitmentConfigurationState } from "@/Pages/AccreditationProcess/AccreditationProcessList";
 import CreateImprovementCommitment from "@/Pages/ImprovementCommitments/CreateImprovementCommitment";
+import { InstitutionalStructurePage } from "@/Pages/InstitutionalStructure";
 import type { BreadcrumbItem } from "@/Components/Ui/Feedback/Breadcrumb";
 
 const SECTIONS = [
   "Modelo de acreditación",
   "Ciclos de acreditación",
   "Procesos de acreditación",
+  "Estructura institucional",
 ] as const;
 
 type AccreditationSection = (typeof SECTIONS)[number];
-type SectionKey = "modelos" | "ciclos" | "procesos";
+type SectionKey = "modelos" | "ciclos" | "procesos" | "estructura";
 
 const SECTION_BY_KEY: Record<SectionKey, AccreditationSection> = {
   modelos: "Modelo de acreditación",
   ciclos: "Ciclos de acreditación",
   procesos: "Procesos de acreditación",
+  estructura: "Estructura institucional",
 };
 
 const KEY_BY_SECTION: Record<AccreditationSection, SectionKey> = {
   "Modelo de acreditación": "modelos",
   "Ciclos de acreditación": "ciclos",
   "Procesos de acreditación": "procesos",
+  "Estructura institucional": "estructura",
 };
 
 const isSectionKey = (value: string | null): value is SectionKey =>
-  value === "modelos" || value === "ciclos" || value === "procesos";
+  value === "modelos" || value === "ciclos" || value === "procesos" || value === "estructura";
 
 const SECTION_ACCESS: Record<
   AccreditationSection,
@@ -55,12 +59,17 @@ const SECTION_ACCESS: Record<
     capability: CAPABILITIES.ACCREDITATION_PROCESS_VIEW,
     permission: "procesos.view",
   },
+  "Estructura institucional": {
+    capability: CAPABILITIES.ACCREDITATION_MODEL_VIEW,
+    permission: "universidades.view",
+  },
 };
 
 const MODULE_INFO_BY_SECTION: Record<AccreditationSection, string> = {
   "Modelo de acreditación": "accreditation_models",
   "Ciclos de acreditación": "accreditation_cycles",
   "Procesos de acreditación": "accreditation_processes",
+  "Estructura institucional": "institutional_structure",
 };
 
 type HeaderMode = "none" | "simple" | "cycle-only" | "contextual";
@@ -213,6 +222,13 @@ const AccreditationModulePage: React.FC = () => {
             onConfigureCommitment={handleOpenCommitmentConfig}
           />
         )
+      )}
+      {activeSection === "Estructura institucional" && (
+        <InstitutionalStructurePage
+          embedded
+          onHeaderExtraChange={handleHeaderExtraChange}
+          onHeaderMetaChange={handleHeaderMetaChange}
+        />
       )}
     </ScreenContainer>
   );

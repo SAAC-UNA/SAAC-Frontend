@@ -1,5 +1,5 @@
 /**
- * StructureModelsPage - PÃ¡gina de gestiÃ³n de modelos de acreditaciÃ³n.
+ * StructureModelsPage - Página de gestión de modelos de acreditación.
  *
  * Vista "modelos": tarjetas de cada modelo (tradicional + flexibles).
  * Vista "estructura": elementos del modelo seleccionado (?modelo=0 tradicional, ?modelo=<id> flexible).
@@ -119,7 +119,7 @@ const StructureModelsPage: React.FC<StructureModelsPageProps> = ({
         notifiedInvalidModelIds.add(selectedModelId);
         showToast({
           type: "error",
-          title: "El modelo seleccionado no existe o no estÃ¡ disponible.",
+          title: "El modelo seleccionado no existe o no está disponible.",
         });
       }
     }
@@ -188,7 +188,7 @@ const StructureModelsPage: React.FC<StructureModelsPageProps> = ({
               </Button>
             </TooltipTrigger>
             <TooltipContent side="bottom">
-              Ir a ciclos de acreditaciÃƒÂ³n
+              Ir a ciclos de acreditación
             </TooltipContent>
           </Tooltip>
         )}
@@ -354,7 +354,7 @@ const StructureModelsPage: React.FC<StructureModelsPageProps> = ({
     });
   };
 
-  // â”€â”€ Render â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // Render
 
   if (selectedModelId === 0) {
     return (
@@ -402,7 +402,7 @@ const StructureModelsPage: React.FC<StructureModelsPageProps> = ({
               ? "Solo se puede eliminar si no tiene elementos hijos."
               : undefined
           }
-          confirmLabel="SÃ­, eliminar"
+          confirmLabel="Sí, eliminar"
           cancelLabel="Cancelar"
           variant="danger"
           isLoading={flexDeleteModal.loading}
@@ -513,11 +513,11 @@ const StructureModelsPage: React.FC<StructureModelsPageProps> = ({
           variant={toggleModal.model.activo ? "info" : "success"}
           title={
             toggleModal.model.activo
-              ? "Confirmar inactivaciÃ³n"
-              : "Confirmar activaciÃ³n"
+              ? "Confirmar inactivación"
+              : "Confirmar activación"
           }
           confirmLabel={
-            toggleModal.model.activo ? "SÃ­, inactivar" : "SÃ­, activar"
+            toggleModal.model.activo ? "Sí, inactivar" : "Sí, activar"
           }
           cancelLabel="Cancelar"
           confirmLoading={toggleModal.loading}
@@ -525,7 +525,7 @@ const StructureModelsPage: React.FC<StructureModelsPageProps> = ({
           showConfirm
           footerMeta={
             toggleModal.model.activo
-              ? "Esta acciÃ³n puede ser revertida"
+              ? "Esta acción puede ser revertida"
               : undefined
           }
         >
@@ -535,7 +535,7 @@ const StructureModelsPage: React.FC<StructureModelsPageProps> = ({
               "text-gris-una-2 leading-relaxed wrap-anywhere",
             )}
           >
-            Â¿EstÃ¡ seguro de que desea{" "}
+            ¿Está seguro de que desea{" "}
             {toggleModal.model.activo ? "inactivar" : "activar"} el modelo{" "}
             <strong className="text-negro-una">
               "{toggleModal.model.nombre}"
