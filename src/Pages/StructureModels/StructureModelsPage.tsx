@@ -53,11 +53,18 @@ const notifiedInvalidModelIds = new Set<number>();
 type StructureModelsPageProps = {
   embedded?: boolean;
   onHeaderExtraChange?: (headerExtra: React.ReactNode) => void;
+  onHeaderMetaChange?: (meta: {
+    title: string;
+    description?: string;
+    breadcrumbMode?: "none" | "simple" | "cycle-only" | "contextual";
+    breadcrumbParent?: { label: string; href?: string };
+  } | null) => void;
 };
 
 const StructureModelsPage: React.FC<StructureModelsPageProps> = ({
   embedded = false,
   onHeaderExtraChange,
+  onHeaderMetaChange,
 }) => {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
@@ -210,6 +217,46 @@ const StructureModelsPage: React.FC<StructureModelsPageProps> = ({
     return () => onHeaderExtraChange?.(null);
   }, [embedded, headerExtra, onHeaderExtraChange]);
 
+  useEffect(() => {
+    if (!embedded) {
+      return undefined;
+    }
+
+    if (selectedModelId === 0) {
+      onHeaderMetaChange?.({
+        title: structureModuleInfo.title,
+        description: structureModuleInfo.description,
+        breadcrumbMode: "simple",
+        breadcrumbParent: {
+          label: "Modelos de Acreditación",
+          href: `${ROUTES.ACCREDITATION}?seccion=modelos`,
+        },
+      });
+      return () => onHeaderMetaChange?.(null);
+    }
+
+    if (selectedModel && selectedModel.tipo === "elemento_flexible") {
+      return undefined;
+    }
+
+    onHeaderMetaChange?.({
+      title: moduleInfo.title,
+      description: moduleInfo.description,
+      breadcrumbMode: "cycle-only",
+    });
+
+    return () => onHeaderMetaChange?.(null);
+  }, [
+    embedded,
+    moduleInfo.description,
+    moduleInfo.title,
+    onHeaderMetaChange,
+    selectedModel,
+    selectedModelId,
+    structureModuleInfo.description,
+    structureModuleInfo.title,
+  ]);
+
   // â”€â”€ Handlers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
   const handleCreateConfirm = async (form: CreateModelForm | EditModelForm) => {
@@ -315,6 +362,9 @@ const StructureModelsPage: React.FC<StructureModelsPageProps> = ({
         title={structureModuleInfo.title}
         description={structureModuleInfo.description}
         showModelsBreadcrumb
+        embedded={embedded}
+        onHeaderExtraChange={onHeaderExtraChange}
+        onHeaderMetaChange={onHeaderMetaChange}
       />
     );
   }
@@ -326,6 +376,9 @@ const StructureModelsPage: React.FC<StructureModelsPageProps> = ({
           model={selectedModel}
           title={structureModuleInfo.title}
           description={structureModuleInfo.description}
+          embedded={embedded}
+          onHeaderExtraChange={onHeaderExtraChange}
+          onHeaderMetaChange={onHeaderMetaChange}
           elements={flexibleElements}
           isLoadingElements={isLoadingFlexibleElements}
           onCreateElement={createFlexibleElement}

@@ -28,14 +28,33 @@ import { AccreditationProcessTable } from "./Components/AccreditationProcessTabl
 import { AccreditationProcessDetailsModal } from "./Components/AccreditationProcessDetailsModal";
 import { AccreditationProcessFormModal } from "./Components/AccreditationProcessFormModal";
 
+export interface CommitmentConfigurationState {
+  procesoId?: string;
+  cicloId?: string;
+  startDate?: string;
+  estimatedEndDate?: string;
+  description?: string;
+  modeloTipo?: string;
+  modeloId?: number;
+}
+
 type AccreditationProcessListProps = {
   embedded?: boolean;
   onHeaderExtraChange?: (headerExtra: React.ReactNode) => void;
+  onHeaderMetaChange?: (meta: {
+    title: string;
+    description?: string;
+    breadcrumbMode?: "none" | "simple" | "cycle-only" | "contextual";
+    breadcrumbParent?: { label: string; href?: string };
+  } | null) => void;
+  onConfigureCommitment?: (state: CommitmentConfigurationState) => void;
 };
 
 export const AccreditationProcessList: React.FC<AccreditationProcessListProps> = ({
   embedded = false,
   onHeaderExtraChange,
+  onHeaderMetaChange,
+  onConfigureCommitment,
 }) => {
   const moduleInfo = getModuleInfo("accreditation_processes");
   const navigate = useNavigate();
@@ -272,16 +291,23 @@ export const AccreditationProcessList: React.FC<AccreditationProcessListProps> =
       process.modeloEstructuraTipo ?? matchedCycle?.modeloEstructuraTipo;
     const modeloId =
       process.modeloEstructuraId ?? matchedCycle?.modeloEstructuraId;
+    const configurationState: CommitmentConfigurationState = {
+      procesoId: process.id,
+      cicloId: process.accreditationCycleId,
+      startDate: process.startDate,
+      estimatedEndDate: process.estimatedEndDate,
+      description: process.description,
+      modeloTipo,
+      modeloId: modeloId ? parseInt(modeloId) : undefined,
+    };
+
+    if (embedded && onConfigureCommitment) {
+      onConfigureCommitment(configurationState);
+      return;
+    }
+
     navigate(ROUTES.COMMITMENTS_NEW, {
-      state: {
-        procesoId: process.id,
-        cicloId: process.accreditationCycleId,
-        startDate: process.startDate,
-        estimatedEndDate: process.estimatedEndDate,
-        description: process.description,
-        modeloTipo,
-        modeloId: modeloId ? parseInt(modeloId) : undefined,
-      },
+      state: configurationState,
     });
   };
 
@@ -371,6 +397,25 @@ export const AccreditationProcessList: React.FC<AccreditationProcessListProps> =
     onHeaderExtraChange?.(headerExtra);
     return () => onHeaderExtraChange?.(null);
   }, [embedded, headerExtra, onHeaderExtraChange]);
+
+  useEffect(() => {
+    if (!embedded) {
+      return undefined;
+    }
+
+    onHeaderMetaChange?.({
+      title: moduleInfo.title,
+      description: moduleInfo.description,
+      breadcrumbMode: "cycle-only",
+    });
+
+    return () => onHeaderMetaChange?.(null);
+  }, [
+    embedded,
+    moduleInfo.description,
+    moduleInfo.title,
+    onHeaderMetaChange,
+  ]);
 
   const confirmDeleteProcess = async (confirmacion: string) => {
     if (!deleteModalState.process) return;

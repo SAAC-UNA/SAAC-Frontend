@@ -36,6 +36,14 @@ interface StructureListProps {
   title?: string;
   description?: string;
   showModelsBreadcrumb?: boolean;
+  embedded?: boolean;
+  onHeaderExtraChange?: (headerExtra: React.ReactNode) => void;
+  onHeaderMetaChange?: (meta: {
+    title: string;
+    description?: string;
+    breadcrumbMode?: "none" | "simple" | "cycle-only" | "contextual";
+    breadcrumbParent?: { label: string; href?: string };
+  } | null) => void;
 }
 
 const getFlexibleModelIdFromSearchParams = (
@@ -59,6 +67,9 @@ const StructureList: React.FC<StructureListProps> = ({
   title,
   description,
   showModelsBreadcrumb = false,
+  embedded = false,
+  onHeaderExtraChange,
+  onHeaderMetaChange,
 }) => {
   const moduleInfo = getModuleInfo("structure_list");
   const location = useLocation();
@@ -100,6 +111,54 @@ const StructureList: React.FC<StructureListProps> = ({
 
   const headerTitle = title ?? moduleInfo.title;
   const headerDescription = description ?? currentStructureLabel;
+  const [searchQuery, setSearchQuery] = useState("");
+
+  const headerExtra = useMemo(
+    () => (
+      <div className="flex flex-col sm:flex-row w-full gap-2 shrink-0 lg:w-auto items-end">
+        <SearchInput
+          placeholder="Buscar elementos..."
+          value={searchQuery}
+          onChange={setSearchQuery}
+          className="w-full sm:w-72"
+        />
+        <Button onClick={() => setCreateModalOpen(true)} variant="secondary">
+          Crear
+        </Button>
+      </div>
+    ),
+    [searchQuery],
+  );
+
+  useEffect(() => {
+    if (!embedded) {
+      return undefined;
+    }
+
+    onHeaderExtraChange?.(headerExtra);
+    return () => onHeaderExtraChange?.(null);
+  }, [embedded, headerExtra, onHeaderExtraChange]);
+
+  useEffect(() => {
+    if (!embedded) {
+      return undefined;
+    }
+
+    onHeaderMetaChange?.({
+      title: headerTitle,
+      description: headerDescription,
+      breadcrumbMode: "simple",
+      breadcrumbParent,
+    });
+
+    return () => onHeaderMetaChange?.(null);
+  }, [
+    breadcrumbParent,
+    embedded,
+    headerDescription,
+    headerTitle,
+    onHeaderMetaChange,
+  ]);
 
   // Cargar árbol al montar la página
   useEffect(() => {
@@ -146,8 +205,6 @@ const StructureList: React.FC<StructureListProps> = ({
     isOpen: boolean;
     element: StructureElement | null;
   }>({ isOpen: false, element: null });
-
-  const [searchQuery, setSearchQuery] = useState("");
 
   const handleEditElement = (element: StructureElement) => {
     setEditModalState({ isOpen: true, element });
@@ -280,41 +337,26 @@ const StructureList: React.FC<StructureListProps> = ({
     );
   }
 
-  return (
+  const content = (
     <>
-      <ScreenContainer>
+      {!embedded && (
         <PageHeader
           title={headerTitle}
           description={headerDescription}
           breadcrumbMode="simple"
           breadcrumbParent={breadcrumbParent}
-          headerExtra={
-            <div className="flex flex-col sm:flex-row w-full gap-2 shrink-0 lg:w-auto items-end">
-              <SearchInput
-                placeholder="Buscar elementos..."
-                value={searchQuery}
-                onChange={setSearchQuery}
-                className="w-full sm:w-72"
-              />
-              <Button
-                onClick={() => setCreateModalOpen(true)}
-                variant="secondary"
-              >
-                Crear
-              </Button>
-            </div>
-          }
+          headerExtra={headerExtra}
         />
+      )}
 
-        <StructureTable
-          treeData={treeData}
-          isLoading={isLoading}
-          onEdit={handleEditElement}
-          onDelete={handleDeleteElement}
-          onToggleActive={handleToggleActive}
-          searchQuery={searchQuery}
-        />
-      </ScreenContainer>
+      <StructureTable
+        treeData={treeData}
+        isLoading={isLoading}
+        onEdit={handleEditElement}
+        onDelete={handleDeleteElement}
+        onToggleActive={handleToggleActive}
+        searchQuery={searchQuery}
+      />
 
       <DeleteConfirmationModal
         isOpen={deleteModalState.isOpen}
@@ -444,6 +486,12 @@ const StructureList: React.FC<StructureListProps> = ({
       />
     </>
   );
+
+  if (embedded) {
+    return content;
+  }
+
+  return <ScreenContainer>{content}</ScreenContainer>;
 };
 
 export default StructureList;

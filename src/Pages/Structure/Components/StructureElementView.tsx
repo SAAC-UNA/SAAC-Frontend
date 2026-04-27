@@ -26,6 +26,14 @@ interface Props {
   model: StructureModel;
   title?: string;
   description?: string;
+  embedded?: boolean;
+  onHeaderExtraChange?: (headerExtra: React.ReactNode) => void;
+  onHeaderMetaChange?: (meta: {
+    title: string;
+    description?: string;
+    breadcrumbMode?: 'none' | 'simple' | 'cycle-only' | 'contextual';
+    breadcrumbParent?: { label: string; href?: string };
+  } | null) => void;
   elements: FlexibleElement[];
   isLoadingElements: boolean;
   onCreateElement: (
@@ -46,6 +54,9 @@ export const StructureElementsView: React.FC<Props> = ({
   model,
   title,
   description,
+  embedded = false,
+  onHeaderExtraChange,
+  onHeaderMetaChange,
   elements,
   isLoadingElements,
   onCreateElement,
@@ -72,6 +83,57 @@ export const StructureElementsView: React.FC<Props> = ({
     title: '',
     message: '',
   });
+
+  const headerTitle = title ?? 'Gestión de Estructura';
+  const headerDescription =
+    description ??
+    (model.version ? `${model.nombre} · v${model.version}` : model.nombre);
+
+  const headerExtra = (
+    <div className="flex items-center gap-2">
+      <Button
+        variant="secondary"
+        size="sm"
+        onClick={() =>
+          setFormModal({ isOpen: true, element: null, defaultParentId: null })
+        }
+      >
+        Crear
+      </Button>
+    </div>
+  );
+
+  React.useEffect(() => {
+    if (!embedded) {
+      return undefined;
+    }
+
+    onHeaderExtraChange?.(headerExtra);
+    return () => onHeaderExtraChange?.(null);
+  }, [embedded, onHeaderExtraChange]);
+
+  React.useEffect(() => {
+    if (!embedded) {
+      return undefined;
+    }
+
+    onHeaderMetaChange?.({
+      title: headerTitle,
+      description: headerDescription,
+      breadcrumbMode: 'simple',
+      breadcrumbParent: {
+        label: 'Modelos de Acreditación',
+        href: `${ROUTES.ACCREDITATION}?seccion=modelos`,
+      },
+    });
+
+    return () => onHeaderMetaChange?.(null);
+  }, [
+    embedded,
+    headerDescription,
+    headerTitle,
+    onHeaderMetaChange,
+  ]);
 
   const handleFormConfirm = async (
     form: CreateFlexibleElementForm | EditFlexibleElementForm,
@@ -111,31 +173,18 @@ export const StructureElementsView: React.FC<Props> = ({
 
   return (
     <div>
-      <PageHeader
-        title={title ?? "Gestión de Estructura"}
-        description={
-          description
-          ?? (model.version ? `${model.nombre} · v${model.version}` : model.nombre)
-        }
-        breadcrumbMode="simple"
-        breadcrumbParent={{
-          label: "Modelos de Acreditación",
-          href: ROUTES.STRUCTURE_MODELS,
-        }}
-        headerExtra={
-          <div className="flex items-center gap-2">
-            <Button
-              variant="secondary"
-              size="sm"
-              onClick={() =>
-                setFormModal({ isOpen: true, element: null, defaultParentId: null })
-              }
-            >
-              Crear
-            </Button>
-          </div>
-        }
-      />
+      {!embedded && (
+        <PageHeader
+          title={headerTitle}
+          description={headerDescription}
+          breadcrumbMode="simple"
+          breadcrumbParent={{
+            label: 'Modelos de Acreditación',
+            href: ROUTES.STRUCTURE_MODELS,
+          }}
+          headerExtra={headerExtra}
+        />
+      )}
 
       <FlexibleElementTable
         elements={elements}

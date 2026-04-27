@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import {
   PageHeader,
@@ -11,6 +11,9 @@ import { useAuth } from "@/Context/AuthContext";
 import StructureModelsPage from "@/Pages/StructureModels/StructureModelsPage";
 import AccreditationCyclesPage from "@/Pages/AccreditationCycles/AccreditationCyclesPage";
 import { AccreditationProcessList } from "@/Pages/AccreditationProcess";
+import type { CommitmentConfigurationState } from "@/Pages/AccreditationProcess/AccreditationProcessList";
+import CreateImprovementCommitment from "@/Pages/ImprovementCommitments/CreateImprovementCommitment";
+import type { BreadcrumbItem } from "@/Components/Ui/Feedback/Breadcrumb";
 
 const SECTIONS = [
   "Modelo de acreditación",
@@ -60,9 +63,20 @@ const MODULE_INFO_BY_SECTION: Record<AccreditationSection, string> = {
   "Procesos de acreditación": "accreditation_processes",
 };
 
+type HeaderMode = "none" | "simple" | "cycle-only" | "contextual";
+
+interface EmbeddedHeaderMeta {
+  title: string;
+  description?: string;
+  breadcrumbMode?: HeaderMode;
+  breadcrumbParent?: BreadcrumbItem;
+}
+
 const AccreditationModulePage: React.FC = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const [headerExtra, setHeaderExtra] = useState<React.ReactNode>(null);
+  const [processConfigState, setProcessConfigState] =
+    useState<CommitmentConfigurationState | null>(null);
   const { canAccess } = useAuth();
 
   const availableSections = useMemo(
@@ -88,14 +102,38 @@ const AccreditationModulePage: React.FC = () => {
       : availableSections[0] ?? "Modelo de acreditación";
   }, [availableSections, searchParams]);
 
+  const defaultHeaderMeta = useMemo<EmbeddedHeaderMeta>(() => {
+    const moduleInfo = getModuleInfo(MODULE_INFO_BY_SECTION[activeSection]);
+    return {
+      title: moduleInfo.title,
+      description: moduleInfo.description,
+      breadcrumbMode: "cycle-only",
+    };
+  }, [activeSection]);
+
+  const [headerMeta, setHeaderMeta] = useState<EmbeddedHeaderMeta>(
+    defaultHeaderMeta,
+  );
+
+  useEffect(() => {
+    setHeaderExtra(null);
+    setProcessConfigState(null);
+    setHeaderMeta(defaultHeaderMeta);
+  }, [defaultHeaderMeta]);
+
   const handleSectionChange = (section: AccreditationSection) => {
     setHeaderExtra(null);
+    setProcessConfigState(null);
+    setHeaderMeta({
+      title: getModuleInfo(MODULE_INFO_BY_SECTION[section]).title,
+      description: getModuleInfo(MODULE_INFO_BY_SECTION[section]).description,
+      breadcrumbMode: "cycle-only",
+    });
     const nextSearchParams = new URLSearchParams(searchParams);
     nextSearchParams.set("seccion", KEY_BY_SECTION[section]);
 
-    if (section !== "Modelo de acreditación") {
-      nextSearchParams.delete("modelo");
-    }
+    // Clicking a module tab should always return to that section's main view.
+    nextSearchParams.delete("modelo");
 
     setSearchParams(nextSearchParams);
   };
@@ -107,14 +145,35 @@ const AccreditationModulePage: React.FC = () => {
     [],
   );
 
-  const moduleInfo = getModuleInfo(MODULE_INFO_BY_SECTION[activeSection]);
+  const handleHeaderMetaChange = useCallback(
+    (nextHeaderMeta: EmbeddedHeaderMeta | null) => {
+      if (!nextHeaderMeta) {
+        setHeaderMeta(defaultHeaderMeta);
+        return;
+      }
+
+      setHeaderMeta((prev) => ({
+        ...prev,
+        ...nextHeaderMeta,
+      }));
+    },
+    [defaultHeaderMeta],
+  );
+
+  const handleOpenCommitmentConfig = useCallback(
+    (state: CommitmentConfigurationState) => {
+      setProcessConfigState(state);
+    },
+    [],
+  );
 
   return (
     <ScreenContainer>
       <PageHeader
-        title={moduleInfo.title}
-        description={moduleInfo.description}
-        breadcrumbMode="cycle-only"
+        title={headerMeta.title}
+        description={headerMeta.description}
+        breadcrumbMode={headerMeta.breadcrumbMode ?? "cycle-only"}
+        breadcrumbParent={headerMeta.breadcrumbParent}
         headerExtra={headerExtra}
       />
 
@@ -128,6 +187,7 @@ const AccreditationModulePage: React.FC = () => {
         <StructureModelsPage
           embedded
           onHeaderExtraChange={handleHeaderExtraChange}
+          onHeaderMetaChange={handleHeaderMetaChange}
         />
       )}
       {activeSection === "Ciclos de acreditación" && (
@@ -137,10 +197,22 @@ const AccreditationModulePage: React.FC = () => {
         />
       )}
       {activeSection === "Procesos de acreditación" && (
-        <AccreditationProcessList
-          embedded
-          onHeaderExtraChange={handleHeaderExtraChange}
-        />
+        processConfigState ? (
+          <CreateImprovementCommitment
+            embedded
+            contextState={processConfigState}
+            onHeaderExtraChange={handleHeaderExtraChange}
+            onHeaderMetaChange={handleHeaderMetaChange}
+            onComplete={() => setProcessConfigState(null)}
+          />
+        ) : (
+          <AccreditationProcessList
+            embedded
+            onHeaderExtraChange={handleHeaderExtraChange}
+            onHeaderMetaChange={handleHeaderMetaChange}
+            onConfigureCommitment={handleOpenCommitmentConfig}
+          />
+        )
       )}
     </ScreenContainer>
   );
