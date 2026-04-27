@@ -160,7 +160,7 @@ export const StructureElementFormModal: React.FC<Props> = ({
     );
   }, [allElements, requiredParentType, element]);
 
-  const parentIsRequired = !isEditing && selectedHierarchyEntry !== null && !isRootTypeSelected;
+  const parentIsRequired = !isEditing && form.tipo.trim().length > 0 && !isRootTypeSelected;
 
   // Opciones de padre: filtradas por jerarquía si está definida
   const parentOptions = useMemo(() => {
