@@ -126,13 +126,10 @@ const toArray = (raw: unknown): RawRecord[] => {
 };
 
 class AccreditationProcessService {
-  async getProcesses(): Promise<AccreditationProcess[]> {
+  async getProcesses(params?: Record<string, unknown>): Promise<AccreditationProcess[]> {
     try {
-      const response = await axiosInstance.get<ApiListResponse>(PROCESS_ENDPOINT, {
-        // Override context params so all accessible processes are returned,
-        // not just those filtered by the current operational context.
-        params: { career_campus_id: undefined, ciclo_acreditacion_id: undefined, proceso_id: undefined, per_page: 200 },
-      });
+      const response =
+        await axiosInstance.get<ApiListResponse>(PROCESS_ENDPOINT, params ? { params } : undefined);
       const raw = response.data?.data ?? response.data ?? [];
       return toArray(raw).map(mapProcess);
     } catch (error: unknown) {

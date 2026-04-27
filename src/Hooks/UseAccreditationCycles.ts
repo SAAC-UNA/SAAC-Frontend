@@ -32,6 +32,7 @@ function normalizeErrorText(value: string): string {
 function extractBackendErrorInfo(err: unknown, fallback: string): BackendErrorInfo {
   let message = fallback;
   let status: number | undefined;
+  let foundBackendMessage = false;
 
   if (err && typeof err === 'object') {
     const e = err as Record<string, unknown>;
@@ -51,10 +52,14 @@ function extractBackendErrorInfo(err: unknown, fallback: string): BackendErrorIn
         }
         if (typeof d.message === 'string' && d.message) {
           message = d.message;
+          foundBackendMessage = true;
         }
       }
     }
-    if (typeof e.message === 'string' && e.message.trim().length > 0) {
+    // Only use the generic axios error message if the backend didn't provide one.
+    // Axios sets e.message = "Request failed with status code 422" which would
+    // otherwise overwrite the real backend message and break cascade detection.
+    if (!foundBackendMessage && typeof e.message === 'string' && e.message.trim().length > 0) {
       message = e.message;
     }
   }
@@ -161,7 +166,13 @@ export function useAccreditationCycles(): UseAccreditationCyclesReturn {
       > = [];
 
       try {
-        const processes = await accreditationProcessService.getProcesses();
+        // Buscar la carrera-sede del ciclo a eliminar para sobreescribir el filtro
+        // del contexto operacional, que puede corresponder a una carrera diferente.
+        const cycleObj = cycles.find((c) => c.ciclo_acreditacion_id === id);
+        const careerCampusOverride = cycleObj?.carrera_sede_id
+          ? { career_campus_id: cycleObj.carrera_sede_id, per_page: 200 }
+          : { per_page: 200 };
+        const processes = await accreditationProcessService.getProcesses(careerCampusOverride);
         cycleProcesses = processes.filter(
           (process) => Number(process.accreditationCycleId) === id,
         );
@@ -201,7 +212,7 @@ export function useAccreditationCycles(): UseAccreditationCyclesReturn {
       }
 
     }
-  }, [loadCycles]);
+  }, [loadCycles, cycles]);
 
   const reactivateCycle = useCallback(async (id: number) => {
     try {
