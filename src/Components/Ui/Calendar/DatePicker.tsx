@@ -20,6 +20,8 @@ import { ICON_SIZES } from '@/Constants/Components';
 import { Button } from '@/Components/Ui/Buttons/Button';
 import { DROPDOWN_VARIANTS, DROPDOWN_VARIANTS_UP } from '@/Constants/Animations';
 
+const DEFAULT_FUTURE_YEAR_RANGE = 20;
+
 // React portals para el calendario, para evitar problemas de overflow en modales u otros contenedores
 interface DropdownPosition {
   top?: number;
@@ -168,8 +170,8 @@ export const DatePicker: React.FC<DatePickerProps> = ({
 
   // Generar rango de años (considera minDate y maxDate si están definidos)
   const currentYear = new Date().getFullYear();
-  const minYear = minDate ? new Date(minDate + 'T00:00:00').getFullYear() : currentYear - 10;
-  const maxYear = maxDate ? new Date(maxDate + 'T00:00:00').getFullYear() : currentYear + 10;
+  const minYear = minDate ? new Date(minDate + 'T00:00:00').getFullYear() : currentYear;
+  const maxYear = maxDate ? new Date(maxDate + 'T00:00:00').getFullYear() : currentYear + DEFAULT_FUTURE_YEAR_RANGE;
 
   const yearRange = Array.from(
     { length: maxYear - minYear + 1 },

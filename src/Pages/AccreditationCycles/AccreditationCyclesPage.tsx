@@ -1,15 +1,16 @@
 /**
- * AccreditationCyclesPage - Gestión de Ciclos de Acreditación (HU-030)
+ * AccreditationCyclesPage - GestiÃ³n de Ciclos de AcreditaciÃ³n (HU-030)
  *
  * Tabla paginada con CRUD completo:
  *  - Crear ciclo (Administrador / Superusuario)
  *  - Editar ciclo (solo si estado === 'activo'; Administrador / Superusuario)
- *  - Eliminar ciclo con confirmación por nombre (Administrador / Superusuario)
- *  - Activar/Inactivar ciclo desde acciones (según permisos)
+ *  - Eliminar ciclo con confirmaciÃ³n por nombre (Administrador / Superusuario)
+ *  - Activar/Inactivar ciclo desde acciones (segÃºn permisos)
  *  - Marcar ciclo como completado desde acciones
  */
 
-import React, { useState, useRef, useMemo } from "react";
+import React, { useEffect, useState, useRef, useMemo } from "react";
+import { useNavigate } from "react-router-dom";
 import { ScreenContainer } from "@/Components/Ui/Layout/ScreenContainer";
 import {
   PageHeader,
@@ -31,13 +32,23 @@ import { TYPOGRAPHY } from "@/Constants/Typography";
 import { cn } from "@/Utils/ClassNames";
 import { TABLE_PAGE_SIZE } from "@/Constants/TablePagination";
 import { getModuleInfo } from "@/Constants/ModuleInfo";
+import { ROUTES } from "@/Constants/ROUTES";
 import type {
   AccreditationCycle,
   CreateAccreditationCycleForm,
   EditAccreditationCycleForm,
 } from "@/Types/AccreditationCycleTypes";
 
-const AccreditationCyclesPage: React.FC = () => {
+type AccreditationCyclesPageProps = {
+  embedded?: boolean;
+  onHeaderExtraChange?: (headerExtra: React.ReactNode) => void;
+};
+
+const AccreditationCyclesPage: React.FC<AccreditationCyclesPageProps> = ({
+  embedded = false,
+  onHeaderExtraChange,
+}) => {
+  const navigate = useNavigate();
   const { canAccess } = useAuth();
   const { showToast } = useToast();
 
@@ -80,7 +91,7 @@ const AccreditationCyclesPage: React.FC = () => {
     requireAnyPermissions: ["ciclos.reactivar"],
   });
 
-  // ── Modal state ───────────────────────────────────────────────────────────
+  // â”€â”€ Modal state â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
   const [formModal, setFormModal] = useState<{
     isOpen: boolean;
@@ -116,7 +127,7 @@ const AccreditationCyclesPage: React.FC = () => {
     message: "",
   });
 
-  // ── Handlers ──────────────────────────────────────────────────────────────
+  // â”€â”€ Handlers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
   const handleCreateConfirm = async (
     form: CreateAccreditationCycleForm | EditAccreditationCycleForm,
@@ -152,7 +163,7 @@ const AccreditationCyclesPage: React.FC = () => {
       showToast({
         type: "error",
         title: "No se pudo eliminar el ciclo",
-        message: result.error ?? "No fue posible completar la eliminación en este momento.",
+        message: result.error ?? "No fue posible completar la eliminaciÃ³n en este momento.",
       });
     }
   };
@@ -209,36 +220,68 @@ const AccreditationCyclesPage: React.FC = () => {
     });
   };
 
-  // ── Render ────────────────────────────────────────────────────────────────
+  // â”€â”€ Render â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
   const moduleInfo = getModuleInfo("accreditation_cycles");
 
-  return (
-    <ScreenContainer>
-      <PageHeader
-        title={moduleInfo.title}
-        description={moduleInfo.description}
-        breadcrumbMode="none"
-        headerExtra={
-          canCreate ? (
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button
-                  variant="secondary"
-                  size="sm"
-                  onClick={() => setFormModal({ isOpen: true, cycle: null })}
-                >
-                  Crear
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent side="bottom">
-                Crear nuevo ciclo de acreditación
-              </TooltipContent>
-            </Tooltip>
-          ) : undefined
-        }
-      />
+  const headerExtra = useMemo(
+    () => (
+      <div className="flex items-center gap-2">
+        {!embedded && (
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => navigate(ROUTES.ACCREDITATION_PROCESSES)}
+              >
+                Ir a Procesos
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent side="bottom">
+              Ir a procesos de acreditaciÃƒÂ³n
+            </TooltipContent>
+          </Tooltip>
+        )}
 
+        {canCreate && (
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                variant="secondary"
+                size="sm"
+                onClick={() => setFormModal({ isOpen: true, cycle: null })}
+              >
+                Crear
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent side="bottom">
+              Crear nuevo ciclo de acreditaciÃƒÂ³n
+            </TooltipContent>
+          </Tooltip>
+        )}
+      </div>
+    ),
+    [canCreate, embedded, navigate],
+  );
+
+  useEffect(() => {
+    if (!embedded) return undefined;
+
+    onHeaderExtraChange?.(headerExtra);
+    return () => onHeaderExtraChange?.(null);
+  }, [embedded, headerExtra, onHeaderExtraChange]);
+
+  const content = (
+    <>
+      {!embedded && (
+        <PageHeader
+          title={moduleInfo.title}
+          description={moduleInfo.description}
+          breadcrumbMode="cycle-only"
+          headerExtra={headerExtra}
+        />
+      )}
       <AccreditationCyclesTable
         cycles={paginatedCycles}
         isLoading={isLoading}
@@ -305,18 +348,18 @@ const AccreditationCyclesPage: React.FC = () => {
           variant={toggleStatusModal.cycle.estado === "activo" ? "info" : "success"}
           title={
             toggleStatusModal.cycle.estado === "activo"
-              ? "Confirmar inactivación"
-              : "Confirmar activación"
+              ? "Confirmar inactivaciÃ³n"
+              : "Confirmar activaciÃ³n"
           }
-          confirmLabel={toggleStatusModal.cycle.estado === "activo" ? "Sí, inactivar" : "Sí, activar"}
+          confirmLabel={toggleStatusModal.cycle.estado === "activo" ? "SÃ­, inactivar" : "SÃ­, activar"}
           cancelLabel="Cancelar"
           confirmLoading={toggleStatusModal.loading}
           showCancel
           showConfirm
           footerMeta={
             toggleStatusModal.cycle.estado === "activo"
-              ? "Esta acción puede revertirse posteriormente"
-              : "Se validará que no exista otro ciclo activo en la misma carrera-sede"
+              ? "Esta acciÃ³n puede revertirse posteriormente"
+              : "Se validarÃ¡ que no exista otro ciclo activo en la misma carrera-sede"
           }
         >
           <p
@@ -325,13 +368,13 @@ const AccreditationCyclesPage: React.FC = () => {
               "text-gris-una-2 leading-relaxed",
             )}
           >
-            ¿Está seguro de {toggleStatusModal.cycle.estado === "activo" ? "inactivar" : "activar"} el ciclo{" "}
+            Â¿EstÃ¡ seguro de {toggleStatusModal.cycle.estado === "activo" ? "inactivar" : "activar"} el ciclo{" "}
             <strong className="text-negro-una">
               "{toggleStatusModal.cycle.nombre}"
             </strong>
             ?
             {toggleStatusModal.cycle.estado !== "activo" &&
-              " Se establecerá como el ciclo activo para su carrera-sede."}
+              " Se establecerÃ¡ como el ciclo activo para su carrera-sede."}
           </p>
         </Modal>
       )}
@@ -346,7 +389,7 @@ const AccreditationCyclesPage: React.FC = () => {
           onConfirm={confirmMarkAsCompleted}
           variant="success"
           title="Confirmar marcado como completado"
-          confirmLabel="Sí, marcar"
+          confirmLabel="SÃ­, marcar"
           cancelLabel="Cancelar"
           confirmLoading={completeModal.loading}
           showCancel
@@ -358,7 +401,7 @@ const AccreditationCyclesPage: React.FC = () => {
               "text-gris-una-2 leading-relaxed",
             )}
           >
-            ¿Está seguro de marcar como completado el ciclo{" "}
+            Â¿EstÃ¡ seguro de marcar como completado el ciclo{" "}
             <strong className="text-negro-una">
               "{completeModal.cycle.nombre}"
             </strong>
@@ -375,8 +418,12 @@ const AccreditationCyclesPage: React.FC = () => {
           setSuccessModal({ isOpen: false, title: "", message: "" })
         }
       />
-    </ScreenContainer>
+    </>
   );
+
+  if (embedded) return content;
+
+  return <ScreenContainer>{content}</ScreenContainer>;
 };
 
 export default AccreditationCyclesPage;

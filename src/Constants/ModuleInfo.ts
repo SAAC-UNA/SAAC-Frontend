@@ -26,6 +26,14 @@ const MODULE_INFO: Record<string, ModuleInfo> = {
   },
 
   // Gestión de Roles
+  accreditation: {
+    title: "Acreditación",
+    subtitle: "Modelos, Ciclos y Procesos",
+    description:
+      "Administre la configuración base de acreditación desde modelos, ciclos y procesos.",
+    shortDescription: "Gestionar acreditación",
+  },
+
   context_selector: {
     title: "Cambiar Contexto",
     subtitle: "Carrera, Ciclo y Proceso",

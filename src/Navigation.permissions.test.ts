@@ -16,7 +16,7 @@ describe("Navigation permissions", () => {
     expect(ids).not.toContain("evaluacion");
   });
 
-  it("muestra Proceso de Acreditacion cuando hay ciclo seleccionado", () => {
+  it("muestra Gestion de Acreditacion cuando hay permisos del modulo", () => {
     const items = getNavigationItems({
       roles: ["Encargado de Acreditación"],
       permissions: ["procesos.view", "modelos.view", "ciclos.view"],
@@ -28,9 +28,7 @@ describe("Navigation permissions", () => {
     const acreditacion = items.find((item) => item.id === "acreditacion");
     const childIds = acreditacion?.children?.map((child) => child.id) ?? [];
 
-    expect(childIds).toContain("procesos-acreditacion");
-    expect(childIds).toContain("modelos-acreditacion");
-    expect(childIds).toContain("ciclos-acreditacion");
+    expect(childIds).toEqual(["gestion-acreditacion"]);
   });
 
   it("no muestra Gestion de Roles para administrador con roles.view", () => {

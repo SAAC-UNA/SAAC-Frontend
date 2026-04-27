@@ -9,8 +9,8 @@ import { EntityFormModal } from "@/Components/Ui/Modals/EntityFormModal";
 import { CreateConfirmationModal } from "@/Components/Ui/Modals/CreateConfirmationModal";
 import { EditConfirmationModal } from "@/Components/Ui/Modals/EditConfirmationModal";
 import { SuccessModal } from "@/Components/Ui/Modals/SuccessModal";
-import { DatePicker } from "@/Components/Ui/Calendar/DatePicker";
 import { CustomSelect } from "@/Components/Ui/Index";
+import { YearRangePicker } from "@/Components/Ui/Calendar/YearRangePicker";
 import { TYPOGRAPHY } from "@/Constants/Typography";
 import { useToast } from "@/Context/ToastContext";
 import { useCareerCampuses } from "@/Hooks/UseCareerCampuses";
@@ -55,11 +55,11 @@ const EMPTY: FormData = {
   estado: "activo",
 };
 
-const STATUS_OPTIONS = [
-  { value: "activo", label: "Activo" },
-  { value: "inactivo", label: "Inactivo" },
-  { value: "completado", label: "Completado" },
-];
+const toYearValue = (value?: string | null): string => {
+  if (!value) return "";
+  return value.slice(0, 4);
+};
+
 export const AccreditationCycleFormModal: React.FC<Props> = ({
   isOpen,
   onClose,
@@ -84,8 +84,8 @@ export const AccreditationCycleFormModal: React.FC<Props> = ({
           ? {
               carrera_sede_id: String(cycle.carrera_sede_id),
               modelo_estructura_id: String(cycle.modelo_estructura_id),
-              fecha_inicio: cycle.fecha_inicio ?? "",
-              fecha_fin: cycle.fecha_fin ?? "",
+              fecha_inicio: toYearValue(cycle.fecha_inicio),
+              fecha_fin: toYearValue(cycle.fecha_fin),
               estado: cycle.estado,
             }
           : EMPTY,
@@ -110,8 +110,8 @@ export const AccreditationCycleFormModal: React.FC<Props> = ({
     return (
       form.carrera_sede_id !== String(cycle.carrera_sede_id)
       || form.modelo_estructura_id !== String(cycle.modelo_estructura_id)
-      || form.fecha_inicio !== (cycle.fecha_inicio ?? "")
-      || form.fecha_fin !== (cycle.fecha_fin ?? "")
+      || form.fecha_inicio !== toYearValue(cycle.fecha_inicio)
+      || form.fecha_fin !== toYearValue(cycle.fecha_fin)
       || form.estado !== cycle.estado
     );
   }, [cycle, form, isEditing]);
@@ -125,13 +125,13 @@ export const AccreditationCycleFormModal: React.FC<Props> = ({
       next.modelo_estructura_id = "Debe seleccionar un modelo de estructura.";
     }
     if (!form.fecha_inicio) {
-      next.fecha_inicio = "La fecha de inicio es obligatoria.";
+      next.fecha_inicio = "El año de inicio es obligatorio.";
     }
     if (!form.fecha_fin) {
-      next.fecha_fin = "La fecha de fin es obligatoria.";
-    } else if (form.fecha_inicio && form.fecha_fin < form.fecha_inicio) {
+      next.fecha_fin = "El año de fin es obligatorio.";
+    } else if (form.fecha_inicio && Number(form.fecha_fin) < Number(form.fecha_inicio)) {
       next.fecha_fin =
-        "La fecha de fin debe ser mayor o igual a la fecha de inicio.";
+        "El año de fin debe ser mayor o igual al año de inicio.";
     }
     setErrors(next);
     return Object.keys(next).length === 0;
@@ -139,13 +139,13 @@ export const AccreditationCycleFormModal: React.FC<Props> = ({
 
   const generatedCycleName = React.useMemo(() => {
     if (!form.fecha_inicio || !form.fecha_fin)
-      return "Complete las fechas para generar el nombre";
+      return "Complete los años para generar el nombre";
 
-    const startYear = Number(form.fecha_inicio.slice(0, 4));
-    const endYear = Number(form.fecha_fin.slice(0, 4));
+    const startYear = Number(form.fecha_inicio);
+    const endYear = Number(form.fecha_fin);
 
     if (!Number.isFinite(startYear) || !Number.isFinite(endYear)) {
-      return "Complete las fechas para generar el nombre";
+      return "Complete los años para generar el nombre";
     }
 
     return startYear === endYear
@@ -270,47 +270,20 @@ export const AccreditationCycleFormModal: React.FC<Props> = ({
             searchPlaceholder="Buscar modelo..."
             placeholder="Seleccione un modelo"
           />
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <DatePicker
-              label="Fecha de inicio"
-              required
-              value={form.fecha_inicio}
-              onChange={(date) =>
-                setForm((p) => {
-                  const next = { ...p, fecha_inicio: date };
-                  if (next.fecha_fin && date && next.fecha_fin < date) {
-                    next.fecha_fin = "";
-                  }
-                  return next;
-                })
-              }
-              maxDate={form.fecha_fin || undefined}
-              error={errors.fecha_inicio}
-            />
-
-            <DatePicker
-              label="Fecha de fin"
-              required
-              value={form.fecha_fin}
-              onChange={(date) => setForm((p) => ({ ...p, fecha_fin: date }))}
-              minDate={form.fecha_inicio || undefined}
-              error={errors.fecha_fin}
-            />
-          </div>
-
-          {isEditing && (
-            <CustomSelect
-              label="Estado"
-              value={form.estado}
-              options={STATUS_OPTIONS}
-              onChange={(v) =>
-                setForm((p) => ({
-                  ...p,
-                  estado: v as AccreditationCycleStatus,
-                }))
-              }
-            />
-          )}
+          <YearRangePicker
+            label="Periodo"
+            required
+            value={{ from: form.fecha_inicio, to: form.fecha_fin }}
+            onChange={(range) =>
+              setForm((p) => ({
+                ...p,
+                fecha_inicio: range.from ?? "",
+                fecha_fin: range.to ?? "",
+              }))
+            }
+            error={errors.fecha_inicio || errors.fecha_fin}
+            placeholder="Seleccione el periodo"
+          />
         </div>
       </EntityFormModal>
 

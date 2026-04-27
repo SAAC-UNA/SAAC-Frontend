@@ -336,7 +336,6 @@ export const StructureElementFormModal: React.FC<Props> = ({
           />
           <CustomSelect
             label="Categoría"
-            required
             value={form.categoria}
             onChange={val => setForm(p => ({ ...p, categoria: val }))}
             options={CATEGORIA_OPTIONS}

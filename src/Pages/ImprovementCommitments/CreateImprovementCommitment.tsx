@@ -6,7 +6,7 @@
  * 2. Revisión y confirmación
  */
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { ROUTES } from '@/Constants/ROUTES';
 import { ScreenContainer } from '@/Components/Ui/Layout/ScreenContainer';
@@ -33,7 +33,36 @@ import { SearchInput } from '@/Components/Ui/Forms/SearchInput';
 import { CustomSelect } from '@/Components/Ui/Forms/SingleSelect';
 import type { SelectOption } from '@/Components/Ui/Forms/SingleSelect';
 
-const CreateImprovementCommitment: React.FC = () => {
+type ImprovementCommitmentContextState = {
+  procesoId?: string;
+  cicloId?: string;
+  startDate?: string;
+  estimatedEndDate?: string;
+  description?: string;
+  modeloTipo?: string;
+  modeloId?: number;
+};
+
+interface CreateImprovementCommitmentProps {
+  embedded?: boolean;
+  contextState?: ImprovementCommitmentContextState;
+  onHeaderExtraChange?: (headerExtra: React.ReactNode) => void;
+  onHeaderMetaChange?: (meta: {
+    title: string;
+    description?: string;
+    breadcrumbMode?: "none" | "simple" | "cycle-only" | "contextual";
+    breadcrumbParent?: { label: string; href?: string };
+  } | null) => void;
+  onComplete?: () => void;
+}
+
+const CreateImprovementCommitment: React.FC<CreateImprovementCommitmentProps> = ({
+  embedded = false,
+  contextState,
+  onHeaderExtraChange,
+  onHeaderMetaChange,
+  onComplete,
+}) => {
   const moduleInfo = getModuleInfo("improvement_commitments_create");
   const { showToast } = useToast();
   const navigate = useNavigate();
@@ -41,22 +70,15 @@ const CreateImprovementCommitment: React.FC = () => {
 
   // State recibido desde AccreditationProcessList al pulsar "Configurar".
   // Los datos de contexto del proceso se pasan vía navigate state, no por query params.
-  const locationState = (location.state ?? {}) as {
-    procesoId?: string;
-    cicloId?: string;
-    startDate?: string;
-    estimatedEndDate?: string;
-    description?: string;
-    modeloTipo?: string;
-    modeloId?: number;
-  };
-  const procesoId   = locationState.procesoId   ?? undefined;
-  const cicloId     = locationState.cicloId     ?? undefined;
-  const startDate   = locationState.startDate   ?? undefined;
-  const estimatedEndDate = locationState.estimatedEndDate ?? undefined;
-  const processDescription = locationState.description ?? '';
-  const modeloTipo  = locationState.modeloTipo  ?? undefined;
-  const modeloIdRaw = locationState.modeloId    ?? undefined;
+  const locationState = (location.state ?? {}) as ImprovementCommitmentContextState;
+  const effectiveState = contextState ?? locationState;
+  const procesoId   = effectiveState.procesoId   ?? undefined;
+  const cicloId     = effectiveState.cicloId     ?? undefined;
+  const startDate   = effectiveState.startDate   ?? undefined;
+  const estimatedEndDate = effectiveState.estimatedEndDate ?? undefined;
+  const processDescription = effectiveState.description ?? '';
+  const modeloTipo  = effectiveState.modeloTipo  ?? undefined;
+  const modeloIdRaw = effectiveState.modeloId    ?? undefined;
 
   const fromProcess = !!procesoId;
   const isFlexible  = modeloTipo === 'elemento_flexible';
@@ -521,8 +543,90 @@ const CreateImprovementCommitment: React.FC = () => {
    */
   const handleSuccessClose = () => {
     setModals((prev) => ({ ...prev, showSuccessModal: false }));
+
+    if (embedded) {
+      onComplete?.();
+      return;
+    }
+
     navigate(ROUTES.ACCREDITATION_PROCESSES);
   };
+
+  const headerExtra = useMemo(
+    () => (
+      <div className="flex gap-4 items-center flex-wrap">
+        {!fromProcess && (
+          <CustomSelect
+            label="Ciclo"
+            value={formData.ciclo_acreditacion_id?.toString() || ''}
+            options={cicloOptions}
+            placeholder="Seleccione un ciclo..."
+            onChange={handleCicloChange}
+            required
+            error={errors.ciclo_acreditacion_id}
+            size="sm"
+            className="w-60"
+          />
+        )}
+        <SearchInput
+          value={creationFilter.searchTerm}
+          onChange={(v) =>
+            setCreationFilter((prev) => ({ ...prev, searchTerm: v }))
+          }
+          placeholder="Buscar elementos..."
+          className="w-72"
+        />
+        <Button
+          onClick={handleConfirmCreate}
+          disabled={isSubmitting}
+          variant="secondary"
+        >
+          Configurar
+        </Button>
+      </div>
+    ),
+    [
+      cicloOptions,
+      creationFilter.searchTerm,
+      embedded,
+      errors.ciclo_acreditacion_id,
+      formData.ciclo_acreditacion_id,
+      fromProcess,
+      isSubmitting,
+    ],
+  );
+
+  useEffect(() => {
+    if (!embedded) {
+      return undefined;
+    }
+
+    onHeaderExtraChange?.(headerExtra);
+    return () => onHeaderExtraChange?.(null);
+  }, [embedded, headerExtra, onHeaderExtraChange]);
+
+  useEffect(() => {
+    if (!embedded) {
+      return undefined;
+    }
+
+    onHeaderMetaChange?.({
+      title: moduleInfo.title,
+      description: moduleInfo.description,
+      breadcrumbMode: "cycle-only",
+      breadcrumbParent: {
+        label: "Procesos de Acreditación",
+        href: `${ROUTES.ACCREDITATION}?seccion=procesos`,
+      },
+    });
+
+    return () => onHeaderMetaChange?.(null);
+  }, [
+    embedded,
+    moduleInfo.description,
+    moduleInfo.title,
+    onHeaderMetaChange,
+  ]);
 
   /**
    * Renderizar el contenido del paso actual
@@ -531,49 +635,8 @@ const CreateImprovementCommitment: React.FC = () => {
 
   return (
     <>
-      <ScreenContainer>
+      {embedded ? (
         <div className="space-y-4">
-          {/* Header */}
-          <PageHeader
-            title={moduleInfo.title}
-            description={moduleInfo.description}
-            breadcrumbMode="cycle-only"
-            breadcrumbParent={{
-              label: "Procesos de Acreditación",
-              href: ROUTES.ACCREDITATION_PROCESSES,
-            }}
-            headerExtra={
-              <div className="flex gap-4 items-center flex-wrap">
-                {!fromProcess && (
-                  <CustomSelect
-                    label="Ciclo"
-                    value={formData.ciclo_acreditacion_id?.toString() || ''}
-                    options={cicloOptions}
-                    placeholder="Seleccione un ciclo..."
-                    onChange={handleCicloChange}
-                    required
-                    error={errors.ciclo_acreditacion_id}
-                    size="sm"
-                    className="w-60"
-                  />
-                )}
-                <SearchInput
-                  value={creationFilter.searchTerm}
-                  onChange={(v) => setCreationFilter(prev => ({ ...prev, searchTerm: v }))}
-                  placeholder="Buscar elementos..."
-                  className="w-72"
-                />
-                <Button
-                  onClick={handleConfirmCreate}
-                  disabled={isSubmitting}
-                  variant="secondary"
-                >
-                  Configurar
-                </Button>
-              </div>
-            }
-          />
-
           {/* Información y acciones del compromiso */}
           <div className="space-y-4">
             {!fromProcess && (
@@ -614,9 +677,66 @@ const CreateImprovementCommitment: React.FC = () => {
             modeloId={modeloIdRaw}
             onCiclosLoaded={setCicloOptions}
           />
-
         </div>
-      </ScreenContainer>
+      ) : (
+        <ScreenContainer>
+          <div className="space-y-4">
+            {/* Header */}
+            <PageHeader
+              title={moduleInfo.title}
+              description={moduleInfo.description}
+              breadcrumbMode="cycle-only"
+              breadcrumbParent={{
+                label: "Procesos de Acreditación",
+                href: ROUTES.ACCREDITATION_PROCESSES,
+              }}
+              headerExtra={headerExtra}
+            />
+
+            {/* Información y acciones del compromiso */}
+            <div className="space-y-4">
+              {!fromProcess && (
+                <div className="flex justify-center">
+                  <div className="w-80">
+                    <DateRangePicker
+                      label="Periodo del Compromiso"
+                      value={{ from: formData.fecha_inicio, to: formData.fecha_fin }}
+                      onChange={(range: DateRange) => {
+                        updateFormData({
+                          fecha_inicio: range?.from ?? '',
+                          fecha_fin: range?.to ?? '',
+                        });
+                      }}
+                      error={errors.fecha_inicio || errors.fecha_fin}
+                      required
+                    />
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Criterios / Elementos */}
+            <CreationStep
+              formData={formData}
+              updateFormData={updateFormData}
+              agregarCriterio={addCriterion}
+              eliminarCriterio={deleteCriterion}
+              actualizarCriterio={updateCriterion}
+              agregarElemento={addElemento}
+              eliminarElemento={deleteElemento}
+              actualizarElemento={updateElemento}
+              errors={errors}
+              cicloFijo={fromProcess}
+              searchTerm={creationFilter.searchTerm}
+              statusFilter="todos"
+              modeloTipo={modeloTipo}
+              modeloId={modeloIdRaw}
+              onCiclosLoaded={setCicloOptions}
+            />
+
+          </div>
+        </ScreenContainer>
+      )}
 
       {/* Modal de Confirmación */}
       <CreateConfirmationModal

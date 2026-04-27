@@ -1,5 +1,5 @@
 /**
- * AccreditationProcessList - Página de listado de procesos de acreditación
+ * AccreditationProcessList - PÃ¡gina de listado de procesos de acreditaciÃ³n
  *
  * Basada en el patron de Gestion de Estructura: header con acciones y tabla separada.
  */
@@ -28,7 +28,34 @@ import { AccreditationProcessTable } from "./Components/AccreditationProcessTabl
 import { AccreditationProcessDetailsModal } from "./Components/AccreditationProcessDetailsModal";
 import { AccreditationProcessFormModal } from "./Components/AccreditationProcessFormModal";
 
-export const AccreditationProcessList: React.FC = () => {
+export interface CommitmentConfigurationState {
+  procesoId?: string;
+  cicloId?: string;
+  startDate?: string;
+  estimatedEndDate?: string;
+  description?: string;
+  modeloTipo?: string;
+  modeloId?: number;
+}
+
+type AccreditationProcessListProps = {
+  embedded?: boolean;
+  onHeaderExtraChange?: (headerExtra: React.ReactNode) => void;
+  onHeaderMetaChange?: (meta: {
+    title: string;
+    description?: string;
+    breadcrumbMode?: "none" | "simple" | "cycle-only" | "contextual";
+    breadcrumbParent?: { label: string; href?: string };
+  } | null) => void;
+  onConfigureCommitment?: (state: CommitmentConfigurationState) => void;
+};
+
+export const AccreditationProcessList: React.FC<AccreditationProcessListProps> = ({
+  embedded = false,
+  onHeaderExtraChange,
+  onHeaderMetaChange,
+  onConfigureCommitment,
+}) => {
   const moduleInfo = getModuleInfo("accreditation_processes");
   const navigate = useNavigate();
 
@@ -157,7 +184,7 @@ export const AccreditationProcessList: React.FC = () => {
     }
 
     if (!formData.accreditationCycleId) {
-      throw new Error("Debe seleccionar un ciclo de acreditación.");
+      throw new Error("Debe seleccionar un ciclo de acreditaciÃ³n.");
     }
 
     const duplicateActive = processes.some(
@@ -264,16 +291,23 @@ export const AccreditationProcessList: React.FC = () => {
       process.modeloEstructuraTipo ?? matchedCycle?.modeloEstructuraTipo;
     const modeloId =
       process.modeloEstructuraId ?? matchedCycle?.modeloEstructuraId;
+    const configurationState: CommitmentConfigurationState = {
+      procesoId: process.id,
+      cicloId: process.accreditationCycleId,
+      startDate: process.startDate,
+      estimatedEndDate: process.estimatedEndDate,
+      description: process.description,
+      modeloTipo,
+      modeloId: modeloId ? parseInt(modeloId) : undefined,
+    };
+
+    if (embedded && onConfigureCommitment) {
+      onConfigureCommitment(configurationState);
+      return;
+    }
+
     navigate(ROUTES.COMMITMENTS_NEW, {
-      state: {
-        procesoId: process.id,
-        cicloId: process.accreditationCycleId,
-        startDate: process.startDate,
-        estimatedEndDate: process.estimatedEndDate,
-        description: process.description,
-        modeloTipo,
-        modeloId: modeloId ? parseInt(modeloId) : undefined,
-      },
+      state: configurationState,
     });
   };
 
@@ -331,9 +365,57 @@ export const AccreditationProcessList: React.FC = () => {
     setDeleteModalState({ isOpen: true, process });
   };
 
-  const handleCreateProcess = () => {
+  const handleCreateProcess = useCallback(() => {
     setFormModalState({ isOpen: true, process: null });
-  };
+  }, []);
+
+  const headerExtra = useMemo(
+    () => (
+      <div className="flex flex-col sm:flex-row w-full gap-2 shrink-0 lg:w-auto">
+        <SearchInput
+          placeholder="Buscar procesos..."
+          value={searchQuery}
+          onChange={setSearchQuery}
+          className="w-full sm:w-72 text-sidebar"
+        />
+        <Button
+          variant="secondary"
+          size="sm"
+          onClick={handleCreateProcess}
+          className="gap-2"
+        >
+          Crear
+        </Button>
+      </div>
+    ),
+    [handleCreateProcess, searchQuery],
+  );
+
+  useEffect(() => {
+    if (!embedded) return undefined;
+
+    onHeaderExtraChange?.(headerExtra);
+    return () => onHeaderExtraChange?.(null);
+  }, [embedded, headerExtra, onHeaderExtraChange]);
+
+  useEffect(() => {
+    if (!embedded) {
+      return undefined;
+    }
+
+    onHeaderMetaChange?.({
+      title: moduleInfo.title,
+      description: moduleInfo.description,
+      breadcrumbMode: "cycle-only",
+    });
+
+    return () => onHeaderMetaChange?.(null);
+  }, [
+    embedded,
+    moduleInfo.description,
+    moduleInfo.title,
+    onHeaderMetaChange,
+  ]);
 
   const confirmDeleteProcess = async (confirmacion: string) => {
     if (!deleteModalState.process) return;
@@ -357,32 +439,16 @@ export const AccreditationProcessList: React.FC = () => {
     }
   };
 
-  return (
-    <ScreenContainer>
-      <PageHeader
-        title={moduleInfo.title}
-        description={moduleInfo.description}
-        breadcrumbMode="cycle-only"
-        headerExtra={
-          <div className="flex flex-col sm:flex-row w-full gap-2 shrink-0 lg:w-auto">
-            <SearchInput
-              placeholder="Buscar procesos..."
-              value={searchQuery}
-              onChange={setSearchQuery}
-              className="w-full sm:w-72 text-sidebar"
-            />
-            <Button
-              variant="secondary"
-              size="sm"
-              onClick={handleCreateProcess}
-              className="gap-2"
-            >
-              Crear
-            </Button>
-          </div>
-        }
-      />
-
+  const content = (
+    <>
+      {!embedded && (
+        <PageHeader
+          title={moduleInfo.title}
+          description={moduleInfo.description}
+          breadcrumbMode="cycle-only"
+          headerExtra={headerExtra}
+        />
+      )}
       <AccreditationProcessTable
         processes={visibleProcesses}
         isLoading={isLoading}
@@ -424,6 +490,10 @@ export const AccreditationProcessList: React.FC = () => {
         title="Proceso eliminado"
         message={`El proceso "${deleteSuccessState.processType}" ha sido eliminado correctamente.`}
       />
-    </ScreenContainer>
+    </>
   );
+
+  if (embedded) return content;
+
+  return <ScreenContainer>{content}</ScreenContainer>;
 };

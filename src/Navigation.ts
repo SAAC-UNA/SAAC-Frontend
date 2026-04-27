@@ -13,7 +13,6 @@ import {
 // ===== ICONOS =====
 const homeIcon = "system-icon:home";
 const rolesIcon = "system-icon:shield";
-const nutIcon = "system-icon:nut";
 const userIcon = "system-icon:user";
 const processIcon = "system-icon:box-archive";
 const evidenceIcon = "system-icon:assignEvidence";
@@ -161,53 +160,29 @@ export const getNavigationItems = (
 
   {
     const acreditacionChildren: NavItem[] = [];
-
-    if (
-      hasAccess({
-        requireAnyCapabilities: [CAPABILITIES.ACCREDITATION_MODEL_VIEW],
-        requireAnyPermissions: ["modelos.view"],
-      })
-    ) {
-      acreditacionChildren.push({
-        id: "modelos-acreditacion",
-        label: "Modelos de Acreditación",
-        icon: nutIcon,
-        href: ROUTES.STRUCTURE_MODELS,
-        isActive: false,
-      });
-    }
-
-    if (
-      hasAccess({
-        requireAnyCapabilities: [CAPABILITIES.ACCREDITATION_CYCLE_VIEW],
-        requireAnyPermissions: ["ciclos.view"],
-      })
-    ) {
-      acreditacionChildren.push({
-        id: "ciclos-acreditacion",
-        label: "Ciclos de Acreditación",
-        icon: calendarIcon,
-        href: ROUTES.ACCREDITATION_CYCLES,
-        isActive: false,
-      });
-    }
-
-    if (
+    const canViewAccreditationSetup = hasAccess({
+      requireAnyCapabilities: [
+        CAPABILITIES.ACCREDITATION_MODEL_VIEW,
+        CAPABILITIES.ACCREDITATION_CYCLE_VIEW,
+      ],
+      requireAnyPermissions: ["modelos.view", "ciclos.view"],
+    });
+    const canViewAccreditationProcesses =
       hasCycleSelection &&
       hasAccess({
         requireAnyCapabilities: [CAPABILITIES.ACCREDITATION_PROCESS_VIEW],
         requireAnyPermissions: ["procesos.view"],
-      })
-    ) {
+      });
+
+    if (canViewAccreditationSetup || canViewAccreditationProcesses) {
       acreditacionChildren.push({
-        id: "procesos-acreditacion",
-        label: "Procesos de Acreditación",
+        id: "gestion-acreditacion",
+        label: "Gestión de Acreditación",
         icon: processIcon,
-        href: ROUTES.ACCREDITATION_PROCESSES,
+        href: ROUTES.ACCREDITATION,
         isActive: false,
       });
     }
-
     if (acreditacionChildren.length > 0) {
       items.push({
         id: "acreditacion",

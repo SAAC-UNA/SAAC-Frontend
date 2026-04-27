@@ -58,15 +58,6 @@ const formatDate = (dateStr?: string): string => {
   }).format(new Date(dateStr));
 };
 
-const formatShortDate = (dateStr?: string | null): string => {
-  if (!dateStr) return "—";
-  return new Intl.DateTimeFormat("es-CR", {
-    year: "numeric",
-    month: "2-digit",
-    day: "2-digit",
-  }).format(new Date(dateStr));
-};
-
 // ── Props ─────────────────────────────────────────────────────────────────────
 
 interface AccreditationCycleDetailModalProps {
@@ -158,15 +149,15 @@ export const AccreditationCycleDetailModal: React.FC<
 
         <Separator />
 
-        <InfoCell label="Fecha de inicio" className="col-start-1 col-end-4">
+        <InfoCell label="Año de inicio" className="col-start-1 col-end-4">
           <span className={cn(TYPOGRAPHY.modal.body, "text-gris-una-2")}>
-            {formatShortDate(cycle.fecha_inicio)}
+            {cycle.fecha_inicio ?? "—"}
           </span>
         </InfoCell>
 
-        <InfoCell label="Fecha de fin" className="col-start-4 col-end-7">
+        <InfoCell label="Año de fin" className="col-start-4 col-end-7">
           <span className={cn(TYPOGRAPHY.modal.body, "text-gris-una-2")}>
-            {formatShortDate(cycle.fecha_fin)}
+            {cycle.fecha_fin ?? "—"}
           </span>
         </InfoCell>
 

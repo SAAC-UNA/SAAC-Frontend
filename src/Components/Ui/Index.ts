@@ -37,6 +37,8 @@ export type {
 export { CustomSelect } from "./Forms/SingleSelect";
 export type { SelectOption, CustomSelectProps } from "./Forms/SingleSelect";
 export { ScreenContainer } from "./Layout/ScreenContainer";
+export { SectionTabs } from "./Layout/SectionTabs";
+export type { SectionTabsProps } from "./Layout/SectionTabs";
 export { WizardProgress } from "./Layout/WizardProgress";
 export type { WizardStep, WizardProgressProps } from "./Layout/WizardProgress";
 export { ScrollReveal } from "./Layout/ScrollReveal";
@@ -58,5 +60,9 @@ export type {
   DateRange,
   DateRangePickerProps,
 } from "./Calendar/DateRangePicker";
+export { YearPicker } from "./Calendar/YearPicker";
+export type { YearPickerProps } from "./Calendar/YearPicker";
+export { YearRangePicker } from "./Calendar/YearRangePicker";
+export type { YearRange, YearRangePickerProps } from "./Calendar/YearRangePicker";
 export { RadioGroupCards } from "./Forms/RadioGroupCards";
 export type { RadioCardOption } from "./Forms/RadioGroupCards";

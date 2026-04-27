@@ -9,6 +9,7 @@ import {
   PageHeader,
   Button,
   LoadingSpinner,
+  SectionTabs,
 } from "@/Components/Ui/Index";
 import { StatusBadge } from "@/Components/Ui/Feedback/StatusBadge";
 import { SystemIcons } from "@/Components/Ui/Icons/SystemIcons";
@@ -443,25 +444,14 @@ export const AccreditationReportAdminPage: React.FC = () => {
         }
       />
 
-      <div className="flex flex-wrap border-b border-gris-light mb-6 gap-0">
-        {TABS.map((tab) => (
-          <button
-            key={tab}
-            onClick={() => {
-              setActiveTab(tab);
-              setSearchQuery("");
-            }}
-            className={cn(
-              "px-5 py-2.5 text-sm font-medium border-b-2 -mb-px transition-colors whitespace-nowrap",
-              activeTab === tab
-                ? "border-rojo-una-2 text-rojo-una-2"
-                : "border-transparent text-gris-una hover:text-negro-una-2",
-            )}
-          >
-            {tab}
-          </button>
-        ))}
-      </div>
+      <SectionTabs
+        tabs={TABS}
+        activeTab={activeTab}
+        onTabChange={(tab) => {
+          setActiveTab(tab);
+          setSearchQuery("");
+        }}
+      />
 
       {!processId && (
         <Card className="mb-6 p-12 flex flex-col items-center justify-center text-center bg-gris-fondo/30 border-dashed animate-in fade-in duration-700">
