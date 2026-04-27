@@ -22,7 +22,6 @@ import {
   type GlobalFilterCatalog,
 } from "@/Services/GlobalFilterContextService";
 import type { ExtensionRequest } from "@/Types/ExtensionRequestTypes";
-import { SystemIcons } from "@/Components/Ui/Icons/SystemIcons";
 import { ROUTES } from "@/Constants/ROUTES";
 import { getModuleInfo } from "@/Constants/ModuleInfo";
 import { CARD_HOVER_SHADOWS } from "@/Constants/CardHoverShadows";
@@ -592,14 +591,6 @@ const HomePage: React.FC = () => {
         cardClassName: CARD_HOVER_SHADOWS.info,
         titleClassName: "text-info",
       },
-      [ROUTES.CONTEXT_SELECTOR]: {
-        ...getModuleCardText("context_selector"),
-        icon: (
-          <SystemIcons.structure.hierarchy className="w-8 h-8 text-negro-una" />
-        ),
-        cardClassName: CARD_HOVER_SHADOWS.negroUna,
-        titleClassName: "text-negro-una",
-      },
     };
 
     const contextCycleId =
@@ -626,10 +617,6 @@ const HomePage: React.FC = () => {
         .filter((href): href is string => Boolean(href && href !== "#")),
     );
 
-    if (!isTeacher) {
-      visibleRoutes.add(ROUTES.CONTEXT_SELECTOR);
-    }
-
     const priorities = isSuperUser
       ? [
           ROUTES.USERS,
@@ -640,7 +627,6 @@ const HomePage: React.FC = () => {
           ROUTES.ACCREDITATION_PROCESSES,
           ROUTES.REPORTS,
           ROUTES.SINAES_ADMIN,
-          ROUTES.CONTEXT_SELECTOR,
         ]
       : isTeacher
         ? [
@@ -659,7 +645,6 @@ const HomePage: React.FC = () => {
             ROUTES.ACCREDITATION_CYCLES,
             ROUTES.REPORTS,
             ROUTES.SINAES_ADMIN,
-            ROUTES.CONTEXT_SELECTOR,
           ];
 
     return priorities
@@ -746,11 +731,11 @@ const HomePage: React.FC = () => {
             {dashboardQuickCards.map((card) => (
               <div
                 key={card.href}
-                className="w-full min-h-48 cursor-pointer"
+                className="w-full h-48 cursor-pointer"
                 onClick={() => navigate(card.href)}
               >
                 <Card
-                  className={`h-full p-5 transition-all duration-200 ${card.cardClassName}`}
+                  className={`h-48 p-5 transition-all duration-200 ${card.cardClassName}`}
                 >
                   <div className="grid grid-cols-3 grid-rows-4 gap-0 h-full">
                     <div className="col-start-1 col-end-3 row-start-1 row-end-3 flex items-center">
@@ -834,15 +819,15 @@ const HomePage: React.FC = () => {
             </Card>
 
             <div className="lg:col-span-9 h-full">
-              <div className="h-full grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 auto-rows-fr">
+              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 auto-rows-[11.5rem]">
                 {dashboardQuickCards.map((card) => (
                   <div
                     key={card.href}
-                    className="h-full min-h-[11.5rem] cursor-pointer"
+                    className="h-[11.5rem] cursor-pointer"
                     onClick={() => navigate(card.href)}
                   >
                     <Card
-                      className={`h-full p-4 transition-all duration-200 ${card.cardClassName}`}
+                      className={`h-[11.5rem] p-4 transition-all duration-200 ${card.cardClassName}`}
                     >
                       <div className="grid grid-cols-3 grid-rows-4 gap-0 h-full">
                         <div className="col-start-1 col-end-3 row-start-1 row-end-3 flex items-center">
@@ -986,11 +971,11 @@ const HomePage: React.FC = () => {
               {dashboardQuickCards.map((card) => (
                 <div
                   key={card.href}
-                  className="w-full min-h-72 cursor-pointer"
+                  className="w-full h-72 cursor-pointer"
                   onClick={() => navigate(card.href)}
                 >
                   <Card
-                    className={`min-h-72 p-5 transition-all duration-200 ${card.cardClassName}`}
+                    className={`h-72 p-5 transition-all duration-200 ${card.cardClassName}`}
                   >
                     <div className="grid grid-cols-3 grid-rows-4 gap-0 h-full">
                       <div className="col-start-1 col-end-3 row-start-1 row-end-3 flex items-center">
