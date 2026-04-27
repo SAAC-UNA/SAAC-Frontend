@@ -131,7 +131,7 @@ export const AccreditationProcessList: React.FC = () => {
 
   const visibleProcesses = useMemo(() => {
     if (!selectedContextCycleId) {
-      return [];
+      return processes;
     }
 
     return processes.filter(
@@ -397,7 +397,7 @@ export const AccreditationProcessList: React.FC = () => {
       <AccreditationProcessFormModal
         isOpen={formModalState.isOpen}
         onClose={() => setFormModalState({ isOpen: false, process: null })}
-        cycles={selectableCycles}
+        cycles={cycles}
         initialData={formModalState.process}
         onSave={handleSaveProcess}
       />

@@ -337,6 +337,24 @@ const EvidenceAssignment: React.FC = () => {
       });
   }, [isFlexible, selectedProcess?.modelo_estructura_id]);
 
+  // Subset de elementos para el selector de asignación: solo los 2 últimos niveles
+  // (hojas + padres directos de hojas). Espeja el flujo tradicional: "criterio → evidencia".
+  // Los niveles superiores se omiten; buildElementTree trata los padres-de-hojas como raíces.
+  const flexAssignableElements = useMemo(() => {
+    if (flexElements.length === 0) return flexElements;
+    const allParentIds = new Set(
+      flexElements.map((e) => e.padre_id).filter((id): id is number => id !== null),
+    );
+    // Hojas = elementos que ningún otro apunta como padre
+    const leaves = flexElements.filter((el) => !allParentIds.has(el.elemento_id));
+    // Padres directos de las hojas
+    const leafParentIds = new Set(
+      leaves.map((el) => el.padre_id).filter((id): id is number => id !== null),
+    );
+    const leafParents = flexElements.filter((el) => leafParentIds.has(el.elemento_id));
+    return [...leafParents, ...leaves];
+  }, [flexElements]);
+
   // ── Duplicados ───────────────────────────────────────────────────────────
   const [duplicatesState, setDuplicatesState] = useState<{
     duplicates: DuplicateAssignment[];
@@ -943,7 +961,7 @@ const EvidenceAssignment: React.FC = () => {
     criteriaEvidences: criteriaState.evidences,
     selectedAvatars,
     isFlexible,
-    flexElements,
+    flexElements: flexAssignableElements,
     flexElementsLoading,
   };
 

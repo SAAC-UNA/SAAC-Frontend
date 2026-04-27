@@ -114,7 +114,7 @@ export const EvidenceAssignmentView: React.FC<EvidenceAssignmentViewProps> = ({
         <div className="space-y-6">
           {/* ── Sección 1: Asignaciones + Destinatarios ── */}
           <ScrollReveal delay={0}>
-            <div className="grid grid-cols-1 lg:grid-cols-[3fr_2.2fr] gap-6 items-start">
+            <div className="grid grid-cols-1 lg:grid-cols-[3fr_2.2fr] gap-6 items-stretch">
               {/* Card: Criterios y Evidencias */}
               <Card className="p-6 space-y-6">
                 {/* Contadores rápidos */}
@@ -726,8 +726,10 @@ export const EvidenceAssignmentView: React.FC<EvidenceAssignmentViewProps> = ({
         isOpen={showConfirmModal}
         onClose={onCloseConfirmModal}
         onConfirm={onConfirmedSubmit}
-        title="Confirmar asignación de evidencias"
-        message={`¿Desea asignar ${formData.selectedEvidences.length} ${formData.selectedEvidences.length === 1 ? "evidencia" : "evidencias"} a los destinatarios seleccionados?`}
+        title={isFlexible ? "Confirmar asignación de elementos" : "Confirmar asignación de evidencias"}
+        message={isFlexible
+          ? `¿Desea asignar ${formData.selectedElements.length} ${formData.selectedElements.length === 1 ? "elemento" : "elementos"} a los destinatarios seleccionados?`
+          : `¿Desea asignar ${formData.selectedEvidences.length} ${formData.selectedEvidences.length === 1 ? "evidencia" : "evidencias"} a los destinatarios seleccionados?`}
         confirmLabel="Sí, asignar"
         isLoading={isSubmitting}
       />
@@ -736,7 +738,9 @@ export const EvidenceAssignmentView: React.FC<EvidenceAssignmentViewProps> = ({
         isOpen={showSuccessModal}
         onClose={onCloseSuccessModal}
         title="¡Asignación completada!"
-        message={`Se ${assignedEvidencesCount === 1 ? "asignó" : "asignaron"} ${assignedEvidencesCount} ${assignedEvidencesCount === 1 ? "evidencia" : "evidencias"} correctamente.`}
+        message={isFlexible
+          ? `Se ${assignedEvidencesCount === 1 ? "asignó" : "asignaron"} ${assignedEvidencesCount} ${assignedEvidencesCount === 1 ? "elemento" : "elementos"} correctamente.`
+          : `Se ${assignedEvidencesCount === 1 ? "asignó" : "asignaron"} ${assignedEvidencesCount} ${assignedEvidencesCount === 1 ? "evidencia" : "evidencias"} correctamente.`}
       />
     </ScreenContainer>
   );
