@@ -5,9 +5,10 @@
  * (StructureModelsPage) para mantener una sola fuente de verdad del layout.
  */
 
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { Button } from '@/Components/Ui/Buttons/Button';
 import { PageHeader } from '@/Components/Ui/Index';
+import { SearchInput } from '@/Components/Ui/Forms/SearchInput';
 import { Modal } from '@/Components/Ui/Modals/Modal';
 import { SuccessModal } from '@/Components/Ui/Modals/SuccessModal';
 import { ROUTES } from '@/Constants/ROUTES';
@@ -83,24 +84,33 @@ export const StructureElementsView: React.FC<Props> = ({
     title: '',
     message: '',
   });
+  const [searchQuery, setSearchQuery] = useState('');
 
   const headerTitle = title ?? 'Gestión de Estructura';
   const headerDescription =
     description ??
     (model.version ? `${model.nombre} · v${model.version}` : model.nombre);
 
-  const headerExtra = (
-    <div className="flex items-center gap-2">
-      <Button
-        variant="secondary"
-        size="sm"
-        onClick={() =>
-          setFormModal({ isOpen: true, element: null, defaultParentId: null })
-        }
-      >
-        Crear
-      </Button>
-    </div>
+  const headerExtra = useMemo(
+    () => (
+      <div className="flex flex-col sm:flex-row w-full gap-2 shrink-0 lg:w-auto items-end">
+        <SearchInput
+          placeholder="Buscar elementos..."
+          value={searchQuery}
+          onChange={setSearchQuery}
+          className="w-full sm:w-72"
+        />
+        <Button
+          variant="secondary"
+          onClick={() =>
+            setFormModal({ isOpen: true, element: null, defaultParentId: null })
+          }
+        >
+          Crear
+        </Button>
+      </div>
+    ),
+    [searchQuery],
   );
 
   React.useEffect(() => {
@@ -193,6 +203,7 @@ export const StructureElementsView: React.FC<Props> = ({
       <FlexibleElementTable
         elements={elements}
         isLoading={isLoadingElements}
+        searchQuery={searchQuery}
         onEdit={(element) =>
           setFormModal({ isOpen: true, element, defaultParentId: null })
         }

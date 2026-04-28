@@ -43,6 +43,14 @@ const KEY_BY_SECTION: Record<AccreditationSection, SectionKey> = {
 const isSectionKey = (value: string | null): value is SectionKey =>
   value === "modelos" || value === "ciclos" || value === "procesos" || value === "estructura";
 
+const getModelIdFromSearchParams = (params: URLSearchParams): number | null => {
+  const raw = params.get("modelo");
+  if (raw === null) return null;
+
+  const parsed = Number(raw);
+  return Number.isInteger(parsed) && parsed >= 0 ? parsed : null;
+};
+
 const SECTION_ACCESS: Record<
   AccreditationSection,
   { capability: string; permission: string }
@@ -100,7 +108,7 @@ const AccreditationModulePage: React.FC = () => {
     [canAccess],
   );
 
-  const activeSection = useMemo<AccreditationSection>(() => {
+  const sectionFromSearchParams = useMemo<AccreditationSection>(() => {
     const sectionKey = searchParams.get("seccion");
     const requestedSection = isSectionKey(sectionKey)
       ? SECTION_BY_KEY[sectionKey]
@@ -110,6 +118,27 @@ const AccreditationModulePage: React.FC = () => {
       ? requestedSection
       : availableSections[0] ?? "Modelo de acreditación";
   }, [availableSections, searchParams]);
+
+  const [activeSection, setActiveSection] = useState<AccreditationSection>(
+    sectionFromSearchParams,
+  );
+
+  useEffect(() => {
+    setActiveSection(sectionFromSearchParams);
+  }, [sectionFromSearchParams]);
+
+  const modelIdFromSearchParams = useMemo(
+    () => getModelIdFromSearchParams(searchParams),
+    [searchParams],
+  );
+
+  const [activeModelId, setActiveModelId] = useState<number | null>(
+    modelIdFromSearchParams,
+  );
+
+  useEffect(() => {
+    setActiveModelId(modelIdFromSearchParams);
+  }, [modelIdFromSearchParams]);
 
   const defaultHeaderMeta = useMemo<EmbeddedHeaderMeta>(() => {
     const moduleInfo = getModuleInfo(MODULE_INFO_BY_SECTION[activeSection]);
@@ -129,6 +158,8 @@ const AccreditationModulePage: React.FC = () => {
   }, [defaultHeaderMeta]);
 
   const handleSectionChange = (section: AccreditationSection) => {
+    setActiveSection(section);
+    setActiveModelId(null);
     setHeaderExtra(null);
     setProcessConfigState(null);
     setHeaderMeta({
@@ -192,13 +223,17 @@ const AccreditationModulePage: React.FC = () => {
 
       {activeSection === "Modelo de acreditación" && (
         <StructureModelsPage
+          key={`modelos-${activeModelId ?? "list"}`}
           embedded
+          selectedModelId={activeModelId}
+          onSelectedModelIdChange={setActiveModelId}
           onHeaderExtraChange={handleHeaderExtraChange}
           onHeaderMetaChange={handleHeaderMetaChange}
         />
       )}
       {activeSection === "Ciclos de acreditación" && (
         <AccreditationCyclesPage
+          key="ciclos"
           embedded
           onHeaderExtraChange={handleHeaderExtraChange}
         />
@@ -206,6 +241,7 @@ const AccreditationModulePage: React.FC = () => {
       {activeSection === "Procesos de acreditación" && (
         processConfigState ? (
           <CreateImprovementCommitment
+            key="procesos-config"
             embedded
             contextState={processConfigState}
             onHeaderExtraChange={handleHeaderExtraChange}
@@ -214,6 +250,7 @@ const AccreditationModulePage: React.FC = () => {
           />
         ) : (
           <AccreditationProcessList
+            key="procesos"
             embedded
             onHeaderExtraChange={handleHeaderExtraChange}
             onHeaderMetaChange={handleHeaderMetaChange}
@@ -223,6 +260,7 @@ const AccreditationModulePage: React.FC = () => {
       )}
       {activeSection === "Estructura institucional" && (
         <InstitutionalStructurePage
+          key="estructura"
           embedded
           onHeaderExtraChange={handleHeaderExtraChange}
           onHeaderMetaChange={handleHeaderMetaChange}

@@ -5,7 +5,6 @@ import { StatusBadge } from "@/Components/Ui/Feedback/StatusBadge";
 import { useFirstColumnConfig } from "@/Hooks/UseFirstColumnConfig";
 import { truncateText } from "@/Utils";
 import { TYPOGRAPHY } from "@/Constants/Typography";
-import { TABLE_TRUNCATE } from "@/Constants/TableTruncate";
 import { TABLE_COLUMN_WIDTHS } from "@/Constants/Components";
 import { cn } from "@/Utils/ClassNames";
 import { ACCREDITATION_CYCLE_STATUS_BADGE } from "@/Constants/StatusBadges";

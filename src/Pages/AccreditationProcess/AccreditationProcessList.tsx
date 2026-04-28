@@ -167,14 +167,6 @@ export const AccreditationProcessList: React.FC<AccreditationProcessListProps> =
     );
   }, [processes, selectedContextCycleId]);
 
-  const selectableCycles = useMemo(() => {
-    if (!selectedContextCycleId) {
-      return cycles;
-    }
-
-    return cycles.filter((cycle) => cycle.id === selectedContextCycleId);
-  }, [cycles, selectedContextCycleId]);
-
   const validateBusinessRules = (
     formData: AccreditationProcessFormData,
     editingProcessId?: string,

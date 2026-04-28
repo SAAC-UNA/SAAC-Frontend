@@ -92,6 +92,7 @@ interface StructureModelCardProps {
   onEdit: () => void;
   onToggleActive: () => void;
   onDelete: () => void;
+  onView?: () => void;
   editTooltip?: string;
   toggleTooltip?: string;
   deleteTooltip?: string;
@@ -103,6 +104,7 @@ export const StructureModelCard: React.FC<StructureModelCardProps> = ({
   onEdit,
   onToggleActive,
   onDelete,
+  onView,
   editTooltip,
   toggleTooltip,
   deleteTooltip,
@@ -153,12 +155,18 @@ export const StructureModelCard: React.FC<StructureModelCardProps> = ({
       id: "view",
       action: "view",
       tooltip: "Ver estructura",
-      onClick: () =>
+      onClick: () => {
+        if (onView) {
+          onView();
+          return;
+        }
+
         navigate(
           `${ROUTES.STRUCTURE_MODELS}?modelo=${
             isTradicional ? 0 : model.modelo_estructura_id
           }`,
-        ),
+        );
+      },
     },
     {
       id: "edit",

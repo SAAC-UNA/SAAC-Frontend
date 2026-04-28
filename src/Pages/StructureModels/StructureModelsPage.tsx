@@ -6,7 +6,7 @@
  */
 
 import React, { useEffect, useMemo, useState } from "react";
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { useSearchParams } from "react-router-dom";
 import { ScreenContainer } from "@/Components/Ui/Layout/ScreenContainer";
 import {
   PageHeader,
@@ -52,6 +52,8 @@ const notifiedInvalidModelIds = new Set<number>();
 
 type StructureModelsPageProps = {
   embedded?: boolean;
+  selectedModelId?: number | null;
+  onSelectedModelIdChange?: (modelId: number | null) => void;
   onHeaderExtraChange?: (headerExtra: React.ReactNode) => void;
   onHeaderMetaChange?: (meta: {
     title: string;
@@ -63,10 +65,11 @@ type StructureModelsPageProps = {
 
 const StructureModelsPage: React.FC<StructureModelsPageProps> = ({
   embedded = false,
+  selectedModelId: controlledSelectedModelId,
+  onSelectedModelIdChange,
   onHeaderExtraChange,
   onHeaderMetaChange,
 }) => {
-  const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const { showToast } = useToast();
   const {
@@ -80,10 +83,14 @@ const StructureModelsPage: React.FC<StructureModelsPageProps> = ({
   } = useStructureModels();
   const { cycles, isLoading: isLoadingCycles } = useAccreditationCycles();
 
-  const selectedModelId = useMemo(
+  const searchSelectedModelId = useMemo(
     () => getModelIdFromSearchParams(searchParams),
     [searchParams],
   );
+  const selectedModelId =
+    controlledSelectedModelId !== undefined
+      ? controlledSelectedModelId
+      : searchSelectedModelId;
 
   const selectedModel = useMemo(
     () =>
@@ -114,6 +121,7 @@ const StructureModelsPage: React.FC<StructureModelsPageProps> = ({
       const nextSearchParams = new URLSearchParams(searchParams);
       nextSearchParams.delete("modelo");
       setSearchParams(nextSearchParams, { replace: true });
+      onSelectedModelIdChange?.(null);
 
       if (!selectedModel && !notifiedInvalidModelIds.has(selectedModelId)) {
         notifiedInvalidModelIds.add(selectedModelId);
@@ -128,6 +136,7 @@ const StructureModelsPage: React.FC<StructureModelsPageProps> = ({
     searchParams,
     selectedModel,
     selectedModelId,
+    onSelectedModelIdChange,
     setSearchParams,
     showToast,
   ]);
@@ -138,6 +147,20 @@ const StructureModelsPage: React.FC<StructureModelsPageProps> = ({
 
   const hasAssociatedCycles = (modelId: number): boolean => {
     return modelIdsWithCycles.has(modelId);
+  };
+
+  const openModelStructure = (model: StructureModel) => {
+    const nextSearchParams = new URLSearchParams(searchParams);
+    nextSearchParams.set("seccion", "modelos");
+    const nextModelId =
+      model.tipo === "tradicional" ? 0 : model.modelo_estructura_id;
+
+    nextSearchParams.set(
+      "modelo",
+      String(nextModelId),
+    );
+    onSelectedModelIdChange?.(nextModelId);
+    setSearchParams(nextSearchParams);
   };
 
   const [formModal, setFormModal] = useState<{
@@ -175,39 +198,20 @@ const StructureModelsPage: React.FC<StructureModelsPageProps> = ({
 
   const headerExtra = useMemo(
     () => (
-      <div className="flex items-center gap-2">
-        {!embedded && (
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => navigate(ROUTES.ACCREDITATION_CYCLES)}
-              >
-                Ir a Ciclos
-              </Button>
-            </TooltipTrigger>
-            <TooltipContent side="bottom">
-              Ir a ciclos de acreditación
-            </TooltipContent>
-          </Tooltip>
-        )}
-
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <Button
-              variant="secondary"
-              size="sm"
-              onClick={() => setFormModal({ isOpen: true, model: null })}
-            >
-              Crear
-            </Button>
-          </TooltipTrigger>
-          <TooltipContent side="bottom">Crear nuevo modelo</TooltipContent>
-        </Tooltip>
-      </div>
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <Button
+            variant="secondary"
+            size="sm"
+            onClick={() => setFormModal({ isOpen: true, model: null })}
+          >
+            Crear
+          </Button>
+        </TooltipTrigger>
+        <TooltipContent side="bottom">Crear nuevo modelo</TooltipContent>
+      </Tooltip>
     ),
-    [embedded, navigate],
+    [],
   );
 
   const isSubPageActive = selectedModelId === 0 || (selectedModel?.tipo === "elemento_flexible");
@@ -224,44 +228,47 @@ const StructureModelsPage: React.FC<StructureModelsPageProps> = ({
   }, [embedded, onHeaderExtraChange]);
 
   useEffect(() => {
-    if (!embedded) {
-      return undefined;
-    }
-
-    if (selectedModelId === 0) {
-      onHeaderMetaChange?.({
-        title: structureModuleInfo.title,
-        description: structureModuleInfo.description,
-        breadcrumbMode: "simple",
-        breadcrumbParent: {
-          label: "Modelos de Acreditación",
-          href: `${ROUTES.ACCREDITATION}?seccion=modelos`,
-        },
-      });
-      return () => onHeaderMetaChange?.(null);
-    }
-
-    if (selectedModel && selectedModel.tipo === "elemento_flexible") {
-      return undefined;
-    }
+    if (!embedded) return;
+    if (isSubPageActive) return;
 
     onHeaderMetaChange?.({
       title: moduleInfo.title,
       description: moduleInfo.description,
       breadcrumbMode: "cycle-only",
     });
-
-    return () => onHeaderMetaChange?.(null);
   }, [
     embedded,
+    isSubPageActive,
     moduleInfo.description,
     moduleInfo.title,
     onHeaderMetaChange,
-    selectedModel,
+  ]);
+
+  useEffect(() => {
+    if (!embedded) return;
+    if (selectedModelId !== 0) return;
+
+    onHeaderMetaChange?.({
+      title: structureModuleInfo.title,
+      description: structureModuleInfo.description,
+      breadcrumbMode: "simple",
+      breadcrumbParent: {
+        label: "Modelos de Acreditación",
+        href: `${ROUTES.ACCREDITATION}?seccion=modelos`,
+      },
+    });
+  }, [
+    embedded,
+    onHeaderMetaChange,
     selectedModelId,
     structureModuleInfo.description,
     structureModuleInfo.title,
   ]);
+
+  useEffect(() => {
+    if (!embedded) return;
+    return () => onHeaderMetaChange?.(null);
+  }, [embedded, onHeaderMetaChange]);
 
   // Handlers 
 
@@ -450,6 +457,7 @@ const StructureModelsPage: React.FC<StructureModelsPageProps> = ({
                 key={model.modelo_estructura_id}
                 model={model}
                 hasCiclos={modelHasCycles}
+                onView={() => openModelStructure(model)}
                 onEdit={() => setFormModal({ isOpen: true, model })}
                 onToggleActive={() => handleToggleActive(model)}
                 onDelete={() =>

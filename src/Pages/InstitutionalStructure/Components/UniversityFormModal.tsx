@@ -74,7 +74,7 @@ export const UniversityFormModal: React.FC<Props> = ({ isOpen, onClose, universi
     >
       <div className="flex flex-col gap-4">
         <div className="flex flex-col gap-1">
-          <label className={cn(TYPOGRAPHY.label, 'font-medium')}>
+          <label className={cn(TYPOGRAPHY.form.label, 'font-medium')}>
             Nombre <span className="text-error">*</span>
           </label>
           <Input
@@ -88,12 +88,12 @@ export const UniversityFormModal: React.FC<Props> = ({ isOpen, onClose, universi
             maxLength={250}
           />
           {errors.nombre && (
-            <span className={cn(TYPOGRAPHY.helper, 'text-error')}>{errors.nombre}</span>
+            <span className={cn(TYPOGRAPHY.form.helper, 'text-error')}>{errors.nombre}</span>
           )}
         </div>
 
         {serverError && (
-          <p className={cn(TYPOGRAPHY.helper, 'text-error')}>{serverError}</p>
+          <p className={cn(TYPOGRAPHY.form.helper, 'text-error')}>{serverError}</p>
         )}
       </div>
     </EntityFormModal>
