@@ -138,7 +138,7 @@ export const AdminFileUploadModal: React.FC<AdminFileUploadModalProps> = ({
       footerButtons={
         <>
           <Button
-            variant="secondary"
+            variant="outline"
             onClick={() => !uploading && onClose()}
             disabled={uploading}
             standardWidth
@@ -146,7 +146,7 @@ export const AdminFileUploadModal: React.FC<AdminFileUploadModalProps> = ({
             Cancelar
           </Button>
           <Button
-            variant="primary"
+            variant="warning"
             onClick={handleSubmit}
             disabled={!canSubmit() || uploading}
             isLoading={uploading}

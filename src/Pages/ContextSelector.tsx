@@ -440,8 +440,6 @@ const ContextSelector: React.FC = () => {
               {step === "cycle" && (
                 <Button
                   variant="ghost"
-                  size="sm"
-                  className="bg-negro-una text-blanco-una hover:bg-negro-una/90 hover:shadow-md"
                   onClick={() =>
                     (window.location.href = ROUTES.ACCREDITATION_CYCLES)
                   }
@@ -452,8 +450,6 @@ const ContextSelector: React.FC = () => {
               {step === "process" && (
                 <Button
                   variant="ghost"
-                  size="sm"
-                  className="bg-negro-una text-blanco-una hover:bg-negro-una/90 hover:shadow-md"
                   onClick={() =>
                     (window.location.href = ROUTES.ACCREDITATION_PROCESSES)
                   }

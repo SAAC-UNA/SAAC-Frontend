@@ -100,52 +100,24 @@ export const AccreditationCyclesTable: React.FC<
         ),
       },
       {
-        key: "modelo",
-        header: "Modelo",
-        align: "left",
+        key: "fecha_inicio",
+        header: "Inicio",
+        align: "right",
         render: (_, item) => (
-          <span
-            className={cn(
-              "block font-sans antialiased font-normal leading-normal text-negro-una-2",
-              TYPOGRAPHY.table.cell,
-            )}
-            title={item.modelo_estructura?.nombre}
-          >
-            {truncateText(
-              item.modelo_estructura?.nombre ?? "N/A",
-              TABLE_TRUNCATE.name,
-            )}
+          <span className={cn("block font-sans antialiased font-normal leading-normal text-negro-una-2", TYPOGRAPHY.table.cell)}>
+            {item.fecha_inicio ?? "—"}
           </span>
         ),
       },
       {
-        key: "periodo",
-        header: "Periodo",
+        key: "fecha_fin",
+        header: "Fin",
         align: "left",
-        render: (_, item) => {
-          if (!item.fecha_inicio && !item.fecha_fin) {
-            return (
-              <span className={`${TYPOGRAPHY.table.helper} text-gris-una`}>
-                —
-              </span>
-            );
-          }
-
-          return (
-            <div className="flex flex-col items-start">
-              <p
-                className={`block font-sans antialiased font-normal leading-normal text-negro-una-2 ${TYPOGRAPHY.table.cell}`}
-              >
-                Inicio: {item.fecha_inicio ?? "—"}
-              </p>
-              <p
-                className={`block font-sans antialiased font-normal leading-normal text-negro-una-2 ${TYPOGRAPHY.table.cell}`}
-              >
-                Fin: {item.fecha_fin ?? "—"}
-              </p>
-            </div>
-          );
-        },
+        render: (_, item) => (
+          <span className={cn("block font-sans antialiased font-normal leading-normal text-negro-una-2", TYPOGRAPHY.table.cell)}>
+            {item.fecha_fin ?? "—"}
+          </span>
+        ),
       },
       {
         key: "estado",

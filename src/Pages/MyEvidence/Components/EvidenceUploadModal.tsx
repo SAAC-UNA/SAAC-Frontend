@@ -329,13 +329,15 @@ export const EvidenceUploadPage: React.FC<EvidenceUploadPageProps> = ({
           <Button variant="outline" onClick={handleClose} disabled={isUploading} standardWidth>
             Cerrar
           </Button>
-          {(selectedFiles.length > 0 || selectedLinks.length > 0) && !isUploading && (
-            <>
-              <Button variant="secondary" onClick={handleStartUpload} standardWidth>
-                Subir
-              </Button>
-            </>
-          )}
+          <Button
+            variant="secondary"
+            onClick={handleStartUpload}
+            disabled={selectedFiles.length === 0 && selectedLinks.length === 0}
+            isLoading={isUploading}
+            standardWidth
+          >
+            Subir
+          </Button>
         </>
       }
     >

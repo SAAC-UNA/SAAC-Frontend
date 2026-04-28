@@ -96,11 +96,11 @@ const VARIANT_CONFIG: Record<ModalVariant, VariantConfig> = {
     confirmVariant: 'secondary',
   },
   upload: {
-    cardBg: 'bg-teal',
-    cardShadow: 'shadow-[0_4px_14px_rgba(20,184,166,0.28)]',
+    cardBg: 'bg-warning',
+    cardShadow: 'shadow-[0_4px_14px_rgba(245,158,11,0.28)]',
     Icon: ({ className }) => <SystemIcons.interface.uploadArrow className={className} />,
-    confirmVariant: 'primary',
-    metaColor: 'text-teal',
+    confirmVariant: 'warning',
+    metaColor: 'text-warning',
   },
 };
 
