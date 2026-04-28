@@ -210,12 +210,18 @@ const StructureModelsPage: React.FC<StructureModelsPageProps> = ({
     [embedded, navigate],
   );
 
-  useEffect(() => {
-    if (!embedded) return undefined;
+  const isSubPageActive = selectedModelId === 0 || (selectedModel?.tipo === "elemento_flexible");
 
+  useEffect(() => {
+    if (!embedded) return;
+    if (isSubPageActive) return;
     onHeaderExtraChange?.(headerExtra);
+  }, [embedded, headerExtra, isSubPageActive, onHeaderExtraChange]);
+
+  useEffect(() => {
+    if (!embedded) return;
     return () => onHeaderExtraChange?.(null);
-  }, [embedded, headerExtra, onHeaderExtraChange]);
+  }, [embedded, onHeaderExtraChange]);
 
   useEffect(() => {
     if (!embedded) {
@@ -257,7 +263,7 @@ const StructureModelsPage: React.FC<StructureModelsPageProps> = ({
     structureModuleInfo.title,
   ]);
 
-  // â”€â”€ Handlers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // Handlers 
 
   const handleCreateConfirm = async (form: CreateModelForm | EditModelForm) => {
     return createModel(form as CreateModelForm);

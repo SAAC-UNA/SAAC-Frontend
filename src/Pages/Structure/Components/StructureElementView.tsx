@@ -109,6 +109,10 @@ export const StructureElementsView: React.FC<Props> = ({
     }
 
     onHeaderExtraChange?.(headerExtra);
+  }, [embedded, headerExtra, onHeaderExtraChange]);
+
+  React.useEffect(() => {
+    if (!embedded) return undefined;
     return () => onHeaderExtraChange?.(null);
   }, [embedded, onHeaderExtraChange]);
 

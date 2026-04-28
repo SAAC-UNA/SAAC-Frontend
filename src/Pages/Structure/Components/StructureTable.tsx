@@ -83,7 +83,9 @@ export const StructureTable: React.FC<StructureTableProps> = ({
                 return acc;
             }, [] as StructureElement[]);
         };
-        return flattenTree(treeData);
+        return flattenTree(treeData).filter(
+            (el) => el.type !== 'university' && el.type !== 'campus' && el.type !== 'career',
+        );
     }, [treeData]);
 
     const normalizeSearchText = (value?: string | null): string => {

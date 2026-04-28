@@ -125,8 +125,6 @@ const AccreditationModulePage: React.FC = () => {
   );
 
   useEffect(() => {
-    setHeaderExtra(null);
-    setProcessConfigState(null);
     setHeaderMeta(defaultHeaderMeta);
   }, [defaultHeaderMeta]);
 

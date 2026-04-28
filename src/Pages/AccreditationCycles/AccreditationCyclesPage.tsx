@@ -269,8 +269,12 @@ const AccreditationCyclesPage: React.FC<AccreditationCyclesPageProps> = ({
     if (!embedded) return undefined;
 
     onHeaderExtraChange?.(headerExtra);
-    return () => onHeaderExtraChange?.(null);
   }, [embedded, headerExtra, onHeaderExtraChange]);
+
+  useEffect(() => {
+    if (!embedded) return undefined;
+    return () => onHeaderExtraChange?.(null);
+  }, [embedded, onHeaderExtraChange]);
 
   const content = (
     <>

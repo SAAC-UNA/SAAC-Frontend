@@ -602,8 +602,12 @@ const CreateImprovementCommitment: React.FC<CreateImprovementCommitmentProps> = 
     }
 
     onHeaderExtraChange?.(headerExtra);
-    return () => onHeaderExtraChange?.(null);
   }, [embedded, headerExtra, onHeaderExtraChange]);
+
+  useEffect(() => {
+    if (!embedded) return undefined;
+    return () => onHeaderExtraChange?.(null);
+  }, [embedded, onHeaderExtraChange]);
 
   useEffect(() => {
     if (!embedded) {
