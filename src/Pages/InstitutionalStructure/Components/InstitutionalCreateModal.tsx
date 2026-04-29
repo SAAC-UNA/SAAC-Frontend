@@ -1,5 +1,5 @@
 /**
- * InstitutionalCreateModal - Modal unificado para crear Universidad, Sede o Carrera.
+ * InstitutionalCreateModal - Modal unificado para crear o editar Universidad, Sede o Carrera.
  */
 
 import React, { useEffect, useMemo, useState } from 'react';
@@ -11,17 +11,24 @@ import { useCareers } from '@/Hooks/UseCareers';
 import { useUniversities } from '@/Hooks/UseUniversities';
 import { TYPOGRAPHY } from '@/Constants/Typography';
 import { cn } from '@/Utils/ClassNames';
+import type { Campus, Career, University } from '@/Types/InstitutionalStructureTypes';
 
-type CreateEntityType = 'universidad' | 'sede' | 'carrera';
+type InstitutionalEntityType = 'universidad' | 'sede' | 'carrera';
+
+export type InstitutionalEditTarget =
+  | { type: 'universidad'; item: University }
+  | { type: 'sede'; item: Campus }
+  | { type: 'carrera'; item: Career };
 
 interface Props {
   isOpen: boolean;
   onClose: () => void;
   onCreated: () => void;
+  editTarget?: InstitutionalEditTarget | null;
 }
 
 interface FormData {
-  entityType: CreateEntityType;
+  entityType: InstitutionalEntityType;
   universidadId: string;
   nombre: string;
 }
@@ -42,18 +49,23 @@ export const InstitutionalCreateModal: React.FC<Props> = ({
   isOpen,
   onClose,
   onCreated,
+  editTarget = null,
 }) => {
+  const isEditing = !!editTarget;
   const { canAccess } = useAuth();
   const {
     universities,
     isLoading: loadingUniversities,
     createUniversity,
+    updateUniversity,
   } = useUniversities();
   const {
     createCampus,
+    updateCampus,
   } = useCampuses();
   const {
     createCareer,
+    updateCareer,
   } = useCareers();
 
   const [form, setForm] = useState<FormData>(EMPTY_FORM);
@@ -98,18 +110,31 @@ export const InstitutionalCreateModal: React.FC<Props> = ({
   useEffect(() => {
     if (!isOpen) return;
 
+    if (editTarget) {
+      setForm({
+        entityType: editTarget.type,
+        nombre: editTarget.item.nombre,
+        universidadId: editTarget.type === 'universidad'
+          ? ''
+          : String(editTarget.item.universidad_id ?? ''),
+      });
+      setErrors({});
+      setServerError('');
+      return;
+    }
+
     const defaultType = (
       canCreateUniversidad
         ? 'universidad'
         : canCreateSede && hasUniversidades
           ? 'sede'
           : 'carrera'
-    ) as CreateEntityType;
+    ) as InstitutionalEntityType;
 
     setForm({ ...EMPTY_FORM, entityType: defaultType });
     setErrors({});
     setServerError('');
-  }, [canCreateSede, canCreateUniversidad, hasUniversidades, isOpen]);
+  }, [canCreateCarrera, canCreateSede, canCreateUniversidad, editTarget, hasUniversidades, isOpen]);
 
   const validate = (): boolean => {
     const nextErrors: FormErrors = {};
@@ -138,16 +163,32 @@ export const InstitutionalCreateModal: React.FC<Props> = ({
 
     let result: { success: boolean; error?: string };
 
-    if (form.entityType === 'universidad') {
-      result = await createUniversity({ nombre: form.nombre.trim() });
+    const nombre = form.nombre.trim();
+
+    if (isEditing && editTarget) {
+      if (editTarget.type === 'universidad') {
+        result = await updateUniversity(editTarget.item.universidad_id, { nombre });
+      } else if (editTarget.type === 'sede') {
+        result = await updateCampus(editTarget.item.sede_id, {
+          nombre,
+          universidad_id: Number(form.universidadId),
+        });
+      } else {
+        result = await updateCareer(editTarget.item.carrera_id, {
+          nombre,
+          universidad_id: Number(form.universidadId),
+        });
+      }
+    } else if (form.entityType === 'universidad') {
+      result = await createUniversity({ nombre });
     } else if (form.entityType === 'sede') {
       result = await createCampus({
-        nombre: form.nombre.trim(),
+        nombre,
         universidad_id: Number(form.universidadId),
       });
     } else {
       result = await createCareer({
-        nombre: form.nombre.trim(),
+        nombre,
         universidad_id: Number(form.universidadId),
       });
     }
@@ -160,7 +201,7 @@ export const InstitutionalCreateModal: React.FC<Props> = ({
       return;
     }
 
-    setServerError(result.error ?? 'No se pudo crear el registro.');
+    setServerError(result.error ?? 'No se pudo guardar el registro.');
   };
 
   const noCreateOptions = entityTypeOptions.every((opt) => opt.disabled);
@@ -170,86 +211,84 @@ export const InstitutionalCreateModal: React.FC<Props> = ({
       isOpen={isOpen}
       onClose={onClose}
       onConfirm={handleConfirm}
-      title="Crear registro"
-      subtitle="Universidad, sede o carrera"
-      confirmLabel="Crear"
+      title={
+        isEditing
+          ? editTarget.type === 'universidad'
+            ? 'Editar universidad'
+            : editTarget.type === 'sede'
+              ? 'Editar sede'
+              : 'Editar carrera'
+          : 'Crear registro'
+      }
+      subtitle={isEditing ? editTarget.item.nombre : 'Universidad, sede o carrera'}
+      isEditing={isEditing}
+      confirmLabel={isEditing ? 'Guardar' : 'Crear'}
       confirmLoading={isSubmitting}
-      confirmDisabled={noCreateOptions}
+      confirmDisabled={!isEditing && noCreateOptions}
       size="md"
     >
       <div className="flex flex-col gap-4">
-        <div className="flex flex-col gap-1">
-          <label className={cn(TYPOGRAPHY.form.label, 'font-medium')}>
-            Tipo de registro <span className="text-error">*</span>
-          </label>
-          <CustomSelect
-            label="Tipo de registro"
-            options={entityTypeOptions}
-            value={form.entityType}
-            placeholder="Seleccione el tipo"
-            onChange={(value) => {
-              setForm((prev) => ({
-                ...prev,
-                entityType: value as CreateEntityType,
-                universidadId: '',
-              }));
-              setErrors({});
-              setServerError('');
-            }}
-          />
-          {!hasUniversidades && canCreateSede && (
-            <span className={cn(TYPOGRAPHY.form.helper, 'text-warning')}>
-              Primero debe existir al menos una universidad para crear una sede.
-            </span>
-          )}
-          {!hasUniversidades && canCreateCarrera && (
-            <span className={cn(TYPOGRAPHY.form.helper, 'text-warning')}>
-              Primero debe existir al menos una universidad para crear una carrera.
-            </span>
-          )}
-        </div>
-
-        {(form.entityType === 'sede' || form.entityType === 'carrera') && (
+        {!isEditing && (
           <div className="flex flex-col gap-1">
-            <label className={cn(TYPOGRAPHY.form.label, 'font-medium')}>
-              Universidad padre <span className="text-error">*</span>
-            </label>
             <CustomSelect
-              label="Universidad padre"
-              options={universityOptions}
-              value={form.universidadId}
-              placeholder={loadingUniversities ? 'Cargando universidades...' : 'Seleccione una universidad'}
-              disabled={loadingUniversities || universityOptions.length === 0}
+              label="Tipo de registro"
+              required
+              options={entityTypeOptions}
+              value={form.entityType}
+              placeholder="Seleccione el tipo"
               onChange={(value) => {
-                setForm((prev) => ({ ...prev, universidadId: value }));
-                setErrors((prev) => ({ ...prev, universidadId: undefined }));
+                setForm((prev) => ({
+                  ...prev,
+                  entityType: value as InstitutionalEntityType,
+                  universidadId: '',
+                }));
+                setErrors({});
                 setServerError('');
               }}
             />
-            {errors.universidadId && (
-              <span className={cn(TYPOGRAPHY.form.helper, 'text-error')}>{errors.universidadId}</span>
+            {!hasUniversidades && canCreateSede && (
+              <span className={cn(TYPOGRAPHY.form.helper, 'text-warning')}>
+                Primero debe existir al menos una universidad para crear una sede.
+              </span>
+            )}
+            {!hasUniversidades && canCreateCarrera && (
+              <span className={cn(TYPOGRAPHY.form.helper, 'text-warning')}>
+                Primero debe existir al menos una universidad para crear una carrera.
+              </span>
             )}
           </div>
         )}
 
-        <div className="flex flex-col gap-1">
-          <label className={cn(TYPOGRAPHY.form.label, 'font-medium')}>
-            Nombre <span className="text-error">*</span>
-          </label>
-          <Input
-            value={form.nombre}
-            onChange={(e) => {
-              setForm((prev) => ({ ...prev, nombre: e.target.value }));
-              setErrors((prev) => ({ ...prev, nombre: undefined }));
+        {(form.entityType === 'sede' || form.entityType === 'carrera') && (
+          <CustomSelect
+            label="Universidad padre"
+            required
+            options={universityOptions}
+            value={form.universidadId}
+            placeholder={loadingUniversities ? 'Cargando universidades...' : 'Seleccione una universidad'}
+            disabled={loadingUniversities || universityOptions.length === 0}
+            onChange={(value) => {
+              setForm((prev) => ({ ...prev, universidadId: value }));
+              setErrors((prev) => ({ ...prev, universidadId: undefined }));
               setServerError('');
             }}
-            placeholder="Ingrese el nombre"
-            maxLength={250}
+            error={errors.universidadId}
           />
-          {errors.nombre && (
-            <span className={cn(TYPOGRAPHY.form.helper, 'text-error')}>{errors.nombre}</span>
-          )}
-        </div>
+        )}
+
+        <Input
+          label="Nombre"
+          required
+          value={form.nombre}
+          onChange={(e) => {
+            setForm((prev) => ({ ...prev, nombre: e.target.value }));
+            setErrors((prev) => ({ ...prev, nombre: undefined }));
+            setServerError('');
+          }}
+          placeholder="Ingrese el nombre"
+          maxLength={250}
+          error={errors.nombre}
+        />
 
         {serverError && (
           <p className={cn(TYPOGRAPHY.form.helper, 'text-error')}>{serverError}</p>

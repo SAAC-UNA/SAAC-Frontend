@@ -144,7 +144,7 @@ export const AccreditationProcessFormContent: React.FC<
 
   return (
     <form ref={formRef} onSubmit={handleSubmit} className="flex flex-col gap-5">
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+      <div className="grid grid-cols-1 gap-5">
         <CustomSelect
           label="Ciclo de Acreditación"
           options={cycleOptions}

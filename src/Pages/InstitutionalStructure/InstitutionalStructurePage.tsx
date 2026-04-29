@@ -12,6 +12,7 @@ import { ScreenContainer } from '@/Components/Ui/Layout/ScreenContainer';
 import { PageHeader } from '@/Components/Ui/Index';
 import { useAuth } from '@/Context/AuthContext';
 import { InstitutionalCreateModal } from './Components/InstitutionalCreateModal';
+import type { InstitutionalEditTarget } from './Components/InstitutionalCreateModal';
 import { InstitutionalHierarchyTable } from './Components/InstitutionalHierarchyTable';
 
 const MODULE_HEADER = {
@@ -40,6 +41,7 @@ const InstitutionalStructurePage: React.FC<Props> = ({
   const { canAccess } = useAuth();
   const [searchQuery, setSearchQuery] = useState('');
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const [editTarget, setEditTarget] = useState<InstitutionalEditTarget | null>(null);
   const [refreshSignal, setRefreshSignal] = useState(0);
 
   const canCreateAny = canAccess({
@@ -48,6 +50,11 @@ const InstitutionalStructurePage: React.FC<Props> = ({
 
   const handleCreated = useCallback(() => {
     setRefreshSignal((prev) => prev + 1);
+  }, []);
+
+  const handleCloseModal = useCallback(() => {
+    setIsCreateModalOpen(false);
+    setEditTarget(null);
   }, []);
 
   const headerExtra = useMemo(
@@ -87,12 +94,14 @@ const InstitutionalStructurePage: React.FC<Props> = ({
       <InstitutionalHierarchyTable
         searchQuery={searchQuery}
         refreshSignal={refreshSignal}
+        onEdit={setEditTarget}
       />
 
       <InstitutionalCreateModal
-        isOpen={isCreateModalOpen}
-        onClose={() => setIsCreateModalOpen(false)}
+        isOpen={isCreateModalOpen || !!editTarget}
+        onClose={handleCloseModal}
         onCreated={handleCreated}
+        editTarget={editTarget}
       />
     </>
   );

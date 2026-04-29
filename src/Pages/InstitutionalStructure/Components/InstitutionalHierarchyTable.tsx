@@ -21,10 +21,8 @@ import { BADGE_COLORS } from '@/Constants/StatusBadges';
 import { TABLE_PAGE_SIZE } from '@/Constants/TablePagination';
 import { cn } from '@/Utils/ClassNames';
 import { truncateText } from '@/Utils';
-import { UniversityFormModal } from './UniversityFormModal';
-import { CampusFormModal } from './CampusFormModal';
-import { CareerFormModal } from './CareerFormModal';
 import type { Campus, Career, University } from '@/Types/InstitutionalStructureTypes';
+import type { InstitutionalEditTarget } from './InstitutionalCreateModal';
 import { TABLE_COLUMN_WIDTHS } from '@/Constants/Components';
 
 type DeleteTarget =
@@ -39,6 +37,7 @@ type ToggleTarget =
 interface Props {
   searchQuery: string;
   refreshSignal: number;
+  onEdit: (target: InstitutionalEditTarget) => void;
 }
 
 type UniversityRow = University & Record<string, unknown> & {
@@ -52,12 +51,11 @@ const matchesQuery = (value: string, query: string): boolean =>
 export const InstitutionalHierarchyTable: React.FC<Props> = ({
   searchQuery,
   refreshSignal,
+  onEdit,
 }) => {
   const {
     universities,
     isLoading: loadingUniversities,
-    createUniversity,
-    updateUniversity,
     deleteUniversity,
     setUniversityActive,
     loadUniversities,
@@ -65,14 +63,12 @@ export const InstitutionalHierarchyTable: React.FC<Props> = ({
   const {
     campuses,
     isLoading: loadingCampuses,
-    updateCampus,
     deleteCampus,
     loadCampuses,
   } = useCampuses();
   const {
     careers,
     isLoading: loadingCareers,
-    updateCareer,
     deleteCareer,
     setCareerActive,
     loadCareers,
@@ -98,9 +94,6 @@ export const InstitutionalHierarchyTable: React.FC<Props> = ({
   const [currentPage, setCurrentPage] = useState(1);
   const prevLength = useRef(universities.length);
 
-  const [universityFormModal, setUniversityFormModal] = useState<{ isOpen: boolean; item: University | null }>({ isOpen: false, item: null });
-  const [campusFormModal, setCampusFormModal] = useState<{ isOpen: boolean; item: Campus | null }>({ isOpen: false, item: null });
-  const [careerFormModal, setCareerFormModal] = useState<{ isOpen: boolean; item: Career | null }>({ isOpen: false, item: null });
   const [deleteModal, setDeleteModal] = useState<{ isOpen: boolean; target: DeleteTarget | null; loading: boolean }>({ isOpen: false, target: null, loading: false });
   const [toggleModal, setToggleModal] = useState<{ isOpen: boolean; target: ToggleTarget | null; loading: boolean }>({ isOpen: false, target: null, loading: false });
   const [successModal, setSuccessModal] = useState({ isOpen: false, title: '', message: '' });
@@ -198,7 +191,7 @@ export const InstitutionalHierarchyTable: React.FC<Props> = ({
           <TableActionButton
             action="edit"
             tooltip="Editar carrera"
-            onClick={() => setCareerFormModal({ isOpen: true, item: career })}
+            onClick={() => onEdit({ type: 'carrera', item: career })}
           />
         )}
         {canEditCarrera && (
@@ -261,7 +254,7 @@ export const InstitutionalHierarchyTable: React.FC<Props> = ({
               <TableActionButton
                 action="edit"
                 tooltip="Editar sede"
-                onClick={() => setCampusFormModal({ isOpen: true, item: campus })}
+                onClick={() => onEdit({ type: 'sede', item: campus })}
               />
             )}
             {canDeleteSede && (
@@ -339,7 +332,7 @@ export const InstitutionalHierarchyTable: React.FC<Props> = ({
             <TableActionButton
               action="edit"
               tooltip="Editar universidad"
-              onClick={() => setUniversityFormModal({ isOpen: true, item })}
+              onClick={() => onEdit({ type: 'universidad', item })}
             />
           )}
           {canEditUniversidad && (
@@ -360,7 +353,7 @@ export const InstitutionalHierarchyTable: React.FC<Props> = ({
         </div>
       ),
     },
-  ], [canDeleteUniversidad, canEditSede, canEditCarrera, canDeleteSede, canDeleteCarrera, canEditUniversidad, firstColumn]);
+  ], [canDeleteUniversidad, canEditSede, canEditCarrera, canDeleteSede, canDeleteCarrera, canEditUniversidad, firstColumn, onEdit]);
 
   const handleDeleteConfirm = async () => {
     if (!deleteModal.target) return;
@@ -449,44 +442,6 @@ export const InstitutionalHierarchyTable: React.FC<Props> = ({
         getRowKey={(item) => `university-${item.universidad_id}`}
         expandableRow={(item) => buildCampusChildren(item)}
         emptyMessage="No hay registros de estructura institucional."
-      />
-
-      <UniversityFormModal
-        isOpen={universityFormModal.isOpen}
-        onClose={() => setUniversityFormModal({ isOpen: false, item: null })}
-        university={universityFormModal.item}
-        onConfirm={async (form) => {
-          if (!universityFormModal.item) {
-            const result = await createUniversity(form);
-            if (result.success) setCurrentPage(1);
-            return result;
-          }
-          return updateUniversity(universityFormModal.item.universidad_id, form);
-        }}
-      />
-
-      <CampusFormModal
-        isOpen={campusFormModal.isOpen}
-        onClose={() => setCampusFormModal({ isOpen: false, item: null })}
-        campus={campusFormModal.item}
-        onConfirm={async (form) => {
-          if (!campusFormModal.item) {
-            return { success: false, error: 'No hay sede seleccionada.' };
-          }
-          return updateCampus(campusFormModal.item.sede_id, form);
-        }}
-      />
-
-      <CareerFormModal
-        isOpen={careerFormModal.isOpen}
-        onClose={() => setCareerFormModal({ isOpen: false, item: null })}
-        career={careerFormModal.item}
-        onConfirm={async (form) => {
-          if (!careerFormModal.item) {
-            return { success: false, error: 'No hay carrera seleccionada.' };
-          }
-          return updateCareer(careerFormModal.item.carrera_id, form);
-        }}
       />
 
       <DeleteConfirmationModal
