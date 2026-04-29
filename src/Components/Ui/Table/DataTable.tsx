@@ -17,7 +17,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { SPRING_LAYOUT, TABLE_ROW_VARIANTS } from '@/Constants/Animations';
 import { cn } from '@/Utils/ClassNames';
 import { TYPOGRAPHY } from '@/Constants/Typography';
-import { ICON_SIZES } from '@/Constants/Components';
+import { ICON_SIZES, TABLE_COLUMN_WIDTHS } from '@/Constants/Components';
 import { SystemIcons } from '../Icons/SystemIcons';
 import { Button } from '../Buttons/Button';
 import { SearchInput } from '../Forms/SearchInput';
@@ -127,7 +127,13 @@ export const ExpandableChildRow: React.FC<{ item: ExpandableChildItem; depth?: n
         )}
         <div className="flex-1 min-w-0">{item.content}</div>
         {item.action && (
-          <div onClick={e => e.stopPropagation()}>{item.action}</div>
+          <div
+            className="flex items-center justify-end"
+            style={{ width: TABLE_COLUMN_WIDTHS.actionsLarge, flexShrink: 0 }}
+            onClick={e => e.stopPropagation()}
+          >
+            {item.action}
+          </div>
         )}
       </div>
       <AnimatePresence initial={false}>

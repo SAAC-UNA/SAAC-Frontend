@@ -84,6 +84,7 @@ export const AccreditationCyclesTable: React.FC<
         key: "nombre",
         header: "Nombre",
         align: "left",
+        width: TABLE_COLUMN_WIDTHS.status,
         render: (_, item) => (
           <div className="flex items-start">
             <p
@@ -96,26 +97,6 @@ export const AccreditationCyclesTable: React.FC<
               {truncateText(item.nombre, firstColumn.maxLength)}
             </p>
           </div>
-        ),
-      },
-      {
-        key: "fecha_inicio",
-        header: "Inicio",
-        align: "right",
-        render: (_, item) => (
-          <span className={cn("block font-sans antialiased font-normal leading-normal text-negro-una-2", TYPOGRAPHY.table.cell)}>
-            {item.fecha_inicio ?? "—"}
-          </span>
-        ),
-      },
-      {
-        key: "fecha_fin",
-        header: "Fin",
-        align: "left",
-        render: (_, item) => (
-          <span className={cn("block font-sans antialiased font-normal leading-normal text-negro-una-2", TYPOGRAPHY.table.cell)}>
-            {item.fecha_fin ?? "—"}
-          </span>
         ),
       },
       {

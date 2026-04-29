@@ -39,8 +39,8 @@ export const Breadcrumb: React.FC<BreadcrumbProps> = ({ items, className, varian
         <ol className={cn(
           "flex flex-wrap items-center gap-1 text-gris-una",
           variant === "child" ? TYPOGRAPHY.table.helper
-          : variant === "table" ? TYPOGRAPHY.table.cell
-          : "text-sm",
+          : variant === "table" ? TYPOGRAPHY.table.helper
+          : "text-xs",
         )}>
           {items.map((item, index) => {
             const isLast = index === items.length - 1;

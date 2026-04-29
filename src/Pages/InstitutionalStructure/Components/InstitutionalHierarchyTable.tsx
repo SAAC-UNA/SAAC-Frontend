@@ -2,7 +2,7 @@
  * InstitutionalHierarchyTable - Tabla jerárquica Universidad > Sede > Carrera.
  */
 
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { DataTable } from '@/Components/Ui/Table/DataTable';
 import type { DataTableColumn, ExpandableChildItem } from '@/Components/Ui/Table/DataTable';
 import { TableActionButton } from '@/Components/Ui/Buttons/TableActionButton';
@@ -13,6 +13,7 @@ import { useFirstColumnConfig } from '@/Hooks/UseFirstColumnConfig';
 import { useUniversities } from '@/Hooks/UseUniversities';
 import { useCampuses } from '@/Hooks/UseCampuses';
 import { useCareers } from '@/Hooks/UseCareers';
+import { useCareerCampuses } from '@/Hooks/UseCareerCampuses';
 import { useAuth } from '@/Context/AuthContext';
 import { useToast } from '@/Context/ToastContext';
 import { TYPOGRAPHY } from '@/Constants/Typography';
@@ -24,6 +25,7 @@ import { UniversityFormModal } from './UniversityFormModal';
 import { CampusFormModal } from './CampusFormModal';
 import { CareerFormModal } from './CareerFormModal';
 import type { Campus, Career, University } from '@/Types/InstitutionalStructureTypes';
+import { TABLE_COLUMN_WIDTHS } from '@/Constants/Components';
 
 type DeleteTarget =
   | { type: 'universidad'; item: University }
@@ -75,6 +77,10 @@ export const InstitutionalHierarchyTable: React.FC<Props> = ({
     setCareerActive,
     loadCareers,
   } = useCareers();
+  const {
+    careerCampuses,
+    isLoading: loadingCareerCampuses,
+  } = useCareerCampuses();
 
   const { canAccess } = useAuth();
   const { showToast } = useToast();
@@ -87,7 +93,7 @@ export const InstitutionalHierarchyTable: React.FC<Props> = ({
   const canEditCarrera = canAccess({ requireAnyPermissions: ['carreras.edit'] });
   const canDeleteCarrera = canAccess({ requireAnyPermissions: ['carreras.delete'] });
 
-  const isLoading = loadingUniversities || loadingCampuses || loadingCareers;
+  const isLoading = loadingUniversities || loadingCampuses || loadingCareers || loadingCareerCampuses;
 
   const [currentPage, setCurrentPage] = useState(1);
   const prevLength = useRef(universities.length);
@@ -98,6 +104,17 @@ export const InstitutionalHierarchyTable: React.FC<Props> = ({
   const [deleteModal, setDeleteModal] = useState<{ isOpen: boolean; target: DeleteTarget | null; loading: boolean }>({ isOpen: false, target: null, loading: false });
   const [toggleModal, setToggleModal] = useState<{ isOpen: boolean; target: ToggleTarget | null; loading: boolean }>({ isOpen: false, target: null, loading: false });
   const [successModal, setSuccessModal] = useState({ isOpen: false, title: '', message: '' });
+
+  const careerById = useMemo(
+    () => new Map(careers.map((career) => [career.carrera_id, career])),
+    [careers],
+  );
+
+  const getCampusCareers = useCallback((campus: Campus): Career[] =>
+    careerCampuses
+      .filter((pair) => pair.sede_id === campus.sede_id)
+      .map((pair) => careerById.get(pair.carrera_id))
+      .filter((career): career is Career => !!career), [careerById, careerCampuses]);
 
   useEffect(() => {
     if (refreshSignal <= 0) return;
@@ -111,12 +128,16 @@ export const InstitutionalHierarchyTable: React.FC<Props> = ({
   const filteredRows = useMemo<UniversityRow[]>(() => {
     const universityRows = universities.map((university) => {
       const relatedCampuses = campuses.filter((campus) => campus.universidad_id === university.universidad_id);
-      const relatedCareers = careers.filter((career) => career.universidad_id === university.universidad_id);
+      const relatedCareerIds = new Set(
+        careerCampuses
+          .filter((pair) => relatedCampuses.some((campus) => campus.sede_id === pair.sede_id))
+          .map((pair) => pair.carrera_id),
+      );
 
       return {
         ...university,
         campusCount: relatedCampuses.length,
-        careerCount: relatedCareers.length,
+        careerCount: relatedCareerIds.size,
       };
     });
 
@@ -128,12 +149,11 @@ export const InstitutionalHierarchyTable: React.FC<Props> = ({
       const relatedCampuses = campuses.filter((campus) => campus.universidad_id === university.universidad_id);
       if (relatedCampuses.some((campus) => matchesQuery(campus.nombre, normalizedQuery))) return true;
 
-      return careers.some((career) =>
-        career.universidad_id === university.universidad_id
-        && matchesQuery(career.nombre, normalizedQuery),
+      return relatedCampuses.some((campus) =>
+        getCampusCareers(campus).some((career) => matchesQuery(career.nombre, normalizedQuery)),
       );
     });
-  }, [campuses, careers, normalizedQuery, universities]);
+  }, [campuses, careerCampuses, getCampusCareers, normalizedQuery, universities]);
 
   useEffect(() => {
     setCurrentPage(1);
@@ -154,8 +174,8 @@ export const InstitutionalHierarchyTable: React.FC<Props> = ({
     return filteredRows.slice(start, start + itemsPerPage);
   }, [boundedPage, filteredRows, itemsPerPage]);
 
-  const buildCareerItem = (career: Career): ExpandableChildItem => ({
-    key: `career-${career.carrera_id}`,
+  const buildCareerItem = (career: Career, keySuffix = ''): ExpandableChildItem => ({
+    key: `career-${career.carrera_id}${keySuffix}`,
     content: (
       <div className="flex min-w-0 items-center justify-between gap-3">
         <div className="min-w-0">
@@ -202,60 +222,62 @@ export const InstitutionalHierarchyTable: React.FC<Props> = ({
 
   const buildCampusChildren = (university: University): ExpandableChildItem[] => {
     const relatedCampuses = campuses.filter((campus) => campus.universidad_id === university.universidad_id);
-    const relatedCareers = careers.filter((career) => career.universidad_id === university.universidad_id);
+    const universityMatches = !normalizedQuery || matchesQuery(university.nombre, normalizedQuery);
 
-    const visibleCampuses = !normalizedQuery
-      ? relatedCampuses
-      : relatedCampuses.filter((campus) =>
-          matchesQuery(campus.nombre, normalizedQuery)
-          || matchesQuery(university.nombre, normalizedQuery),
-        );
+    const visibleCampuses = relatedCampuses.filter((campus) => {
+      if (universityMatches) return true;
+      if (matchesQuery(campus.nombre, normalizedQuery)) return true;
+      return getCampusCareers(campus).some((career) => matchesQuery(career.nombre, normalizedQuery));
+    });
 
-    const visibleCareers = !normalizedQuery
-      ? relatedCareers
-      : relatedCareers.filter((career) => matchesQuery(career.nombre, normalizedQuery));
+    const campusItems: ExpandableChildItem[] = visibleCampuses.map((campus) => {
+      const campusMatches = universityMatches || matchesQuery(campus.nombre, normalizedQuery);
+      const campusCareers = getCampusCareers(campus);
+      const visibleCampusCareers = campusMatches
+        ? campusCareers
+        : campusCareers.filter((career) => matchesQuery(career.nombre, normalizedQuery));
 
-    const campusItems: ExpandableChildItem[] = visibleCampuses.map((campus) => ({
-      key: `campus-${campus.sede_id}`,
-      content: (
-        <div className="flex min-w-0 items-center justify-between gap-3">
-          <div className="min-w-0">
-            <p className={cn('font-semibold text-negro-una-2', TYPOGRAPHY.table.cell)} title={campus.nombre}>
-              {truncateText(campus.nombre, 48)}
-            </p>
-            <p className={cn('text-gris-una', TYPOGRAPHY.table.helper)}>
-              Sede de {university.nombre}
-            </p>
+      return {
+        key: `campus-${campus.sede_id}`,
+        content: (
+          <div className="flex min-w-0 items-center justify-between gap-3">
+            <div className="min-w-0">
+              <p className={cn('font-semibold text-negro-una-2', TYPOGRAPHY.table.cell)} title={campus.nombre}>
+                {truncateText(campus.nombre, 48)}
+              </p>
+              <p className={cn('text-gris-una', TYPOGRAPHY.table.helper)}>
+                Sede
+              </p>
+            </div>
+            <StatusBadge
+              label={campus.activo ? 'Activo' : 'Inactivo'}
+              colorClasses={campus.activo ? BADGE_COLORS.verde.colorClasses : BADGE_COLORS.error.colorClasses}
+            />
           </div>
-          <StatusBadge
-            label={campus.activo ? 'Activo' : 'Inactivo'}
-            colorClasses={campus.activo ? BADGE_COLORS.verde.colorClasses : BADGE_COLORS.error.colorClasses}
-          />
-        </div>
-      ),
-      action: (
-        <div className="flex items-center gap-1">
-          {canEditSede && (
-            <TableActionButton
-              action="edit"
-              tooltip="Editar sede"
-              onClick={() => setCampusFormModal({ isOpen: true, item: campus })}
-            />
-          )}
-          {canDeleteSede && (
-            <TableActionButton
-              action="delete"
-              tooltip="Eliminar sede"
-              onClick={() => setDeleteModal({ isOpen: true, target: { type: 'sede', item: campus }, loading: false })}
-            />
-          )}
-        </div>
-      ),
-    }));
+        ),
+        action: (
+          <div className="flex items-center gap-1">
+            {canEditSede && (
+              <TableActionButton
+                action="edit"
+                tooltip="Editar sede"
+                onClick={() => setCampusFormModal({ isOpen: true, item: campus })}
+              />
+            )}
+            {canDeleteSede && (
+              <TableActionButton
+                action="delete"
+                tooltip="Eliminar sede"
+                onClick={() => setDeleteModal({ isOpen: true, target: { type: 'sede', item: campus }, loading: false })}
+              />
+            )}
+          </div>
+        ),
+        children: visibleCampusCareers.map((career) => buildCareerItem(career, `-${campus.sede_id}`)),
+      };
+    });
 
-    const careerItems: ExpandableChildItem[] = visibleCareers.map(buildCareerItem);
-
-    return [...campusItems, ...careerItems];
+    return campusItems;
   };
 
   const columns: DataTableColumn<UniversityRow>[] = useMemo(() => [
@@ -273,23 +295,32 @@ export const InstitutionalHierarchyTable: React.FC<Props> = ({
     {
       key: 'campusCount',
       header: 'Sedes',
-      align: 'center',
+      align: 'left',
+      width: TABLE_COLUMN_WIDTHS.status,
       render: (_, item) => (
-        <span className={cn('text-negro-una-2', TYPOGRAPHY.table.cell)}>{item.campusCount}</span>
+        <StatusBadge
+          label={String(item.campusCount)}
+          colorClasses={BADGE_COLORS.info.colorClasses}
+        />
       ),
     },
     {
       key: 'careerCount',
       header: 'Carreras',
-      align: 'center',
+      align: 'left',
+      width: TABLE_COLUMN_WIDTHS.status,
       render: (_, item) => (
-        <span className={cn('text-negro-una-2', TYPOGRAPHY.table.cell)}>{item.careerCount}</span>
+        <StatusBadge
+          label={String(item.careerCount)}
+          colorClasses={BADGE_COLORS.morado.colorClasses}
+        />
       ),
     },
     {
       key: 'activo',
       header: 'Estado',
       align: 'left',
+      width: TABLE_COLUMN_WIDTHS.status,
       render: (_, item) => (
         <StatusBadge
           label={item.activo ? 'Activo' : 'Inactivo'}
@@ -300,9 +331,10 @@ export const InstitutionalHierarchyTable: React.FC<Props> = ({
     {
       key: 'acciones',
       header: 'Acciones',
-      align: 'right',
+      align: 'center',
+      width: TABLE_COLUMN_WIDTHS.actionsLarge,
       render: (_, item) => (
-        <div className="flex justify-end gap-1" onClick={(event) => event.stopPropagation()}>
+        <div className="flex justify-center gap-1" onClick={(event) => event.stopPropagation()}>
           {canEditUniversidad && (
             <TableActionButton
               action="edit"
