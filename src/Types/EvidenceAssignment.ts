@@ -42,6 +42,10 @@ export interface UserCycle {
   ciclo_acreditacion_id: number;
   nombre: string;
   tipo_modelo: "tradicional" | "elemento_flexible";
+  carrera_sede_id: number;
+  carrera_nombre: string;
+  sede_nombre: string;
+  procesos: string[];
 }
 
 export interface EvidenceAssignmentFormData {

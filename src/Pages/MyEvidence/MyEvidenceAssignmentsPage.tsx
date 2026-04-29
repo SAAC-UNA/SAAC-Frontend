@@ -12,6 +12,7 @@ import {
   LoadingSpinner,
 } from "@/Components/Ui/Index";
 import type { SelectOption } from "@/Components/Ui/Index";
+import type { BreadcrumbItem } from "@/Components/Ui/Feedback/Breadcrumb";
 import { BackendErrorAlert } from "@/Components/Ui/Feedback/BackendErrorAlert";
 import { SearchInput } from "@/Components/Ui/Forms/SearchInput";
 import { getModuleInfo } from "@/Constants/ModuleInfo";
@@ -172,7 +173,7 @@ export const MyEvidenceAssignmentsPage: React.FC = () => {
 
     try {
       setPageState((prev) => ({ ...prev, loading: true, error: null }));
-      const data = await evidenceAssignmentService.getMyAssignments(userId);
+      const data = await evidenceAssignmentService.getMyAssignments(userId, true);
       setPageState((prev) => ({ ...prev, assignments: data }));
     } catch (error: unknown) {
       setPageState((prev) => ({
@@ -198,7 +199,7 @@ export const MyEvidenceAssignmentsPage: React.FC = () => {
     try {
       setFlexState((prev) => ({ ...prev, loading: true, error: null }));
       const data =
-        await evidenceAssignmentService.getMyElementAssignments(userId);
+        await evidenceAssignmentService.getMyElementAssignments(userId, true);
       setFlexState((prev) => ({ ...prev, assignments: data }));
 
       const modeloId = data[0]?.process?.modelo_estructura_id;
@@ -215,7 +216,7 @@ export const MyEvidenceAssignmentsPage: React.FC = () => {
         ...prev,
         error: getErrorMessage(
           error,
-          "No se pudieron obtener las pautas asignadas",
+          "No se pudieron obtener los elementos asignados",
         ),
       }));
     } finally {
@@ -233,26 +234,51 @@ export const MyEvidenceAssignmentsPage: React.FC = () => {
     try {
       const data = await evidenceAssignmentService.getUserCycles(userId);
       setUserCycles(data);
-    } catch {
-      // silencioso: los nombres se pueden inferir desde las asignaciones
+    } catch (e) {
+      // Si falla, el fallback desde assignments se activa automáticamente
+      console.warn("[MyEvidenceAssignmentsPage] getUserCycles falló:", e);
     }
   };
 
-  // Ciclos disponibles: solo ciclos donde el usuario tiene asignaciones.
-  // userCycles se usa únicamente para enriquecer nombre y tipo de modelo.
+  // Ciclos disponibles: si userCycles tiene datos (endpoint mis-ciclos), úsalos como fuente principal.
+  // Fallback: inferir desde las asignaciones ya cargadas (misma lógica anterior) en caso de que el
+  // endpoint falle o todavía no haya respondido.
   const availableCycles = useMemo(() => {
-    const cycleMetadata = new Map(
-      userCycles.map((cycle) => [cycle.ciclo_acreditacion_id, cycle]),
-    );
-    const cycleMap = new Map<number, { nombre: string; isFlexible: boolean }>();
+    if (userCycles.length > 0) {
+      return userCycles.map((cycle) => ({
+        ciclo_id: cycle.ciclo_acreditacion_id,
+        nombre: cycle.nombre,
+        isFlexible: cycle.tipo_modelo === "elemento_flexible",
+        carrera_sede_id: cycle.carrera_sede_id,
+        carrera_nombre: cycle.carrera_nombre,
+        sede_nombre: cycle.sede_nombre,
+        procesos: cycle.procesos,
+      }));
+    }
+
+    // Fallback: construir desde las asignaciones cargadas
+    const cycleMap = new Map<
+      number,
+      {
+        nombre: string;
+        isFlexible: boolean;
+        carrera_sede_id: number;
+        carrera_nombre: string;
+        sede_nombre: string;
+        procesos: string[];
+      }
+    >();
 
     for (const a of assignments) {
       const cicloId = a.proceso?.ciclo_acreditacion_id;
       if (cicloId && !cycleMap.has(cicloId)) {
-        const metadata = cycleMetadata.get(cicloId);
         cycleMap.set(cicloId, {
-          nombre: metadata?.nombre ?? `Ciclo ${cicloId}`,
-          isFlexible: metadata?.tipo_modelo === "elemento_flexible",
+          nombre: `Ciclo ${cicloId}`,
+          isFlexible: false,
+          carrera_sede_id: 0,
+          carrera_nombre: "",
+          sede_nombre: "",
+          procesos: [],
         });
       }
     }
@@ -260,18 +286,18 @@ export const MyEvidenceAssignmentsPage: React.FC = () => {
     for (const a of flexState.assignments) {
       const cicloId = a.process?.ciclo_acreditacion_id;
       if (cicloId) {
-        const metadata = cycleMetadata.get(cicloId);
         cycleMap.set(cicloId, {
-          nombre: metadata?.nombre ?? `Ciclo ${cicloId}`,
+          nombre: `Ciclo ${cicloId}`,
           isFlexible: true,
+          carrera_sede_id: 0,
+          carrera_nombre: "",
+          sede_nombre: "",
+          procesos: [],
         });
       }
     }
 
-    return [...cycleMap.entries()].map(([id, info]) => ({
-      ciclo_id: id,
-      ...info,
-    }));
+    return [...cycleMap.entries()].map(([id, info]) => ({ ciclo_id: id, ...info }));
   }, [userCycles, assignments, flexState.assignments]);
 
   useEffect(() => {
@@ -295,9 +321,15 @@ export const MyEvidenceAssignmentsPage: React.FC = () => {
     availableCycles.find((c) => c.ciclo_id === selectedCycleId) ?? null;
   const isFlexible = selectedCycle?.isFlexible ?? false;
 
+  // El selector se muestra solo cuando el usuario tiene asignaciones en más de una carrera.
+  const hasMultipleCareers = useMemo(() => {
+    const careerIds = new Set(availableCycles.map((c) => c.carrera_sede_id));
+    return careerIds.size > 1;
+  }, [availableCycles]);
+
   const cycleOptions: SelectOption[] = availableCycles.map((c) => ({
     value: String(c.ciclo_id),
-    label: c.nombre,
+    label: [c.sede_nombre, c.carrera_nombre, c.nombre].filter(Boolean).join(" / "),
   }));
 
   const routeContext = useMemo(() => {
@@ -430,7 +462,7 @@ export const MyEvidenceAssignmentsPage: React.FC = () => {
       showToast({
         type: "success",
         title: "Estado actualizado",
-        message: `Pauta marcada como ${newStatus === "Completado" ? "completada" : "en progreso"}`,
+        message: `Elemento marcado como ${newStatus === "Completado" ? "completada" : "en progreso"}`,
       });
     } catch {
       showToast({
@@ -485,7 +517,7 @@ export const MyEvidenceAssignmentsPage: React.FC = () => {
         type: "error",
         title: isDuplicate ? "Solicitud duplicada" : "Error",
         message: isDuplicate
-          ? "Ya tienes una solicitud pendiente para esta pauta"
+          ? "Ya tienes una solicitud pendiente para este elemento"
           : message,
       });
       if (isDuplicate) {
@@ -705,6 +737,19 @@ export const MyEvidenceAssignmentsPage: React.FC = () => {
   const showSearchInput = isFlexible ? hasFlexibleSearch : hasTraditionalSearch;
   const moduleInfo = getModuleInfo("my_evidence_assignments");
 
+  // Breadcrumb contextual: Sede / Carrera / Proceso(s)
+  const contextBreadcrumb = useMemo((): BreadcrumbItem[] => {
+    if (!selectedCycle) return [];
+    const parts: BreadcrumbItem[] = [];
+    if (selectedCycle.sede_nombre) parts.push({ label: selectedCycle.sede_nombre });
+    if (selectedCycle.carrera_nombre) parts.push({ label: selectedCycle.carrera_nombre });
+    for (const p of selectedCycle.procesos ?? []) {
+      parts.push({ label: p });
+    }
+    if (parts.length > 0) parts[parts.length - 1].current = true;
+    return parts;
+  }, [selectedCycle]);
+
   // Paginación unificada por proceso
   const activeList = isFlexible ? filteredFlex : filteredAssignments;
   const totalPages = Math.ceil(activeList.length / itemsPerPage);
@@ -722,14 +767,15 @@ export const MyEvidenceAssignmentsPage: React.FC = () => {
       <PageHeader
         title={moduleInfo.title}
         description={moduleInfo.description}
+        breadcrumbItems={contextBreadcrumb.length > 0 ? contextBreadcrumb : undefined}
         headerExtra={
-          cycleOptions.length > 1 ||
+          (hasMultipleCareers && cycleOptions.length > 1) ||
           showSearchInput ? (
             <div className="flex items-end gap-3">
-              {cycleOptions.length > 1 && (
+              {hasMultipleCareers && cycleOptions.length > 1 && (
                 <CustomSelect
                   className="w-80"
-                  label="Ciclo de acreditación"
+                  label="Proceso de acreditación"
                   options={cycleOptions}
                   value={selectedCycleId ? String(selectedCycleId) : ""}
                   onChange={(v) => {
@@ -740,7 +786,7 @@ export const MyEvidenceAssignmentsPage: React.FC = () => {
               )}
               {showSearchInput && (
                 <SearchInput
-                  placeholder={isFlexible ? "Buscar pautas..." : "Buscar evidencias..."}
+                  placeholder={isFlexible ? "Buscar elementos..." : "Buscar evidencias..."}
                   value={filters.search || ""}
                   onChange={(value) =>
                     handleFiltersChange({ ...filters, search: value })
@@ -793,7 +839,7 @@ export const MyEvidenceAssignmentsPage: React.FC = () => {
           </>
         )}
 
-        {/* ── Modelo flexible (Pautas) ── */}
+        {/* ── Modelo flexible (Elementos) ── */}
         {selectedCycleId !== null && isFlexible && (
           <>
             {flexState.error && (
@@ -881,7 +927,7 @@ export const MyEvidenceAssignmentsPage: React.FC = () => {
         isOpen={flexRevertConfirm.open}
         onClose={() => setFlexRevertConfirm({ open: false, assignment: null, loading: false })}
         onConfirm={handleFlexConfirmRevert}
-        title="Revertir estado de pauta"
+        title="Revertir estado de elemento"
         variant="info"
         confirmLabel="Sí, revertir"
         cancelLabel="Cancelar"
@@ -891,11 +937,11 @@ export const MyEvidenceAssignmentsPage: React.FC = () => {
         footerMeta="Esta acción puede volver a completarse posteriormente"
       >
         <p className="text-sm text-gris-una-2 leading-relaxed">
-          ¿Está seguro de que desea marcar esta pauta como{" "}
+          ¿Está seguro de que desea marcar este elemento como{" "}
           <strong>en progreso</strong>?
         </p>
         <p className="mt-2 text-sm text-gris-una-2">
-          La pauta dejará de estar marcada como completada.
+          El elemento dejará de estar marcado como completado.
         </p>
       </Modal>
 
@@ -921,7 +967,7 @@ export const MyEvidenceAssignmentsPage: React.FC = () => {
           onClose={() => setUploadModal({ open: false, assignment: null })}
           elementoId={uploadModal.assignment.elemento_id}
           procesoId={uploadModal.assignment.proceso_id}
-          nombre={uploadModal.assignment.element?.nombre ?? 'Pauta'}
+          nombre={uploadModal.assignment.element?.nombre ?? 'Elemento'}
           onSuccess={loadFlexAssignments}
         />
       )}

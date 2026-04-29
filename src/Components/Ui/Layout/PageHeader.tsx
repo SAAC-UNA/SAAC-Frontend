@@ -23,6 +23,8 @@ interface PageHeaderProps {
   headerExtra?: React.ReactNode; // Para contenido adicional al lado del título
   breadcrumbMode?: "none" | "simple" | "cycle-only" | "contextual";
   breadcrumbParent?: BreadcrumbItem;
+  /** Items de breadcrumb personalizados; si se proveen, reemplazan los generados por breadcrumbMode. */
+  breadcrumbItems?: BreadcrumbItem[];
 }
 
 export const PageHeader: React.FC<PageHeaderProps> = ({
@@ -35,6 +37,7 @@ export const PageHeader: React.FC<PageHeaderProps> = ({
   headerExtra,
   breadcrumbMode = "none",
   breadcrumbParent,
+  breadcrumbItems,
 }) => {
   const { isMobile } = useBreakpoint();
   const [contextSnapshot, setContextSnapshot] =
@@ -168,9 +171,9 @@ export const PageHeader: React.FC<PageHeaderProps> = ({
         className,
       )}
     >
-      {breadcrumbLabel.length > 0 && (
+      {(breadcrumbItems ?? breadcrumbLabel).length > 0 && (
         <div className="mb-3 flex items-center justify-between gap-3">
-          <Breadcrumb items={breadcrumbLabel} className="mb-0 min-w-0 flex-1" />
+          <Breadcrumb items={breadcrumbItems ?? breadcrumbLabel} className="mb-0 min-w-0 flex-1" />
         </div>
       )}
 

@@ -121,6 +121,8 @@ export const globalFilterContextService = {
           : current.proceso_id,
     };
 
+    await axiosInstance.put("/contexto/filtros-globales", next);
+
     syncContextIds(next);
     emitContextChanged();
 
@@ -128,6 +130,8 @@ export const globalFilterContextService = {
   },
 
   async resetContext(): Promise<GlobalFilterContext> {
+    await axiosInstance.delete("/contexto/filtros-globales");
+
     clearOperationalContextIds();
     emitContextChanged();
 

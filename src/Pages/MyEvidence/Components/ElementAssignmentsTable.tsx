@@ -1,5 +1,5 @@
 /**
- * ElementAssignmentsTable - Tabla de pautas asignadas (modelo flexible)
+ * ElementAssignmentsTable - Tabla de elementos asignados (modelo flexible)
  * Utilizada en MyEvidenceAssignmentsPage cuando el usuario tiene asignaciones
  * de tipo ELEMENTO_ASIGNACION (modelo flexible SINAES 2025).
  */
@@ -60,7 +60,7 @@ export const ElementAssignmentsTable: React.FC<ElementAssignmentsTableProps> = (
     () => [
       {
         key: 'element',
-        header: 'Pauta',
+        header: 'Elemento',
         align: 'left',
         width: firstColumn.width,
         render: (_: unknown, assignment: FlexibleAssignmentItem) => {
@@ -243,8 +243,8 @@ export const ElementAssignmentsTable: React.FC<ElementAssignmentsTableProps> = (
       searchable={false}
       emptyMessage={
         hasFilters
-          ? 'No se encontraron pautas que coincidan con los filtros aplicados.'
-          : 'No tienes pautas asignadas. Cuando se te asigne una pauta, aparecerá aquí.'
+          ? 'No se encontraron elementos que coincidan con los filtros aplicados.'
+          : 'No tienes elementos asignados. Cuando se te asigne un elemento, aparecerá aquí.'
       }
       pagination={pagination}
     />

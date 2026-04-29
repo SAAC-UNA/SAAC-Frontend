@@ -23,6 +23,7 @@ import type {
 import type { FlexibleElement } from '@/Types/StructureModelTypes';
 import type { FileModel } from '@/Types/FileTypes';
 import { devLog } from '@/Utils/devLogger';
+import { getOperationalContextSnapshot } from '@/Services/OperationalContextStore';
 
 export interface AssignmentCatalogRole {
   id: number;
@@ -103,11 +104,13 @@ class EvidenceAssignmentService {
   }
 
   /**
-   * Obtener todas las asignaciones
+   * Obtener todas las asignaciones, filtradas por proceso del contexto activo.
    */
   async getAllAssignments(): Promise<EvidenceAssignment[]> {
     try {
-      const response = await axiosInstance.get<{ data: EvidenceAssignment[] }>('/evidencias-asignaciones');
+      const { processId } = getOperationalContextSnapshot();
+      const params = processId ? { proceso_id: processId } : {};
+      const response = await axiosInstance.get<{ data: EvidenceAssignment[] }>('/evidencias-asignaciones', { params });
       return response.data.data || [];
     } catch (error) {
       throw new Error('Error al obtener las asignaciones');
@@ -115,15 +118,16 @@ class EvidenceAssignmentService {
   }
 
   /**
-   * Obtiene todas las evidencias asignadas a un usuario específico
+   * Obtiene las evidencias asignadas a un usuario, filtradas por proceso del contexto activo.
    * GET /api/usuarios/{usuarioId}/evidencias-asignadas
-   * 
-   * Usa los nuevos tipos de HU-029 para mejor type-safety
    */
-  async getMyAssignments(userId: number): Promise<EvidenceAssignment[]> {
+  async getMyAssignments(userId: number, skipContextFilter = false): Promise<EvidenceAssignment[]> {
     try {
+      const { processId } = getOperationalContextSnapshot();
+      const params = (!skipContextFilter && processId) ? { proceso_id: processId } : {};
       const response = await axiosInstance.get<{ data: EvidenceAssignment[] }>(
-        `/usuarios/${userId}/evidencias-asignadas`
+        `/usuarios/${userId}/evidencias-asignadas`,
+        { params }
       );
       
       return response.data.data || [];
@@ -402,13 +406,16 @@ class EvidenceAssignmentService {
   }
 
   /**
-   * Obtiene los elementos asignados al usuario (modelo flexible).
+   * Obtiene los elementos asignados al usuario (modelo flexible), filtrados por proceso del contexto activo.
    * GET /api/usuarios/{userId}/elementos-asignados
    */
-  async getMyElementAssignments(userId: number): Promise<FlexibleAssignmentItem[]> {
+  async getMyElementAssignments(userId: number, skipContextFilter = false): Promise<FlexibleAssignmentItem[]> {
     try {
+      const { processId } = getOperationalContextSnapshot();
+      const params = (!skipContextFilter && processId) ? { proceso_id: processId } : {};
       const response = await axiosInstance.get<{ data: FlexibleAssignmentItem[] }>(
-        `/usuarios/${userId}/elementos-asignados`
+        `/usuarios/${userId}/elementos-asignados`,
+        { params }
       );
       return response.data.data || [];
     } catch (error: any) {
