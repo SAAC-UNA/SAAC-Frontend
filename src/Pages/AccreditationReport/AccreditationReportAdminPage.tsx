@@ -506,11 +506,10 @@ export const AccreditationReportAdminPage: React.FC = () => {
             </Button>
             {(selectedFiles.length > 0 || isUploading) && (
               <Button
-                variant="primary"
+                variant="warning"
                 disabled={!canSubmitUpload()}
                 isLoading={isUploading}
                 onClick={() => void handleUpload()}
-                className="rounded-xl shadow-md shadow-rojo-una/10"
               >
                 Subir
               </Button>
