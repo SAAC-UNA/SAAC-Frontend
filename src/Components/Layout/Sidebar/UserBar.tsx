@@ -54,6 +54,7 @@ export const UserWidget: React.FC<UserWidgetProps> = ({
 
   const DROPDOWN_WIDTH = 384; // w-96
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [aboutHovered, setAboutHovered] = useState(false);
   const [bellHovered, setBellHovered] = useState(false);
   const [logoutHovered, setLogoutHovered] = useState(false);
 
@@ -225,6 +226,42 @@ export const UserWidget: React.FC<UserWidgetProps> = ({
             <TooltipContent side="right">Notificaciones</TooltipContent>
           </Tooltip>
         )}
+
+        {/* Botón informativo Acerca de */}
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <button
+              type="button"
+              onClick={() => navigate(ROUTES.INSTITUTIONAL_HOME)}
+              aria-label="Acerca de"
+              className={cn(
+                buttonVariants({ variant: "sidebarAction", size: "none" }),
+                aboutHovered && "!bg-transparent",
+              )}
+              onMouseEnter={() => setAboutHovered(true)}
+              onMouseLeave={() => setAboutHovered(false)}
+            >
+              {aboutHovered && (
+                <motion.div
+                  layoutId="sidebar-action-hover-indicator"
+                  className="absolute inset-0 bg-rojo-una-2 rounded-corner -z-10"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  transition={SPRING_SIDEBAR}
+                />
+              )}
+              <SystemIcons.interface.informationCircle
+                className={cn(
+                  APP_HEADER_BUTTON.icon,
+                  "relative z-10 transition-colors duration-150",
+                  aboutHovered ? "text-blanco-una" : "text-negro-una-2",
+                )}
+              />
+            </button>
+          </TooltipTrigger>
+          <TooltipContent side="right">Acerca de</TooltipContent>
+        </Tooltip>
 
         {/* Botón cerrar sesión */}
         <Tooltip>

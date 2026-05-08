@@ -30,6 +30,7 @@ export const ROUTES = {
   // Inicio
   // ---------------------------------------------------------------------------
   HOME: "/",
+  INSTITUTIONAL_HOME: "/institucion-educativa",
   CONTEXT_SELECTOR: "/selector-procesos",
 
   // ---------------------------------------------------------------------------

@@ -31,6 +31,9 @@ import { SessionExpired } from "@/Pages/Auth/SessionExpired";
 const HomePage = lazy(() =>
   import("./Pages/Index").then((m) => ({ default: m.HomePage })),
 );
+const InstitutionalHomePage = lazy(
+  () => import("@/Pages/InstitutionalHomePage"),
+);
 const RoleFormPage = lazy(() => import("@/Pages/Roles/RoleFormPage"));
 const RolesRepository = lazy(() =>
   import("./Pages/Roles").then((m) => ({ default: m.RolesRepository })),
@@ -185,6 +188,10 @@ function App() {
                           <Routes key={`context-${contextRenderKey}`}>
                             {/* Pagina de inicio */}
                             <Route path="/" element={<HomePage />} />
+                            <Route
+                              path={ROUTES.INSTITUTIONAL_HOME}
+                              element={<InstitutionalHomePage />}
+                            />
                             <Route
                               path={ROUTES.CONTEXT_SELECTOR}
                               element={<ContextSelector />}
