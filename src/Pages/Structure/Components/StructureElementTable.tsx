@@ -23,6 +23,23 @@ import {
 } from '@/Constants/StatusBadges';
 import { FlexibleElementDetail } from './StructureElementDetailModal';
 
+const compareByNaturalNomenclature = (
+  left?: string | null,
+  right?: string | null,
+): number => {
+  const leftValue = (left ?? '').trim();
+  const rightValue = (right ?? '').trim();
+
+  if (!leftValue && !rightValue) return 0;
+  if (!leftValue) return 1;
+  if (!rightValue) return -1;
+
+  return leftValue.localeCompare(rightValue, 'es', {
+    numeric: true,
+    sensitivity: 'base',
+  });
+};
+
 interface FlexibleElementTableProps {
   elements: FlexibleElement[];
   isLoading: boolean;
@@ -68,18 +85,44 @@ export const FlexibleElementTable: React.FC<FlexibleElementTableProps> = ({
   };
 
   const filteredElements = useMemo(() => {
-    if (!debouncedSearchQuery.trim()) return elements;
+    const typeOrder = new Map<string, number>();
+    elements.forEach((element, index) => {
+      if (!typeOrder.has(element.tipo)) {
+        typeOrder.set(element.tipo, index);
+      }
+    });
 
-    const query = normalizeSearchText(debouncedSearchQuery);
+    const filtered = !debouncedSearchQuery.trim()
+      ? elements
+      : (() => {
+        const query = normalizeSearchText(debouncedSearchQuery);
 
-    return elements.filter((element) =>
-      normalizeSearchText(element.tipo).includes(query)
-      || normalizeSearchText(element.nomenclatura).includes(query)
-      || normalizeSearchText(element.descripcion).includes(query)
-      || normalizeSearchText(element.categoria).includes(query)
-      || normalizeSearchText(element.nombre).includes(query)
-      || normalizeSearchText(element.activo ? 'Activo' : 'Inactivo').includes(query),
-    );
+        return elements.filter((element) =>
+          normalizeSearchText(element.tipo).includes(query)
+          || normalizeSearchText(element.nomenclatura).includes(query)
+          || normalizeSearchText(element.descripcion).includes(query)
+          || normalizeSearchText(element.categoria).includes(query)
+          || normalizeSearchText(element.nombre).includes(query)
+          || normalizeSearchText(element.activo ? 'Activo' : 'Inactivo').includes(query),
+        );
+      })();
+
+    return [...filtered].sort((left, right) => {
+      const typeDiff =
+        (typeOrder.get(left.tipo) ?? Number.MAX_SAFE_INTEGER)
+        - (typeOrder.get(right.tipo) ?? Number.MAX_SAFE_INTEGER);
+      if (typeDiff !== 0) return typeDiff;
+
+      const nomenclatureDiff = compareByNaturalNomenclature(
+        left.nomenclatura,
+        right.nomenclatura,
+      );
+      if (nomenclatureDiff !== 0) return nomenclatureDiff;
+
+      const leftLabel = left.nombre ?? left.descripcion ?? '';
+      const rightLabel = right.nombre ?? right.descripcion ?? '';
+      return leftLabel.localeCompare(rightLabel, 'es', { sensitivity: 'base' });
+    });
   }, [debouncedSearchQuery, elements]);
 
   const safeItemsPerPage = Number.isFinite(itemsPerPage) && itemsPerPage > 0
