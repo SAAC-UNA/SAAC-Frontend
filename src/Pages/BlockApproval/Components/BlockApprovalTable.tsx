@@ -24,6 +24,23 @@ const BLOCK_STATUS_BADGE: Record<BlockApprovalStatus, { label: string; colorClas
   incompleto:  { label: 'Incompleto',  colorClasses: 'text-orange-700 bg-orange-100' },
 };
 
+const normalizeStatus = (value: unknown): BlockApprovalStatus => {
+  if (typeof value !== 'string') return 'pendiente';
+
+  const normalized = value
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .trim()
+    .toLowerCase();
+
+  if (normalized.startsWith('aprobad')) return 'aprobado';
+  if (normalized.startsWith('rechazad')) return 'rechazado';
+  if (normalized.startsWith('incomplet')) return 'incompleto';
+  if (normalized.startsWith('pendient')) return 'pendiente';
+
+  return 'pendiente';
+};
+
 export interface EvidenceApprovalItem {
   evidencia_id: number;
   nomenclatura: string;
@@ -80,6 +97,14 @@ interface BlockApprovalTableProps {
   totalPages: number;
   selectedProcesoId: number | null;
   isFlexible?: boolean;
+  actionRulesByCriterion?: Record<
+    number,
+    {
+      canApproveByEvidence: boolean;
+      canRejectByEvidence: boolean;
+      isLoaded: boolean;
+    }
+  >;
   onPageChange: (page: number) => void;
   onAprobar: (criterio: Criterio) => void;
   onRechazar: (criterio: Criterio) => void;
@@ -93,6 +118,7 @@ export const BlockApprovalTable: React.FC<BlockApprovalTableProps> = ({
   totalPages,
   selectedProcesoId,
   isFlexible = false,
+  actionRulesByCriterion,
   onPageChange,
   onAprobar,
   onRechazar,
@@ -169,7 +195,8 @@ export const BlockApprovalTable: React.FC<BlockApprovalTableProps> = ({
       align: 'left',
       width: TABLE_COLUMN_WIDTHS.status,
       render: (_, item) => {
-        const config = BLOCK_STATUS_BADGE[item.estado_aprobacion ?? 'pendiente'];
+        const status = normalizeStatus(item.estado_aprobacion);
+        const config = BLOCK_STATUS_BADGE[status];
         return (
           <div className="flex justify-start">
             <StatusBadge label={config.label} colorClasses={config.colorClasses} />
@@ -183,10 +210,20 @@ export const BlockApprovalTable: React.FC<BlockApprovalTableProps> = ({
       align: 'center',
       width: TABLE_COLUMN_WIDTHS.actions,
       render: (_, item) => {
-        const canApproveBlock = item.estado_aprobacion === 'pendiente';
+        const status = normalizeStatus(item.estado_aprobacion);
+        const evidenceRules = actionRulesByCriterion?.[item.id];
+        const canApproveByEvidence = evidenceRules?.canApproveByEvidence ?? true;
+        const canRejectByEvidence = evidenceRules?.canRejectByEvidence ?? true;
+        const areEvidenceRulesLoaded = evidenceRules?.isLoaded ?? true;
+        const canApproveBlock =
+          status === 'pendiente'
+          && areEvidenceRulesLoaded
+          && canApproveByEvidence;
         const canRejectBlock =
-          item.estado_aprobacion === 'pendiente' ||
-          item.estado_aprobacion === 'incompleto';
+          status === 'pendiente'
+          && areEvidenceRulesLoaded
+          && canRejectByEvidence;
+
         return (
           <div className="flex items-center justify-center gap-2" onClick={e => e.stopPropagation()}>
             <TableActionButton
@@ -200,7 +237,17 @@ export const BlockApprovalTable: React.FC<BlockApprovalTableProps> = ({
               action="custom"
               customIcon={<SystemIcons.interface.checkCircle className={ICON} />}
               customVariant="tablePower"
-              tooltip={canApproveBlock ? 'Aprobar bloque' : item.estado_aprobacion === 'incompleto' ? 'Bloque incompleto: hay evidencias rechazadas' : 'Bloque ya procesado'}
+              tooltip={
+                canApproveBlock
+                  ? 'Aprobar bloque'
+                  : status !== 'pendiente'
+                    ? status === 'incompleto'
+                      ? 'Bloque incompleto: hay evidencias rechazadas'
+                      : 'Bloque ya procesado'
+                    : !areEvidenceRulesLoaded
+                      ? `Validando ${isFlexible ? 'elementos' : 'evidencias'} del bloque...`
+                    : `No se puede aprobar: hay ${isFlexible ? 'elementos' : 'evidencias'} rechazadas en el bloque`
+              }
               onClick={() => onAprobar(item)}
               isActive={canApproveBlock}
               disabled={!canApproveBlock}
@@ -212,9 +259,15 @@ export const BlockApprovalTable: React.FC<BlockApprovalTableProps> = ({
               tooltip={
                 canRejectBlock
                   ? 'Rechazar bloque'
-                  : item.estado_aprobacion === 'rechazado'
-                    ? 'Bloque ya rechazado'
-                    : 'Bloque ya aprobado'
+                  : status !== 'pendiente'
+                    ? status === 'incompleto'
+                      ? 'Bloque incompleto: no se puede rechazar nuevamente'
+                      : status === 'rechazado'
+                        ? 'Bloque ya rechazado'
+                        : 'Bloque ya aprobado'
+                    : !areEvidenceRulesLoaded
+                      ? `Validando ${isFlexible ? 'elementos' : 'evidencias'} del bloque...`
+                    : `No se puede rechazar: hay ${isFlexible ? 'elementos' : 'evidencias'} aprobadas en el bloque`
               }
               onClick={() => onRechazar(item)}
               disabled={!canRejectBlock}
@@ -223,7 +276,7 @@ export const BlockApprovalTable: React.FC<BlockApprovalTableProps> = ({
         );
       },
     },
-  ], [onAprobar, onRechazar, onOpenCriterionEvidences, isFlexible, TYPOGRAPHY, firstColumn.width]);
+  ], [onAprobar, onRechazar, onOpenCriterionEvidences, isFlexible, TYPOGRAPHY, firstColumn.width, actionRulesByCriterion]);
 
   if (!selectedProcesoId) {
     return (

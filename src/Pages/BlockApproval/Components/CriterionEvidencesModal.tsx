@@ -29,6 +29,17 @@ const EVIDENCE_STATUS_BADGE: Record<
   rechazado: { label: 'Rechazado', colorClasses: 'text-error-dark bg-error-ring' },
 };
 
+const normalizeEvidenceStatus = (value: unknown): EvidenceApprovalStatus => {
+  if (typeof value !== 'string') return 'pendiente';
+
+  const normalized = value.trim().toLowerCase();
+  if (normalized === 'aprobado') return 'aprobado';
+  if (normalized === 'rechazado') return 'rechazado';
+  if (normalized === 'pendiente') return 'pendiente';
+
+  return 'pendiente';
+};
+
 interface CriterionEvidencesModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -548,13 +559,14 @@ export const CriterionEvidencesModal: React.FC<CriterionEvidencesModalProps> = (
         <div className="space-y-2 py-1">
           {displayRows.map((row) => {
             const evidencia = row.evidencia;
-            const statusConfig = EVIDENCE_STATUS_BADGE[evidencia.approval_status];
+            const evidenceStatus = normalizeEvidenceStatus(evidencia.approval_status);
+            const statusConfig = EVIDENCE_STATUS_BADGE[evidenceStatus];
             const isLocked =
-              evidencia.approval_status === 'aprobado' && blockIsIncompleto;
+              evidenceStatus === 'aprobado' && blockIsIncompleto;
             const canApprove =
-              !blockIsApproved && !blockIsRejected && !isLocked && evidencia.approval_status !== 'aprobado';
+              !blockIsApproved && !blockIsRejected && !isLocked && evidenceStatus === 'pendiente';
             const canReject =
-              !blockIsApproved && !blockIsRejected && !isLocked && evidencia.approval_status !== 'rechazado';
+              !blockIsApproved && !blockIsRejected && !isLocked && evidenceStatus === 'pendiente';
             const responsableLabel = row.responsable.nombre ?? 'Sin responsable identificado';
 
             return (
@@ -602,10 +614,14 @@ export const CriterionEvidencesModal: React.FC<CriterionEvidencesModalProps> = (
                       tooltip={
                         blockIsRejected
                           ? 'Bloque rechazado: acciones bloqueadas'
+                          : blockIsApproved
+                            ? 'Bloque aprobado: acciones bloqueadas'
                           : isLocked
-                          ? `${isFlexible ? 'Fuente' : 'Evidencia'} aprobada (bloqueada)`
+                          ? `${isFlexible ? 'Elemento' : 'Evidencia'} aprobada (bloqueada)`
+                          : evidenceStatus === 'rechazado'
+                            ? 'Ya rechazada'
                           : canApprove
-                            ? `Aprobar ${isFlexible ? 'fuente' : 'evidencia'}`
+                            ? `Aprobar ${isFlexible ? 'elemento' : 'evidencia'}`
                             : 'Ya aprobada'
                       }
                       tooltipPosition="left"
@@ -622,11 +638,15 @@ export const CriterionEvidencesModal: React.FC<CriterionEvidencesModalProps> = (
                       tooltip={
                         blockIsRejected
                           ? 'Bloque rechazado: acciones bloqueadas'
+                          : evidenceStatus === 'aprobado'
+                            ? `${isFlexible ? 'Elemento' : 'Evidencia'} ya aprobado`
+                          : evidenceStatus === 'rechazado'
+                            ? 'Ya rechazada'
                           : isLocked
-                          ? `${isFlexible ? 'Fuente' : 'Evidencia'} aprobada (bloqueada)`
+                          ? `${isFlexible ? 'Elemento' : 'Evidencia'} aprobada (bloqueada)`
                           : canReject
-                            ? `Rechazar ${isFlexible ? 'fuente' : 'evidencia'}`
-                            : 'Ya rechazada'
+                            ? `Rechazar ${isFlexible ? 'elemento' : 'evidencia'}`
+                            : 'Acción no disponible'
                       }
                       tooltipPosition="left"
                       disabled={!canReject}

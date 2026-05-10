@@ -46,8 +46,10 @@ export const EvidenceApprovalModal: React.FC<EvidenceApprovalModalProps> = ({
   };
 
   const isAprobar = action === 'aprobar';
-  const title = isAprobar ? 'Aprobar Evidencia' : 'Rechazar Evidencia';
+  const entityLabel = 'elemento';
+  const title = isAprobar ? 'Aprobar Elemento' : 'Rechazar Elemento';
   const subtitle = `${evidencia.nomenclatura} - ${evidencia.descripcion}`;
+  const showCommentField = !isAprobar;
 
   return (
     <Modal
@@ -69,24 +71,26 @@ export const EvidenceApprovalModal: React.FC<EvidenceApprovalModalProps> = ({
         {/* Confirmación */}
         <p className={cn(TYPOGRAPHY.modal.body, 'text-gris-una-2 leading-relaxed')}>
           {isAprobar
-            ? '¿Está seguro que desea aprobar esta evidencia?'
-            : '¿Está seguro que desea rechazar esta evidencia? El responsable recibirá una notificación y deberá reenviarla.'}
+            ? `¿Está seguro que desea aprobar este ${entityLabel}?`
+            : `¿Está seguro que desea rechazar este ${entityLabel}? El responsable recibirá una notificación y deberá reenviar la entrega.`}
         </p>
 
         {/* Comentario (opcional para aprobar, recomendado para rechazar) */}
-        <Textarea
-          label="Comentario (opcional)"
-          value={comment}
-          onChange={(e) => setComment(e.target.value)}
-          rows={3}
-          maxLength={500}
-          characterCount
-          placeholder={
-            isAprobar
-              ? 'Agregue un comentario si lo desea...'
-              : 'Agregue un comentario sobre el rechazo...'
-          }
-        />
+        {showCommentField && (
+          <Textarea
+            label="Comentario (opcional)"
+            value={comment}
+            onChange={(e) => setComment(e.target.value)}
+            rows={3}
+            maxLength={500}
+            characterCount
+            placeholder={
+              isAprobar
+                ? 'Agregue un comentario si lo desea...'
+                : 'Agregue un comentario sobre el rechazo...'
+            }
+          />
+        )}
 
         {/* Nueva fecha límite (solo al rechazar) */}
         {!isAprobar && (
