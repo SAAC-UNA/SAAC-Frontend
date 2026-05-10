@@ -52,6 +52,21 @@ interface ContextInfo {
 
 type ExportFormat = "pdf" | "excel";
 
+const toNumericId = (value: unknown): number | null => {
+  const parsed = Number(value);
+  return Number.isFinite(parsed) ? parsed : null;
+};
+
+const normalizeApprovalStatus = (value: unknown): ApprovalStatus => {
+  if (typeof value !== "string") return "pendiente";
+
+  const normalized = value.trim().toLowerCase();
+  if (normalized === "aprobado") return "aprobado";
+  if (normalized === "rechazado") return "rechazado";
+
+  return "pendiente";
+};
+
 const FinalReports: React.FC = () => {
   const moduleInfo = getModuleInfo("final_reports");
   const { exportToPdf: generatePdfReport } = usePdfExport();
@@ -80,12 +95,15 @@ const FinalReports: React.FC = () => {
     loadingFiles: Set<number>;
   }>({ loadingFiles: new Set() });
   const loadingFiles = uiState.loadingFiles;
+  const selectedProcesoIdNum = toNumericId(selectedProcesoId);
 
   const selectedProcess = useMemo(
     () =>
-      processes.find((p: Proceso) => p.proceso_id === selectedProcesoId) ??
+      processes.find(
+        (p: Proceso) => toNumericId(p.proceso_id) === selectedProcesoIdNum,
+      ) ??
       null,
-    [processes, selectedProcesoId],
+    [processes, selectedProcesoIdNum],
   );
   const isFlexible =
     selectedProcess?.accreditation_cycle?.modelo_estructura?.tipo ===
@@ -139,14 +157,14 @@ const FinalReports: React.FC = () => {
     setContextLoading(true);
     try {
       const catalog = await globalFilterContextService.getCatalog();
-      const procesoId = catalog.context.proceso_id ?? null;
+      const procesoId = toNumericId(catalog.context.proceso_id);
       const cicloId = catalog.context.ciclo_acreditacion_id ?? null;
       const carreraId = catalog.context.career_campus_id ?? null;
 
       setSelectedProcesoId(procesoId);
 
       const selectedProcess = catalog.processes.find(
-        (process) => process.proceso_id === procesoId,
+        (process) => toNumericId(process.proceso_id) === procesoId,
       );
       const selectedCycle = catalog.cycles.find(
         (cycle) => cycle.ciclo_acreditacion_id === cicloId,
@@ -180,7 +198,7 @@ const FinalReports: React.FC = () => {
   };
 
   const fetchData = async () => {
-    if (!selectedProcesoId) {
+    if (!selectedProcesoIdNum) {
       setDataState({
         isLoading: false,
         processes: [],
@@ -198,13 +216,13 @@ const FinalReports: React.FC = () => {
         processesResponse.data.data || processesResponse.data;
 
       const selProc = processesArray.find(
-        (p: any) => p.proceso_id === selectedProcesoId,
+        (p: any) => toNumericId(p.proceso_id) === selectedProcesoIdNum,
       );
       const flex =
         selProc?.accreditation_cycle?.modelo_estructura?.tipo ===
         "elemento_flexible";
 
-      if (!selectedProcesoId || !selProc) {
+      if (!selectedProcesoIdNum || !selProc) {
         setDataState((prev) => ({
           ...prev,
           processes: processesArray,
@@ -221,34 +239,46 @@ const FinalReports: React.FC = () => {
           axiosInstance.get(
             `/estructura/elementos?modelo_estructura_id=${modeloId}`,
           ),
-          axiosInstance.get("/aprobaciones-elementos"),
+          axiosInstance.get("/aprobaciones-elementos", {
+            params: {
+              proceso_id: selectedProcesoIdNum,
+              estado: "aprobado",
+            },
+          }),
         ]);
         const elementosArray =
           elementosResponse.data.data || elementosResponse.data;
         const approvalsArray =
           approvalsResponse.data.data || approvalsResponse.data;
 
-        const approvalsMap = new Map<string, ApprovalStatus>();
+        const approvedElementIds = new Set<number>();
         approvalsArray.forEach((ap: any) => {
-          approvalsMap.set(
-            `${ap.elemento_id}-${ap.proceso_id}`,
-            ap.estado as ApprovalStatus,
+          const elementId = toNumericId(
+            ap?.elemento_id ?? ap?.elemento?.elemento_id,
           );
+          const processId = toNumericId(
+            ap?.proceso_id ?? ap?.process?.proceso_id,
+          );
+          if (elementId === null || processId === null) return;
+          if (processId !== selectedProcesoIdNum) return;
+          if (normalizeApprovalStatus(ap?.estado) !== "aprobado") return;
+
+          approvedElementIds.add(elementId);
         });
 
         const approvedElements = elementosArray
+          .filter((el: any) =>
+            approvedElementIds.has(toNumericId(el.elemento_id ?? el.id) ?? -1),
+          )
           .map((el: any) => ({
             id: el.elemento_id ?? el.id,
             padre_id: el.padre_id ?? null,
             tipo: el.tipo ?? null,
             nomenclatura: el.nomenclatura ?? "",
             descripcion: el.descripcion ?? el.nombre ?? "",
-            estado_aprobacion:
-              approvalsMap.get(
-                `${el.elemento_id ?? el.id}-${selectedProcesoId}`,
-              ) ?? "pendiente",
+            estado_aprobacion: "aprobado" as ApprovalStatus,
           }))
-          .filter((el: any) => el.estado_aprobacion === "aprobado");
+          ;
 
         setDataState((prev) => ({
           ...prev,
@@ -261,7 +291,9 @@ const FinalReports: React.FC = () => {
           await Promise.all([
             axiosInstance.get("/estructura/criterios"),
             axiosInstance.get("/estructura/evidencias"),
-            axiosInstance.get("/aprobaciones-criterios"),
+            axiosInstance.get("/aprobaciones-criterios", {
+              params: { estado: "aprobado" },
+            }),
           ]);
         const criteriaArray =
           criteriaResponse.data.data || criteriaResponse.data;
@@ -270,21 +302,35 @@ const FinalReports: React.FC = () => {
         const approvalsArray =
           approvalsResponse.data.data || approvalsResponse.data;
 
-        const approvalsMap = new Map<string, ApprovalStatus>();
+        const approvedCriteriaIds = new Set<number>();
         approvalsArray.forEach((aprobacion: any) => {
-          const key = `${aprobacion.criterio_id}-${aprobacion.proceso_id}`;
-          approvalsMap.set(key, aprobacion.estado as ApprovalStatus);
+          const criterionId = toNumericId(
+            aprobacion?.criterio_id ?? aprobacion?.criterion?.criterio_id,
+          );
+          const processId = toNumericId(
+            aprobacion?.proceso_id ?? aprobacion?.process?.proceso_id,
+          );
+          if (criterionId === null || processId === null) return;
+          if (processId !== selectedProcesoIdNum) return;
+          if (normalizeApprovalStatus(aprobacion?.estado) !== "aprobado") return;
+
+          approvedCriteriaIds.add(criterionId);
         });
 
-        const criteriaWithStatus = criteriaArray.map((c: any) => {
-          const key = `${c.id}-${selectedProcesoId}`;
-          const approvalStatus = approvalsMap.get(key) ?? "pendiente";
-          return { ...c, estado_aprobacion: approvalStatus as ApprovalStatus };
-        });
+        const approvedCriteria = criteriaArray
+          .filter((c: any) => {
+            const criterionId = toNumericId(c.id ?? c.criterio_id);
+            return criterionId !== null && approvedCriteriaIds.has(criterionId);
+          })
+          .map((c: any) => {
+          const criterionId = toNumericId(c.id ?? c.criterio_id);
 
-        const approvedCriteria = criteriaWithStatus.filter(
-          (c: Criterio) => c.estado_aprobacion === "aprobado",
-        );
+          return {
+            ...c,
+            id: criterionId ?? c.id,
+            estado_aprobacion: "aprobado" as ApprovalStatus,
+          };
+        });
 
         setDataState((prev) => ({
           ...prev,
@@ -442,7 +488,7 @@ const FinalReports: React.FC = () => {
   };
 
   const handleEnlaceGenerado = async () => {
-    if (selectedEvidencia) {
+      if (selectedEvidencia) {
       await loadFiles(selectedEvidencia.id);
     }
     setPublicLinkModal({ open: false, archivo: null, evidencia: null });

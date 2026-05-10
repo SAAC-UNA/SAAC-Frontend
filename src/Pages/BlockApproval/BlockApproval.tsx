@@ -17,6 +17,18 @@ import { getOperationalContextSnapshot } from '@/Services/OperationalContextStor
 
 type BlockApprovalStatus = 'pendiente' | 'aprobado' | 'rechazado' | 'incompleto';
 
+const toNumericId = (value: unknown): number | null => {
+  const parsed = Number(value);
+  return Number.isFinite(parsed) ? parsed : null;
+};
+
+const parseTimestamp = (value: unknown): number => {
+  if (typeof value !== 'string') return 0;
+
+  const ts = Date.parse(value);
+  return Number.isFinite(ts) ? ts : 0;
+};
+
 interface Proceso {
   proceso_id: number;
   tipo_proceso: string;
@@ -42,6 +54,59 @@ const normalizeSearchValue = (value: unknown): string => {
     .replace(/[\u0300-\u036f]/g, '')
     .toLowerCase();
 };
+
+const normalizeEvidenceStatus = (value: unknown): EvidenceApprovalStatus => {
+  if (typeof value !== 'string') return 'pendiente';
+
+  const normalized = value.trim().toLowerCase();
+  if (normalized === 'aprobado') return 'aprobado';
+  if (normalized === 'rechazado') return 'rechazado';
+  if (normalized === 'pendiente') return 'pendiente';
+
+  return 'pendiente';
+};
+
+const normalizeBlockStatus = (value: unknown): BlockApprovalStatus => {
+  if (typeof value !== 'string') return 'pendiente';
+
+  const normalized = value.trim().toLowerCase();
+  if (normalized === 'aprobado') return 'aprobado';
+  if (normalized === 'rechazado') return 'rechazado';
+  if (normalized === 'incompleto') return 'incompleto';
+  if (normalized === 'pendiente') return 'pendiente';
+
+  return 'pendiente';
+};
+
+const extractEvidenceDecisionFlags = (
+  evidencias: EvidenceApprovalItem[] | undefined,
+): { hasApproved: boolean; hasRejected: boolean } => {
+  if (!evidencias || evidencias.length === 0) {
+    return { hasApproved: false, hasRejected: false };
+  }
+
+  let hasApproved = false;
+  let hasRejected = false;
+
+  evidencias.forEach((evidencia) => {
+    const baseStatus = normalizeEvidenceStatus(evidencia.approval_status);
+    if (baseStatus === 'aprobado') hasApproved = true;
+    if (baseStatus === 'rechazado') hasRejected = true;
+
+    Object.values(evidencia.approvals_by_user ?? {}).forEach((decision) => {
+      const decisionStatus = normalizeEvidenceStatus(decision?.approval_status);
+      if (decisionStatus === 'aprobado') hasApproved = true;
+      if (decisionStatus === 'rechazado') hasRejected = true;
+    });
+  });
+
+  return { hasApproved, hasRejected };
+};
+
+const hasCriterionRulesLoaded = (
+  rules: Record<number, EvidenceApprovalItem[]>,
+  criterionId: number,
+): boolean => Object.prototype.hasOwnProperty.call(rules, criterionId);
 
 const BlockApproval: React.FC = () => {
   const moduleInfo = getModuleInfo("block_approval");
@@ -127,11 +192,16 @@ const BlockApproval: React.FC = () => {
 
   const { isLoading, criteria, evidences, processes } = dataState;
   const { selectedProcesoId, currentPage, searchTerm } = filterState;
+  const selectedProcesoIdNum = toNumericId(selectedProcesoId);
   const itemsPerPage = TABLE_PAGE_SIZE.standard;
 
   const selectedProcess = useMemo(
-    () => processes.find(p => p.proceso_id === selectedProcesoId) ?? null,
-    [processes, selectedProcesoId]);
+    () =>
+      processes.find(
+        (p) => toNumericId(p.proceso_id) === selectedProcesoIdNum,
+      ) ?? null,
+    [processes, selectedProcesoIdNum],
+  );
   const isFlexible = selectedProcess?.accreditation_cycle?.modelo_estructura?.tipo === 'elemento_flexible';
 
   // Limpiar caché de evidencias y recargar datos cuando cambie el proceso
@@ -144,7 +214,7 @@ const BlockApproval: React.FC = () => {
   useEffect(() => {
     const syncSelectedProcessFromContext = () => {
       const snapshot = getOperationalContextSnapshot();
-      const nextProcessId = snapshot.processId;
+      const nextProcessId = toNumericId(snapshot.processId);
 
       setFilterState((prev) => {
         if (prev.selectedProcesoId === nextProcessId) {
@@ -185,7 +255,9 @@ const BlockApproval: React.FC = () => {
       const processesArray: Proceso[] = processesResponse.data.data || processesResponse.data;
 
       // Detect model type from the currently selected process
-      const selectedRaw = processesArray.find(p => p.proceso_id === selectedProcesoId);
+      const selectedRaw = processesArray.find(
+        (p) => toNumericId(p.proceso_id) === selectedProcesoIdNum,
+      );
       const modeloEstructura = selectedRaw?.accreditation_cycle?.modelo_estructura;
       const isSelectedFlexible = modeloEstructura?.tipo === 'elemento_flexible';
       const selectedModeloId = modeloEstructura?.modelo_estructura_id;
@@ -225,7 +297,7 @@ const BlockApproval: React.FC = () => {
           if (!Number.isFinite(elementId)) return;
 
           const next = {
-            estado: (approval?.estado ?? 'pendiente') as BlockApprovalStatus,
+            estado: normalizeBlockStatus(approval?.estado),
             comentario: approval?.comentario ?? null,
             updated_at: typeof approval?.updated_at === 'string' ? approval.updated_at : null,
           };
@@ -407,10 +479,34 @@ const BlockApproval: React.FC = () => {
           linkedCountByCriterion.set(criterionId, evidenceIds.size);
         });
 
-        const approvalsMap = new Map<string, BlockApprovalStatus>();
+        const latestCriterionApprovalByKey = new Map<
+          string,
+          { estado: BlockApprovalStatus; updatedAt: number }
+        >();
         approvalsArray.forEach((aprobacion: any) => {
-          const key = `${aprobacion.criterio_id}-${aprobacion.proceso_id}`;
-          approvalsMap.set(key, aprobacion.estado as BlockApprovalStatus);
+          const criterionId = toNumericId(
+            aprobacion?.criterio_id ?? aprobacion?.criterion?.criterio_id,
+          );
+          const processId = toNumericId(
+            aprobacion?.proceso_id ?? aprobacion?.process?.proceso_id,
+          );
+          if (criterionId === null || processId === null) return;
+
+          const key = `${criterionId}-${processId}`;
+          const next = {
+            estado: normalizeBlockStatus(aprobacion?.estado),
+            updatedAt: parseTimestamp(aprobacion?.updated_at),
+          };
+
+          const prev = latestCriterionApprovalByKey.get(key);
+          if (!prev || next.updatedAt >= prev.updatedAt) {
+            latestCriterionApprovalByKey.set(key, next);
+          }
+        });
+
+        const approvalsMap = new Map<string, BlockApprovalStatus>();
+        latestCriterionApprovalByKey.forEach((value, key) => {
+          approvalsMap.set(key, value.estado);
         });
 
         const responsablesByCriterion = new Map<number, Map<number, string>>();
@@ -442,12 +538,21 @@ const BlockApproval: React.FC = () => {
         const criterionIdsWithApprovals = new Set<number>();
 
         approvalsArray.forEach((aprobacion: any) => {
-          if (selectedProcesoId && aprobacion?.proceso_id !== selectedProcesoId) {
+          const approvalProcessId = toNumericId(
+            aprobacion?.proceso_id ?? aprobacion?.process?.proceso_id,
+          );
+          if (
+            selectedProcesoIdNum !== null
+            && approvalProcessId !== null
+            && approvalProcessId !== selectedProcesoIdNum
+          ) {
             return;
           }
 
-          const criterionId = Number(aprobacion?.criterio_id);
-          if (Number.isFinite(criterionId)) {
+          const criterionId = toNumericId(
+            aprobacion?.criterio_id ?? aprobacion?.criterion?.criterio_id,
+          );
+          if (criterionId !== null) {
             criterionIdsWithApprovals.add(criterionId);
           }
         });
@@ -462,20 +567,67 @@ const BlockApproval: React.FC = () => {
           return Number.isFinite(criterionId) && visibleCriterionIds.has(criterionId);
         });
 
-        const criteriaWithStatus = filteredCriteria.map((c: any) => {
-          const key = selectedProcesoId ? `${c.id}-${selectedProcesoId}` : '';
-          const criterionId = c.id ?? c.criterio_id;
+        const criteriaWithStatus: Criterio[] = filteredCriteria.map((c: any) => {
+          const criterionId = Number(c.id ?? c.criterio_id);
+          const key = selectedProcesoIdNum !== null ? `${criterionId}-${selectedProcesoIdNum}` : '';
           const responsibleUsers = Array.from(
             (responsablesByCriterion.get(criterionId) ?? new Map<number, string>()).entries(),
           ).map(([id, name]) => ({ id, name }));
           return {
             ...c,
+            id: criterionId,
+            nomenclatura: c.nomenclatura ?? '',
+            descripcion: c.descripcion ?? '',
             estado_aprobacion: (approvalsMap.get(key) ?? 'pendiente') as BlockApprovalStatus,
             linked_count: linkedCountByCriterion.get(criterionId) ?? 0,
             responsables: responsibleUsers,
           };
         });
 
+        const preloadedEvidenceApprovals: Record<number, EvidenceApprovalItem[]> = {};
+
+        if (selectedProcesoId) {
+          const pendingCriteriaIds = criteriaWithStatus
+            .filter((criterio: Criterio) => (criterio.estado_aprobacion ?? 'pendiente') === 'pendiente')
+            .map((criterio: Criterio) => criterio.id);
+
+          const evidenceApprovalResults = await Promise.all(
+            pendingCriteriaIds.map(async (criterionId: number) => {
+              try {
+                const res = await axiosInstance.get(
+                  `/criterios/${criterionId}/evidencias/aprobaciones`,
+                  { params: { proceso_id: selectedProcesoId } },
+                );
+
+                const loaded: EvidenceApprovalItem[] = (
+                  res.data?.data?.evidences ?? []
+                ).map((item: any) => ({
+                  ...item,
+                  asignacion: item?.asignacion
+                    ? {
+                        ...item.asignacion,
+                        usuario_nombre:
+                          item.asignacion.usuario_nombre ??
+                          item.asignacion.usuario?.nombre ??
+                          item.asignacion.user?.nombre ??
+                          null,
+                      }
+                    : null,
+                }));
+
+                return [criterionId, loaded] as const;
+              } catch {
+                return [criterionId, [] as EvidenceApprovalItem[]] as const;
+              }
+            }),
+          );
+
+          evidenceApprovalResults.forEach(([criterionId, approvals]) => {
+            preloadedEvidenceApprovals[criterionId] = approvals;
+          });
+        }
+
+        setEvidenceApprovalsByCriterion(preloadedEvidenceApprovals);
         setDataState({ criteria: criteriaWithStatus, evidences: evidencesArray, processes: processesArray, isLoading: false });
       }
     } catch (error: any) {
@@ -584,14 +736,14 @@ const BlockApproval: React.FC = () => {
 
     return criteria.filter((criterio) => {
       const status = criterio.estado_aprobacion ?? 'pendiente';
-      const statusLabel =
+      const statusSearchTerms =
         status === 'aprobado'
-          ? 'aprobado'
+          ? ['aprobado', 'aprobada', 'aprobados', 'aprobadas']
           : status === 'rechazado'
-            ? 'rechazado'
+            ? ['rechazado', 'rechazada', 'rechazados', 'rechazadas']
             : status === 'incompleto'
-              ? 'incompleto'
-              : 'pendiente';
+              ? ['incompleto', 'incompleta', 'incompletos', 'incompletas']
+              : ['pendiente', 'pendientes'];
 
       const responsables = criterio.responsables ?? [];
       const responsablesText = responsables
@@ -611,8 +763,8 @@ const BlockApproval: React.FC = () => {
         criterio.nomenclatura ?? '',
         criterio.descripcion ?? '',
         `${criterio.nomenclatura ?? ''} ${criterio.descripcion ?? ''}`,
-        statusLabel,
         status,
+        ...statusSearchTerms,
         responsablesText,
         responsablesIds,
         String(recursosCount),
@@ -625,13 +777,97 @@ const BlockApproval: React.FC = () => {
     });
   }, [criteria, searchTerm]);
 
+  const actionRulesByCriterion = useMemo(
+    () =>
+      criteria.reduce<Record<number, { canApproveByEvidence: boolean; canRejectByEvidence: boolean; isLoaded: boolean }>>(
+        (acc, criterio) => {
+          const isLoaded =
+            isFlexible
+            || (criterio.estado_aprobacion ?? 'pendiente') !== 'pendiente'
+            || hasCriterionRulesLoaded(evidenceApprovalsByCriterion, criterio.id);
+
+          if (!isLoaded) {
+            acc[criterio.id] = {
+              canApproveByEvidence: false,
+              canRejectByEvidence: false,
+              isLoaded: false,
+            };
+            return acc;
+          }
+
+          const flags = extractEvidenceDecisionFlags(
+            evidenceApprovalsByCriterion[criterio.id],
+          );
+
+          acc[criterio.id] = {
+            canApproveByEvidence: !flags.hasRejected,
+            canRejectByEvidence: !flags.hasApproved,
+            isLoaded: true,
+          };
+          return acc;
+        },
+        {},
+      ),
+    [criteria, evidenceApprovalsByCriterion, isFlexible],
+  );
+
+  const loadCriterionApprovalsIfNeeded = useCallback(
+    async (criterionId: number): Promise<EvidenceApprovalItem[]> => {
+      const cached = evidenceApprovalsByCriterion[criterionId];
+      if (cached !== undefined) return cached;
+
+      if (!selectedProcesoId || isFlexible) {
+        return [];
+      }
+
+      try {
+        const res = await axiosInstance.get(
+          `/criterios/${criterionId}/evidencias/aprobaciones`,
+          { params: { proceso_id: selectedProcesoId } },
+        );
+
+        const loaded: EvidenceApprovalItem[] = (
+          res.data?.data?.evidences ?? []
+        ).map((item: any) => ({
+          ...item,
+          asignacion: item?.asignacion
+            ? {
+                ...item.asignacion,
+                usuario_nombre:
+                  item.asignacion.usuario_nombre ??
+                  item.asignacion.usuario?.nombre ??
+                  item.asignacion.user?.nombre ??
+                  null,
+              }
+            : null,
+        }));
+
+        setEvidenceApprovalsByCriterion((prev) => ({
+          ...prev,
+          [criterionId]: loaded,
+        }));
+
+        return loaded;
+      } catch {
+        setEvidenceApprovalsByCriterion((prev) => ({
+          ...prev,
+          [criterionId]: [],
+        }));
+        return [];
+      }
+    },
+    [evidenceApprovalsByCriterion, isFlexible, selectedProcesoId],
+  );
+
   const pendingApprovalCriteria = useMemo(
     () =>
       criteria.filter(
         (criterio) =>
-          (criterio.estado_aprobacion ?? 'pendiente') === 'pendiente',
+          (criterio.estado_aprobacion ?? 'pendiente') === 'pendiente'
+          && (actionRulesByCriterion[criterio.id]?.isLoaded ?? false)
+          && (actionRulesByCriterion[criterio.id]?.canApproveByEvidence ?? false),
       ),
-    [criteria],
+    [criteria, actionRulesByCriterion],
   );
 
   const totalPages = Math.ceil(filteredCriteria.length / itemsPerPage);
@@ -649,7 +885,18 @@ const BlockApproval: React.FC = () => {
   }, [filteredCriteria.length]);
 
   // --- Handlers de BLOQUE ---
-  const handleAprobar = useCallback((criterio: Criterio) => {
+  const handleAprobar = useCallback(async (criterio: Criterio) => {
+    const evidencias = await loadCriterionApprovalsIfNeeded(criterio.id);
+    const flags = extractEvidenceDecisionFlags(evidencias);
+    if (flags.hasRejected) {
+      showToast({
+        type: 'warning',
+        title: 'Acción no permitida',
+        message: `No se puede aprobar el bloque porque ya existen ${isFlexible ? 'elementos' : 'evidencias'} rechazadas dentro del bloque.`,
+      });
+      return;
+    }
+
     setCriterionEvidencesModal({ open: false, criterio: null });
     setEvidenceModal((prev) => ({
       ...prev,
@@ -665,9 +912,33 @@ const BlockApproval: React.FC = () => {
       criterion: criterio,
       successOpen: false,
     }));
-  }, []);
+  }, [isFlexible, loadCriterionApprovalsIfNeeded, showToast]);
 
-  const handleRechazar = useCallback((criterio: Criterio) => {
+  const handleRechazar = useCallback(async (criterio: Criterio) => {
+    const blockStatus = normalizeBlockStatus(criterio.estado_aprobacion);
+    if (blockStatus !== 'pendiente') {
+      showToast({
+        type: 'warning',
+        title: 'Acción no permitida',
+        message:
+          blockStatus === 'aprobado'
+            ? 'No se puede rechazar un bloque ya aprobado.'
+            : 'No se puede rechazar un bloque que ya fue procesado.',
+      });
+      return;
+    }
+
+    const evidencias = await loadCriterionApprovalsIfNeeded(criterio.id);
+    const flags = extractEvidenceDecisionFlags(evidencias);
+    if (flags.hasApproved) {
+      showToast({
+        type: 'warning',
+        title: 'Acción no permitida',
+        message: `No se puede rechazar porque ya existen ${isFlexible ? 'elementos' : 'evidencias'} aprobadas dentro del bloque.`,
+      });
+      return;
+    }
+
     setCriterionEvidencesModal({ open: false, criterio: null });
     setEvidenceModal((prev) => ({
       ...prev,
@@ -683,7 +954,7 @@ const BlockApproval: React.FC = () => {
       criterion: criterio,
       successOpen: false,
     }));
-  }, []);
+  }, [isFlexible, loadCriterionApprovalsIfNeeded, showToast]);
 
   const handleConfirmAction = async (
     comentario: string,
@@ -691,6 +962,28 @@ const BlockApproval: React.FC = () => {
   ) => {
     const { criterion, action } = approvalState;
     if (!criterion || !selectedProcesoId) return;
+
+    const evidencias = await loadCriterionApprovalsIfNeeded(criterion.id);
+    const flags = extractEvidenceDecisionFlags(evidencias);
+    if (action === 'aprobar' && flags.hasRejected) {
+      showToast({
+        type: 'warning',
+        title: 'Acción no permitida',
+        message: `No se puede aprobar el bloque porque ya existen ${isFlexible ? 'elementos' : 'evidencias'} rechazadas dentro del bloque.`,
+      });
+      setApprovalState((prev) => ({ ...prev, isOpen: false, criterion: null }));
+      return;
+    }
+
+    if (action === 'rechazar' && flags.hasApproved) {
+      showToast({
+        type: 'warning',
+        title: 'Acción no permitida',
+        message: `No se puede rechazar el bloque porque ya existen ${isFlexible ? 'elementos' : 'evidencias'} aprobadas dentro del bloque.`,
+      });
+      setApprovalState((prev) => ({ ...prev, isOpen: false, criterion: null }));
+      return;
+    }
 
     try {
       const endpoint = isFlexible
@@ -811,6 +1104,15 @@ const BlockApproval: React.FC = () => {
 
   const handleRechazarEvidencia = useCallback(
     (criterio: Criterio, evidencia: EvidenceApprovalItem) => {
+      if (normalizeEvidenceStatus(evidencia.approval_status) === 'aprobado') {
+        showToast({
+          type: 'warning',
+          title: 'Acción no permitida',
+          message: 'No se puede rechazar un elemento ya aprobado.',
+        });
+        return;
+      }
+
       setCriterionEvidencesModal({ open: false, criterio: null });
       setApprovalState((prev) => ({
         ...prev,
@@ -825,7 +1127,7 @@ const BlockApproval: React.FC = () => {
         successOpen: false,
       });
     },
-    [],
+    [showToast],
   );
 
   const handleConfirmEvidenceAction = async (
@@ -869,7 +1171,7 @@ const BlockApproval: React.FC = () => {
     } catch (error: any) {
       showToast({
         type: "error",
-        title: "Error al procesar la evidencia",
+        title: "Error al procesar el elemento",
         message: error.response?.data?.message || "Ocurrió un error inesperado",
       });
       setEvidenceModal((prev) => ({ ...prev, isOpen: false }));
@@ -915,6 +1217,7 @@ const BlockApproval: React.FC = () => {
         totalPages={totalPages}
         selectedProcesoId={selectedProcesoId}
         isFlexible={isFlexible}
+        actionRulesByCriterion={actionRulesByCriterion}
         onPageChange={(value) => setFilterState(prev => ({ ...prev, currentPage: value }))}
         onAprobar={handleAprobar}
         onRechazar={handleRechazar}
@@ -1031,10 +1334,10 @@ const BlockApproval: React.FC = () => {
         }
         title={
           evidenceModal.action === "aprobar"
-            ? "Evidencia Aprobada"
-            : "Evidencia Rechazada"
+            ? "Elemento Aprobado"
+            : "Elemento Rechazado"
         }
-        message={`La evidencia ha sido ${evidenceModal.action === "aprobar" ? "aprobada" : "rechazada"} exitosamente.`}
+        message={`El elemento ha sido ${evidenceModal.action === "aprobar" ? "aprobado" : "rechazado"} exitosamente.`}
       />
     </ScreenContainer>
   );

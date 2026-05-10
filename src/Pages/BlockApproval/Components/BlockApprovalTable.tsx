@@ -80,6 +80,14 @@ interface BlockApprovalTableProps {
   totalPages: number;
   selectedProcesoId: number | null;
   isFlexible?: boolean;
+  actionRulesByCriterion?: Record<
+    number,
+    {
+      canApproveByEvidence: boolean;
+      canRejectByEvidence: boolean;
+      isLoaded: boolean;
+    }
+  >;
   onPageChange: (page: number) => void;
   onAprobar: (criterio: Criterio) => void;
   onRechazar: (criterio: Criterio) => void;
@@ -93,6 +101,7 @@ export const BlockApprovalTable: React.FC<BlockApprovalTableProps> = ({
   totalPages,
   selectedProcesoId,
   isFlexible = false,
+  actionRulesByCriterion,
   onPageChange,
   onAprobar,
   onRechazar,
@@ -183,10 +192,19 @@ export const BlockApprovalTable: React.FC<BlockApprovalTableProps> = ({
       align: 'center',
       width: TABLE_COLUMN_WIDTHS.actions,
       render: (_, item) => {
-        const canApproveBlock = item.estado_aprobacion === 'pendiente';
+        const evidenceRules = actionRulesByCriterion?.[item.id];
+        const canApproveByEvidence = evidenceRules?.canApproveByEvidence ?? true;
+        const canRejectByEvidence = evidenceRules?.canRejectByEvidence ?? true;
+        const areEvidenceRulesLoaded = evidenceRules?.isLoaded ?? true;
+        const canApproveBlock =
+          item.estado_aprobacion === 'pendiente'
+          && areEvidenceRulesLoaded
+          && canApproveByEvidence;
         const canRejectBlock =
-          item.estado_aprobacion === 'pendiente' ||
-          item.estado_aprobacion === 'incompleto';
+          item.estado_aprobacion === 'pendiente'
+          && areEvidenceRulesLoaded
+          && canRejectByEvidence;
+
         return (
           <div className="flex items-center justify-center gap-2" onClick={e => e.stopPropagation()}>
             <TableActionButton
@@ -200,7 +218,17 @@ export const BlockApprovalTable: React.FC<BlockApprovalTableProps> = ({
               action="custom"
               customIcon={<SystemIcons.interface.checkCircle className={ICON} />}
               customVariant="tablePower"
-              tooltip={canApproveBlock ? 'Aprobar bloque' : item.estado_aprobacion === 'incompleto' ? 'Bloque incompleto: hay evidencias rechazadas' : 'Bloque ya procesado'}
+              tooltip={
+                canApproveBlock
+                  ? 'Aprobar bloque'
+                  : item.estado_aprobacion !== 'pendiente'
+                    ? item.estado_aprobacion === 'incompleto'
+                      ? 'Bloque incompleto: hay evidencias rechazadas'
+                      : 'Bloque ya procesado'
+                    : !areEvidenceRulesLoaded
+                      ? `Validando ${isFlexible ? 'elementos' : 'evidencias'} del bloque...`
+                    : `No se puede aprobar: hay ${isFlexible ? 'elementos' : 'evidencias'} rechazadas en el bloque`
+              }
               onClick={() => onAprobar(item)}
               isActive={canApproveBlock}
               disabled={!canApproveBlock}
@@ -212,9 +240,15 @@ export const BlockApprovalTable: React.FC<BlockApprovalTableProps> = ({
               tooltip={
                 canRejectBlock
                   ? 'Rechazar bloque'
-                  : item.estado_aprobacion === 'rechazado'
-                    ? 'Bloque ya rechazado'
-                    : 'Bloque ya aprobado'
+                  : item.estado_aprobacion !== 'pendiente'
+                    ? item.estado_aprobacion === 'incompleto'
+                      ? 'Bloque incompleto: no se puede rechazar nuevamente'
+                      : item.estado_aprobacion === 'rechazado'
+                        ? 'Bloque ya rechazado'
+                        : 'Bloque ya aprobado'
+                    : !areEvidenceRulesLoaded
+                      ? `Validando ${isFlexible ? 'elementos' : 'evidencias'} del bloque...`
+                    : `No se puede rechazar: hay ${isFlexible ? 'elementos' : 'evidencias'} aprobadas en el bloque`
               }
               onClick={() => onRechazar(item)}
               disabled={!canRejectBlock}
@@ -223,7 +257,7 @@ export const BlockApprovalTable: React.FC<BlockApprovalTableProps> = ({
         );
       },
     },
-  ], [onAprobar, onRechazar, onOpenCriterionEvidences, isFlexible, TYPOGRAPHY, firstColumn.width]);
+  ], [onAprobar, onRechazar, onOpenCriterionEvidences, isFlexible, TYPOGRAPHY, firstColumn.width, actionRulesByCriterion]);
 
   if (!selectedProcesoId) {
     return (
