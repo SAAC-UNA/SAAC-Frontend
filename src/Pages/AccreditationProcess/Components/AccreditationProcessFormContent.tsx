@@ -88,7 +88,7 @@ export const AccreditationProcessFormContent: React.FC<
     }
 
     if (showDescription && formData.description.length > 100) {
-      nextErrors.description = "La descripciÃ³n no puede exceder 100 caracteres";
+      nextErrors.description = "La descripción no puede exceder 100 caracteres";
     }
 
     if (!formData.accreditationCycleId) {

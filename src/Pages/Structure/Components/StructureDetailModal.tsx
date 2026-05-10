@@ -105,18 +105,18 @@ export const StructureElementDetail: React.FC<StructureElementDetailProps> = ({
 
           <InfoCell label="Nomenclatura" className="col-start-1 col-end-4">
             <span className={cn(TYPOGRAPHY.modal.body, 'text-gris-una-2')}>
-              {flexibleElement.nomenclatura || 'â€”'}
+              {flexibleElement.nomenclatura || '—'}
             </span>
           </InfoCell>
 
-          <InfoCell label="CategorÃ­a" className="col-start-4 col-end-7 items-start">
+          <InfoCell label="Categoría" className="col-start-4 col-end-7 items-start">
             {flexibleElement.categoria ? (
               <StatusBadge
                 label={flexibleElement.categoria}
                 colorClasses={getFlexibleCategoryBadgeColor(flexibleElement.categoria)}
               />
             ) : (
-              <span className={cn(TYPOGRAPHY.modal.body, 'text-gris-una-2')}>â€”</span>
+              <span className={cn(TYPOGRAPHY.modal.body, 'text-gris-una-2')}>—</span>
             )}
           </InfoCell>
 
@@ -124,7 +124,7 @@ export const StructureElementDetail: React.FC<StructureElementDetailProps> = ({
 
           <InfoCell label="Identificador" className="col-span-6">
             <span className={cn(TYPOGRAPHY.modal.body, 'text-gris-una-2')}>
-              {flexibleElement.nombre || flexibleElement.descripcion || 'â€”'}
+              {flexibleElement.nombre || flexibleElement.descripcion || '—'}
             </span>
           </InfoCell>
 
@@ -190,7 +190,7 @@ export const StructureElementDetail: React.FC<StructureElementDetailProps> = ({
         {/* div2 - Nombre */}
         <InfoCell label="Nombre" className="col-start-4 col-end-7">
           <span className={cn(TYPOGRAPHY.modal.body, 'text-gris-una-2')}>
-            {traditionalElement.name || traditionalElement.nomenclature || 'â€”'}
+            {traditionalElement.name || traditionalElement.nomenclature || '—'}
           </span>
         </InfoCell>
 
