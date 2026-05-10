@@ -157,7 +157,11 @@ const ContextSelector: React.FC = () => {
   const processCards = useMemo<CardItem[]>(() => {
     if (!catalog?.processes || !selectedCycleId) return [];
     return catalog.processes
-      .filter((p: any) => p.ciclo_acreditacion_id === Number(selectedCycleId))
+      .filter(
+        (p: any) =>
+          p.ciclo_acreditacion_id === Number(selectedCycleId) &&
+          p.activo === true,
+      )
       .map((p: any) => ({
         id: String(p.proceso_id),
         label: p.tipo_proceso,
