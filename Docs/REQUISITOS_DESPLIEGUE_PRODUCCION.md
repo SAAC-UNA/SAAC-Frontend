@@ -183,7 +183,3 @@ El frontend se comunica exclusivamente con el backend mediante la URL configurad
 1. Abrir el navegador en el dominio configurado → debe cargar el login.
 2. Navegar a una ruta interna (ej. `/dashboard`) y hacer F5 → **no debe dar 404**.
 3. Verificar en DevTools → Network que las llamadas al API (`VITE_API_URL`) respondan correctamente.
-
----
-
-*Generado el 7 de abril de 2026 — SAAC Frontend v1.0.0*
