@@ -56,26 +56,31 @@ const normalizeSearchValue = (value: unknown): string => {
 };
 
 const normalizeEvidenceStatus = (value: unknown): EvidenceApprovalStatus => {
-  if (typeof value !== 'string') return 'pendiente';
+  const normalized = normalizeSearchValue(value).trim();
 
-  const normalized = value.trim().toLowerCase();
-  if (normalized === 'aprobado') return 'aprobado';
-  if (normalized === 'rechazado') return 'rechazado';
-  if (normalized === 'pendiente') return 'pendiente';
+  if (normalized.startsWith('aprobad')) return 'aprobado';
+  if (normalized.startsWith('rechazad')) return 'rechazado';
+  if (normalized.startsWith('pendient')) return 'pendiente';
 
   return 'pendiente';
 };
 
 const normalizeBlockStatus = (value: unknown): BlockApprovalStatus => {
-  if (typeof value !== 'string') return 'pendiente';
+  const normalized = normalizeSearchValue(value).trim();
 
-  const normalized = value.trim().toLowerCase();
-  if (normalized === 'aprobado') return 'aprobado';
-  if (normalized === 'rechazado') return 'rechazado';
-  if (normalized === 'incompleto') return 'incompleto';
-  if (normalized === 'pendiente') return 'pendiente';
+  if (normalized.startsWith('aprobad')) return 'aprobado';
+  if (normalized.startsWith('rechazad')) return 'rechazado';
+  if (normalized.startsWith('incomplet')) return 'incompleto';
+  if (normalized.startsWith('pendient')) return 'pendiente';
 
   return 'pendiente';
+};
+
+const BLOCK_STATUS_SEARCH_TERMS: Record<BlockApprovalStatus, string[]> = {
+  pendiente: ['pendiente', 'pendientes'],
+  aprobado: ['aprobado', 'aprobada', 'aprobados', 'aprobadas'],
+  rechazado: ['rechazado', 'rechazada', 'rechazados', 'rechazadas'],
+  incompleto: ['incompleto', 'incompleta', 'incompletos', 'incompletas'],
 };
 
 const extractEvidenceDecisionFlags = (
@@ -735,15 +740,8 @@ const BlockApproval: React.FC = () => {
     }
 
     return criteria.filter((criterio) => {
-      const status = criterio.estado_aprobacion ?? 'pendiente';
-      const statusSearchTerms =
-        status === 'aprobado'
-          ? ['aprobado', 'aprobada', 'aprobados', 'aprobadas']
-          : status === 'rechazado'
-            ? ['rechazado', 'rechazada', 'rechazados', 'rechazadas']
-            : status === 'incompleto'
-              ? ['incompleto', 'incompleta', 'incompletos', 'incompletas']
-              : ['pendiente', 'pendientes'];
+      const status = normalizeBlockStatus(criterio.estado_aprobacion);
+      const statusSearchTerms = BLOCK_STATUS_SEARCH_TERMS[status];
 
       const responsables = criterio.responsables ?? [];
       const responsablesText = responsables
@@ -783,7 +781,7 @@ const BlockApproval: React.FC = () => {
         (acc, criterio) => {
           const isLoaded =
             isFlexible
-            || (criterio.estado_aprobacion ?? 'pendiente') !== 'pendiente'
+            || normalizeBlockStatus(criterio.estado_aprobacion) !== 'pendiente'
             || hasCriterionRulesLoaded(evidenceApprovalsByCriterion, criterio.id);
 
           if (!isLoaded) {
@@ -863,7 +861,7 @@ const BlockApproval: React.FC = () => {
     () =>
       criteria.filter(
         (criterio) =>
-          (criterio.estado_aprobacion ?? 'pendiente') === 'pendiente'
+          normalizeBlockStatus(criterio.estado_aprobacion) === 'pendiente'
           && (actionRulesByCriterion[criterio.id]?.isLoaded ?? false)
           && (actionRulesByCriterion[criterio.id]?.canApproveByEvidence ?? false),
       ),

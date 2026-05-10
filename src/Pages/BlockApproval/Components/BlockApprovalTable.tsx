@@ -24,6 +24,23 @@ const BLOCK_STATUS_BADGE: Record<BlockApprovalStatus, { label: string; colorClas
   incompleto:  { label: 'Incompleto',  colorClasses: 'text-orange-700 bg-orange-100' },
 };
 
+const normalizeStatus = (value: unknown): BlockApprovalStatus => {
+  if (typeof value !== 'string') return 'pendiente';
+
+  const normalized = value
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .trim()
+    .toLowerCase();
+
+  if (normalized.startsWith('aprobad')) return 'aprobado';
+  if (normalized.startsWith('rechazad')) return 'rechazado';
+  if (normalized.startsWith('incomplet')) return 'incompleto';
+  if (normalized.startsWith('pendient')) return 'pendiente';
+
+  return 'pendiente';
+};
+
 export interface EvidenceApprovalItem {
   evidencia_id: number;
   nomenclatura: string;
@@ -178,7 +195,8 @@ export const BlockApprovalTable: React.FC<BlockApprovalTableProps> = ({
       align: 'left',
       width: TABLE_COLUMN_WIDTHS.status,
       render: (_, item) => {
-        const config = BLOCK_STATUS_BADGE[item.estado_aprobacion ?? 'pendiente'];
+        const status = normalizeStatus(item.estado_aprobacion);
+        const config = BLOCK_STATUS_BADGE[status];
         return (
           <div className="flex justify-start">
             <StatusBadge label={config.label} colorClasses={config.colorClasses} />
@@ -192,16 +210,17 @@ export const BlockApprovalTable: React.FC<BlockApprovalTableProps> = ({
       align: 'center',
       width: TABLE_COLUMN_WIDTHS.actions,
       render: (_, item) => {
+        const status = normalizeStatus(item.estado_aprobacion);
         const evidenceRules = actionRulesByCriterion?.[item.id];
         const canApproveByEvidence = evidenceRules?.canApproveByEvidence ?? true;
         const canRejectByEvidence = evidenceRules?.canRejectByEvidence ?? true;
         const areEvidenceRulesLoaded = evidenceRules?.isLoaded ?? true;
         const canApproveBlock =
-          item.estado_aprobacion === 'pendiente'
+          status === 'pendiente'
           && areEvidenceRulesLoaded
           && canApproveByEvidence;
         const canRejectBlock =
-          item.estado_aprobacion === 'pendiente'
+          status === 'pendiente'
           && areEvidenceRulesLoaded
           && canRejectByEvidence;
 
@@ -221,8 +240,8 @@ export const BlockApprovalTable: React.FC<BlockApprovalTableProps> = ({
               tooltip={
                 canApproveBlock
                   ? 'Aprobar bloque'
-                  : item.estado_aprobacion !== 'pendiente'
-                    ? item.estado_aprobacion === 'incompleto'
+                  : status !== 'pendiente'
+                    ? status === 'incompleto'
                       ? 'Bloque incompleto: hay evidencias rechazadas'
                       : 'Bloque ya procesado'
                     : !areEvidenceRulesLoaded
@@ -240,10 +259,10 @@ export const BlockApprovalTable: React.FC<BlockApprovalTableProps> = ({
               tooltip={
                 canRejectBlock
                   ? 'Rechazar bloque'
-                  : item.estado_aprobacion !== 'pendiente'
-                    ? item.estado_aprobacion === 'incompleto'
+                  : status !== 'pendiente'
+                    ? status === 'incompleto'
                       ? 'Bloque incompleto: no se puede rechazar nuevamente'
-                      : item.estado_aprobacion === 'rechazado'
+                      : status === 'rechazado'
                         ? 'Bloque ya rechazado'
                         : 'Bloque ya aprobado'
                     : !areEvidenceRulesLoaded

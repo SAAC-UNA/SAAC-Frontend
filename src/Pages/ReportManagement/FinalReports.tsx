@@ -232,6 +232,31 @@ const FinalReports: React.FC = () => {
         return;
       }
 
+      const fetchNodeFiles = async (
+        nodeId: number,
+        isFlexibleNode: boolean,
+      ): Promise<Archivo[]> => {
+        try {
+          const response = isFlexibleNode
+            ? await axiosInstance.get("/elementos-archivos", {
+                params: {
+                  elemento_id: nodeId,
+                  proceso_id: selectedProcesoIdNum,
+                },
+              })
+            : await axiosInstance.get("/archivos", {
+                params: {
+                  evidencia_id: nodeId,
+                  proceso_id: selectedProcesoIdNum,
+                },
+              });
+
+          return (response.data.data || response.data) as Archivo[];
+        } catch {
+          return [];
+        }
+      };
+
       if (flex) {
         const modeloId =
           selProc.accreditation_cycle.modelo_estructura!.modelo_estructura_id;
@@ -271,19 +296,25 @@ const FinalReports: React.FC = () => {
             approvedElementIds.has(toNumericId(el.elemento_id ?? el.id) ?? -1),
           )
           .map((el: any) => ({
-            id: el.elemento_id ?? el.id,
+            id: toNumericId(el.elemento_id ?? el.id) ?? el.elemento_id ?? el.id,
             padre_id: el.padre_id ?? null,
             tipo: el.tipo ?? null,
             nomenclatura: el.nomenclatura ?? "",
             descripcion: el.descripcion ?? el.nombre ?? "",
             estado_aprobacion: "aprobado" as ApprovalStatus,
-          }))
-          ;
+          }));
+
+        const approvedElementsWithFiles = await Promise.all(
+          approvedElements.map(async (elemento: Criterio) => ({
+            ...elemento,
+            archivos: await fetchNodeFiles(elemento.id, true),
+          })),
+        );
 
         setDataState((prev) => ({
           ...prev,
           processes: processesArray,
-          criteria: approvedElements,
+          criteria: approvedElementsWithFiles,
           evidences: [],
         }));
       } else {
@@ -332,11 +363,36 @@ const FinalReports: React.FC = () => {
           };
         });
 
+        const approvedEvidences = await Promise.all(
+          evidencesArray.map(async (ev: any) => {
+            const evidenceId = toNumericId(ev.id ?? ev.evidencia_id);
+            const criterionId = toNumericId(ev.criterio_id);
+            const normalizedEvidence = {
+              ...ev,
+              id: evidenceId ?? ev.id,
+              criterio_id: criterionId ?? ev.criterio_id,
+            };
+
+            if (
+              evidenceId === null ||
+              criterionId === null ||
+              !approvedCriteriaIds.has(criterionId)
+            ) {
+              return normalizedEvidence;
+            }
+
+            return {
+              ...normalizedEvidence,
+              archivos: await fetchNodeFiles(evidenceId, false),
+            };
+          }),
+        );
+
         setDataState((prev) => ({
           ...prev,
           processes: processesArray,
           criteria: approvedCriteria,
-          evidences: evidencesArray,
+          evidences: approvedEvidences,
         }));
       }
     } catch (error: any) {
