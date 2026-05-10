@@ -1,5 +1,5 @@
 /**
- * AccreditationProcessList - PÃ¡gina de listado de procesos de acreditaciÃ³n
+ * AccreditationProcessList - Página de listado de procesos de acreditación
  *
  * Basada en el patron de Gestion de Estructura: header con acciones y tabla separada.
  */
@@ -176,7 +176,7 @@ export const AccreditationProcessList: React.FC<AccreditationProcessListProps> =
     }
 
     if (!formData.accreditationCycleId) {
-      throw new Error("Debe seleccionar un ciclo de acreditaciÃ³n.");
+      throw new Error("Debe seleccionar un ciclo de acreditación.");
     }
 
     const duplicateActive = processes.some(

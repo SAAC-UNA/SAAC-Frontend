@@ -53,8 +53,27 @@ interface ExpansionItem {
 
 // ---------- Helpers ----------
 
+const hasArchivoAdjunto = (archivo: Archivo | null | undefined): boolean => {
+  if (!archivo) return false;
+
+  const archivoId = Number(archivo.archivo_id);
+  const hasValidId = Number.isFinite(archivoId) && archivoId > 0;
+  const hasPhysicalReference = [
+    archivo.ruta_archivo,
+    archivo.nombre_original,
+    archivo.url_publica,
+    archivo.url_publica_carpeta,
+    archivo.token_publico,
+  ].some((value) => typeof value === "string" && value.trim().length > 0);
+
+  return hasValidId && hasPhysicalReference;
+};
+
+const getArchivosAdjuntos = (archivos: Archivo[] = []): Archivo[] =>
+  archivos.filter(hasArchivoAdjunto);
+
 const hasPublicLink = (archivos: Archivo[] = []) =>
-  archivos.some(
+  getArchivosAdjuntos(archivos).some(
     (a) =>
       a.is_publico &&
       (Boolean(a.token_publico) ||
@@ -100,8 +119,9 @@ const ExpansionRow: React.FC<ExpansionRowProps> = ({
   return (
     <div className="space-y-1">
       {items.map((item) => {
-        const tieneArchivos = (item.archivos?.length ?? 0) > 0;
-        const tieneEnlace = hasPublicLink(item.archivos ?? []);
+        const archivosAdjuntos = getArchivosAdjuntos(item.archivos ?? []);
+        const tieneArchivos = archivosAdjuntos.length > 0;
+        const tieneEnlace = hasPublicLink(archivosAdjuntos);
         const isLoadingFile = loadingFiles.has(item.id);
 
         const asEvidencia: Evidencia = {
@@ -109,7 +129,7 @@ const ExpansionRow: React.FC<ExpansionRowProps> = ({
           nomenclatura: item.nomenclatura,
           descripcion: item.descripcion,
           criterio_id: item.criterio_id ?? 0,
-          archivos: item.archivos ?? [],
+          archivos: archivosAdjuntos,
         };
 
         let action: React.ReactNode;
@@ -310,9 +330,14 @@ export const FinalReportsTable: React.FC<FinalReportsTableProps> = ({
   ): { total: number; loaded: number; withLink: number } => {
     const items = getExpansionItems(criterio);
     const loaded = items.filter((i) => i.archivos !== undefined);
-    const withLink = loaded.filter((i) => hasPublicLink(i.archivos ?? []));
+    const withFiles = loaded.filter(
+      (i) => getArchivosAdjuntos(i.archivos ?? []).length > 0,
+    );
+    const withLink = loaded.filter((i) =>
+      hasPublicLink(getArchivosAdjuntos(i.archivos ?? [])),
+    );
     return {
-      total: items.length,
+      total: loaded.length > 0 ? withFiles.length : items.length,
       loaded: loaded.length,
       withLink: withLink.length,
     };

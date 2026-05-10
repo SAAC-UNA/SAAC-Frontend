@@ -395,22 +395,33 @@ const FinalReports: React.FC = () => {
     return "";
   };
 
+  const hasArchivoAdjunto = (archivo: Archivo | null | undefined): boolean => {
+    if (!archivo) return false;
+
+    const archivoId = Number(archivo.archivo_id);
+    const hasValidId = Number.isFinite(archivoId) && archivoId > 0;
+    const hasPhysicalReference = [
+      archivo.ruta_archivo,
+      archivo.nombre_original,
+      archivo.url_publica,
+      archivo.url_publica_carpeta,
+      archivo.token_publico,
+    ].some((value) => typeof value === "string" && value.trim().length > 0);
+
+    return hasValidId && hasPhysicalReference;
+  };
+
+  const getArchivosAdjuntos = (archivos: Archivo[] = []): Archivo[] =>
+    archivos.filter(hasArchivoAdjunto);
+
   const getArchivoParaEnlace = (evidencia: Evidencia): Archivo | null => {
-    const archivos = evidencia.archivos || [];
+    const archivos = getArchivosAdjuntos(evidencia.archivos || []);
     if (archivos.length === 0) return null;
 
     const publico = archivos.find(
       (archivo) => archivo.is_publico && Boolean(resolvePublicLink(archivo)),
     );
     return publico || archivos[0];
-  };
-
-  const getPublicLinkForEvidence = (evidencia: Evidencia): string => {
-    const archivoPublico = (evidencia.archivos || []).find(
-      (archivo) => archivo.is_publico && Boolean(resolvePublicLink(archivo)),
-    );
-
-    return archivoPublico ? resolvePublicLink(archivoPublico) : "";
   };
 
   const handleGenerateLink = (archivo: Archivo, evidencia: Evidencia) => {
@@ -453,7 +464,7 @@ const FinalReports: React.FC = () => {
       const todosLosArchivos = new Set<number>();
 
       const pushPendingFiles = (archivos: Archivo[]) => {
-        archivos.forEach((archivo) => {
+        getArchivosAdjuntos(archivos).forEach((archivo) => {
           if (!archivo.is_publico) {
             todosLosArchivos.add(archivo.archivo_id);
           }
@@ -552,7 +563,7 @@ const FinalReports: React.FC = () => {
   const buildReportRows = () => {
     if (isFlexible) {
       return flexibleSourceElements.flatMap((elemento) =>
-        (elemento.archivos ?? []).map((archivo) => ({
+        getArchivosAdjuntos(elemento.archivos ?? []).map((archivo) => ({
           criterio: `${elemento.nomenclatura} — ${elemento.descripcion}`,
           evidencia: archivo.nombre_original,
           link:
@@ -564,11 +575,18 @@ const FinalReports: React.FC = () => {
     }
     return criteria.flatMap((criterio) => {
       const evidenciasCriterio = getEvidenciasPorCriterio(criterio.id);
-      return evidenciasCriterio.map((evidencia) => ({
-        criterio: `${criterio.nomenclatura} - ${criterio.descripcion}`,
-        evidencia: `${evidencia.nomenclatura} - ${evidencia.descripcion}`,
-        link: getPublicLinkForEvidence(evidencia) || "Sin enlace",
-      }));
+      return evidenciasCriterio.flatMap((evidencia) => {
+        const archivosAdjuntos = getArchivosAdjuntos(evidencia.archivos ?? []);
+
+        return archivosAdjuntos.map((archivo) => ({
+          criterio: `${criterio.nomenclatura} - ${criterio.descripcion}`,
+          evidencia: `${evidencia.nomenclatura} - ${evidencia.descripcion}`,
+          link:
+            archivo.is_publico && resolvePublicLink(archivo)
+              ? resolvePublicLink(archivo)
+              : "Sin enlace",
+        }));
+      });
     });
   };
 

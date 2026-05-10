@@ -1,11 +1,11 @@
 /**
- * ChainedMultiSelect � MultiSelects encadenados dinamicamente para estructuras
- * jerarquicas de profundidad variable (N niveles).
+ * ChainedMultiSelect - MultiSelects encadenados dinámicamente para estructuras
+ * jerárquicas de profundidad variable (N niveles).
  *
- * Genera un MultiSelect por cada nivel del arbol. Al seleccionar elementos en
- * el nivel N, el nivel N+1 muestra unicamente los hijos de los nodos activos.
- * La seleccion final (emitida por onChange) son los IDs de los nodos hoja del
- * ultimo nivel visible que el usuario marco.
+ * Genera un MultiSelect por cada nivel del árbol. Al seleccionar elementos en
+ * el nivel N, el nivel N+1 muestra únicamente los hijos de los nodos activos.
+ * La selección final (emitida por onChange) son los IDs de los nodos hoja del
+ * último nivel visible que el usuario marcó.
  */
 
 import React, { useMemo, useState, useEffect } from 'react';

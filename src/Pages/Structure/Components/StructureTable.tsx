@@ -31,6 +31,34 @@ import { TableActionButton } from '@/Components/Ui/Buttons/TableActionButton';
 import { StatusBadge } from '@/Components/Ui/Feedback/StatusBadge';
 import { TABLE_COLUMN_WIDTHS } from '@/Constants/Components';
 
+const STRUCTURE_TYPE_ORDER: Record<ElementType, number> = {
+    university: 0,
+    campus: 1,
+    career: 2,
+    dimension: 3,
+    component: 4,
+    criteria: 5,
+    standard: 6,
+    evidence: 7,
+};
+
+const compareByNaturalNomenclature = (
+    left?: string | null,
+    right?: string | null,
+): number => {
+    const leftValue = (left ?? '').trim();
+    const rightValue = (right ?? '').trim();
+
+    if (!leftValue && !rightValue) return 0;
+    if (!leftValue) return 1;
+    if (!rightValue) return -1;
+
+    return leftValue.localeCompare(rightValue, 'es', {
+        numeric: true,
+        sensitivity: 'base',
+    });
+};
+
 
 interface StructureTableProps {
     treeData: StructureElement[];
@@ -83,9 +111,25 @@ export const StructureTable: React.FC<StructureTableProps> = ({
                 return acc;
             }, [] as StructureElement[]);
         };
-        return flattenTree(treeData).filter(
+
+        const filtered = flattenTree(treeData).filter(
             (el) => el.type !== 'university' && el.type !== 'campus' && el.type !== 'career',
         );
+
+        return [...filtered].sort((left, right) => {
+            const typeDiff = STRUCTURE_TYPE_ORDER[left.type] - STRUCTURE_TYPE_ORDER[right.type];
+            if (typeDiff !== 0) return typeDiff;
+
+            const nomenclatureDiff = compareByNaturalNomenclature(
+                left.nomenclature,
+                right.nomenclature,
+            );
+            if (nomenclatureDiff !== 0) return nomenclatureDiff;
+
+            const leftLabel = left.name ?? left.description ?? '';
+            const rightLabel = right.name ?? right.description ?? '';
+            return leftLabel.localeCompare(rightLabel, 'es', { sensitivity: 'base' });
+        });
     }, [treeData]);
 
     const normalizeSearchText = (value?: string | null): string => {
