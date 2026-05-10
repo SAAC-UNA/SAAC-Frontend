@@ -777,6 +777,17 @@ export const SystemIcons = {
       </svg>
     ),
 
+    computer: ({ className, size, color }: IconProps) => (
+      <svg
+        className={`${getSizeClasses(size)} ${className || ""}`}
+        fill={color || "currentColor"}
+        viewBox="0 0 24 24"
+        xmlns="http://www.w3.org/2000/svg"
+      >
+        <path d="M20 18c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2H4c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2H0v2h24v-2h-4ZM4 6h16v10H4V6Z" />
+      </svg>
+    ),
+
     informe: ({ className, size, color }: IconProps) => (
       <svg
         fill={color || "currentColor"}
@@ -1295,6 +1306,7 @@ export const getIconByName = (
 
     // Work & Security
     shield: () => SystemIcons.users.roles({ size }), // Usando roles que tiene el shield
+    computer: () => SystemIcons.users.computer({ size }),
     bag: () => SystemIcons.work.bag({ size }),
     assignEvidence: () => SystemIcons.work.assignEvidence({ size }),
     myEvidences: () => SystemIcons.work.myEvidences({ size }),
