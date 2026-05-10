@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
-import { ScreenContainer, PageHeader, Button } from '@/Components/Ui/Index';
+import { ScreenContainer, PageHeader } from '@/Components/Ui/Index';
 import { useToast } from '@/Context/ToastContext';
 import { getModuleInfo } from '@/Constants/ModuleInfo';
 import { axiosInstance } from '@/Config/axios';
@@ -7,7 +7,6 @@ import { ApprovalModal } from './Components/ApprovalModal';
 import { EvidenceApprovalModal } from './Components/EvidenceApprovalModal';
 import { CriterionEvidencesModal } from './Components/CriterionEvidencesModal.tsx';
 import { SuccessModal } from '@/Components/Ui/Modals/SuccessModal';
-import { Modal } from '@/Components/Ui/Modals/Modal';
 import { SearchInput } from '@/Components/Ui/Forms/SearchInput';
 import { TABLE_PAGE_SIZE } from '@/Constants/TablePagination';
 import { BlockApprovalTable } from './Components/BlockApprovalTable';
@@ -94,18 +93,6 @@ const BlockApproval: React.FC = () => {
     open: boolean;
     criterio: Criterio | null;
   }>({ open: false, criterio: null });
-
-  const [bulkApprovalState, setBulkApprovalState] = useState<{
-    isOpen: boolean;
-    loading: boolean;
-    successOpen: boolean;
-    approvedCount: number;
-  }>({
-    isOpen: false,
-    loading: false,
-    successOpen: false,
-    approvedCount: 0,
-  });
 
   const extractValidationMessage = (error: any, fallback: string): string => {
     const validationErrors = error?.response?.data?.errors;
@@ -625,15 +612,6 @@ const BlockApproval: React.FC = () => {
     });
   }, [criteria, searchTerm]);
 
-  const pendingApprovalCriteria = useMemo(
-    () =>
-      criteria.filter(
-        (criterio) =>
-          (criterio.estado_aprobacion ?? 'pendiente') === 'pendiente',
-      ),
-    [criteria],
-  );
-
   const totalPages = Math.ceil(filteredCriteria.length / itemsPerPage);
   const paginatedCriteria = useMemo(
     () =>
@@ -731,60 +709,6 @@ const BlockApproval: React.FC = () => {
         message: extractValidationMessage(error, 'Ocurrió un error inesperado al procesar el bloque.'),
       });
       setApprovalState((prev) => ({ ...prev, isOpen: false, criterion: null }));
-    }
-  };
-
-  const handleConfirmApproveAll = async () => {
-    if (!selectedProcesoId || pendingApprovalCriteria.length === 0) return;
-
-    setBulkApprovalState((prev) => ({ ...prev, loading: true }));
-
-    const failed: string[] = [];
-    let approvedCount = 0;
-
-    for (const criterio of pendingApprovalCriteria) {
-      const endpoint = isFlexible
-        ? `/elementos/${criterio.id}/aprobar`
-        : `/criterios/${criterio.id}/aprobar`;
-
-      try {
-        await axiosInstance.post(endpoint, {
-          proceso_id: selectedProcesoId,
-          comentario: null,
-        });
-        approvedCount += 1;
-      } catch (error: any) {
-        failed.push(
-          `${criterio.nomenclatura || criterio.id}: ${extractValidationMessage(
-            error,
-            'No se pudo aprobar',
-          )}`,
-        );
-      }
-    }
-
-    setEvidenceApprovalsByCriterion({});
-    await fetchData();
-
-    setBulkApprovalState({
-      isOpen: false,
-      loading: false,
-      successOpen: approvedCount > 0,
-      approvedCount,
-    });
-
-    if (failed.length > 0) {
-      showToast({
-        type: approvedCount > 0 ? 'warning' : 'error',
-        title:
-          approvedCount > 0
-            ? 'Aprobación parcial'
-            : 'No se pudieron aprobar los bloques',
-        message:
-          failed.length === 1
-            ? failed[0]
-            : `${failed.length} bloques no se pudieron aprobar. Revise los pendientes e inténtelo nuevamente.`,
-      });
     }
   };
 
@@ -891,19 +815,6 @@ const BlockApproval: React.FC = () => {
                 setFilterState((prev) => ({ ...prev, searchTerm: value }))
               }
             />
-            <Button
-              variant="secondary"
-              onClick={() =>
-                setBulkApprovalState((prev) => ({ ...prev, isOpen: true }))
-              }
-              disabled={
-                isLoading ||
-                !selectedProcesoId ||
-                pendingApprovalCriteria.length === 0
-              }
-            >
-              Aceptar todos
-            </Button>
           </div>
         }
       />
@@ -967,35 +878,6 @@ const BlockApproval: React.FC = () => {
         evidencia={evidenceModal.evidencia}
       />
 
-      <Modal
-        isOpen={bulkApprovalState.isOpen}
-        onClose={() =>
-          setBulkApprovalState((prev) => ({ ...prev, isOpen: false }))
-        }
-        onConfirm={handleConfirmApproveAll}
-        title="Aceptar todos"
-        subtitle={`${pendingApprovalCriteria.length} ${
-          pendingApprovalCriteria.length === 1
-            ? isFlexible
-              ? 'elemento pendiente'
-              : 'criterio pendiente'
-            : isFlexible
-              ? 'elementos pendientes'
-              : 'criterios pendientes'
-        }`}
-        variant="success"
-        confirmLabel="Sí, aceptar todos"
-        cancelLabel="Cancelar"
-        confirmLoading={bulkApprovalState.loading}
-        showConfirm
-        showCancel
-      >
-        <p className="text-sm leading-relaxed text-gris-una-2">
-          ¿Seguro que desea aceptar todos los bloques pendientes del proceso
-          seleccionado? Esta acción aprobará en cascada sus recursos asociados.
-        </p>
-      </Modal>
-
       {/* Éxito de bloque */}
       <SuccessModal
         isOpen={approvalState.successOpen}
@@ -1008,19 +890,6 @@ const BlockApproval: React.FC = () => {
             : "Bloque Rechazado"
         }
         message={`El bloque ha sido ${approvalState.action === "aprobar" ? "aprobado" : "rechazado"} exitosamente.`}
-      />
-
-      <SuccessModal
-        isOpen={bulkApprovalState.successOpen}
-        onClose={() =>
-          setBulkApprovalState((prev) => ({ ...prev, successOpen: false }))
-        }
-        title="Bloques aprobados"
-        message={`${bulkApprovalState.approvedCount} ${
-          bulkApprovalState.approvedCount === 1
-            ? 'bloque fue aprobado'
-            : 'bloques fueron aprobados'
-        } exitosamente.`}
       />
 
       {/* Éxito de evidencia individual */}
