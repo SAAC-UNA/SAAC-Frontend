@@ -147,7 +147,11 @@ const ContextSelector: React.FC = () => {
     const cid = selectedCareerId ? Number(selectedCareerId) : null;
     const target = fixedCareer ?? cid;
     return catalog.cycles
-      .filter((cy: any) => (target ? cy.carrera_sede_id === target : true))
+      .filter(
+        (cy: any) =>
+          (target ? cy.carrera_sede_id === target : true) &&
+          String(cy.estado).toLowerCase() === "activo",
+      )
       .map((cy: any) => ({
         id: String(cy.ciclo_acreditacion_id),
         label: cy.nombre,

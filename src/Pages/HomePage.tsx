@@ -437,7 +437,9 @@ const HomePage: React.FC = () => {
     }
 
     return catalog.cycles.filter(
-      (cycle) => cycle.carrera_sede_id === fixedCareer.carrera_sede_id,
+      (cycle) =>
+        cycle.carrera_sede_id === fixedCareer.carrera_sede_id &&
+        cycle.estado.toLowerCase() === "activo",
     );
   }, [catalog, fixedCareer]);
 
@@ -447,7 +449,8 @@ const HomePage: React.FC = () => {
     }
 
     return catalog.processes.filter(
-      (process) => process.ciclo_acreditacion_id === Number(cycleId),
+      (process) =>
+        process.ciclo_acreditacion_id === Number(cycleId) && process.activo,
     );
   }, [catalog, cycleId]);
 
