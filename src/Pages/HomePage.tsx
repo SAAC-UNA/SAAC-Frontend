@@ -551,6 +551,16 @@ const HomePage: React.FC = () => {
         cardClassName: CARD_HOVER_SHADOWS.slate,
         titleClassName: "text-slate",
       },
+      [ROUTES.ACCREDITATION]: {
+        ...getModuleCardText("accreditation"),
+        icon: (
+          <span className="text-slate">
+            {getIconByName("box-archive", "xl")}
+          </span>
+        ),
+        cardClassName: CARD_HOVER_SHADOWS.slate,
+        titleClassName: "text-slate",
+      },
       [ROUTES.USERS]: {
         ...getModuleCardText("users"),
         icon: (
@@ -580,16 +590,18 @@ const HomePage: React.FC = () => {
       [ROUTES.REPORTS]: {
         ...getModuleCardText("final_reports"),
         icon: (
-          <span className="text-info">{getIconByName("reports", "xl")}</span>
+          <span className="text-teal">{getIconByName("reports", "xl")}</span>
         ),
-        cardClassName: CARD_HOVER_SHADOWS.info,
-        titleClassName: "text-info",
+        cardClassName: CARD_HOVER_SHADOWS.teal,
+        titleClassName: "text-teal",
       },
       [ROUTES.SINAES_ADMIN]: {
         ...getModuleCardText("accreditation_report_admin"),
-        icon: <span className="text-info">{getIconByName("medal", "xl")}</span>,
-        cardClassName: CARD_HOVER_SHADOWS.info,
-        titleClassName: "text-info",
+        icon: (
+          <span className="text-indigo">{getIconByName("medal", "xl")}</span>
+        ),
+        cardClassName: CARD_HOVER_SHADOWS.indigo,
+        titleClassName: "text-indigo",
       },
     };
 
@@ -622,9 +634,7 @@ const HomePage: React.FC = () => {
           ROUTES.USERS,
           ROUTES.ROLES,
           ROUTES.AUDIT_LOG,
-          ROUTES.STRUCTURE_MODELS,
-          ROUTES.ACCREDITATION_CYCLES,
-          ROUTES.ACCREDITATION_PROCESSES,
+          ROUTES.ACCREDITATION,
           ROUTES.REPORTS,
           ROUTES.SINAES_ADMIN,
         ]
