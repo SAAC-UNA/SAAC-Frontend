@@ -65,9 +65,6 @@ export const AccreditationProcessList: React.FC<AccreditationProcessListProps> =
   // Datos
   const [cycles, setCycles] = useState<AccreditationCycle[]>([]);
   const [processes, setProcesses] = useState<AccreditationProcess[]>([]);
-  const [selectedContextCycleId, setSelectedContextCycleId] = useState<
-    string | null
-  >(null);
   const [isLoading, setIsLoading] = useState(true);
 
   // Modales
@@ -106,9 +103,6 @@ export const AccreditationProcessList: React.FC<AccreditationProcessListProps> =
 
       setCycles(loadedCycles);
       setProcesses(loadedProcesses);
-      setSelectedContextCycleId(
-        contextSnapshot.cycleId ? String(contextSnapshot.cycleId) : null,
-      );
 
       // Sync context snapshot with cycle label for breadcrumb and emit change event
       const selectedCycle = catalog.cycles.find(
@@ -124,7 +118,6 @@ export const AccreditationProcessList: React.FC<AccreditationProcessListProps> =
       console.error("No se pudo cargar procesos/ciclos desde backend:", error);
       setCycles([]);
       setProcesses([]);
-      setSelectedContextCycleId(null);
     } finally {
       setIsLoading(false);
     }
@@ -157,15 +150,8 @@ export const AccreditationProcessList: React.FC<AccreditationProcessListProps> =
   }, [loadData]);
 
   const visibleProcesses = useMemo(() => {
-    if (!selectedContextCycleId) {
-      return processes;
-    }
-
-    return processes.filter(
-      (process) =>
-        String(process.accreditationCycleId) === String(selectedContextCycleId),
-    );
-  }, [processes, selectedContextCycleId]);
+    return processes;
+  }, [processes]);
 
   const validateBusinessRules = (
     formData: AccreditationProcessFormData,
@@ -235,6 +221,13 @@ export const AccreditationProcessList: React.FC<AccreditationProcessListProps> =
       };
 
       setProcesses((prev) => [normalizedCreated, ...prev]);
+      globalFilterContextService.syncContextSnapshot({
+        ...getOperationalContextSnapshot(),
+        cycleId: Number(formData.accreditationCycleId),
+        cycleLabel: cycleName,
+        processId: null,
+        processLabel: null,
+      });
       return normalizedCreated;
     }
 
@@ -267,6 +260,13 @@ export const AccreditationProcessList: React.FC<AccreditationProcessListProps> =
         process.id === processId ? normalizedUpdated : process,
       ),
     );
+    globalFilterContextService.syncContextSnapshot({
+      ...getOperationalContextSnapshot(),
+      cycleId: Number(formData.accreditationCycleId),
+      cycleLabel: cycleName,
+      processId: null,
+      processLabel: null,
+    });
 
     return normalizedUpdated;
   };

@@ -123,11 +123,15 @@ export const GlobalContextSelectionPage = () => {
       : null;
 
     if (!selectedCareerId) {
-      return catalog.cycles;
+      return catalog.cycles.filter(
+        (item) => item.estado.toLowerCase() === "activo",
+      );
     }
 
     return catalog.cycles.filter(
-      (item) => item.carrera_sede_id === selectedCareerId,
+      (item) =>
+        item.carrera_sede_id === selectedCareerId &&
+        item.estado.toLowerCase() === "activo",
     );
   }, [catalog, selection.careerCampusId]);
 
@@ -147,11 +151,11 @@ export const GlobalContextSelectionPage = () => {
       : null;
 
     if (!selectedCycleId) {
-      return catalog.processes;
+      return catalog.processes.filter((item) => item.activo);
     }
 
     return catalog.processes.filter(
-      (item) => item.ciclo_acreditacion_id === selectedCycleId,
+      (item) => item.ciclo_acreditacion_id === selectedCycleId && item.activo,
     );
   }, [catalog, selection.cycleId]);
 

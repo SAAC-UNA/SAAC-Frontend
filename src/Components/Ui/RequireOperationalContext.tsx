@@ -47,18 +47,6 @@ export const RequireOperationalContext = ({
         return;
       }
 
-      // Si localStorage ya tiene ciclo (puesto por ContextSelector),
-      // confiamos en eso sin necesidad de volver a llamar al backend.
-      const snap = getOperationalContextSnapshot();
-      if (snap.cycleId !== null) {
-        if (isMounted) {
-          setHasCompleteContext(true);
-          setCheckingContext(false);
-        }
-        return;
-      }
-
-      // Sin contexto local: validar contra el backend
       setCheckingContext(true);
       try {
         const catalog = await globalFilterContextService.getCatalog();
@@ -71,7 +59,9 @@ export const RequireOperationalContext = ({
         }
 
         const cycleValid = catalog.cycles.some(
-          (cy) => cy.ciclo_acreditacion_id === cycleId,
+          (cy) =>
+            cy.ciclo_acreditacion_id === cycleId &&
+            cy.estado.toLowerCase() === "activo",
         );
 
         if (isMounted) {
