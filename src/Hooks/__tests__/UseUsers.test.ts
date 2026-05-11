@@ -112,6 +112,7 @@ describe('useUsers Hook', () => {
         email: 'juan@test.com',
         status: 'active',
         role: 'Admin',
+        careers: [],
         directPermissions: ['users.create'],
         allPermissions: [
           { id: 1, name: 'users.create', label: 'Crear Usuarios' },

@@ -23,16 +23,16 @@
         <div class='clearfix'>
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">33.33% </span>
+                <span class="strong">0% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>1/3</span>
+                <span class='fraction'>0/2</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
                 <span class="strong">0% </span>
                 <span class="quiet">Branches</span>
-                <span class='fraction'>0/6</span>
+                <span class='fraction'>0/3</span>
             </div>
         
             
@@ -44,9 +44,9 @@
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">33.33% </span>
+                <span class="strong">0% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>1/3</span>
+                <span class='fraction'>0/2</span>
             </div>
         
             
@@ -117,7 +117,9 @@
 <a name='L52'></a><a href='#L52'>52</a>
 <a name='L53'></a><a href='#L53'>53</a>
 <a name='L54'></a><a href='#L54'>54</a>
-<a name='L55'></a><a href='#L55'>55</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
+<a name='L55'></a><a href='#L55'>55</a>
+<a name='L56'></a><a href='#L56'>56</a>
+<a name='L57'></a><a href='#L57'>57</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -137,8 +139,6 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -156,7 +156,11 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -173,54 +177,56 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js">/**
  * DetailsModal - Modal estándar para mostrar detalles de elementos
- * 
- * Modal reutilizable que sigue el patrón de los otros modales estándar.
- * Utiliza el componente Modal base con variant="info".
+ *
+ * Patrón "view": cuerpo limpio + botón "Cerrar" en el footer.
+ * Tamaño predefinido: lg (max-w-4xl).
+ *
+ * Uso:
+ *   &lt;DetailsModal isOpen={...} onClose={...} title="Detalles del Usuario"&gt;
+ *     {children}
+ *   &lt;/DetailsModal&gt;
  */
 &nbsp;
 import React from 'react';
 import { Modal } from './Modal';
+import type { ModalVariant } from './Modal';
 &nbsp;
 interface DetailsModalProps {
   isOpen: boolean;
   onClose: () =&gt; void;
   title?: string;
-  itemName?: string;
-  itemType?: string;
-  cancelLabel?: string;
+  subtitle?: string;
   size?: 'sm' | 'md' | 'lg' | 'xl';
+  /** Altura máxima del modal. Por defecto crece con el contenido hasta el 90vh */
+  maxHeight?: 'sm' | 'md' | 'lg' | 'xl' | 'full' | 'auto';
+  variant?: ModalVariant;
+  heroIcon?: React.ReactNode;
   children: React.ReactNode;
 }
 &nbsp;
-export const DetailsModal: React.FC&lt;DetailsModalProps&gt; = <span class="fstat-no" title="function not covered" >({</span>
+export const DetailsModal: React.FC&lt;DetailsModalProps&gt; = <span class="cstat-no" title="statement not covered" ><span class="fstat-no" title="function not covered" >({</span></span>
   isOpen,
   onClose,
   title = <span class="branch-0 cbranch-no" title="branch not covered" >'Detalles',</span>
-  itemName,
-  itemType = <span class="branch-0 cbranch-no" title="branch not covered" >'elemento',</span>
-  cancelLabel = <span class="branch-0 cbranch-no" title="branch not covered" >'Cerrar',</span>
+  subtitle,
   size = <span class="branch-0 cbranch-no" title="branch not covered" >'lg',</span>
+  maxHeight = <span class="branch-0 cbranch-no" title="branch not covered" >'auto',</span>
+  variant,
+  heroIcon,
   children
 }) =&gt; {
-  const defaultMessage = <span class="cstat-no" title="statement not covered" >itemName ? (</span>
-    &lt;&gt;
-      Información detallada del {itemType}: &lt;span className="font-semibold"&gt;{itemName}&lt;/span&gt;
-    &lt;/&gt;
-  ) : (
-    `Información detallada del ${itemType}`
-  );
-&nbsp;
 <span class="cstat-no" title="statement not covered" >  return (</span>
     &lt;Modal
       isOpen={isOpen}
       onClose={onClose}
-      variant="info"
       title={title}
-      message={defaultMessage}
-      showConfirm={false}
-      showCancel={true}
-      cancelLabel={cancelLabel}
+      subtitle={subtitle}
       size={size}
+      maxHeight={maxHeight}
+      variant={variant}
+      heroIcon={heroIcon}
+      showCancel={false}
+      showConfirm={false}
     &gt;
       {children}
     &lt;/Modal&gt;
@@ -232,7 +238,7 @@ export const DetailsModal: React.FC&lt;DetailsModalProps&gt; = <span class="fsta
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2026-03-08T22:36:17.162Z
+                at 2026-05-11T18:18:15.206Z
             </div>
         <script src="../../../../prettify.js"></script>
         <script>

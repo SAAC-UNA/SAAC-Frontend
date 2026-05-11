@@ -844,17 +844,6 @@ const BlockApproval: React.FC = () => {
     [evidenceApprovalsByCriterion, isFlexible, selectedProcesoId],
   );
 
-  const pendingApprovalCriteria = useMemo(
-    () =>
-      criteria.filter(
-        (criterio) =>
-          normalizeBlockStatus(criterio.estado_aprobacion) === 'pendiente'
-          && (actionRulesByCriterion[criterio.id]?.isLoaded ?? false)
-          && (actionRulesByCriterion[criterio.id]?.canApproveByEvidence ?? false),
-      ),
-    [criteria, actionRulesByCriterion],
-  );
-
   const totalPages = Math.ceil(filteredCriteria.length / itemsPerPage);
   const paginatedCriteria = useMemo(
     () =>

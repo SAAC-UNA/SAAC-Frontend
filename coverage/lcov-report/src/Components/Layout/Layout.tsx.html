@@ -23,9 +23,9 @@
         <div class='clearfix'>
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">50% </span>
+                <span class="strong">33.33% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>1/2</span>
+                <span class='fraction'>1/3</span>
             </div>
         
             
@@ -44,9 +44,9 @@
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">50% </span>
+                <span class="strong">33.33% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>1/2</span>
+                <span class='fraction'>1/3</span>
             </div>
         
             
@@ -61,7 +61,7 @@
             </div>
         </template>
     </div>
-    <div class='status-line medium'></div>
+    <div class='status-line low'></div>
     <pre><table class="coverage">
 <tr><td class="line-count quiet"><a name='L1'></a><a href='#L1'>1</a>
 <a name='L2'></a><a href='#L2'>2</a>
@@ -116,7 +116,27 @@
 <a name='L51'></a><a href='#L51'>51</a>
 <a name='L52'></a><a href='#L52'>52</a>
 <a name='L53'></a><a href='#L53'>53</a>
-<a name='L54'></a><a href='#L54'>54</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
+<a name='L54'></a><a href='#L54'>54</a>
+<a name='L55'></a><a href='#L55'>55</a>
+<a name='L56'></a><a href='#L56'>56</a>
+<a name='L57'></a><a href='#L57'>57</a>
+<a name='L58'></a><a href='#L58'>58</a>
+<a name='L59'></a><a href='#L59'>59</a>
+<a name='L60'></a><a href='#L60'>60</a>
+<a name='L61'></a><a href='#L61'>61</a>
+<a name='L62'></a><a href='#L62'>62</a>
+<a name='L63'></a><a href='#L63'>63</a>
+<a name='L64'></a><a href='#L64'>64</a>
+<a name='L65'></a><a href='#L65'>65</a>
+<a name='L66'></a><a href='#L66'>66</a>
+<a name='L67'></a><a href='#L67'>67</a>
+<a name='L68'></a><a href='#L68'>68</a>
+<a name='L69'></a><a href='#L69'>69</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -151,6 +171,7 @@
 <span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -169,30 +190,44 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js">import React from 'react';
-import { SidebarProvider } from '@/Context/SidebarContext';
-import { ModernSidebar, MainContent, AppHeader, UserProfileHeader } from './Sidebar/Index';
-import { ToastContainer } from '@/Components/Ui/Toast';
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js">import React from "react";
+import { useLocation } from "react-router-dom";
+import { motion, AnimatePresence } from "framer-motion";
+import { SidebarProvider } from "@/Context/SidebarContext";
+import {
+  ModernSidebar,
+  MainContent,
+} from "./Sidebar/Index";
+import { PAGE_TRANSITION_VARIANTS } from "@/Constants/Animations";
 &nbsp;
 /**
  * COMPONENTE DE LAYOUT BASE
- * 
+ *
  * Define la estructura fundamental e inmutable de la aplicación.
- * 
+ *
  * RESPONSABILIDADES:
  * - Configurar la estructura básica (sidebar + contenido principal)
  * - Proveer el contexto del sidebar
  * - Definir el header con logo y título
  * - Establecer variables CSS para dimensiones del sidebar
- * 
+ *
  * COMPONENTES PRINCIPALES:
  * - ModernSidebar: Barra lateral de navegación
  * - MainContent: Área principal de contenido (antes SidebarInset)
  * - SidebarTrigger: Botón para colapsar/expandir sidebar
- * 
+ *
  * NOTA: Para lógica responsive específica, usar ResponsiveLayout
  * de @/components/Ui/ResponsiveLayout como wrapper interno en páginas que lo requieran.
- * 
+ *
  * CAMBIO DE NOMENCLATURA: MainContent reemplaza a SidebarInset para mayor claridad,
  * ya que maneja TODO el contenido principal, no solo una "inserción" del sidebar.
  */
@@ -202,34 +237,44 @@ interface LayoutProps {
 }
 &nbsp;
 export const Layout: React.FC&lt;LayoutProps&gt; = <span class="fstat-no" title="function not covered" >({</span> children }) =&gt; {
+  const location = <span class="cstat-no" title="statement not covered" >useLocation();</span>
+&nbsp;
 <span class="cstat-no" title="statement not covered" >  return (</span>
-&lt;SidebarProvider&gt;
-      &lt;div className="flex min-h-screen w-full"&gt;
+    &lt;SidebarProvider&gt;
+      &lt;div className="flex min-h-screen w-full bg-transparent"&gt;
         &lt;ModernSidebar /&gt;
         &lt;MainContent&gt;
-          &lt;AppHeader rightContent={&lt;UserProfileHeader /&gt;} /&gt;
           &lt;div className="flex-1"&gt;
-            &lt;div className="px-4 pt-4 pb-8"
-              style={{ ['--app-header-height' as any]: '64px' }}
+            &lt;div
+              className="px-3 pt-3 pb-3 sm:px-4 sm:pt-3 sm:pb-4"
+              style={{ ["--app-header-height" as any]: "64px" }}
             &gt;
-              {children}
+              &lt;AnimatePresence mode="wait" initial={false}&gt;
+                &lt;motion.div
+                  key={location.pathname}
+                  variants={PAGE_TRANSITION_VARIANTS}
+                  initial="initial"
+                  animate="animate"
+                  exit="exit"
+                &gt;
+                  {children}
+                &lt;/motion.div&gt;
+              &lt;/AnimatePresence&gt;
             &lt;/div&gt;
           &lt;/div&gt;
         &lt;/MainContent&gt;
       &lt;/div&gt;
-      
-      {/* Container de toasts */}
-      &lt;ToastContainer /&gt;
     &lt;/SidebarProvider&gt;
   );
-};</pre></td></tr></table></pre>
+};
+&nbsp;</pre></td></tr></table></pre>
 
                 <div class='push'></div><!-- for sticky footer -->
             </div><!-- /wrapper -->
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2026-03-08T22:36:17.162Z
+                at 2026-05-11T18:18:15.206Z
             </div>
         <script src="../../../prettify.js"></script>
         <script>

@@ -2,6 +2,10 @@ import { render, waitFor } from "@testing-library/react";
 import '@testing-library/jest-dom';
 import App from "../App";
 
+jest.mock("@/Components/Ui/Backgrounds/Grainient", () => ({
+  Grainient: () => <div data-testid="grainient-background" />,
+}));
+
 // Mockeamos el servicio de autenticación para que resuelva sin sesión activa
 jest.mock("@/Services/AuthService", () => ({
   authService: {

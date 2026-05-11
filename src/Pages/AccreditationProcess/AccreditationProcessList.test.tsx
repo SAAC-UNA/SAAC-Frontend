@@ -227,9 +227,9 @@ describe("AccreditationProcessList", () => {
     });
 
     expect(screen.getByRole("heading", { name: "Procesos de Acreditación" })).toBeInTheDocument();
-    expect(screen.getByTestId("process-table")).toHaveAttribute("data-count", "1");
+    expect(screen.getByTestId("process-table")).toHaveAttribute("data-count", "2");
     expect(screen.getByTestId("process-ids")).toHaveTextContent("proc-1");
-    expect(screen.getByTestId("process-ids")).not.toHaveTextContent("proc-2");
+    expect(screen.getByTestId("process-ids")).toHaveTextContent("proc-2");
 
     expect(mockSyncContextSnapshot).toHaveBeenCalledWith({
       careerCampusId: null,
@@ -243,20 +243,20 @@ describe("AccreditationProcessList", () => {
     render(<AccreditationProcessList />);
 
     await waitFor(() => {
-      expect(screen.getByTestId("process-table")).toHaveAttribute("data-count", "1");
+      expect(screen.getByTestId("process-table")).toHaveAttribute("data-count", "2");
     });
 
     fireEvent.click(screen.getByRole("button", { name: "Crear" }));
 
     expect(screen.getByTestId("process-form-modal")).toHaveAttribute("data-mode", "create");
-    expect(screen.getByTestId("process-form-modal")).toHaveAttribute("data-cycles", "1");
+    expect(screen.getByTestId("process-form-modal")).toHaveAttribute("data-cycles", "2");
   });
 
   it("navega a configuracion con los parametros del proceso", async () => {
     render(<AccreditationProcessList />);
 
     await waitFor(() => {
-      expect(screen.getByTestId("process-table")).toHaveAttribute("data-count", "1");
+      expect(screen.getByTestId("process-table")).toHaveAttribute("data-count", "2");
     });
 
     fireEvent.click(screen.getByRole("button", { name: "Configurar primer proceso" }));

@@ -292,7 +292,16 @@
 <a name='L227'></a><a href='#L227'>227</a>
 <a name='L228'></a><a href='#L228'>228</a>
 <a name='L229'></a><a href='#L229'>229</a>
-<a name='L230'></a><a href='#L230'>230</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
+<a name='L230'></a><a href='#L230'>230</a>
+<a name='L231'></a><a href='#L231'>231</a>
+<a name='L232'></a><a href='#L232'>232</a>
+<a name='L233'></a><a href='#L233'>233</a>
+<a name='L234'></a><a href='#L234'>234</a>
+<a name='L235'></a><a href='#L235'>235</a>
+<a name='L236'></a><a href='#L236'>236</a>
+<a name='L237'></a><a href='#L237'>237</a>
+<a name='L238'></a><a href='#L238'>238</a>
+<a name='L239'></a><a href='#L239'>239</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -339,8 +348,6 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -498,6 +505,8 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -521,7 +530,16 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js">import React, { useEffect, useState } from 'react';
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js">import React, { useEffect, useState } from "react";
 &nbsp;
 interface SuccessModalProps {
   isOpen: boolean;
@@ -538,7 +556,7 @@ export const SuccessModal: React.FC&lt;SuccessModalProps&gt; = <span class="csta
   message,
   onClose,
   autoClose = <span class="branch-0 cbranch-no" title="branch not covered" >true,</span>
-  autoCloseDelay = <span class="branch-0 cbranch-no" title="branch not covered" >3000</span>
+  autoCloseDelay = <span class="branch-0 cbranch-no" title="branch not covered" >3000,</span>
 }) =&gt; {
   const [isClosing, setIsClosing] = <span class="cstat-no" title="statement not covered" >useState(false);</span>
 &nbsp;
@@ -567,8 +585,6 @@ export const SuccessModal: React.FC&lt;SuccessModalProps&gt; = <span class="csta
 <span class="cstat-no" title="statement not covered" >      handleClose();</span>
     }
   };
-&nbsp;
-&nbsp;
 &nbsp;
 <span class="cstat-no" title="statement not covered" >  return (</span>
     &lt;&gt;
@@ -720,44 +736,55 @@ export const SuccessModal: React.FC&lt;SuccessModalProps&gt; = <span class="csta
           filter: drop-shadow(0 2px 4px rgba(0,0,0,0.2));
         }
       `}&lt;/style&gt;
-      
-      &lt;div 
-        className={`success-modal-overlay fixed inset-0 bg-black/60 backdrop-blur-sm flex justify-center items-center z-50 ${isClosing ? 'fadeOut' : ''}`}
+&nbsp;
+      &lt;div
+        className={`success-modal-overlay fixed inset-0 bg-black/60 backdrop-blur-sm flex justify-center items-center z-[80] ${isClosing ? "fadeOut" : ""}`}
+        role="presentation"
         onClick={handleOverlayClick}
       &gt;
-        &lt;div 
-          className={`success-modal-content relative bg-gradient-to-br from-white to-gray-50 p-8 rounded-2xl shadow-2xl text-center max-w-md mx-4 overflow-visible ${isClosing ? 'slideOut' : ''}`}
+        &lt;div
+          className={`success-modal-content relative bg-gradient-to-br from-white to-gray-50 p-8 rounded-2xl shadow-2xl text-center w-full max-w-md mx-4 overflow-hidden ${isClosing ? "slideOut" : ""}`}
+          role="presentation"
           onClick={<span class="fstat-no" title="function not covered" >(e</span>) =&gt; <span class="cstat-no" title="statement not covered" >e.stopPropagation()}</span>
         &gt;
           {/* Contenedor del checkmark */}
           &lt;div className="relative flex justify-center items-center min-h-40 mb-4"&gt;
             {/* Ícono de confirmación SVG */}
             &lt;svg className="success-checkmark" viewBox="0 0 35.6 35.6"&gt;
-              &lt;circle className="background" cx="17.8" cy="17.8" r="17.8"&gt;&lt;/circle&gt;
+              &lt;circle
+                className="background"
+                cx="17.8"
+                cy="17.8"
+                r="17.8"
+              &gt;&lt;/circle&gt;
               &lt;circle className="stroke" cx="17.8" cy="17.8" r="14.37"&gt;&lt;/circle&gt;
-              &lt;polyline className="check" points="11.78 18.12 15.55 22.23 25.17 12.87"&gt;&lt;/polyline&gt;
+              &lt;polyline
+                className="check"
+                points="11.78 18.12 15.55 22.23 25.17 12.87"
+              &gt;&lt;/polyline&gt;
             &lt;/svg&gt;
           &lt;/div&gt;
-          
+&nbsp;
           &lt;h2 className="text-xl font-bold text-gray-800 mb-2 relative z-10"&gt;
             {title}
           &lt;/h2&gt;
-          
-          &lt;p className="text-sm text-gray-600 relative z-10"&gt;
+&nbsp;
+          &lt;p className="text-sm text-gray-600 relative z-10 break-words [overflow-wrap:anywhere]"&gt;
             {message}
           &lt;/p&gt;
         &lt;/div&gt;
       &lt;/div&gt;
     &lt;/&gt;
   );
-};</pre></td></tr></table></pre>
+};
+&nbsp;</pre></td></tr></table></pre>
 
                 <div class='push'></div><!-- for sticky footer -->
             </div><!-- /wrapper -->
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2026-03-08T22:36:17.162Z
+                at 2026-05-11T18:18:15.206Z
             </div>
         <script src="../../../../prettify.js"></script>
         <script>
