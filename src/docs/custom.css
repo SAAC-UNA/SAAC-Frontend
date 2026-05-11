@@ -1,0 +1,32 @@
+:root {
+  --ifm-color-primary: #00843d;
+  --ifm-color-primary-dark: #007637;
+  --ifm-color-primary-darker: #006f34;
+  --ifm-color-primary-darkest: #005c2b;
+  --ifm-color-primary-light: #009246;
+  --ifm-color-primary-lighter: #009b4a;
+  --ifm-color-primary-lightest: #00af54;
+  --ifm-font-family-base: Poppins, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --ifm-heading-font-family: Poppins, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+
+.theme-doc-markdown {
+  max-width: 980px;
+}
+
+.markdown h1:first-child {
+  letter-spacing: 0;
+}
+
+.module-meta {
+  border-left: 4px solid var(--ifm-color-primary);
+  background: #f6faf7;
+  border-radius: 6px;
+  padding: 1rem;
+  margin: 1rem 0 1.5rem;
+}
+
+.field-table table {
+  display: table;
+  width: 100%;
+}

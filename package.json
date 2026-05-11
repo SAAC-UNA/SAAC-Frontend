@@ -6,6 +6,9 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
+    "docs:dev": "docusaurus start",
+    "docs:build": "docusaurus build",
+    "docs:serve": "docusaurus serve",
     "lint": "eslint .",
     "preview": "vite preview",
     "test": "jest",
@@ -32,6 +35,8 @@
     "@babel/preset-env": "^7.28.3",
     "@babel/preset-react": "^7.27.1",
     "@babel/preset-typescript": "^7.27.1",
+    "@docusaurus/core": "^3.7.0",
+    "@docusaurus/preset-classic": "^3.7.0",
     "@eslint/js": "^9.33.0",
     "@tailwindcss/vite": "^4.2.2",
     "@testing-library/jest-dom": "^6.8.0",
