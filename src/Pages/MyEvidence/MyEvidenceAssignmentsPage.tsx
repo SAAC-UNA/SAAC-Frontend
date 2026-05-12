@@ -49,6 +49,15 @@ const parsePositiveInt = (value: string | null): number | null => {
   return Number.isFinite(parsed) && parsed > 0 ? parsed : null;
 };
 
+const parseTimestamp = (value: string | undefined): number => {
+  if (!value) {
+    return 0;
+  }
+
+  const parsed = Date.parse(value);
+  return Number.isFinite(parsed) ? parsed : 0;
+};
+
 export const MyEvidenceAssignmentsPage: React.FC = () => {
   const { showToast } = useToast();
   const { user } = useAuth();
@@ -719,16 +728,108 @@ export const MyEvidenceAssignmentsPage: React.FC = () => {
     setCurrentPage(1);
   };
 
+  const scopedTraditionalAssignments = useMemo(() => {
+    const processIdFromRoute = routeContext.processId;
+
+    return assignments.filter((assignment) => {
+      const assignmentCycleId = assignment.proceso?.ciclo_acreditacion_id;
+      const assignmentProcessId =
+        assignment.proceso?.proceso_id ?? assignment.proceso_id;
+
+      if (assignmentCycleId !== selectedCycleId) {
+        return false;
+      }
+
+      if (processIdFromRoute !== null && assignmentProcessId !== processIdFromRoute) {
+        return false;
+      }
+
+      return true;
+    });
+  }, [assignments, selectedCycleId, routeContext.processId]);
+
+  const scopedFlexAssignments = useMemo(() => {
+    const processIdFromRoute = routeContext.processId;
+
+    return flexState.assignments.filter((assignment) => {
+      const assignmentCycleId = assignment.process?.ciclo_acreditacion_id;
+      const assignmentProcessId =
+        assignment.process?.proceso_id ?? assignment.proceso_id;
+
+      if (assignmentCycleId !== selectedCycleId) {
+        return false;
+      }
+
+      if (processIdFromRoute !== null && assignmentProcessId !== processIdFromRoute) {
+        return false;
+      }
+
+      return true;
+    });
+  }, [flexState.assignments, selectedCycleId, routeContext.processId]);
+
+  const latestTraditionalAssignments = useMemo(() => {
+    if (routeContext.processId === null) {
+      return scopedTraditionalAssignments;
+    }
+
+    const latestByEvidence = new Map<string, EvidenceAssignment>();
+
+    for (const assignment of scopedTraditionalAssignments) {
+      const processId = assignment.proceso?.proceso_id ?? assignment.proceso_id;
+      const key = `${processId}-${assignment.evidencia_id}-${assignment.usuario_id}`;
+      const current = latestByEvidence.get(key);
+
+      if (!current) {
+        latestByEvidence.set(key, assignment);
+        continue;
+      }
+
+      const currentTs = parseTimestamp(current.updated_at);
+      const nextTs = parseTimestamp(assignment.updated_at);
+
+      if (nextTs >= currentTs) {
+        latestByEvidence.set(key, assignment);
+      }
+    }
+
+    return Array.from(latestByEvidence.values());
+  }, [scopedTraditionalAssignments, routeContext.processId]);
+
+  const latestFlexAssignments = useMemo(() => {
+    if (routeContext.processId === null) {
+      return scopedFlexAssignments;
+    }
+
+    const latestByElement = new Map<string, FlexibleAssignmentItem>();
+
+    for (const assignment of scopedFlexAssignments) {
+      const processId = assignment.process?.proceso_id ?? assignment.proceso_id;
+      const key = `${processId}-${assignment.elemento_id}-${assignment.usuario_id}`;
+      const current = latestByElement.get(key);
+
+      if (!current) {
+        latestByElement.set(key, assignment);
+        continue;
+      }
+
+      const currentTs = parseTimestamp(current.updated_at);
+      const nextTs = parseTimestamp(assignment.updated_at);
+
+      if (nextTs >= currentTs) {
+        latestByElement.set(key, assignment);
+      }
+    }
+
+    return Array.from(latestByElement.values());
+  }, [scopedFlexAssignments, routeContext.processId]);
+
   const filteredAssignments = filterAndSortAssignments(
-    assignments.filter(
-      (a) => a.proceso?.ciclo_acreditacion_id === selectedCycleId,
-    ),
+    latestTraditionalAssignments,
     filters,
   );
   const filteredFlex = filterFlexAssignments(
-    flexState.assignments.filter(
-      (a) => a.process?.ciclo_acreditacion_id === selectedCycleId,
-    ),
+    latestFlexAssignments,
     filters.search,
   );
 

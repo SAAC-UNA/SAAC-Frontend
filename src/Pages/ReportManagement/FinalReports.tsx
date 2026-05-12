@@ -67,6 +67,25 @@ const normalizeApprovalStatus = (value: unknown): ApprovalStatus => {
   return "pendiente";
 };
 
+const toTimestamp = (value: unknown): number => {
+  if (typeof value === "number" && Number.isFinite(value)) return value;
+  if (value instanceof Date) return value.getTime();
+  if (typeof value === "string") {
+    const parsed = Date.parse(value);
+    return Number.isNaN(parsed) ? 0 : parsed;
+  }
+  return 0;
+};
+
+const isDecisionCurrentForAssignment = (
+  decisionUpdatedAt: number,
+  assignmentUpdatedAt: number,
+): boolean => {
+  if (assignmentUpdatedAt <= 0) return true;
+  if (decisionUpdatedAt <= 0) return false;
+  return decisionUpdatedAt >= assignmentUpdatedAt;
+};
+
 const FinalReports: React.FC = () => {
   const moduleInfo = getModuleInfo("final_reports");
   const { exportToPdf: generatePdfReport } = usePdfExport();
@@ -260,23 +279,53 @@ const FinalReports: React.FC = () => {
       if (flex) {
         const modeloId =
           selProc.accreditation_cycle.modelo_estructura!.modelo_estructura_id;
-        const [elementosResponse, approvalsResponse] = await Promise.all([
+        const [elementosResponse, approvalsResponse, assignmentsResponse] = await Promise.all([
           axiosInstance.get(
             `/estructura/elementos?modelo_estructura_id=${modeloId}`,
           ),
           axiosInstance.get("/aprobaciones-elementos", {
             params: {
               proceso_id: selectedProcesoIdNum,
-              estado: "aprobado",
             },
           }),
+          axiosInstance.get(`/procesos/${selectedProcesoIdNum}/elementos-asignaciones`),
         ]);
         const elementosArray =
           elementosResponse.data.data || elementosResponse.data;
         const approvalsArray =
           approvalsResponse.data.data || approvalsResponse.data;
+        const assignmentsArray =
+          assignmentsResponse.data.data || assignmentsResponse.data || [];
 
-        const approvedElementIds = new Set<number>();
+        const elementsById = new Map<number, any>();
+        const parentById = new Map<number, number | null>();
+        const childrenByParent = new Map<number, number[]>();
+
+        elementosArray.forEach((elemento: any) => {
+          const elementId = toNumericId(elemento?.elemento_id ?? elemento?.id);
+          if (elementId === null) return;
+
+          const parentId = toNumericId(elemento?.padre_id);
+
+          elementsById.set(elementId, elemento);
+          parentById.set(elementId, parentId);
+
+          if (parentId !== null) {
+            const children = childrenByParent.get(parentId) ?? [];
+            children.push(elementId);
+            childrenByParent.set(parentId, children);
+          }
+        });
+
+        const latestApprovalByElement = new Map<
+          number,
+          { status: ApprovalStatus; updatedAt: number }
+        >();
+        const latestApprovalByElementUser = new Map<
+          number,
+          Map<number, { status: ApprovalStatus; updatedAt: number }>
+        >();
+
         approvalsArray.forEach((ap: any) => {
           const elementId = toNumericId(
             ap?.elemento_id ?? ap?.elemento?.elemento_id,
@@ -286,29 +335,177 @@ const FinalReports: React.FC = () => {
           );
           if (elementId === null || processId === null) return;
           if (processId !== selectedProcesoIdNum) return;
-          if (normalizeApprovalStatus(ap?.estado) !== "aprobado") return;
 
-          approvedElementIds.add(elementId);
+          const updatedAt = toTimestamp(ap?.updated_at ?? ap?.created_at);
+          const current = latestApprovalByElement.get(elementId);
+
+          if (!current || updatedAt >= current.updatedAt) {
+            latestApprovalByElement.set(elementId, {
+              status: normalizeApprovalStatus(ap?.estado),
+              updatedAt,
+            });
+          }
+
+          const userId = toNumericId(ap?.usuario_id ?? ap?.user?.usuario_id);
+          if (userId === null) return;
+
+          if (!latestApprovalByElementUser.has(elementId)) {
+            latestApprovalByElementUser.set(elementId, new Map());
+          }
+
+          const approvalsByUser = latestApprovalByElementUser.get(elementId)!;
+          const existingDecision = approvalsByUser.get(userId);
+
+          if (!existingDecision || updatedAt >= existingDecision.updatedAt) {
+            approvalsByUser.set(userId, {
+              status: normalizeApprovalStatus(ap?.estado),
+              updatedAt,
+            });
+          }
         });
 
-        const approvedElements = elementosArray
-          .filter((el: any) =>
-            approvedElementIds.has(toNumericId(el.elemento_id ?? el.id) ?? -1),
-          )
-          .map((el: any) => ({
-            id: toNumericId(el.elemento_id ?? el.id) ?? el.elemento_id ?? el.id,
-            padre_id: el.padre_id ?? null,
-            tipo: el.tipo ?? null,
-            nomenclatura: el.nomenclatura ?? "",
-            descripcion: el.descripcion ?? el.nombre ?? "",
-            estado_aprobacion: "aprobado" as ApprovalStatus,
-          }));
+        const latestAssignmentsByElementUser = new Map<
+          number,
+          Map<number, { estado: string; updatedAt: number }>
+        >();
+
+        assignmentsArray.forEach((assignment: any) => {
+          const elementId = toNumericId(assignment?.elemento_id);
+          const userId = toNumericId(assignment?.usuario_id);
+          if (elementId === null || userId === null) return;
+
+          const updatedAt = toTimestamp(
+            assignment?.updated_at ?? assignment?.fecha_asignacion,
+          );
+
+          if (!latestAssignmentsByElementUser.has(elementId)) {
+            latestAssignmentsByElementUser.set(elementId, new Map());
+          }
+
+          const assignmentsByUser = latestAssignmentsByElementUser.get(elementId)!;
+          const existing = assignmentsByUser.get(userId);
+          if (!existing || updatedAt >= existing.updatedAt) {
+            assignmentsByUser.set(userId, {
+              estado: assignment?.estado,
+              updatedAt,
+            });
+          }
+        });
+
+        const isLeafElement = (elementId: number): boolean =>
+          (childrenByParent.get(elementId)?.length ?? 0) === 0;
+
+        const resolveLeafStatus = (elementId: number): ApprovalStatus => {
+          const assignmentsByUser = latestAssignmentsByElementUser.get(elementId);
+          if (!assignmentsByUser || assignmentsByUser.size === 0) {
+            return "pendiente";
+          }
+
+          const decisionsByUser = latestApprovalByElementUser.get(elementId);
+          let hasApproved = false;
+          let hasRejected = false;
+          let hasMissingCurrentDecision = false;
+
+          assignmentsByUser.forEach((assignment, userId) => {
+            const decision = decisionsByUser?.get(userId);
+            if (
+              !decision
+              || !isDecisionCurrentForAssignment(
+                decision.updatedAt,
+                assignment.updatedAt,
+              )
+            ) {
+              hasMissingCurrentDecision = true;
+              return;
+            }
+
+            if (decision.status === "aprobado") {
+              hasApproved = true;
+              return;
+            }
+
+            if (decision.status === "rechazado") {
+              hasRejected = true;
+              return;
+            }
+
+            hasMissingCurrentDecision = true;
+          });
+
+          if (
+            hasMissingCurrentDecision
+            || (!hasApproved && !hasRejected)
+            || (hasApproved && hasRejected)
+          ) {
+            return "pendiente";
+          }
+
+          if (hasRejected) {
+            return "rechazado";
+          }
+
+          return "aprobado";
+        };
+
+        const leafStatusByElement = new Map<number, ApprovalStatus>();
+        elementsById.forEach((_, elementId) => {
+          if (isLeafElement(elementId)) {
+            leafStatusByElement.set(elementId, resolveLeafStatus(elementId));
+          }
+        });
+
+        const getElementStatus = (elementId: number): ApprovalStatus => {
+          if (isLeafElement(elementId)) {
+            return leafStatusByElement.get(elementId) ?? "pendiente";
+          }
+
+          return latestApprovalByElement.get(elementId)?.status ?? "pendiente";
+        };
+
+        const approvedLeafIds = new Set<number>();
+        elementsById.forEach((_, elementId) => {
+          if (!isLeafElement(elementId)) return;
+          if (getElementStatus(elementId) === "aprobado") {
+            approvedLeafIds.add(elementId);
+          }
+        });
+
+        const includedElementIds = new Set<number>(approvedLeafIds);
+        approvedLeafIds.forEach((leafId) => {
+          let parentId = parentById.get(leafId) ?? null;
+          while (parentId !== null) {
+            includedElementIds.add(parentId);
+            parentId = parentById.get(parentId) ?? null;
+          }
+        });
+
+        const approvedElements = Array.from(includedElementIds)
+          .map((elementId) => {
+            const element = elementsById.get(elementId);
+            if (!element) return null;
+
+            return {
+              id: elementId,
+              padre_id: toNumericId(element.padre_id),
+              tipo: element.tipo ?? null,
+              nomenclatura: element.nomenclatura ?? "",
+              descripcion: element.descripcion ?? element.nombre ?? "",
+              estado_aprobacion: getElementStatus(elementId),
+            } as Criterio;
+          })
+          .filter((element): element is Criterio => element !== null);
 
         const approvedElementsWithFiles = await Promise.all(
-          approvedElements.map(async (elemento: Criterio) => ({
-            ...elemento,
-            archivos: await fetchNodeFiles(elemento.id, true),
-          })),
+          approvedElements.map(async (elemento: Criterio) => {
+            const archivos = isLeafElement(elemento.id)
+              ? await fetchNodeFiles(elemento.id, true)
+              : [];
+
+            return {
+              ...elemento,
+              archivos,
+            };
+          }),
         );
 
         setDataState((prev) => ({
@@ -505,6 +702,7 @@ const FinalReports: React.FC = () => {
     const hasPhysicalReference = [
       archivo.ruta_archivo,
       archivo.nombre_original,
+      archivo.url,
       archivo.url_publica,
       archivo.url_publica_carpeta,
       archivo.token_publico,
@@ -694,9 +892,21 @@ const FinalReports: React.FC = () => {
 
   const downloadExcel = async () => {
     try {
+      const endpoint = isFlexible
+        ? "/estructura/elementos/export/excel"
+        : "/estructura/evidencias/export/excel";
+
+      const params: Record<string, unknown> = {};
+      if (selectedProcesoIdNum) {
+        params.proceso_id = selectedProcesoIdNum;
+      }
+
       const response = await axiosInstance.get(
-        "/estructura/evidencias/export/excel",
-        { responseType: "blob" },
+        endpoint,
+        {
+          params,
+          responseType: "blob",
+        },
       );
 
       const blob = new Blob([response.data], {
@@ -705,7 +915,8 @@ const FinalReports: React.FC = () => {
       const url = URL.createObjectURL(blob);
       const link = document.createElement("a");
       link.href = url;
-      link.download = `informe_evidencias_${selectedProcesoId}_${Date.now()}.xlsx`;
+      const filePrefix = isFlexible ? "informe_elementos" : "informe_evidencias";
+      link.download = `${filePrefix}_${selectedProcesoId}_${Date.now()}.xlsx`;
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);

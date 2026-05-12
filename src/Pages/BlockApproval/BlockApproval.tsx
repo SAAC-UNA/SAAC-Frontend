@@ -75,6 +75,41 @@ const normalizeBlockStatus = (value: unknown): BlockApprovalStatus => {
   return 'pendiente';
 };
 
+const normalizeAssignmentStatus = (value: unknown): string => {
+  const normalized = normalizeSearchValue(value)
+    .replace(/[_-]+/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+
+  if (normalized === 'en proceso') return 'en progreso';
+
+  return normalized;
+};
+
+const isCompletedAssignmentStatus = (value: unknown): boolean =>
+  normalizeAssignmentStatus(value).startsWith('completad');
+
+const isDecisionCurrentForAssignment = (
+  decisionUpdatedAt: unknown,
+  assignmentUpdatedAt: number,
+): boolean => {
+  if (assignmentUpdatedAt <= 0) return true;
+
+  const decisionUpdated = parseTimestamp(decisionUpdatedAt);
+  if (decisionUpdated <= 0) return false;
+
+  return decisionUpdated >= assignmentUpdatedAt;
+};
+
+const hasFreshSubmissionSinceDecision = (
+  latestSubmissionAt: number,
+  latestDecisionAt: number,
+): boolean => {
+  if (latestSubmissionAt <= 0) return false;
+  if (latestDecisionAt <= 0) return true;
+  return latestSubmissionAt > latestDecisionAt;
+};
+
 const BLOCK_STATUS_SEARCH_TERMS: Record<BlockApprovalStatus, string[]> = {
   pendiente: ['pendiente', 'pendientes'],
   aprobado: ['aprobado', 'aprobada', 'aprobados', 'aprobadas'],
@@ -274,6 +309,28 @@ const BlockApproval: React.FC = () => {
           return Number.isFinite(ts) ? ts : 0;
         };
 
+        const getLatestAssignmentsByUser = (assignments: any[]): any[] =>
+          Array.from(
+            assignments.reduce((acc: Map<number, any>, assignment: any) => {
+              const userId = Number(assignment?.usuario_id);
+              if (!Number.isFinite(userId)) return acc;
+
+              const currentUpdatedAt = parseTimestamp(
+                assignment?.updated_at ?? assignment?.fecha_asignacion,
+              );
+              const previous = acc.get(userId);
+              const previousUpdatedAt = parseTimestamp(
+                previous?.updated_at ?? previous?.fecha_asignacion,
+              );
+
+              if (!previous || currentUpdatedAt >= previousUpdatedAt) {
+                acc.set(userId, assignment);
+              }
+
+              return acc;
+            }, new Map<number, any>()).values(),
+          );
+
         const latestApprovalByElement = new Map<
           number,
           { estado: BlockApprovalStatus; comentario: string | null; updated_at?: string | null }
@@ -281,7 +338,14 @@ const BlockApproval: React.FC = () => {
 
         const approvalsByElementAndUser = new Map<
           number,
-          Record<string, { approval_status: EvidenceApprovalStatus; comentario_rechazo?: string | null }>
+          Record<
+            string,
+            {
+              approval_status: EvidenceApprovalStatus;
+              comentario_rechazo?: string | null;
+              updated_at?: string | null;
+            }
+          >
         >();
 
         allApprovals.forEach((approval: any) => {
@@ -314,35 +378,142 @@ const BlockApproval: React.FC = () => {
           approvalsByElementAndUser.get(elementId)![String(userId)] = {
             approval_status: estado as EvidenceApprovalStatus,
             comentario_rechazo: approval?.comentario ?? null,
+            updated_at: typeof approval?.updated_at === 'string' ? approval.updated_at : null,
           };
         });
 
-        // En esta pantalla se deben mantener visibles todas las asignaciones del proceso,
-        // incluyendo pendientes/rechazadas, para no perder filas tras acciones de aprobación.
-        const reviewableAssignments: any[] = allAssignments;
+        const reviewableAssignments: any[] = allAssignments.filter((assignment: any) =>
+          isCompletedAssignmentStatus(assignment?.estado),
+        );
 
-        // Group reviewable assignments by elemento_id
-        const assignmentsByElement = new Map<number, any[]>();
-        reviewableAssignments.forEach((asgn: any) => {
-          const eid = asgn.elemento_id;
-          if (!assignmentsByElement.has(eid)) assignmentsByElement.set(eid, []);
-          assignmentsByElement.get(eid)!.push(asgn);
+        const allAssignmentsByElement = new Map<number, any[]>();
+        allAssignments.forEach((assignment: any) => {
+          const elementId = Number(assignment?.elemento_id);
+          if (!Number.isFinite(elementId)) return;
+
+          if (!allAssignmentsByElement.has(elementId)) {
+            allAssignmentsByElement.set(elementId, []);
+          }
+
+          allAssignmentsByElement.get(elementId)!.push(assignment);
+        });
+
+        const allElementsById = new Map<number, any>();
+        allElements.forEach((element: any) => {
+          const elementId = Number(element?.elemento_id);
+          if (Number.isFinite(elementId)) {
+            allElementsById.set(elementId, element);
+          }
+        });
+
+        const latestCompletedAssignmentByBlock = new Map<number, number>();
+        const latestAssignmentByBlock = new Map<number, number>();
+
+        allAssignments.forEach((assignment: any) => {
+          const childElementId = Number(assignment?.elemento_id);
+          if (!Number.isFinite(childElementId)) return;
+
+          const childElement = allElementsById.get(childElementId);
+          const blockId = Number(childElement?.padre_id);
+          if (!Number.isFinite(blockId)) return;
+
+          const assignmentUpdatedAt = parseTimestamp(
+            assignment?.updated_at ?? assignment?.fecha_asignacion,
+          );
+          const previousUpdatedAt = latestAssignmentByBlock.get(blockId) ?? 0;
+
+          if (assignmentUpdatedAt >= previousUpdatedAt) {
+            latestAssignmentByBlock.set(blockId, assignmentUpdatedAt);
+          }
+        });
+
+        reviewableAssignments.forEach((assignment: any) => {
+          const childElementId = Number(assignment?.elemento_id);
+          if (!Number.isFinite(childElementId)) return;
+
+          const childElement = allElementsById.get(childElementId);
+          const blockId = Number(childElement?.padre_id);
+          if (!Number.isFinite(blockId)) return;
+
+          const assignmentUpdatedAt = parseTimestamp(
+            assignment?.updated_at ?? assignment?.fecha_asignacion,
+          );
+          const previousUpdatedAt = latestCompletedAssignmentByBlock.get(blockId) ?? 0;
+
+          if (assignmentUpdatedAt >= previousUpdatedAt) {
+            latestCompletedAssignmentByBlock.set(blockId, assignmentUpdatedAt);
+          }
+        });
+
+        const rejectedElementIds = new Set<number>();
+        allAssignmentsByElement.forEach((elementAssignments, elementId) => {
+          const approvalsByUser = approvalsByElementAndUser.get(elementId) ?? {};
+
+          const latestAssignmentsByUser = getLatestAssignmentsByUser(elementAssignments);
+
+          const hasCurrentRejected = latestAssignmentsByUser.some((assignment) => {
+            const userId = Number(assignment?.usuario_id);
+            if (!Number.isFinite(userId)) return false;
+
+            const decision = approvalsByUser[String(userId)];
+            if (!decision) return false;
+
+            const decisionStatus = normalizeEvidenceStatus(decision.approval_status);
+            if (decisionStatus !== 'rechazado') return false;
+
+            if (!isCompletedAssignmentStatus(assignment?.estado)) {
+              return true;
+            }
+
+            const assignmentUpdatedAt = parseTimestamp(
+              assignment?.updated_at ?? assignment?.fecha_asignacion,
+            );
+
+            if (
+              !isDecisionCurrentForAssignment(
+                decision?.updated_at,
+                assignmentUpdatedAt,
+              )
+            ) {
+              return false;
+            }
+
+            return true;
+          });
+
+          if (hasCurrentRejected) {
+            rejectedElementIds.add(elementId);
+          }
         });
 
         // Only show blocks whose children have reviewable assignments
         const assignedElementIds = new Set<number>(reviewableAssignments.map((a: any) => a.elemento_id));
 
         const assignedLeaves = allElements.filter(
-          (e: any) => assignedElementIds.has(e.elemento_id) && e.activo !== false,
+          (e: any) =>
+            (assignedElementIds.has(e.elemento_id) || rejectedElementIds.has(e.elemento_id))
+            && e.activo !== false,
         );
         const relevantParentIds = new Set<number>(
           assignedLeaves
             .map((e: any) => e.padre_id)
             .filter((id: any): id is number => id !== null && id !== undefined),
         );
+
         const blocks = allElements.filter((e: any) => relevantParentIds.has(e.elemento_id) && e.activo !== false);
 
         const criteriaFromBlocks: Criterio[] = blocks.map((b: any) => {
+          const latestBlockApproval = latestApprovalByElement.get(b.elemento_id);
+          const latestBlockApprovalAt = parseTimestamp(latestBlockApproval?.updated_at ?? null);
+          const latestSubmissionAt =
+            latestAssignmentByBlock.get(b.elemento_id)
+            ?? latestCompletedAssignmentByBlock.get(b.elemento_id)
+            ?? 0;
+          const hasFreshSubmission = hasFreshSubmissionSinceDecision(
+            latestSubmissionAt,
+            latestBlockApprovalAt,
+          );
+
           // Collect unique users across all reviewable child assignments of this block
           const childElementIds = new Set(
             assignedLeaves
@@ -350,8 +521,85 @@ const BlockApproval: React.FC = () => {
               .map((e: any) => e.elemento_id),
           );
           const linkedCount = childElementIds.size;
+
+          let hasApprovedDecision = false;
+          let hasRejectedDecision = false;
+          let hasUndecidedCompleted = false;
+          let hasPendingAssignment = false;
+
+          childElementIds.forEach((childId) => {
+            const childAssignments = allAssignmentsByElement.get(childId) ?? [];
+            const latestAssignmentsByUser = getLatestAssignmentsByUser(childAssignments);
+            const approvalsByUser = approvalsByElementAndUser.get(childId) ?? {};
+
+            latestAssignmentsByUser.forEach((assignment) => {
+              const userId = Number(assignment?.usuario_id);
+              if (!Number.isFinite(userId)) {
+                hasUndecidedCompleted = true;
+                return;
+              }
+
+              const decision = approvalsByUser[String(userId)];
+              const assignmentUpdatedAt = parseTimestamp(
+                assignment?.updated_at ?? assignment?.fecha_asignacion,
+              );
+              const decisionStatus = normalizeEvidenceStatus(
+                decision?.approval_status,
+              );
+
+              if (!isCompletedAssignmentStatus(assignment?.estado)) {
+                if (decisionStatus === 'rechazado') {
+                  hasRejectedDecision = true;
+                } else {
+                  hasPendingAssignment = true;
+                }
+                return;
+              }
+
+              if (
+                !decision
+                || !isDecisionCurrentForAssignment(
+                  decision?.updated_at,
+                  assignmentUpdatedAt,
+                )
+              ) {
+                hasUndecidedCompleted = true;
+                return;
+              }
+
+              if (decisionStatus === 'aprobado') {
+                hasApprovedDecision = true;
+                return;
+              }
+
+              if (decisionStatus === 'rechazado') {
+                hasRejectedDecision = true;
+                return;
+              }
+
+              hasUndecidedCompleted = true;
+            });
+          });
+
+          const derivedStatus: BlockApprovalStatus =
+            hasPendingAssignment
+            || hasUndecidedCompleted
+            || (!hasApprovedDecision && !hasRejectedDecision)
+              ? 'pendiente'
+              : hasApprovedDecision && hasRejectedDecision
+                ? 'incompleto'
+                : hasRejectedDecision
+                  ? 'rechazado'
+                  : 'aprobado';
+
+          const effectiveBlockStatus: BlockApprovalStatus = hasFreshSubmission
+            ? 'pendiente'
+            : (derivedStatus !== 'pendiente'
+              ? derivedStatus
+              : (latestBlockApproval?.estado ?? 'pendiente'));
+
           const responsableMap = new Map<number, string>();
-          reviewableAssignments
+          allAssignments
             .filter((a: any) => childElementIds.has(a.elemento_id))
             .forEach((a: any) => {
               const uid = a.usuario_id;
@@ -370,7 +618,7 @@ const BlockApproval: React.FC = () => {
             id: b.elemento_id,
             nomenclatura: b.nomenclatura ?? '',
             descripcion: b.nombre ?? b.descripcion ?? '',
-            estado_aprobacion: latestApprovalByElement.get(b.elemento_id)?.estado ?? 'pendiente',
+            estado_aprobacion: effectiveBlockStatus,
             responsables: Array.from(responsableMap.entries()).map(([id, name]) => ({ id, name })),
             linked_count: linkedCount,
           };
@@ -379,21 +627,95 @@ const BlockApproval: React.FC = () => {
         const childrenByBlock: Record<number, EvidenceApprovalItem[]> = {};
         blocks.forEach((b: any) => {
           childrenByBlock[b.elemento_id] = allElements
-            .filter((e: any) => e.padre_id === b.elemento_id && assignedElementIds.has(e.elemento_id) && e.activo !== false)
+            .filter(
+              (e: any) =>
+                e.padre_id === b.elemento_id
+                && (assignedElementIds.has(e.elemento_id) || rejectedElementIds.has(e.elemento_id))
+                && e.activo !== false,
+            )
             .map((child: any) => {
               const childId = child.elemento_id;
               const approvalsByUser = approvalsByElementAndUser.get(childId) ?? {};
-              const firstDecision = Object.values(approvalsByUser)[0];
-              const childAssignments = assignmentsByElement.get(childId) ?? [];
-              const uniqueAssignees = Array.from(
-                childAssignments.reduce((acc: Map<number, any>, assignment: any) => {
-                  const uid = assignment?.usuario_id;
-                  if (!uid || acc.has(uid)) return acc;
-                  acc.set(uid, assignment);
+              const childAssignments = allAssignmentsByElement.get(childId) ?? [];
+              const uniqueAssignees = getLatestAssignmentsByUser(childAssignments);
+
+              const includedAssignees = uniqueAssignees.filter((assignment) => {
+                if (isCompletedAssignmentStatus(assignment?.estado)) {
+                  return true;
+                }
+
+                const userId = Number(assignment?.usuario_id);
+                if (!Number.isFinite(userId)) return false;
+
+                const decision = approvalsByUser[String(userId)];
+                if (!decision) return false;
+
+                return normalizeEvidenceStatus(decision.approval_status) === 'rechazado';
+              });
+
+              if (includedAssignees.length === 0) {
+                return null;
+              }
+
+              const filteredApprovalsByUser = includedAssignees.reduce<
+                Record<
+                  string,
+                  {
+                    approval_status: EvidenceApprovalStatus;
+                    comentario_rechazo?: string | null;
+                    updated_at?: string | null;
+                  }
+                >
+              >((acc, assignment) => {
+                const userId = Number(assignment?.usuario_id);
+                if (!Number.isFinite(userId)) return acc;
+
+                const decision = approvalsByUser[String(userId)];
+                if (!decision) return acc;
+
+                const decisionStatus = normalizeEvidenceStatus(decision.approval_status);
+
+                if (!isCompletedAssignmentStatus(assignment?.estado)) {
+                  if (decisionStatus !== 'rechazado') {
+                    return acc;
+                  }
+
+                  acc[String(userId)] = {
+                    approval_status: decisionStatus,
+                    comentario_rechazo: decision.comentario_rechazo ?? null,
+                    updated_at: decision.updated_at ?? null,
+                  };
+
                   return acc;
-                }, new Map<number, any>()).values(),
-              );
-              const firstAssignment = childAssignments[0];
+                }
+
+                const assignmentUpdatedAt = parseTimestamp(
+                  assignment?.updated_at ?? assignment?.fecha_asignacion,
+                );
+
+                if (
+                  !isDecisionCurrentForAssignment(
+                    decision?.updated_at,
+                    assignmentUpdatedAt,
+                  )
+                ) {
+                  return acc;
+                }
+
+                acc[String(userId)] = {
+                  approval_status: decisionStatus,
+                  comentario_rechazo: decision.comentario_rechazo ?? null,
+                  updated_at: decision.updated_at ?? null,
+                };
+
+                return acc;
+              }, {});
+
+              const firstDecision = includedAssignees
+                .map((assignment) => filteredApprovalsByUser[String(assignment.usuario_id)])
+                .find((decision) => Boolean(decision));
+
+              const firstAssignment = includedAssignees[0];
               return {
                 evidencia_id: childId,
                 nomenclatura: child.nomenclatura ?? '',
@@ -405,10 +727,11 @@ const BlockApproval: React.FC = () => {
                   fecha_limite: firstAssignment.fecha_limite,
                   usuario_id: firstAssignment.usuario_id,
                   usuario_nombre: firstAssignment.user?.nombre ?? firstAssignment.user?.name ?? null,
+                  updated_at: firstAssignment.updated_at ?? null,
                 } : null,
                 asignacion_id: firstAssignment?.elemento_asignacion_id,
-                approvals_by_user: approvalsByUser,
-                responsables_asignados: uniqueAssignees.map((assignment: any) => ({
+                approvals_by_user: filteredApprovalsByUser,
+                responsables_asignados: includedAssignees.map((assignment: any) => ({
                   usuario_id: assignment.usuario_id,
                   usuario_nombre:
                     assignment.user?.nombre ??
@@ -420,9 +743,11 @@ const BlockApproval: React.FC = () => {
                   fecha_limite: assignment.fecha_limite ?? null,
                   asignacion_id: assignment.elemento_asignacion_id,
                   proceso_id: assignment.proceso_id,
+                  updated_at: assignment.updated_at ?? null,
                 })),
               };
-            });
+            })
+            .filter((item): item is EvidenceApprovalItem => item !== null);
         });
 
         setDataState({ isLoading: false, criteria: criteriaFromBlocks, evidences: [], processes: processesArray });
@@ -444,7 +769,19 @@ const BlockApproval: React.FC = () => {
         const approvalsArray = approvalsResponse.data.data || approvalsResponse.data;
         const assignmentsArray = assignmentsResponse.data?.data || assignmentsResponse.data || [];
 
-        const reviewableAssignments = assignmentsArray;
+        const reviewableAssignments = assignmentsArray.filter((assignment: any) =>
+          isCompletedAssignmentStatus(assignment?.estado),
+        );
+
+        const latestCompletedAssignmentByCriterion = new Map<number, number>();
+        const latestCompletedAssignmentByEvidence = new Map<
+          number,
+          { assignment: any; updatedAt: number }
+        >();
+        const latestCompletedAssignmentByEvidenceUser = new Map<
+          string,
+          { assignment: any; updatedAt: number }
+        >();
 
         const evidenceIdsByCriterion = new Map<number, Set<number>>();
         reviewableAssignments.forEach((assignment: any) => {
@@ -453,17 +790,56 @@ const BlockApproval: React.FC = () => {
           const criterionId = Number(criterionIdRaw);
           if (!Number.isFinite(criterionId)) return;
 
+          const evidenceIdRaw =
+            assignment?.evidencia_id ?? evidenceData?.evidencia_id ?? evidenceData?.id;
+          const evidenceId = Number(evidenceIdRaw);
+          if (!Number.isFinite(evidenceId)) return;
+
+          const assignmentUpdatedAt = parseTimestamp(
+            assignment?.updated_at ?? assignment?.fecha_asignacion,
+          );
+
+          const previousCriterionUpdatedAt =
+            latestCompletedAssignmentByCriterion.get(criterionId) ?? 0;
+          if (assignmentUpdatedAt >= previousCriterionUpdatedAt) {
+            latestCompletedAssignmentByCriterion.set(criterionId, assignmentUpdatedAt);
+          }
+
+          const previousEvidenceAssignment = latestCompletedAssignmentByEvidence.get(evidenceId);
+          if (!previousEvidenceAssignment || assignmentUpdatedAt >= previousEvidenceAssignment.updatedAt) {
+            latestCompletedAssignmentByEvidence.set(evidenceId, {
+              assignment,
+              updatedAt: assignmentUpdatedAt,
+            });
+          }
+
+          const userId = Number(
+            assignment?.usuario_id
+              ?? assignment?.usuario?.usuario_id
+              ?? assignment?.user?.usuario_id,
+          );
+
+          if (Number.isFinite(userId)) {
+            const evidenceUserKey = `${evidenceId}-${userId}`;
+            const previousEvidenceUserAssignment =
+              latestCompletedAssignmentByEvidenceUser.get(evidenceUserKey);
+
+            if (
+              !previousEvidenceUserAssignment
+              || assignmentUpdatedAt >= previousEvidenceUserAssignment.updatedAt
+            ) {
+              latestCompletedAssignmentByEvidenceUser.set(evidenceUserKey, {
+                assignment,
+                updatedAt: assignmentUpdatedAt,
+              });
+            }
+          }
+
           if (!evidenceIdsByCriterion.has(criterionId)) {
             evidenceIdsByCriterion.set(criterionId, new Set<number>());
           }
 
-          const evidenceIdRaw =
-            assignment?.evidencia_id ?? evidenceData?.evidencia_id ?? evidenceData?.id;
-          const evidenceId = Number(evidenceIdRaw);
-
-          if (Number.isFinite(evidenceId)) {
-            evidenceIdsByCriterion.get(criterionId)!.add(evidenceId);
-          }
+          evidenceIdsByCriterion.get(criterionId)!.add(evidenceId);
         });
 
         const linkedCountByCriterion = new Map<number, number>();
@@ -496,11 +872,6 @@ const BlockApproval: React.FC = () => {
           }
         });
 
-        const approvalsMap = new Map<string, BlockApprovalStatus>();
-        latestCriterionApprovalByKey.forEach((value, key) => {
-          approvalsMap.set(key, value.estado);
-        });
-
         const responsablesByCriterion = new Map<number, Map<number, string>>();
         reviewableAssignments.forEach((assignment: any) => {
           const evidenceData = assignment?.evidencia ?? assignment?.evidence ?? null;
@@ -526,33 +897,7 @@ const BlockApproval: React.FC = () => {
           }
         });
 
-        const criterionIdsWithAssignments = new Set<number>(evidenceIdsByCriterion.keys());
-        const criterionIdsWithApprovals = new Set<number>();
-
-        approvalsArray.forEach((aprobacion: any) => {
-          const approvalProcessId = toNumericId(
-            aprobacion?.proceso_id ?? aprobacion?.process?.proceso_id,
-          );
-          if (
-            selectedProcesoIdNum !== null
-            && approvalProcessId !== null
-            && approvalProcessId !== selectedProcesoIdNum
-          ) {
-            return;
-          }
-
-          const criterionId = toNumericId(
-            aprobacion?.criterio_id ?? aprobacion?.criterion?.criterio_id,
-          );
-          if (criterionId !== null) {
-            criterionIdsWithApprovals.add(criterionId);
-          }
-        });
-
-        const visibleCriterionIds = new Set<number>([
-          ...criterionIdsWithAssignments,
-          ...criterionIdsWithApprovals,
-        ]);
+        const visibleCriterionIds = new Set<number>(evidenceIdsByCriterion.keys());
 
         const filteredCriteria = criteriaArray.filter((criterion: any) => {
           const criterionId = Number(criterion?.id ?? criterion?.criterio_id);
@@ -561,7 +906,15 @@ const BlockApproval: React.FC = () => {
 
         const criteriaWithStatus: Criterio[] = filteredCriteria.map((c: any) => {
           const criterionId = Number(c.id ?? c.criterio_id);
-          const key = selectedProcesoIdNum !== null ? `${criterionId}-${selectedProcesoIdNum}` : '';
+          const key = selectedProcesoIdNum !== null ? `${criterionId}-${selectedProcesoIdNum}` : null;
+          const latestApproval = key ? latestCriterionApprovalByKey.get(key) : undefined;
+          const latestCompletedSubmissionAt =
+            latestCompletedAssignmentByCriterion.get(criterionId) ?? 0;
+          const latestApprovalAt = latestApproval?.updatedAt ?? 0;
+          const hasFreshSubmission = hasFreshSubmissionSinceDecision(
+            latestCompletedSubmissionAt,
+            latestApprovalAt,
+          );
           const responsibleUsers = Array.from(
             (responsablesByCriterion.get(criterionId) ?? new Map<number, string>()).entries(),
           ).map(([id, name]) => ({ id, name }));
@@ -570,7 +923,9 @@ const BlockApproval: React.FC = () => {
             id: criterionId,
             nomenclatura: c.nomenclatura ?? '',
             descripcion: c.descripcion ?? '',
-            estado_aprobacion: (approvalsMap.get(key) ?? 'pendiente') as BlockApprovalStatus,
+            estado_aprobacion: (hasFreshSubmission
+              ? 'pendiente'
+              : (latestApproval?.estado ?? 'pendiente')) as BlockApprovalStatus,
             linked_count: linkedCountByCriterion.get(criterionId) ?? 0,
             responsables: responsibleUsers,
           };
@@ -593,19 +948,101 @@ const BlockApproval: React.FC = () => {
 
                 const loaded: EvidenceApprovalItem[] = (
                   res.data?.data?.evidences ?? []
-                ).map((item: any) => ({
-                  ...item,
-                  asignacion: item?.asignacion
-                    ? {
-                        ...item.asignacion,
-                        usuario_nombre:
-                          item.asignacion.usuario_nombre ??
-                          item.asignacion.usuario?.nombre ??
-                          item.asignacion.user?.nombre ??
-                          null,
+                )
+                  .map((item: any) => {
+                    const evidenceId = Number(item?.evidencia_id);
+                    if (!Number.isFinite(evidenceId)) return null;
+
+                    const evidenceAssignmentSnapshot =
+                      latestCompletedAssignmentByEvidence.get(evidenceId);
+                    if (!evidenceAssignmentSnapshot) return null;
+
+                    const rawApprovalsByUser = item?.approvals_by_user ?? {};
+                    const filteredApprovalsByUser = Object.entries(rawApprovalsByUser).reduce<
+                      Record<
+                        string,
+                        {
+                          approval_status: EvidenceApprovalStatus;
+                          comentario_rechazo?: string | null;
+                          aprobacion_evidencia_id?: number | null;
+                          updated_at?: string | null;
+                        }
+                      >
+                    >((acc, [userIdRaw, decision]) => {
+                      const userId = Number(userIdRaw);
+                      if (!Number.isFinite(userId)) return acc;
+
+                      const assignmentSnapshot =
+                        latestCompletedAssignmentByEvidenceUser.get(
+                          `${evidenceId}-${userId}`,
+                        );
+                      if (!assignmentSnapshot) return acc;
+
+                      if (
+                        !isDecisionCurrentForAssignment(
+                          (decision as any)?.updated_at,
+                          assignmentSnapshot.updatedAt,
+                        )
+                      ) {
+                        return acc;
                       }
-                    : null,
-                }));
+
+                      acc[String(userId)] = {
+                        approval_status: normalizeEvidenceStatus(
+                          (decision as any)?.approval_status,
+                        ),
+                        comentario_rechazo:
+                          (decision as any)?.comentario_rechazo ?? null,
+                        aprobacion_evidencia_id:
+                          (decision as any)?.aprobacion_evidencia_id ?? null,
+                        updated_at: (decision as any)?.updated_at ?? null,
+                      };
+
+                      return acc;
+                    }, {});
+
+                    const latestDecision = Object.values(filteredApprovalsByUser)
+                      .sort(
+                        (a, b) =>
+                          parseTimestamp(b.updated_at ?? null)
+                          - parseTimestamp(a.updated_at ?? null),
+                      )[0];
+
+                    const assignmentData = evidenceAssignmentSnapshot.assignment;
+                    const assignmentUserId = Number(
+                      assignmentData?.usuario_id
+                        ?? assignmentData?.usuario?.usuario_id
+                        ?? assignmentData?.user?.usuario_id,
+                    );
+
+                    return {
+                      ...item,
+                      approval_status: latestDecision?.approval_status ?? 'pendiente',
+                      comentario_rechazo: latestDecision?.comentario_rechazo ?? null,
+                      asignacion:
+                        Number.isFinite(assignmentUserId)
+                          ? {
+                              estado: assignmentData?.estado,
+                              fecha_limite: assignmentData?.fecha_limite ?? null,
+                              usuario_id: assignmentUserId,
+                              usuario_nombre:
+                                assignmentData?.usuario?.nombre
+                                ?? assignmentData?.user?.nombre
+                                ?? assignmentData?.usuario_nombre
+                                ?? null,
+                              updated_at:
+                                assignmentData?.updated_at
+                                ?? assignmentData?.fecha_asignacion
+                                ?? null,
+                            }
+                          : null,
+                      asignacion_id:
+                        assignmentData?.evidencia_asignacion_id
+                        ?? item?.asignacion_id,
+                      approvals_by_user: filteredApprovalsByUser,
+                    } satisfies EvidenceApprovalItem;
+                  })
+                  .filter((item): item is EvidenceApprovalItem => item !== null);
 
                 return [criterionId, loaded] as const;
               } catch {

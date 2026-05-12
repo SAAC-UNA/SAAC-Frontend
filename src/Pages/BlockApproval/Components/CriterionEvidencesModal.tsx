@@ -3,6 +3,11 @@ import { Modal } from '@/Components/Ui/Modals/Modal';
 import { StatusBadge } from '@/Components/Ui/Feedback/StatusBadge';
 import { ButtonWithTooltip } from '@/Components/Ui/Buttons/ButtonWithTooltip';
 import { TableActionButton } from '@/Components/Ui/Buttons/TableActionButton';
+import { DataTable } from '@/Components/Ui/Table/DataTable';
+import type {
+  DataTableColumn,
+  ExpandableChildItem,
+} from '@/Components/Ui/Table/DataTable';
 import { LoadingSpinner } from '@/Components/Ui/Feedback/Loading';
 import { SystemIcons } from '@/Components/Ui/Icons/SystemIcons';
 import { TABLE_ACTION_BUTTON } from '@/Constants/Components';
@@ -40,6 +45,37 @@ const normalizeEvidenceStatus = (value: unknown): EvidenceApprovalStatus => {
   return 'pendiente';
 };
 
+const parseTimestamp = (value: unknown): number => {
+  if (typeof value !== 'string') return 0;
+  const timestamp = Date.parse(value);
+  return Number.isFinite(timestamp) ? timestamp : 0;
+};
+
+const normalizeAssignmentStatus = (value: unknown): string =>
+  String(value ?? '')
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[_-]+/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim()
+    .toLowerCase();
+
+const isCompletedAssignmentStatus = (value: unknown): boolean =>
+  normalizeAssignmentStatus(value).startsWith('completad');
+
+const hasCurrentDecision = (
+  decisionUpdatedAt: unknown,
+  assignmentUpdatedAt: unknown,
+): boolean => {
+  const assignmentTs = parseTimestamp(assignmentUpdatedAt);
+  if (assignmentTs <= 0) return true;
+
+  const decisionTs = parseTimestamp(decisionUpdatedAt);
+  if (decisionTs <= 0) return false;
+
+  return decisionTs >= assignmentTs;
+};
+
 interface CriterionEvidencesModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -68,7 +104,7 @@ interface ResourceItem {
   autor_nombre?: string | null;
 }
 
-interface EvidenceDisplayRow {
+interface EvidenceDisplayRow extends Record<string, unknown> {
   rowKey: string;
   evidencia: EvidenceApprovalItem;
   responsable: ResponsibleInfo;
@@ -89,7 +125,15 @@ const dedupeTraditionalAssignments = (
 ): EvidenceAssignment[] => {
   const byUser = new Map<number, EvidenceAssignment>();
   assignments.forEach((assignment) => {
-    if (!byUser.has(assignment.usuario_id)) {
+    const previous = byUser.get(assignment.usuario_id);
+    const currentUpdatedAt = parseTimestamp(
+      assignment.updated_at ?? assignment.fecha_asignacion,
+    );
+    const previousUpdatedAt = parseTimestamp(
+      previous?.updated_at ?? previous?.fecha_asignacion,
+    );
+
+    if (!previous || currentUpdatedAt >= previousUpdatedAt) {
       byUser.set(assignment.usuario_id, assignment);
     }
   });
@@ -101,23 +145,30 @@ const dedupeFlexibleAssignments = (
 ): FlexibleAssignmentItem[] => {
   const byUser = new Map<number, FlexibleAssignmentItem>();
   assignments.forEach((assignment) => {
-    if (!byUser.has(assignment.usuario_id)) {
+    const previous = byUser.get(assignment.usuario_id);
+    const currentUpdatedAt = parseTimestamp(
+      assignment.updated_at ?? assignment.fecha_asignacion,
+    );
+    const previousUpdatedAt = parseTimestamp(
+      previous?.updated_at ?? previous?.fecha_asignacion,
+    );
+
+    if (!previous || currentUpdatedAt >= previousUpdatedAt) {
       byUser.set(assignment.usuario_id, assignment);
     }
   });
   return Array.from(byUser.values());
 };
 
-const EvidenceDocumentsDropdown: React.FC<{
+const EvidenceDocumentsChildrenPanel: React.FC<{
   evidenciaId: number;
   isFlexible: boolean;
   procesoId: number | null;
   responsable: ResponsibleInfo;
 }> = ({ evidenciaId, isFlexible, procesoId, responsable }) => {
   const { showToast } = useToast();
-  const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [resources, setResources] = useState<ResourceItem[] | null>(null);
+  const [resources, setResources] = useState<ResourceItem[]>([]);
 
   const loadResources = useCallback(async () => {
     setLoading(true);
@@ -185,13 +236,9 @@ const EvidenceDocumentsDropdown: React.FC<{
     }
   }, [evidenciaId, isFlexible, procesoId, responsable]);
 
-  const handleToggle = () => {
-    const next = !open;
-    setOpen(next);
-    if (next && resources === null) {
-      void loadResources();
-    }
-  };
+  useEffect(() => {
+    void loadResources();
+  }, [loadResources]);
 
   const handleOpenLink = (url?: string | null) => {
     if (!url) {
@@ -234,79 +281,59 @@ const EvidenceDocumentsDropdown: React.FC<{
   };
 
   return (
-    <div className="mt-2">
-      <button
-        type="button"
-        onClick={handleToggle}
-        className="flex items-center gap-2 text-gris-una hover:text-negro-una transition-colors"
-      >
-        {open ? (
-          <SystemIcons.interface.chevronUp className="size-4" />
-        ) : (
-          <SystemIcons.interface.chevronDown className="size-4" />
-        )}
-        <span className={TYPOGRAPHY.table.helper}>
-          {open ? 'Ocultar documentos del responsable' : 'Ver documentos del responsable'}
-          {resources ? ` (${resources.length})` : ''}
-        </span>
-      </button>
-
-      {open && (
-        <div className="mt-2 rounded-md border border-gris-light/80 bg-gris-light/20 px-2 py-2 space-y-1.5">
-          {loading ? (
-            <div className="relative min-h-18">
-              <LoadingSpinner variant="loader" />
-            </div>
-          ) : resources && resources.length > 0 ? (
-            resources.map((resource) => (
-              <div
-                key={resource.archivo_id}
-                className="flex items-center justify-between gap-2 rounded-md border border-gris-light bg-white px-2 py-1.5"
-              >
-                <div className="flex items-center gap-2 min-w-0">
-                  {resource.tipo === 'enlace' ? (
-                    <SystemIcons.interface.link className="size-4 text-info shrink-0" />
-                  ) : (
-                    <SystemIcons.modal.document className="size-4 text-info shrink-0" />
-                  )}
-                  <div className="min-w-0">
-                    <p
-                      className={`truncate text-negro-una-2 ${TYPOGRAPHY.table.helper}`}
-                      title={resource.nombre_original}
-                    >
-                      {resource.nombre_original}
-                    </p>
-                    <p className={`text-gris-una ${TYPOGRAPHY.table.helper}`}>
-                      {formatDate(resource.fecha_subida)}
-                    </p>
-                  </div>
-                </div>
-
-                <div className="flex items-center gap-1" onClick={(event) => event.stopPropagation()}>
-                  {resource.tipo === 'enlace' ? (
-                    <TableActionButton
-                      action="view"
-                      tooltip="Abrir enlace"
-                      onClick={() => handleOpenLink(resource.url)}
-                    />
-                  ) : (
-                    <TableActionButton
-                      action="custom"
-                      customIcon={<SystemIcons.actions.download className="size-4" />}
-                      customVariant="tablePower"
-                      tooltip="Descargar archivo"
-                      onClick={() => handleDownload(resource)}
-                    />
-                  )}
-                </div>
-              </div>
-            ))
-          ) : (
-            <p className={`text-gris-una px-1 ${TYPOGRAPHY.table.helper}`}>
-              Este responsable no tiene documentos adjuntos para esta evidencia.
-            </p>
-          )}
+    <div className="rounded-md border border-gris-light/80 bg-gris-light/20 px-2 py-2 space-y-1.5">
+      {loading ? (
+        <div className="relative min-h-18">
+          <LoadingSpinner variant="loader" />
         </div>
+      ) : resources.length > 0 ? (
+        resources.map((resource) => (
+          <div
+            key={resource.archivo_id}
+            className="flex items-center justify-between gap-2 rounded-md border border-gris-light bg-white px-2 py-1.5"
+          >
+            <div className="flex items-center gap-2 min-w-0">
+              {resource.tipo === 'enlace' ? (
+                <SystemIcons.interface.link className="size-4 text-info shrink-0" />
+              ) : (
+                <SystemIcons.modal.document className="size-4 text-info shrink-0" />
+              )}
+              <div className="min-w-0">
+                <p
+                  className={`truncate text-negro-una-2 ${TYPOGRAPHY.table.helper}`}
+                  title={resource.nombre_original}
+                >
+                  {resource.nombre_original}
+                </p>
+                <p className={`text-gris-una ${TYPOGRAPHY.table.helper}`}>
+                  {formatDate(resource.fecha_subida)}
+                </p>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-1" onClick={(event) => event.stopPropagation()}>
+              {resource.tipo === 'enlace' ? (
+                <TableActionButton
+                  action="view"
+                  tooltip="Abrir enlace"
+                  onClick={() => handleOpenLink(resource.url)}
+                />
+              ) : (
+                <TableActionButton
+                  action="custom"
+                  customIcon={<SystemIcons.actions.download className="size-4" />}
+                  customVariant="tablePower"
+                  tooltip="Descargar archivo"
+                  onClick={() => handleDownload(resource)}
+                />
+              )}
+            </div>
+          </div>
+        ))
+      ) : (
+        <p className={`text-gris-una px-1 ${TYPOGRAPHY.table.helper}`}>
+          Este responsable no tiene documentos adjuntos para esta evidencia.
+        </p>
       )}
     </div>
   );
@@ -338,6 +365,7 @@ export const CriterionEvidencesModal: React.FC<CriterionEvidencesModalProps> = (
       setLoadingRows(true);
       try {
         const rows: EvidenceDisplayRow[] = [];
+        const criterionIsIncompleto = criterio.estado_aprobacion === 'incompleto';
         const uniqueEvidences = new Map<number, EvidenceApprovalItem>();
         evidencias.forEach((evidencia) => {
           if (!uniqueEvidences.has(evidencia.evidencia_id)) {
@@ -361,9 +389,7 @@ export const CriterionEvidencesModal: React.FC<CriterionEvidencesModalProps> = (
                     evidencia.approval_status ??
                     'pendiente',
                   comentario_rechazo:
-                    fallbackDecision?.comentario_rechazo ??
-                    evidencia.comentario_rechazo ??
-                    null,
+                    fallbackDecision?.comentario_rechazo ?? null,
                 },
                 responsable: {
                   usuario_id: evidencia.asignacion?.usuario_id ?? null,
@@ -380,6 +406,7 @@ export const CriterionEvidencesModal: React.FC<CriterionEvidencesModalProps> = (
                 estado: assignment.estado,
                 fecha_limite: assignment.fecha_limite,
                 elemento_asignacion_id: assignment.asignacion_id,
+                updated_at: assignment.updated_at,
                 user: {
                   nombre: assignment.usuario_nombre ?? null,
                 },
@@ -390,6 +417,7 @@ export const CriterionEvidencesModal: React.FC<CriterionEvidencesModalProps> = (
               estado: string;
               fecha_limite: string | null;
               elemento_asignacion_id?: number;
+              updated_at?: string | null;
               user?: {
                 nombre?: string | null;
               };
@@ -409,13 +437,31 @@ export const CriterionEvidencesModal: React.FC<CriterionEvidencesModalProps> = (
             if (uniqueAssignments.length > 0) {
               uniqueAssignments.forEach((assignment) => {
                 const decision = evidencia.approvals_by_user?.[String(assignment.usuario_id)];
+                const currentDecision =
+                  decision
+                  && hasCurrentDecision(decision.updated_at, assignment.updated_at)
+                    ? decision
+                    : undefined;
+
+                const currentStatus = normalizeEvidenceStatus(
+                  currentDecision?.approval_status ?? evidencia.approval_status,
+                );
+                const shouldInclude =
+                  isCompletedAssignmentStatus(assignment.estado)
+                  || currentStatus === 'rechazado';
+
+                if (!shouldInclude) return;
+
                 rows.push({
                   rowKey: `${evidencia.evidencia_id}-${assignment.usuario_id}`,
                   evidencia: {
                     ...evidencia,
-                    approval_status: decision?.approval_status ?? 'pendiente',
+                    approval_status: currentDecision?.approval_status ?? currentStatus,
                     comentario_rechazo:
-                      decision?.comentario_rechazo ?? null,
+                      currentDecision?.comentario_rechazo
+                      ?? (currentStatus === 'rechazado'
+                        ? (evidencia.comentario_rechazo ?? null)
+                        : null),
                     asignacion: {
                       estado: assignment.estado,
                       fecha_limite: assignment.fecha_limite,
@@ -441,20 +487,40 @@ export const CriterionEvidencesModal: React.FC<CriterionEvidencesModalProps> = (
               .catch(() => []);
 
             const processAssignments = procesoId
-              ? assignments.filter((assignment) => assignment.proceso_id === procesoId)
+              ? assignments.filter(
+                  (assignment) => assignment.proceso_id === procesoId,
+                )
               : assignments;
             const uniqueAssignments = dedupeTraditionalAssignments(processAssignments);
 
             if (uniqueAssignments.length > 0) {
               uniqueAssignments.forEach((assignment) => {
                 const decision = evidencia.approvals_by_user?.[String(assignment.usuario_id)];
+                const currentDecision =
+                  decision
+                  && hasCurrentDecision(decision.updated_at, assignment.updated_at)
+                    ? decision
+                    : undefined;
+
+                const currentStatus = normalizeEvidenceStatus(
+                  currentDecision?.approval_status ?? evidencia.approval_status,
+                );
+                const shouldInclude =
+                  isCompletedAssignmentStatus(assignment.estado)
+                  || currentStatus === 'rechazado';
+
+                if (!shouldInclude) return;
+
                 rows.push({
                   rowKey: `${evidencia.evidencia_id}-${assignment.usuario_id}`,
                   evidencia: {
                     ...evidencia,
-                    approval_status: decision?.approval_status ?? 'pendiente',
+                    approval_status: currentDecision?.approval_status ?? currentStatus,
                     comentario_rechazo:
-                      decision?.comentario_rechazo ?? null,
+                      currentDecision?.comentario_rechazo
+                      ?? (currentStatus === 'rechazado'
+                        ? (evidencia.comentario_rechazo ?? null)
+                        : null),
                     asignacion: {
                       estado: assignment.estado,
                       fecha_limite: assignment.fecha_limite,
@@ -485,18 +551,37 @@ export const CriterionEvidencesModal: React.FC<CriterionEvidencesModalProps> = (
               ? evidencia.approvals_by_user?.[String(evidencia.asignacion.usuario_id)]
               : undefined;
 
+          const currentFallbackDecision =
+            fallbackDecision
+            && hasCurrentDecision(fallbackDecision.updated_at, evidencia.asignacion?.updated_at)
+              ? fallbackDecision
+              : undefined;
+
+          const fallbackStatus = normalizeEvidenceStatus(
+            currentFallbackDecision?.approval_status ?? evidencia.approval_status,
+          );
+
+          const fallbackIsReviewable =
+            !evidencia.asignacion
+            || isCompletedAssignmentStatus(evidencia.asignacion.estado)
+            || fallbackStatus === 'rechazado';
+
+          if (!fallbackIsReviewable) {
+            continue;
+          }
+
           rows.push({
             rowKey: `${evidencia.evidencia_id}-${evidencia.asignacion?.usuario_id ?? 'sin-responsable'}`,
             evidencia: {
               ...evidencia,
               approval_status:
-                fallbackDecision?.approval_status ??
-                evidencia.approval_status ??
-                'pendiente',
+                currentFallbackDecision?.approval_status ??
+                fallbackStatus,
               comentario_rechazo:
-                fallbackDecision?.comentario_rechazo ??
-                evidencia.comentario_rechazo ??
-                null,
+                currentFallbackDecision?.comentario_rechazo
+                ?? (fallbackStatus === 'rechazado'
+                  ? (evidencia.comentario_rechazo ?? null)
+                  : null),
             },
             responsable: {
               usuario_id: evidencia.asignacion?.usuario_id ?? null,
@@ -528,6 +613,142 @@ export const CriterionEvidencesModal: React.FC<CriterionEvidencesModalProps> = (
   const blockIsRejected = criterio.estado_aprobacion === 'rechazado';
   const blockIsIncompleto = criterio.estado_aprobacion === 'incompleto';
   const showLoading = loading || loadingRows;
+  const emptyMessage = isFlexible
+    ? 'No hay fuentes asociadas para revisar en este bloque.'
+    : 'No hay evidencias asociadas para revisar en este bloque.';
+
+  const evidenceColumns: DataTableColumn<EvidenceDisplayRow>[] = [
+      {
+        key: 'evidencia',
+        header: isFlexible ? 'Fuente' : 'Evidencia',
+        align: 'left',
+        render: (_, row) => {
+          const evidencia = row.evidencia;
+          const evidenceStatus = normalizeEvidenceStatus(evidencia.approval_status);
+
+          return (
+            <div className="min-w-0">
+              <p
+                className={`truncate text-gris-una ${TYPOGRAPHY.table.helper}`}
+                title={`${evidencia.nomenclatura} - ${evidencia.descripcion}`}
+              >
+                <span className="font-semibold text-negro-una">
+                  {evidencia.nomenclatura}
+                </span>
+                <span> - {evidencia.descripcion}</span>
+              </p>
+
+              {evidenceStatus === 'rechazado' && evidencia.comentario_rechazo && (
+                <p
+                  className={`mt-1 grid grid-cols-[auto_minmax(0,1fr)] items-start gap-x-1 ${TYPOGRAPHY.table.helper}`}
+                  title={evidencia.comentario_rechazo}
+                >
+                  <span className="font-semibold text-error-dark whitespace-nowrap">Motivo:</span>
+                  <span className="text-gris-una-2 wrap-anywhere whitespace-pre-line line-clamp-3">
+                    {evidencia.comentario_rechazo}
+                  </span>
+                </p>
+              )}
+            </div>
+          );
+        },
+      },
+      {
+        key: 'responsable',
+        header: 'Responsable',
+        align: 'left',
+        render: (_, row) => (
+          <p className={`text-gris-una ${TYPOGRAPHY.table.helper}`}>
+            {row.responsable.nombre ?? 'Sin responsable identificado'}
+          </p>
+        ),
+      },
+      {
+        key: 'estado',
+        header: 'Estado',
+        align: 'left',
+        render: (_, row) => {
+          const evidenceStatus = normalizeEvidenceStatus(row.evidencia.approval_status);
+          const statusConfig = EVIDENCE_STATUS_BADGE[evidenceStatus];
+
+          return (
+            <StatusBadge
+              label={statusConfig.label}
+              colorClasses={statusConfig.colorClasses}
+            />
+          );
+        },
+      },
+      {
+        key: 'acciones',
+        header: 'Acciones',
+        align: 'center',
+        render: (_, row) => {
+          const evidencia = row.evidencia;
+          const evidenceStatus = normalizeEvidenceStatus(evidencia.approval_status);
+          const isLocked = evidenceStatus === 'aprobado' && blockIsIncompleto;
+          const canApprove =
+            !blockIsApproved && !blockIsRejected && !isLocked && evidenceStatus === 'pendiente';
+          const canReject =
+            !blockIsApproved && !blockIsRejected && !isLocked && evidenceStatus === 'pendiente';
+
+          return (
+            <div
+              className="flex items-center justify-center gap-1"
+              onClick={(event) => event.stopPropagation()}
+            >
+              <ButtonWithTooltip
+                variant="tablePower"
+                size="sm"
+                tooltip={
+                  blockIsRejected
+                    ? 'Bloque rechazado: acciones bloqueadas'
+                    : blockIsApproved
+                      ? 'Bloque aprobado: acciones bloqueadas'
+                    : isLocked
+                    ? `${isFlexible ? 'Elemento' : 'Evidencia'} aprobada (bloqueada)`
+                    : evidenceStatus === 'rechazado'
+                      ? 'Ya rechazada'
+                    : canApprove
+                      ? `Aprobar ${isFlexible ? 'elemento' : 'evidencia'}`
+                      : 'Ya aprobada'
+                }
+                tooltipPosition="left"
+                disabled={!canApprove}
+                onClick={() => onAprobarEvidencia(criterio, evidencia)}
+                className={TABLE_ACTION_BUTTON.button}
+              >
+                <SystemIcons.interface.checkCircle className="size-4" />
+              </ButtonWithTooltip>
+
+              <ButtonWithTooltip
+                variant="tableDelete"
+                size="sm"
+                tooltip={
+                  blockIsRejected
+                    ? 'Bloque rechazado: acciones bloqueadas'
+                    : evidenceStatus === 'aprobado'
+                      ? `${isFlexible ? 'Elemento' : 'Evidencia'} ya aprobado`
+                    : evidenceStatus === 'rechazado'
+                      ? 'Ya rechazada'
+                    : isLocked
+                    ? `${isFlexible ? 'Elemento' : 'Evidencia'} aprobada (bloqueada)`
+                    : canReject
+                      ? `Rechazar ${isFlexible ? 'elemento' : 'evidencia'}`
+                      : 'Acción no disponible'
+                }
+                tooltipPosition="left"
+                disabled={!canReject}
+                onClick={() => onRechazarEvidencia(criterio, evidencia)}
+                className={TABLE_ACTION_BUTTON.button}
+              >
+                <SystemIcons.interface.xCircle className="size-4" />
+              </ButtonWithTooltip>
+            </div>
+          );
+        },
+      },
+    ];
 
   return (
     <Modal
@@ -543,125 +764,32 @@ export const CriterionEvidencesModal: React.FC<CriterionEvidencesModalProps> = (
       showCancel={false}
       showConfirm={false}
     >
-      {showLoading ? (
-        <div className="relative min-h-35">
-          <LoadingSpinner variant="loader" />
-        </div>
-      ) : displayRows.length === 0 ? (
-        <div className="py-8 text-center">
-          <p className={`${TYPOGRAPHY.modal.body} text-gris-una`}>
-            {isFlexible
-              ? 'No hay fuentes asociadas para revisar en este bloque.'
-              : 'No hay evidencias asociadas para revisar en este bloque.'}
-          </p>
-        </div>
-      ) : (
-        <div className="space-y-2 py-1">
-          {displayRows.map((row) => {
-            const evidencia = row.evidencia;
-            const evidenceStatus = normalizeEvidenceStatus(evidencia.approval_status);
-            const statusConfig = EVIDENCE_STATUS_BADGE[evidenceStatus];
-            const isLocked =
-              evidenceStatus === 'aprobado' && blockIsIncompleto;
-            const canApprove =
-              !blockIsApproved && !blockIsRejected && !isLocked && evidenceStatus === 'pendiente';
-            const canReject =
-              !blockIsApproved && !blockIsRejected && !isLocked && evidenceStatus === 'pendiente';
-            const responsableLabel = row.responsable.nombre ?? 'Sin responsable identificado';
-
-            return (
-              <div
-                key={row.rowKey}
-                className="rounded-lg border border-gris-light px-3 py-2"
-              >
-                <div className="flex items-start justify-between gap-3">
-                  <div className="min-w-0 flex-1">
-                    <div className="flex items-center gap-2">
-                      <StatusBadge
-                        label={statusConfig.label}
-                        colorClasses={statusConfig.colorClasses}
-                      />
-                      <p className={`truncate text-gris-una ${TYPOGRAPHY.table.helper}`}>
-                        <span className="font-semibold text-negro-una">
-                          {evidencia.nomenclatura}
-                        </span>
-                        <span> - {evidencia.descripcion}</span>
-                      </p>
-                    </div>
-
-                    <p className={`mt-1 text-gris-una ${TYPOGRAPHY.table.helper}`}>
-                      Responsable: {responsableLabel}
-                    </p>
-
-                    {evidencia.comentario_rechazo && (
-                      <p className={`mt-1 text-error-dark whitespace-pre-wrap wrap-break-word ${TYPOGRAPHY.table.helper}`}>
-                        Motivo: {evidencia.comentario_rechazo}
-                      </p>
-                    )}
-
-                    <EvidenceDocumentsDropdown
-                      evidenciaId={evidencia.evidencia_id}
-                      isFlexible={isFlexible}
-                      procesoId={procesoId}
-                      responsable={row.responsable}
-                    />
-                  </div>
-
-                  <div className="flex items-center gap-1" onClick={(event) => event.stopPropagation()}>
-                    <ButtonWithTooltip
-                      variant="tablePower"
-                      size="sm"
-                      tooltip={
-                        blockIsRejected
-                          ? 'Bloque rechazado: acciones bloqueadas'
-                          : blockIsApproved
-                            ? 'Bloque aprobado: acciones bloqueadas'
-                          : isLocked
-                          ? `${isFlexible ? 'Elemento' : 'Evidencia'} aprobada (bloqueada)`
-                          : evidenceStatus === 'rechazado'
-                            ? 'Ya rechazada'
-                          : canApprove
-                            ? `Aprobar ${isFlexible ? 'elemento' : 'evidencia'}`
-                            : 'Ya aprobada'
-                      }
-                      tooltipPosition="left"
-                      disabled={!canApprove}
-                      onClick={() => onAprobarEvidencia(criterio, evidencia)}
-                      className={TABLE_ACTION_BUTTON.button}
-                    >
-                      <SystemIcons.interface.checkCircle className="size-4" />
-                    </ButtonWithTooltip>
-
-                    <ButtonWithTooltip
-                      variant="tableDelete"
-                      size="sm"
-                      tooltip={
-                        blockIsRejected
-                          ? 'Bloque rechazado: acciones bloqueadas'
-                          : evidenceStatus === 'aprobado'
-                            ? `${isFlexible ? 'Elemento' : 'Evidencia'} ya aprobado`
-                          : evidenceStatus === 'rechazado'
-                            ? 'Ya rechazada'
-                          : isLocked
-                          ? `${isFlexible ? 'Elemento' : 'Evidencia'} aprobada (bloqueada)`
-                          : canReject
-                            ? `Rechazar ${isFlexible ? 'elemento' : 'evidencia'}`
-                            : 'Acción no disponible'
-                      }
-                      tooltipPosition="left"
-                      disabled={!canReject}
-                      onClick={() => onRechazarEvidencia(criterio, evidencia)}
-                      className={TABLE_ACTION_BUTTON.button}
-                    >
-                      <SystemIcons.interface.xCircle className="size-4" />
-                    </ButtonWithTooltip>
-                  </div>
-                </div>
-              </div>
-            );
-          })}
-        </div>
-      )}
+      <div className="px-1 py-2">
+        <DataTable<EvidenceDisplayRow>
+          title=""
+          searchable={false}
+          loading={showLoading}
+          data={displayRows}
+          columns={evidenceColumns}
+          getRowKey={(item) => item.rowKey}
+          emptyMessage={emptyMessage}
+          unstyled
+          expandableRow={(row): ExpandableChildItem[] => [
+            {
+              key: `docs-${row.rowKey}`,
+              noBorder: true,
+              content: (
+                <EvidenceDocumentsChildrenPanel
+                  evidenciaId={row.evidencia.evidencia_id}
+                  isFlexible={isFlexible}
+                  procesoId={procesoId}
+                  responsable={row.responsable}
+                />
+              ),
+            },
+          ]}
+        />
+      </div>
     </Modal>
   );
 };

@@ -7,7 +7,7 @@
  * Para la vista completa, ver NotificationCenter.
  */
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { SPRING_HOVER } from "@/Constants/Animations";
@@ -21,6 +21,10 @@ import { TYPOGRAPHY } from "@/Constants/Typography";
 import { formatTimeAgo } from "@/Utils/DateUtils";
 import type { Notification } from "@/Types/NotificationTypes";
 import { buildNotificationTargetRoute } from "@/Components/Notifications/notificationNavigation";
+import {
+  buildNotificationCopy,
+  isNotificationImportant,
+} from "@/Components/Notifications/notificationCopy";
 
 interface NotificationDropdownProps {
   onClose: () => void;
@@ -61,6 +65,14 @@ const DropdownItem: React.FC<DropdownItemProps> = ({
     }
   };
 
+  const notificationCopy = useMemo(
+    () => buildNotificationCopy(notification),
+    [notification],
+  );
+  const isImportant = useMemo(
+    () => isNotificationImportant(notification),
+    [notification],
+  );
   const timeAgo = formatTimeAgo(notification.created_at);
 
   return (
@@ -90,23 +102,23 @@ const DropdownItem: React.FC<DropdownItemProps> = ({
           transition={SPRING_HOVER}
         />
       )}
-      {/* Fila superior: dot + título + badge crítico + tiempo */}
+      {/* Fila superior: dot + título + badge de prioridad + tiempo */}
       <div className="relative z-10 flex items-start justify-between gap-2">
         <div className="flex items-center gap-2 min-w-0">
           {!notification.leida && (
             <span
               className={cn(
                 "h-1.5 w-1.5 shrink-0 rounded-full",
-                notification.es_critica ? "bg-rojo-una" : "bg-azul-una-2",
+                isImportant ? "bg-rojo-una" : "bg-azul-una-2",
               )}
             />
           )}
           <h4 className={cn(TYPOGRAPHY.form.label, "font-semibold text-negro-una-2 truncate")}>
             {notification.titulo}
           </h4>
-          {notification.es_critica && (
+          {isImportant && (
             <StatusBadge
-              label="Crítico"
+              label="Importante"
               colorClasses="bg-error-light text-error"
             />
           )}
@@ -120,12 +132,33 @@ const DropdownItem: React.FC<DropdownItemProps> = ({
       <p
         className={cn(
           TYPOGRAPHY.form.helper,
-          "relative z-10 mt-0.5 text-gris-una-2 line-clamp-2",
+          "relative z-10 mt-0.5 text-gris-una-2 line-clamp-2 wrap-anywhere whitespace-pre-line",
           !notification.leida && "ml-3.5",
         )}
       >
-        {notification.mensaje}
+        {notificationCopy.summary}
       </p>
+
+      {notificationCopy.evaluatorComment && (
+        <div
+          className={cn(
+            "relative z-10 mt-1",
+            !notification.leida && "ml-3.5",
+          )}
+        >
+          <p
+            className={cn(
+              TYPOGRAPHY.form.helper,
+              "grid grid-cols-[auto_minmax(0,1fr)] items-start gap-x-1",
+            )}
+          >
+            <span className="font-semibold text-error whitespace-nowrap">Observación del evaluador:</span>
+            <span className="text-gris-una-2 line-clamp-2 wrap-anywhere whitespace-pre-line">
+              {notificationCopy.evaluatorComment}
+            </span>
+          </p>
+        </div>
+      )}
     </motion.div>
   );
 };

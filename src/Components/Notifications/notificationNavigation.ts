@@ -5,6 +5,7 @@ const ASSIGNMENT_EVENTS = new Set([
   "asignacion_evidencia",
   "asignacion_elemento",
   "devolucion_observacion",
+  "rechazo_evidencia",
   "rechazo_elemento",
 ]);
 

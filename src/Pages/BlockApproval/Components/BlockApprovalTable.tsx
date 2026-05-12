@@ -52,6 +52,7 @@ export interface EvidenceApprovalItem {
     fecha_limite: string | null;
     usuario_id: number;
     usuario_nombre?: string | null;
+    updated_at?: string | null;
   } | null;
   asignacion_id?: number;
   approvals_by_user?: Record<
@@ -70,6 +71,7 @@ export interface EvidenceApprovalItem {
     fecha_limite: string | null;
     asignacion_id?: number;
     proceso_id?: number;
+    updated_at?: string | null;
   }>;
 }
 

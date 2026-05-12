@@ -26,7 +26,6 @@ export const ApprovalModal: React.FC<ApprovalModalProps> = ({
   onClose,
   onConfirm,
   action,
-  isFlexible = false,
   criterio
 }) => {
   const [comment, setComment] = useState('');
@@ -87,7 +86,7 @@ export const ApprovalModal: React.FC<ApprovalModalProps> = ({
             value={comment}
             onChange={(e) => setComment(e.target.value)}
             rows={3}
-            maxLength={isFlexible ? 100 : 500}
+            maxLength={100}
             characterCount
             placeholder="Agregue un comentario sobre el rechazo..."
           />

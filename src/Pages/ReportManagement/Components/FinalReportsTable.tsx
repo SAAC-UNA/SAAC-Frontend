@@ -16,6 +16,8 @@ export interface Archivo {
   archivo_id: number;
   nombre_original: string;
   ruta_archivo: string;
+  tipo?: string;
+  url?: string;
   token_publico?: string;
   url_publica?: string;
   url_publica_carpeta?: string;
@@ -61,6 +63,7 @@ const hasArchivoAdjunto = (archivo: Archivo | null | undefined): boolean => {
   const hasPhysicalReference = [
     archivo.ruta_archivo,
     archivo.nombre_original,
+    archivo.url,
     archivo.url_publica,
     archivo.url_publica_carpeta,
     archivo.token_publico,

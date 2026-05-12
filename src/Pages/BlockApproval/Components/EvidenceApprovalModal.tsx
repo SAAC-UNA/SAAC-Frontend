@@ -82,7 +82,7 @@ export const EvidenceApprovalModal: React.FC<EvidenceApprovalModalProps> = ({
             value={comment}
             onChange={(e) => setComment(e.target.value)}
             rows={3}
-            maxLength={500}
+            maxLength={100}
             characterCount
             placeholder={
               isAprobar

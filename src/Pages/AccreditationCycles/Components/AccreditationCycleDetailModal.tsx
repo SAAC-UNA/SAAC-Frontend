@@ -127,7 +127,7 @@ export const AccreditationCycleDetailModal: React.FC<
         <Separator />
 
         {/* div5 — Nombre del modelo */}
-        <InfoCell label="Nombre del modelo" className="col-start-1 col-end-5">
+        <InfoCell label="Nombre del modelo" className="col-start-1 col-end-4">
           <div className="flex flex-col gap-1">
             <span className={cn(TYPOGRAPHY.modal.body, "text-gris-una-2")}>
               {modelo?.nombre ?? "—"}
@@ -141,7 +141,7 @@ export const AccreditationCycleDetailModal: React.FC<
         </InfoCell>
 
         {/* div7 — Versión */}
-        <InfoCell label="Versión" className="col-start-5 col-end-7">
+        <InfoCell label="Versión" className="col-start-4 col-end-7">
           <span className={cn(TYPOGRAPHY.modal.body, "text-gris-una-2")}>
             {modelo?.version ?? "Sin versión"}
           </span>
