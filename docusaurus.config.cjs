@@ -1,3 +1,5 @@
+const path = require("node:path");
+
 const config = {
   title: "Manual SAAC",
   tagline: "Documentacion funcional del frontend",
@@ -28,7 +30,7 @@ const config = {
         docs: {
           path: "Docs/manual",
           routeBasePath: "/",
-          sidebarPath: require.resolve("./sidebars.js"),
+          sidebarPath: require.resolve("./sidebars.cjs"),
         },
         blog: false,
         pages: false,
@@ -37,6 +39,26 @@ const config = {
         },
       },
     ],
+  ],
+
+  plugins: [
+    function generatedModulesCompatPlugin() {
+      return {
+        name: "generated-modules-compat-plugin",
+        configureWebpack() {
+          return {
+            module: {
+              rules: [
+                {
+                  test: /[\\\/]\.docusaurus[\\\/].+\.js$/,
+                  type: "javascript/auto",
+                },
+              ],
+            },
+          };
+        },
+      };
+    },
   ],
 
   themeConfig: {
@@ -62,7 +84,7 @@ const config = {
     },
     footer: {
       style: "light",
-      copyright: `SAAC - Manual funcional del frontend`,
+      copyright: "SAAC - Manual funcional del frontend",
     },
     colorMode: {
       defaultMode: "light",
@@ -72,4 +94,4 @@ const config = {
   },
 };
 
-export default config;
+module.exports = config;

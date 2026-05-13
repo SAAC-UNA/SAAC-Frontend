@@ -3,6 +3,26 @@ const sidebars = {
     "index",
     {
       type: "category",
+      label: "Inicio y Contexto",
+      link: { type: "doc", id: "inicio/index" },
+      items: [
+        "inicio/inicio",
+        "inicio/selector-contexto",
+        "inicio/institucion-educativa",
+      ],
+    },
+    {
+      type: "category",
+      label: "Acceso y Vistas Publicas",
+      link: { type: "doc", id: "acceso/index" },
+      items: [
+        "acceso/autenticacion",
+        "acceso/carpeta-publica",
+        "acceso/informe-publico",
+      ],
+    },
+    {
+      type: "category",
       label: "Administracion",
       link: { type: "doc", id: "administracion/index" },
       items: [
@@ -18,6 +38,7 @@ const sidebars = {
       items: [
         "acreditacion/gestion-acreditacion",
         "acreditacion/modelos-acreditacion",
+        "acreditacion/estructura-tradicional",
         "acreditacion/ciclos-acreditacion",
         "acreditacion/procesos-acreditacion",
         "acreditacion/estructura-institucional",
@@ -69,4 +90,4 @@ const sidebars = {
   ],
 };
 
-export default sidebars;
+module.exports = sidebars;

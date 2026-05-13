@@ -23,9 +23,10 @@ Cada pagina de modulo debe indicar:
 
 | Modulo | Submodulos visibles desde navegacion |
 | --- | --- |
-| Inicio | Inicio |
+| Inicio y Contexto | Inicio, Selector de Contexto, Acerca de SAAC UNA |
+| Acceso y Vistas Publicas | Login, Sesion Expirada, Carpeta Publica, Informe Publico |
 | Administracion | Roles, Usuarios, Bitacora del Sistema |
-| Acreditacion | Gestion de Acreditacion |
+| Acreditacion | Gestion de Acreditacion, Modelos, Estructura Tradicional, Ciclos, Procesos, Estructura Institucional |
 | Entregables | Asignar Entregables, Mis Entregas, Buscar Entregables |
 | Ampliacion | Mis Solicitudes, Gestionar Solicitudes |
 | Compromisos de Mejora | Listado, Configuracion, Detalle |

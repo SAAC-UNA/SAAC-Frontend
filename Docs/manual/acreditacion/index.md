@@ -19,6 +19,7 @@ El modulo Acreditacion agrupa la configuracion y gestion del proceso de acredita
 | --- | --- | --- |
 | Gestion de Acreditacion | `/acreditacion` | `cap.accreditation.model.view`, `cap.accreditation.cycle.view` o, con ciclo seleccionado, `cap.accreditation.process.view` |
 | Modelos de Acreditacion | `/acreditacion?seccion=modelos`, `/estructura/modelos` | `cap.accreditation.model.view` o `modelos.view` |
+| Estructura Tradicional | `/estructura` | `procesos.view` |
 | Ciclos de Acreditacion | `/acreditacion?seccion=ciclos`, `/ciclos-acreditacion` | `cap.accreditation.cycle.view` o `ciclos.view` |
 | Procesos de Acreditacion | `/acreditacion?seccion=procesos`, `/procesos-acreditacion` | `cap.accreditation.process.view` o `procesos.view` |
 | Estructura Institucional | `/acreditacion?seccion=estructura`, `/institucion-educativa` | Permisos de estructura institucional |
