@@ -17,6 +17,7 @@ import type { BackendUser } from '../../Services/UserService';
 jest.mock('@/Services/UserService', () => ({
   userService: {
     listUsers: jest.fn(),
+    createUserFromLdap: jest.fn(),
     activateUser: jest.fn(),
     deactivateUser: jest.fn(),
   },
@@ -365,6 +366,74 @@ describe('useUsers Hook', () => {
       expect(result.current.users[0].createdAt).toBeInstanceOf(Date);
       expect(result.current.users[0].updatedAt).toBeInstanceOf(Date);
       expect(result.current.users[0].createdAt.getFullYear()).toBeGreaterThanOrEqual(2023);
+    });
+  });
+
+  describe('crearUsuarioDesdeLdap', () => {
+    it('debe crear usuario y agregarlo a la lista local', async () => {
+      const createdBackendUser: BackendUser = {
+        ...mockBackendUsers[0],
+        id: 3,
+        cedula: '801490957',
+        email: 'nuevo@test.com',
+        name: 'Nuevo Usuario',
+        roles: [{ id: 3, name: 'Profesor' }],
+      };
+
+      mockUserService.createUserFromLdap.mockResolvedValue({
+        data: createdBackendUser,
+        message: 'Usuario creado',
+      });
+
+      const { result } = renderHook(() => useUsers());
+
+      let createdUser;
+      await act(async () => {
+        createdUser = await result.current.crearUsuarioDesdeLdap({
+          cedula: '801490957',
+          role: 'Profesor',
+        });
+      });
+
+      expect(mockUserService.createUserFromLdap).toHaveBeenCalledWith({
+        cedula: '801490957',
+        role: 'Profesor',
+      });
+      expect(createdUser).toMatchObject({
+        id: 3,
+        name: 'Nuevo Usuario',
+        role: 'Profesor',
+      });
+      expect(result.current.users[0]).toMatchObject({
+        id: 3,
+        name: 'Nuevo Usuario',
+      });
+      expect(result.current.error).toBe(null);
+    });
+
+    it('no debe reemplazar la tabla con error global si falla la creacion', async () => {
+      mockUserService.listUsers.mockResolvedValue(mockBackendUsers);
+      mockUserService.createUserFromLdap.mockRejectedValue(
+        new Error('El usuario ya existe en SAAC'),
+      );
+
+      const { result } = renderHook(() => useUsers());
+
+      await act(async () => {
+        await result.current.loadUsers();
+      });
+
+      await expect(
+        act(async () => {
+          await result.current.crearUsuarioDesdeLdap({
+            cedula: '801490957',
+            role: 'Profesor',
+          });
+        }),
+      ).rejects.toThrow('El usuario ya existe en SAAC');
+
+      expect(result.current.error).toBe(null);
+      expect(result.current.users).toHaveLength(2);
     });
   });
 
