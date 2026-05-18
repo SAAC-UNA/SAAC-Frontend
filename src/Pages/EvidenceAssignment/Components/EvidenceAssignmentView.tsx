@@ -29,6 +29,7 @@ import type {
 } from "../EvidenceAssignment";
 import { formatDateShort } from "@/Utils/DateUtils";
 import type { ExpandableChildItem } from "@/Components/Ui/Table/DataTable";
+import { getElementPath } from "@/Utils/elementTreeUtils";
 
 // ---------------------------------------------------------------------------
 // EvidenceAssignmentView — componente de presentación puro
@@ -88,13 +89,31 @@ export const EvidenceAssignmentView: React.FC<EvidenceAssignmentViewProps> = ({
     </Button>
   );
 
-  const getEvidenceBreadcrumb = (evidenciaId: number): BreadcrumbItem[] => {
+  const getAssignmentBreadcrumb = (assignmentId: number): BreadcrumbItem[] => {
+    if (isFlexible) {
+      const element = flexElements.find((el) => el.elemento_id === assignmentId);
+      const path =
+        getElementPath(assignmentId, flexElements) ||
+        element?.nombre ||
+        element?.nomenclatura ||
+        element?.tipo ||
+        `Elemento ${assignmentId}`;
+
+      return path.split(" > ").map((label) => ({ label }));
+    }
+
+    const evidenciaId = assignmentId;
     const ev = evidenceById[evidenciaId];
     if (!ev) return [{ label: 'N/A' }];
     const criterion = criterionById[ev.criterio_id] as Criterion | undefined;
     return criterion
       ? [{ label: criterion.nomenclatura }, { label: `${ev.nomenclatura} — ${ev.descripcion}` }]
       : [{ label: `${ev.nomenclatura} — ${ev.descripcion}` }];
+  };
+
+  const getAssignmentLabel = (assignmentId: number): string => {
+    const breadcrumb = getAssignmentBreadcrumb(assignmentId);
+    return breadcrumb.map((item) => item.label).join(" > ");
   };
 
   return (
@@ -534,7 +553,7 @@ export const EvidenceAssignmentView: React.FC<EvidenceAssignmentViewProps> = ({
                             <div
                               className={`flex items-center gap-2 flex-1 min-w-0 ${TYPOGRAPHY.table.cell}`}
                             >
-                              <Breadcrumb items={getEvidenceBreadcrumb(dup.evidencia_id)} />
+                              <Breadcrumb items={getAssignmentBreadcrumb(dup.evidencia_id)} />
                             </div>
                           ),
                           action: (
@@ -552,7 +571,7 @@ export const EvidenceAssignmentView: React.FC<EvidenceAssignmentViewProps> = ({
                         className={`p-3 bg-warning-light rounded-corner border border-warning-ring ${TYPOGRAPHY.table.helper} text-warning-dark`}
                       >
                         <strong>Bloqueado automáticamente:</strong> Estos
-                        usuarios fueron excluidos; ya tienen evidencias
+                        usuarios fueron excluidos; ya tienen {isFlexible ? "elementos" : "evidencias"}
                         asignadas en estado activo. No se pueden crear
                         asignaciones duplicadas mientras no estén completadas o
                         canceladas.
@@ -568,13 +587,13 @@ export const EvidenceAssignmentView: React.FC<EvidenceAssignmentViewProps> = ({
                       <h2
                         className={`${TYPOGRAPHY.table.caption} font-semibold text-negro-una`}
                       >
-                        Evidencias Ya Completadas
+                        {isFlexible ? "Elementos Ya Completados" : "Evidencias Ya Completadas"}
                       </h2>
                       <div className="flex items-center justify-between gap-4 mt-1">
                         <p
                           className={`${TYPOGRAPHY.table.helper} text-gris-una`}
                         >
-                          Usuarios que ya completaron estas evidencias. Puede
+                          Usuarios que ya completaron {isFlexible ? "estos elementos" : "estas evidencias"}. Puede
                           reasignarlas si es necesario.
                         </p>
                         <label className="flex items-center gap-2 cursor-pointer select-none shrink-0">
@@ -684,9 +703,9 @@ export const EvidenceAssignmentView: React.FC<EvidenceAssignmentViewProps> = ({
                                     )
                                   }
                                   className="w-4 h-4 rounded border-info-ring text-info focus:ring-info cursor-pointer shrink-0"
-                                  aria-label={`Reasignar ${evidenceById[dup.evidencia_id]?.nomenclatura}`}
+                                  aria-label={`Reasignar ${getAssignmentLabel(dup.evidencia_id)}`}
                                 />
-                                <Breadcrumb variant="table" items={getEvidenceBreadcrumb(dup.evidencia_id)} />
+                                <Breadcrumb variant="table" items={getAssignmentBreadcrumb(dup.evidencia_id)} />
                               </div>
                             ),
                             action: (
@@ -705,7 +724,7 @@ export const EvidenceAssignmentView: React.FC<EvidenceAssignmentViewProps> = ({
                         className={`p-3 bg-info-light rounded-corner border border-info-ring ${TYPOGRAPHY.table.helper} text-info-dark`}
                       >
                         <strong>Reasignación permitida:</strong> Estos usuarios
-                        ya completaron estas evidencias. Márquelos si desea
+                        ya completaron {isFlexible ? "estos elementos" : "estas evidencias"}. Márquelos si desea
                         reasignarlas para crear una nueva asignación.
                       </div>
                     </div>
