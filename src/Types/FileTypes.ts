@@ -106,7 +106,7 @@ export interface FileUploadState {
 /**
  * ⚠️ SOLO PARA UX - NO ES SEGURIDAD
  * Formatos permitidos (debe coincidir con backend: StoreFileRequest.php línea 38)
- * Backend valida: 'mimes:pdf,doc,docx,xls,xlsx,ppt,pptx,jpg,jpeg,png,webp,mp4,avi,mov,wmv,mkv,webm,zip,rar,7z'
+ * Backend valida: 'mimes:pdf,doc,docx,xls,xlsx,ppt,pptx,jpg,jpeg,png,gif,bmp,svg,webp,avif,heic,heif,mp4,avi,mov,wmv,mkv,webm,zip,rar,7z,txt,csv,rtf'
  */
 export const ALLOWED_FILE_EXTENSIONS = [
   "pdf",
@@ -119,6 +119,9 @@ export const ALLOWED_FILE_EXTENSIONS = [
   "jpg",
   "jpeg",
   "png",
+  "gif",
+  "bmp",
+  "svg",
   "webp",
   "avif",
   "heic",
@@ -132,6 +135,9 @@ export const ALLOWED_FILE_EXTENSIONS = [
   "zip",
   "rar",
   "7z",
+  "txt",
+  "csv",
+  "rtf",
 ] as const;
 
 export type AllowedFileExtension = (typeof ALLOWED_FILE_EXTENSIONS)[number];
@@ -150,6 +156,9 @@ export const ALLOWED_MIME_TYPES = [
   "application/vnd.openxmlformats-officedocument.presentationml.presentation",
   "image/jpeg",
   "image/png",
+  "image/gif",
+  "image/bmp",
+  "image/svg+xml",
   "image/webp",
   "image/avif",
   "image/heic",
@@ -163,6 +172,11 @@ export const ALLOWED_MIME_TYPES = [
   "application/zip",
   "application/x-rar-compressed",
   "application/x-7z-compressed",
+  "text/plain",
+  "text/csv",
+  "application/csv",
+  "application/rtf",
+  "text/rtf",
 ] as const;
 
 /**
@@ -225,10 +239,11 @@ export function getFileCategory(filename: string): FileCategory {
   if (["pdf", "doc", "docx"].includes(extension)) return "document";
   if (["xls", "xlsx"].includes(extension)) return "spreadsheet";
   if (["ppt", "pptx"].includes(extension)) return "presentation";
-  if (["jpg", "jpeg", "png", "webp"].includes(extension)) return "image";
+  if (["jpg", "jpeg", "png", "gif", "bmp", "svg", "webp", "avif", "heic", "heif"].includes(extension)) return "image";
   if (["mp4", "avi", "mov", "wmv", "mkv", "webm"].includes(extension))
     return "video";
   if (["zip", "rar", "7z"].includes(extension)) return "archive";
+  if (["txt", "csv", "rtf"].includes(extension)) return "document";
 
   return "other";
 }
