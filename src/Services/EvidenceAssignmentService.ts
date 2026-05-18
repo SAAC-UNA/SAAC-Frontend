@@ -89,6 +89,68 @@ class EvidenceAssignmentService {
   }
 
   /**
+   * Validar asignaciones duplicadas de elementos flexibles antes de crear.
+   *
+   * El backend no expone un endpoint dedicado de validaciÃ³n para elementos;
+   * se reutiliza el listado por elemento/proceso y se adapta a la forma que
+   * consume la pantalla de asignaciÃ³n.
+   */
+  async validateElementDuplicates(data: {
+    proceso_id: number;
+    elemento_id: number;
+    usuarios: number[];
+  }): Promise<DuplicateValidationResponse> {
+    try {
+      const response = await axiosInstance.get<{ data: FlexibleAssignmentItem[] }>(
+        `/elementos/${data.elemento_id}/asignaciones`,
+        { params: { proceso_id: data.proceso_id } },
+      );
+      const assignments = response.data.data || [];
+      const selectedUsers = new Set(data.usuarios);
+
+      const duplicados = assignments
+        .filter((assignment) => selectedUsers.has(assignment.usuario_id))
+        .map((assignment) => ({
+          usuario_id: assignment.usuario_id,
+          usuario_nombre:
+            assignment.user?.nombre ?? `Usuario ${assignment.usuario_id}`,
+          evidencia_id: assignment.elemento_id,
+          estado: this.normalizeElementDuplicateStatus(assignment.estado),
+          fecha_asignacion:
+            assignment.created_at || assignment.updated_at || new Date().toISOString(),
+          asignacion_id: assignment.elemento_asignacion_id,
+        }));
+
+      return {
+        tiene_duplicados: duplicados.length > 0,
+        duplicados,
+        total_duplicados: duplicados.length,
+      };
+    } catch (error: any) {
+      throw new Error(
+        error.response?.data?.message ||
+        'Error al validar asignaciones duplicadas de elementos'
+      );
+    }
+  }
+
+  private normalizeElementDuplicateStatus(
+    status: string,
+  ): DuplicateValidationResponse['duplicados'][number]['estado'] {
+    const normalized = status.trim().toLowerCase();
+    if (normalized === 'completado' || normalized === 'validada') {
+      return 'completado';
+    }
+    if (normalized === 'vencido') {
+      return 'vencido';
+    }
+    if (normalized === 'en progreso' || normalized === 'observada') {
+      return 'en_progreso';
+    }
+    return 'pendiente';
+  }
+
+  /**
    * Crear nuevas asignaciones de evidencias
    */
   async createAssignment(data: EvidenceAssignmentRequest): Promise<EvidenceAssignmentApiResponse> {

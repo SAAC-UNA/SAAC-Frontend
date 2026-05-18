@@ -369,9 +369,13 @@ const EvidenceAssignment: React.FC = () => {
     let cancelled = false;
 
     const validate = async () => {
+      const selectedAssignmentIds = isFlexible
+        ? formData.selectedElements
+        : formData.selectedEvidences;
+
       if (
         !formData.proceso_id ||
-        formData.selectedEvidences.length === 0 ||
+        selectedAssignmentIds.length === 0 ||
         formData.selectedUsers.length === 0
       ) {
         if (cancelled) return;
@@ -392,12 +396,18 @@ const EvidenceAssignment: React.FC = () => {
       const found: DuplicateAssignment[] = [];
       try {
         const results = await Promise.all(
-          formData.selectedEvidences.map(async (evidenciaId) => {
-            const res = await evidenceAssignmentService.validateDuplicates({
-              proceso_id: formData.proceso_id!,
-              evidencia_id: evidenciaId,
-              usuarios: formData.selectedUsers,
-            });
+          selectedAssignmentIds.map(async (assignmentId) => {
+            const res = isFlexible
+              ? await evidenceAssignmentService.validateElementDuplicates({
+                  proceso_id: formData.proceso_id!,
+                  elemento_id: assignmentId,
+                  usuarios: formData.selectedUsers,
+                })
+              : await evidenceAssignmentService.validateDuplicates({
+                  proceso_id: formData.proceso_id!,
+                  evidencia_id: assignmentId,
+                  usuarios: formData.selectedUsers,
+                });
 
             if (!res.tiene_duplicados) {
               return [] as DuplicateAssignment[];
@@ -405,7 +415,7 @@ const EvidenceAssignment: React.FC = () => {
 
             return res.duplicados.map((d) => ({
               ...d,
-              evidencia_id: evidenciaId,
+              evidencia_id: assignmentId,
             }));
           }),
         );
@@ -430,8 +440,10 @@ const EvidenceAssignment: React.FC = () => {
       cancelled = true;
     };
   }, [
+    isFlexible,
     formData.proceso_id,
     JSON.stringify(formData.selectedEvidences),
+    JSON.stringify(formData.selectedElements),
     JSON.stringify(formData.selectedUsers),
   ]);
 
@@ -808,20 +820,35 @@ const EvidenceAssignment: React.FC = () => {
     try {
       if (isFlexible) {
         // Modelo flexible: enviar asignaciones en paralelo para reducir latencia total.
-        const elementPayloads = formData.selectedElements.map((elementoId) => ({
-          proceso_id: formData.proceso_id!,
-          elemento_id: elementoId,
-          usuarios:
-            formData.selectedUsers.length > 0
-              ? formData.selectedUsers
-              : undefined,
-          roles:
-            formData.selectedRoles.length > 0
-              ? formData.selectedRoles
-              : undefined,
-          fecha_limite: formData.fecha_limite || undefined,
-          comentario: formData.comentario || undefined,
-        }));
+        const elementPayloads = formData.selectedElements
+          .map((elementoId) => {
+            const finalUsers = formData.selectedUsers.filter(
+              (id) =>
+                !excludedUsersSet.has(id) &&
+                !excludedCompletedPairs.some(
+                  (p) => p.usuario_id === id && p.evidencia_id === elementoId,
+                ),
+            );
+
+            const roles =
+              formData.selectedRoles.length > 0
+                ? formData.selectedRoles
+                : undefined;
+
+            if (finalUsers.length === 0 && !roles) {
+              return null;
+            }
+
+            return {
+              proceso_id: formData.proceso_id!,
+              elemento_id: elementoId,
+              usuarios: finalUsers.length > 0 ? finalUsers : undefined,
+              roles,
+              fecha_limite: formData.fecha_limite || undefined,
+              comentario: formData.comentario || undefined,
+            };
+          })
+          .filter((payload): payload is NonNullable<typeof payload> => payload !== null);
 
         await Promise.all(
           elementPayloads.map((payload) =>
