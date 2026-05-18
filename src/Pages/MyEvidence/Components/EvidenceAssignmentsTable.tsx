@@ -193,12 +193,15 @@ export const EvidenceAssignmentsTable: React.FC<
           const validStatus = ["pendiente", "en_progreso"].includes(
             assignment.estado,
           );
-          const canRequestExtension = !hasPendingRequest && validStatus;
+          const hasDeadline = Boolean(assignment.fecha_limite);
+          const canRequestExtension = !hasPendingRequest && validStatus && hasDeadline;
 
           // Tooltip dinámico
           let clockTooltip = "Solicitar ampliación";
           if (hasPendingRequest) {
             clockTooltip = "Cancelar ampliación";
+          } else if (!hasDeadline) {
+            clockTooltip = "No hay fecha limite para ampliar";
           } else if (!validStatus) {
             clockTooltip = "No se puede solicitar ampliación";
           }

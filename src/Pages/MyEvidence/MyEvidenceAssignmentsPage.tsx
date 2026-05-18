@@ -491,6 +491,15 @@ export const MyEvidenceAssignmentsPage: React.FC = () => {
   };
 
   const handleFlexRequestExtension = (a: FlexibleAssignmentItem) => {
+    if (!a.fecha_limite) {
+      showToast({
+        type: "warning",
+        title: "Sin fecha límite",
+        message: "No se puede solicitar una ampliación porque este entregable no tiene fecha límite.",
+      });
+      return;
+    }
+
     setFlexModal((prev) => ({
       ...prev,
       selectedForExtension: a,
@@ -610,6 +619,15 @@ export const MyEvidenceAssignmentsPage: React.FC = () => {
 
   // HU-016: Handler para solicitar ampliación
   const handleRequestExtension = (assignment: EvidenceAssignment) => {
+    if (!assignment.fecha_limite) {
+      showToast({
+        type: "warning",
+        title: "Sin fecha límite",
+        message: "No se puede solicitar una ampliación porque este entregable no tiene fecha límite.",
+      });
+      return;
+    }
+
     setModalState((prev) => ({
       ...prev,
       selectedAssignmentForExtension: assignment,

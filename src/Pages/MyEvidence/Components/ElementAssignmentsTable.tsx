@@ -174,12 +174,14 @@ export const ElementAssignmentsTable: React.FC<ElementAssignmentsTableProps> = (
           const isCompleted = assignment.estado === 'Completado';
           const isActionable = ['Pendiente', 'En Progreso'].includes(assignment.estado);
           const hasPending = assignment.has_pending_extension_request === true;
+          const hasDeadline = Boolean(assignment.fecha_limite);
           const pendingRequestId = assignment.pending_extension_request_id ?? null;
-          const canExtend = !hasPending && isActionable;
+          const canExtend = !hasPending && isActionable && hasDeadline;
           const canMarkCompleted = assignment.has_uploaded_files === true;
 
           let extensionTooltip = 'Solicitar ampliación';
           if (hasPending) extensionTooltip = 'Ya hay una solicitud pendiente';
+          else if (!hasDeadline) extensionTooltip = 'No hay fecha limite para ampliar';
           else if (!isActionable) extensionTooltip = 'No se puede solicitar ampliación';
 
           const completeTooltip = isCompleted
