@@ -56,7 +56,8 @@ export const TYPOGRAPHY = {
   
   modal: {
     title: 'size-modal-title',               // 20px - Título de modales
-    subtitle: 'size-modal-subtitle',         // 14px - Subtítulo de modales
+    subtitle: 'size-modal-subtitle',         // 12.8px - Subtítulo de modales
+    subtitleBig: 'size-modal-subtitle-big',  // 14px - Subtítulo destacado de modales
     body: 'size-modal-body',                 // 14px - Contenido de modales
   },
   

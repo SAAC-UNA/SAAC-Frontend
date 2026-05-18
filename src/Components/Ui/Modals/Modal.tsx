@@ -16,7 +16,7 @@ interface ModalProps {
 
   // ── Hero card ──
   /** Título visible en la tarjeta de color */
-  title: string;
+  title: React.ReactNode;
   /** Subtítulo/descripción debajo del título */
   subtitle?: string;
   /** Badge de estado en la parte inferior de la tarjeta (ej: "Activo", "Pendiente") */

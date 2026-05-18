@@ -250,6 +250,7 @@ line {
   --text-empty-title-compact: 16px;
   --text-empty-desc-compact: 12px;
   --text-modal-title: 20px;
+  --text-modal-subtitle-big: 14px;
   --text-modal-subtitle: 12.8px;
   --text-modal-body: 12.8px;
   --text-pagination: 12.8px;
@@ -541,6 +542,9 @@ line {
   }
   .size-modal-subtitle {
     font-size: var(--text-modal-subtitle);
+  }
+  .size-modal-subtitle-big {
+    font-size: var(--text-modal-subtitle-big);
   }
   .size-modal-body {
     font-size: var(--text-modal-body);

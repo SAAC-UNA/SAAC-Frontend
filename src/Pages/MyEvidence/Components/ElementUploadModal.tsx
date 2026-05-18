@@ -185,7 +185,12 @@ export const ElementUploadPage: React.FC<ElementUploadPageProps> = ({
     <Modal
       isOpen={isOpen}
       onClose={handleClose}
-      title={`Subir recursos: ${nombre}`}
+      title={
+        <>
+          Subir recursos:{" "}
+          <span className={TYPOGRAPHY.modal.subtitleBig}>{nombre}</span>
+        </>
+      }
       variant="upload"
       size="xl"
       maxHeight="xl"
