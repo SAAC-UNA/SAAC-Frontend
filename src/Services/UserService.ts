@@ -70,6 +70,11 @@ export interface User {
   updatedAt?: Date;
 }
 
+export interface CreateUserFromLdapPayload {
+  cedula: string;
+  role: string;
+}
+
 /**
  * Respuesta estándar de la API
  */
@@ -83,6 +88,15 @@ export interface ApiResponse<T = any> {
  * Servicio para gestión básica de usuarios
  */
 class UserService {
+  private getErrorMessage(error: any, fallback: string): string {
+    return (
+      error?.response?.data?.message ||
+      error?.response?.data?.errorMessage ||
+      error?.message ||
+      fallback
+    );
+  }
+
   /**
    * Listar todos los usuarios
    */
@@ -96,6 +110,26 @@ class UserService {
     } catch (error) {
       console.error("Error obteniendo usuarios:", error);
       throw error;
+    }
+  }
+
+  /**
+   * Crear un usuario local a partir de los datos encontrados en LDAP
+   */
+  async createUserFromLdap(
+    payload: CreateUserFromLdapPayload,
+  ): Promise<ApiResponse<BackendUser>> {
+    try {
+      const response = await axiosInstance.post("/admin/users", {
+        cedula: payload.cedula.trim(),
+        role: payload.role,
+      });
+      return response.data;
+    } catch (error: any) {
+      console.error("Error creando usuario desde LDAP:", error);
+      throw new Error(
+        this.getErrorMessage(error, "Error al crear usuario desde LDAP"),
+      );
     }
   }
 

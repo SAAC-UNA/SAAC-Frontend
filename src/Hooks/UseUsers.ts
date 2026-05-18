@@ -12,6 +12,7 @@ import {
   userService,
   type User,
   type BackendUser,
+  type CreateUserFromLdapPayload,
 } from "@/Services/UserService";
 
 /**
@@ -60,6 +61,33 @@ export const useUsers = () => {
       setIsLoading(false);
     }
   }, []);
+
+  /**
+   * Crear un usuario desde LDAP y asignarle un rol inicial
+   */
+  const crearUsuarioDesdeLdap = useCallback(
+    async (payload: CreateUserFromLdapPayload): Promise<User> => {
+      setIsLoading(true);
+      setError(null);
+
+      try {
+        const response = await userService.createUserFromLdap(payload);
+        if (!response.data) {
+          throw new Error("No se recibieron datos del usuario creado");
+        }
+
+        const createdUser = transformBackendUser(response.data);
+        setUsers((prevUsers) => [createdUser, ...prevUsers]);
+        return createdUser;
+      } catch (err) {
+        console.error("Error en crearUsuarioDesdeLdap:", err);
+        throw err;
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    [],
+  );
 
   /**
    * Activar un usuario
@@ -144,6 +172,7 @@ export const useUsers = () => {
     isLoading,
     error,
     loadUsers,
+    crearUsuarioDesdeLdap,
     activarUsuario,
     desactivarUsuario,
   };

@@ -7,9 +7,12 @@
 
 import React, { useState, useEffect, useCallback, lazy, Suspense } from "react";
 import { UsersTable } from "./Components/UsersTable";
-import { PageHeader, ScreenContainer } from "@/Components/Ui/Index";
+import { Button, PageHeader, ScreenContainer } from "@/Components/Ui/Index";
 import { SearchInput } from "@/Components/Ui/Forms/SearchInput";
 import { UserEditModal } from "./Components/UserEditModal";
+import { UserCreateModal } from "./Components/UserCreateModal";
+import { SystemIcons } from "@/Components/Ui/Icons/SystemIcons";
+import { ICON_SIZES } from "@/Constants/Components";
 
 // Lazy load de modales para mejor rendimiento
 const UserDetailsModal = lazy(() =>
@@ -26,12 +29,28 @@ import { Modal } from "@/Components/Ui/Modals/Modal";
 import { getContextualInfo } from "@/Constants/ModuleInfo";
 import { useUsers } from "@/Hooks/UseUsers";
 import { useToast } from "@/Context/ToastContext";
+import { useAuth } from "@/Context/AuthContext";
 import type { User } from "@/Services/UserService";
+
+const ROLES_WITHOUT_REQUIRED_CAREER_SCOPE = new Set([
+  "profesor",
+  "docente",
+  "superusuario",
+]);
+
+const requiresCareerScopeAfterCreate = (roleName?: string) => {
+  if (!roleName) return true;
+  return !ROLES_WITHOUT_REQUIRED_CAREER_SCOPE.has(roleName.toLowerCase());
+};
 
 const UsersRepository: React.FC = () => {
   // Obtener información del módulo desde ModuleInfo
   const moduleInfo = getContextualInfo("users", "list");
   const { showToast } = useToast();
+  const { canAccess } = useAuth();
+  const canCreateUsers = canAccess({
+    requireAnyPermissions: ["usuarios.create"],
+  });
 
   // Estado para búsqueda
   const [searchQuery, setSearchQuery] = useState("");
@@ -44,6 +63,7 @@ const UsersRepository: React.FC = () => {
     users,
     loadUsers,
     error,
+    crearUsuarioDesdeLdap,
   } = useUsers();
 
   // Estado para el modal de detalles del usuario
@@ -80,10 +100,35 @@ const UsersRepository: React.FC = () => {
     isOpen: boolean;
     user: User | null;
   }>({ isOpen: false, user: null });
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
 
   const handleEditUser = useCallback((user: User) => {
     setUserEditModalState({ isOpen: true, user });
   }, []);
+
+  const handleCreatedUser = useCallback(
+    async (createdUser: User) => {
+      setIsCreateModalOpen(false);
+      await loadUsers();
+
+      showToast({
+        type: "success",
+        title: "Usuario creado",
+        message: `El usuario "${createdUser.name}" fue creado desde LDAP.`,
+      });
+
+      if (requiresCareerScopeAfterCreate(createdUser.role)) {
+        setUserEditModalState({ isOpen: true, user: createdUser });
+        showToast({
+          type: "info",
+          title: "Asignar carrera-sede",
+          message:
+            "Este rol necesita alcance institucional. Asigne la carrera-sede antes de finalizar.",
+        });
+      }
+    },
+    [loadUsers, showToast],
+  );
 
   const handleViewUser = useCallback((user: User) => {
     setUserDetailsModalState({
@@ -166,6 +211,15 @@ const UsersRepository: React.FC = () => {
               onChange={setSearchQuery}
               className="w-full sm:w-72"
             />
+            {canCreateUsers && (
+              <Button
+                type="button"
+                variant="secondary"
+                onClick={() => setIsCreateModalOpen(true)}
+              >
+                Agregar
+              </Button>
+            )}
           </div>
         }
       ></PageHeader>
@@ -257,7 +311,15 @@ const UsersRepository: React.FC = () => {
         />
       </Suspense>
 
-      {/* Modal de edición de usuario */}
+      {/* Modal de creacion de usuario */}
+      <UserCreateModal
+        isOpen={isCreateModalOpen}
+        onClose={() => setIsCreateModalOpen(false)}
+        onCreate={crearUsuarioDesdeLdap}
+        onCreated={handleCreatedUser}
+      />
+
+      {/* Modal de edicion de usuario */}
       <UserEditModal
         isOpen={userEditModalState.isOpen}
         onClose={() => setUserEditModalState({ isOpen: false, user: null })}
